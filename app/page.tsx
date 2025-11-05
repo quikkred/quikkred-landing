@@ -17,7 +17,6 @@ import StepsSection from "@/components/homepage/steps-section";
 import FeaturesSection from "@/components/homepage/features-section";
 import LoansGrid from "@/components/homepage/loans-grid";
 import LoanCalculatorAll from "@/components/homepage/loan-calculator";
-import Testimonials from "@/components/homepage/Testimonials";
 
 
 export default function Home() {
@@ -140,28 +139,10 @@ export default function Home() {
   return (
     <>
       <div className="min-h-screen" ref={containerRef}>
-        {/* Enhanced Hero Section with Parallax */}
-        <motion.div
-          className="relative w-full overflow-hidden;"
-          style={{ opacity, padding: '10vh 10%' }}
-        >
-          {/* Simplified Background - Static for better performance */}
-          <div className="absolute inset-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#25B181]/3 via-[#4A66FF]/3 to-[#FF9C70]/3" />
-          </div>
+        {/* Hero Section - Reduced spacing */}
+        <Hero/>
 
-          {/* Static decorative elements for better performance */}
-          <div className="hidden md:block absolute top-20 left-10 w-20 h-20 bg-gradient-to-br from-[#25B181] to-[#51C9AF] rounded-full opacity-20 blur-3xl" />
-          <div className="hidden md:block absolute bottom-20 right-10 w-32 h-32 bg-gradient-to-br from-[#4A66FF] to-[#FF9C70] rounded-full opacity-20 blur-3xl" />
-
-          <div className="w-full">
-            {/* <HeroSection /> */}
-            <Hero/>
-
-          </div>
-        </motion.div>
-
-             <section className="py-12 sm:py-16 lg:py-20 bg-white overflow-hidden">
+        <section className="py-12 sm:py-16 lg:py-20 bg-white overflow-hidden">
           <StepsSection/>
         </section>
 
@@ -240,11 +221,10 @@ export default function Home() {
           </div>
         </section>
 
-        
+
         <FeaturesSection/>
-        
+
         <LoanCalculatorAll/>
-        <Testimonials/>
 
         {/* Loan Products Showcase */}
         <section className="py-12 sm:py-16 lg:py-20 bg-white">
@@ -426,65 +406,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Final CTA Section */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-[#25B181] via-[#51C9AF] to-[#7CDAC3] text-white relative overflow-hidden shadow-2xl">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#25B181]/20 via-[#51C9AF]/20 to-[#7CDAC3]/20" />
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0" style={{
-              backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.1) 35px, rgba(255,255,255,.1) 70px)`,
-            }} />
-          </div>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="container mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10"
-          >
-            <Rocket className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 mx-auto mb-4 sm:mb-6 text-yellow-300" />
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold font-sora mb-4 sm:mb-6 px-4">
-              {t.homepage.sections.cta.title}
-            </h2>
-            <p className="text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 text-white/90 max-w-2xl mx-auto px-4">
-              {t.homepage.sections.cta.subtitle}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-lg mx-auto">
-              <Link href="/apply/quick" className="w-full sm:w-auto">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white text-[#25B181] rounded-full font-semibold text-base sm:text-lg shadow-xl hover:shadow-2xl hover:bg-[#D3F1EB] transition-all duration-300 flex items-center justify-center gap-2"
-                >
-                  Apply in 3 Minutes
-                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                </motion.button>
-              </Link>
-              <Link href="/contact" className="w-full sm:w-auto">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-transparent border-2 border-white text-white rounded-full font-semibold text-base sm:text-lg hover:bg-white/20 transition-all duration-300 flex items-center justify-center gap-2"
-                >
-                  <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
-                  {t.homepage.sections.cta.talkButton}
-                </motion.button>
-              </Link>
-            </div>
-            <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 lg:gap-8 text-white/90 text-sm sm:text-base">
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span>{t.homepage.sections.cta.badges.rbiLicensed}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <BadgeCheck className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span>{t.homepage.sections.cta.badges.isoCertified}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span>{t.homepage.sections.cta.badges.awardWinning}</span>
-              </div>
-            </div>
-          </motion.div>
-        </section>
 
         {/* Feature Comparison Table */}
         {/* <FeatureCards /> */}

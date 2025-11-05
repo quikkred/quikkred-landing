@@ -382,7 +382,7 @@ export default function ProductsPage() {
                         Learn More
                       </button>
                     </Link>
-                    <Link href="/apply" className="flex-1">
+                    <Link href="/apply/quick" className="flex-1">
                       <button className={`w-full px-4 py-2 bg-gradient-to-r ${product.color} text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2`}>
                         Apply Now
                         <ArrowRight className="w-4 h-4" />
@@ -481,7 +481,7 @@ export default function ProductsPage() {
               Join thousands of satisfied customers who've transformed their financial journey with Quikkred
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-lg mx-auto">
-              <Link href="/apply" className="w-full sm:w-auto">
+              <Link href="/apply/quick" className="w-full sm:w-auto">
                 <button className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white text-[#25B181] rounded-full font-semibold text-base sm:text-lg hover:shadow-xl transition-all">
                   Apply Now
                 </button>

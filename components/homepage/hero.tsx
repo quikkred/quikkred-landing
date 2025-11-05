@@ -1,190 +1,174 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
-
-const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ children, className, ...props }) => (
-  <button
-    {...props}
-    className={[
-      "inline-flex items-center justify-center",
-      className ?? "",
-    ].filter(Boolean).join(" ")}
-  >
-    {children}
-  </button>
-)
+import { motion } from "framer-motion"
+import { ArrowRight, Shield, Zap, CheckCircle, Users, Star, Clock, Phone } from "lucide-react"
 
 export default function Hero() {
-  const [formData, setFormData] = useState({
-    name: "",
-    mobile: "",
-    loanAmount: "",
-    email: "",
-  })
-  const [currentStep, setCurrentStep] = useState(1)
-  const [submitted, setSubmitted] = useState(false)
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
-  }
-
-  const handleNext = () => {
-    const currentField = Object.keys(formData)[currentStep - 1]
-    if (formData[currentField as keyof typeof formData]) {
-      if (currentStep === 4) {
-        // Submit on last step
-        handleSubmit()
-      } else {
-        setCurrentStep(currentStep + 1)
-      }
-    }
-  }
-
-  const handleSubmit = () => {
-    console.log("Form submitted:", formData)
-    // Store data in localStorage for pre-filling the quick application
-    localStorage.setItem('heroFormData', JSON.stringify({
-      name: formData.name,
-      mobile: formData.mobile,
-      amount: formData.loanAmount,
-      email: formData.email
-    }));
-    // Redirect to quick application
-    window.location.href = '/apply/quick';
-  }
-
   const steps = [
-    { question: "What's your name?", placeholder: "Enter your name", field: "name" },
-    { question: "Enter your Mobile number?", placeholder: "Enter your mobile number", field: "mobile" },
-    { question: "How much do you need?", placeholder: "Enter Amount in ₹", field: "loanAmount" },
-    { question: "Enter email address?", placeholder: "Enter your email", field: "email" },
+    {
+      number: "1",
+      title: "Fill Details",
+      description: "Basic info in 60 seconds",
+      icon: CheckCircle,
+    },
+    {
+      number: "2",
+      title: "Get Approved",
+      description: "Instant decision on screen",
+      icon: Shield,
+    },
+    {
+      number: "3",
+      title: "Receive Money",
+      description: "Direct to your account",
+      icon: Zap,
+    }
   ]
 
-  const currentStepData = steps[currentStep - 1]
-
-  if (submitted) {
-    return (
-      <section className="bg-white py-16 md:py-32 px-4">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-            <h1 className="text-5xl md:text-6xl font-bold text-slate-900 leading-tight">
-              Get <span className="text-teal-500">Instant</span>
-              <br />
-              Personal Loans
-            </h1>
-            <p className="text-base text-slate-700 leading-relaxed max-w-md">
-              Quick approval, minimal documentation, transparent process. Your trusted partner for all financial needs
-            </p>
-            <Button
-              onClick={() => window.location.href = '/apply/quick'}
-              className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-3 text-base font-semibold rounded"
-            >
-              Get Instant Loan →
-            </Button>
-          </div>
-
-          <div className="relative flex justify-center items-start pt-8">
-            <div className="absolute -top-8 -right-12 w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg">
-              $
-            </div>
-
-            <div className="w-full max-w-sm bg-white rounded-lg shadow-xl border border-slate-100 p-8">
-              <div className="text-center space-y-4">
-                <div className="text-5xl">✓</div>
-                <h2 className="text-2xl font-bold text-slate-900">Thank You!</h2>
-                <p className="text-slate-600">
-                  Your application has been submitted successfully. We'll contact you soon.
-                </p>
-                <Button
-                  onClick={() => {
-                    setCurrentStep(1)
-                    setSubmitted(false)
-                    setFormData({ name: "", mobile: "", loanAmount: "", email: "" })
-                  }}
-                  className="w-full bg-teal-500 hover:bg-teal-600 text-white py-3 font-semibold rounded-lg"
-                >
-                  Submit Another
-                </Button>
-              </div>
-            </div>
-
-            <div className="absolute bottom-32 -left-8 w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center text-white text-xl">
-              ⏱
-            </div>
-
-            <div className="absolute bottom-12 -right-8 w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-              $
-            </div>
-          </div>
-        </div>
-      </section>
-    )
-  }
-
   return (
-    <section className="bg-white py-16 md:py-32 px-4">
-      <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-        {/* Left Content */}
-        <div className="space-y-6">
-          <h1 className="text-5xl md:text-6xl font-bold text-slate-900 leading-tight">
-            Get <span className="text-teal-500">Instant</span>
-            <br />
-            Personal Loans
-          </h1>
-          <p className="text-base text-slate-700 leading-relaxed max-w-md">
-            Quick approval, minimal documentation, transparent process. Your trusted partner for all financial needs
-          </p>
-          <Button className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-3 text-base font-semibold rounded">
-            Get Started
-          </Button>
-        </div>
+    <section className="bg-white py-16 md:py-24 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Left Content */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="space-y-6"
+          >
+            {/* Trust Badge - matching steps section style */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              className="inline-block"
+            >
+              <span className="inline-block px-4 py-2 bg-teal-100 text-teal-600 rounded-full text-xs sm:text-sm font-semibold">
+                RBI Registered NBFC • 100% Secure
+              </span>
+            </motion.div>
 
-        {/* Right - Form Card with Decorative Elements */}
-        <div className="relative flex justify-center items-start pt-8">
-          <div className="absolute -top-8 -right-12 w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg">
-            $
-          </div>
+            {/* Main Heading - matching site typography scale */}
+            <div className="space-y-4">
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-4xl md:text-5xl font-bold text-slate-900 leading-tight"
+              >
+                Get Loan <span className="text-teal-500">Approval</span>
+                <br />
+                in <span className="text-teal-500">3 Simple Steps</span>
+              </motion.h1>
 
-          <div className="w-full max-w-sm bg-white rounded-lg shadow-xl border border-slate-100 p-8">
-            {/* Progress Indicators */}
-            <div className="flex gap-2 mb-8">
-              <div className={`h-1 flex-1 rounded ${currentStep >= 1 ? "bg-teal-500" : "bg-slate-300"}`}></div>
-              <div className={`h-1 flex-1 rounded ${currentStep >= 2 ? "bg-teal-500" : "bg-slate-300"}`}></div>
-              <div className={`h-1 flex-1 rounded ${currentStep >= 3 ? "bg-teal-500" : "bg-slate-300"}`}></div>
-              <div className={`h-1 flex-1 rounded ${currentStep >= 4 ? "bg-teal-500" : "bg-slate-300"}`}></div>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="text-slate-600 text-lg leading-relaxed"
+              >
+                No paperwork. No waiting. Just instant approval and quick disbursal. Your financial emergency solved in minutes.
+              </motion.p>
             </div>
 
-            {/* Form Content */}
-            <label className="block text-slate-900 font-semibold mb-4">{currentStepData.question}</label>
-            <input
-              type={currentStepData.field === "email" ? "email" : "text"}
-              name={currentStepData.field}
-              placeholder={currentStepData.placeholder}
-              value={formData[currentStepData.field as keyof typeof formData]}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-400"
-            />
-            <Button
-              onClick={handleNext}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 font-semibold rounded-lg"
+            {/* Key Features - matching card style */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="flex flex-wrap gap-4"
             >
-              {currentStep === 4 ? "Submit" : "Next"}
-            </Button>
-          </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-lg">
+                <CheckCircle className="w-5 h-5 text-teal-500" />
+                <span className="font-medium text-slate-700 text-sm">Instant Approval</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-lg">
+                <Shield className="w-5 h-5 text-teal-500" />
+                <span className="font-medium text-slate-700 text-sm">100% Secure</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-lg">
+                <Zap className="w-5 h-5 text-teal-500" />
+                <span className="font-medium text-slate-700 text-sm">Same Day Disbursal</span>
+              </div>
+            </motion.div>
 
-          <div className="absolute bottom-32 -left-8 w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center text-white text-xl">
-            ⏱
-          </div>
+            {/* CTA Button - Inside Hero */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="flex flex-col sm:flex-row gap-4 pt-2"
+            >
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => window.location.href = '/apply/quick'}
+                className="group px-8 py-4 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 text-lg"
+              >
+                Apply Now
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </motion.button>
 
-          <div className="absolute bottom-12 -right-8 w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-            $
-          </div>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => window.location.href = '/contact'}
+                className="px-8 py-4 bg-white border-2 border-slate-300 text-slate-700 font-semibold rounded-lg hover:border-teal-500 hover:text-teal-500 transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                <Phone className="w-5 h-5" />
+                Talk to Expert
+              </motion.button>
+            </motion.div>
+          </motion.div>
+
+          {/* Right - 3 Steps Visual - matching steps section exactly */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            className="relative"
+          >
+            <div className="space-y-6">
+              {steps.map((step, index) => {
+                const Icon = step.icon
+                return (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 + index * 0.1 }}
+                    whileHover={{ scale: 1.02 }}
+                    className="relative"
+                  >
+                    <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-start gap-4">
+                        {/* Icon - matching site icon style */}
+                        <div className="flex-shrink-0">
+                          <div className="bg-teal-100 w-12 h-12 rounded-lg flex items-center justify-center">
+                            <Icon className="w-6 h-6 text-teal-500" />
+                          </div>
+                        </div>
+
+                        {/* Step Content */}
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-slate-900 mb-2">{step.title}</h3>
+                          <p className="text-slate-600 text-sm leading-relaxed">{step.description}</p>
+                        </div>
+
+                        {/* Number badge - matching steps section */}
+                        <div className="absolute -top-3 -right-3">
+                          <div className="w-8 h-8 bg-teal-500 text-white rounded-full font-bold text-sm flex items-center justify-center shadow-sm">
+                            {step.number}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>
