@@ -971,7 +971,7 @@ export function GatewayVaultLoader() {
                     >
                       <div className="relative rounded-3xl overflow-hidden bg-white/10 backdrop-blur-xl p-6 shadow-2xl">
                         <Image
-                          src="/logo 2.png"
+                          src="/logo.png"
                           alt="Quikkred Logo"
                           width={400}
                           height={120}

@@ -277,7 +277,7 @@ export function Header() {
           {/* Logo */}
          <Link href="/" className="flex p-[20px] items-center group">
   <img
-    src="https://quikkred.in/logo3.png"
+    src="https://quikkred.in/logo.png"
     alt={t.common.appName}
     className="h-auto object-contain"
     style={{ imageRendering: '-webkit-optimize-contrast',maxHeight: '50px' }}

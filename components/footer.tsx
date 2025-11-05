@@ -192,7 +192,7 @@ export function Footer() {
   className="flex items-start mb-4 sm:mb-6"
 >
   <Image
-    src="https://quikkred.in/logoW.png"
+    src="/logo.png"
     alt={t.common.appName}
     width={150}
     height={150}
@@ -202,7 +202,7 @@ export function Footer() {
 
 {/* <Link href="/" className="flex p-[20px] items-center group">
   <img
-    src="https://quikkred.in/logoW.png"
+    src="/logo.png"
     alt={t.common.appName}
     className="w-48 sm:w-56 md:w-64 lg:w-72 xl:w-80 h-auto object-contain"
     style={{ imageRendering: '-webkit-optimize-contrast' }}
