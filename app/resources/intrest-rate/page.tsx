@@ -479,7 +479,7 @@ export default function InterestRatesPage() {
 
                     {/* CTA Buttons */}
                     <div className="flex gap-3">
-                      <Link href="/apply/loan" className="flex-1">
+                      <Link href="/apply/quick" className="flex-1">
                         <button className="w-full px-4 py-2 bg-[#4A66FF] text-white rounded-lg text-sm font-semibold hover:bg-[var(--royal-blue-dark)] transition-colors">
                           Apply Now
                         </button>
@@ -596,7 +596,7 @@ export default function InterestRatesPage() {
                   Check Eligibility
                 </button>
               </Link>
-              <Link href="/apply/loan">
+              <Link href="/apply/quick">
                 <button className="px-8 py-3 bg-transparent border-2 border-white  rounded-lg font-semibold hover:bg-white hover:text-[#4A66FF] transition-all">
                   Apply Now
                 </button>

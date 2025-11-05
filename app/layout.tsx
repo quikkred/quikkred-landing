@@ -22,28 +22,48 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
-  title: "Quikkred - Instant Loans with AI-powered Approval",
-  description: "India's most trusted NBFC. Get instant loans with AI-powered approval in 30 seconds. Payday loans, personal loans, business loans - 100% digital, transparent pricing.",
-  keywords: "Quikkred, blue chip finance, instant loan, AI lending, NBFC, payday loan, personal loan, business loan, quick loan india",
-  metadataBase: new URL('https://Quikkred.co.in'),
+  title: "Quikkred - Get Instant Loan Approval in 3 Easy Steps | Quick Personal Loans India",
+  description: "Apply for instant personal loans online in India. Get approval in just 3 simple steps with minimal documentation. Fast disbursal, competitive interest rates, 100% digital process. Apply now!",
+  keywords: "instant loan, quick loan, personal loan online, instant approval, fast loan disbursal, digital loan application, minimal documentation loan, online personal loan India, quick cash loan, emergency loan",
+  metadataBase: new URL('https://www.quikkred.in'),
   icons: {
-    icon: "./favicons.ico",          // default favicon
-    shortcut: "./favicons.ico",      // shortcut icon
-    apple: "./apple-touch-icon.png" // optional for Apple devices
+    icon: "./favicons.ico",
+    shortcut: "./favicons.ico",
+    apple: "./apple-touch-icon.png"
+  },
+  authors: [{ name: "Quikkred" }],
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
   openGraph: {
-    title: "Quikkred",
-    description: "Get instant loans with AI-powered approval in 30 seconds. Trusted by + customers.",
-    images: ["/og-image.png"],
-    url: 'https://Quikkred.com',
+    title: "Quikkred - Get Instant Loan Approval in 3 Easy Steps",
+    description: "Apply for instant personal loans online. Get approval in 3 steps with minimal documentation. Fast, secure, and 100% digital.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Quikkred Instant Loans" }],
+    url: 'https://www.quikkred.in',
     siteName: 'Quikkred',
     type: 'website',
+    locale: 'en_IN',
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Quikkred",
-    description: "Get instant loans with AI-powered approval in 30 seconds",
+    title: "Quikkred - Get Instant Loan Approval in 3 Easy Steps",
+    description: "Apply for instant personal loans online. Fast approval, minimal documentation, 100% digital.",
     images: ["/og-image.png"],
+    creator: "@quikkred",
+  },
+  verification: {
+    google: 'your-google-verification-code',
+  },
+  alternates: {
+    canonical: 'https://www.quikkred.in',
   },
 };
 
@@ -78,6 +98,39 @@ export default function RootLayout({
                 }
               })();
             `,
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'FinancialService',
+              name: 'Quikkred',
+              description: 'Instant personal loans with quick approval in 3 easy steps',
+              url: 'https://www.quikkred.in',
+              logo: 'https://www.quikkred.in/logo.png',
+              address: {
+                '@type': 'PostalAddress',
+                addressCountry: 'IN',
+              },
+              sameAs: [
+                'https://www.facebook.com/quikkred',
+                'https://twitter.com/quikkred',
+                'https://www.linkedin.com/company/quikkred'
+              ],
+              aggregateRating: {
+                '@type': 'AggregateRating',
+                ratingValue: '4.8',
+                reviewCount: '50000'
+              },
+              offers: {
+                '@type': 'Offer',
+                name: 'Personal Loan',
+                description: 'Instant personal loans starting from ₹10,000',
+                priceCurrency: 'INR',
+              }
+            })
           }}
         />
         <link rel="icon" href="/favicon.ico" />

@@ -62,7 +62,7 @@ export default function SalaryAdvancePage() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/apply">
+              <Link href="/apply/quick">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -349,7 +349,7 @@ export default function SalaryAdvancePage() {
               Get instant salary advance in just 5 minutes
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/apply">
+              <Link href="/apply/quick">
                 <button className="px-8 py-4 bg-white text-[#25B181] rounded-full font-semibold text-lg hover:shadow-xl transition-all">
                   Get Salary Advance Now
                 </button>

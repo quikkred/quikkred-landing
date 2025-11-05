@@ -638,7 +638,7 @@ export default function EligibilityCheckPage() {
             <div className="flex flex-col sm:flex-row gap-4">
               {result?.isEligible ? (
                 <>
-                  <Link href="/apply/loan" className="flex-1">
+                  <Link href="/apply/quick" className="flex-1">
                     <button className="w-full px-8 py-4 bg-[#4A66FF] text-white rounded-lg font-semibold hover:bg-[var(--royal-blue-dark)] transition-colors">
                       Apply for Loan Now
                     </button>

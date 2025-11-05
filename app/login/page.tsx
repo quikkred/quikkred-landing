@@ -635,7 +635,7 @@ export default function LoginPage() {
                   <p className="text-gray-700 mb-6">
                     Join thousands who have already transformed their financial journey with instant AI-powered loans.
                   </p>
-                  <Link href="/apply">
+                  <Link href="/apply/quick">
                     <button className="w-full bg-gradient-to-r from-[#fbbf24] to-[#38bdf8] text-white py-3 px-6 rounded-full font-semibold hover:shadow-lg transition-all mb-4">
                       Start Your Application
                     </button>

@@ -330,7 +330,7 @@ export default function EMICalculatorPage() {
             <div className="bg-gradient-to-r from-[#25B181] to-[#51C9AF] rounded-2xl p-8 ">
               <h3 className="text-xl font-bold mb-2">Ready to Apply?</h3>
               <p className="mb-4 opacity-90">Get instant approval with our AI-powered system</p>
-              <Link href="/apply">
+              <Link href="/apply/quick">
                 <button className="w-full-[var(--royal-blue)] py-3 px-6 rounded-lg font-semibold hover:shadow-lg transition-all">
                   Apply for Loan
                 </button>

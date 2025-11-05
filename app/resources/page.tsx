@@ -342,7 +342,7 @@ export default function FinancialLiteracyPage() {
               Our financial experts are here to guide you. Get personalized advice and smart loan solutions.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Link href="/apply">
+              <Link href="/apply/quick">
                 <button
                   className="px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all"
                   style={{ backgroundColor: '#FFFFFF', color: '#145214' }}

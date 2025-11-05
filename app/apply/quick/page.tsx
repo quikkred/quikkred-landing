@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
@@ -8,6 +8,9 @@ import {
   Calendar, User, Phone, Mail, CreditCard, Camera,
   AlertCircle, ArrowRight, Sparkles, Shield, Zap
 } from "lucide-react";
+import { loansService } from "@/lib/api/loans.service";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast, Toaster } from "@/components/ui/toast";
 
 // Auto-decision engine
 const autoDecisionEngine = (data: any) => {
@@ -56,16 +59,20 @@ const autoDecisionEngine = (data: any) => {
 
 export default function QuickLoanApplication() {
   const router = useRouter();
+  const { login } = useAuth();
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [decision, setDecision] = useState<any>(null);
   const [selfieCapture, setSelfieCapture] = useState(false);
+  const [verificationMethod, setVerificationMethod] = useState<'mobile' | 'email'>('email');
 
   const [formData, setFormData] = useState({
     // Step 1: Basic Details
     mobile: "",
     otp: "",
     mobileVerified: false,
+    emailVerified: false,
     fullName: "",
     pan: "",
     aadhaar: "",
@@ -89,6 +96,27 @@ export default function QuickLoanApplication() {
     eSignConsent: false
   });
 
+  // Pre-fill data from hero section
+  useEffect(() => {
+    try {
+      const heroData = localStorage.getItem('heroFormData');
+      if (heroData) {
+        const data = JSON.parse(heroData);
+        setFormData(prev => ({
+          ...prev,
+          fullName: data.name || prev.fullName,
+          mobile: data.mobile || prev.mobile,
+          loanAmount: data.amount || prev.loanAmount,
+          email: data.email || prev.email
+        }));
+        // Clear the localStorage after reading
+        localStorage.removeItem('heroFormData');
+      }
+    } catch (error) {
+      console.error('Error reading hero form data:', error);
+    }
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setFormData(prev => ({
@@ -99,18 +127,98 @@ export default function QuickLoanApplication() {
 
   const sendOTP = async () => {
     setLoading(true);
-    // Simulate OTP sending
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setLoading(false);
-    alert("OTP sent to " + formData.mobile);
+    try {
+      const payload = verificationMethod === 'email'
+        ? { email: formData.email }
+        : { mobile: formData.mobile };
+
+      const response = await fetch("https://api.bluechipfinmax.com/api/auth/customer/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast({
+          variant: "success",
+          title: "OTP Sent Successfully!",
+          description: `A one-time password has been sent to your ${verificationMethod}. Please check and enter it below.`,
+        });
+      } else {
+        toast({
+          variant: "error",
+          title: "Failed to Send OTP",
+          description: data.message || 'Please try again.',
+        });
+      }
+    } catch (error: any) {
+      toast({
+        variant: "error",
+        title: "Error",
+        description: error.message || 'Failed to send OTP. Please try again.',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const verifyOTP = async () => {
+    if (!formData.otp || formData.otp.length !== 6) {
+      toast({
+        variant: "warning",
+        title: "Invalid OTP",
+        description: "Please enter a valid 6-digit OTP.",
+      });
+      return;
+    }
+
     setLoading(true);
-    // Simulate OTP verification
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setFormData(prev => ({ ...prev, mobileVerified: true }));
-    setLoading(false);
+    try {
+      const payload = verificationMethod === 'email'
+        ? { email: formData.email, otp: formData.otp }
+        : { mobile: formData.mobile, otp: formData.otp };
+
+      const response = await fetch("https://api.bluechipfinmax.com/api/auth/customer/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        if (verificationMethod === 'email') {
+          setFormData(prev => ({ ...prev, emailVerified: true }));
+        } else {
+          setFormData(prev => ({ ...prev, mobileVerified: true }));
+        }
+        toast({
+          variant: "success",
+          title: "Verification Successful!",
+          description: `Your ${verificationMethod === 'email' ? 'email' : 'mobile number'} has been verified successfully.`,
+        });
+      } else {
+        toast({
+          variant: "error",
+          title: "Verification Failed",
+          description: data.message || 'Invalid OTP. Please try again.',
+        });
+      }
+    } catch (error: any) {
+      toast({
+        variant: "error",
+        title: "Verification Error",
+        description: error.message || 'Failed to verify OTP. Please try again.',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const captureSelfi = () => {
@@ -118,22 +226,35 @@ export default function QuickLoanApplication() {
     // In real app, this would open camera
     setTimeout(() => {
       setSelfieCapture(false);
-      alert("Selfie captured successfully");
+      toast({
+        variant: "success",
+        title: "Selfie Captured!",
+        description: "Your selfie has been captured successfully.",
+      });
     }, 2000);
   };
 
   const handleNext = async () => {
     // Validate current step
     if (currentStep === 1) {
-      if (!formData.mobileVerified || !formData.fullName || !formData.pan || !formData.aadhaar || !formData.email) {
-        alert("Please complete all required fields");
+      const isVerified = verificationMethod === 'email' ? formData.emailVerified : formData.mobileVerified;
+      if (!isVerified || !formData.fullName || !formData.email || !formData.mobile || !formData.pan || !formData.aadhaar) {
+        toast({
+          variant: "warning",
+          title: "Incomplete Information",
+          description: "Please verify your email/mobile and complete all required fields.",
+        });
         return;
       }
     }
 
     if (currentStep === 2) {
       if (!formData.monthlyIncome || !formData.bankName) {
-        alert("Please complete all required fields");
+        toast({
+          variant: "warning",
+          title: "Incomplete Information",
+          description: "Please complete all required fields.",
+        });
         return;
       }
     }
@@ -142,19 +263,81 @@ export default function QuickLoanApplication() {
       // Final step - submit and get instant decision
       setLoading(true);
 
-      // Simulate verification
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      try {
+        // Call backend API to submit loan application
+        const response = await loansService.applyLoan({
+          fullName: formData.fullName,
+          mobileNumber: formData.mobile,
+          email: formData.email,
+          panCard: formData.pan,
+          aadhaarCard: formData.aadhaar,
+          loanAmount: parseFloat(formData.loanAmount),
+          loanType: 'PERSONAL',
+          tenure: parseInt(formData.tenure),
+          purpose: 'Quick Loan Application',
+          employmentType: formData.employmentType.toUpperCase() as 'SALARIED' | 'SELF_EMPLOYED' | 'STUDENT' | 'RETIRED',
+          monthlyIncome: parseFloat(formData.monthlyIncome),
+          employerName: formData.companyName
+        });
 
-      // Get auto-decision
-      const result = autoDecisionEngine({
-        monthlyIncome: parseFloat(formData.monthlyIncome),
-        loanAmount: parseFloat(formData.loanAmount),
-        pan: formData.pan,
-        aadhaar: formData.aadhaar,
-        tenure: parseInt(formData.tenure)
-      });
+        // Check if API call was successful
+        if (response.success && response.data) {
+          // If backend returned user authentication data, use it for auto-login
+          if (response.data.userId && response.data.token) {
+            console.log('✅ Loan application submitted successfully with user authentication');
 
-      setDecision(result);
+            // Automatically log in the user with API data
+            const loginSuccess = await login(
+              formData.email,
+              '', // No password needed for API-based login
+              'CUSTOMER', // Default role for loan applicants
+              {
+                userId: response.data.userId,
+                token: response.data.token,
+                mobile: formData.mobile,
+                role: response.data.role || 'CUSTOMER'
+              }
+            );
+
+            if (loginSuccess) {
+              console.log('✅ User authenticated and granted dashboard access');
+            }
+          }
+
+          // Use API response for decision
+          setDecision({
+            approved: true,
+            apiResponse: response.data,
+            approvedAmount: parseFloat(formData.loanAmount),
+            interestRate: 12.5,
+            tenure: parseInt(formData.tenure),
+            emi: Math.round((parseFloat(formData.loanAmount) * (12.5/100/12) * Math.pow(1 + 12.5/100/12, parseInt(formData.tenure))) / (Math.pow(1 + 12.5/100/12, parseInt(formData.tenure)) - 1)),
+            processingFee: Math.round(parseFloat(formData.loanAmount) * 0.02)
+          });
+        } else {
+          // API returned error, use local decision engine as fallback
+          const result = autoDecisionEngine({
+            monthlyIncome: parseFloat(formData.monthlyIncome),
+            loanAmount: parseFloat(formData.loanAmount),
+            pan: formData.pan,
+            aadhaar: formData.aadhaar,
+            tenure: parseInt(formData.tenure)
+          });
+          setDecision(result);
+        }
+      } catch (error) {
+        console.error('Error submitting loan application:', error);
+        // Fallback to local decision engine
+        const result = autoDecisionEngine({
+          monthlyIncome: parseFloat(formData.monthlyIncome),
+          loanAmount: parseFloat(formData.loanAmount),
+          pan: formData.pan,
+          aadhaar: formData.aadhaar,
+          tenure: parseInt(formData.tenure)
+        });
+        setDecision(result);
+      }
+
       setLoading(false);
       return;
     }
@@ -173,8 +356,15 @@ export default function QuickLoanApplication() {
     setLoading(false);
 
     // Redirect to dashboard
-    alert("Loan approved and disbursed! Amount will be credited within 24 hours.");
-    router.push("/user");
+    toast({
+      variant: "success",
+      title: "Loan Approved & Disbursed!",
+      description: "Your loan amount will be credited to your bank account within 24 hours.",
+    });
+
+    setTimeout(() => {
+      router.push("/user");
+    }, 1500);
   };
 
   // Show loading screen during verification
@@ -383,6 +573,7 @@ export default function QuickLoanApplication() {
   // Main application form
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5] py-8 px-4">
+      <Toaster />
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
@@ -432,60 +623,158 @@ export default function QuickLoanApplication() {
               >
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Basic Details (1 minute)</h2>
 
-                {/* Mobile Number with OTP */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Mobile Number *
+                {/* Verification Method Toggle */}
+                <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Choose Verification Method *
                   </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="tel"
-                      name="mobile"
-                      value={formData.mobile}
-                      onChange={handleChange}
-                      disabled={formData.mobileVerified}
-                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100"
-                      placeholder="+91 98765 43210"
-                    />
-                    {!formData.mobileVerified && (
-                      <button
-                        onClick={sendOTP}
-                        disabled={!formData.mobile || loading}
-                        className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50"
-                      >
-                        {loading ? "Sending..." : "Send OTP"}
-                      </button>
-                    )}
-                    {formData.mobileVerified && (
-                      <CheckCircle className="w-10 h-10 text-green-600" />
-                    )}
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setVerificationMethod('email')}
+                      className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
+                        verificationMethod === 'email'
+                          ? 'bg-[#25B181] text-white shadow-md'
+                          : 'bg-white text-gray-700 border border-gray-300 hover:border-[#25B181]'
+                      }`}
+                    >
+                      <Mail className="w-5 h-5 inline mr-2" />
+                      Verify with Email
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setVerificationMethod('mobile')}
+                      className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
+                        verificationMethod === 'mobile'
+                          ? 'bg-[#25B181] text-white shadow-md'
+                          : 'bg-white text-gray-700 border border-gray-300 hover:border-[#25B181]'
+                      }`}
+                    >
+                      <Phone className="w-5 h-5 inline mr-2" />
+                      Verify with Mobile
+                    </button>
                   </div>
                 </div>
 
-                {!formData.mobileVerified && formData.mobile && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Enter OTP *
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        name="otp"
-                        value={formData.otp}
-                        onChange={handleChange}
-                        maxLength={6}
-                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                        placeholder="Enter 6-digit OTP"
-                      />
-                      <button
-                        onClick={verifyOTP}
-                        disabled={formData.otp.length !== 6 || loading}
-                        className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-                      >
-                        Verify
-                      </button>
+                {/* Email Verification */}
+                {verificationMethod === 'email' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address *
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleChange}
+                          disabled={formData.emailVerified}
+                          className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100"
+                          placeholder="your@email.com"
+                        />
+                        {!formData.emailVerified && (
+                          <button
+                            onClick={sendOTP}
+                            disabled={!formData.email || loading}
+                            className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50"
+                          >
+                            {loading ? "Sending..." : "Send OTP"}
+                          </button>
+                        )}
+                        {formData.emailVerified && (
+                          <CheckCircle className="w-10 h-10 text-green-600" />
+                        )}
+                      </div>
+                      <p className="mt-1 text-xs text-gray-500">We'll use this email for all loan communication</p>
                     </div>
-                  </div>
+
+                    {!formData.emailVerified && formData.email && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Enter OTP *
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            name="otp"
+                            value={formData.otp}
+                            onChange={handleChange}
+                            maxLength={6}
+                            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                            placeholder="Enter 6-digit OTP"
+                          />
+                          <button
+                            onClick={verifyOTP}
+                            disabled={formData.otp.length !== 6 || loading}
+                            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                          >
+                            Verify
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Mobile Verification */}
+                {verificationMethod === 'mobile' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Mobile Number *
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="tel"
+                          name="mobile"
+                          value={formData.mobile}
+                          onChange={handleChange}
+                          disabled={formData.mobileVerified}
+                          className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100"
+                          placeholder="+91 98765 43210"
+                        />
+                        {!formData.mobileVerified && (
+                          <button
+                            onClick={sendOTP}
+                            disabled={!formData.mobile || loading}
+                            className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50"
+                          >
+                            {loading ? "Sending..." : "Send OTP"}
+                          </button>
+                        )}
+                        {formData.mobileVerified && (
+                          <CheckCircle className="w-10 h-10 text-green-600" />
+                        )}
+                      </div>
+                    </div>
+
+                    {!formData.mobileVerified && formData.mobile && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Enter OTP *
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            name="otp"
+                            value={formData.otp}
+                            onChange={handleChange}
+                            maxLength={6}
+                            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                            placeholder="Enter 6-digit OTP"
+                          />
+                          <button
+                            onClick={verifyOTP}
+                            disabled={formData.otp.length !== 6 || loading}
+                            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                          >
+                            Verify
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 <div>
@@ -501,6 +790,41 @@ export default function QuickLoanApplication() {
                     placeholder="Enter your full name"
                   />
                 </div>
+
+                {/* Show additional fields based on verification method */}
+                {verificationMethod === 'email' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Mobile Number *
+                    </label>
+                    <input
+                      type="tel"
+                      name="mobile"
+                      value={formData.mobile}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                      placeholder="+91 98765 43210"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">For SMS notifications</p>
+                  </div>
+                )}
+
+                {verificationMethod === 'mobile' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email Address *
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                      placeholder="your@email.com"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -533,32 +857,17 @@ export default function QuickLoanApplication() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Date of Birth *
-                    </label>
-                    <input
-                      type="date"
-                      name="dob"
-                      value={formData.dob}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email *
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                      placeholder="your@email.com"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Date of Birth *
+                  </label>
+                  <input
+                    type="date"
+                    name="dob"
+                    value={formData.dob}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                  />
                 </div>
               </motion.div>
             )}

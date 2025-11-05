@@ -11,7 +11,6 @@ import {
   Phone,
   Mail,
   MapPin,
-  User,
   Home,
   CreditCard,
   Info,
@@ -20,7 +19,6 @@ import {
   Briefcase,
   Shield,
   HelpCircle,
-  LogIn,
   ArrowRight,
   Sparkles,
   Calculator,
@@ -31,12 +29,15 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { useIsHydrated } from "@/lib/hooks/useIsHydrated";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function Header() {
   const { t, language, setLanguage, availableLanguages } = useLanguage();
+  const { user } = useAuth();
   const isHydrated = useIsHydrated();
   const pathname = usePathname();
   const isLanguageSelectionPage = pathname === '/select-language';
+  const isHomePage = pathname === '/';
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -259,13 +260,6 @@ export function Header() {
               {/* <Link href="/track-application" className="hover:text-emerald-500 transition-colors hidden md:inline">
                 {t.navigation.track}
               </Link> */}
-              <Link
-                href="/login"
-                className="hidden lg:flex items-center gap-1 hover:text-emerald-500 transition-colors"
-              >
-                <User className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                {t.navigation.login}
-              </Link>
             </div>
           </div>
         </div>
@@ -285,7 +279,7 @@ export function Header() {
 </Link>
           {/* <div className="flex"> */}
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center">
+            <div className="hidden lg:flex items-center gap-1">
               <Link
                 href="/"
                 className="flex items-center px-2 xl:px-3 py-2 text-sm xl:text-base text-slate-700 hover:text-blue-400 transition-colors"
@@ -353,30 +347,46 @@ export function Header() {
                 <Phone className="w-4 h-4" />
                 {t.navigation.contact}
               </Link>
-            </div>
 
-            {/* CTA Buttons */}
-            <div className="hidden lg:flex items-center gap-3 xl:gap-4">
-              <Link href="/apply">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="btn-primary flex items-center w-[100px] gap-1 text-xs xl:text-sm !py-2 xl:!py-2.5 !px-4 xl:!px-5"
-                >
-                  {t.common.apply}
-                  <ArrowRight className="w-3 h-3 xl:w-3.5 xl:h-3.5" />
-                </motion.button>
-              </Link>
+              {/* Smart Button: Login on homepage (hero has Apply), Apply/Dashboard on other pages */}
+              {user ? (
+                <Link href="/user" className="ml-2">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="btn-primary flex items-center gap-1 text-xs xl:text-sm !py-2 xl:!py-2.5 !px-4 xl:!px-5"
+                  >
+                    Dashboard
+                    <ArrowRight className="w-3 h-3 xl:w-3.5 xl:h-3.5" />
+                  </motion.button>
+                </Link>
+              ) : isHomePage ? (
+                <Link href="/login" className="ml-2">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="btn-primary flex items-center gap-1 text-xs xl:text-sm !py-2 xl:!py-2.5 !px-4 xl:!px-5"
+                  >
+                    {t.navigation.login}
+                    <ArrowRight className="w-3 h-3 xl:w-3.5 xl:h-3.5" />
+                  </motion.button>
+                </Link>
+              ) : (
+                <Link href="/apply/quick" className="ml-2">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="btn-primary flex items-center gap-1 text-xs xl:text-sm !py-2 xl:!py-2.5 !px-4 xl:!px-5"
+                  >
+                    {t.common.apply}
+                    <ArrowRight className="w-3 h-3 xl:w-3.5 xl:h-3.5" />
+                  </motion.button>
+                </Link>
+              )}
             </div>
           {/* </div> */}
-          {/* Mobile Login & Menu Toggle */}
+          {/* Mobile Menu Toggle */}
           <div className="flex lg:hidden items-center gap-2 sm:gap-3">
-            <Link
-              href="/login"
-              className="flex items-center gap-1 p-2 text-slate-700 hover:text-blue-400 transition-colors"
-            >
-              <User className="w-5 h-5 sm:w-6 sm:h-6" />
-            </Link>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 text-slate-700 hover:text-blue-400 transition-colors"
@@ -456,22 +466,38 @@ export function Header() {
                   </Link>
                 )}
 
-                <Link
-                  href="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 sm:px-4 py-2.5 sm:py-3 text-center text-sm sm:text-base text-slate-200 font-semibold hover:text-blue-400 transition-colors"
-                >
-                  {t.navigation.login}
-                </Link>
-                <Link
-                  href="/apply"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-3 sm:px-4"
-                >
-                  <button className="w-full mt-2 btn-primary text-sm sm:text-base py-2.5 sm:py-3">
-                    {t.common.apply}
-                  </button>
-                </Link>
+                {/* Mobile: Login on homepage, Apply/Dashboard on other pages */}
+                {user ? (
+                  <Link
+                    href="/user"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 sm:px-4"
+                  >
+                    <button className="w-full mt-2 btn-primary text-sm sm:text-base py-2.5 sm:py-3">
+                      Dashboard
+                    </button>
+                  </Link>
+                ) : isHomePage ? (
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 sm:px-4"
+                  >
+                    <button className="w-full mt-2 btn-primary text-sm sm:text-base py-2.5 sm:py-3">
+                      {t.navigation.login}
+                    </button>
+                  </Link>
+                ) : (
+                  <Link
+                    href="/apply/quick"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-3 sm:px-4"
+                  >
+                    <button className="w-full mt-2 btn-primary text-sm sm:text-base py-2.5 sm:py-3">
+                      {t.common.apply}
+                    </button>
+                  </Link>
+                )}
               </div>
             </div>
           </motion.div>

@@ -140,7 +140,7 @@ export default function PersonalLoanPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/apply">
+              <Link href="/apply/quick">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -369,7 +369,7 @@ export default function PersonalLoanPage() {
               Apply now and get instant approval in just 30 seconds
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/apply">
+              <Link href="/apply/quick">
                 <button className="px-8 py-4 bg-white text-[#4A66FF] rounded-full font-semibold text-lg hover:shadow-xl transition-all">
                   {t.common.apply}
                 </button>
