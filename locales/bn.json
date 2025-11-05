@@ -1,0 +1,656 @@
+{
+  "common": {
+    "appName": "লক্ষ্মী",
+    "tagline": "আপনার সমৃদ্ধির দরজা",
+    "apply": "এখনই আবেদন করুন",
+    "learnMore": "আরো জানুন",
+    "getStarted": "শুরু করুন",
+    "contactUs": "আমাদের সাথে যোগাযোগ করুন",
+    "viewDetails": "বিস্তারিত দেখুন",
+    "submit": "জমা দিন",
+    "cancel": "বাতিল করুন",
+    "back": "ফিরে যান",
+    "next": "পরবর্তী",
+    "close": "বন্ধ করুন",
+    "loading": "লোড হচ্ছে...",
+    "error": "ত্রুটি",
+    "success": "সফল",
+    "warning": "সতর্কতা",
+    "info": "তথ্য",
+    "language": "Select Language",
+    "support": "Support"
+  },
+  "navigation": {
+    "home": "হোম",
+    "about": "আমাদের সম্পর্কে",
+    "products": "পণ্য",
+    "services": "সেবা",
+    "apply": "আবেদন করুন",
+    "track": "আবেদন ট্র্যাক করুন",
+    "contact": "যোগাযোগ",
+    "login": "লগইন",
+    "register": "নিবন্ধন করুন",
+    "dashboard": "ড্যাশবোর্ড",
+    "profile": "প্রোফাইল",
+    "logout": "লগআউট",
+    "partners": "অংশীদার",
+    "resources": "সম্পদ",
+    "faqs": "সচরাচর জিজ্ঞাসিত প্রশ্ন",
+    "emiCalculator": "EMI ক্যালকুলেটর",
+    "blog": "ব্লগ",
+    "careers": "ক্যারিয়ার",
+    "privacy": "গোপনীয়তা নীতি",
+    "terms": "নিয়ম ও শর্তাবলী",
+    "emiCalculatorDesc": "Calculate your EMI",
+    "blogDesc": "Financial insights",
+    "channelPartners": "Channel Partners",
+    "channelPartnersDesc": "Join our network",
+    "corporateTieups": "Corporate Tie-ups",
+    "corporateTieupsDesc": "Business partnerships",
+    "apiIntegration": "API Integration",
+    "apiIntegrationDesc": "Developer resources",
+    "investorRelations": "Investor Relations",
+    "investorRelationsDesc": "For investors"
+  },
+  "hero": {
+    "title": "তাৎক্ষণিক ব্যক্তিগত ঋণ পান",
+    "subtitle": "ন্যূনতম কাগজপত্র সহ ৫,০০,০০০ টাকা পর্যন্ত",
+    "description": "দ্রুত অনুমোদন, ন্যূনতম কাগজপত্র, স্বচ্ছ প্রক্রিয়া। আপনার সব আর্থিক প্রয়োজনের জন্য বিশ্বস্ত অংশীদার।",
+    "features": {
+      "instant": "৩০ সেকেন্ডে তাৎক্ষণিক অনুমোদন",
+      "paperless": "১০০% কাগজবিহীন প্রক্রিয়া",
+      "secure": "ব্যাংক-স্তরের নিরাপত্তা",
+      "support": "২৪/৭ গ্রাহক সেবা"
+    },
+    "cta": {
+      "primary": "তাৎক্ষণিক অনুমোদন পান",
+      "secondary": "যোগ্যতা পরীক্ষা করুন"
+    },
+    "badge": "RBI লাইসেন্সকৃত NBFC",
+    "stats": {
+      "customers": "৫০,০০০+ সন্তুষ্ট গ্রাহক",
+      "disbursed": "৫০০ কোটি+ বিতরণ",
+      "rating": "৪.৮/৫ রেটিং",
+      "branches": "৫০০+ অংশীদার শাখা"
+    }
+  },
+  "products": {
+    "title": "আমাদের ঋণ পণ্য",
+    "subtitle": "আপনার প্রয়োজন অনুযায়ী সঠিক ঋণ নির্বাচন করুন",
+    "types": {
+      "personal": {
+        "name": "ব্যক্তিগত ঋণ",
+        "description": "আপনার সকল ব্যক্তিগত প্রয়োজনের জন্য দ্রুত নগদ",
+        "amount": "১০,০০০ - ৫,০০,০০০ টাকা",
+        "tenure": "৩ - ২৪ মাস",
+        "rate": "মাসিক ১.৫% থেকে শুরু",
+        "features": [
+          "৩০-সেকেন্ড অনুমোদন",
+          "নমনীয় পরিশোধ বিকল্প",
+          "ন্যূনতম কাগজপত্র",
+          "১০০% কাগজবিহীন প্রক্রিয়া"
+        ]
+      },
+      "salary": {
+        "name": "বেতন অগ্রিম",
+        "description": "আপনার মাসিক বেতনের ২ গুণ পর্যন্ত অগ্রিম পান",
+        "amount": "৫,০০০ - ২,০০,০০০ টাকা",
+        "tenure": "১ - ৩ মাস",
+        "rate": "মাসিক ১.৫% থেকে শুরু",
+        "features": [
+          "বেতনভুক্তদের জন্য তাৎক্ষণিক অনুমোদন",
+          "বেতন থেকে স্বয়ংক্রিয় কাটতি",
+          "কোনো জামানতের প্রয়োজন নেই",
+          "৫০০+ অংশীদার কোম্পানি"
+        ]
+      },
+      "emergency": {
+        "name": "জরুরি তহবিল",
+        "description": "চিকিৎসা ও জরুরি প্রয়োজনের জন্য ২৪-ঘণ্টা সহায়তা",
+        "amount": "১০,০০০ - ২,০০,০০০ টাকা",
+        "tenure": "৩ - ১২ মাস",
+        "rate": "মাসিক ১.২% থেকে শুরু",
+        "features": [
+          "২৪-ঘণ্টা অনুমোদন",
+          "হাসপাতালে সরাসরি পেমেন্ট",
+          "সহানুভূতিশীল সহায়তা",
+          "কোনো প্রশ্ন করা হয় না"
+        ]
+      },
+      "festival": {
+        "name": "উৎসব অগ্রিম",
+        "description": "আর্থিক চিন্তা ছাড়াই প্রতিটি উৎসব উদযাপন করুন",
+        "amount": "৫,০০০ - ১,০০,০০০ টাকা",
+        "tenure": "১ - ৬ মাস",
+        "rate": "মাসিক ১.২% থেকে শুরু",
+        "features": [
+          "বিশেষ উৎসবের হার",
+          "দ্রুত বিতরণ",
+          "নমনীয় পরিশোধ",
+          "সব উৎসবের জন্য"
+        ]
+      },
+      "medical": {
+        "name": "চিকিৎসা ঋণ",
+        "description": "পরিকল্পিত চিকিৎসার জন্য স্বাস্থ্য অর্থায়ন",
+        "amount": "২৫,০০০ - ১০,০০,০০০ টাকা",
+        "tenure": "৬ - ৪৮ মাস",
+        "rate": "মাসিক ১.০% থেকে শুরু",
+        "features": [
+          "সর্বনিম্ন সুদের হার",
+          "হাসপাতাল টাই-আপ",
+          "বীমা সমন্বয়",
+          "ক্যাশলেস সুবিধা"
+        ]
+      },
+      "travel": {
+        "name": "এখন ভ্রমণ পরে পেমেন্ট",
+        "description": "আজই আপনার স্বপ্নের ছুটি বুক করুন",
+        "amount": "২৫,০০০ - ৩,০০,০০০ টাকা",
+        "tenure": "৩ - ১২ মাস",
+        "rate": "মাসিক ১.৩% থেকে শুরু",
+        "features": [
+          "তাৎক্ষণিক বুকিং ক্রেডিট",
+          "ভ্রমণ বীমা অন্তর্ভুক্ত",
+          "অংশীদার ছাড়",
+          "শূন্য ডাউন পেমেন্ট"
+        ]
+      }
+    }
+  },
+  "features": {
+    "title": "কেন লক্ষ্মীওয়ান নির্বাচন করবেন",
+    "subtitle": "ডিজিটাল ঋণের ভবিষ্যতের অভিজ্ঞতা নিন",
+    "list": {
+      "instant": {
+        "title": "তাৎক্ষণিক অনুমোদন",
+        "description": "আমাদের AI-চালিত সিস্টেমের সাথে মাত্র ৩০ সেকেন্ডে অনুমোদন পান"
+      },
+      "paperless": {
+        "title": "১০০% কাগজবিহীন",
+        "description": "আবেদন থেকে বিতরণ পর্যন্ত সম্পূর্ণ ডিজিটাল প্রক্রিয়া"
+      },
+      "secure": {
+        "title": "ব্যাংক-স্তরের নিরাপত্তা",
+        "description": "আপনার ডেটা ২৫৬-বিট SSL এনক্রিপশন দিয়ে সুরক্ষিত"
+      },
+      "transparent": {
+        "title": "স্বচ্ছ মূল্য",
+        "description": "কোনো লুকানো চার্জ নেই, স্পষ্ট নিয়ম ও শর্তাবলী"
+      },
+      "support": {
+        "title": "২৪/৭ সহায়তা",
+        "description": "একাধিক ভাষায় ২৪ ঘণ্টা গ্রাহক সেবা"
+      },
+      "flexible": {
+        "title": "নমনীয় পরিশোধ",
+        "description": "আপনার সুবিধা অনুযায়ী মেয়াদ ও EMI নির্বাচন করুন"
+      }
+    }
+  },
+  "application": {
+    "title": "ঋণ আবেদন",
+    "steps": {
+      "personal": "ব্যক্তিগত বিবরণ",
+      "employment": "চাকরির তথ্য",
+      "documents": "নথি",
+      "loan": "ঋণের বিবরণ",
+      "review": "পর্যালোচনা ও জমা দিন"
+    },
+    "fields": {
+      "fullName": "পূর্ণ নাম",
+      "email": "ইমেইল ঠিকানা",
+      "mobile": "মোবাইল নম্বর",
+      "pan": "PAN নম্বর",
+      "aadhaar": "আধার নম্বর",
+      "dob": "জন্ম তারিখ",
+      "address": "ঠিকানা",
+      "city": "শহর",
+      "state": "রাজ্য",
+      "pincode": "পিন কোড",
+      "employmentType": "চাকরির ধরন",
+      "companyName": "কোম্পানির নাম",
+      "designation": "পদবি",
+      "monthlyIncome": "মাসিক আয়",
+      "loanAmount": "প্রয়োজনীয় ঋণের পরিমাণ",
+      "loanPurpose": "ঋণের উদ্দেশ্য",
+      "tenure": "ঋণের মেয়াদ"
+    },
+    "placeholders": {
+      "fullName": "আপনার পূর্ণ নাম লিখুন",
+      "email": "example@email.com",
+      "mobile": "১০-অংকের মোবাইল নম্বর লিখুন",
+      "pan": "ABCDE1234F",
+      "aadhaar": "XXXX XXXX XXXX",
+      "amount": "টাকায় পরিমাণ লিখুন"
+    },
+    "validation": {
+      "required": "এই ক্ষেত্রটি প্রয়োজনীয়",
+      "invalidEmail": "অনুগ্রহ করে বৈধ ইমেইল লিখুন",
+      "invalidMobile": "অনুগ্রহ করে বৈধ ১০-অংকের মোবাইল নম্বর লিখুন",
+      "invalidPAN": "অনুগ্রহ করে বৈধ PAN নম্বর লিখুন",
+      "invalidAadhaar": "অনুগ্রহ করে বৈধ আধার নম্বর লিখুন",
+      "minAmount": "সর্বনিম্ন পরিমাণ হলো",
+      "maxAmount": "সর্বোচ্চ পরিমাণ হলো"
+    }
+  },
+  "dashboard": {
+    "welcome": "আবার স্বাগতম",
+    "overview": "সংক্ষিপ্ত বিবরণ",
+    "activeLoans": "সক্রিয় ঋণ",
+    "totalOutstanding": "মোট বকেয়া",
+    "nextEMI": "পরবর্তী EMI",
+    "creditScore": "ক্রেডিট স্কোর",
+    "recentTransactions": "সাম্প্রতিক লেনদেন",
+    "quickActions": "দ্রুত কর্ম",
+    "payEMI": "EMI পেমেন্ট করুন",
+    "applyLoan": "নতুন ঋণের জন্য আবেদন করুন",
+    "viewStatement": "বিবৃতি দেখুন",
+    "support": "সহায়তা পান",
+    "profile": {
+      "title": "আমার প্রোফাইল",
+      "personalInfo": "ব্যক্তিগত তথ্য",
+      "kycStatus": "KYC স্থিতি",
+      "documents": "নথি",
+      "settings": "সেটিংস"
+    }
+  },
+  "footer": {
+    "about": {
+      "title": "লক্ষ্মীওয়ান সম্পর্কে",
+      "description": "ন্যূনতম কাগজপত্র এবং দ্রুত অনুমোদন সহ তাৎক্ষণিক ব্যক্তিগত ঋণের জন্য আপনার বিশ্বস্ত অংশীদার।"
+    },
+    "quickLinks": {
+      "title": "দ্রুত লিংক",
+      "items": {
+        "about": "আমাদের সম্পর্কে",
+        "products": "আমাদের পণ্য",
+        "partners": "অংশীদার",
+        "careers": "ক্যারিয়ার",
+        "contact": "আমাদের সাথে যোগাযোগ করুন",
+        "ourStory": "Our Story",
+        "leadershipTeam": "Leadership Team",
+        "pressMedia": "Press & Media",
+        "awardsRecognition": "Awards & Recognition",
+        "csrInitiatives": "CSR Initiatives",
+        "testimonials": "Testimonials"
+      }
+    },
+    "products": {
+      "title": "পণ্য",
+      "items": {
+        "personal": "ব্যক্তিগত ঋণ",
+        "salary": "বেতন অগ্রিম",
+        "emergency": "জরুরি তহবিল",
+        "medical": "চিকিৎসা ঋণ",
+        "travel": "Travel Loan",
+        "festival": "Festival Advance"
+      }
+    },
+    "legal": {
+      "title": "আইনি",
+      "items": {
+        "privacy": "গোপনীয়তা নীতি",
+        "terms": "নিয়ম ও শর্তাবলী",
+        "disclaimer": "দাবিত্যাগ",
+        "grievance": "অভিযোগ নিষ্পত্তি",
+        "cookiePolicy": "Cookie Policy",
+        "fairPracticeCode": "Fair Practice Code",
+        "interestRatePolicy": "Interest Rate Policy",
+        "kycPolicy": "KYC Policy",
+        "rbiGuidelines": "RBI Guidelines"
+      }
+    },
+    "contact": {
+      "title": "আমাদের সাথে যোগাযোগ করুন",
+      "address": "মুম্বাই, মহারাষ্ট্র",
+      "phone": "+৯১ ১৮০০-১২৩-৪৫৬৭",
+      "email": "support@quikkred.com",
+      "hours": "সোম-শনি: সকাল ৯টা - সন্ধ্যা ৬টা"
+    },
+    "social": {
+      "title": "আমাদের ফলো করুন",
+      "facebook": "Facebook",
+      "twitter": "Twitter",
+      "linkedin": "LinkedIn",
+      "instagram": "Instagram"
+    },
+    "copyright": "© ২০২৪ লক্ষ্মীওয়ান। সব অধিকার সংরক্ষিত।",
+    "disclaimer": "লক্ষ্মীওয়ান RBI দ্বারা নিয়ন্ত্রিত নিবন্ধিত NBFC",
+    "resources": {
+      "title": "Resources",
+      "items": {
+        "eligibilityCheck": "Eligibility Check",
+        "interestRates": "Interest Rates",
+        "documentChecklist": "Document Checklist",
+        "howToApply": "How to Apply",
+        "financialLiteracy": "Financial Literacy"
+      }
+    },
+    "support": {
+      "title": "Support",
+      "items": {
+        "customerSupport": "Customer Support",
+        "grievanceRedressal": "Grievance Redressal",
+        "nodalOfficer": "Nodal Officer",
+        "locateBranch": "Locate Branch",
+        "downloadForms": "Download Forms",
+        "reportFraud": "Report Fraud"
+      }
+    },
+    "mobileApp": {
+      "title": "Download our mobile app",
+      "appStore": "App Store",
+      "playStore": "Play Store",
+      "comingSoon": "Coming Soon!",
+      "comingSoonMessage": "Our mobile app will be available soon. Stay tuned!"
+    }
+  },
+  "contact": {
+    "title": "যোগাযোগে থাকুন",
+    "subtitle": "আমরা আপনাকে সাহায্য করতে এখানে আছি",
+    "form": {
+      "name": "আপনার নাম",
+      "email": "আপনার ইমেইল",
+      "phone": "ফোন নম্বর",
+      "subject": "বিষয়",
+      "message": "বার্তা",
+      "send": "বার্তা পাঠান"
+    },
+    "info": {
+      "address": "প্রধান কার্যালয়",
+      "phone": "ফোন",
+      "email": "ইমেইল",
+      "hours": "ব্যবসায়িক সময়"
+    },
+    "support": {
+      "title": "২৪/৭ গ্রাহক সহায়তা",
+      "description": "জরুরি সহায়তার জন্য, আমাদের টিম ২৪ ঘণ্টা উপলব্ধ",
+      "chat": "লাইভ চ্যাট শুরু করুন",
+      "call": "এখনই কল করুন"
+    }
+  },
+ "about": {
+  "title": "লক্ষ্মীওয়ান সম্পর্কে",
+  "subtitle": "আর্থিক স্বাধীনতার জন্য আপনার গেটওয়ে",
+  "mission": {
+    "title": "আমাদের মিশন",
+    "description": "প্রতিটি ভারতীয়ের জন্য আর্থিক সেবাকে সহজলভ্য, সাশ্রয়ী ও স্বচ্ছ করা, স্বপ্নকে ক্ষমতায়ন করা এবং সমৃদ্ধি সক্ষম করা।"
+  },
+  "vision": {
+    "title": "আমাদের দৃষ্টিভঙ্গি",
+    "description": "উদ্ভাবনী আর্থিক সমাধানের মাধ্যমে জীবনে রূপান্তর এনে ভারতের সবচেয়ে বিশ্বস্ত ডিজিটাল ঋণ প্ল্যাটফর্ম হয়ে ওঠা।"
+  },
+  "valuesSection": {
+    "title": "আমাদের মূল্যবোধ",
+    "trust": "বিশ্বাস ও স্বচ্ছতা",
+    "innovation": "উদ্ভাবন",
+    "customer": "গ্রাহক প্রথম",
+    "integrity": "সততা"
+  },
+  "stats": {
+    "customers": "সন্তুষ্ট গ্রাহক",
+    "disbursed": "বিতরণকৃত পরিমাণ",
+    "branches": "অংশীদার শাখা",
+    "team": "টিম সদস্য"
+  },
+  "ourStory": "আমাদের গল্প",
+  "ourStoryDesc": "উদ্ভাবনের যাত্রা",
+  "leadershipTeam": "নেতৃত্ব দল",
+  "leadershipDesc": "আমাদের নেতাদের সাথে দেখা করুন",
+  "missionVision": "মিশন এবং দৃষ্টি",
+  "missionVisionDesc": "আমাদের উদ্দেশ্য",
+  "timeline": "সময়রেখা",
+  "timelineDesc": "আমাদের যাত্রার পথ",
+  "values": "মূল্যবোধ",
+  "valuesDesc": "সামাজিক দায়বদ্ধতা"
+},
+  "eligibility": {
+    "title": "যোগ্যতার মাপদণ্ড",
+    "age": "বয়স: ২১-৬০ বছর",
+    "income": "মাসিক আয়: ১৫,০০০ টাকা+",
+    "employment": "চাকরি: বেতনভুক্ত/স্ব-কর্মসংস্থান",
+    "credit": "CIBIL স্কোর: ৬৫০+",
+    "documents": "বৈধ KYC নথি",
+    "check": "Eligibility Check",
+    "checkDesc": "Check loan eligibility",
+    "documentGuide": "Document Guide",
+    "documentGuideDesc": "Required documents",
+    "interestRates": "Interest Rates",
+    "interestRatesDesc": "Current rates"
+  },
+  "process": {
+    "title": "এটি কিভাবে কাজ করে",
+    "steps": {
+      "apply": {
+        "title": "অনলাইন আবেদন করুন",
+        "description": "সহজ আবেদন ফর্ম পূরণ করুন"
+      },
+      "verify": {
+        "title": "দ্রুত যাচাইকরণ",
+        "description": "তাৎক্ষণিক যাচাইকরণের জন্য নথি আপলোড করুন"
+      },
+      "approval": {
+        "title": "তাৎক্ষণিক অনুমোদন",
+        "description": "৩০ সেকেন্ডে অনুমোদন পান"
+      },
+      "disbursal": {
+        "title": "অর্থ স্থানান্তর",
+        "description": "আপনার ব্যাংক অ্যাকাউন্টে অর্থ পান"
+      }
+    }
+  },
+  "testimonials": {
+    "title": "আমাদের গ্রাহকরা কি বলেন",
+    "subtitle": "প্রকৃত মানুষের প্রকৃত গল্প"
+  },
+  "faqs": {
+    "title": "সচরাচর জিজ্ঞাসিত প্রশ্ন",
+    "subtitle": "আপনার জানা দরকার সব কিছু",
+    "categories": {
+      "general": "সাধারণ",
+      "eligibility": "যোগ্যতা",
+      "documents": "নথি",
+      "repayment": "পরিশোধ",
+      "charges": "চার্জ"
+    },
+    "description": "Common questions"
+  },
+  "error": {
+    "404": {
+      "title": "পৃষ্ঠা পাওয়া যায়নি",
+      "description": "আপনি যে পৃষ্ঠাটি খুঁজছেন তা বিদ্যমান নেই",
+      "button": "হোমে যান"
+    },
+    "500": {
+      "title": "সার্ভার ত্রুটি",
+      "description": "আমাদের পক্ষ থেকে কিছু ভুল হয়েছে",
+      "button": "আবার চেষ্টা করুন"
+    },
+    "general": {
+      "title": "ওহ! কিছু ভুল হয়েছে",
+      "description": "অনুগ্রহ করে পরে আবার চেষ্টা করুন",
+      "button": "রিফ্রেশ করুন"
+    }
+  },
+  "homepage": {
+    "trustBadges": {
+      "customers": {
+        "value": "+",
+        "title": "সন্তুষ্ট গ্রাহক"
+      },
+      "disbursed": {
+        "value": " কোটি+",
+        "title": "বিতরণকৃত ঋণ"
+      },
+      "approvalTime": {
+        "value": "30 সেকেন্ড",
+        "title": "অনুমোদনের সময়"
+      },
+      "rating": {
+        "value": "4.8/5",
+        "title": "গ্রাহক রেটিং"
+      }
+    },
+    "features": {
+      "fast": {
+        "title": "বিদ্যুতের মতো দ্রুত",
+        "description": "AI-চালিত তাৎক্ষণিক সিদ্ধান্ত সহ 30-সেকেন্ডের অনুমোদন"
+      },
+      "secure": {
+        "title": "100% সুরক্ষিত",
+        "description": "ব্যাংক-গ্রেড 256-বিট এনক্রিপশন আপনার ডেটা রক্ষা করে"
+      },
+      "aiScore": {
+        "title": "AI ক্রেডিট স্কোর",
+        "description": "স্মার্ট অ্যালগরিদম 500+ ডেটা পয়েন্ট বিশ্লেষণ করে"
+      },
+      "available": {
+        "title": "24/7 উপলব্ধ",
+        "description": "যেকোনো সময় আবেদন করুন, শাখায় যাওয়ার প্রয়োজন নেই"
+      },
+      "mobile": {
+        "title": "মোবাইল প্রথম",
+        "description": "মিনিটেই আপনার ফোনে সম্পূর্ণ প্রক্রিয়া"
+      },
+      "licensed": {
+        "title": "RBI লাইসেন্সপ্রাপ্ত",
+        "description": "স্বচ্ছ অনুশীলন সহ সম্পূর্ণ সম্মতিপ্রাপ্ত NBFC"
+      },
+      "flexible": {
+        "title": "নমনীয় EMI",
+        "description": "আপনার বাজেটের সাথে মানানসই মেয়াদ নির্বাচন করুন"
+      },
+      "instant": {
+        "title": "তাৎক্ষণিক অর্থ",
+        "description": "সরাসরি আপনার ব্যাংক অ্যাকাউন্টে ক্রেডিট"
+      }
+    },
+    "loanProducts": {
+      "personal": {
+        "name": "ব্যক্তিগত ঋণ",
+        "description": "আপনার সকল ব্যক্তিগত প্রয়োজনের জন্য",
+        "rate": "10.5% বার্ষিক থেকে শুরু"
+      },
+      "business": {
+        "name": "ব্যবসায়িক ঋণ",
+        "description": "আপনার ব্যবসা দ্রুত বাড়ান",
+        "rate": "12% বার্ষিক থেকে শুরু"
+      },
+      "emergency": {
+        "name": "জরুরি ঋণ",
+        "description": "জরুরি পরিস্থিতির জন্য তাৎক্ষণিক নগদ",
+        "rate": "15% বার্ষিক থেকে শুরু"
+      },
+      "education": {
+        "name": "শিক্ষা ঋণ",
+        "description": "আপনার ভবিষ্যতে বিনিয়োগ করুন",
+        "rate": "9% বার্ষিক থেকে শুরু"
+      }
+    },
+    "steps": {
+      "apply": {
+        "title": "দ্রুত আবেদন",
+        "description": "2 মিনিটেরও কম সময়ে মৌলিক তথ্য দিয়ে একটি সহজ ফর্ম পূরণ করুন",
+        "time": "2 মিনিট"
+      },
+      "approval": {
+        "title": "তাৎক্ষণিক অনুমোদন",
+        "description": "আমাদের AI আপনার প্রোফাইল বিশ্লেষণ করে এবং তাৎক্ষণিক সিদ্ধান্ত দেয়",
+        "time": "30 সেকেন্ড"
+      },
+      "money": {
+        "title": "অর্থ পান",
+        "description": "সরাসরি আপনার ব্যাংক অ্যাকাউন্টে তহবিল স্থানান্তরিত",
+        "time": "তাৎক্ষণিক"
+      }
+    },
+    "faqs": {
+      "title": "প্রশ্ন আছে?",
+      "subtitle": "আমাদের সেবা সম্পর্কে আপনার জানা প্রয়োজন সব কিছু"
+    },
+    "sections": {
+      "whyChoose": {
+        "badge": "ব্লুচিপ ফিনম্যাক্স কেন বেছে নেবেন",
+        "title": "বিপ্লবী বৈশিষ্ট্য",
+        "subtitle": "আমাদের অত্যাধুনিক প্রযুক্তি এবং গ্রাহক-প্রথম পদ্ধতির সাথে ডিজিটাল ঋণের ভবিষ্যতের অভিজ্ঞতা নিন"
+      },
+      "products": {
+        "badge": "আমাদের পণ্য",
+        "title": "প্রতিটির জন্য ঋণ",
+        "titleHighlight": "প্রয়োজন",
+        "subtitle": "আপনার অনন্য প্রয়োজনীয়তা পূরণের জন্য তৈরি আর্থিক সমাধান"
+      },
+      "calculator": {
+        "badge": "স্মার্ট ক্যালকুলেটর",
+        "title": "আপনার",
+        "titleHighlight": "স্বপ্নের ঋণ",
+        "subtitle": "তাৎক্ষণিক EMI গণনা পান, আপনার যোগ্যতা দেখুন এবং মোট খরচ বুঝুন - সবকিছু রিয়েল-টাইমে",
+        "features": {
+          "noHiddenCharges": "কোনো লুকানো চার্জ বা আশ্চর্য নেই",
+          "flexibleTenure": "৬০ মাস পর্যন্ত নমনীয় মেয়াদ বিকল্প",
+          "lowestRates": "সর্বনিম্ন সুদের হার গ্যারান্টিযুক্ত"
+        }
+      },
+      "howItWorks": {
+        "badge": "সহজ প্রক্রিয়া",
+        "title": "আপনার ঋণ পান",
+        "titleHighlight": "৩ ধাপে",
+        "subtitle": "আবেদন থেকে আপনার অ্যাকাউন্টে অর্থ পর্যন্ত - দ্রুততম ঋণ প্রক্রিয়ার অভিজ্ঞতা নিন"
+      },
+      "testimonials": {
+        "badge": "গ্রাহক গল্প",
+        "title": "হাজারো দ্বারা",
+        "titleHighlight": "বিশ্বস্ত",
+        "subtitle": "ব্লুচিপ ফিনম্যাক্সের সাথে তাদের জীবনকে রূপান্তরিত করা প্রকৃত গ্রাহকদের প্রকৃত গল্প",
+        "loanAmount": "ঋণের পরিমাণ"
+      },
+      "cta": {
+        "title": "আপনার আর্থিক ভবিষ্যত পরিবর্তন করতে প্রস্তুত?",
+        "subtitle": "সেই সন্তুষ্ট গ্রাহকদের সাথে যোগ দিন যারা ইতিমধ্যে আর্থিক স্বাধীনতার দিকে স্মার্ট পদক্ষেপ নিয়েছে",
+        "applyButton": "তাৎক্ষণিক ঋণের জন্য আবেদন করুন",
+        "talkButton": "বিশেষজ্ঞের সাথে কথা বলুন",
+        "badges": {
+          "rbiLicensed": "RBI লাইসেন্সপ্রাপ্ত",
+          "isoCertified": "ISO প্রমাণিত",
+          "awardWinning": "পুরস্কার বিজয়ী"
+        }
+      }
+    }
+  },
+  "calculator": {
+    "title": "EMI Calculator",
+    "subtitle": "See your monthly payment instantly",
+    "loanAmount": "Loan Amount",
+    "tenure": "Tenure",
+    "interestRate": "Interest Rate (per month)",
+    "months": "months",
+    "month": "month",
+    "processingFee": "Processing Fee",
+    "totalInterest": "Total Interest",
+    "totalPayable": "Total Payable",
+    "monthlyEMI": "Your Monthly EMI",
+    "for": "for",
+    "applyNowFor": "Apply Now for",
+    "trustMessages": {
+      "noHiddenCharges": "No hidden charges",
+      "flexibleRepayment": "Flexible repayment options",
+      "instantDisbursal": "Instant disbursal on approval"
+    },
+    "footer": "Get approval in 30 seconds • Money in bank within minutes"
+  },
+  "newsletter": {
+    "title": "Stay Updated with Finmax",
+    "subtitle": "Get exclusive offers, financial tips, and updates on new loan products",
+    "placeholder": "Enter your email",
+    "button": "Subscribe",
+    "subscribing": "Subscribing...",
+    "successTitle": "Subscribed Successfully!",
+    "successMessage": "Thank you for subscribing to our newsletter.",
+    "errors": {
+      "required": "Email is required",
+      "invalid": "Please enter a valid email",
+      "failed": "Failed to subscribe. Please try again."
+    }
+  }
+}
