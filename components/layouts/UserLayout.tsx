@@ -311,7 +311,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                   className="flex items-center justify-center w-full py-4"
                 >
                   <Image
-                    src="/logo 2.png"
+                    src="/logo.png"
                     alt="Quikkred Logo"
                     width={160}
                     height={80}

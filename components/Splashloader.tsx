@@ -37,7 +37,7 @@ export default function LoadingSplash() {
           }}
         >
           <Image
-            src="/logo3.png"
+            src="/logo.png"
             alt="Quikkred"
             width={200}
             height={200}
