@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* Frontend-only configuration - API handled by external backend */
 
+  // Enable standalone output for Docker deployment
+  output: 'standalone',
+
   // Disable React Strict Mode to prevent double API calls in development
   reactStrictMode: false,
 
