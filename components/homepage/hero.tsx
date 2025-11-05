@@ -48,8 +48,15 @@ export default function Hero() {
 
   const handleSubmit = () => {
     console.log("Form submitted:", formData)
-    setSubmitted(true)
-    // Here you can send the data to your backend
+    // Store data in localStorage for pre-filling the quick application
+    localStorage.setItem('heroFormData', JSON.stringify({
+      name: formData.name,
+      mobile: formData.mobile,
+      amount: formData.loanAmount,
+      email: formData.email
+    }));
+    // Redirect to quick application
+    window.location.href = '/apply/quick';
   }
 
   const steps = [
@@ -74,8 +81,11 @@ export default function Hero() {
             <p className="text-base text-slate-700 leading-relaxed max-w-md">
               Quick approval, minimal documentation, transparent process. Your trusted partner for all financial needs
             </p>
-            <Button className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-3 text-base font-semibold rounded">
-              Get Started
+            <Button
+              onClick={() => window.location.href = '/apply/quick'}
+              className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-3 text-base font-semibold rounded"
+            >
+              Get Instant Loan →
             </Button>
           </div>
 
