@@ -534,6 +534,7 @@ export default function QuickLoanApplication() {
                     mobile: "",
                     otp: "",
                     mobileVerified: false,
+                    emailVerified: false,
                     fullName: "",
                     pan: "",
                     aadhaar: "",
