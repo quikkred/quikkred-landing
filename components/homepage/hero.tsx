@@ -3,8 +3,10 @@
 import type React from "react"
 import { motion } from "framer-motion"
 import { ArrowRight, Shield, Zap, CheckCircle, Users, Star, Clock, Phone } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export default function Hero() {
+  const router = useRouter()
   const steps = [
     {
       number: "1",
@@ -103,7 +105,7 @@ export default function Hero() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => window.location.href = '/apply/quick'}
+                onClick={() => router.push('/apply/quick')}
                 className="group px-8 py-4 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 text-lg"
               >
                 Apply Now
@@ -113,7 +115,7 @@ export default function Hero() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => window.location.href = '/contact'}
+                onClick={() => router.push('/contact')}
                 className="px-8 py-4 bg-white border-2 border-slate-300 text-slate-700 font-semibold rounded-lg hover:border-teal-500 hover:text-teal-500 transition-all duration-300 flex items-center justify-center gap-2"
               >
                 <Phone className="w-5 h-5" />

@@ -579,8 +579,9 @@ export default function QuickLoanApplication() {
         {/* Header */}
         <div className="text-center mb-8">
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0.8, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
           >
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Quick Loan Application</h1>
             <p className="text-gray-600">Get instant approval in just 3 minutes</p>
@@ -608,18 +609,20 @@ export default function QuickLoanApplication() {
         {/* Form Card */}
         <motion.div
           key={currentStep}
-          initial={{ opacity: 0, x: 20 }}
+          initial={{ opacity: 0.9, x: 5 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
+          exit={{ opacity: 0.9, x: -5 }}
+          transition={{ duration: 0.15 }}
           className="bg-white rounded-2xl shadow-xl p-8"
         >
           <AnimatePresence mode="wait">
             {/* Step 1: Basic Details */}
             {currentStep === 1 && (
               <motion.div
-                initial={{ opacity: 0 }}
+                initial={{ opacity: 0.9 }}
                 animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
+                exit={{ opacity: 0.9 }}
+                transition={{ duration: 0.1 }}
                 className="space-y-6"
               >
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Basic Details (1 minute)</h2>
