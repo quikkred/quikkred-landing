@@ -448,13 +448,13 @@ export default function Home() {
               {t.homepage.sections.cta.subtitle}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-lg mx-auto">
-              <Link href="/apply" className="w-full sm:w-auto">
+              <Link href="/apply/quick" className="w-full sm:w-auto">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white text-[#25B181] rounded-full font-semibold text-base sm:text-lg shadow-xl hover:shadow-2xl hover:bg-[#D3F1EB] transition-all duration-300 flex items-center justify-center gap-2"
                 >
-                  {t.homepage.sections.cta.applyButton}
+                  Apply in 3 Minutes
                   <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </motion.button>
               </Link>
