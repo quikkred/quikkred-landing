@@ -1,0 +1,657 @@
+{
+  "common": {
+    "appName": "Quikkred",
+    "tagline": "Your Gateway to Prosperity",
+    "apply": "Apply Now",
+    "learnMore": "Learn More",
+    "getStarted": "Get Started",
+    "contactUs": "Contact Us",
+    "viewDetails": "View Details",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "back": "Back",
+    "next": "Next",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information",
+    "language": "Select Language",
+    "support": "Support"
+  },
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "products": "Products",
+    "services": "Services",
+    "apply": "Apply",
+    "track": "Track Application",
+    "contact": "Contact",
+    "login": "Login",
+    "register": "Register",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "logout": "Logout",
+    "partners": "Partners",
+    "resources": "Resources",
+    "faqs": "FAQs",
+    "emiCalculator": "EMI Calculator",
+    "emiCalculatorDesc": "Calculate your EMI",
+    "blog": "Blog",
+    "blogDesc": "Financial insights",
+    "careers": "Careers",
+    "privacy": "Privacy Policy",
+    "terms": "Terms & Conditions",
+    "channelPartners": "Channel Partners",
+    "channelPartnersDesc": "Join our network",
+    "corporateTieups": "Corporate Tie-ups",
+    "corporateTieupsDesc": "Business partnerships",
+    "apiIntegration": "API Integration",
+    "apiIntegrationDesc": "Developer resources",
+    "investorRelations": "Investor Relations",
+    "investorRelationsDesc": "For investors"
+  },
+  "hero": {
+    "title": "Get Instant Personal Loans",
+    "subtitle": "Up to ₹5,00,000 with minimal documentation",
+    "description": "Quick approval, minimal documentation, transparent process. Your trusted partner for all financial needs.",
+    "features": {
+      "instant": "Instant Approval in 30 seconds",
+      "paperless": "100% Paperless Process",
+      "secure": "Bank-Level Security",
+      "support": "24/7 Customer Support"
+    },
+    "cta": {
+      "primary": "Get Instant Approval",
+      "secondary": "Check Eligibility"
+    },
+    "badge": "RBI Licensed NBFC",
+    "stats": {
+      "customers": "+ Happy Customers",
+      "disbursed": "+ Disbursed",
+      "rating": " Rating",
+      "branches": "+ Partner Branches"
+    }
+  },
+  "products": {
+    "title": "Our Loan Products",
+    "subtitle": "Choose the perfect loan for your needs",
+    "types": {
+      "personal": {
+        "name": "Personal Loan",
+        "description": "Quick cash for all your personal needs",
+        "amount": "₹10,000 - ₹5,00,000",
+        "tenure": "3 - 24 months",
+        "rate": "Starting from 1.5% per month",
+        "features": [
+          "30-second approval",
+          "Flexible repayment options",
+          "Minimal documentation",
+          "100% paperless process"
+        ]
+      },
+      "salary": {
+        "name": "Salary Advance",
+        "description": "Get advance up to 2x your monthly salary",
+        "amount": "₹5,000 - ₹2,00,000",
+        "tenure": "1 - 3 months",
+        "rate": "Starting from 1.5% per month",
+        "features": [
+          "Instant approval for salaried",
+          "Auto-deduction from salary",
+          "No collateral required",
+          "500+ partner companies"
+        ]
+      },
+      "emergency": {
+        "name": "Emergency Fund",
+        "description": "24-hour support for medical and urgent needs",
+        "amount": "₹10,000 - ₹2,00,000",
+        "tenure": "3 - 12 months",
+        "rate": "Starting from 1.2% per month",
+        "features": [
+          "24-hour approval",
+          "Direct hospital payment",
+          "Compassionate support",
+          "No questions asked"
+        ]
+      },
+      "festival": {
+        "name": "Festival Advance",
+        "description": "Celebrate every festival without financial worry",
+        "amount": "₹5,000 - ₹1,00,000",
+        "tenure": "1 - 6 months",
+        "rate": "Starting from 1.2% per month",
+        "features": [
+          "Special festival rates",
+          "Quick disbursal",
+          "Flexible repayment",
+          "All festivals covered"
+        ]
+      },
+      "medical": {
+        "name": "Medical Loan",
+        "description": "Healthcare financing for planned treatments",
+        "amount": "₹25,000 - ₹10,00,000",
+        "tenure": "6 - 48 months",
+        "rate": "Starting from 1.0% per month",
+        "features": [
+          "Lowest interest rates",
+          "Hospital tie-ups",
+          "Insurance coordination",
+          "Cashless facility"
+        ]
+      },
+      "travel": {
+        "name": "Travel Now Pay Later",
+        "description": "Book your dream vacation today",
+        "amount": "₹25,000 - ₹3,00,000",
+        "tenure": "3 - 12 months",
+        "rate": "Starting from 1.3% per month",
+        "features": [
+          "Instant booking credit",
+          "Travel insurance included",
+          "Partner discounts",
+          "Zero down payment"
+        ]
+      }
+    }
+  },
+  "features": {
+    "title": "Why Choose Quikkred",
+    "subtitle": "Experience the future of digital lending",
+    "list": {
+      "instant": {
+        "title": "Instant Approval",
+        "description": "Get approved in just 30 seconds with our AI-powered system"
+      },
+      "paperless": {
+        "title": "100% Paperless",
+        "description": "Complete digital process from application to disbursement"
+      },
+      "secure": {
+        "title": "Bank-Level Security",
+        "description": "Your data is protected with 256-bit SSL encryption"
+      },
+      "transparent": {
+        "title": "Transparent Pricing",
+        "description": "No hidden charges, clear terms and conditions"
+      },
+      "support": {
+        "title": "24/7 Support",
+        "description": "Round-the-clock customer support in multiple languages"
+      },
+      "flexible": {
+        "title": "Flexible Repayment",
+        "description": "Choose tenure and EMI that suits your comfort"
+      }
+    }
+  },
+  "application": {
+    "title": "Loan Application",
+    "steps": {
+      "personal": "Personal Details",
+      "employment": "Employment Info",
+      "documents": "Documents",
+      "loan": "Loan Details",
+      "review": "Review & Submit"
+    },
+    "fields": {
+      "fullName": "Full Name",
+      "email": "Email Address",
+      "mobile": "Mobile Number",
+      "pan": "PAN Number",
+      "aadhaar": "Aadhaar Number",
+      "dob": "Date of Birth",
+      "address": "Address",
+      "city": "City",
+      "state": "State",
+      "pincode": "PIN Code",
+      "employmentType": "Employment Type",
+      "companyName": "Company Name",
+      "designation": "Designation",
+      "monthlyIncome": "Monthly Income",
+      "loanAmount": "Loan Amount Required",
+      "loanPurpose": "Purpose of Loan",
+      "tenure": "Loan Tenure"
+    },
+    "placeholders": {
+      "fullName": "Enter your full name",
+      "email": "example@email.com",
+      "mobile": "Enter 10-digit mobile number",
+      "pan": "ABCDE1234F",
+      "aadhaar": "XXXX XXXX XXXX",
+      "amount": "Enter amount in ₹"
+    },
+    "validation": {
+      "required": "This field is required",
+      "invalidEmail": "Please enter a valid email",
+      "invalidMobile": "Please enter a valid 10-digit mobile number",
+      "invalidPAN": "Please enter a valid PAN number",
+      "invalidAadhaar": "Please enter a valid Aadhaar number",
+      "minAmount": "Minimum amount is",
+      "maxAmount": "Maximum amount is"
+    }
+  },
+  "dashboard": {
+    "welcome": "Welcome back",
+    "overview": "Overview",
+    "activeLoans": "Active Loans",
+    "totalOutstanding": "Total Outstanding",
+    "nextEMI": "Next EMI",
+    "creditScore": "Credit Score",
+    "recentTransactions": "Recent Transactions",
+    "quickActions": "Quick Actions",
+    "payEMI": "Pay EMI",
+    "applyLoan": "Apply for New Loan",
+    "viewStatement": "View Statement",
+    "support": "Get Support",
+    "profile": {
+      "title": "My Profile",
+      "personalInfo": "Personal Information",
+      "kycStatus": "KYC Status",
+      "documents": "Documents",
+      "settings": "Settings"
+    }
+  },
+  "footer": {
+    "about": {
+      "title": "About Quikkred",
+      "description": "Your trusted partner for instant personal loans with minimal documentation and quick approval."
+    },
+    "quickLinks": {
+      "title": "Quick Links",
+      "items": {
+        "about": "About Us",
+        "products": "Our Products",
+        "partners": "Partners",
+        "careers": "Careers",
+        "contact": "Contact Us",
+        "ourStory": "Our Story",
+        "leadershipTeam": "Leadership Team",
+        "pressMedia": "Press & Media",
+        "awardsRecognition": "Awards & Recognition",
+        "csrInitiatives": "CSR Initiatives",
+        "testimonials": "Testimonials"
+      }
+    },
+    "products": {
+      "title": "Products",
+      "items": {
+        "personal": "Personal Loan",
+        "salary": "Salary Advance",
+        "emergency": "Emergency Fund",
+        "medical": "Medical Loan",
+        "travel": "Travel Loan",
+        "festival": "Festival Advance"
+      }
+    },
+    "resources": {
+      "title": "Resources",
+      "items": {
+        "eligibilityCheck": "Eligibility Check",
+        "interestRates": "Interest Rates",
+        "documentChecklist": "Document Checklist",
+        "howToApply": "How to Apply",
+        "financialLiteracy": "Financial Literacy"
+      }
+    },
+    "support": {
+      "title": "Support",
+      "items": {
+        "customerSupport": "Customer Support",
+        "grievanceRedressal": "Grievance Redressal",
+        "nodalOfficer": "Nodal Officer",
+        "locateBranch": "Locate Branch",
+        "downloadForms": "Download Forms",
+        "reportFraud": "Report Fraud"
+      }
+    },
+    "legal": {
+      "title": "Legal",
+      "items": {
+        "privacy": "Privacy Policy",
+        "terms": "Terms & Conditions",
+        "disclaimer": "Disclaimer",
+        "grievance": "Grievance Redressal",
+        "cookiePolicy": "Cookie Policy",
+        "fairPracticeCode": "Fair Practice Code",
+        "interestRatePolicy": "Interest Rate Policy",
+        "kycPolicy": "KYC Policy",
+        "rbiGuidelines": "RBI Guidelines"
+      }
+    },
+    "contact": {
+      "title": "Contact Us",
+      "address": "Mumbai, Maharashtra",
+      "phone": "+91 1800-123-4567",
+      "email": "support@quikkred.com",
+      "hours": "Mon-Sat: 9 AM - 6 PM"
+    },
+    "social": {
+      "title": "Follow Us",
+      "facebook": "Facebook",
+      "twitter": "Twitter",
+      "linkedin": "LinkedIn",
+      "instagram": "Instagram"
+    },
+    "mobileApp": {
+      "title": "Download our mobile app",
+      "appStore": "App Store",
+      "playStore": "Play Store",
+      "comingSoon": "Coming Soon!",
+      "comingSoonMessage": "Our mobile app will be available soon. Stay tuned!"
+    },
+    "copyright": "© 2025 Quikkred. All rights reserved.",
+    "disclaimer": "Quikkred is a registered NBFC regulated by RBI"
+  },
+  "contact": {
+    "title": "Get in Touch",
+    "subtitle": "We're here to help you",
+    "form": {
+      "name": "Your Name",
+      "email": "Your Email",
+      "phone": "Phone Number",
+      "subject": "Subject",
+      "message": "Message",
+      "send": "Send Message"
+    },
+    "info": {
+      "address": "Head Office",
+      "phone": "Phone",
+      "email": "Email",
+      "hours": "Business Hours"
+    },
+    "support": {
+      "title": "24/7 Customer Support",
+      "description": "For urgent assistance, our team is available round the clock",
+      "chat": "Start Live Chat",
+      "call": "Call Now"
+    }
+  },
+  "about": {
+    "title": "About Quikkred",
+    "subtitle": "Your Gateway to Financial Freedom",
+    "ourStory": "Our Story",
+    "ourStoryDesc": "Journey of innovation",
+    "leadershipTeam": "Leadership Team",
+    "leadershipDesc": "Meet our leaders",
+    "missionVision": "Mission & Vision",
+    "missionVisionDesc": "Our purpose",
+    "timeline": "Timeline",
+    "timelineDesc": "Road of our Journey",
+    "values": "Values",
+    "valuesDesc": "Social responsibility",
+    "mission": {
+      "title": "Our Mission",
+      "description": "To make financial services accessible, affordable, and transparent for every Indian, empowering dreams and enabling prosperity."
+    },
+    "vision": {
+      "title": "Our Vision",
+      "description": "To be India's most trusted digital lending platform, transforming lives through innovative financial solutions."
+    },
+    "valuesSection": {
+      "title": "Our Values",
+      "trust": "Trust & Transparency",
+      "innovation": "Innovation",
+      "customer": "Customer First",
+      "integrity": "Integrity"
+    },
+    "stats": {
+      "customers": "Happy Customers",
+      "disbursed": "Amount Disbursed",
+      "branches": "Partner Branches",
+      "team": "Team Members"
+    }
+  },
+  "eligibility": {
+    "title": "Eligibility Criteria",
+    "check": "Eligibility Check",
+    "checkDesc": "Check loan eligibility",
+    "age": "Age: 21-60 years",
+    "income": "Monthly Income: ₹15,000+",
+    "employment": "Employment: Salaried/Self-employed",
+    "credit": "CIBIL Score: 650+",
+    "documents": "Valid KYC documents",
+    "documentGuide": "Document Guide",
+    "documentGuideDesc": "Required documents",
+    "interestRates": "Interest Rates",
+    "interestRatesDesc": "Current rates"
+  },
+  "process": {
+    "title": "How It Works",
+    "steps": {
+      "apply": {
+        "title": "Apply Online",
+        "description": "Fill the simple application form"
+      },
+      "verify": {
+        "title": "Quick Verification",
+        "description": "Upload documents for instant verification"
+      },
+      "approval": {
+        "title": "Instant Approval",
+        "description": "Get approved in 30 seconds"
+      },
+      "disbursal": {
+        "title": "Money Transfer",
+        "description": "Receive money in your bank account"
+      }
+    }
+  },
+  "testimonials": {
+    "title": "What Our Customers Say",
+    "subtitle": "Real stories from real people"
+  },
+  "faqs": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know",
+    "description": "Common questions",
+    "categories": {
+      "general": "General",
+      "eligibility": "Eligibility",
+      "documents": "Documents",
+      "repayment": "Repayment",
+      "charges": "Charges"
+    }
+  },
+  "error": {
+    "404": {
+      "title": "Page Not Found",
+      "description": "The page you're looking for doesn't exist",
+      "button": "Go Home"
+    },
+    "500": {
+      "title": "Server Error",
+      "description": "Something went wrong on our end",
+      "button": "Try Again"
+    },
+    "general": {
+      "title": "Oops! Something went wrong",
+      "description": "Please try again later",
+      "button": "Refresh"
+    }
+  },
+  "homepage": {
+    
+    "trustBadges": {
+      "customers": {
+        "value": "+",
+        "title": "Happy Customers"
+      },
+      "disbursed": {
+        "value": "+",
+        "title": "Loans Disbursed"
+      },
+      "approvalTime": {
+        "value": "30 Sec",
+        "title": "Approval Time"
+      },
+      "rating": {
+        "value": "",
+        "title": "Customer Rating"
+      }
+    },
+    "features": {
+      "fast": {
+        "title": "Lightning Fast",
+        "description": "30-second approval with AI-powered instant decisioning"
+      },
+      "secure": {
+        "title": "100% Secure",
+        "description": "Bank-grade 256-bit encryption protects your data"
+      },
+      "aiScore": {
+        "title": "AI Credit Score",
+        "description": "Smart algorithms analyze 500+ data points"
+      },
+      "available": {
+        "title": "24/7 Available",
+        "description": "Apply anytime, no branch visits needed"
+      },
+      "mobile": {
+        "title": "Mobile First",
+        "description": "Complete process on your phone in minutes"
+      },
+      "licensed": {
+        "title": "RBI Licensed",
+        "description": "Fully compliant NBFC with transparent practices"
+      },
+      "flexible": {
+        "title": "Flexible EMIs",
+        "description": "Choose tenure that suits your budget"
+      },
+      "instant": {
+        "title": "Instant Money",
+        "description": "Direct credit to your bank account"
+      }
+    },
+    "loanProducts": {
+      "personal": {
+        "name": "Personal Loan",
+        "description": "For all your personal needs",
+        "rate": "10.5% p.a. onwards"
+      },
+      "business": {
+        "name": "Business Loan",
+        "description": "Grow your business faster",
+        "rate": "12% p.a. onwards"
+      },
+      "emergency": {
+        "name": "Emergency Loan",
+        "description": "Instant cash for urgencies",
+        "rate": "15% p.a. onwards"
+      },
+      "education": {
+        "name": "Education Loan",
+        "description": "Invest in your future",
+        "rate": "9% p.a. onwards"
+      }
+    },
+    "steps": {
+      "apply": {
+        "title": "Quick Apply",
+        "description": "Fill a simple form with basic details in under 2 minutes",
+        "time": "2 minutes"
+      },
+      "approval": {
+        "title": "Instant Approval",
+        "description": "Our AI analyzes your profile and gives instant decision",
+        "time": "30 seconds"
+      },
+      "money": {
+        "title": "Get Money",
+        "description": "Funds transferred directly to your bank account",
+        "time": "Instant"
+      }
+    },
+    "faqs": {
+      "title": "Got Questions?",
+      "subtitle": "Everything you need to know about our services"
+    },
+    "sections": {
+      "whyChoose": {
+        "badge": "Why Choose Quikkred",
+        "title": "Revolutionary Features",
+        "subtitle": "Experience the future of digital lending with our cutting-edge technology and customer-first approach"
+      },
+      "products": {
+        "badge": "Our Products",
+        "title": "Loans for Every",
+        "titleHighlight": "Need",
+        "subtitle": "Tailored financial solutions designed to meet your unique requirements"
+      },
+      "calculator": {
+        "badge": "Smart Calculator",
+        "title": "Calculate Your",
+        "titleHighlight": "Dream Loan",
+        "subtitle": "Get instant EMI calculations, see your eligibility, and understand the total cost - all in real-time",
+        "features": {
+          "noHiddenCharges": "No hidden charges or surprises",
+          "flexibleTenure": "Flexible tenure options up to 60 months",
+          "lowestRates": "Lowest interest rates guaranteed"
+        }
+      },
+      "howItWorks": {
+        "badge": "Simple Process",
+        "title": "Get Your Loan in",
+        "titleHighlight": "3 Steps",
+        "subtitle": "From application to money in your account - experience the fastest loan process"
+      },
+      "testimonials": {
+        "badge": "Customer Stories",
+        "title": "Trusted by",
+        "titleHighlight": "Thousands",
+        "subtitle": "Real stories from real customers who transformed their lives with Quikkred",
+        "loanAmount": "Loan Amount"
+      },
+      "cta": {
+        "title": "Ready to Transform Your Financial Future?",
+        "subtitle": "Join happy customers who've already taken the smart step towards financial freedom",
+        "applyButton": "Apply for Instant Loan",
+        "talkButton": "Talk to Expert",
+        "badges": {
+          "rbiLicensed": "RBI Licensed",
+          "isoCertified": "ISO Certified",
+          "awardWinning": "Award Winning"
+        }
+      }
+    }
+  },
+  "calculator": {
+    "title": "EMI Calculator",
+    "subtitle": "See your monthly payment instantly",
+    "loanAmount": "Loan Amount",
+    "tenure": "Tenure",
+    "interestRate": "Interest Rate (per month)",
+    "months": "months",
+    "month": "month",
+    "processingFee": "Processing Fee",
+    "totalInterest": "Total Interest",
+    "totalPayable": "Total Payable",
+    "monthlyEMI": "Your Monthly EMI",
+    "for": "for",
+    "applyNowFor": "Apply Now for",
+    "trustMessages": {
+      "noHiddenCharges": "No hidden charges",
+      "flexibleRepayment": "Flexible repayment options",
+      "instantDisbursal": "Instant disbursal on approval"
+    },
+    "footer": "Get approval in 30 seconds • Money in bank within minutes"
+  },
+  "newsletter": {
+    "title": "Stay Updated with Quikkred",
+    "subtitle": "Get exclusive offers, financial tips, and updates on new loan products",
+    "placeholder": "Enter your email",
+    "button": "Subscribe",
+    "subscribing": "Subscribing...",
+    "successTitle": "Subscribed Successfully!",
+    "successMessage": "Thank you for subscribing to our newsletter.",
+    "errors": {
+      "required": "Email is required",
+      "invalid": "Please enter a valid email",
+      "failed": "Failed to subscribe. Please try again."
+    }
+  }
+}
