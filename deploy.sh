@@ -35,7 +35,7 @@ docker tag $ECR_REPOSITORY:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazon
 echo -e "${YELLOW}Step 5/6: Pushing to ECR...${NC}"
 docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
 
-echo -e "${YELLOW}Step 6/6: Updating ECS service...${NC}"
+echo -e "${YELLOW}Step 6/7: Updating ECS service...${NC}"
 aws ecs update-service \
   --cluster $ECS_CLUSTER \
   --service $ECS_SERVICE \
@@ -43,5 +43,15 @@ aws ecs update-service \
   --region $AWS_REGION \
   --no-cli-pager
 
-echo -e "${GREEN}✅ Deployment initiated! ECS will roll out new version in 2-3 minutes.${NC}"
-echo -e "${GREEN}Monitor at: https://console.aws.amazon.com/ecs/v2/clusters/$ECS_CLUSTER/services/$ECS_SERVICE${NC}"
+echo -e "${YELLOW}Step 7/7: Invalidating CloudFront cache...${NC}"
+CLOUDFRONT_ID="E3GO0B7PSWGAHD"
+aws cloudfront create-invalidation \
+  --distribution-id $CLOUDFRONT_ID \
+  --paths "/*" \
+  --region $AWS_REGION \
+  --no-cli-pager
+
+echo -e "${GREEN}✅ Deployment complete!${NC}"
+echo -e "${GREEN}ECS will roll out new version in 2-3 minutes.${NC}"
+echo -e "${GREEN}CloudFront cache invalidation in progress (2-5 minutes).${NC}"
+echo -e "${GREEN}Monitor ECS: https://console.aws.amazon.com/ecs/v2/clusters/$ECS_CLUSTER/services/$ECS_SERVICE${NC}"
