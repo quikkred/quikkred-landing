@@ -132,16 +132,15 @@ export function Footer() {
   };
 
   return (
-    <footer className="bg-slate-900 pt-12 sm:pt-16 lg:pt-20 pb-6 sm:pb-8 mt-12 sm:mt-16 lg:mt-20 border-t border-slate-700">
+    <footer className="bg-slate-900 pb-6 sm:pb-8 mt-12 sm:mt-16 lg:mt-20 border-t border-slate-700">
       {/* Newsletter Section */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 -mt-24 sm:-mt-28 lg:-mt-32">
+      {/* <div className="container mx-auto px-4 sm:px-6 lg:px-8 -mt-24 sm:-mt-28 lg:-mt-32">
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           whileInView={{ y: 0, opacity: 1 }}
           viewport={{ once: true }}
           className="rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-12 shadow-xl-dark bg-gradient-to-br from-[#25B181] to-[#1F8F68] relative overflow-hidden"
         >
-          {/* Decorative Elements */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24"></div>
 
@@ -180,7 +179,7 @@ export function Footer() {
             </div>
           </div>
         </motion.div>
-      </div>
+      </div> */}
 
       {/* Main Footer Content */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 mt-12 sm:mt-16 lg:mt-20">
@@ -341,7 +340,7 @@ export function Footer() {
 
         {/* Certifications */}
         <div className="mt-8 sm:mt-10 lg:mt-12 pt-6 sm:pt-8 border-t border-gray-100">
-          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 lg:gap-8 mb-6 sm:mb-8">
+          {/* <div className="flex flex-wrap justify-center gap-3 sm:gap-4 lg:gap-8 mb-6 sm:mb-8">
             {certifications.map((cert, index) => (
               <motion.div
                 key={index}
@@ -355,7 +354,7 @@ export function Footer() {
                 <span className="text-slate-400 font-medium text-xs sm:text-sm whitespace-nowrap">{cert.text}</span>
               </motion.div>
             ))}
-          </div>
+          </div> */}
 
           {/* Legal Links */}
           <div className="flex flex-wrap justify-center gap-3 sm:gap-4 text-xs sm:text-sm mb-6 sm:mb-8 px-4">

@@ -17,6 +17,9 @@ import StepsSection from "@/components/homepage/steps-section";
 import FeaturesSection from "@/components/homepage/features-section";
 import LoansGrid from "@/components/homepage/loans-grid";
 import LoanCalculatorAll from "@/components/homepage/loan-calculator";
+import Testimonials from "@/components/homepage/Testimonials";
+import { FinancialCTA } from "@/components/homepage/financial-cta";
+import SalaryAdvance from "@/components/SalaryAdvance";
 
 
 export default function Home() {
@@ -139,103 +142,12 @@ export default function Home() {
   return (
     <>
       <div className="min-h-screen" ref={containerRef}>
-        {/* Hero Section - Reduced spacing */}
         <Hero/>
-
-        <section className="py-12 sm:py-16 lg:py-20 bg-white overflow-hidden">
           <StepsSection/>
-        </section>
-
-        {/* Trust Badges Section - Clean White Background */}
-        {/* <section className="py-12 sm:py-16 lg:py-20 bg-white relative">
-          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-200/50 to-transparent"></div>
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 lg:gap-10">
-              {trustBadges.map((badge, index) => (
-                <motion.div
-                  key={badge.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="text-center"
-                >
-                  <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-[#D3F1EB] to-[#A8E3D7] rounded-full mb-2 sm:mb-3">
-                    <badge.icon className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-[#25B181]" />
-                  </div>
-                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1">{badge.value}</h3>
-                  <p className="text-xs sm:text-sm text-gray-600 px-2">{badge.title}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section> */}
-
-        {/* Main Features Grid - Clean Light Background */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-gray-50 to-[#D3F1EB]/20">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-10 sm:mb-12 lg:mb-16"
-            >
-              <span className="inline-block px-4 py-2 bg-[#D3F1EB] text-[#25B181] rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
-                {t.homepage.sections.whyChoose.badge}
-              </span>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold font-sora mb-3 sm:mb-4 text-gray-900 px-4">
-                {t.homepage.sections.whyChoose.title}
-              </h2>
-              <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto px-4">
-                {t.homepage.sections.whyChoose.subtitle}
-              </p>
-            </motion.div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
-              {features.map((feature, index) => (
-                <motion.div
-                  key={feature.title}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.05 }}
-                  whileHover={{ scale: 1.05, y: -5 }}
-                  className="group relative bg-white rounded-2xl shadow-card overflow-hidden hover:shadow-glow transition-all duration-300"
-                >
-                  {/* Gradient Border Effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#25B181] to-[#FF9C70] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="relative bg-white rounded-2xl p-5 sm:p-6 m-[1px]">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-[#25B181] to-[#51C9AF] rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300">
-                      <feature.icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-                    </div>
-                    <h3 className="text-lg sm:text-xl font-semibold mb-2 text-gray-900 group-hover:text-[#25B181] transition-colors">
-                      {feature.title}
-                    </h3>
-                    <p className="text-gray-600 text-sm leading-relaxed">
-                      {feature.description}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-
         <FeaturesSection/>
-
-        <LoanCalculatorAll/>
-
-        {/* Loan Products Showcase */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-white">
-           
-
-            <LoansGrid/>
-         
-        </section>
-
-        {/* Interactive Loan Calculator Section */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-[#DAE6FF]/20 via-[#D3F1EB]/20 to-[#FFF4E4]/20">
+        
+             {/* Interactive Loan Calculator Section */}
+        <section className="py-12 sm:py-16 lg:py-20 bg-[#F6F6F6]">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
               <motion.div
@@ -278,16 +190,23 @@ export default function Home() {
                 viewport={{ once: true }}
                 className="order-1 lg:order-2"
               >
-                {/* <LoanCalculator /> */}
+                <LoanCalculatorAll/>
               </motion.div>
             </div>
           </div>
         </section>
 
+        {/* Loan Products Showcase */}
+        {/* <section className="py-12 sm:py-16 lg:py-20 bg-white"> */}
+            <LoansGrid/>
+        {/* </section> */}
+
+   <FinancialCTA/>
+
    
 
         {/* Testimonials Section */}
-        <section className="py-12 sm:py-16 lg:py-20 gradient-dark">
+        {/* <section className="py-12 sm:py-16 lg:py-20 gradient-dark">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -342,7 +261,7 @@ export default function Home() {
               ))}
             </div>
           </div>
-        </section>
+        </section> */}
 
         {/* FAQ Section */}
         <section className="py-12 sm:py-16 lg:py-20 bg-white">
@@ -406,9 +325,72 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Final CTA Section */}
+        {/* <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-[#25B181] via-[#51C9AF] to-[#7CDAC3] text-white relative overflow-hidden shadow-2xl">
+          <div className="absolute inset-0 bg-gradient-to-r from-[#25B181]/20 via-[#51C9AF]/20 to-[#7CDAC3]/20" />
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute inset-0" style={{
+              backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.1) 35px, rgba(255,255,255,.1) 70px)`,
+            }} />
+          </div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="container mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10"
+          >
+            <Rocket className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 mx-auto mb-4 sm:mb-6 text-yellow-300" />
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold font-sora mb-4 sm:mb-6 px-4">
+              {t.homepage.sections.cta.title}
+            </h2>
+            <p className="text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 text-white/90 max-w-2xl mx-auto px-4">
+              {t.homepage.sections.cta.subtitle}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-lg mx-auto">
+              <Link href="/apply" className="w-full sm:w-auto">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white text-[#25B181] rounded-full font-semibold text-base sm:text-lg shadow-xl hover:shadow-2xl hover:bg-[#D3F1EB] transition-all duration-300 flex items-center justify-center gap-2"
+                >
+                  {t.homepage.sections.cta.applyButton}
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                </motion.button>
+              </Link>
+              <Link href="/contact" className="w-full sm:w-auto">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-transparent border-2 border-white text-white rounded-full font-semibold text-base sm:text-lg hover:bg-white/20 transition-all duration-300 flex items-center justify-center gap-2"
+                >
+                  <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
+                  {t.homepage.sections.cta.talkButton}
+                </motion.button>
+              </Link>
+            </div>
+            <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 lg:gap-8 text-white/90 text-sm sm:text-base">
+              <div className="flex items-center gap-2">
+                <Shield className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span>{t.homepage.sections.cta.badges.rbiLicensed}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <BadgeCheck className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span>{t.homepage.sections.cta.badges.isoCertified}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span>{t.homepage.sections.cta.badges.awardWinning}</span>
+              </div>
+            </div>
+          </motion.div>
+        </section> */}
 
         {/* Feature Comparison Table */}
         {/* <FeatureCards /> */}
+
+
+
+
       </div>
     </>
   );

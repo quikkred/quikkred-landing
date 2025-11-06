@@ -25,18 +25,12 @@ export default function StepsSection() {
   ]
 
   return (
-    <section className="bg-slate-100 py-16 md:py-24 px-4">
+    <section className="bg-[#f6f6f6] py-16 md:py-24 px-4">
       <div className="max-w-6xl mx-auto">
-        {/* <span className="inline-block px-4 py-2 bg-[#DAE6FF] text-center text-[#4A66FF] rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
-                {t.homepage.sections.howItWorks.badge}
-              </span>
-        
-         */}
-
          <div
               className="text-center mb-10 sm:mb-12 lg:mb-16"
             >
-              <span className="inline-block px-4 py-2 bg-[#14b8a642] text-[#4A66FF] rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
+              <span className="inline-block px-4 py-2 bg-[#14b8a642] text-teal-500 rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
                 {t.homepage.sections.howItWorks.badge}
               </span>
               <h2 className="text-4xl md:text-5xl font-bold text-center text-slate-900 mb-3">

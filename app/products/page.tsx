@@ -3,12 +3,30 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
-  CreditCard, Wallet, AlertCircle, PartyPopper, Heart, Plane,
-  ArrowRight, CheckCircle, TrendingUp, Shield, Clock, Calculator, ChevronDown,
-  Banknote, Users, Award, Zap, Building, ChevronRight
+  CreditCard,
+  Wallet,
+  AlertCircle,
+  PartyPopper,
+  Heart,
+  Plane,
+  ArrowRight,
+  CheckCircle,
+  TrendingUp,
+  Shield,
+  Clock,
+  Calculator,
+  ChevronDown,
+  Banknote,
+  Users,
+  Award,
+  Zap,
+  Building,
+  ChevronRight,
 } from "lucide-react";
 import { useState } from "react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import SalaryAdvance from "@/components/SalaryAdvance";
+import Products from "@/components/Product/Products";
 
 const loanProducts = [
   {
@@ -23,16 +41,16 @@ const loanProducts = [
       "Instant approval for salaried employees",
       "Auto-deduction from next salary",
       "No collateral required",
-      "500+ partner companies"
+      "500+ partner companies",
     ],
     eligibility: [
       "Age: 21-58 years",
       "Monthly income: ₹15,000+",
       "6+ months employment",
-      "Salary account required"
+      "Salary account required",
     ],
     color: "from-[#25B181] to-[#51C9AF]",
-    popular: true
+    popular: true,
   },
   {
     id: "personal",
@@ -46,15 +64,15 @@ const loanProducts = [
       "30-second approval",
       "Flexible repayment options",
       "Minimal documentation",
-      "100% paperless process"
+      "100% paperless process",
     ],
     eligibility: [
       "Age: 21-60 years",
       "Monthly income: ₹15,000+",
       "CIBIL Score: 650+",
-      "Indian citizen"
+      "Indian citizen",
     ],
-    color: "from-[#4A66FF] to-[#25B181]"
+    color: "from-[#4A66FF] to-[#25B181]",
   },
   {
     id: "emergency",
@@ -68,15 +86,15 @@ const loanProducts = [
       "24-hour approval",
       "Direct hospital payment",
       "Compassionate support",
-      "No questions asked"
+      "No questions asked",
     ],
     eligibility: [
       "Emergency proof",
       "Basic KYC documents",
       "Income proof",
-      "Medical documents"
+      "Medical documents",
     ],
-    color: "from-[#FF9C70] to-[#25B181]"
+    color: "from-[#FF9C70] to-[#25B181]",
   },
   {
     id: "festival",
@@ -90,15 +108,15 @@ const loanProducts = [
       "Special festival rates",
       "Quick disbursal",
       "Flexible repayment",
-      "All festivals covered"
+      "All festivals covered",
     ],
     eligibility: [
       "Regular income proof",
       "Basic KYC",
       "3 months bank statement",
-      "Employment proof"
+      "Employment proof",
     ],
-    color: "from-[#FF9C70] to-[#FFD700]"
+    color: "from-[#FF9C70] to-[#FFD700]",
   },
   {
     id: "medical",
@@ -112,15 +130,15 @@ const loanProducts = [
       "Lowest interest rates",
       "Hospital tie-ups",
       "Insurance coordination",
-      "Cashless facility"
+      "Cashless facility",
     ],
     eligibility: [
       "Treatment estimate",
       "Doctor prescription",
       "Income documents",
-      "Insurance papers"
+      "Insurance papers",
     ],
-    color: "from-[#25B181] to-[#4A66FF]"
+    color: "from-[#25B181] to-[#4A66FF]",
   },
   {
     id: "travel",
@@ -134,16 +152,16 @@ const loanProducts = [
       "Instant booking credit",
       "Travel insurance included",
       "Partner discounts",
-      "Zero down payment"
+      "Zero down payment",
     ],
     eligibility: [
       "Travel itinerary",
       "Valid passport/visa",
       "Income: ₹25,000+",
-      "Return tickets"
+      "Return tickets",
     ],
-    color: "from-[#4A66FF] to-[#FF9C70]"
-  }
+    color: "from-[#4A66FF] to-[#FF9C70]",
+  },
 ];
 
 export default function ProductsPage() {
@@ -152,11 +170,8 @@ export default function ProductsPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white">
-        <div className="absolute inset-0 bg-black/10" />
-
-        <div className="relative">
-          {/* Breadcrumb */}
+      <section className="">
+        {/* <div className="relative">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24">
             <div className="flex items-center gap-2 text-white/80 text-xs sm:text-sm mb-4 sm:mb-6">
               <Link href="/" className="hover:text-white transition-colors">Home</Link>
@@ -165,59 +180,19 @@ export default function ProductsPage() {
             </div>
           </div>
 
-          {/* Hero Content */}
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12 sm:pb-16 lg:pb-20">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="max-w-4xl"
-            >
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 font-sora">
-                Loan Products for Every Need
-              </h1>
-              <p className="text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 opacity-90 max-w-2xl">
-                From salary advances to emergency funds, find the perfect loan solution
-                tailored to your requirements with instant approval.
-              </p>
+       
+        </div> */}
 
-              {/* Key Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
-                <div className="bg-white/10 backdrop-blur-md rounded-lg sm:rounded-xl p-3 sm:p-4 border border-white/30">
-                  <p className="text-2xl sm:text-3xl font-bold">30 Sec</p>
-                  <p className="text-xs sm:text-sm opacity-80">Instant Approval</p>
-                </div>
-                <div className="bg-white/10 backdrop-blur-md rounded-lg sm:rounded-xl p-3 sm:p-4 border border-white/30">
-                  <p className="text-2xl sm:text-3xl font-bold">100%</p>
-                  <p className="text-xs sm:text-sm opacity-80">Paperless</p>
-                </div>
-                <div className="bg-white/10 backdrop-blur-md rounded-lg sm:rounded-xl p-3 sm:p-4 border border-white/30">
-                  <p className="text-2xl sm:text-3xl font-bold">500+</p>
-                  <p className="text-xs sm:text-sm opacity-80">Partner Companies</p>
-                </div>
-                <div className="bg-white/10 backdrop-blur-md rounded-lg sm:rounded-xl p-3 sm:p-4 border border-white/30">
-                  <p className="text-2xl sm:text-3xl font-bold">24/7</p>
-                  <p className="text-xs sm:text-sm opacity-80">Support Available</p>
-                </div>
-              </div>
-
-              {/* Trust Badges */}
-              <div className="flex flex-wrap gap-2 sm:gap-3 lg:gap-4">
-                <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/20 backdrop-blur-md rounded-full border border-white/30 text-xs sm:text-sm">
-                  <Shield className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span>RBI Licensed NBFC</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/20 backdrop-blur-md rounded-full border border-white/30 text-xs sm:text-sm">
-                  <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span>Quick Disbursal</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/20 backdrop-blur-md rounded-full border border-white/30 text-xs sm:text-sm">
-                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span>Competitive Rates</span>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
+        <Products
+          title="Find the Right"
+          highlightWord="Loan for You"
+          subtitle="Get instant loan approval with QuikKred. Fast, secure, and 100% digital process designed for modern India."
+          buttonPrimaryText="Calculate EMI Now"
+          buttonSecondaryText="Apply for the loan"
+          imageSrc="/product-main.jpg"
+          // features={["No hidden charges", "Quick disbursal", "24/7 support"]}
+          primaryColor="emerald"
+        />
       </section>
 
       {/* Featured Product - Salary Advance */}
@@ -233,9 +208,12 @@ export default function ProductsPage() {
               <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
               Most Popular
             </div>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-3 sm:mb-4 bg-gradient-to-r from-[#25B181] to-[#FF9C70] bg-clip-text text-transparent px-4">Salary Advance - Our Flagship Product</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-3 sm:mb-4 bg-gradient-to-r from-[#25B181] to-[#FF9C70] bg-clip-text text-transparent px-4">
+              Salary Advance - Our Flagship Product
+            </h2>
             <p className="text-base sm:text-lg lg:text-xl text-gray-700 max-w-3xl mx-auto px-4">
-              Specially designed for salaried employees. Get up to 2 months salary in advance with auto-deduction facility.
+              Specially designed for salaried employees. Get up to 2 months
+              salary in advance with auto-deduction facility.
             </p>
           </motion.div>
 
@@ -248,12 +226,16 @@ export default function ProductsPage() {
             <div className="grid md:grid-cols-2 gap-6 sm:gap-8 items-center">
               <div>
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-14 h-14 bg-gradient-to-r from-[#25B181] to-[#25B181] rounded-xl flex items-center justify-center shadow-lg">
+                  <div className="w-14 h-14 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
                     <Wallet className="w-7 h-7 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900">Instant Salary Advance</h3>
-                    <p className="text-gray-700">For all salaried professionals</p>
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      Instant Salary Advance
+                    </h3>
+                    <p className="text-gray-700">
+                      For all salaried professionals
+                    </p>
                   </div>
                 </div>
 
@@ -263,7 +245,7 @@ export default function ProductsPage() {
                     "Auto-deduction from next salary",
                     "No paperwork or collateral",
                     "500+ partner companies",
-                    "Lowest interest rates"
+                    "Lowest interest rates",
                   ].map((feature, index) => (
                     <div key={index} className="flex items-start gap-3">
                       <CheckCircle className="w-5 h-5 text-[#25B181] mt-0.5 flex-shrink-0" />
@@ -289,7 +271,9 @@ export default function ProductsPage() {
                   </div>
                   <div className="flex justify-between pb-3 border-b border-gray-200">
                     <span className="text-gray-700">Interest Rate</span>
-                    <span className="font-semibold text-[#25B181]">1.5% per month</span>
+                    <span className="font-semibold text-[#25B181]">
+                      1.5% per month
+                    </span>
                   </div>
                   <div className="flex justify-between pb-3 border-b border-gray-200">
                     <span className="text-gray-700">Tenure</span>
@@ -297,7 +281,9 @@ export default function ProductsPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-700">Processing Time</span>
-                    <span className="font-semibold text-[#25B181]">30 seconds</span>
+                    <span className="font-semibold text-[#25B181]">
+                      30 seconds
+                    </span>
                   </div>
                 </div>
               </div>
@@ -315,9 +301,12 @@ export default function ProductsPage() {
             viewport={{ once: true }}
             className="text-center mb-8 sm:mb-10 lg:mb-12"
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-3 sm:mb-4 bg-gradient-to-r from-[#25B181] to-[#FF9C70] bg-clip-text text-transparent px-4">All Loan Products</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-3 sm:mb-4 bg-gradient-to-r from-[#25B181] to-[#FF9C70] bg-clip-text text-transparent px-4">
+              All Loan Products
+            </h2>
             <p className="text-base sm:text-lg lg:text-xl text-gray-700 max-w-3xl mx-auto px-4">
-              Choose from our comprehensive range of loan offerings designed for every financial need
+              Choose from our comprehensive range of loan offerings designed for
+              every financial need
             </p>
           </motion.div>
 
@@ -332,7 +321,9 @@ export default function ProductsPage() {
                 className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col"
               >
                 {/* Product Header */}
-                <div className={`bg-gradient-to-r ${product.color} p-6 text-white relative`}>
+                <div
+                  className={`bg-gradient-to-r ${product.color} p-6 text-white relative`}
+                >
                   {product.popular && (
                     <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold">
                       POPULAR
@@ -367,7 +358,10 @@ export default function ProductsPage() {
                     <h4 className="font-semibold mb-3">Key Features</h4>
                     <ul className="space-y-2">
                       {product.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-sm">
+                        <li
+                          key={idx}
+                          className="flex items-start gap-2 text-sm"
+                        >
                           <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                           <span className="text-gray-600">{feature}</span>
                         </li>
@@ -383,7 +377,9 @@ export default function ProductsPage() {
                       </button>
                     </Link>
                     <Link href="/apply/quick" className="flex-1">
-                      <button className={`w-full px-4 py-2 bg-gradient-to-r ${product.color} text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2`}>
+                      <button
+                        className={`w-full px-4 py-2 bg-gradient-to-r ${product.color} text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2`}
+                      >
                         Apply Now
                         <ArrowRight className="w-4 h-4" />
                       </button>
@@ -394,15 +390,17 @@ export default function ProductsPage() {
                 {/* Expandable Eligibility */}
                 <div className="border-t border-gray-200">
                   <button
-                    onClick={() => setSelectedProduct(
-                      selectedProduct === product.id ? null : product.id
-                    )}
+                    onClick={() =>
+                      setSelectedProduct(
+                        selectedProduct === product.id ? null : product.id
+                      )
+                    }
                     className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50:bg-gray-700 transition-colors"
                   >
                     <span className="font-medium">Eligibility Criteria</span>
                     <ChevronDown
                       className={`w-5 h-5 transition-transform ${
-                        selectedProduct === product.id ? 'rotate-180' : ''
+                        selectedProduct === product.id ? "rotate-180" : ""
                       }`}
                     />
                   </button>
@@ -414,7 +412,10 @@ export default function ProductsPage() {
                     >
                       <ul className="space-y-2">
                         {product.eligibility.map((item, idx) => (
-                          <li key={idx} className="flex items-start gap-2 text-sm">
+                          <li
+                            key={idx}
+                            className="flex items-start gap-2 text-sm"
+                          >
                             <CheckCircle className="w-4 h-4 text-[#4A66FF] mt-0.5 flex-shrink-0" />
                             <span className="text-gray-600">{item}</span>
                           </li>
@@ -438,9 +439,12 @@ export default function ProductsPage() {
             viewport={{ once: true }}
             className="text-center mb-8 sm:mb-10 lg:mb-12"
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-3 sm:mb-4 text-gray-900 px-4">Why Choose Quikkred?</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-3 sm:mb-4 text-gray-900 px-4">
+              Why Choose Quikkred?
+            </h2>
             <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto px-4">
-              We're not just another lending platform. We're your financial partner committed to your prosperity.
+              We're not just another lending platform. We're your financial
+              partner committed to your prosperity.
             </p>
           </motion.div>
 
@@ -457,7 +461,9 @@ export default function ProductsPage() {
                 <div className="w-16 h-16 bg-gradient-to-r from-[#25B181] to-[#FF9C70] rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <item.icon className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2 text-gray-900">{item.title}</h3>
+                <h3 className="text-xl font-semibold mb-2 text-gray-900">
+                  {item.title}
+                </h3>
                 <p className="text-gray-600">{item.description}</p>
               </motion.div>
             ))}
@@ -478,7 +484,8 @@ export default function ProductsPage() {
               Ready to Get Your Loan?
             </h2>
             <p className="text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 opacity-90 px-4">
-              Join thousands of satisfied customers who've transformed their financial journey with Quikkred
+              Join thousands of satisfied customers who've transformed their
+              financial journey with Quikkred
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-lg mx-auto">
               <Link href="/apply/quick" className="w-full sm:w-auto">
@@ -486,7 +493,10 @@ export default function ProductsPage() {
                   Apply Now
                 </button>
               </Link>
-              <Link href="/resources/emi-calculator" className="w-full sm:w-auto">
+              <Link
+                href="/resources/emi-calculator"
+                className="w-full sm:w-auto"
+              >
                 <button className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white/20 backdrop-blur-md text-white rounded-full font-semibold text-base sm:text-lg border-2 border-white/30 hover:bg-white/30 transition-all flex items-center gap-2 justify-center">
                   <Calculator className="w-4 h-4 sm:w-5 sm:h-5" />
                   Calculate EMI
@@ -504,21 +514,21 @@ const whyChooseUs = [
   {
     icon: Zap,
     title: "Lightning Fast",
-    description: "30-second approval with AI-powered decisioning"
+    description: "30-second approval with AI-powered decisioning",
   },
   {
     icon: Shield,
     title: "100% Secure",
-    description: "Bank-grade encryption and data protection"
+    description: "Bank-grade encryption and data protection",
   },
   {
     icon: Users,
     title: "Trusted by Many",
-    description: "+ happy customers and counting"
+    description: "+ happy customers and counting",
   },
   {
     icon: Award,
     title: "RBI Licensed",
-    description: "Fully compliant and regulated NBFC"
-  }
+    description: "Fully compliant and regulated NBFC",
+  },
 ];

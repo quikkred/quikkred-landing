@@ -28,12 +28,8 @@ export default function LoanCalculatorAll() {
   const purposes = ["Personal", "Medical", "Education", "Business", "Travel", "Wedding"]
 
   return (
-    <section className="bg-slate-50 py-16 md:py-24 px-4">
+    <section>
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-4xl md:text-5xl font-bold text-center text-slate-900 mb-4">
-          See Your <span className="text-teal-500">Loan</span>, Your Way.
-        </h2>
-
         <div className="max-w-2xl mx-auto bg-white rounded-lg p-8 shadow-sm">
           {/* Payday Loan Calculator Header */}
           <div className="mb-8">

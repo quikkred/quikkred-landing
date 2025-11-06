@@ -4,13 +4,29 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
 import {
-  Activity, CheckCircle, Clock, Shield, TrendingUp,
-  ArrowRight, Calculator, FileText, Users, Zap,
-  Phone, ChevronRight, Star, Award, Heart,
-  Stethoscope, Ambulance, Hospital, Cross
+  Activity,
+  CheckCircle,
+  Clock,
+  Shield,
+  TrendingUp,
+  ArrowRight,
+  Calculator,
+  FileText,
+  Users,
+  Zap,
+  Phone,
+  ChevronRight,
+  Star,
+  Award,
+  Heart,
+  Stethoscope,
+  Ambulance,
+  Hospital,
+  Cross,
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { LoanCalculator } from "@/components/loan-calculator";
+import SalaryAdvance from "@/components/SalaryAdvance";
 
 export default function MedicalEmergencyPage() {
   const { t } = useLanguage();
@@ -18,68 +34,30 @@ export default function MedicalEmergencyPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white py-12 sm:py-16 lg:py-20">
-        <div className="absolute inset-0 bg-black/20" />
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-4xl"
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <Link href="/" className="hover:text-white/80">Home</Link>
-              <ChevronRight className="w-4 h-4" />
-              <Link href="/products" className="hover:text-white/80">Products</Link>
-              <ChevronRight className="w-4 h-4" />
-              <span>Medical Emergency</span>
-            </div>
-
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 font-sora">
-              Medical Emergency Loan
-            </h1>
-            <p className="text-sm sm:text-base lg:text-xl mb-8 opacity-90">
-              Instant medical funding when every second counts - From ₹10,000 to ₹10,00,000
-            </p>
-
-            <div className="flex flex-wrap gap-6 mb-8">
-              <div className="flex items-center gap-2">
-                <Activity className="w-5 h-5" />
-                <span>24-Hour Approval</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Cross className="w-5 h-5" />
-                <span>Direct Hospital Payment</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Shield className="w-5 h-5" />
-                <span>Lowest Medical Rates</span>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/apply/quick">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-8 py-4 bg-white text-[#25B181] rounded-full font-semibold text-lg shadow-xl hover:shadow-2xl transition-all flex items-center gap-2"
-                >
-                  Apply Now
-                  <ArrowRight className="w-5 h-5" />
-                </motion.button>
-              </Link>
-              <Link href="/resources/emi-calculator">
-                <button className="px-8 py-4 bg-white/20 backdrop-blur-md text-white rounded-full font-semibold text-lg border-2 border-white/30 hover:bg-white/30 transition-all flex items-center gap-2">
-                  <Calculator className="w-5 h-5" />
-                  Calculate EMI
-                </button>
-              </Link>
-            </div>
-          </motion.div>
-        </div>
+      <section>
+        <section className="py-12 sm:py-16 lg:py-20">
+          <SalaryAdvance
+            title="Focus on Recovery, Not Bills."
+            highlightWord="Recovery,"
+            title1=" Not Bills."
+            subtitle="Get an instant loan for medical emergencies. Quick approval, 100% digital, and direct-to-hospital payment options."
+            buttonPrimaryText="Get Help Now"
+            buttonSecondaryText="Check Eligibility"
+            quickAccessAmount="₹5,00,000"
+            timeText="Under 5 mins"
+            imageSrc="/Medicalloan_hero_image.jpg"
+            features={[
+              "24-Hour Disbursal",
+              "Direct Hospital Pay",
+              "Best Medical Rates",
+            ]}
+            primaryColor="emerald"
+          />
+        </section>
       </section>
 
       {/* Medical Features Grid */}
-      <section className="py-12 sm:py-16 lg:py-20">
+      <section className="bg-[#f6f6f6] py-12 sm:py-16 lg:py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -87,7 +65,9 @@ export default function MedicalEmergencyPage() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">Why Choose Medical Emergency Loan?</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">
+              Why Choose Medical Emergency Loan?
+            </h2>
             <p className="text-xl text-gray-600">
               Fast, reliable funding for all your medical needs
             </p>
@@ -123,7 +103,9 @@ export default function MedicalEmergencyPage() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">Partner Hospitals</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">
+              Partner Hospitals
+            </h2>
             <p className="text-xl text-gray-600">
               Direct cashless treatment at leading hospitals across India
             </p>
@@ -142,7 +124,9 @@ export default function MedicalEmergencyPage() {
                 <Hospital className="w-8 h-8 text-[#25B181] mx-auto mb-3" />
                 <h3 className="text-lg font-semibold mb-2">{hospital.name}</h3>
                 <p className="text-sm text-gray-600">{hospital.location}</p>
-                <p className="text-xs text-[#25B181] mt-2">{hospital.specialties}</p>
+                <p className="text-xs text-[#25B181] mt-2">
+                  {hospital.specialties}
+                </p>
               </motion.div>
             ))}
           </div>
@@ -158,7 +142,9 @@ export default function MedicalEmergencyPage() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">Medical Expenses Covered</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">
+              Medical Expenses Covered
+            </h2>
             <p className="text-xl text-gray-600">
               Comprehensive coverage for all types of medical treatments
             </p>
@@ -180,7 +166,10 @@ export default function MedicalEmergencyPage() {
                 <h3 className="text-lg font-semibold mb-2">{category.title}</h3>
                 <ul className="space-y-1">
                   {category.items.map((item, idx) => (
-                    <li key={idx} className="text-sm text-gray-600 flex items-center gap-2">
+                    <li
+                      key={idx}
+                      className="text-sm text-gray-600 flex items-center gap-2"
+                    >
                       <CheckCircle className="w-3 h-3 text-[#25B181] flex-shrink-0" />
                       {item}
                     </li>
@@ -213,7 +202,9 @@ export default function MedicalEmergencyPage() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">How It Works</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">
+              How It Works
+            </h2>
             <p className="text-xl text-gray-600">
               Get medical funding in 4 simple steps
             </p>
@@ -253,7 +244,9 @@ export default function MedicalEmergencyPage() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">Patient Success Stories</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">
+              Patient Success Stories
+            </h2>
             <p className="text-xl text-gray-600">
               How we helped families during medical emergencies
             </p>
@@ -271,7 +264,10 @@ export default function MedicalEmergencyPage() {
               >
                 <div className="flex gap-1 mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                    <Star
+                      key={i}
+                      className="w-5 h-5 fill-yellow-400 text-yellow-400"
+                    />
                   ))}
                 </div>
                 <p className="text-gray-600 mb-4">"{testimonial.comment}"</p>
@@ -281,7 +277,9 @@ export default function MedicalEmergencyPage() {
                   </div>
                   <div>
                     <p className="font-semibold">{testimonial.name}</p>
-                    <p className="text-sm text-gray-600">{testimonial.treatment}</p>
+                    <p className="text-sm text-gray-600">
+                      {testimonial.treatment}
+                    </p>
                   </div>
                 </div>
               </motion.div>
@@ -298,9 +296,12 @@ export default function MedicalEmergencyPage() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 font-sora">Need Medical Funding?</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 font-sora">
+              Need Medical Funding?
+            </h2>
             <p className="text-sm sm:text-base lg:text-xl mb-8 opacity-90">
-              Don't delay treatment - Get instant medical loan approval in 24 hours
+              Don't delay treatment - Get instant medical loan approval in 24
+              hours
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/apply/quick">
@@ -326,33 +327,39 @@ const medicalFeatures = [
   {
     icon: Activity,
     title: "24-Hour Approval",
-    description: "Emergency medical loans approved within 24 hours, even on weekends"
+    description:
+      "Emergency medical loans approved within 24 hours, even on weekends",
   },
   {
     icon: Cross,
     title: "Direct Hospital Payment",
-    description: "We pay directly to hospitals for cashless treatment experience"
+    description:
+      "We pay directly to hospitals for cashless treatment experience",
   },
   {
     icon: Shield,
     title: "Lowest Medical Rates",
-    description: "Special interest rates starting at 1% per month for medical emergencies"
+    description:
+      "Special interest rates starting at 1% per month for medical emergencies",
   },
   {
     icon: Ambulance,
     title: "Emergency Support",
-    description: "24/7 customer support for medical emergency loan applications"
+    description:
+      "24/7 customer support for medical emergency loan applications",
   },
   {
     icon: Heart,
     title: "No Collateral",
-    description: "Unsecured loans with minimal documentation during emergencies"
+    description:
+      "Unsecured loans with minimal documentation during emergencies",
   },
   {
     icon: Stethoscope,
     title: "All Treatments",
-    description: "Coverage for all medical treatments, surgeries, and procedures"
-  }
+    description:
+      "Coverage for all medical treatments, surgeries, and procedures",
+  },
 ];
 
 const hospitalPartners: any[] = [
@@ -370,54 +377,92 @@ const medicalCategories = [
   {
     title: "Emergency Surgeries",
     icon: Activity,
-    items: ["Heart Surgery", "Brain Surgery", "Cancer Treatment", "Organ Transplant", "Accident Treatment"]
+    items: [
+      "Heart Surgery",
+      "Brain Surgery",
+      "Cancer Treatment",
+      "Organ Transplant",
+      "Accident Treatment",
+    ],
   },
   {
     title: "Planned Procedures",
     icon: Stethoscope,
-    items: ["Knee Replacement", "Cataract Surgery", "Dental Implants", "Cosmetic Surgery", "Fertility Treatment"]
+    items: [
+      "Knee Replacement",
+      "Cataract Surgery",
+      "Dental Implants",
+      "Cosmetic Surgery",
+      "Fertility Treatment",
+    ],
   },
   {
     title: "Critical Care",
     icon: Heart,
-    items: ["ICU Treatment", "Ventilator Support", "Dialysis", "Chemotherapy", "Radiation Therapy"]
+    items: [
+      "ICU Treatment",
+      "Ventilator Support",
+      "Dialysis",
+      "Chemotherapy",
+      "Radiation Therapy",
+    ],
   },
   {
     title: "Diagnostics",
     icon: Cross,
-    items: ["MRI & CT Scans", "PET Scans", "Biopsy", "Blood Tests", "Health Checkups"]
+    items: [
+      "MRI & CT Scans",
+      "PET Scans",
+      "Biopsy",
+      "Blood Tests",
+      "Health Checkups",
+    ],
   },
   {
     title: "Maternity Care",
     icon: Users,
-    items: ["Normal Delivery", "C-Section", "NICU Care", "Prenatal Care", "Postnatal Care"]
+    items: [
+      "Normal Delivery",
+      "C-Section",
+      "NICU Care",
+      "Prenatal Care",
+      "Postnatal Care",
+    ],
   },
   {
     title: "Alternative Medicine",
     icon: Hospital,
-    items: ["Ayurvedic Treatment", "Homeopathy", "Physiotherapy", "Rehabilitation", "Mental Health"]
-  }
+    items: [
+      "Ayurvedic Treatment",
+      "Homeopathy",
+      "Physiotherapy",
+      "Rehabilitation",
+      "Mental Health",
+    ],
+  },
 ];
 
 const medicalSteps = [
   {
     title: "Emergency Application",
-    description: "Fill our emergency medical loan form with patient details and treatment requirements."
+    description:
+      "Fill our emergency medical loan form with patient details and treatment requirements.",
   },
   {
     title: "Medical Verification",
-    description: "Our medical team verifies the treatment necessity with your doctor within 2 hours."
+    description:
+      "Our medical team verifies the treatment necessity with your doctor within 2 hours.",
   },
   {
     title: "Instant Approval",
-    description: "Get loan approval within 24 hours with special medical emergency rates."
+    description:
+      "Get loan approval within 24 hours with special medical emergency rates.",
   },
   {
     title: "Direct Payment",
-    description: "We transfer funds directly to the hospital or your account for immediate treatment."
-  }
+    description:
+      "We transfer funds directly to the hospital or your account for immediate treatment.",
+  },
 ];
 
-const medicalTestimonials: any[] = [
-
-];
+const medicalTestimonials: any[] = [];
