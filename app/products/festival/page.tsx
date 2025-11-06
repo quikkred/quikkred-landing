@@ -4,13 +4,28 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
 import {
-  Sparkles, CheckCircle, Clock, Shield, TrendingUp,
-  ArrowRight, Calculator, FileText, Users, Zap,
-  Phone, ChevronRight, Star, Award, Gift,
-  Calendar, PartyPopper, Heart
+  Sparkles,
+  CheckCircle,
+  Clock,
+  Shield,
+  TrendingUp,
+  ArrowRight,
+  Calculator,
+  FileText,
+  Users,
+  Zap,
+  Phone,
+  ChevronRight,
+  Star,
+  Award,
+  Gift,
+  Calendar,
+  PartyPopper,
+  Heart,
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { LoanCalculator } from "@/components/loan-calculator";
+import SalaryAdvance from "@/components/SalaryAdvance";
 
 export default function FestivalAdvancePage() {
   const { t } = useLanguage();
@@ -18,104 +33,30 @@ export default function FestivalAdvancePage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-[#FF9C70] via-[#FFB596] to-[#FF9C70] text-white py-12 sm:py-16 lg:py-20">
-        <div className="absolute inset-0 bg-black/20" />
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-4xl"
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <Link href="/" className="hover:text-white/80">Home</Link>
-              <ChevronRight className="w-4 h-4" />
-              <Link href="/products" className="hover:text-white/80">Products</Link>
-              <ChevronRight className="w-4 h-4" />
-              <span>Festival Advance</span>
-            </div>
-
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 font-sora">
-              Festival Advance
-            </h1>
-            <p className="text-sm sm:text-base lg:text-xl mb-8 opacity-90">
-              Celebrate every festival with joy - Get instant funds from ₹5,000 to ₹2,00,000
-            </p>
-
-            <div className="flex flex-wrap gap-6 mb-8">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5" />
-                <span>Instant Festival Cash</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Gift className="w-5 h-5" />
-                <span>Special Festival Rates</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                <span>Flexible Repayment</span>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/apply/quick">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-8 py-4 bg-white text-[#FF9C70] rounded-full font-semibold text-lg shadow-xl hover:shadow-2xl transition-all flex items-center gap-2"
-                >
-                  Apply Now
-                  <ArrowRight className="w-5 h-5" />
-                </motion.button>
-              </Link>
-              <Link href="/resources/emi-calculator">
-                <button className="px-8 py-4 bg-white/20 backdrop-blur-md text-white rounded-full font-semibold text-lg border-2 border-white/30 hover:bg-white/30 transition-all flex items-center gap-2">
-                  <Calculator className="w-5 h-5" />
-                  Calculate EMI
-                </button>
-              </Link>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Festival Features Grid */}
-      <section className="py-12 sm:py-16 lg:py-20">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">Why Choose Festival Advance?</h2>
-            <p className="text-xl text-gray-600">
-              Make every celebration memorable without financial worries
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {festivalFeatures.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow"
-              >
-                <div className="w-12 h-12 bg-gradient-to-r from-[#FF9C70] to-[#FFB596] rounded-lg flex items-center justify-center mb-4">
-                  <feature.icon className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+      <section>
+        <section className="py-12 sm:py-16 lg:py-20">
+          <SalaryAdvance
+            title="Make Your Celebrations"
+            highlightWord="Brighter."
+            // title1=" Not Bills."
+            subtitle="Get an instant Festival Advance to make your celebrations complete. No long waits, just joy and festivities."
+            buttonPrimaryText="Get Funds Now"
+            buttonSecondaryText="Check Eligibility"
+            quickAccessAmount="₹50,000"
+            timeText="10 mins"
+            imageSrc="/FestivalAdvance_hero_image.jpg"
+            features={[
+              "Festival Cash",
+              "Festival Special Rates",
+              "Flexible Repayment",
+            ]}
+            primaryColor="emerald"
+          />
+        </section>
       </section>
 
       {/* Festival Types */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-[#f6f6f6]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -123,7 +64,9 @@ export default function FestivalAdvancePage() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">Festivals We Support</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">
+              Festivals We Support
+            </h2>
             <p className="text-xl text-gray-600">
               Get advance for all major festivals across religions and cultures
             </p>
@@ -142,6 +85,44 @@ export default function FestivalAdvancePage() {
                 <div className="text-4xl mb-3">{festival.icon}</div>
                 <h3 className="text-lg font-semibold mb-2">{festival.name}</h3>
                 <p className="text-sm text-gray-600">{festival.period}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Festival Features Grid */}
+      <section className="py-12 sm:py-16 lg:py-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">
+              Why Choose Festival Advance?
+            </h2>
+            <p className="text-xl text-gray-600">
+              Make every celebration memorable without financial worries
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {festivalFeatures.map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow"
+              >
+                <div className="w-12 h-12 bg-emerald-600 rounded-lg flex items-center justify-center mb-4">
+                  <feature.icon className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                <p className="text-gray-600">{feature.description}</p>
               </motion.div>
             ))}
           </div>
@@ -169,7 +150,9 @@ export default function FestivalAdvancePage() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">How It Works</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">
+              How It Works
+            </h2>
             <p className="text-xl text-gray-600">
               Get your festival advance in 3 simple steps
             </p>
@@ -209,7 +192,9 @@ export default function FestivalAdvancePage() {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">Festival Success Stories</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">
+              Festival Success Stories
+            </h2>
             <p className="text-xl text-gray-600">
               How our customers celebrated with Quikkred
             </p>
@@ -227,7 +212,10 @@ export default function FestivalAdvancePage() {
               >
                 <div className="flex gap-1 mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                    <Star
+                      key={i}
+                      className="w-5 h-5 fill-yellow-400 text-yellow-400"
+                    />
                   ))}
                 </div>
                 <p className="text-gray-600 mb-4">"{testimonial.comment}"</p>
@@ -237,7 +225,9 @@ export default function FestivalAdvancePage() {
                   </div>
                   <div>
                     <p className="font-semibold">{testimonial.name}</p>
-                    <p className="text-sm text-gray-600">{testimonial.festival}</p>
+                    <p className="text-sm text-gray-600">
+                      {testimonial.festival}
+                    </p>
                   </div>
                 </div>
               </motion.div>
@@ -254,9 +244,12 @@ export default function FestivalAdvancePage() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 font-sora">Ready to Celebrate?</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 font-sora">
+              Ready to Celebrate?
+            </h2>
             <p className="text-sm sm:text-base lg:text-xl mb-8 opacity-90">
-              Get your festival advance now and make this celebration unforgettable
+              Get your festival advance now and make this celebration
+              unforgettable
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/apply/quick">
@@ -282,33 +275,34 @@ const festivalFeatures = [
   {
     icon: Zap,
     title: "Instant Approval",
-    description: "Get approved in 30 seconds and receive money before the festival rush"
+    description:
+      "Get approved in 30 seconds and receive money before the festival rush",
   },
   {
     icon: Gift,
     title: "Special Festival Rates",
-    description: "Enjoy reduced interest rates during festival seasons"
+    description: "Enjoy reduced interest rates during festival seasons",
   },
   {
     icon: Calendar,
     title: "Flexible Repayment",
-    description: "Start repayment after festivals with comfortable EMI options"
+    description: "Start repayment after festivals with comfortable EMI options",
   },
   {
     icon: Shield,
     title: "100% Secure",
-    description: "Bank-grade security for all your financial transactions"
+    description: "Bank-grade security for all your financial transactions",
   },
   {
     icon: Sparkles,
     title: "No Hidden Charges",
-    description: "Transparent pricing with no surprise fees or charges"
+    description: "Transparent pricing with no surprise fees or charges",
   },
   {
     icon: Heart,
     title: "Quick Disbursal",
-    description: "Money transferred within 10 minutes of approval"
-  }
+    description: "Money transferred within 10 minutes of approval",
+  },
 ];
 
 const festivals = [
@@ -319,24 +313,25 @@ const festivals = [
   { name: "Dussehra", icon: "🏹", period: "Sep-Oct" },
   { name: "Ganesh Chaturthi", icon: "🐘", period: "Aug-Sep" },
   { name: "Navratri", icon: "💃", period: "Sep-Oct" },
-  { name: "Karva Chauth", icon: "🌙", period: "October" }
+  { name: "Karva Chauth", icon: "🌙", period: "October" },
 ];
 
 const festivalSteps = [
   {
     title: "Apply for Festival Advance",
-    description: "Fill our quick application form mentioning the festival and amount needed. Takes less than 3 minutes."
+    description:
+      "Fill our quick application form mentioning the festival and amount needed. Takes less than 3 minutes.",
   },
   {
     title: "Instant Approval",
-    description: "Get approved instantly with our AI-powered assessment. Special festival rates applied automatically."
+    description:
+      "Get approved instantly with our AI-powered assessment. Special festival rates applied automatically.",
   },
   {
     title: "Celebrate & Repay",
-    description: "Receive money immediately and enjoy your festival. Start repayment after the celebration period."
-  }
+    description:
+      "Receive money immediately and enjoy your festival. Start repayment after the celebration period.",
+  },
 ];
 
-const festivalTestimonials: any[] = [
-
-];
+const festivalTestimonials: any[] = [];
