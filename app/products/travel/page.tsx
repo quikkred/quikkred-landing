@@ -28,6 +28,8 @@ import {
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { LoanCalculator } from "@/components/loan-calculator";
 import SalaryAdvance from "@/components/SalaryAdvance";
+import { DocumentIcon } from "@/components/feature-icon";
+import { FinancialFeatureSection } from "@/components/financial-feature-section";
 
 export default function TravelNowPayLaterPage() {
   const { t } = useLanguage();
@@ -192,6 +194,37 @@ export default function TravelNowPayLaterPage() {
           </div>
         </div>
       </section>
+
+      <FinancialFeatureSection
+        image="/Travelnow_sub_image.jpg"
+        imageAlt="Woman smiling while using her phone"
+        badge={{
+          percentage: "100%",
+          label: "Secure",
+        }}
+        heading="A Simpler Way to Celebrate."
+        description="We’ve removed the hassle so you can focus on the joy. Get your funds with just a few clicks."
+        features={[
+          {
+            icon: <DocumentIcon />,
+            title: "Instant Approval",
+            description:
+              "Get your advance approved in minutes. No waiting, no long forms.",
+          },
+          {
+            icon: <DocumentIcon />,
+            title: "Flexible Repayment",
+            description:
+              "Choose a simple repayment plan that fits your salary cycle.",
+          },
+          {
+            icon: <DocumentIcon />,
+            title: "100% Digital",
+            description:
+              "From application to disbursal, the entire process is completely online.",
+          },
+        ]}
+      />
 
       {/* How It Works */}
       <section className="py-12 sm:py-16 lg:py-20">

@@ -22,6 +22,8 @@ import {
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { LoanCalculator } from "@/components/loan-calculator";
 import SalaryAdvance from "@/components/SalaryAdvance";
+import { DocumentIcon } from "@/components/feature-icon";
+import { FinancialFeatureSection } from "@/components/financial-feature-section";
 
 export default function EmergencyFundPage() {
   const { t } = useLanguage();
@@ -105,6 +107,36 @@ export default function EmergencyFundPage() {
           </div>
         </div>
       </section>
+
+<FinancialFeatureSection
+  image="/EmergencyFund_sub_image.jpg"
+  imageAlt="Smiling woman using phone for emergency fund application"
+  badge={{
+    percentage: "100%",
+    label: "Secure",
+  }}
+  heading="Fast Help for Emergencies."
+  description="We believe you deserve fast support during an emergency. No judgment, no long waits—just the help you need."
+  features={[
+    {
+      icon: <DocumentIcon />,
+      title: "Priority Application",
+      description: "2-minute form. Your emergency request is prioritized.",
+    },
+    {
+      icon: <DocumentIcon />,
+      title: "Fully Secure",
+      description: "We use bank-level 256-bit encryption to protect your personal and financial data.",
+    },
+    {
+      icon: <DocumentIcon />,
+      title: "No Hidden Fees",
+      description: "One single, transparent fee. No surprises.",
+    },
+  ]}
+/>
+
+
 
       {/* Process */}
       <section className="py-20 bg-white">
