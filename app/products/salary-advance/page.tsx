@@ -23,6 +23,8 @@ import {
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { LoanCalculator } from "@/components/loan-calculator";
 import SalaryAdvance from "@/components/SalaryAdvance";
+import { FinancialFeatureSection } from "@/components/financial-feature-section";
+import { DocumentIcon } from "@/components/feature-icon";
 
 export default function SalaryAdvancePage() {
   const { t } = useLanguage();
@@ -102,40 +104,36 @@ export default function SalaryAdvancePage() {
         </div>
       </section>
 
-      {/* Partner Companies */}
-      {/* <section className="py-12 sm:py-16 lg:py-20">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">Our Partner Companies</h2>
-            <p className="text-xl text-gray-600">
-              Employees from 500+ companies trust us for salary advances
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8">
-            {companies.map((company, index) => (
-              <motion.div
-                key={company}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.05 }}
-                className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-shadow flex items-center justify-center h-24"
-              >
-                <span className="text-gray-600 font-semibold">{company}</span>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section> */}
+       <FinancialFeatureSection
+        image="/Salaryadvance_sub_image.jpg"
+        imageAlt="Man in green sweater looking at phone"
+        badge={{
+          percentage: "100%",
+          label: "Secure",
+        }}
+        heading="Financial Flexibility, on Your Terms"
+        description="We believe everyone deserves access to their earned salary when they need it. No judgment, just support."
+        features={[
+          {
+            icon: <DocumentIcon />,
+            title: "Apply Online",
+            description: "Fill a simple form with employment details and upload salary slips",
+          },
+          {
+            icon: <DocumentIcon />,
+            title: "Fully Secure",
+            description: "We use bank-level 256-bit encryption to protect your personal and financial data.",
+          },
+          {
+            icon: <DocumentIcon />,
+            title: "Clear & Simple",
+            description: "One single, transparent fee. No hidden charges, no surprises on repayment.",
+          },
+        ]}
+      />
 
       {/* Eligibility */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 ">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
             <motion.div
@@ -273,48 +271,6 @@ export default function SalaryAdvancePage() {
           </div>
         </div>
       </section>
-
-      {/* Testimonials */}
-      {/* <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">What Employees Say</h2>
-            <p className="text-xl text-gray-600">
-              Real stories from real people
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-white rounded-2xl p-6 shadow-lg"
-              >
-                <div className="flex gap-1 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-gray-600 mb-4 italic">"{testimonial.comment}"</p>
-                <div className="border-t pt-4">
-                  <p className="font-semibold">{testimonial.name}</p>
-                  <p className="text-sm text-gray-600">{testimonial.designation}</p>
-                  <p className="text-sm text-gray-500">{testimonial.company}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section> */}
 
       {/* CTA */}
       <section className="py-20 bg-gradient-to-r from-[#25B181] to-[#25B181] text-white">

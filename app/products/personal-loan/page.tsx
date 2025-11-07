@@ -23,6 +23,8 @@ import {
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { LoanCalculator } from "@/components/loan-calculator";
 import SalaryAdvance from "@/components/SalaryAdvance";
+import { DocumentIcon } from "@/components/feature-icon";
+import { FinancialFeatureSection } from "@/components/financial-feature-section";
 
 export default function PersonalLoanPage() {
   const { t } = useLanguage();
@@ -183,6 +185,35 @@ export default function PersonalLoanPage() {
           </div>
         </div>
       </section>
+
+      <FinancialFeatureSection
+  image="/Peronalloan_sub_image.jpg"
+  imageAlt="Happy couple using laptop for online loan application"
+  badge={{
+    percentage: "0%",
+    label: "Hidden Fees",
+  }}
+  heading="Funding Your Goals. Simplified"
+  description="We offer a straightforward, supportive path to the funds you need for your next big step. No barriers, just support."
+  features={[
+    {
+      icon: <DocumentIcon />,
+      title: "Flexible Loans",
+      description: "Get up to ₹15 Lakhs and choose a tenure that fits your budget.",
+    },
+    {
+      icon: <DocumentIcon />,
+      title: "Fully Secure",
+      description: "Your data is protected with bank-level 256-bit encryption.",
+    },
+    {
+      icon: <DocumentIcon />,
+      title: "No Hidden Charges",
+      description: "One processing fee. Clear EMIs. See all costs upfront—no surprises.",
+    },
+  ]}
+/>
+
 
       {/* Eligibility Section */}
       <section className="py-12 sm:py-16 lg:py-20">
