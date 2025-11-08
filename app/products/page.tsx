@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { useTranslation } from "react-i18next";
 import SalaryAdvance from "@/components/SalaryAdvance";
 import Products from "@/components/Product/Products";
 
@@ -166,6 +167,7 @@ const loanProducts = [
 
 export default function ProductsPage() {
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen">
@@ -471,41 +473,36 @@ export default function ProductsPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-[#25B181] to-[#FF9C70] text-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="max-w-3xl mx-auto"
+      <div className="flex items-center justify-center min-h-screen bg-[#f6f6f6] py-16 md:py-24 px-4">
+      <div
+        className="w-full max-w-4xl rounded-3xl p-12 md:p-20 text-center"
+        style={{
+          background: "linear-gradient(180deg, #6D9DFF 0%, #415E99 100%)",
+        }}
+      >
+        <h1
+          className="text-white mb-4 text-balance"
+          style={{
+            fontFamily: "'Cabin', sans-serif",
+            fontWeight: 600,
+            fontSize: "47px",
+            lineHeight: "130%",
+            letterSpacing: "0.24px",
+            textAlign: "center",
+          }}
+        >
+         {t('products.cta.title')}
+        </h1>
+
+        <p className="text-lg md:text-xl text-white/90 mb-8 text-balance">{t('products.cta.description')}</p>
+
+          <button
+            className="h-12 bg-gray-900 hover:bg-gray-800 text-white px-8 rounded-lg font-semibold transition-colors w-full md:w-auto border-0 cursor-pointer"
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 font-sora px-4">
-              Ready to Get Your Loan?
-            </h2>
-            <p className="text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 opacity-90 px-4">
-              Join thousands of satisfied customers who've transformed their
-              financial journey with Quikkred
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-lg mx-auto">
-              <Link href="/apply/quick" className="w-full sm:w-auto">
-                <button className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white text-[#25B181] rounded-full font-semibold text-base sm:text-lg hover:shadow-xl transition-all">
-                  Apply Now
-                </button>
-              </Link>
-              <Link
-                href="/resources/emi-calculator"
-                className="w-full sm:w-auto"
-              >
-                <button className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white/20 backdrop-blur-md text-white rounded-full font-semibold text-base sm:text-lg border-2 border-white/30 hover:bg-white/30 transition-all flex items-center gap-2 justify-center">
-                  <Calculator className="w-4 h-4 sm:w-5 sm:h-5" />
-                  Calculate EMI
-                </button>
-              </Link>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+            {t('products.cta.button')}
+          </button>
+      </div>
+    </div>
     </div>
   );
 }

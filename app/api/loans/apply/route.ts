@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Forward the loan application to the backend API
-    const response = await fetch('https://api.bluechipfinmax.com/api/loans/apply', {
+    const response = await fetch('http://93.127.167.88:8000/api/application/loan/create', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

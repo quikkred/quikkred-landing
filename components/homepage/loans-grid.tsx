@@ -2,44 +2,10 @@ import { useLanguage } from "@/lib/contexts/LanguageContext";
 
 export default function LoansGrid() {
   const { t } = useLanguage();
-  const loans = [
-    {
-      title: "Salary Advance",
-      amount: "₹5,000 - ₹5,00,000",
-      description: "Get advance up to 2x your monthly salary instantly",
-      color: "bg-teal-500",
-    },
-    {
-      title: "Personal Loan",
-      amount: "₹10,000 - ₹50,00,000",
-      description: "Quick cash for all your personal needs",
-      color: "bg-blue-600",
-    },
-    {
-      title: "Emergency Fund",
-      amount: "₹10,000 - ₹2,00,000",
-      description: "24-hour support for medical and urgent needs",
-      color: "bg-teal-600",
-    },
-    {
-      title: "Festival Advance",
-      amount: "₹5,000 - ₹1,00,000",
-      description: "Celebrate every festival without financial worry",
-      color: "bg-blue-600",
-    },
-    {
-      title: "Medical Loan",
-      amount: "₹25,000 - ₹10,00,000",
-      description: "Healthcare financing for planned treatments",
-      color: "bg-teal-600",
-    },
-    {
-      title: "Travel Now Pay Later",
-      amount: "₹25,000 - ₹3,00,000",
-      description: "Book your dream vacation today, pay next month",
-      color: "bg-blue-600",
-    },
-  ];
+  const loans = t.homepage.loansGrid.loans.map((loan: any, idx: number) => ({
+    ...loan,
+    color: idx % 3 === 0 ? "bg-teal-500" : idx % 3 === 1 ? "bg-blue-600" : "bg-teal-600"
+  }));
 
   return (
     <section className="py-16 md:py-24 px-4">
@@ -92,7 +58,7 @@ export default function LoansGrid() {
                   {loan.description}
                 </p>
                 <button className="w-full py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors text-sm font-medium">
-                  Learn more
+                  {t.homepage.loansGrid.button}
                 </button>
               </div>
             </div>

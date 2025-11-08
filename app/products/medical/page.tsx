@@ -25,13 +25,15 @@ import {
   Cross,
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { useTranslation } from "react-i18next";
 import { LoanCalculator } from "@/components/loan-calculator";
 import SalaryAdvance from "@/components/SalaryAdvance";
 import { DocumentIcon } from "@/components/feature-icon";
 import { FinancialFeatureSection } from "@/components/financial-feature-section";
 
 export default function MedicalEmergencyPage() {
-  const { t } = useLanguage();
+  const { t: tLang } = useLanguage();
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen">
@@ -39,19 +41,19 @@ export default function MedicalEmergencyPage() {
       <section>
         <section className="py-12 sm:py-16 lg:py-20">
           <SalaryAdvance
-            title="Focus on Recovery, Not Bills."
-            highlightWord="Recovery,"
-            title1=" Not Bills."
-            subtitle="Get an instant loan for medical emergencies. Quick approval, 100% digital, and direct-to-hospital payment options."
-            buttonPrimaryText="Get Help Now"
-            buttonSecondaryText="Check Eligibility"
-            quickAccessAmount="₹5,00,000"
-            timeText="Under 5 mins"
+            title={t('products.pages.medical.hero.title')}
+            highlightWord={t('products.pages.medical.hero.highlightWord')}
+            title1={t('products.pages.medical.hero.title1')}
+            subtitle={t('products.pages.medical.hero.subtitle')}
+            buttonPrimaryText={t('products.pages.medical.hero.buttonPrimary')}
+            buttonSecondaryText={t('products.pages.medical.hero.buttonSecondary')}
+            quickAccessAmount={t('products.pages.medical.hero.quickAccessAmount')}
+            timeText={t('products.pages.medical.hero.timeText')}
             imageSrc="/Medicalloan_hero_image.jpg"
             features={[
-              "24-Hour Disbursal",
-              "Direct Hospital Pay",
-              "Best Medical Rates",
+              t('products.pages.medical.hero.features.rates'),
+              t('products.pages.medical.hero.features.cashless'),
+              t('products.pages.medical.hero.features.network'),
             ]}
             primaryColor="emerald"
           />
@@ -350,6 +352,37 @@ export default function MedicalEmergencyPage() {
           </motion.div>
         </div>
       </section>
+
+         <div className="flex items-center justify-center min-h-screen bg-[#f6f6f6] py-16 md:py-24 px-4">
+      <div
+        className="w-full max-w-4xl rounded-3xl p-12 md:p-20 text-center"
+        style={{
+          background: "linear-gradient(180deg, #6D9DFF 0%, #415E99 100%)",
+        }}
+      >
+        <h1
+          className="text-white mb-4 text-balance"
+          style={{
+            fontFamily: "'Cabin', sans-serif",
+            fontWeight: 600,
+            fontSize: "47px",
+            lineHeight: "130%",
+            letterSpacing: "0.24px",
+            textAlign: "center",
+          }}
+        >
+         {t('products.cta.title')}
+        </h1>
+
+        <p className="text-lg md:text-xl text-white/90 mb-8 text-balance">{t('products.cta.description')}</p>
+
+          <button
+            className="h-12 bg-gray-900 hover:bg-gray-800 text-white px-8 rounded-lg font-semibold transition-colors w-full md:w-auto border-0 cursor-pointer"
+          >
+            {t('products.cta.button')}
+          </button>
+      </div>
+    </div>
     </div>
   );
 }
