@@ -183,7 +183,7 @@ export default function ApplyPage() {
 
       console.log(`Uploading ${apiFieldName}...`, file.name, file.size, file.type);
 
-      const response = await fetch("https://api.bluechipfinmax.com/api/document/upload", {
+      const response = await fetch("http://93.127.167.88:8000/api/document/upload", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -260,7 +260,7 @@ export default function ApplyPage() {
 
       console.log('Uploading all documents in one request...');
 
-      const response = await fetch("https://api.bluechipfinmax.com/api/document/upload", {
+      const response = await fetch("http://93.127.167.88:8000/api/document/upload", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -368,7 +368,7 @@ export default function ApplyPage() {
         payload.mobile = formData.phone;
       }
 
-      const response = await fetch("https://api.bluechipfinmax.com/api/auth/customer/create", {
+      const response = await fetch("http://93.127.167.88:8000/api/auth/customer/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -422,7 +422,7 @@ export default function ApplyPage() {
     setVerifying(prev => ({ ...prev, email: true }));
 
     try {
-      const response = await fetch("https://api.bluechipfinmax.com/api/auth/customer/verify", {
+      const response = await fetch("http://93.127.167.88:8000/api/auth/customer/verify", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -502,7 +502,7 @@ export default function ApplyPage() {
         payload.email = formData.email;
       }
 
-      const response = await fetch("https://api.bluechipfinmax.com/api/auth/customer/create", {
+      const response = await fetch("http://93.127.167.88:8000/api/auth/customer/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -556,7 +556,7 @@ export default function ApplyPage() {
     setVerifying(prev => ({ ...prev, phone: true }));
 
     try {
-      const response = await fetch("https://api.bluechipfinmax.com/api/auth/customer/verify", {
+      const response = await fetch("http://93.127.167.88:8000/api/auth/customer/verify", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -672,7 +672,7 @@ export default function ApplyPage() {
         return false;
       }
 
-      const response = await fetch("https://api.bluechipfinmax.com/api/customer/profile", {
+      const response = await fetch("http://93.127.167.88:8000/api/customer/profile", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -779,7 +779,7 @@ export default function ApplyPage() {
         return false;
       }
 
-      const response = await fetch("https://api.bluechipfinmax.com/api/employment/create", {
+      const response = await fetch("http://93.127.167.88:8000/api/employment/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -918,7 +918,7 @@ export default function ApplyPage() {
 
       console.log('Submitting loan application:', applicationData);
 
-      const response = await fetch("https://api.bluechipfinmax.com/api/loans/apply", {
+      const response = await fetch("http://93.127.167.88:8000/api/application/loan/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

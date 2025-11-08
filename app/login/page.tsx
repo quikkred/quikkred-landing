@@ -92,7 +92,7 @@ export default function LoginPage() {
         ? { email: formData.emailOrPhone }
         : { mobile: formData.emailOrPhone };
 
-      const response = await fetch("https://api.bluechipfinmax.com/api/auth/customer/create", {
+      const response = await fetch("http://93.127.167.88:8000/api/auth/customer/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -132,78 +132,88 @@ export default function LoginPage() {
     }
   };
 
-  const verifyOtp = async () => {
-    if (!otp || otp.length !== 6) {
-      setError('Please enter valid 6-digit OTP');
-      toast({
-        variant: "warning",
-        title: "Invalid OTP",
-        description: "Please enter a valid 6-digit OTP.",
-      });
-      return;
-    }
+const verifyOtp = async () => {
+  if (!otp || otp.length !== 6) {
+    setError('Please enter valid 6-digit OTP');
+    toast({
+      variant: "warning",
+      title: "Invalid OTP",
+      description: "Please enter a valid 6-digit OTP.",
+    });
+    return;
+  }
 
-    setVerifyingOtp(true);
-    setError(null);
+  setVerifyingOtp(true);
+  setError(null);
 
-    try {
-      const payload = loginMethod === 'email'
-        ? { email: formData.emailOrPhone, otp: otp }
-        : { mobile: formData.emailOrPhone, otp: otp };
+  try {
+    const payload =
+      loginMethod === 'email'
+        ? { email: formData.emailOrPhone, otp }
+        : { mobile: formData.emailOrPhone, otp };
 
-      const response = await fetch("https://api.bluechipfinmax.com/api/auth/customer/verify", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+    const response = await fetch("http://93.127.167.88:8000/api/auth/customer/verifyOtp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (response.ok && data.success && data.data) {
-        // Pass the API response data to the login function
-        const success = await login(
-          formData.emailOrPhone,
-          otp,
-          formData.selectedRole,
-          data.data  // Pass API data containing userId, token, role, mobile
-        );
+    if (response.ok && data.success && data.data) {
+      // ✅ Extract data from response
+      const { userId, role, accessToken, refreshToken, email, customerUniqueId } = data.data;
 
-        if (success) {
-          toast({
-            variant: "success",
-            title: "Login Successful!",
-            description: "Welcome back! Redirecting to your dashboard...",
-          });
-          // AuthContext handles redirection to appropriate dashboard based on role
-        } else {
-          setError('Login failed. Please try again.');
-          toast({
-            variant: "error",
-            title: "Login Failed",
-            description: "Unable to log you in. Please try again.",
-          });
-        }
+      // ✅ Save important details in localStorage
+      localStorage.setItem("userId", userId);
+      localStorage.setItem("role", role);
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+      localStorage.setItem("email", email || "");
+      localStorage.setItem("customerUniqueId", customerUniqueId || "");
+
+      // ✅ Continue with your login handler
+      const success = await login(
+        formData.emailOrPhone,
+        otp,
+        formData.selectedRole,
+        data.data // API response data
+      );
+
+      if (success) {
+        toast({
+          variant: "success",
+          title: "Login Successful!",
+          description: "Welcome back! Redirecting to your dashboard...",
+        });
       } else {
-        setError(data.message || 'Invalid OTP. Please try again.');
+        setError("Login failed. Please try again.");
         toast({
           variant: "error",
-          title: "Invalid OTP",
-          description: data.message || 'The OTP you entered is incorrect. Please try again.',
+          title: "Login Failed",
+          description: "Unable to log you in. Please try again.",
         });
       }
-    } catch (err: any) {
-      setError(err.message || 'Verification failed. Please try again.');
+    } else {
+      setError(data.message || "Invalid OTP. Please try again.");
       toast({
         variant: "error",
-        title: "Verification Error",
-        description: err.message || 'Verification failed. Please try again.',
+        title: "Invalid OTP",
+        description: data.message || "The OTP you entered is incorrect. Please try again.",
       });
-    } finally {
-      setVerifyingOtp(false);
     }
-  };
+  } catch (err: any) {
+    setError(err.message || "Verification failed. Please try again.");
+    toast({
+      variant: "error",
+      title: "Verification Error",
+      description: err.message || "Verification failed. Please try again.",
+    });
+  } finally {
+    setVerifyingOtp(false);
+  }
+};
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -20,14 +20,43 @@ import {
   Activity,
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { useTranslation } from "react-i18next";
 import { LoanCalculator } from "@/components/loan-calculator";
 import SalaryAdvance from "@/components/SalaryAdvance";
 import { DocumentIcon } from "@/components/feature-icon";
 import { FinancialFeatureSection } from "@/components/financial-feature-section";
 
 export default function EmergencyFundPage() {
-  const { t } = useLanguage();
+  const { t: tLang } = useLanguage();
+  const { t } = useTranslation();
   const [loanAmount, setLoanAmount] = useState(50000);
+
+  const emergencyTypes = [
+    {
+      icon: Hospital,
+      title: t('products.pages.emergency.emergencyTypes.medical.title'),
+      description: t('products.pages.emergency.emergencyTypes.medical.description'),
+      amount: t('products.pages.emergency.emergencyTypes.medical.amount'),
+    },
+    {
+      icon: Activity,
+      title: t('products.pages.emergency.emergencyTypes.accident.title'),
+      description: t('products.pages.emergency.emergencyTypes.accident.description'),
+      amount: t('products.pages.emergency.emergencyTypes.accident.amount'),
+    },
+    {
+      icon: Heart,
+      title: t('products.pages.emergency.emergencyTypes.family.title'),
+      description: t('products.pages.emergency.emergencyTypes.family.description'),
+      amount: t('products.pages.emergency.emergencyTypes.family.amount'),
+    },
+    {
+      icon: Stethoscope,
+      title: t('products.pages.emergency.emergencyTypes.unexpected.title'),
+      description: t('products.pages.emergency.emergencyTypes.unexpected.description'),
+      amount: t('products.pages.emergency.emergencyTypes.unexpected.amount'),
+    },
+  ];
 
   return (
     <div className="min-h-screen">
@@ -35,19 +64,19 @@ export default function EmergencyFundPage() {
       <section>
         <section className="py-12 sm:py-16 lg:py-20">
           <SalaryAdvance
-            title="Unexpected"
-            highlightWord="Expenses?"
-            title1=" We've Got You."
-            subtitle="Get instant financial support for life's unforeseen moments. Quick, easy, and completely transparent."
-            buttonPrimaryText="Get Funds Now"
-            buttonSecondaryText="Check Eligibility"
-            quickAccessAmount="₹50,000"
-            timeText="10 mins"
+            title={t('products.pages.emergency.hero.title')}
+            highlightWord={t('products.pages.emergency.hero.highlightWord')}
+            title1={t('products.pages.emergency.hero.title1')}
+            subtitle={t('products.pages.emergency.hero.subtitle')}
+            buttonPrimaryText={t('products.pages.emergency.hero.buttonPrimary')}
+            buttonSecondaryText={t('products.pages.emergency.hero.buttonSecondary')}
+            quickAccessAmount={t('products.pages.emergency.hero.quickAccessAmount')}
+            timeText={t('products.pages.emergency.hero.timeText')}
             imageSrc="/EmergencyFund_hero_image.jpg"
             features={[
-              "24-Hour Approval",
-              "Compassionate Care",
-              "100% Confidential",
+              t('products.pages.emergency.hero.features.approval'),
+              t('products.pages.emergency.hero.features.care'),
+              t('products.pages.emergency.hero.features.confidential'),
             ]}
             primaryColor="emerald"
           />
@@ -64,11 +93,10 @@ export default function EmergencyFundPage() {
             className="text-center mb-12"
           >
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">
-              We Cover All Emergency Situations
+              {t('products.pages.emergency.emergencyTypes.title')}
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Whatever the emergency, we're here to help with instant financial
-              support
+              {t('products.pages.emergency.emergencyTypes.subtitle')}
             </p>
           </motion.div>
 
@@ -101,8 +129,8 @@ export default function EmergencyFundPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             <LoanCalculator
-              title="Emergency Loan Calculator"
-              subtitle="Calculate your daily EMI for Emergency Loan"
+              title={t('products.pages.emergency.calculator.title')}
+              subtitle={t('products.pages.emergency.calculator.subtitle')}
             />
           </div>
         </div>
@@ -112,26 +140,26 @@ export default function EmergencyFundPage() {
   image="/EmergencyFund_sub_image.jpg"
   imageAlt="Smiling woman using phone for emergency fund application"
   badge={{
-    percentage: "100%",
-    label: "Secure",
+    percentage: t('products.pages.emergency.financialFeature.badge.percentage'),
+    label: t('products.pages.emergency.financialFeature.badge.label'),
   }}
-  heading="Fast Help for Emergencies."
-  description="We believe you deserve fast support during an emergency. No judgment, no long waits—just the help you need."
+  heading={t('products.pages.emergency.financialFeature.heading')}
+  description={t('products.pages.emergency.financialFeature.description')}
   features={[
     {
       icon: <DocumentIcon />,
-      title: "Priority Application",
-      description: "2-minute form. Your emergency request is prioritized.",
+      title: t('products.pages.emergency.financialFeature.features.priority.title'),
+      description: t('products.pages.emergency.financialFeature.features.priority.description'),
     },
     {
       icon: <DocumentIcon />,
-      title: "Fully Secure",
-      description: "We use bank-level 256-bit encryption to protect your personal and financial data.",
+      title: t('products.pages.emergency.financialFeature.features.secure.title'),
+      description: t('products.pages.emergency.financialFeature.features.secure.description'),
     },
     {
       icon: <DocumentIcon />,
-      title: "No Hidden Fees",
-      description: "One single, transparent fee. No surprises.",
+      title: t('products.pages.emergency.financialFeature.features.noHidden.title'),
+      description: t('products.pages.emergency.financialFeature.features.noHidden.description'),
     },
   ]}
 />
@@ -148,10 +176,10 @@ export default function EmergencyFundPage() {
             className="text-center mb-12"
           >
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">
-              Emergency Loan Process
+              {t('products.pages.emergency.process.title')}
             </h2>
             <p className="text-xl text-gray-600">
-              Simple 3-step process designed for speed
+              {t('products.pages.emergency.process.subtitle')}
             </p>
           </motion.div>
 
@@ -195,7 +223,7 @@ export default function EmergencyFundPage() {
             className="text-center mb-12"
           >
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">
-              Real Stories of Help
+              {t('products.pages.emergency.testimonials.title')}
             </h2>
             <p className="text-xl text-gray-600">
               How we've helped people in their time of need
@@ -273,6 +301,38 @@ export default function EmergencyFundPage() {
           </motion.div>
         </div>
       </section>
+
+   <div className="flex items-center justify-center min-h-screen bg-[#f6f6f6] py-16 md:py-24 px-4">
+      <div
+        className="w-full max-w-4xl rounded-3xl p-12 md:p-20 text-center"
+        style={{
+          background: "linear-gradient(180deg, #6D9DFF 0%, #415E99 100%)",
+        }}
+      >
+        <h1
+          className="text-white mb-4 text-balance"
+          style={{
+            fontFamily: "'Cabin', sans-serif",
+            fontWeight: 600,
+            fontSize: "47px",
+            lineHeight: "130%",
+            letterSpacing: "0.24px",
+            textAlign: "center",
+          }}
+        >
+         {t('products.cta.title')}
+        </h1>
+
+        <p className="text-lg md:text-xl text-white/90 mb-8 text-balance">{t('products.cta.description')}</p>
+
+          <button
+            className="h-12 bg-gray-900 hover:bg-gray-800 text-white px-8 rounded-lg font-semibold transition-colors w-full md:w-auto border-0 cursor-pointer"
+          >
+            {t('products.cta.button')}
+          </button>
+      </div>
+    </div>
+
     </div>
   );
 }

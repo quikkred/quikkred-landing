@@ -175,7 +175,7 @@ export default function TrackApplicationPage() {
         ? `loanNumber=${encodeURIComponent(searchValue)}`
         : `mobile=${encodeURIComponent(searchValue)}`;
 
-      const response = await fetch(`https://api.bluechipfinmax.com/api/loans/status?${queryParam}`, {
+      const response = await fetch(`http://93.127.167.88:8000/api/loans/status?${queryParam}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

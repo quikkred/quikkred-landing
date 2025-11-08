@@ -136,21 +136,21 @@ export default function UserDashboard() {
       }
 
       const [loansResponse, documentsResponse, creditScoreResponse] = await Promise.all([
-        fetch('https://api.bluechipfinmax.com/api/loans/my-loans', {
+        fetch('http://93.127.167.88:8000/api/loans/my-loans', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           }
         }),
-        fetch('https://api.bluechipfinmax.com/api/document/get', {
+        fetch('http://93.127.167.88:8000/api/document/get', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           }
         }),
-        fetch('https://api.bluechipfinmax.com/api/creditScore/get', {
+        fetch('http://93.127.167.88:8000/api/creditScore/get', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

@@ -26,13 +26,15 @@ import {
   Waves,
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { useTranslation } from "react-i18next";
 import { LoanCalculator } from "@/components/loan-calculator";
 import SalaryAdvance from "@/components/SalaryAdvance";
 import { DocumentIcon } from "@/components/feature-icon";
 import { FinancialFeatureSection } from "@/components/financial-feature-section";
 
 export default function TravelNowPayLaterPage() {
-  const { t } = useLanguage();
+  const { t: tLang } = useLanguage();
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen">
@@ -40,16 +42,20 @@ export default function TravelNowPayLaterPage() {
       <section>
         <section className="py-12 sm:py-16 lg:py-20">
           <SalaryAdvance
-            title="Explore More. "
-            highlightWord="Pay Later."
-            //  title1=" Not Bills."
-            subtitle="Turn your travel dreams into reality today. Book your trip now and pay us back in easy EMIs. No hidden costs."
-            buttonPrimaryText="Plan Your Trip"
-            buttonSecondaryText="Check Eligibility"
-            quickAccessAmount="₹25,000+"
-            timeText="10 mins"
+            title={t('products.pages.travel.hero.title')}
+            highlightWord={t('products.pages.travel.hero.highlightWord')}
+            title1={t('products.pages.travel.hero.title1')}
+            subtitle={t('products.pages.travel.hero.subtitle')}
+            buttonPrimaryText={t('products.pages.travel.hero.buttonPrimary')}
+            buttonSecondaryText={t('products.pages.travel.hero.buttonSecondary')}
+            quickAccessAmount={t('products.pages.travel.hero.quickAccessAmount')}
+            timeText={t('products.pages.travel.hero.timeText')}
             imageSrc="/Travelnow_hero_image.jpg"
-            features={["Instant Booking", "Insured Travel", "Global Trips"]}
+            features={[
+              t('products.pages.travel.hero.features.booking'),
+              t('products.pages.travel.hero.features.insurance'),
+              t('products.pages.travel.hero.features.down'),
+            ]}
             primaryColor="emerald"
           />
         </section>
@@ -94,7 +100,7 @@ export default function TravelNowPayLaterPage() {
       </section>
 
       {/* Travel Destinations */}
-      <section className="py-20 bg-gray-50">
+      {/* <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -138,10 +144,10 @@ export default function TravelNowPayLaterPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Travel Partners */}
-      <section className="py-12 sm:py-16 lg:py-20">
+      {/* <section className="py-12 sm:py-16 lg:py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -181,7 +187,7 @@ export default function TravelNowPayLaterPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* EMI Calculator Section */}
       <section className="py-20 bg-gray-50">
@@ -269,7 +275,7 @@ export default function TravelNowPayLaterPage() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-20 bg-gray-50">
+      {/* <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -319,39 +325,38 @@ export default function TravelNowPayLaterPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-[#4A66FF] to-[#6B7FFF] text-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
+      <div className="flex items-center justify-center min-h-screen bg-[#f6f6f6] py-16 md:py-24 px-4">
+        <div
+          className="w-full max-w-5xl rounded-3xl p-12 md:p-20 text-center"
+          style={{
+            background: "linear-gradient(180deg, #6D9DFF 0%, #415E99 100%)",
+          }}
+        >
+          <h1
+            className="text-white mb-4 text-balance"
+            style={{
+              fontFamily: "'Cabin', sans-serif",
+              fontWeight: 600,
+              fontSize: "47px",
+              lineHeight: "130%",
+              letterSpacing: "0.24px",
+              textAlign: "center",
+            }}
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 font-sora">
-              Ready to Explore the World?
-            </h2>
-            <p className="text-sm sm:text-base lg:text-xl mb-8 opacity-90">
-              Don't wait for the perfect time - Start your journey today with
-              Travel Now Pay Later
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/apply/quick">
-                <button className="px-8 py-4 bg-white text-[#4A66FF] rounded-full font-semibold text-lg hover:shadow-xl transition-all">
-                  Book Your Travel Now
-                </button>
-              </Link>
-              <a href="tel:+918888881111">
-                <button className="px-8 py-4 bg-white/20 backdrop-blur-md text-white rounded-full font-semibold text-lg border-2 border-white/30 hover:bg-white/30 transition-all flex items-center gap-2 mx-auto sm:mx-0">
-                  <Phone className="w-5 h-5" />
-                  Call Travel Expert
-                </button>
-              </a>
-            </div>
-          </motion.div>
+            {t('products.cta.title')}
+          </h1>
+
+          <p className="text-lg md:text-xl text-white/90 mb-8 text-balance">
+            {t('products.cta.description')}
+          </p>
+
+          <button className="h-12 bg-gray-900 hover:bg-gray-800 text-white px-8 rounded-lg font-semibold transition-colors w-full md:w-auto border-0 cursor-pointer">
+            {t('products.cta.button')}
+          </button>
         </div>
-      </section>
+      </div>
     </div>
   );
 }

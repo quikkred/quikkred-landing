@@ -59,13 +59,21 @@ const autoDecisionEngine = (data: any) => {
 
 export default function QuickLoanApplication() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, user, isLoading } = useAuth();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [decision, setDecision] = useState<any>(null);
   const [selfieCapture, setSelfieCapture] = useState(false);
   const [verificationMethod, setVerificationMethod] = useState<'mobile' | 'email'>('email');
+  const [userDataLoaded, setUserDataLoaded] = useState(false);
+  const [panVerifying, setPanVerifying] = useState(false);
+  const [aadhaarVerifying, setAadhaarVerifying] = useState(false);
+  const [panVerified, setPanVerified] = useState(false);
+  const [aadhaarVerified, setAadhaarVerified] = useState(false);
+  const [panData, setPanData] = useState<any>(null);
+  const [aadhaarData, setAadhaarData] = useState<any>(null);
+  const [apiDeterminedStep, setApiDeterminedStep] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
     // Step 1: Basic Details
@@ -96,26 +104,185 @@ export default function QuickLoanApplication() {
     eSignConsent: false
   });
 
-  // Pre-fill data from hero section
+  // Load user data if logged in
   useEffect(() => {
-    try {
-      const heroData = localStorage.getItem('heroFormData');
-      if (heroData) {
-        const data = JSON.parse(heroData);
-        setFormData(prev => ({
-          ...prev,
-          fullName: data.name || prev.fullName,
-          mobile: data.mobile || prev.mobile,
-          loanAmount: data.amount || prev.loanAmount,
-          email: data.email || prev.email
-        }));
-        // Clear the localStorage after reading
-        localStorage.removeItem('heroFormData');
+    const loadUserData = async () => {
+      if (user && !userDataLoaded) {
+        console.log('🔵 Loading user data for logged-in user...');
+        try {
+          const token = localStorage.getItem('accessToken') ||
+                        localStorage.getItem('token') ||
+                        localStorage.getItem('authToken');
+
+          if (token) {
+            // Fetch user profile data
+            const response = await fetch('http://93.127.167.88:8000/api/customer/get', {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              }
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success && result.data) {
+              const profileData = result.data;
+              console.log('✅ User profile loaded successfully');
+              console.log('📊 Profile Data:', {
+                isBasicDetailsFilled: profileData.isBasicDetailsFilled,
+                isEmploymentDetailsFilled: profileData.isEmploymentDetailsFilled,
+                isVerificationDetailsFilled: profileData.isVerificationDetailsFilled
+              });
+
+              // Convert ISO date to YYYY-MM-DD format for input field
+              const formatDateForInput = (isoDate: string) => {
+                if (!isoDate) return '';
+                try {
+                  const date = new Date(isoDate);
+                  const year = date.getFullYear();
+                  const month = String(date.getMonth() + 1).padStart(2, '0');
+                  const day = String(date.getDate()).padStart(2, '0');
+                  return `${year}-${month}-${day}`;
+                } catch (error) {
+                  console.error('Error formatting date:', error);
+                  return '';
+                }
+              };
+
+              // Pre-fill form data
+              setFormData(prev => ({
+                ...prev,
+                fullName: profileData.fullName || user.name || prev.fullName,
+                mobile: profileData.mobile || user.mobile || prev.mobile,
+                email: profileData.email || user.email || prev.email,
+                pan: profileData.panCard || prev.pan,
+                aadhaar: profileData.aadhaarNumber || prev.aadhaar,
+                dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
+                employmentType: profileData.employmentType || prev.employmentType,
+                monthlyIncome: profileData.monthlyIncome?.toString() || prev.monthlyIncome,
+                companyName: profileData.companyName || prev.companyName,
+                bankName: profileData.banks?.[0]?.bankName || prev.bankName,
+                accountNumber: profileData.banks?.[0]?.accountNumber || prev.accountNumber,
+                ifsc: profileData.banks?.[0]?.ifscCode || prev.ifsc,
+                mobileVerified: true, // Already logged in = verified
+                emailVerified: true
+              }));
+
+              // Set verification flags from API
+              if (profileData.isPanVerify) {
+                setPanVerified(true);
+                console.log('✅ PAN already verified');
+              }
+              if (profileData.isAadhaarVerify) {
+                setAadhaarVerified(true);
+                console.log('✅ Aadhaar already verified');
+              }
+
+              // Auto-jump to next incomplete step based on completion flags
+              let nextStep = 1; // Default to step 1
+
+              console.log('🔍 Checking step completion...');
+              console.log('  isBasicDetailsFilled:', profileData.isBasicDetailsFilled);
+              console.log('  isEmploymentDetailsFilled:', profileData.isEmploymentDetailsFilled);
+
+              // Check completion status and determine next step
+              if (profileData.isBasicDetailsFilled === true && profileData.isEmploymentDetailsFilled === true) {
+                // Both Step 1 and Step 2 completed - go to Step 3
+                console.log('✅ Step 1 (Basic Details) completed');
+                console.log('✅ Step 2 (Employment Details) completed');
+                console.log('🎯 Determined: Jump to Step 3');
+                nextStep = 3;
+              } else if (profileData.isBasicDetailsFilled === true) {
+                // Only Step 1 completed - go to Step 2
+                console.log('✅ Step 1 (Basic Details) completed');
+                console.log('⏭️ Moving to Step 2 (Employment Details)');
+                console.log('🎯 Determined: Jump to Step 2');
+                nextStep = 2;
+              } else {
+                console.log('ℹ️ No steps completed yet - starting from Step 1');
+              }
+
+              // Set the API determined step if it's different from default
+              if (nextStep > 1) {
+                console.log(`🚀 Setting API determined step to: ${nextStep}`);
+                setApiDeterminedStep(nextStep);
+              } else {
+                console.log('📍 Staying at Step 1 (default)');
+              }
+
+              setUserDataLoaded(true);
+              console.log('🟢 Form pre-filled with user data');
+            } else {
+              console.log('⚠️ Profile API returned no data, using basic user info');
+              // Still mark as verified even if profile fetch fails
+              setFormData(prev => ({
+                ...prev,
+                fullName: user.name || prev.fullName,
+                mobile: user.mobile || prev.mobile,
+                email: user.email || prev.email,
+                mobileVerified: true,
+                emailVerified: true
+              }));
+              setUserDataLoaded(true);
+            }
+          }
+        } catch (error) {
+          console.error('❌ Error loading user data:', error);
+          // Still mark as verified even if error occurs
+          setFormData(prev => ({
+            ...prev,
+            fullName: user.name || prev.fullName,
+            mobile: user.mobile || prev.mobile,
+            email: user.email || prev.email,
+            mobileVerified: true,
+            emailVerified: true
+          }));
+          setUserDataLoaded(true);
+        }
       }
-    } catch (error) {
-      console.error('Error reading hero form data:', error);
+    };
+
+    if (!isLoading) {
+      loadUserData();
     }
-  }, []);
+  }, [user, isLoading, userDataLoaded]);
+
+  // Pre-fill data from hero section (for non-logged-in users)
+  useEffect(() => {
+    if (!user) {
+      try {
+        const heroData = localStorage.getItem('heroFormData');
+        if (heroData) {
+          const data = JSON.parse(heroData);
+          setFormData(prev => ({
+            ...prev,
+            fullName: data.name || prev.fullName,
+            mobile: data.mobile || prev.mobile,
+            loanAmount: data.amount || prev.loanAmount,
+            email: data.email || prev.email
+          }));
+          // Clear the localStorage after reading
+          localStorage.removeItem('heroFormData');
+        }
+      } catch (error) {
+        console.error('Error reading hero form data:', error);
+      }
+    }
+  }, [user]);
+
+  // Apply API-determined step after data is loaded
+  useEffect(() => {
+    if (apiDeterminedStep !== null && apiDeterminedStep !== currentStep) {
+      console.log(`🎯 Applying API-determined step: ${apiDeterminedStep}`);
+      setCurrentStep(apiDeterminedStep);
+      toast({
+        variant: "success",
+        title: "Welcome Back!",
+        description: `Your progress has been saved. Continue from Step ${apiDeterminedStep}.`,
+      });
+    }
+  }, [apiDeterminedStep]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -132,7 +299,7 @@ export default function QuickLoanApplication() {
         ? { email: formData.email }
         : { mobile: formData.mobile };
 
-      const response = await fetch("https://api.bluechipfinmax.com/api/auth/customer/create", {
+      const response = await fetch("http://93.127.167.88:8000/api/auth/customer/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -182,7 +349,7 @@ export default function QuickLoanApplication() {
         ? { email: formData.email, otp: formData.otp }
         : { mobile: formData.mobile, otp: formData.otp };
 
-      const response = await fetch("https://api.bluechipfinmax.com/api/auth/customer/verify", {
+      const response = await fetch("http://93.127.167.88:8000/api/auth/customer/verify", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -221,6 +388,200 @@ export default function QuickLoanApplication() {
     }
   };
 
+  // Verify PAN Card
+  const verifyPAN = async () => {
+    if (!formData.pan || formData.pan.length !== 10) {
+      toast({
+        variant: "warning",
+        title: "Invalid PAN",
+        description: "Please enter a valid 10-character PAN number.",
+      });
+      return;
+    }
+
+    setPanVerifying(true);
+    try {
+      const token = localStorage.getItem('accessToken') ||
+                    localStorage.getItem('token') ||
+                    localStorage.getItem('authToken');
+
+      const response = await fetch('http://93.127.167.88:8000/api/application/loan/document/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+        body: JSON.stringify({ panCard: formData.pan }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success && result.data) {
+        setPanVerified(true);
+        setPanData(result.data);
+
+        // Auto-fill name and DOB from PAN data
+        if (result.data.holderName && !formData.fullName) {
+          setFormData(prev => ({
+            ...prev,
+            fullName: result.data.holderName,
+            dob: result.data.dateOfBirth || prev.dob
+          }));
+        }
+
+        // Save verified PAN data to customer profile immediately
+        const userId = localStorage.getItem('userId');
+        if (token && userId) {
+          try {
+            const updatePayload = {
+              panCard: formData.pan,
+              isPanVerify: true,
+              fullName: result.data.holderName,
+              dateOfBirth: result.data.dateOfBirth
+            };
+
+            const updateResponse = await fetch(`http://93.127.167.88:8000/api/customer/update/${userId}`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify(updatePayload)
+            });
+
+            if (updateResponse.ok) {
+              console.log('✅ PAN verification data saved to customer profile');
+            }
+          } catch (error) {
+            console.error('Failed to save PAN data to profile:', error);
+          }
+        }
+
+        toast({
+          variant: "success",
+          title: "PAN Verified Successfully!",
+          description: `PAN verified for ${result.data.holderName}`,
+        });
+      } else {
+        toast({
+          variant: "error",
+          title: "PAN Verification Failed",
+          description: result.message || 'Unable to verify PAN. Please check the number and try again.',
+        });
+      }
+    } catch (error: any) {
+      toast({
+        variant: "error",
+        title: "Verification Error",
+        description: error.message || 'Failed to verify PAN. Please try again.',
+      });
+    } finally {
+      setPanVerifying(false);
+    }
+  };
+
+  // Verify Aadhaar Card
+  const verifyAadhaar = async () => {
+    if (!formData.aadhaar || formData.aadhaar.length !== 12) {
+      toast({
+        variant: "warning",
+        title: "Invalid Aadhaar",
+        description: "Please enter a valid 12-digit Aadhaar number.",
+      });
+      return;
+    }
+
+    setAadhaarVerifying(true);
+    try {
+      const token = localStorage.getItem('accessToken') ||
+                    localStorage.getItem('token') ||
+                    localStorage.getItem('authToken');
+
+      const response = await fetch('http://93.127.167.88:8000/api/application/loan/document/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+        body: JSON.stringify({ aadhaarNumber: formData.aadhaar }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success && result.data) {
+        setAadhaarVerified(true);
+        setAadhaarData(result.data);
+
+        // Auto-fill name and DOB from Aadhaar data
+        if (result.data.holderName && !formData.fullName) {
+          setFormData(prev => ({
+            ...prev,
+            fullName: result.data.holderName,
+            dob: result.data.dateOfBirth || prev.dob
+          }));
+        }
+
+        // Save verified Aadhaar data to customer profile immediately
+        const userId = localStorage.getItem('userId');
+        if (token && userId) {
+          try {
+            const updatePayload = {
+              aadhaarNumber: formData.aadhaar,
+              isAadhaarVerify: true,
+              fullName: result.data.holderName,
+              dateOfBirth: result.data.dateOfBirth,
+              // Optionally save address from Aadhaar if available
+              ...(result.data.address && {
+                currentAddress: {
+                  line1: result.data.address.line1,
+                  line2: result.data.address.line2,
+                  city: result.data.address.city,
+                  state: result.data.address.state,
+                  pincode: result.data.address.pincode
+                }
+              })
+            };
+
+            const updateResponse = await fetch(`http://93.127.167.88:8000/api/customer/update/${userId}`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify(updatePayload)
+            });
+
+            if (updateResponse.ok) {
+              console.log('✅ Aadhaar verification data saved to customer profile');
+            }
+          } catch (error) {
+            console.error('Failed to save Aadhaar data to profile:', error);
+          }
+        }
+
+        toast({
+          variant: "success",
+          title: "Aadhaar Verified Successfully!",
+          description: `Aadhaar verified for ${result.data.holderName}`,
+        });
+      } else {
+        toast({
+          variant: "error",
+          title: "Aadhaar Verification Failed",
+          description: result.message || 'Unable to verify Aadhaar. Please check the number and try again.',
+        });
+      }
+    } catch (error: any) {
+      toast({
+        variant: "error",
+        title: "Verification Error",
+        description: error.message || 'Failed to verify Aadhaar. Please try again.',
+      });
+    } finally {
+      setAadhaarVerifying(false);
+    }
+  };
+
   const captureSelfi = () => {
     setSelfieCapture(true);
     // In real app, this would open camera
@@ -234,18 +595,136 @@ export default function QuickLoanApplication() {
     }, 2000);
   };
 
+  // Save customer data to backend
+  const saveCustomerData = async (step: number) => {
+    try {
+      const token = localStorage.getItem('accessToken') ||
+                    localStorage.getItem('token') ||
+                    localStorage.getItem('authToken');
+      const userId = localStorage.getItem('userId');
+
+      if (!token || !userId) {
+        console.warn('No token or userId found, skipping customer data save');
+        return false;
+      }
+
+      let payload: any = {};
+
+      if (step === 1) {
+        // Step 1: Basic Details
+        payload = {
+          fullName: formData.fullName,
+          email: formData.email,
+          mobile: formData.mobile,
+          dateOfBirth: formData.dob,
+          panCard: formData.pan,
+          aadhaarNumber: formData.aadhaar,
+          isPanVerify: panVerified,
+          isAadhaarVerify: aadhaarVerified,
+          isBasicDetailsFilled: true
+        };
+      } else if (step === 2) {
+        // Step 2: Employment & Bank Details
+        payload = {
+          employmentType: formData.employmentType.toUpperCase(),
+          monthlyIncome: parseFloat(formData.monthlyIncome),
+          companyName: formData.companyName,
+          isEmploymentDetailsFilled: true
+        };
+
+        // Add bank details if provided
+        if (formData.bankName && formData.accountNumber && formData.ifsc) {
+          payload.banks = [{
+            bankName: formData.bankName,
+            accountNumber: formData.accountNumber,
+            ifscCode: formData.ifsc,
+            accountType: 'SAVINGS',
+            isPrimary: true
+          }];
+        }
+      } else if (step === 3) {
+        // Step 3: Verification & Consent Details
+        payload = {
+          isVerificationDetailsFilled: true,
+          // Note: Consent flags are typically stored in the loan application, not customer profile
+          // But we mark the verification step as complete
+        };
+      }
+
+      const response = await fetch(`http://93.127.167.88:8000/api/customer/update/${userId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        console.log(`✅ Step ${step} data saved successfully`);
+        return true;
+      } else {
+        console.error(`❌ Failed to save step ${step} data:`, result.message);
+        toast({
+          variant: "error",
+          title: "Save Failed",
+          description: result.message || "Failed to save your data. You can continue, but please try again later.",
+        });
+        return false;
+      }
+    } catch (error: any) {
+      console.error('Error saving customer data:', error);
+      toast({
+        variant: "error",
+        title: "Save Error",
+        description: "Failed to save your data. You can continue, but please try again later.",
+      });
+      return false;
+    }
+  };
+
   const handleNext = async () => {
     // Validate current step
     if (currentStep === 1) {
-      const isVerified = verificationMethod === 'email' ? formData.emailVerified : formData.mobileVerified;
-      if (!isVerified || !formData.fullName || !formData.email || !formData.mobile || !formData.pan || !formData.aadhaar) {
+      // For logged-in users, skip verification check
+      const isVerified = user ? true : (verificationMethod === 'email' ? formData.emailVerified : formData.mobileVerified);
+
+      if (!isVerified || !formData.fullName || !formData.email || !formData.mobile) {
         toast({
           variant: "warning",
           title: "Incomplete Information",
-          description: "Please verify your email/mobile and complete all required fields.",
+          description: user
+            ? "Please complete all required fields."
+            : "Please verify your email/mobile and complete all required fields.",
         });
         return;
       }
+
+      // Check if PAN and Aadhaar are provided and verified
+      if (!formData.pan || !formData.aadhaar) {
+        toast({
+          variant: "warning",
+          title: "Documents Required",
+          description: "Please provide both PAN and Aadhaar numbers.",
+        });
+        return;
+      }
+
+      if (!panVerified || !aadhaarVerified) {
+        toast({
+          variant: "warning",
+          title: "Verification Required",
+          description: "Please verify both PAN and Aadhaar before proceeding.",
+        });
+        return;
+      }
+
+      // Save Step 1 data before proceeding
+      setLoading(true);
+      await saveCustomerData(1);
+      setLoading(false);
     }
 
     if (currentStep === 2) {
@@ -257,14 +736,32 @@ export default function QuickLoanApplication() {
         });
         return;
       }
+
+      // Save Step 2 data before proceeding
+      setLoading(true);
+      await saveCustomerData(2);
+      setLoading(false);
     }
 
     if (currentStep === 3) {
-      // Final step - submit and get instant decision
+      // Validate loan details and consents
+      if (!formData.loanAmount || !formData.creditBureauConsent || !formData.termsConsent) {
+        toast({
+          variant: "warning",
+          title: "Incomplete Information",
+          description: "Please enter loan amount and accept all required consents.",
+        });
+        return;
+      }
+
+      // Final step - save verification details and submit loan application
       setLoading(true);
 
       try {
-        // Call backend API to submit loan application
+        // Step 3: Save verification/consent details to customer profile
+        await saveCustomerData(3);
+
+        // Now submit the full loan application
         const response = await loansService.applyLoan({
           fullName: formData.fullName,
           mobileNumber: formData.mobile,
@@ -576,6 +1073,19 @@ export default function QuickLoanApplication() {
     <div className="min-h-screen bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5] py-8 px-4">
       <Toaster />
       <div className="max-w-3xl mx-auto">
+        {/* Close button for logged-in users */}
+        {user && (
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={() => router.push('/user')}
+              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-white rounded-lg transition-all"
+            >
+              <X className="w-5 h-5" />
+              <span className="text-sm font-medium">Close</span>
+            </button>
+          </div>
+        )}
+
         {/* Header */}
         <div className="text-center mb-8">
           <motion.div
@@ -627,41 +1137,58 @@ export default function QuickLoanApplication() {
               >
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Basic Details (1 minute)</h2>
 
-                {/* Verification Method Toggle */}
-                <div className="bg-gray-50 rounded-xl p-4 mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Choose Verification Method *
-                  </label>
-                  <div className="flex gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setVerificationMethod('email')}
-                      className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
-                        verificationMethod === 'email'
-                          ? 'bg-[#25B181] text-white shadow-md'
-                          : 'bg-white text-gray-700 border border-gray-300 hover:border-[#25B181]'
-                      }`}
-                    >
-                      <Mail className="w-5 h-5 inline mr-2" />
-                      Verify with Email
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setVerificationMethod('mobile')}
-                      className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
-                        verificationMethod === 'mobile'
-                          ? 'bg-[#25B181] text-white shadow-md'
-                          : 'bg-white text-gray-700 border border-gray-300 hover:border-[#25B181]'
-                      }`}
-                    >
-                      <Phone className="w-5 h-5 inline mr-2" />
-                      Verify with Mobile
-                    </button>
+                {/* Logged in user notice - Show instead of verification */}
+                {user && userDataLoaded && (formData.emailVerified || formData.mobileVerified) ? (
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h3 className="font-semibold text-green-800">Welcome back, {formData.fullName}!</h3>
+                        <p className="text-sm text-green-700 mt-1">
+                          Your account is already verified. Your details have been pre-filled from your profile. Please review and proceed to the next step.
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <>
+                    {/* Verification Method Toggle - Only show for non-logged in users */}
+                    <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        Choose Verification Method *
+                      </label>
+                      <div className="flex gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setVerificationMethod('email')}
+                          className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
+                            verificationMethod === 'email'
+                              ? 'bg-[#25B181] text-white shadow-md'
+                              : 'bg-white text-gray-700 border border-gray-300 hover:border-[#25B181]'
+                          }`}
+                        >
+                          <Mail className="w-5 h-5 inline mr-2" />
+                          Verify with Email
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setVerificationMethod('mobile')}
+                          className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
+                            verificationMethod === 'mobile'
+                              ? 'bg-[#25B181] text-white shadow-md'
+                              : 'bg-white text-gray-700 border border-gray-300 hover:border-[#25B181]'
+                          }`}
+                        >
+                          <Phone className="w-5 h-5 inline mr-2" />
+                          Verify with Mobile
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
 
-                {/* Email Verification */}
-                {verificationMethod === 'email' && (
+                {/* Email Verification - Only show for non-logged in users */}
+                {!user && verificationMethod === 'email' && (
                   <>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -721,8 +1248,8 @@ export default function QuickLoanApplication() {
                   </>
                 )}
 
-                {/* Mobile Verification */}
-                {verificationMethod === 'mobile' && (
+                {/* Mobile Verification - Only show for non-logged in users */}
+                {!user && verificationMethod === 'mobile' && (
                   <>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -795,39 +1322,74 @@ export default function QuickLoanApplication() {
                   />
                 </div>
 
-                {/* Show additional fields based on verification method */}
-                {verificationMethod === 'email' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Mobile Number *
-                    </label>
-                    <input
-                      type="tel"
-                      name="mobile"
-                      value={formData.mobile}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                      placeholder="+91 98765 43210"
-                    />
-                    <p className="mt-1 text-xs text-gray-500">For SMS notifications</p>
-                  </div>
-                )}
+                {/* Show additional fields - always show both for logged-in users */}
+                {user ? (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address *
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                        placeholder="your@email.com"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Mobile Number *
+                      </label>
+                      <input
+                        type="tel"
+                        name="mobile"
+                        value={formData.mobile}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                        placeholder="+91 98765 43210"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">For SMS notifications</p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {verificationMethod === 'email' && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Mobile Number *
+                        </label>
+                        <input
+                          type="tel"
+                          name="mobile"
+                          value={formData.mobile}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                          placeholder="+91 98765 43210"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">For SMS notifications</p>
+                      </div>
+                    )}
 
-                {verificationMethod === 'mobile' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email Address *
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                      placeholder="your@email.com"
-                    />
-                    <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
-                  </div>
+                    {verificationMethod === 'mobile' && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Email Address *
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                          placeholder="your@email.com"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 <div className="grid grid-cols-2 gap-4">
@@ -835,29 +1397,83 @@ export default function QuickLoanApplication() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       PAN Number *
                     </label>
-                    <input
-                      type="text"
-                      name="pan"
-                      value={formData.pan}
-                      onChange={handleChange}
-                      maxLength={10}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                      placeholder="ABCDE1234F"
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        name="pan"
+                        value={formData.pan}
+                        onChange={(e) => {
+                          handleChange(e);
+                          if (panVerified) setPanVerified(false); // Reset verification if changed
+                        }}
+                        disabled={panVerified}
+                        maxLength={10}
+                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 uppercase"
+                        placeholder="ABCDE1234F"
+                      />
+                      {!panVerified && (
+                        <button
+                          type="button"
+                          onClick={verifyPAN}
+                          disabled={!formData.pan || formData.pan.length !== 10 || panVerifying}
+                          className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
+                        >
+                          {panVerifying ? "Verifying..." : "Verify"}
+                        </button>
+                      )}
+                      {panVerified && (
+                        <div className="flex items-center gap-2 px-3 py-3 bg-green-50 border border-green-200 rounded-lg">
+                          <CheckCircle className="w-5 h-5 text-green-600" />
+                          <span className="text-sm text-green-700 font-medium">Verified</span>
+                        </div>
+                      )}
+                    </div>
+                    {panVerified && panData && (
+                      <p className="mt-2 text-xs text-green-700">
+                        ✓ Verified for {panData.holderName}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Aadhaar Number *
                     </label>
-                    <input
-                      type="text"
-                      name="aadhaar"
-                      value={formData.aadhaar}
-                      onChange={handleChange}
-                      maxLength={12}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                      placeholder="1234 5678 9012"
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        name="aadhaar"
+                        value={formData.aadhaar}
+                        onChange={(e) => {
+                          handleChange(e);
+                          if (aadhaarVerified) setAadhaarVerified(false); // Reset verification if changed
+                        }}
+                        disabled={aadhaarVerified}
+                        maxLength={12}
+                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100"
+                        placeholder="1234 5678 9012"
+                      />
+                      {!aadhaarVerified && (
+                        <button
+                          type="button"
+                          onClick={verifyAadhaar}
+                          disabled={!formData.aadhaar || formData.aadhaar.length !== 12 || aadhaarVerifying}
+                          className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
+                        >
+                          {aadhaarVerifying ? "Verifying..." : "Verify"}
+                        </button>
+                      )}
+                      {aadhaarVerified && (
+                        <div className="flex items-center gap-2 px-3 py-3 bg-green-50 border border-green-200 rounded-lg">
+                          <CheckCircle className="w-5 h-5 text-green-600" />
+                          <span className="text-sm text-green-700 font-medium">Verified</span>
+                        </div>
+                      )}
+                    </div>
+                    {aadhaarVerified && aadhaarData && (
+                      <p className="mt-2 text-xs text-green-700">
+                        ✓ Verified for {aadhaarData.holderName}
+                      </p>
+                    )}
                   </div>
                 </div>
 

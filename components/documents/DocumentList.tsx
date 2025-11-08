@@ -74,7 +74,7 @@ export function DocumentList({
         return;
       }
 
-      const response = await fetch('https://api.bluechipfinmax.com/api/document/get', {
+      const response = await fetch('http://93.127.167.88:8000/api/document/get', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

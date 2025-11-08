@@ -3,26 +3,12 @@ import { FileText, CheckCircle, DollarSign } from "lucide-react"
 
 export default function StepsSection() {
   const { t } = useLanguage();
-  const steps = [
-    {
-      number: "1",
-      title: "Apply Online",
-      description: "Fill a simple form with employment details and upload salary slips",
-      icon: FileText,
-    },
-    {
-      number: "2",
-      title: "Instant Verification",
-      description: "Our AI verifies your details and approves within seconds",
-      icon: CheckCircle,
-    },
-    {
-      number: "3",
-      title: "Get Money",
-      description: "Money transferred to your bank account in 5 minutes",
-      icon: DollarSign,
-    },
-  ]
+
+  const icons = [FileText, CheckCircle, DollarSign]
+  const steps = t.homepage.stepsSection.steps.map((step: any, idx: number) => ({
+    ...step,
+    icon: icons[idx]
+  }))
 
   return (
     <section className="bg-[#f6f6f6] py-16 md:py-24 px-4">
@@ -34,10 +20,10 @@ export default function StepsSection() {
                 {t.homepage.sections.howItWorks.badge}
               </span>
               <h2 className="text-4xl md:text-5xl font-bold text-center text-slate-900 mb-3">
-          Get Your Loan in <span className="text-teal-500">Simple Steps</span>
+          {t.homepage.stepsSection.heading} <span className="text-teal-500">{t.homepage.stepsSection.headingHighlight}</span>
         </h2>
               <p className="text-center text-slate-700 text-lg mb-16 max-w-2xl mx-auto">
-          Experience the fastest and most transparent loan process
+          {t.homepage.stepsSection.subtitle}
         </p>
             </div>
 

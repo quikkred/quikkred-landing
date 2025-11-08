@@ -21,77 +21,79 @@ import {
   Banknote,
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { useTranslation } from "react-i18next";
 import { LoanCalculator } from "@/components/loan-calculator";
 import SalaryAdvance from "@/components/SalaryAdvance";
 import { DocumentIcon } from "@/components/feature-icon";
 import { FinancialFeatureSection } from "@/components/financial-feature-section";
 
 export default function PersonalLoanPage() {
-  const { t } = useLanguage();
+  const { t: tLang } = useLanguage();
+  const { t } = useTranslation();
 
   const features = [
     {
       icon: Zap,
-      title: t.features.list.instant.title,
-      description: t.features.list.instant.description,
+      title: tLang.features.list.instant.title,
+      description: tLang.features.list.instant.description,
     },
     {
       icon: Shield,
-      title: t.features.list.secure.title,
-      description: t.features.list.secure.description,
+      title: tLang.features.list.secure.title,
+      description: tLang.features.list.secure.description,
     },
     {
       icon: Banknote,
-      title: "Flexible Amounts",
-      description: `Borrow from ${t.products.types.personal.amount} based on your needs`,
+      title: t('products.pages.personalLoan.features.flexibleAmounts.title'),
+      description: t('products.pages.personalLoan.features.flexibleAmounts.description'),
     },
     {
       icon: Clock,
-      title: t.features.list.flexible.title,
-      description: `Choose repayment period from ${t.products.types.personal.tenure}`,
+      title: tLang.features.list.flexible.title,
+      description: `Choose repayment period from ${tLang.products.types.personal.tenure}`,
     },
     {
       icon: Users,
-      title: "No Guarantor",
-      description: "No need for guarantor or collateral for your loan",
+      title: t('products.pages.personalLoan.features.noGuarantor.title'),
+      description: t('products.pages.personalLoan.features.noGuarantor.description'),
     },
     {
       icon: Award,
-      title: "Best Rates",
-      description: `Industry-leading interest rates ${t.products.types.personal.rate}`,
+      title: t('products.pages.personalLoan.features.bestRates.title'),
+      description: t('products.pages.personalLoan.features.bestRates.description'),
     },
   ];
 
   const eligibility = [
-    t.eligibility.age,
-    t.eligibility.income,
-    t.eligibility.credit,
-    t.eligibility.employment,
-    "Self-employed with minimum 2 years business vintage",
-    "Valid bank account with 6 months statement",
+    tLang.eligibility.age,
+    tLang.eligibility.income,
+    tLang.eligibility.credit,
+    tLang.eligibility.employment,
+    t('products.pages.personalLoan.eligibility.requirements.selfEmployed'),
+    t('products.pages.personalLoan.eligibility.requirements.bankAccount'),
   ];
 
   const documents = [
-    "PAN Card (Mandatory)",
-    "Aadhaar Card for KYC and address proof",
-    "Latest 3 months salary slips (for salaried)",
-    "Last 6 months bank statement",
-    "ITR for last 2 years (for self-employed)",
-    "Business proof (for self-employed)",
+    t('products.pages.personalLoan.eligibility.documents.pan'),
+    t('products.pages.personalLoan.eligibility.documents.aadhaar'),
+    t('products.pages.personalLoan.eligibility.documents.salarySlips'),
+    t('products.pages.personalLoan.eligibility.documents.bankStatement'),
+    t('products.pages.personalLoan.eligibility.documents.itr'),
+    t('products.pages.personalLoan.eligibility.documents.businessProof'),
   ];
 
   const steps = [
     {
-      title: t.process.steps.apply.title,
-      description: t.process.steps.apply.description,
+      title: tLang.process.steps.apply.title,
+      description: tLang.process.steps.apply.description,
     },
     {
-      title: t.process.steps.verify.title,
-      description: t.process.steps.verify.description,
+      title: tLang.process.steps.verify.title,
+      description: tLang.process.steps.verify.description,
     },
     {
-      title: t.process.steps.disbursal.title,
-      description: t.process.steps.disbursal.description,
+      title: tLang.process.steps.disbursal.title,
+      description: tLang.process.steps.disbursal.description,
     },
   ];
 
@@ -118,19 +120,19 @@ export default function PersonalLoanPage() {
       {/* Hero Section */}
       <section className="py-12 sm:py-16 lg:py-20">
         <SalaryAdvance
-          title="Personal"
-          highlightWord="Loans,"
-          title1="Simplified"
-          subtitle="Quick cash for all your personal needs - ₹10,000 - ₹5,00,000"
-          buttonPrimaryText="Get Personal Loan"
-          buttonSecondaryText="Check Eligibility"
-          quickAccessAmount="₹50,000"
-          timeText="10 mins"
+          title={t('products.pages.personalLoan.hero.title')}
+          highlightWord={t('products.pages.personalLoan.hero.highlightWord')}
+          title1={t('products.pages.personalLoan.hero.title1')}
+          subtitle={t('products.pages.personalLoan.hero.subtitle')}
+          buttonPrimaryText={t('products.pages.personalLoan.hero.buttonPrimary')}
+          buttonSecondaryText={t('products.pages.personalLoan.hero.buttonSecondary')}
+          quickAccessAmount={t('products.pages.personalLoan.hero.quickAccessAmount')}
+          timeText={t('products.pages.personalLoan.hero.timeText')}
           imageSrc="/Peronalloan_hero_image.jpg"
           features={[
-            "Loans up to ₹5 Lakhs",
-            "Instant approval",
-            "24-Hour Disbursal",
+            t('products.pages.personalLoan.hero.features.loansUpTo'),
+            t('products.pages.personalLoan.hero.features.instant'),
+            t('products.pages.personalLoan.hero.features.disbursal'),
           ]}
           primaryColor="emerald"
         />
@@ -146,9 +148,9 @@ export default function PersonalLoanPage() {
             className="text-center mb-12"
           >
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4 text-gray-900">
-              Why Choose {t.common.appName} {t.products.types.personal.name}?
+              {t('products.pages.personalLoan.features.title')}
             </h2>
-            <p className="text-xl text-gray-600">{t.features.subtitle}</p>
+            <p className="text-xl text-gray-600">{tLang.features.subtitle}</p>
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -179,8 +181,8 @@ export default function PersonalLoanPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             <LoanCalculator
-              title="Personal Loan Calculator"
-              subtitle="Calculate your daily EMI for personal loan"
+              title={t('products.pages.personalLoan.calculator.title')}
+              subtitle={t('products.pages.personalLoan.calculator.subtitle')}
             />
           </div>
         </div>
@@ -190,26 +192,26 @@ export default function PersonalLoanPage() {
   image="/Peronalloan_sub_image.jpg"
   imageAlt="Happy couple using laptop for online loan application"
   badge={{
-    percentage: "0%",
-    label: "Hidden Fees",
+    percentage: t('products.pages.personalLoan.financialFeature.badge.percentage'),
+    label: t('products.pages.personalLoan.financialFeature.badge.label'),
   }}
-  heading="Funding Your Goals. Simplified"
-  description="We offer a straightforward, supportive path to the funds you need for your next big step. No barriers, just support."
+  heading={t('products.pages.personalLoan.financialFeature.heading')}
+  description={t('products.pages.personalLoan.financialFeature.description')}
   features={[
     {
       icon: <DocumentIcon />,
-      title: "Flexible Loans",
-      description: "Get up to ₹15 Lakhs and choose a tenure that fits your budget.",
+      title: t('products.pages.personalLoan.financialFeature.features.flexible.title'),
+      description: t('products.pages.personalLoan.financialFeature.features.flexible.description'),
     },
     {
       icon: <DocumentIcon />,
-      title: "Fully Secure",
-      description: "Your data is protected with bank-level 256-bit encryption.",
+      title: t('products.pages.personalLoan.financialFeature.features.secure.title'),
+      description: t('products.pages.personalLoan.financialFeature.features.secure.description'),
     },
     {
       icon: <DocumentIcon />,
-      title: "No Hidden Charges",
-      description: "One processing fee. Clear EMIs. See all costs upfront—no surprises.",
+      title: t('products.pages.personalLoan.financialFeature.features.noHidden.title'),
+      description: t('products.pages.personalLoan.financialFeature.features.noHidden.description'),
     },
   ]}
 />
@@ -226,10 +228,10 @@ export default function PersonalLoanPage() {
               className="text-center mb-12"
             >
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4 text-gray-900">
-                {t.eligibility.title}
+                {tLang.eligibility.title}
               </h2>
               <p className="text-xl text-gray-600">
-                Simple requirements, minimal documentation
+                {t('products.pages.personalLoan.eligibility.subtitle')}
               </p>
             </motion.div>
 
@@ -242,7 +244,7 @@ export default function PersonalLoanPage() {
               >
                 <h3 className="text-2xl font-semibold mb-6 flex items-center gap-2 text-gray-900">
                   <CheckCircle className="w-6 h-6 text-green-500" />
-                  {t.eligibility.title}
+                  {tLang.eligibility.title}
                 </h3>
                 <ul className="space-y-4">
                   {eligibility.map((item, index) => (
@@ -262,7 +264,7 @@ export default function PersonalLoanPage() {
               >
                 <h3 className="text-2xl font-semibold mb-6 flex items-center gap-2 text-gray-900">
                   <FileText className="w-6 h-6 text-[#4A66FF]" />
-                  {t.eligibility.documents}
+                  {tLang.eligibility.documents}
                 </h3>
                 <ul className="space-y-4">
                   {documents.map((item, index) => (
@@ -288,10 +290,10 @@ export default function PersonalLoanPage() {
             className="text-center mb-12"
           >
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4 text-gray-900">
-              {t.process.title}
+              {tLang.process.title}
             </h2>
             <p className="text-xl text-gray-600">
-              Get your personal loan in 3 simple steps
+              {t('products.pages.personalLoan.process.subtitle')}
             </p>
           </motion.div>
 
@@ -332,9 +334,9 @@ export default function PersonalLoanPage() {
             className="text-center mb-12"
           >
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4 text-gray-900">
-              {t.testimonials?.title}
+              {tLang.testimonials?.title}
             </h2>
-            <p className="text-xl text-gray-600">{t.testimonials?.subtitle}</p>
+            <p className="text-xl text-gray-600">{tLang.testimonials?.subtitle}</p>
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -384,27 +386,58 @@ export default function PersonalLoanPage() {
             viewport={{ once: true }}
           >
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 font-sora">
-              Ready to Get Your {t.products.types.personal.name}?
+              {t('products.pages.personalLoan.cta.title')}
             </h2>
             <p className="text-sm sm:text-base lg:text-xl mb-8 opacity-90">
-              Apply now and get instant approval in just 30 seconds
+              {t('products.pages.personalLoan.cta.subtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/apply/quick">
                 <button className="px-8 py-4 bg-white text-[#4A66FF] rounded-full font-semibold text-lg hover:shadow-xl transition-all">
-                  {t.common.apply}
+                  {tLang.common.apply}
                 </button>
               </Link>
-              <a href={`tel:${t.footer.contact.phone}`}>
+              <a href={`tel:${tLang.footer.contact.phone}`}>
                 <button className="px-8 py-4 bg-white/20 backdrop-blur-md text-white rounded-full font-semibold text-lg border-2 border-white/30 hover:bg-white/30 transition-all flex items-center gap-2 mx-auto sm:mx-0">
                   <Phone className="w-5 h-5" />
-                  Call Us Now
+                  {t('products.pages.personalLoan.cta.callButton')}
                 </button>
               </a>
             </div>
           </motion.div>
         </div>
       </section>
+
+         <div className="flex items-center justify-center min-h-screen bg-[#f6f6f6] py-16 md:py-24 px-4">
+      <div
+        className="w-full max-w-4xl rounded-3xl p-12 md:p-20 text-center"
+        style={{
+          background: "linear-gradient(180deg, #6D9DFF 0%, #415E99 100%)",
+        }}
+      >
+        <h1
+          className="text-white mb-4 text-balance"
+          style={{
+            fontFamily: "'Cabin', sans-serif",
+            fontWeight: 600,
+            fontSize: "47px",
+            lineHeight: "130%",
+            letterSpacing: "0.24px",
+            textAlign: "center",
+          }}
+        >
+         {t('products.cta.title')}
+        </h1>
+
+        <p className="text-lg md:text-xl text-white/90 mb-8 text-balance">{t('products.cta.description')}</p>
+
+          <button
+            className="h-12 bg-gray-900 hover:bg-gray-800 text-white px-8 rounded-lg font-semibold transition-colors w-full md:w-auto border-0 cursor-pointer"
+          >
+            {t('products.cta.button')}
+          </button>
+      </div>
+    </div>
     </div>
   );
 }

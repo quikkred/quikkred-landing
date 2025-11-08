@@ -21,13 +21,17 @@ import {
   Calendar,
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { useTranslation } from "react-i18next";
 import { LoanCalculator } from "@/components/loan-calculator";
 import SalaryAdvance from "@/components/SalaryAdvance";
 import { FinancialFeatureSection } from "@/components/financial-feature-section";
 import { DocumentIcon } from "@/components/feature-icon";
+import StepsSection from "@/components/homepage/steps-section";
+import { FinancialCTA } from "@/components/homepage/financial-cta";
 
 export default function SalaryAdvancePage() {
-  const { t } = useLanguage();
+  const { t: tLang } = useLanguage();
+  const { t } = useTranslation();
   const [salary, setSalary] = useState(30000);
   const [loanAmount, setLoanAmount] = useState(15000);
   const maxLoan = Math.min(salary * 2, 100000);
@@ -35,21 +39,58 @@ export default function SalaryAdvancePage() {
   const interest = loanAmount * 0.015;
   const totalPayable = loanAmount + interest + processingFee;
 
+  const benefits = [
+    {
+      icon: Zap,
+      title: t('products.pages.salaryAdvance.benefits.list.instantApproval.title'),
+      description: t('products.pages.salaryAdvance.benefits.list.instantApproval.description'),
+    },
+    {
+      icon: Calendar,
+      title: t('products.pages.salaryAdvance.benefits.list.flexibleRepayment.title'),
+      description: t('products.pages.salaryAdvance.benefits.list.flexibleRepayment.description'),
+    },
+    {
+      icon: Shield,
+      title: t('products.pages.salaryAdvance.benefits.list.secure.title'),
+      description: t('products.pages.salaryAdvance.benefits.list.secure.description'),
+    },
+    {
+      icon: CreditCard,
+      title: t('products.pages.salaryAdvance.benefits.list.noHiddenCharges.title'),
+      description: t('products.pages.salaryAdvance.benefits.list.noHiddenCharges.description'),
+    },
+    {
+      icon: Building,
+      title: t('products.pages.salaryAdvance.benefits.list.companyTieups.title'),
+      description: t('products.pages.salaryAdvance.benefits.list.companyTieups.description'),
+    },
+    {
+      icon: Wallet,
+      title: t('products.pages.salaryAdvance.benefits.list.repeatAdvances.title'),
+      description: t('products.pages.salaryAdvance.benefits.list.repeatAdvances.description'),
+    },
+  ];
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="py-12 sm:py-16 lg:py-20">
         <SalaryAdvance
-          title="Instant"
-          highlightWord="Salary"
-          title1="Advance"
-          subtitle="Get instant loan approval with QuikKred. Fast, secure, and 100% digital process designed for modern India."
-          buttonPrimaryText="Get Salary Advance"
-          buttonSecondaryText="Check Eligibility"
-          quickAccessAmount="₹1,00,000"
-          timeText="5 mins"
+          title={t('products.pages.salaryAdvance.hero.title')}
+          highlightWord={t('products.pages.salaryAdvance.hero.highlightWord')}
+          title1={t('products.pages.salaryAdvance.hero.title1')}
+          subtitle={t('products.pages.salaryAdvance.hero.subtitle')}
+          buttonPrimaryText={t('products.pages.salaryAdvance.hero.buttonPrimary')}
+          buttonSecondaryText={t('products.pages.salaryAdvance.hero.buttonSecondary')}
+          quickAccessAmount={t('products.pages.salaryAdvance.hero.quickAccessAmount')}
+          timeText={t('products.pages.salaryAdvance.hero.timeText')}
           imageSrc="/Salaryadvance_hero_image.jpg"
-          features={["No credit check", "Instant approval", "Transparent fees"]}
+          features={[
+            t('products.pages.salaryAdvance.hero.features.noCredit'),
+            t('products.pages.salaryAdvance.hero.features.instant'),
+            t('products.pages.salaryAdvance.hero.features.transparent')
+          ]}
           primaryColor="emerald"
         />
       </section>
@@ -64,10 +105,10 @@ export default function SalaryAdvancePage() {
             className="text-center mb-12"
           >
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">
-              Why Salaried Employees Love Us
+              {t('products.pages.salaryAdvance.benefits.title')}
             </h2>
             <p className="text-xl text-gray-600">
-              Designed specifically for working professionals
+              {t('products.pages.salaryAdvance.benefits.subtitle')}
             </p>
           </motion.div>
 
@@ -97,8 +138,8 @@ export default function SalaryAdvancePage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             <LoanCalculator
-              title="Advance Salary Calculator"
-              subtitle="Calculate your daily EMI for Advance Salary"
+              title={t('products.pages.salaryAdvance.calculator.title')}
+              subtitle={t('products.pages.salaryAdvance.calculator.subtitle')}
             />
           </div>
         </div>
@@ -108,26 +149,26 @@ export default function SalaryAdvancePage() {
         image="/Salaryadvance_sub_image.jpg"
         imageAlt="Man in green sweater looking at phone"
         badge={{
-          percentage: "100%",
-          label: "Secure",
+          percentage: t('products.pages.salaryAdvance.financialFeature.badge.percentage'),
+          label: t('products.pages.salaryAdvance.financialFeature.badge.label'),
         }}
-        heading="Financial Flexibility, on Your Terms"
-        description="We believe everyone deserves access to their earned salary when they need it. No judgment, just support."
+        heading={t('products.pages.salaryAdvance.financialFeature.heading')}
+        description={t('products.pages.salaryAdvance.financialFeature.description')}
         features={[
           {
             icon: <DocumentIcon />,
-            title: "Apply Online",
-            description: "Fill a simple form with employment details and upload salary slips",
+            title: t('products.pages.salaryAdvance.financialFeature.features.applyOnline.title'),
+            description: t('products.pages.salaryAdvance.financialFeature.features.applyOnline.description'),
           },
           {
             icon: <DocumentIcon />,
-            title: "Fully Secure",
-            description: "We use bank-level 256-bit encryption to protect your personal and financial data.",
+            title: t('products.pages.salaryAdvance.financialFeature.features.fullySecure.title'),
+            description: t('products.pages.salaryAdvance.financialFeature.features.fullySecure.description'),
           },
           {
             icon: <DocumentIcon />,
-            title: "Clear & Simple",
-            description: "One single, transparent fee. No hidden charges, no surprises on repayment.",
+            title: t('products.pages.salaryAdvance.financialFeature.features.clearSimple.title'),
+            description: t('products.pages.salaryAdvance.financialFeature.features.clearSimple.description'),
           },
         ]}
       />
@@ -143,10 +184,10 @@ export default function SalaryAdvancePage() {
               className="text-center mb-12"
             >
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">
-                Simple Eligibility Criteria
+                {t('products.pages.salaryAdvance.eligibility.title')}
               </h2>
               <p className="text-xl text-gray-600">
-                If you're a salaried employee, you're likely eligible!
+                {t('products.pages.salaryAdvance.eligibility.subtitle')}
               </p>
             </motion.div>
 
@@ -158,20 +199,20 @@ export default function SalaryAdvancePage() {
                 className="bg-white rounded-2xl p-8 shadow-lg"
               >
                 <h3 className="text-xl font-semibold mb-4 text-[#25B181]">
-                  Basic Requirements
+                  {t('products.pages.salaryAdvance.eligibility.basicRequirements.title')}
                 </h3>
                 <ul className="space-y-3">
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
-                    <span>Age: 21-58 years</span>
+                    <span>{t('products.pages.salaryAdvance.eligibility.basicRequirements.age')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
-                    <span>Min Salary: ₹15,000/month</span>
+                    <span>{t('products.pages.salaryAdvance.eligibility.basicRequirements.minSalary')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
-                    <span>Indian Citizen</span>
+                    <span>{t('products.pages.salaryAdvance.eligibility.basicRequirements.citizenship')}</span>
                   </li>
                 </ul>
               </motion.div>
@@ -184,20 +225,20 @@ export default function SalaryAdvancePage() {
                 className="bg-white rounded-2xl p-8 shadow-lg"
               >
                 <h3 className="text-xl font-semibold mb-4 text-[#25B181]">
-                  Employment
+                  {t('products.pages.salaryAdvance.eligibility.employment.title')}
                 </h3>
                 <ul className="space-y-3">
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
-                    <span>Permanent employee</span>
+                    <span>{t('products.pages.salaryAdvance.eligibility.employment.permanent')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
-                    <span>6+ months in current job</span>
+                    <span>{t('products.pages.salaryAdvance.eligibility.employment.tenure')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
-                    <span>Salary via bank transfer</span>
+                    <span>{t('products.pages.salaryAdvance.eligibility.employment.bankTransfer')}</span>
                   </li>
                 </ul>
               </motion.div>
@@ -210,20 +251,20 @@ export default function SalaryAdvancePage() {
                 className="bg-white rounded-2xl p-8 shadow-lg"
               >
                 <h3 className="text-xl font-semibold mb-4 text-[#25B181]">
-                  Documents
+                  {t('products.pages.salaryAdvance.eligibility.documents.title')}
                 </h3>
                 <ul className="space-y-3">
                   <li className="flex items-start gap-2">
                     <FileText className="w-5 h-5 text-[#4A66FF] mt-0.5" />
-                    <span>PAN Card</span>
+                    <span>{t('products.pages.salaryAdvance.eligibility.documents.pan')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <FileText className="w-5 h-5 text-[#4A66FF] mt-0.5" />
-                    <span>Aadhaar Card</span>
+                    <span>{t('products.pages.salaryAdvance.eligibility.documents.aadhaar')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <FileText className="w-5 h-5 text-[#4A66FF] mt-0.5" />
-                    <span>Last 3 Salary Slips</span>
+                    <span>{t('products.pages.salaryAdvance.eligibility.documents.salarySlips')}</span>
                   </li>
                 </ul>
               </motion.div>
@@ -232,130 +273,41 @@ export default function SalaryAdvancePage() {
         </div>
       </section>
 
-      {/* Process */}
-      <section className="py-12 sm:py-16 lg:py-20">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">
-              How to Get Your Salary Advance
-            </h2>
-            <p className="text-xl text-gray-600">
-              3 simple steps to instant cash
-            </p>
-          </motion.div>
+     <StepsSection/> 
 
-          <div className="max-w-5xl mx-auto">
-            <div className="grid md:grid-cols-3 gap-8">
-              {process.map((step, index) => (
-                <motion.div
-                  key={step.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="text-center"
-                >
-                  <div className="w-20 h-20 bg-gradient-to-r from-[#25B181] to-[#25B181] rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
-                    {index + 1}
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-                  <p className="text-gray-600">{step.description}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* CTA */}
-      <section className="py-20 bg-gradient-to-r from-[#25B181] to-[#25B181] text-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
+   <div className="flex items-center justify-center min-h-screen bg-[#f6f6f6] py-16 md:py-24 px-4">
+      <div
+        className="w-full max-w-4xl rounded-3xl p-12 md:p-20 text-center"
+        style={{
+          background: "linear-gradient(180deg, #6D9DFF 0%, #415E99 100%)",
+        }}
+      >
+        <h1
+          className="text-white mb-4 text-balance"
+          style={{
+            fontFamily: "'Cabin', sans-serif",
+            fontWeight: 600,
+            fontSize: "47px",
+            lineHeight: "130%",
+            letterSpacing: "0.24px",
+            textAlign: "center",
+          }}
+        >
+         {t('products.cta.title')}
+        </h1>
+
+        <p className="text-lg md:text-xl text-white/90 mb-8 text-balance">{t('products.cta.description')}</p>
+
+          <button
+            className="h-12 bg-gray-900 hover:bg-gray-800 text-white px-8 rounded-lg font-semibold transition-colors w-full md:w-auto border-0 cursor-pointer"
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 font-sora">
-              Don't Wait Till Payday!
-            </h2>
-            <p className="text-sm sm:text-base lg:text-xl mb-8 opacity-90">
-              Get instant salary advance in just 5 minutes
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/apply/quick">
-                <button className="px-8 py-4 bg-white text-[#25B181] rounded-full font-semibold text-lg hover:shadow-xl transition-all">
-                  Get Salary Advance Now
-                </button>
-              </Link>
-              <a href="tel:+918888881111">
-                <button className="px-8 py-4 bg-white/20 backdrop-blur-md text-white rounded-full font-semibold text-lg border-2 border-white/30 hover:bg-white/30 transition-all flex items-center gap-2 mx-auto sm:mx-0">
-                  <Phone className="w-5 h-5" />
-                  Talk to Expert
-                </button>
-              </a>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+            {t('products.cta.button')}
+          </button>
+      </div>
+    </div>
+
     </div>
   );
 }
 
-const benefits = [
-  {
-    icon: Zap,
-    title: "Instant Approval",
-    description:
-      "No waiting, no queues. Get approved instantly with our AI system",
-  },
-  {
-    icon: Calendar,
-    title: "Flexible Repayment",
-    description: "Auto-deduct from your next salary or pay in EMIs",
-  },
-  {
-    icon: Shield,
-    title: "100% Secure",
-    description: "Your data is encrypted and never shared with third parties",
-  },
-  {
-    icon: CreditCard,
-    title: "No Hidden Charges",
-    description: "Transparent pricing with no surprises",
-  },
-  {
-    icon: Building,
-    title: "Company Tie-ups",
-    description: "Special rates for employees of partner companies",
-  },
-  {
-    icon: Wallet,
-    title: "Repeat Advances",
-    description: "Build credit history and get higher advances",
-  },
-];
-
-const companies: any[] = [];
-
-const process = [
-  {
-    title: "Apply Online",
-    description:
-      "Fill a simple form with employment details and upload salary slips",
-  },
-  {
-    title: "Instant Verification",
-    description: "Our AI verifies your details and approves within seconds",
-  },
-  {
-    title: "Get Money",
-    description: "Money transferred to your bank account in 5 minutes",
-  },
-];
-
-const testimonials: any[] = [];

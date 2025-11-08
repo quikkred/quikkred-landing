@@ -99,13 +99,14 @@ export interface NewLoanApplicationRequest {
 
 class LoansService {
   // Apply for a loan (original method)
-  async applyLoan(data: LoanApplication): Promise<ApiResponse<any>> {
-    return apiClient.post('/api/loans/apply', data);
-  }
+async applyLoan(data: LoanApplication): Promise<ApiResponse<any>> {
+  return apiClient.post('http://93.127.167.88:8000/api/application/loan/create', data);
+}
+
 
   // Apply for a new loan (external API)
   async applyNewLoan(data: NewLoanApplicationRequest): Promise<ApiResponse<any>> {
-    return apiClient.post('/api/loans/apply', data, true);
+    return apiClient.post('/api/application/loan/create', data, true);
   }
 
   // Calculate EMI
