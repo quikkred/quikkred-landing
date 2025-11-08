@@ -148,7 +148,7 @@
 - POST /api/auth/verify-otp
 
 ✅ **Loan APIs**
-- POST /api/loans/apply
+- POST /api/application/loan/create
 - GET /api/loans/status
 - POST /api/loans/calculate-emi
 - GET /api/loans/eligibility

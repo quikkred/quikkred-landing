@@ -2,7 +2,7 @@
 
 ## Base URL
 ```
-Production: https://api.bluechipfinmax.com/v1
+Production: http://93.127.167.88:8000/v1
 Staging: https://api-staging.Quikkred.com/v1
 ```
 

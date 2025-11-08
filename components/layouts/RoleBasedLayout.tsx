@@ -4,9 +4,6 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import AdminLayout from "./AdminLayout";
 import UserLayout from "./UserLayout";
-import UnderwriterLayout from "./UnderwriterLayout";
-import FinanceManagerLayout from "./FinanceManagerLayout";
-import CollectionAgentLayout from "./CollectionAgentLayout";
 
 interface RoleBasedLayoutProps {
   children: React.ReactNode;
@@ -15,10 +12,7 @@ interface RoleBasedLayoutProps {
 // Define user roles and their corresponding routes
 export const USER_ROLES = {
   ADMIN: 'admin',
-  USER: 'user',
-  AGENT: 'agent',
-  MANAGER: 'manager',
-  COLLECTION: 'collection'
+  USER: 'user'
 } as const;
 
 export type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
@@ -26,10 +20,7 @@ export type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
 // Define route patterns for each role
 const ROLE_ROUTES = {
   [USER_ROLES.ADMIN]: ['/admin'],
-  [USER_ROLES.USER]: ['/dashboard'],
-  [USER_ROLES.AGENT]: ['/agent'],
-  [USER_ROLES.MANAGER]: ['/manager'],
-  [USER_ROLES.COLLECTION]: ['/collection']
+  [USER_ROLES.USER]: ['/dashboard']
 };
 
 // Mock function to get user role (replace with actual auth logic)
@@ -41,9 +32,6 @@ const getUserRole = (): UserRole | null => {
   const path = window.location.pathname;
 
   if (path.startsWith('/admin')) return USER_ROLES.ADMIN;
-  if (path.startsWith('/agent')) return USER_ROLES.AGENT;
-  if (path.startsWith('/manager')) return USER_ROLES.MANAGER;
-  if (path.startsWith('/collection')) return USER_ROLES.COLLECTION;
   if (path.startsWith('/dashboard')) return USER_ROLES.USER;
 
   return null;
@@ -100,15 +88,6 @@ const RoleBasedLayout = ({ children }: RoleBasedLayoutProps) => {
 
     case USER_ROLES.USER:
       return <UserLayout>{children}</UserLayout>;
-
-    case USER_ROLES.AGENT:
-      return <UnderwriterLayout>{children}</UnderwriterLayout>;
-
-    case USER_ROLES.MANAGER:
-      return <FinanceManagerLayout>{children}</FinanceManagerLayout>;
-
-    case USER_ROLES.COLLECTION:
-      return <CollectionAgentLayout>{children}</CollectionAgentLayout>;
 
     default:
       router.push('/login');

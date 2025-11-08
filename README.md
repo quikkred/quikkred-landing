@@ -177,7 +177,7 @@ Quikkred/
 - `POST /api/auth/verify-otp` - OTP verification
 
 ### Loan Application Endpoints
-- `POST /api/loans/apply` - Submit loan application
+- `POST /api/application/loan/create` - Submit loan application
 - `GET /api/loans/status/:id` - Check application status
 - `POST /api/loans/documents` - Upload documents
 

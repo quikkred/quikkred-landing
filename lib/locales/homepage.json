@@ -1,0 +1,388 @@
+{
+  "en": {
+    "hero": {
+      "trustBadge": "RBI Registered NBFC • 100% Secure",
+      "heading": "Get Loan",
+      "headingHighlight1": "Approval",
+      "headingLine2": "in",
+      "headingHighlight2": "3 Simple Steps",
+      "description": "No paperwork. No waiting. Just instant approval and quick disbursal. Your financial emergency solved in minutes.",
+      "features": {
+        "instantApproval": "Instant Approval",
+        "secure": "100% Secure",
+        "sameDayDisbursal": "Same Day Disbursal"
+      },
+      "buttons": {
+        "applyNow": "Apply Now",
+        "talkToExpert": "Talk to Expert"
+      },
+      "steps": [
+        {
+          "number": "1",
+          "title": "Fill Details",
+          "description": "Basic info in 60 seconds"
+        },
+        {
+          "number": "2",
+          "title": "Get Approved",
+          "description": "Instant decision on screen"
+        },
+        {
+          "number": "3",
+          "title": "Receive Money",
+          "description": "Direct to your account"
+        }
+      ]
+    },
+    "loansGrid": {
+      "badge": "Our Products",
+      "title": "Loans Designed for",
+      "titleHighlight": "Every Need",
+      "subtitle": "Choose from our range of flexible loan products tailored to your requirements",
+      "loans": [
+        {
+          "title": "Salary Advance",
+          "amount": "₹5,000 - ₹5,00,000",
+          "description": "Get advance up to 2x your monthly salary instantly"
+        },
+        {
+          "title": "Personal Loan",
+          "amount": "₹10,000 - ₹50,00,000",
+          "description": "Quick cash for all your personal needs"
+        },
+        {
+          "title": "Emergency Fund",
+          "amount": "₹10,000 - ₹2,00,000",
+          "description": "24-hour support for medical and urgent needs"
+        },
+        {
+          "title": "Festival Advance",
+          "amount": "₹5,000 - ₹1,00,000",
+          "description": "Celebrate every festival without financial worry"
+        },
+        {
+          "title": "Medical Loan",
+          "amount": "₹25,000 - ₹10,00,000",
+          "description": "Healthcare financing for planned treatments"
+        },
+        {
+          "title": "Travel Now Pay Later",
+          "amount": "₹25,000 - ₹3,00,000",
+          "description": "Book your dream vacation today, pay next month"
+        }
+      ],
+      "button": "Learn more"
+    },
+    "featuresSection": {
+      "heading": "A Better, Smarter Way to",
+      "headingHighlight": "Borrow",
+      "subtitle": "Experience the future of lending with our innovative approach",
+      "features": [
+        {
+          "title": "Apply Online",
+          "description": "The price shown is the total price you'll pay, with no hidden fees"
+        },
+        {
+          "title": "Flexible Repayments",
+          "description": "Choose a repayment schedule that fits your lifestyle and budget."
+        },
+        {
+          "title": "100% Secure",
+          "description": "Bank-level encryption keeps your personal and financial data safe."
+        },
+        {
+          "title": "Lightning Fast",
+          "description": "Get approved in minutes and receive funds within 24 hours."
+        }
+      ]
+    },
+    "stepsSection": {
+      "badge": "How It Works",
+      "heading": "Get Your Loan in",
+      "headingHighlight": "Simple Steps",
+      "subtitle": "Experience the fastest and most transparent loan process",
+      "steps": [
+        {
+          "number": "1",
+          "title": "Apply Online",
+          "description": "Fill a simple form with employment details and upload salary slips"
+        },
+        {
+          "number": "2",
+          "title": "Instant Verification",
+          "description": "Our AI verifies your details and approves within seconds"
+        },
+        {
+          "number": "3",
+          "title": "Get Money",
+          "description": "Money transferred to your bank account in 5 minutes"
+        }
+      ]
+    },
+    "testimonials": {
+      "heading": "Don't Just Take Our",
+      "headingHighlight": "Word",
+      "subheading": "For It",
+      "items": [
+        {
+          "name": "Rajesh Kumar",
+          "text": "The bullet loan let me stock up for the festival season. I paid it back easily after my sales. A total game-changer.",
+          "image": "https://randomuser.me/api/portraits/men/32.jpg"
+        },
+        {
+          "name": "Priya Sharma",
+          "text": "Finally, a loan that understands freelancers! No monthly EMI pressure, just one payment when my project invoice clears.",
+          "image": "https://randomuser.me/api/portraits/women/44.jpg"
+        },
+        {
+          "name": "Amit Patel",
+          "text": "Emergency medical loan saved my father's life. The quick disbursal and hassle-free process was a blessing.",
+          "image": "https://randomuser.me/api/portraits/men/40.jpg"
+        }
+      ]
+    },
+    "faq": {
+      "heading": "Got Questions?",
+      "headingHighlight": "We've Got Answers.",
+      "subtitle": "Find answers to common questions about our loan products and process",
+      "faqs": [
+        {
+          "question": "How long does the approval process take?",
+          "answer": "Our approval process typically takes 5-15 minutes. Most applicants receive a decision instantly."
+        },
+        {
+          "question": "What credit score do I need?",
+          "answer": "We work with a wide range of credit profiles. You can get a pre-qualification with no credit check."
+        },
+        {
+          "question": "Can I pay off my loan early?",
+          "answer": "Yes! There are no prepayment penalties. You can pay off your loan at any time without fees."
+        },
+        {
+          "question": "What's the maximum loan amount?",
+          "answer": "Maximum loan amounts vary based on loan type and your qualifications. Personal loans go up to $50,000."
+        }
+      ]
+    },
+    "loanCalculator": {
+      "heading": "Loan Calculator",
+      "subtitle": "Calculate Your Total Repayment Amount",
+      "labels": {
+        "loanPurpose": "Select Loan Purpose",
+        "loanAmount": "Loan Amount",
+        "loanTenure": "Loan Tenure",
+        "dailyInterestRate": "Daily Interest Rate",
+        "processingFee": "Processing Fee",
+        "principalAmount": "Principal Amount",
+        "interest": "Interest",
+        "totalRepayment": "Total Repayment"
+      },
+      "purposes": ["Personal", "Medical", "Education", "Business", "Travel", "Wedding"],
+      "button": "Apply for This Loan",
+      "disclaimer": "Get Instant Approval • Money in Bank Within Minutes",
+      "units": {
+        "perDay": "per day",
+        "days": "days"
+      }
+    },
+    "financialCTA": {
+      "heading": "Ready to Transform Your Financial Future?",
+      "description": "Get your instant, no-obligation quote in 60 seconds.",
+      "inputPlaceholder": "Enter Your email",
+      "buttonText": "Subscribe"
+    }
+  },
+  "hi": {
+    "hero": {
+      "trustBadge": "आरबीआई पंजीकृत एनबीएफसी • 100% सुरक्षित",
+      "heading": "लोन",
+      "headingHighlight1": "अप्रूवल",
+      "headingLine2": "पाएं",
+      "headingHighlight2": "3 आसान स्टेप्स में",
+      "description": "कोई कागजी कार्रवाई नहीं। कोई प्रतीक्षा नहीं। बस तुरंत अप्रूवल और त्वरित वितरण। मिनटों में आपकी वित्तीय आपातकाल का समाधान।",
+      "features": {
+        "instantApproval": "तुरंत अप्रूवल",
+        "secure": "100% सुरक्षित",
+        "sameDayDisbursal": "उसी दिन वितरण"
+      },
+      "buttons": {
+        "applyNow": "अभी आवेदन करें",
+        "talkToExpert": "विशेषज्ञ से बात करें"
+      },
+      "steps": [
+        {
+          "number": "1",
+          "title": "विवरण भरें",
+          "description": "60 सेकंड में बुनियादी जानकारी"
+        },
+        {
+          "number": "2",
+          "title": "अप्रूवल पाएं",
+          "description": "स्क्रीन पर तुरंत निर्णय"
+        },
+        {
+          "number": "3",
+          "title": "पैसा प्राप्त करें",
+          "description": "सीधे आपके खाते में"
+        }
+      ]
+    },
+    "loansGrid": {
+      "badge": "हमारे उत्पाद",
+      "title": "हर जरूरत के लिए",
+      "titleHighlight": "डिज़ाइन किए गए लोन",
+      "subtitle": "अपनी आवश्यकताओं के अनुरूप लचीले लोन उत्पादों की हमारी श्रृंखला में से चुनें",
+      "loans": [
+        {
+          "title": "सैलरी एडवांस",
+          "amount": "₹5,000 - ₹5,00,000",
+          "description": "अपनी मासिक सैलरी का 2 गुना तक एडवांस तुरंत प्राप्त करें"
+        },
+        {
+          "title": "पर्सनल लोन",
+          "amount": "₹10,000 - ₹50,00,000",
+          "description": "अपनी सभी व्यक्तिगत जरूरतों के लिए त्वरित नकद"
+        },
+        {
+          "title": "इमरजेंसी फंड",
+          "amount": "₹10,000 - ₹2,00,000",
+          "description": "चिकित्सा और तत्काल जरूरतों के लिए 24 घंटे सहायता"
+        },
+        {
+          "title": "फेस्टिवल एडवांस",
+          "amount": "₹5,000 - ₹1,00,000",
+          "description": "बिना वित्तीय चिंता के हर त्योहार मनाएं"
+        },
+        {
+          "title": "मेडिकल लोन",
+          "amount": "₹25,000 - ₹10,00,000",
+          "description": "नियोजित उपचार के लिए स्वास्थ्य देखभाल वित्तपोषण"
+        },
+        {
+          "title": "ट्रैवल अभी पेमेंट बाद में",
+          "amount": "₹25,000 - ₹3,00,000",
+          "description": "आज अपनी सपनों की छुट्टी बुक करें, अगले महीने भुगतान करें"
+        }
+      ],
+      "button": "और जानें"
+    },
+    "featuresSection": {
+      "heading": "उधार लेने का एक बेहतर, स्मार्ट",
+      "headingHighlight": "तरीका",
+      "subtitle": "हमारे नवीन दृष्टिकोण के साथ उधार देने के भविष्य का अनुभव करें",
+      "features": [
+        {
+          "title": "ऑनलाइन आवेदन करें",
+          "description": "दिखाई गई कीमत वह कुल कीमत है जो आप देंगे, कोई छुपी फीस नहीं"
+        },
+        {
+          "title": "लचीली पुनर्भुगतान",
+          "description": "अपनी जीवनशैली और बजट के अनुरूप पुनर्भुगतान कार्यक्रम चुनें।"
+        },
+        {
+          "title": "100% सुरक्षित",
+          "description": "बैंक-स्तरीय एन्क्रिप्शन आपके व्यक्तिगत और वित्तीय डेटा को सुरक्षित रखता है।"
+        },
+        {
+          "title": "बिजली की तरह तेज",
+          "description": "मिनटों में मंजूरी पाएं और 24 घंटे के भीतर फंड प्राप्त करें।"
+        }
+      ]
+    },
+    "stepsSection": {
+      "badge": "यह कैसे काम करता है",
+      "heading": "अपना लोन",
+      "headingHighlight": "आसान स्टेप्स में",
+      "subtitle": "सबसे तेज और सबसे पारदर्शी लोन प्रक्रिया का अनुभव करें",
+      "steps": [
+        {
+          "number": "1",
+          "title": "ऑनलाइन आवेदन करें",
+          "description": "रोजगार विवरण के साथ एक सरल फॉर्म भरें और सैलरी स्लिप अपलोड करें"
+        },
+        {
+          "number": "2",
+          "title": "तुरंत सत्यापन",
+          "description": "हमारी AI आपके विवरण की पुष्टि करती है और सेकंडों में मंजूरी देती है"
+        },
+        {
+          "number": "3",
+          "title": "पैसा पाएं",
+          "description": "5 मिनट में आपके बैंक खाते में पैसा ट्रांसफर"
+        }
+      ]
+    },
+    "testimonials": {
+      "heading": "केवल हमारी",
+      "headingHighlight": "बात",
+      "subheading": "पर विश्वास न करें",
+      "items": [
+        {
+          "name": "राजेश कुमार",
+          "text": "बुलेट लोन ने मुझे त्योहार के मौसम के लिए स्टॉक करने दिया। मैंने अपनी बिक्री के बाद इसे आसानी से चुका दिया। एक पूर्ण गेम-चेंजर।",
+          "image": "https://randomuser.me/api/portraits/men/32.jpg"
+        },
+        {
+          "name": "प्रिया शर्मा",
+          "text": "आखिरकार, एक लोन जो फ्रीलांसरों को समझता है! कोई मासिक EMI दबाव नहीं, बस मेरी परियोजना इनवॉइस क्लीयर होने पर एक भुगतान।",
+          "image": "https://randomuser.me/api/portraits/women/44.jpg"
+        },
+        {
+          "name": "अमित पटेल",
+          "text": "आपातकालीन चिकित्सा लोन ने मेरे पिता की जान बचाई। त्वरित वितरण और परेशानी मुक्त प्रक्रिया एक आशीर्वाद थी।",
+          "image": "https://randomuser.me/api/portraits/men/40.jpg"
+        }
+      ]
+    },
+    "faq": {
+      "heading": "कोई सवाल है?",
+      "headingHighlight": "हमारे पास जवाब हैं।",
+      "subtitle": "हमारे लोन उत्पादों और प्रक्रिया के बारे में सामान्य प्रश्नों के उत्तर खोजें",
+      "faqs": [
+        {
+          "question": "अप्रूवल प्रक्रिया में कितना समय लगता है?",
+          "answer": "हमारी अप्रूवल प्रक्रिया में आमतौर पर 5-15 मिनट लगते हैं। अधिकांश आवेदकों को तुरंत निर्णय प्राप्त होता है।"
+        },
+        {
+          "question": "मुझे किस क्रेडिट स्कोर की आवश्यकता है?",
+          "answer": "हम क्रेडिट प्रोफाइल की एक विस्तृत श्रृंखला के साथ काम करते हैं। आप बिना क्रेडिट चेक के प्री-क्वालिफिकेशन प्राप्त कर सकते हैं।"
+        },
+        {
+          "question": "क्या मैं अपना लोन जल्दी चुका सकता हूं?",
+          "answer": "हाँ! कोई प्रीपेमेंट पेनल्टी नहीं है। आप बिना किसी शुल्क के किसी भी समय अपना लोन चुका सकते हैं।"
+        },
+        {
+          "question": "अधिकतम लोन राशि क्या है?",
+          "answer": "अधिकतम लोन राशि लोन प्रकार और आपकी योग्यता के आधार पर भिन्न होती है। पर्सनल लोन ₹50,000 तक जाते हैं।"
+        }
+      ]
+    },
+    "loanCalculator": {
+      "heading": "लोन कैलकुलेटर",
+      "subtitle": "अपनी कुल पुनर्भुगतान राशि की गणना करें",
+      "labels": {
+        "loanPurpose": "लोन का उद्देश्य चुनें",
+        "loanAmount": "लोन राशि",
+        "loanTenure": "लोन अवधि",
+        "dailyInterestRate": "दैनिक ब्याज दर",
+        "processingFee": "प्रोसेसिंग फीस",
+        "principalAmount": "मूल राशि",
+        "interest": "ब्याज",
+        "totalRepayment": "कुल पुनर्भुगतान"
+      },
+      "purposes": ["व्यक्तिगत", "चिकित्सा", "शिक्षा", "व्यवसाय", "यात्रा", "शादी"],
+      "button": "इस लोन के लिए आवेदन करें",
+      "disclaimer": "तुरंत अप्रूवल पाएं • मिनटों में बैंक में पैसा",
+      "units": {
+        "perDay": "प्रति दिन",
+        "days": "दिन"
+      }
+    },
+    "financialCTA": {
+      "heading": "अपने वित्तीय भविष्य को बदलने के लिए तैयार हैं?",
+      "description": "60 सेकंड में अपना तुरंत, बिना किसी दायित्व का उद्धरण प्राप्त करें।",
+      "inputPlaceholder": "अपना ईमेल दर्ज करें",
+      "buttonText": "सब्सक्राइब करें"
+    }
+  }
+}
