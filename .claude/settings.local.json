@@ -9,7 +9,8 @@
       "Bash(npm run build:*)",
       "Bash(npm run dev:*)",
       "Bash(curl:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(node -e:*)"
     ],
     "deny": [],
     "ask": []

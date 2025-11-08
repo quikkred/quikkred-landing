@@ -135,12 +135,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    // Check for existing session
-    const token = localStorage.getItem('token');
-    const storedRole = localStorage.getItem('userRole') as UserRole;
+    // Check for existing session - check multiple token keys for compatibility
+    const token = localStorage.getItem('token') ||
+                  localStorage.getItem('authToken') ||
+                  localStorage.getItem('accessToken');
+    const storedRole = (localStorage.getItem('userRole') || localStorage.getItem('role')) as UserRole;
     const storedUserId = localStorage.getItem('userId');
     const storedUserName = localStorage.getItem('userName');
-    const storedUserEmail = localStorage.getItem('userEmail');
+    const storedUserEmail = localStorage.getItem('userEmail') || localStorage.getItem('email');
+    const storedUserMobile = localStorage.getItem('userMobile');
 
     if (token && storedRole && MOCK_USERS[storedRole]) {
       // Create user object from stored data instead of mock
@@ -149,6 +152,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         id: storedUserId || MOCK_USERS[storedRole].id,
         name: storedUserName || MOCK_USERS[storedRole].name,
         email: storedUserEmail || MOCK_USERS[storedRole].email,
+        mobile: storedUserMobile || MOCK_USERS[storedRole].mobile,
       };
 
       setUser(userData);
@@ -166,7 +170,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUserProfile = async (token: string, currentUser: User) => {
     console.log('🔵 Fetching user profile from API...');
     try {
-      const response = await fetch('https://api.bluechipfinmax.com/api/customer/profile', {
+      const response = await fetch('http://93.127.167.88:8000/api/customer/get', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -223,8 +227,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       // If API data is provided, use it for authentication
-      if (apiData && apiData.userId && apiData.token && apiData.role) {
+      if (apiData && apiData.userId && (apiData.token || apiData.accessToken) && apiData.role) {
         const userRole = apiData.role as UserRole;
+        const authToken = apiData.accessToken || apiData.token;
 
         // Create user object from API data
         const userData: User = {
@@ -240,9 +245,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             : []
         };
 
-        // Store session in localStorage and cookies
-        localStorage.setItem('token', apiData.token);
-        localStorage.setItem('authToken', apiData.token);
+        // Store session in localStorage and cookies (use all 3 keys for compatibility)
+        localStorage.setItem('token', authToken);
+        localStorage.setItem('authToken', authToken);
+        localStorage.setItem('accessToken', authToken);
         localStorage.setItem('userRole', userRole);
         localStorage.setItem('userEmail', email);
         localStorage.setItem('userName', userData.name);
@@ -252,14 +258,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Set cookies for middleware to access
-        document.cookie = `auth-token=${apiData.token}; path=/; max-age=2592000`;
+        document.cookie = `auth-token=${authToken}; path=/; max-age=2592000`;
         document.cookie = `user-role=${userRole}; path=/; max-age=2592000`;
 
         setUser(userData);
 
-        // Fetch real user profile for CUSTOMER/USER roles
+        // Fetch real user profile for CUSTOMER/USER roles and wait for it
         if (userRole === 'CUSTOMER' || userRole === 'USER') {
-          fetchUserProfile(apiData.token, userData);
+          await fetchUserProfile(authToken, userData);
         }
 
         // Redirect to appropriate dashboard
@@ -322,11 +328,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
+    // Clear all localStorage items
     localStorage.removeItem('token');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('userRole');
+    localStorage.removeItem('role');
     localStorage.removeItem('userEmail');
+    localStorage.removeItem('email');
     localStorage.removeItem('userName');
     localStorage.removeItem('userId');
+    localStorage.removeItem('userMobile');
+    localStorage.removeItem('customerUniqueId');
+    localStorage.removeItem('heroFormData');
 
     // Clear cookies
     document.cookie = 'auth-token=; path=/; max-age=0';

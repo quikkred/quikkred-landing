@@ -1,34 +1,20 @@
 import { Star, Quote } from "lucide-react";
 import Image from "next/image";
-
-const testimonials = [
-  {
-    name: "Rajesh Kumar",
-    text: "The bullet loan let me stock up for the festival season. I paid it back easily after my sales. A total game-changer.",
-    image: "https://randomuser.me/api/portraits/men/32.jpg",
-    color: "white",
-  },
-  {
-    name: "Priya Sharma",
-    text: "Finally, a loan that understands freelancers! No monthly EMI pressure, just one payment when my project invoice clears.",
-    image: "https://randomuser.me/api/portraits/women/44.jpg",
-    color: "from-blue-500 to-indigo-500 text-white",
-    gradient: true,
-  },
-  {
-    name: "Amit Patel",
-    text: "Emergency medical loan saved my father's life. The quick disbursal and hassle-free process was a blessing.",
-    image: "https://randomuser.me/api/portraits/men/40.jpg",
-    color: "white",
-  },
-];
+import { useLanguage } from "@/lib/contexts/LanguageContext";
 
 export default function Testimonials() {
+  const { t } = useLanguage();
+
+  const testimonials = t.homepage.testimonials.items.map((item: any, idx: number) => ({
+    ...item,
+    color: idx === 1 ? "from-blue-500 to-indigo-500 text-white" : "white",
+    gradient: idx === 1
+  }));
   return (
     <section className="bg-slate-50 py-16">
       <div className="max-w-6xl mx-auto px-6 text-center">
         <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-12">
-          Don’t Just Take Our <span className="text-teal-500">Word</span> For It
+          {t.homepage.testimonials.heading} <span className="text-teal-500">{t.homepage.testimonials.headingHighlight}</span> {t.homepage.testimonials.subheading}
         </h2>
 
         <div className="grid md:grid-cols-3 gap-8">

@@ -4,26 +4,29 @@ import type React from "react"
 import { motion } from "framer-motion"
 import { ArrowRight, Shield, Zap, CheckCircle, Users, Star, Clock, Phone } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useLanguage } from "@/lib/contexts/LanguageContext"
 
 export default function Hero() {
   const router = useRouter()
+  const { t } = useLanguage()
+
   const steps = [
     {
-      number: "1",
-      title: "Fill Details",
-      description: "Basic info in 60 seconds",
+      number: t.homepage.hero.steps[0].number,
+      title: t.homepage.hero.steps[0].title,
+      description: t.homepage.hero.steps[0].description,
       icon: CheckCircle,
     },
     {
-      number: "2",
-      title: "Get Approved",
-      description: "Instant decision on screen",
+      number: t.homepage.hero.steps[1].number,
+      title: t.homepage.hero.steps[1].title,
+      description: t.homepage.hero.steps[1].description,
       icon: Shield,
     },
     {
-      number: "3",
-      title: "Receive Money",
-      description: "Direct to your account",
+      number: t.homepage.hero.steps[2].number,
+      title: t.homepage.hero.steps[2].title,
+      description: t.homepage.hero.steps[2].description,
       icon: Zap,
     }
   ]
@@ -47,7 +50,7 @@ export default function Hero() {
               className="inline-block"
             >
               <span className="inline-block px-4 py-2 bg-teal-100 text-teal-600 rounded-full text-xs sm:text-sm font-semibold">
-                RBI Registered NBFC • 100% Secure
+                {t.homepage.hero.trustBadge}
               </span>
             </motion.div>
 
@@ -59,9 +62,9 @@ export default function Hero() {
                 transition={{ delay: 0.3 }}
                 className="text-4xl md:text-5xl font-bold text-slate-900 leading-tight"
               >
-                Get Loan <span className="text-teal-500">Approval</span>
+                {t.homepage.hero.heading} <span className="text-teal-500">{t.homepage.hero.headingHighlight1}</span>
                 <br />
-                in <span className="text-teal-500">3 Simple Steps</span>
+                {t.homepage.hero.headingLine2} <span className="text-teal-500">{t.homepage.hero.headingHighlight2}</span>
               </motion.h1>
 
               <motion.p
@@ -70,7 +73,7 @@ export default function Hero() {
                 transition={{ delay: 0.4 }}
                 className="text-slate-600 text-lg leading-relaxed"
               >
-                No paperwork. No waiting. Just instant approval and quick disbursal. Your financial emergency solved in minutes.
+                {t.homepage.hero.description}
               </motion.p>
             </div>
 
@@ -83,15 +86,15 @@ export default function Hero() {
             >
               <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-lg">
                 <CheckCircle className="w-5 h-5 text-teal-500" />
-                <span className="font-medium text-slate-700 text-sm">Instant Approval</span>
+                <span className="font-medium text-slate-700 text-sm">{t.homepage.hero.features.instantApproval}</span>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-lg">
                 <Shield className="w-5 h-5 text-teal-500" />
-                <span className="font-medium text-slate-700 text-sm">100% Secure</span>
+                <span className="font-medium text-slate-700 text-sm">{t.homepage.hero.features.secure}</span>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-lg">
                 <Zap className="w-5 h-5 text-teal-500" />
-                <span className="font-medium text-slate-700 text-sm">Same Day Disbursal</span>
+                <span className="font-medium text-slate-700 text-sm">{t.homepage.hero.features.sameDayDisbursal}</span>
               </div>
             </motion.div>
 
@@ -108,7 +111,7 @@ export default function Hero() {
                 onClick={() => router.push('/apply/quick')}
                 className="group px-8 py-4 bg-teal-500 hover:bg-teal-600 text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 text-lg"
               >
-                Apply Now
+                {t.homepage.hero.buttons.applyNow}
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </motion.button>
 
@@ -119,7 +122,7 @@ export default function Hero() {
                 className="px-8 py-4 bg-white border-2 border-slate-300 text-slate-700 font-semibold rounded-lg hover:border-teal-500 hover:text-teal-500 transition-all duration-300 flex items-center justify-center gap-2"
               >
                 <Phone className="w-5 h-5" />
-                Talk to Expert
+                {t.homepage.hero.buttons.talkToExpert}
               </motion.button>
             </motion.div>
           </motion.div>

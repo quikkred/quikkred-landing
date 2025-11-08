@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import enData from '@/locales/en.json';
 
 type TranslationData = typeof enData;
@@ -87,6 +88,8 @@ function getInitialLanguageForState() {
 }
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
+  const { i18n } = useTranslation();
+
   // Use initializer functions to read language and translations synchronously
   // Initializer runs once when component mounts, not during SSR
   const [language, setLanguageState] = useState<string>(() => {
@@ -103,6 +106,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     return translationCache[lang] || enData;
   });
 
+  // Sync i18n language on mount
+  useEffect(() => {
+    if (i18n && language) {
+      i18n.changeLanguage(language);
+    }
+  }, []);
+
   // Synchronize document attributes when language changes
   useEffect(() => {
     document.documentElement.lang = language;
@@ -115,6 +125,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const setLanguage = async (lang: string) => {
     setLanguageState(lang);
+
+    // Sync with i18n
+    if (i18n) {
+      await i18n.changeLanguage(lang);
+    }
 
     // Load translation dynamically
     const translation = await getTranslation(lang);

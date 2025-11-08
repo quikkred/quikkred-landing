@@ -11,11 +11,6 @@ import { Suspense } from "react";
 // Lazy load all dashboard layouts - they're only needed when authenticated
 const AdminLayout = dynamic(() => import("./AdminLayout"), { ssr: false });
 const UserLayout = dynamic(() => import("./UserLayout"), { ssr: false });
-const UnderwriterLayout = dynamic(() => import("./UnderwriterLayout"), { ssr: false });
-const FinanceManagerLayout = dynamic(() => import("./FinanceManagerLayout"), { ssr: false });
-const CollectionAgentLayout = dynamic(() => import("./CollectionAgentLayout"), { ssr: false });
-const RiskAnalystLayout = dynamic(() => import("./RiskAnalystLayout"), { ssr: false });
-const SupportAgentLayout = dynamic(() => import("./SupportAgentLayout"), { ssr: false });
 
 interface ConditionalLayoutProps {
   children: React.ReactNode;
@@ -49,6 +44,9 @@ const PUBLIC_ROUTES = [
 // Routes that should NOT show header/footer (full-page experiences)
 const FULL_SCREEN_ROUTES = ['/select-language'];
 
+// Routes that should be full-screen for logged-in users only
+const LOGGED_IN_FULL_SCREEN_ROUTES = ['/apply/quick', '/apply/loan'];
+
 // Check if current path should use public layout
 const isPublicRoute = (pathname: string): boolean => {
   return PUBLIC_ROUTES.some(route => {
@@ -65,6 +63,15 @@ const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
 
   // If it's a full-screen route, render without header/footer
   if (FULL_SCREEN_ROUTES.includes(pathname)) {
+    return (
+      <>
+        {children}
+      </>
+    );
+  }
+
+  // If user is logged in and on an application form page, show full-screen
+  if (user && LOGGED_IN_FULL_SCREEN_ROUTES.some(route => pathname.startsWith(route))) {
     return (
       <>
         {children}
@@ -101,21 +108,6 @@ const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
     case 'USER':
     case 'CUSTOMER':
       return <UserLayout>{children}</UserLayout>;
-
-    case 'UNDERWRITER':
-      return <UnderwriterLayout>{children}</UnderwriterLayout>;
-
-    case 'FINANCE_MANAGER':
-      return <FinanceManagerLayout>{children}</FinanceManagerLayout>;
-
-    case 'COLLECTION_AGENT':
-      return <CollectionAgentLayout>{children}</CollectionAgentLayout>;
-
-    case 'SUPPORT_AGENT':
-      return <SupportAgentLayout>{children}</SupportAgentLayout>;
-
-    case 'RISK_ANALYST':
-      return <RiskAnalystLayout>{children}</RiskAnalystLayout>;
 
     default:
       // Fallback to public layout

@@ -205,63 +205,6 @@ export default function Home() {
 
    
 
-        {/* Testimonials Section */}
-        {/* <section className="py-12 sm:py-16 lg:py-20 gradient-dark">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-10 sm:mb-12 lg:mb-16"
-            >
-              <span className="inline-block px-4 py-2 bg-[#FFF4E4] text-[#E36229] rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
-                {t.homepage.sections.testimonials.badge}
-              </span>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold font-sora mb-3 sm:mb-4 px-4">
-                {t.homepage.sections.testimonials.title} <span className="text-[#FF9C70]">{t.homepage.sections.testimonials.titleHighlight}</span>
-              </h2>
-              <p className="text-base sm:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto px-4">
-                {t.homepage.sections.testimonials.subtitle}
-              </p>
-            </motion.div>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-8">
-              {testimonials.map((testimonial, index) => (
-                <motion.div
-                  key={testimonial.name}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="card-dark p-5 sm:p-6 hover-glow"
-                >
-                  <div className="flex items-center gap-1 mb-3 sm:mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 sm:w-5 sm:h-5 fill-yellow-400 text-yellow-400" />
-                    ))}
-                  </div>
-                  <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 italic line-clamp-4">
-                    "{testimonial.content}"
-                  </p>
-                  <div className="flex items-center gap-3 sm:gap-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#4A66FF] to-[#6D90FF] rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
-                      {testimonial.name[0]}
-                    </div>
-                    <div className="min-w-0">
-                      <h4 className="font-semibold text-sm sm:text-base truncate">{testimonial.name}</h4>
-                      <p className="text-xs sm:text-sm text-gray-600 truncate">{testimonial.designation}</p>
-                    </div>
-                  </div>
-                  <div className="mt-3 sm:mt-4 pt-3 sm:pt-4">
-                    <span className="text-xs px-2 py-1 bg-[#DAE6FF] text-[#4A66FF] rounded-full inline-block">
-                      {t.homepage.sections.testimonials.loanAmount}: {testimonial.loanAmount}
-                    </span>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section> */}
 
         {/* FAQ Section */}
         <section className="py-12 sm:py-16 lg:py-20 bg-white">

@@ -20,7 +20,7 @@ interface UserLayoutProps {
 const UserLayout = ({ children }: UserLayoutProps) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [userData, setUserData] = useState({
@@ -63,28 +63,16 @@ const UserLayout = ({ children }: UserLayoutProps) => {
     //   color: "text-purple-400"
     // },
     {
-      title: "My Bank",
-      icon: Wallet,
-      href: "/user/bank",
+      title: "My Applications",
+      icon: FileText,
+      href: "/user/applications",
       color: "text-purple-400"
     },
-    {
-      title: "Track Application",
-      icon: Target,
-      href: "/user/track-application",
-      color: "text-cyan-400"
-    },
-    {
-      title: "Documents",
-      icon: FileText,
-      href: "/user/documents",
-      color: "text-indigo-400"
-    },
     // {
-    //   title: "EMI Calculator",
-    //   icon: Calculator,
-    //   href: "/resources/emi-calculator",
-    //   color: "text-lime-400"
+    //   title: "Documents",
+    //   icon: FileText,
+    //   href: "/user/documents",
+    //   color: "text-indigo-400"
     // },
     {
       title: "Support",
@@ -114,7 +102,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
         const token = localStorage.getItem('authToken') || localStorage.getItem('token');
         if (!token) return;
 
-        const response = await fetch('https://api.bluechipfinmax.com/api/creditScore/get', {
+        const response = await fetch('http://93.127.167.88:8000/api/creditScore/get', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -150,7 +138,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
           return;
         }
 
-        const response = await fetch('https://api.bluechipfinmax.com/api/customer/profile', {
+        const response = await fetch('http://93.127.167.88:8000/api/customer/profile', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -194,7 +182,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
         }
 
         console.log('Fetching notifications...');
-        const response = await fetch('https://api.bluechipfinmax.com/api/notification/getAll', {
+        const response = await fetch('http://93.127.167.88:8000/api/notification/getAll', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -283,13 +271,8 @@ const UserLayout = ({ children }: UserLayoutProps) => {
   }, [pathname]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userEmail');
-    router.push('/login');
+    // Use the logout function from AuthContext to ensure all cleanup is done properly
+    logout();
   };
 
   return (
