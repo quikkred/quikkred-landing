@@ -102,7 +102,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
         const token = localStorage.getItem('authToken') || localStorage.getItem('token');
         if (!token) return;
 
-        const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/creditScore/get', {
+        const response = await fetch('http://93.127.167.88:4050/api/creditScore/get', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -138,7 +138,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
           return;
         }
 
-        const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/customer/profile', {
+        const response = await fetch('http://93.127.167.88:4050/api/customer/profile', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -182,7 +182,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
         }
 
         console.log('Fetching notifications...');
-        const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/notification/getAll', {
+        const response = await fetch('http://93.127.167.88:4050/api/notification/getAll', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

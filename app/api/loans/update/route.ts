@@ -16,7 +16,7 @@ export async function PUT(request: NextRequest) {
     const authHeader = request.headers.get('Authorization');
 
     // Forward the update request to the backend API
-    const response = await fetch(`https://77q1g1gk-5050.inc1.devtunnels.ms/api/application/loan/update/${applicationId}`, {
+    const response = await fetch(`http://93.127.167.88:4050/api/application/loan/update/${applicationId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
