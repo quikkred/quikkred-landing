@@ -42,6 +42,8 @@ export default function ApplyPage() {
   const [verifying, setVerifying] = useState({ email: false, phone: false });
   const [userId, setUserId] = useState<string | null>(null);
   const [authToken, setAuthToken] = useState<string | null>(null);
+  const [applicationId, setApplicationId] = useState<string | null>(null);
+  const [loanNumber, setLoanNumber] = useState<string | null>(null);
   const [savingPersonalDetails, setSavingPersonalDetails] = useState(false);
   const [savingEmploymentInfo, setSavingEmploymentInfo] = useState(false);
   const [uploadingDocuments, setUploadingDocuments] = useState(false);
@@ -58,27 +60,57 @@ export default function ApplyPage() {
     bankStatement: false
   });
 
+  // Tracking flags for completed sections
+  const [isBasicDetailsFilled, setIsBasicDetailsFilled] = useState(false);
+  const [isEmploymentDetailsFilled, setIsEmploymentDetailsFilled] = useState(false);
+  const [isVerificationDetailsFilled, setIsVerificationDetailsFilled] = useState(false);
+
   const [formData, setFormData] = useState({
     // Personal Details
     fullName: "",
     email: "",
     phone: "",
     dob: "",
+    gender: "Male",
+    maritalStatus: "Single",
     pan: "",
     aadhaar: "",
     address: "",
     city: "",
     state: "",
     pincode: "",
+    permanentAddressSame: true,
+    permanentAddress: "",
+    permanentCity: "",
+    permanentState: "",
+    permanentPincode: "",
 
     // Employment Info
-    employmentType: "salaried",
+    employmentType: "",
     companyName: "",
     designation: "",
     monthlyIncome: "",
     workEmail: "",
     officeAddress: "",
+    officeCity: "",
+    officeState: "",
+    officePincode: "",
     employmentYears: "",
+
+    // Bank Details
+    bankName: "",
+    accountNumber: "",
+    accountType: "Savings",
+    ifscCode: "",
+    accountHolderName: "",
+
+    // References
+    reference1Name: "",
+    reference1Mobile: "",
+    reference1Relationship: "",
+    reference2Name: "",
+    reference2Mobile: "",
+    reference2Relationship: "",
 
     // Documents
     panCard: null,
@@ -90,6 +122,7 @@ export default function ApplyPage() {
     loanAmount: "",
     loanPurpose: "",
     tenure: "1",
+    emiAmount: "",
 
     // Agreement
     termsAccepted: false
@@ -183,7 +216,7 @@ export default function ApplyPage() {
 
       console.log(`Uploading ${apiFieldName}...`, file.name, file.size, file.type);
 
-      const response = await fetch("http://93.127.167.88:8000/api/document/upload", {
+      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/document/upload", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -260,7 +293,7 @@ export default function ApplyPage() {
 
       console.log('Uploading all documents in one request...');
 
-      const response = await fetch("http://93.127.167.88:8000/api/document/upload", {
+      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/document/upload", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -322,6 +355,18 @@ export default function ApplyPage() {
       setUserId(storedUserId);
     }
 
+    // Load applicationId from localStorage
+    const storedApplicationId = localStorage.getItem('applicationId');
+    if (storedApplicationId) {
+      setApplicationId(storedApplicationId);
+    }
+
+    // Load loanNumber from localStorage
+    const storedLoanNumber = localStorage.getItem('loanNumber');
+    if (storedLoanNumber) {
+      setLoanNumber(storedLoanNumber);
+    }
+
     // Load verified user data from localStorage
     const verifiedUserData = localStorage.getItem('verifiedUser');
     if (verifiedUserData) {
@@ -368,7 +413,7 @@ export default function ApplyPage() {
         payload.mobile = formData.phone;
       }
 
-      const response = await fetch("http://93.127.167.88:8000/api/auth/customer/create", {
+      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -422,7 +467,7 @@ export default function ApplyPage() {
     setVerifying(prev => ({ ...prev, email: true }));
 
     try {
-      const response = await fetch("http://93.127.167.88:8000/api/auth/customer/verify", {
+      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/verify", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -502,7 +547,7 @@ export default function ApplyPage() {
         payload.email = formData.email;
       }
 
-      const response = await fetch("http://93.127.167.88:8000/api/auth/customer/create", {
+      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -556,7 +601,7 @@ export default function ApplyPage() {
     setVerifying(prev => ({ ...prev, phone: true }));
 
     try {
-      const response = await fetch("http://93.127.167.88:8000/api/auth/customer/verify", {
+      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/verify", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -615,6 +660,167 @@ export default function ApplyPage() {
     }
   };
 
+  // Create or update loan application
+  const createOrUpdateLoanApplication = async (isSubmit: boolean = false) => {
+    try {
+      // Get token from state or localStorage
+      const token = authToken || localStorage.getItem('authToken');
+
+      if (!token) {
+        toast({
+          variant: "error",
+          title: "Authentication Required",
+          description: "Authentication token missing. Please verify your email or phone first."
+        });
+        return null;
+      }
+
+      // Split fullName into firstName and lastName
+      const nameParts = formData.fullName.trim().split(/\s+/);
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+
+      // Calculate EMI amount if not provided
+      const loanAmt = parseFloat(formData.loanAmount) || 0;
+      const tenureMonths = parseInt(formData.tenure) || 1;
+      const interestRate = 0.015; // 1.5% per month
+      const totalInterest = loanAmt * interestRate * tenureMonths;
+      const processingFee = loanAmt * 0.02; // 2%
+      const totalAmount = loanAmt + totalInterest + processingFee;
+      const emiAmount = Math.round(totalAmount / tenureMonths);
+
+      // Build payload matching the API specification
+      const payload: any = {
+        firstName,
+        lastName,
+        dateOfBirth: formData.dob || undefined,
+        gender: formData.gender || undefined,
+        maritalStatus: formData.maritalStatus || undefined,
+        panCard: formData.pan?.toUpperCase() || undefined,
+        aadhaarNumber: formData.aadhaar?.replace(/\s/g, '') || undefined,
+        isBasicDetailsFilled,
+        isEmploymentDetailsFilled,
+        isVerificationDetailsFilled,
+        currentAddress: (formData.address && formData.city && formData.state && formData.pincode) ? {
+          street: formData.address,
+          city: formData.city,
+          state: formData.state,
+          pincode: formData.pincode
+        } : undefined,
+        isPermanentAddressSame: formData.permanentAddressSame,
+        permanentAddress: (!formData.permanentAddressSame && formData.permanentAddress && formData.permanentCity && formData.permanentState && formData.permanentPincode) ? {
+          street: formData.permanentAddress,
+          city: formData.permanentCity,
+          state: formData.permanentState,
+          pincode: formData.permanentPincode
+        } : undefined,
+        employmentType: formData.employmentType || undefined,
+        companyName: formData.companyName || undefined,
+        designation: formData.designation || undefined,
+        monthlyIncome: formData.monthlyIncome ? parseFloat(formData.monthlyIncome) : undefined,
+        workExperienceMonths: formData.employmentYears ? (() => {
+          if (formData.employmentYears === "<1") return 6;
+          if (formData.employmentYears === "1-2") return 18;
+          if (formData.employmentYears === "2-5") return 36;
+          if (formData.employmentYears === "5+") return 60;
+          return parseInt(formData.employmentYears) * 12;
+        })() : undefined,
+        officeAddress: (formData.officeAddress && formData.officeCity && formData.officeState && formData.officePincode) ? {
+          street: formData.officeAddress,
+          city: formData.officeCity,
+          state: formData.officeState,
+          pincode: formData.officePincode
+        } : undefined,
+        banks: (formData.bankName && formData.accountNumber && formData.ifscCode) ? [{
+          bankName: formData.bankName,
+          accountNumber: formData.accountNumber,
+          accountType: formData.accountType,
+          ifscCode: formData.ifscCode,
+          accountHolderName: formData.accountHolderName || formData.fullName
+        }] : undefined,
+        references: [],
+        loanAmount: formData.loanAmount ? parseFloat(formData.loanAmount) : undefined,
+        requestedTenure: formData.tenure ? parseInt(formData.tenure) : undefined,
+        tenureUnit: "months",
+        emiAmount: emiAmount || undefined,
+        purpose: formData.loanPurpose || undefined,
+        isSubmit: isSubmit
+      };
+
+      // Add references if provided
+      if (formData.reference1Name && formData.reference1Mobile) {
+        payload.references.push({
+          name: formData.reference1Name,
+          mobile: formData.reference1Mobile,
+          relationship: formData.reference1Relationship || "Friend"
+        });
+      }
+      if (formData.reference2Name && formData.reference2Mobile) {
+        payload.references.push({
+          name: formData.reference2Name,
+          mobile: formData.reference2Mobile,
+          relationship: formData.reference2Relationship || "Friend"
+        });
+      }
+
+      // Remove undefined values and empty arrays
+      Object.keys(payload).forEach(key => {
+        if (payload[key] === undefined || (Array.isArray(payload[key]) && payload[key].length === 0)) {
+          delete payload[key];
+        }
+      });
+
+      console.log('Sending payload:', JSON.stringify(payload, null, 2));
+
+      // Always use the create endpoint (it handles both create and update)
+      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/application/loan/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      console.log('API response:', data);
+
+      if (response.ok && data.success) {
+        // Store the application ID and loan number on first create
+        if (data.data && !applicationId) {
+          if (data.data.applicationNumber) {
+            setApplicationId(data.data.applicationNumber);
+            localStorage.setItem('applicationId', data.data.applicationNumber);
+          }
+          if (data.data.loanNumber) {
+            setLoanNumber(data.data.loanNumber);
+            localStorage.setItem('loanNumber', data.data.loanNumber);
+          }
+          if (data.data.customerId) {
+            setUserId(data.data.customerId);
+            localStorage.setItem('userId', data.data.customerId);
+          }
+        }
+        return data;
+      } else {
+        toast({
+          variant: "error",
+          title: "Error",
+          description: data.message || "Failed to save application data. Please try again."
+        });
+        return null;
+      }
+    } catch (error) {
+      console.error("Error saving application:", error);
+      toast({
+        variant: "error",
+        title: "Connection Error",
+        description: "Failed to save application data. Please check your connection."
+      });
+      return null;
+    }
+  };
+
   // Submit personal details to API
   const submitPersonalDetails = async () => {
     // Validation
@@ -631,78 +837,21 @@ export default function ApplyPage() {
 
     setSavingPersonalDetails(true);
     try {
-      // Split fullName into firstName, middleName, lastName
-      const nameParts = formData.fullName.trim().split(/\s+/);
-      const firstName = nameParts[0] || "";
-      const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
-      const middleName = nameParts.length > 2 ? nameParts.slice(1, -1).join(" ") : "";
+      // Mark basic details as filled
+      setIsBasicDetailsFilled(true);
 
-      // Split address into line1 and line2 (by line breaks or after certain length)
-      const addressLines = formData.address.trim().split('\n');
-      const line1 = addressLines[0] || formData.address.substring(0, 100);
-      const line2 = addressLines.length > 1 ? addressLines.slice(1).join(', ') : "";
+      // Create or update loan application with personal details
+      const result = await createOrUpdateLoanApplication(false);
 
-      const payload = {
-        email: formData.email,
-        mobile: formData.phone,
-        firstName,
-        middleName,
-        lastName,
-        dateOfBirth: formData.dob,
-        panNumber: formData.pan.toUpperCase(),
-        aadhaarNumber: formData.aadhaar.replace(/\s/g, ''),
-        currentAddress: {
-          line1,
-          line2,
-          city: formData.city,
-          state: formData.state,
-          pincode: formData.pincode
-        }
-      };
-
-      // Get token from state or localStorage
-      const token = authToken || localStorage.getItem('authToken');
-
-      if (!token) {
-        toast({
-          variant: "error",
-          title: "Authentication Required",
-          description: "Authentication token missing. Please verify your email or phone first."
-        });
-        return false;
-      }
-
-      const response = await fetch("http://93.127.167.88:8000/api/customer/profile", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        // Store userId from response if available
-        if (data.data?.id) {
-          setUserId(data.data.id);
-          localStorage.setItem('userId', data.data.id);
-        }
+      if (result) {
         toast({
           variant: "success",
           title: "Success",
-          description: data.message || "Personal details saved successfully."
+          description: "Personal details saved successfully."
         });
         return true;
-      } else {
-        toast({
-          variant: "error",
-          title: "Error",
-          description: data.message || "Failed to save personal details. Please try again."
-        });
-        return false;
       }
+      return false;
     } catch (error) {
       console.error("Error saving personal details:", error);
       toast({
@@ -718,93 +867,63 @@ export default function ApplyPage() {
 
   // Submit employment information to API
   const submitEmploymentInfo = async () => {
-    // Validation
-    if (!formData.employmentType || !formData.companyName || !formData.designation ||
-        !formData.monthlyIncome || !formData.employmentYears) {
+    // Validation based on employment type
+    if (!formData.employmentType) {
       toast({
         variant: "warning",
         title: "Incomplete Form",
-        description: "Please fill in all required employment fields."
+        description: "Please select your employment type."
       });
       return false;
     }
 
-    // Get user ID
-    const currentUserId = userId || localStorage.getItem('userId');
-    if (!currentUserId) {
+    // Conditional validation based on employment type
+    if ((formData.employmentType === 'SALARIED' || formData.employmentType === 'SELF-EMPLOYED') &&
+        (!formData.companyName || !formData.designation)) {
       toast({
-        variant: "error",
-        title: "User ID Missing",
-        description: "User ID not found. Please complete previous steps first."
+        variant: "warning",
+        title: "Incomplete Form",
+        description: "Please fill in company/business name and designation."
+      });
+      return false;
+    }
+
+    if (formData.employmentType !== 'UNEMPLOYED' && !formData.monthlyIncome) {
+      toast({
+        variant: "warning",
+        title: "Incomplete Form",
+        description: "Please enter your monthly income."
+      });
+      return false;
+    }
+
+    if ((formData.employmentType === 'SALARIED' || formData.employmentType === 'SELF-EMPLOYED') &&
+        !formData.employmentYears) {
+      toast({
+        variant: "warning",
+        title: "Incomplete Form",
+        description: "Please select your work experience."
       });
       return false;
     }
 
     setSavingEmploymentInfo(true);
     try {
-      // Convert employmentYears string to number
-      let yearsInCurrentJob = 0;
-      if (formData.employmentYears === "<1") {
-        yearsInCurrentJob = 0;
-      } else if (formData.employmentYears === "1-2") {
-        yearsInCurrentJob = 1;
-      } else if (formData.employmentYears === "2-5") {
-        yearsInCurrentJob = 2;
-      } else if (formData.employmentYears === "5+") {
-        yearsInCurrentJob = 5;
-      } else {
-        yearsInCurrentJob = parseInt(formData.employmentYears) || 0;
-      }
+      // Mark employment details as filled
+      setIsEmploymentDetailsFilled(true);
 
-      const payload = {
-        user: currentUserId,
-        employmentType: formData.employmentType === "salaried" ? "SALARIED" : "SELF_EMPLOYED",
-        companyName: formData.companyName,
-        designation: formData.designation,
-        workEmail: formData.workEmail || "",
-        monthlyIncome: parseFloat(formData.monthlyIncome),
-        yearsInCurrentJob,
-        officeAddress: formData.officeAddress || ""
-      };
+      // Update loan application with employment info
+      const result = await createOrUpdateLoanApplication(false);
 
-      // Get token from state or localStorage
-      const token = authToken || localStorage.getItem('authToken');
-
-      if (!token) {
-        toast({
-          variant: "error",
-          title: "Authentication Required",
-          description: "Authentication token missing. Please verify your email or phone first."
-        });
-        return false;
-      }
-
-      const response = await fetch("http://93.127.167.88:8000/api/employment/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
+      if (result) {
         toast({
           variant: "success",
           title: "Success",
-          description: data.message || "Employment information saved successfully."
+          description: "Employment information saved successfully."
         });
         return true;
-      } else {
-        toast({
-          variant: "error",
-          title: "Error",
-          description: data.message || "Failed to save employment information. Please try again."
-        });
-        return false;
       }
+      return false;
     } catch (error) {
       console.error("Error saving employment information:", error);
       toast({
@@ -837,6 +956,8 @@ export default function ApplyPage() {
         });
         return;
       }
+      // Mark verification as complete
+      setIsVerificationDetailsFilled(true);
     }
 
     // Submit personal details on step 2
@@ -866,6 +987,26 @@ export default function ApplyPage() {
       // Upload all documents
       const success = await uploadAllDocuments();
       if (!success) return;
+
+      // Update loan application after document upload
+      await createOrUpdateLoanApplication(false);
+    }
+
+    // Save loan details on step 5
+    if (currentStep === 5) {
+      // Validation
+      if (!formData.loanAmount || !formData.loanPurpose || !formData.tenure) {
+        toast({
+          variant: "warning",
+          title: "Incomplete Form",
+          description: "Please fill in all loan details."
+        });
+        return;
+      }
+
+      // Update loan application with loan details
+      const result = await createOrUpdateLoanApplication(false);
+      if (!result) return;
     }
 
     if (currentStep < steps.length) {
@@ -894,66 +1035,37 @@ export default function ApplyPage() {
     setError(null);
 
     try {
-      // Prepare loan application data
-      const applicationData = {
-        loanType: "PAY-DAY" as const,
-        requestedAmount: parseFloat(formData.loanAmount),
-        interestRate: 12.5,
-        processingFee: Math.round(parseFloat(formData.loanAmount) * 0.02), // 2% of loan amount
-        tenure: parseInt(formData.tenure)
-      };
+      // Final submission with isSubmit = true
+      const result = await createOrUpdateLoanApplication(true);
 
-      // Get token from state or localStorage
-      const token = authToken || localStorage.getItem('authToken');
-
-      if (!token) {
-        toast({
-          variant: "error",
-          title: "Authentication Required",
-          description: "Authentication token missing. Please verify your email or phone first."
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      console.log('Submitting loan application:', applicationData);
-
-      const response = await fetch("http://93.127.167.88:8000/api/application/loan/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify(applicationData),
-      });
-
-      const data = await response.json();
-      console.log('Loan application response:', data);
-
-      if (response.ok && data.success) {
+      if (result && result.success) {
         // Store application details for tracking
-        if (data.data?.id) {
-          localStorage.setItem('lastApplicationId', data.data.id);
+        if (result.data?.applicationNumber) {
+          localStorage.setItem('lastApplicationId', result.data.applicationNumber);
         }
-        if (data.data?.loanNumber) {
-          localStorage.setItem('lastLoanNumber', data.data.loanNumber);
+        if (result.data?.loanNumber) {
+          localStorage.setItem('lastLoanNumber', result.data.loanNumber);
         }
 
         // Show success message
         toast({
           variant: "success",
           title: "Success",
-          description: data.message || "Loan application submitted successfully. Redirecting to dashboard..."
+          description: result.message || "Loan application submitted successfully. Redirecting to dashboard..."
         });
+
+        // Clear stored IDs as application is complete
+        localStorage.removeItem('applicationId');
+        localStorage.removeItem('loanNumber');
 
         // Redirect to dashboard or success page
         setTimeout(() => router.push('/dashboard'), 2000);
       } else {
-        setError(data.message || 'Failed to submit application. Please try again.');
+        setError('Failed to submit application. Please try again.');
         toast({
           variant: "error",
           title: "Error",
-          description: data.message || 'Failed to submit application. Please try again.'
+          description: 'Failed to submit application. Please try again.'
         });
       }
     } catch (err: any) {
@@ -1421,50 +1533,66 @@ export default function ApplyPage() {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--emerald-green)]"
                       required
                     >
-                      <option value="salaried">Salaried Employee</option>
-                      <option value="self-employed">Self Employed</option>
+                      <option value="">Select Employment Type</option>
+                      <option value="SALARIED">Salaried Employee</option>
+                      <option value="SELF-EMPLOYED">Self Employed</option>
+                      <option value="UNEMPLOYED">Unemployed</option>
+                      <option value="STUDENT">Student</option>
+                      <option value="RETIRED">Retired</option>
                     </select>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Company Name *</label>
-                      <input
-                        type="text"
-                        name="companyName"
-                        value={formData.companyName}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white"
-                        placeholder="Your Company Name"
-                        required
-                      />
-                    </div>
+                    {(formData.employmentType === 'SALARIED' || formData.employmentType === 'SELF-EMPLOYED') && (
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          {formData.employmentType === 'SELF-EMPLOYED' ? 'Business Name' : 'Company Name'} *
+                        </label>
+                        <input
+                          type="text"
+                          name="companyName"
+                          value={formData.companyName}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white"
+                          placeholder={formData.employmentType === 'SELF-EMPLOYED' ? 'Your Business Name' : 'Your Company Name'}
+                          required={formData.employmentType === 'SALARIED' || formData.employmentType === 'SELF-EMPLOYED'}
+                        />
+                      </div>
+                    )}
 
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Designation *</label>
-                      <input
-                        type="text"
-                        name="designation"
-                        value={formData.designation}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white"
-                        placeholder="Your Job Title"
-                        required
-                      />
-                    </div>
+                    {(formData.employmentType === 'SALARIED' || formData.employmentType === 'SELF-EMPLOYED') && (
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          {formData.employmentType === 'SELF-EMPLOYED' ? 'Business Type' : 'Designation'} *
+                        </label>
+                        <input
+                          type="text"
+                          name="designation"
+                          value={formData.designation}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white"
+                          placeholder={formData.employmentType === 'SELF-EMPLOYED' ? 'Your Business Type' : 'Your Job Title'}
+                          required={formData.employmentType === 'SALARIED' || formData.employmentType === 'SELF-EMPLOYED'}
+                        />
+                      </div>
+                    )}
 
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Monthly Income *</label>
-                      <input
-                        type="number"
-                        name="monthlyIncome"
-                        value={formData.monthlyIncome}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white"
-                        placeholder="₹ 50,000"
-                        required
-                      />
-                    </div>
+                    {formData.employmentType !== 'UNEMPLOYED' && (
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          {formData.employmentType === 'STUDENT' ? 'Monthly Allowance/Income' : 'Monthly Income'} *
+                        </label>
+                        <input
+                          type="number"
+                          name="monthlyIncome"
+                          value={formData.monthlyIncome}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white"
+                          placeholder="₹ 50,000"
+                          required={formData.employmentType !== 'UNEMPLOYED'}
+                        />
+                      </div>
+                    )}
 
                     <div>
                       <label className="block text-sm font-medium mb-2">Work Email</label>
@@ -1478,35 +1606,43 @@ export default function ApplyPage() {
                       />
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Years in Current Job *</label>
-                      <select
-                        name="employmentYears"
-                        value={formData.employmentYears}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white"
-                        required
-                      >
-                        <option value="">Select Years</option>
-                        <option value="<1">Less than 1 year</option>
-                        <option value="1-2">1-2 years</option>
-                        <option value="2-5">2-5 years</option>
-                        <option value="5+">More than 5 years</option>
-                      </select>
-                    </div>
+                    {(formData.employmentType === 'SALARIED' || formData.employmentType === 'SELF-EMPLOYED') && (
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          {formData.employmentType === 'SELF-EMPLOYED' ? 'Years in Business' : 'Years in Current Job'} *
+                        </label>
+                        <select
+                          name="employmentYears"
+                          value={formData.employmentYears}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white"
+                          required={formData.employmentType === 'SALARIED' || formData.employmentType === 'SELF-EMPLOYED'}
+                        >
+                          <option value="">Select Years</option>
+                          <option value="<1">Less than 1 year</option>
+                          <option value="1-2">1-2 years</option>
+                          <option value="2-5">2-5 years</option>
+                          <option value="5+">More than 5 years</option>
+                        </select>
+                      </div>
+                    )}
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Office Address</label>
-                    <textarea
-                      name="officeAddress"
-                      value={formData.officeAddress}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--emerald-green)]"
-                      rows={3}
-                      placeholder="Enter your office address"
-                    />
-                  </div>
+                  {(formData.employmentType === 'SALARIED' || formData.employmentType === 'SELF-EMPLOYED') && (
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        {formData.employmentType === 'SELF-EMPLOYED' ? 'Business Address' : 'Office Address'}
+                      </label>
+                      <textarea
+                        name="officeAddress"
+                        value={formData.officeAddress}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--emerald-green)]"
+                        rows={3}
+                        placeholder={formData.employmentType === 'SELF-EMPLOYED' ? 'Enter your business address' : 'Enter your office address'}
+                      />
+                    </div>
+                  )}
                 </motion.div>
               )}
 

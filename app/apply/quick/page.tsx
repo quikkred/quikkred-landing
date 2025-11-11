@@ -88,7 +88,7 @@ export default function QuickLoanApplication() {
     email: "",
 
     // Step 2: Employment & Bank
-    employmentType: "salaried",
+    employmentType: "SALARIED",
     monthlyIncome: "",
     companyName: "",
     bankName: "",
@@ -98,6 +98,13 @@ export default function QuickLoanApplication() {
     // Step 3: Loan & Consent
     loanAmount: "",
     tenure: "12",
+    purpose: "",
+    reference1Name: "",
+    reference1Mobile: "",
+    reference1Relationship: "",
+    reference2Name: "",
+    reference2Mobile: "",
+    reference2Relationship: "",
     selfie: null as File | null,
     creditBureauConsent: false,
     termsConsent: false,
@@ -116,7 +123,7 @@ export default function QuickLoanApplication() {
 
           if (token) {
             // Fetch user profile data
-            const response = await fetch('http://93.127.167.88:8000/api/customer/get', {
+            const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/customer/get', {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
@@ -299,7 +306,7 @@ export default function QuickLoanApplication() {
         ? { email: formData.email }
         : { mobile: formData.mobile };
 
-      const response = await fetch("http://93.127.167.88:8000/api/auth/customer/create", {
+      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -349,7 +356,7 @@ export default function QuickLoanApplication() {
         ? { email: formData.email, otp: formData.otp }
         : { mobile: formData.mobile, otp: formData.otp };
 
-      const response = await fetch("http://93.127.167.88:8000/api/auth/customer/verify", {
+      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/verify", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -405,7 +412,7 @@ export default function QuickLoanApplication() {
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      const response = await fetch('http://93.127.167.88:8000/api/application/loan/document/verify', {
+      const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/application/loan/document/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -429,31 +436,44 @@ export default function QuickLoanApplication() {
           }));
         }
 
-        // Save verified PAN data to customer profile immediately
-        const userId = localStorage.getItem('userId');
-        if (token && userId) {
+        // Save verified PAN data via loan application API
+        if (token) {
           try {
-            const updatePayload = {
+            const nameParts = result.data.holderName.trim().split(/\s+/);
+            const firstName = nameParts[0] || "";
+            const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+
+            const loanPayload = {
+              firstName,
+              lastName,
               panCard: formData.pan,
-              isPanVerify: true,
-              fullName: result.data.holderName,
-              dateOfBirth: result.data.dateOfBirth
+              dateOfBirth: result.data.dateOfBirth,
+              isBasicDetailsFilled: true,
+              isSubmit: false
             };
 
-            const updateResponse = await fetch(`http://93.127.167.88:8000/api/customer/update/${userId}`, {
-              method: 'PATCH',
+            const updateResponse = await fetch(`https://77q1g1gk-5050.inc1.devtunnels.ms/api/application/loan/create`, {
+              method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
               },
-              body: JSON.stringify(updatePayload)
+              body: JSON.stringify(loanPayload)
             });
 
             if (updateResponse.ok) {
-              console.log('✅ PAN verification data saved to customer profile');
+              const data = await updateResponse.json();
+              console.log('✅ PAN verification data saved to loan application');
+
+              // Store IDs if this is first save
+              if (data.data) {
+                if (data.data.customerId) localStorage.setItem('userId', data.data.customerId);
+                if (data.data.applicationNumber) localStorage.setItem('applicationId', data.data.applicationNumber);
+                if (data.data.loanNumber) localStorage.setItem('loanNumber', data.data.loanNumber);
+              }
             }
           } catch (error) {
-            console.error('Failed to save PAN data to profile:', error);
+            console.error('Failed to save PAN data:', error);
           }
         }
 
@@ -497,7 +517,7 @@ export default function QuickLoanApplication() {
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      const response = await fetch('http://93.127.167.88:8000/api/application/loan/document/verify', {
+      const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/application/loan/document/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -521,41 +541,54 @@ export default function QuickLoanApplication() {
           }));
         }
 
-        // Save verified Aadhaar data to customer profile immediately
-        const userId = localStorage.getItem('userId');
-        if (token && userId) {
+        // Save verified Aadhaar data via loan application API
+        if (token) {
           try {
-            const updatePayload = {
+            const nameParts = result.data.holderName.trim().split(/\s+/);
+            const firstName = nameParts[0] || "";
+            const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+
+            const loanPayload: any = {
+              firstName,
+              lastName,
               aadhaarNumber: formData.aadhaar,
-              isAadhaarVerify: true,
-              fullName: result.data.holderName,
               dateOfBirth: result.data.dateOfBirth,
-              // Optionally save address from Aadhaar if available
-              ...(result.data.address && {
-                currentAddress: {
-                  line1: result.data.address.line1,
-                  line2: result.data.address.line2,
-                  city: result.data.address.city,
-                  state: result.data.address.state,
-                  pincode: result.data.address.pincode
-                }
-              })
+              isBasicDetailsFilled: true,
+              isSubmit: false
             };
 
-            const updateResponse = await fetch(`http://93.127.167.88:8000/api/customer/update/${userId}`, {
-              method: 'PATCH',
+            // Optionally save address from Aadhaar if available
+            if (result.data.address) {
+              loanPayload.currentAddress = {
+                street: `${result.data.address.line1} ${result.data.address.line2}`.trim(),
+                city: result.data.address.city,
+                state: result.data.address.state,
+                pincode: result.data.address.pincode
+              };
+            }
+
+            const updateResponse = await fetch(`https://77q1g1gk-5050.inc1.devtunnels.ms/api/application/loan/create`, {
+              method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
               },
-              body: JSON.stringify(updatePayload)
+              body: JSON.stringify(loanPayload)
             });
 
             if (updateResponse.ok) {
-              console.log('✅ Aadhaar verification data saved to customer profile');
+              const data = await updateResponse.json();
+              console.log('✅ Aadhaar verification data saved to loan application');
+
+              // Store IDs if this is first save
+              if (data.data) {
+                if (data.data.customerId) localStorage.setItem('userId', data.data.customerId);
+                if (data.data.applicationNumber) localStorage.setItem('applicationId', data.data.applicationNumber);
+                if (data.data.loanNumber) localStorage.setItem('loanNumber', data.data.loanNumber);
+              }
             }
           } catch (error) {
-            console.error('Failed to save Aadhaar data to profile:', error);
+            console.error('Failed to save Aadhaar data:', error);
           }
         }
 
@@ -595,41 +628,45 @@ export default function QuickLoanApplication() {
     }, 2000);
   };
 
-  // Save customer data to backend
+  // Save customer data to backend via loan application API
   const saveCustomerData = async (step: number) => {
     try {
       const token = localStorage.getItem('accessToken') ||
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
-      const userId = localStorage.getItem('userId');
 
-      if (!token || !userId) {
-        console.warn('No token or userId found, skipping customer data save');
+      if (!token) {
+        console.warn('No token found, skipping customer data save');
         return false;
       }
 
-      let payload: any = {};
+      let payload: any = {
+        isSubmit: false
+      };
 
       if (step === 1) {
         // Step 1: Basic Details
+        const nameParts = formData.fullName.trim().split(/\s+/);
+        const firstName = nameParts[0] || "";
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+
         payload = {
-          fullName: formData.fullName,
-          email: formData.email,
-          mobile: formData.mobile,
+          firstName,
+          lastName,
           dateOfBirth: formData.dob,
           panCard: formData.pan,
           aadhaarNumber: formData.aadhaar,
-          isPanVerify: panVerified,
-          isAadhaarVerify: aadhaarVerified,
-          isBasicDetailsFilled: true
+          isBasicDetailsFilled: true,
+          isSubmit: false
         };
       } else if (step === 2) {
         // Step 2: Employment & Bank Details
         payload = {
-          employmentType: formData.employmentType.toUpperCase(),
+          employmentType: formData.employmentType,
           monthlyIncome: parseFloat(formData.monthlyIncome),
           companyName: formData.companyName,
-          isEmploymentDetailsFilled: true
+          isEmploymentDetailsFilled: true,
+          isSubmit: false
         };
 
         // Add bank details if provided
@@ -638,21 +675,20 @@ export default function QuickLoanApplication() {
             bankName: formData.bankName,
             accountNumber: formData.accountNumber,
             ifscCode: formData.ifsc,
-            accountType: 'SAVINGS',
-            isPrimary: true
+            accountType: 'Savings',
+            accountHolderName: formData.fullName
           }];
         }
       } else if (step === 3) {
         // Step 3: Verification & Consent Details
         payload = {
           isVerificationDetailsFilled: true,
-          // Note: Consent flags are typically stored in the loan application, not customer profile
-          // But we mark the verification step as complete
+          isSubmit: false
         };
       }
 
-      const response = await fetch(`http://93.127.167.88:8000/api/customer/update/${userId}`, {
-        method: 'PATCH',
+      const response = await fetch(`https://77q1g1gk-5050.inc1.devtunnels.ms/api/application/loan/create`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -661,6 +697,13 @@ export default function QuickLoanApplication() {
       });
 
       const result = await response.json();
+
+      // Store IDs if this is first save
+      if (result.data) {
+        if (result.data.customerId) localStorage.setItem('userId', result.data.customerId);
+        if (result.data.applicationNumber) localStorage.setItem('applicationId', result.data.applicationNumber);
+        if (result.data.loanNumber) localStorage.setItem('loanNumber', result.data.loanNumber);
+      }
 
       if (response.ok && result.success) {
         console.log(`✅ Step ${step} data saved successfully`);
@@ -744,83 +787,117 @@ export default function QuickLoanApplication() {
     }
 
     if (currentStep === 3) {
-      // Validate loan details and consents
-      if (!formData.loanAmount || !formData.creditBureauConsent || !formData.termsConsent) {
+      // Validate loan details, references and consents
+      if (!formData.loanAmount || !formData.purpose ||
+          !formData.reference1Name || !formData.reference1Mobile || !formData.reference1Relationship ||
+          !formData.reference2Name || !formData.reference2Mobile || !formData.reference2Relationship ||
+          !formData.creditBureauConsent || !formData.termsConsent) {
         toast({
           variant: "warning",
           title: "Incomplete Information",
-          description: "Please enter loan amount and accept all required consents.",
+          description: "Please complete all loan details, references, and accept required consents.",
         });
         return;
       }
 
-      // Final step - save verification details and submit loan application
+      // Final step - submit only Step 3 data (Step 1 & 2 already saved)
       setLoading(true);
 
       try {
-        // Step 3: Save verification/consent details to customer profile
-        await saveCustomerData(3);
+        const token = localStorage.getItem('accessToken') ||
+                      localStorage.getItem('token') ||
+                      localStorage.getItem('authToken');
 
-        // Now submit the full loan application
-        const response = await loansService.applyLoan({
-          fullName: formData.fullName,
-          mobileNumber: formData.mobile,
-          email: formData.email,
-          panCard: formData.pan,
-          aadhaarCard: formData.aadhaar,
-          loanAmount: parseFloat(formData.loanAmount),
-          loanType: 'PERSONAL',
-          tenure: parseInt(formData.tenure),
-          purpose: 'Quick Loan Application',
-          employmentType: formData.employmentType.toUpperCase() as 'SALARIED' | 'SELF_EMPLOYED' | 'STUDENT' | 'RETIRED',
-          monthlyIncome: parseFloat(formData.monthlyIncome),
-          employerName: formData.companyName
+        if (!token) {
+          toast({
+            variant: "error",
+            title: "Authentication Error",
+            description: "Please login to continue.",
+          });
+          setLoading(false);
+          return;
+        }
+
+        // Calculate EMI
+        const principal = parseFloat(formData.loanAmount);
+        const rate = 12.5 / 100 / 12; // 12.5% annual rate
+        const tenureMonths = parseInt(formData.tenure);
+        const emi = Math.round((principal * rate * Math.pow(1 + rate, tenureMonths)) / (Math.pow(1 + rate, tenureMonths) - 1));
+
+        // Submit only Step 3 data with isSubmit: true (Steps 1 & 2 already saved)
+        const payload = {
+          loanAmount: principal,
+          requestedTenure: tenureMonths,
+          tenureUnit: 'months',
+          emiAmount: emi,
+          purpose: formData.purpose,
+          references: [
+            {
+              name: formData.reference1Name,
+              mobile: formData.reference1Mobile,
+              relationship: formData.reference1Relationship
+            },
+            {
+              name: formData.reference2Name,
+              mobile: formData.reference2Mobile,
+              relationship: formData.reference2Relationship
+            }
+          ],
+          isVerificationDetailsFilled: true,
+          isSubmit: true // Final submission
+        };
+
+        const response = await fetch(`https://77q1g1gk-5050.inc1.devtunnels.ms/api/application/loan/create`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
         });
 
+        const result = await response.json();
+
         // Check if API call was successful
-        if (response.success && response.data) {
-          // If backend returned user authentication data, use it for auto-login
-          if (response.data.userId && response.data.token) {
-            console.log('✅ Loan application submitted successfully with user authentication');
+        if (response.ok && result.success) {
+          console.log('✅ Loan application submitted successfully');
+          console.log('📊 Response:', result);
 
-            // Automatically log in the user with API data
-            const loginSuccess = await login(
-              formData.email,
-              '', // No password needed for API-based login
-              'CUSTOMER', // Default role for loan applicants
-              {
-                userId: response.data.userId,
-                token: response.data.token,
-                mobile: formData.mobile,
-                role: response.data.role || 'CUSTOMER'
-              }
-            );
-
-            if (loginSuccess) {
-              console.log('✅ User authenticated and granted dashboard access');
-            }
+          // Store IDs from response
+          if (result.data) {
+            if (result.data.customerId) localStorage.setItem('userId', result.data.customerId);
+            if (result.data.applicationNumber) localStorage.setItem('applicationId', result.data.applicationNumber);
+            if (result.data.loanNumber) localStorage.setItem('loanNumber', result.data.loanNumber);
           }
 
           // Use API response for decision
           setDecision({
             approved: true,
-            apiResponse: response.data,
-            approvedAmount: parseFloat(formData.loanAmount),
+            apiResponse: result.data,
+            approvedAmount: principal,
             interestRate: 12.5,
-            tenure: parseInt(formData.tenure),
-            emi: Math.round((parseFloat(formData.loanAmount) * (12.5/100/12) * Math.pow(1 + 12.5/100/12, parseInt(formData.tenure))) / (Math.pow(1 + 12.5/100/12, parseInt(formData.tenure)) - 1)),
-            processingFee: Math.round(parseFloat(formData.loanAmount) * 0.02)
+            tenure: tenureMonths,
+            emi: emi,
+            processingFee: Math.round(principal * 0.02)
           });
         } else {
-          // API returned error, use local decision engine as fallback
-          const result = autoDecisionEngine({
+          // API returned error
+          console.error('❌ Loan application failed:', result.message);
+          toast({
+            variant: "error",
+            title: "Application Failed",
+            description: result.message || "Failed to submit loan application. Please try again.",
+          });
+
+          // Use local decision engine as fallback
+          const decisionResult = autoDecisionEngine({
             monthlyIncome: parseFloat(formData.monthlyIncome),
-            loanAmount: parseFloat(formData.loanAmount),
+            loanAmount: principal,
             pan: formData.pan,
             aadhaar: formData.aadhaar,
-            tenure: parseInt(formData.tenure)
+            tenure: tenureMonths
           });
-          setDecision(result);
+          setDecision(decisionResult);
         }
       } catch (error) {
         console.error('Error submitting loan application:', error);
@@ -1037,7 +1114,7 @@ export default function QuickLoanApplication() {
                     aadhaar: "",
                     dob: "",
                     email: "",
-                    employmentType: "salaried",
+                    employmentType: "SALARIED",
                     monthlyIncome: "",
                     companyName: "",
                     bankName: "",
@@ -1045,6 +1122,13 @@ export default function QuickLoanApplication() {
                     ifsc: "",
                     loanAmount: "",
                     tenure: "12",
+                    purpose: "",
+                    reference1Name: "",
+                    reference1Mobile: "",
+                    reference1Relationship: "",
+                    reference2Name: "",
+                    reference2Mobile: "",
+                    reference2Relationship: "",
                     selfie: null,
                     creditBureauConsent: false,
                     termsConsent: false,
@@ -1512,8 +1596,11 @@ export default function QuickLoanApplication() {
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
                   >
-                    <option value="salaried">Salaried</option>
-                    <option value="self-employed">Self Employed</option>
+                    <option value="SALARIED">SALARIED</option>
+                    <option value="SELF-EMPLOYED">SELF-EMPLOYED</option>
+                     <option value="UNEMPLOYED">UNEMPLOYED</option>
+                    <option value="STUDENT">STUDENT</option>
+                    <option value= "RETIRED">RETIRED</option>
                   </select>
                 </div>
 
@@ -1605,7 +1692,7 @@ export default function QuickLoanApplication() {
                 exit={{ opacity: 0 }}
                 className="space-y-6"
               >
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Verification & Consent (1 minute)</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Loan Details & References (1 minute)</h2>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -1636,6 +1723,122 @@ export default function QuickLoanApplication() {
                       <option value="12">12 Months</option>
                       <option value="24">24 Months</option>
                     </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Purpose of Loan *
+                  </label>
+                  <input
+                    type="text"
+                    name="purpose"
+                    value={formData.purpose}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                    placeholder="e.g., Home Renovation, Medical Emergency, Education"
+                  />
+                </div>
+
+                {/* Reference 1 */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-4">Reference 1 *</h3>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Name
+                      </label>
+                      <input
+                        type="text"
+                        name="reference1Name"
+                        value={formData.reference1Name}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                        placeholder="Full Name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Mobile
+                      </label>
+                      <input
+                        type="tel"
+                        name="reference1Mobile"
+                        value={formData.reference1Mobile}
+                        onChange={handleChange}
+                        maxLength={10}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                        placeholder="9876543210"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Relationship
+                      </label>
+                      <select
+                        name="reference1Relationship"
+                        value={formData.reference1Relationship}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                      >
+                        <option value="">Select</option>
+                        <option value="Friend">Friend</option>
+                        <option value="Colleague">Colleague</option>
+                        <option value="Family">Family</option>
+                        <option value="Neighbor">Neighbor</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Reference 2 */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="font-semibold text-gray-900 mb-4">Reference 2 *</h3>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Name
+                      </label>
+                      <input
+                        type="text"
+                        name="reference2Name"
+                        value={formData.reference2Name}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                        placeholder="Full Name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Mobile
+                      </label>
+                      <input
+                        type="tel"
+                        name="reference2Mobile"
+                        value={formData.reference2Mobile}
+                        onChange={handleChange}
+                        maxLength={10}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                        placeholder="9876543210"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Relationship
+                      </label>
+                      <select
+                        name="reference2Relationship"
+                        value={formData.reference2Relationship}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                      >
+                        <option value="">Select</option>
+                        <option value="Friend">Friend</option>
+                        <option value="Colleague">Colleague</option>
+                        <option value="Family">Family</option>
+                        <option value="Neighbor">Neighbor</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
 

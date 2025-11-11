@@ -59,7 +59,7 @@ export default function SupportPage() {
         return;
       }
 
-      const response = await fetch('http://93.127.167.88:8000/api/supportTicket/getAll', {
+      const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/supportTicket/getAll', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -99,7 +99,7 @@ export default function SupportPage() {
         return;
       }
 
-      const response = await fetch('http://93.127.167.88:8000/api/supportTicket/create', {
+      const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/supportTicket/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

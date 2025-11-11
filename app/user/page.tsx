@@ -136,21 +136,21 @@ export default function UserDashboard() {
       }
 
       const [loansResponse, documentsResponse, creditScoreResponse] = await Promise.all([
-        fetch('http://93.127.167.88:8000/api/loans/my-loans', {
+        fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/loans/my-loans', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           }
         }),
-        fetch('http://93.127.167.88:8000/api/document/get', {
+        fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/document/get', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           }
         }),
-        fetch('http://93.127.167.88:8000/api/creditScore/get', {
+        fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/creditScore/get', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
