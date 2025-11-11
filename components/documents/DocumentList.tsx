@@ -74,7 +74,7 @@ export function DocumentList({
         return;
       }
 
-      const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/document/get', {
+      const response = await fetch('http://93.127.167.88:4050/api/document/get', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

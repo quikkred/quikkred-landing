@@ -73,6 +73,11 @@ export default function QuickLoanApplication() {
   const [aadhaarVerified, setAadhaarVerified] = useState(false);
   const [panData, setPanData] = useState<any>(null);
   const [aadhaarData, setAadhaarData] = useState<any>(null);
+  const [aadhaarAddress, setAadhaarAddress] = useState<any>(null);
+  const [aadhaarOtpSent, setAadhaarOtpSent] = useState(false);
+  const [aadhaarOtp, setAadhaarOtp] = useState("");
+  const [panError, setPanError] = useState<string>("");
+  const [aadhaarError, setAadhaarError] = useState<string>("");
   const [apiDeterminedStep, setApiDeterminedStep] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
@@ -123,7 +128,7 @@ export default function QuickLoanApplication() {
 
           if (token) {
             // Fetch user profile data
-            const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/customer/get', {
+            const response = await fetch('http://93.127.167.88:4050/api/customer/get', {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
@@ -306,7 +311,7 @@ export default function QuickLoanApplication() {
         ? { email: formData.email }
         : { mobile: formData.mobile };
 
-      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/create", {
+      const response = await fetch("http://93.127.167.88:4050/api/auth/customer/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -356,7 +361,7 @@ export default function QuickLoanApplication() {
         ? { email: formData.email, otp: formData.otp }
         : { mobile: formData.mobile, otp: formData.otp };
 
-      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/verify", {
+      const response = await fetch("http://93.127.167.88:4050/api/auth/customer/verify", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -397,11 +402,27 @@ export default function QuickLoanApplication() {
 
   // Verify PAN Card
   const verifyPAN = async () => {
+    setPanError(""); // Clear previous errors
+
     if (!formData.pan || formData.pan.length !== 10) {
+      const errorMsg = "Please enter a valid 10-character PAN number.";
+      setPanError(errorMsg);
       toast({
         variant: "warning",
         title: "Invalid PAN",
-        description: "Please enter a valid 10-character PAN number.",
+        description: errorMsg,
+      });
+      return;
+    }
+
+    // Check if name and DOB are filled (from Aadhaar)
+    if (!formData.fullName || !formData.dob) {
+      const errorMsg = "Please verify Aadhaar first to get name and date of birth.";
+      setPanError(errorMsg);
+      toast({
+        variant: "warning",
+        title: "Missing Information",
+        description: errorMsg,
       });
       return;
     }
@@ -412,13 +433,27 @@ export default function QuickLoanApplication() {
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/application/loan/document/verify', {
+      // Format DOB from YYYY-MM-DD to DD/MM/YYYY
+      const formatDOBForAPI = (dateStr: string) => {
+        if (!dateStr) return '';
+        const parts = dateStr.split('-');
+        if (parts.length === 3) {
+          return `${parts[2]}/${parts[1]}/${parts[0]}`; // Convert to DD/MM/YYYY
+        }
+        return dateStr;
+      };
+
+      const response = await fetch('http://93.127.167.88:4050/api/kyc/pan/verification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token ? `Bearer ${token}` : '',
         },
-        body: JSON.stringify({ panCard: formData.pan }),
+        body: JSON.stringify({
+          pan_number: formData.pan,
+          name: formData.fullName,
+          dob: formatDOBForAPI(formData.dob)
+        }),
       });
 
       const result = await response.json();
@@ -426,87 +461,76 @@ export default function QuickLoanApplication() {
       if (response.ok && result.success && result.data) {
         setPanVerified(true);
         setPanData(result.data);
+        setPanError(""); // Clear any errors
 
-        // Auto-fill name and DOB from PAN data
-        if (result.data.holderName && !formData.fullName) {
-          setFormData(prev => ({
-            ...prev,
-            fullName: result.data.holderName,
-            dob: result.data.dateOfBirth || prev.dob
-          }));
-        }
+        // Check verification status
+        const panStatus = result.data.data?.status;
+        const nameMatch = result.data.data?.name_as_per_pan_match;
+        const dobMatch = result.data.data?.date_of_birth_match;
 
-        // Save verified PAN data via loan application API
-        if (token) {
-          try {
-            const nameParts = result.data.holderName.trim().split(/\s+/);
-            const firstName = nameParts[0] || "";
-            const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+        if (panStatus === 'valid') {
+          let description = 'PAN verification successful!';
+          let warningMsg = '';
 
-            const loanPayload = {
-              firstName,
-              lastName,
-              panCard: formData.pan,
-              dateOfBirth: result.data.dateOfBirth,
-              isBasicDetailsFilled: true,
-              isSubmit: false
-            };
-
-            const updateResponse = await fetch(`https://77q1g1gk-5050.inc1.devtunnels.ms/api/application/loan/create`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              },
-              body: JSON.stringify(loanPayload)
-            });
-
-            if (updateResponse.ok) {
-              const data = await updateResponse.json();
-              console.log('✅ PAN verification data saved to loan application');
-
-              // Store IDs if this is first save
-              if (data.data) {
-                if (data.data.customerId) localStorage.setItem('userId', data.data.customerId);
-                if (data.data.applicationNumber) localStorage.setItem('applicationId', data.data.applicationNumber);
-                if (data.data.loanNumber) localStorage.setItem('loanNumber', data.data.loanNumber);
-              }
-            }
-          } catch (error) {
-            console.error('Failed to save PAN data:', error);
+          if (!nameMatch) {
+            warningMsg += 'Name does not match exactly with PAN records. ';
           }
-        }
+          if (!dobMatch) {
+            warningMsg += 'Date of birth does not match with PAN records.';
+          }
 
-        toast({
-          variant: "success",
-          title: "PAN Verified Successfully!",
-          description: `PAN verified for ${result.data.holderName}`,
-        });
+          if (warningMsg) {
+            setPanError(`⚠️ ${warningMsg}`);
+          }
+
+          toast({
+            variant: nameMatch && dobMatch ? "success" : "warning",
+            title: "PAN Verified!",
+            description: warningMsg ? `${description} ${warningMsg}` : description,
+          });
+        } else {
+          const errorMsg = 'PAN is not valid. Please check and try again.';
+          setPanError(errorMsg);
+          setPanVerified(false);
+          toast({
+            variant: "error",
+            title: "PAN Verification Failed",
+            description: errorMsg,
+          });
+        }
       } else {
+        const errorMsg = result.message || 'Unable to verify PAN. Please check the number and try again.';
+        setPanError(errorMsg);
         toast({
           variant: "error",
           title: "PAN Verification Failed",
-          description: result.message || 'Unable to verify PAN. Please check the number and try again.',
+          description: errorMsg,
         });
       }
     } catch (error: any) {
+      const errorMsg = error.message || 'Failed to verify PAN. Please try again.';
+      setPanError(errorMsg);
       toast({
         variant: "error",
         title: "Verification Error",
-        description: error.message || 'Failed to verify PAN. Please try again.',
+        description: errorMsg,
       });
     } finally {
       setPanVerifying(false);
     }
   };
 
-  // Verify Aadhaar Card
-  const verifyAadhaar = async () => {
+  // Send Aadhaar OTP
+  const sendAadhaarOTP = async () => {
+    setAadhaarError(""); // Clear previous errors
+
     if (!formData.aadhaar || formData.aadhaar.length !== 12) {
+      const errorMsg = "Please enter a valid 12-digit Aadhaar number.";
+      setAadhaarError(errorMsg);
       toast({
         variant: "warning",
         title: "Invalid Aadhaar",
-        description: "Please enter a valid 12-digit Aadhaar number.",
+        description: errorMsg,
       });
       return;
     }
@@ -517,13 +541,73 @@ export default function QuickLoanApplication() {
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/application/loan/document/verify', {
+      const response = await fetch('http://93.127.167.88:4050/api/kyc/aadhaar/otp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token ? `Bearer ${token}` : '',
         },
-        body: JSON.stringify({ aadhaarNumber: formData.aadhaar }),
+        body: JSON.stringify({ aadhaar_number: formData.aadhaar }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setAadhaarOtpSent(true);
+        setAadhaarError(""); // Clear any errors
+        toast({
+          variant: "success",
+          title: "OTP Sent Successfully!",
+          description: "Please enter the OTP sent to your Aadhaar-linked mobile number.",
+        });
+      } else {
+        const errorMsg = result.message || 'Unable to send OTP. Please check the Aadhaar number and try again.';
+        setAadhaarError(errorMsg);
+        toast({
+          variant: "error",
+          title: "Failed to Send OTP",
+          description: errorMsg,
+        });
+      }
+    } catch (error: any) {
+      const errorMsg = error.message || 'Failed to send OTP. Please try again.';
+      setAadhaarError(errorMsg);
+      toast({
+        variant: "error",
+        title: "Error",
+        description: errorMsg,
+      });
+    } finally {
+      setAadhaarVerifying(false);
+    }
+  };
+
+  // Verify Aadhaar OTP
+  const verifyAadhaarOTP = async () => {
+    if (!aadhaarOtp || aadhaarOtp.length !== 6) {
+      const errorMsg = "Please enter a valid 6-digit OTP.";
+      setAadhaarError(errorMsg);
+      toast({
+        variant: "warning",
+        title: "Invalid OTP",
+        description: errorMsg,
+      });
+      return;
+    }
+
+    setAadhaarVerifying(true);
+    try {
+      const token = localStorage.getItem('accessToken') ||
+                    localStorage.getItem('token') ||
+                    localStorage.getItem('authToken');
+
+      const response = await fetch('http://93.127.167.88:4050/api/kyc/aadhaar/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+        body: JSON.stringify({ otp: aadhaarOtp }),
       });
 
       const result = await response.json();
@@ -531,84 +615,53 @@ export default function QuickLoanApplication() {
       if (response.ok && result.success && result.data) {
         setAadhaarVerified(true);
         setAadhaarData(result.data);
+        setAadhaarError(""); // Clear any errors
 
-        // Auto-fill name and DOB from Aadhaar data
-        if (result.data.holderName && !formData.fullName) {
-          setFormData(prev => ({
-            ...prev,
-            fullName: result.data.holderName,
-            dob: result.data.dateOfBirth || prev.dob
-          }));
-        }
-
-        // Save verified Aadhaar data via loan application API
-        if (token) {
-          try {
-            const nameParts = result.data.holderName.trim().split(/\s+/);
-            const firstName = nameParts[0] || "";
-            const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
-
-            const loanPayload: any = {
-              firstName,
-              lastName,
-              aadhaarNumber: formData.aadhaar,
-              dateOfBirth: result.data.dateOfBirth,
-              isBasicDetailsFilled: true,
-              isSubmit: false
-            };
-
-            // Optionally save address from Aadhaar if available
-            if (result.data.address) {
-              loanPayload.currentAddress = {
-                street: `${result.data.address.line1} ${result.data.address.line2}`.trim(),
-                city: result.data.address.city,
-                state: result.data.address.state,
-                pincode: result.data.address.pincode
-              };
-            }
-
-            const updateResponse = await fetch(`https://77q1g1gk-5050.inc1.devtunnels.ms/api/application/loan/create`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              },
-              body: JSON.stringify(loanPayload)
-            });
-
-            if (updateResponse.ok) {
-              const data = await updateResponse.json();
-              console.log('✅ Aadhaar verification data saved to loan application');
-
-              // Store IDs if this is first save
-              if (data.data) {
-                if (data.data.customerId) localStorage.setItem('userId', data.data.customerId);
-                if (data.data.applicationNumber) localStorage.setItem('applicationId', data.data.applicationNumber);
-                if (data.data.loanNumber) localStorage.setItem('loanNumber', data.data.loanNumber);
-              }
-            }
-          } catch (error) {
-            console.error('Failed to save Aadhaar data:', error);
+        // Parse date format from DD-MM-YYYY to YYYY-MM-DD
+        const formatDOB = (dateStr: string) => {
+          if (!dateStr) return '';
+          const parts = dateStr.split('-');
+          if (parts.length === 3) {
+            return `${parts[2]}-${parts[1]}-${parts[0]}`; // Convert to YYYY-MM-DD
           }
+          return dateStr;
+        };
+
+        // Auto-fill name, DOB from Aadhaar data
+        setFormData(prev => ({
+          ...prev,
+          fullName: result.data.name || prev.fullName,
+          dob: formatDOB(result.data.date_of_birth) || prev.dob
+        }));
+
+        // Store address data for later use (will be saved on Next button click)
+        if (result.data.address) {
+          setAadhaarAddress(result.data.address);
+          console.log('✅ Aadhaar verified successfully');
+          console.log('📊 Address data stored:', result.data.address);
         }
 
         toast({
           variant: "success",
           title: "Aadhaar Verified Successfully!",
-          description: `Aadhaar verified for ${result.data.holderName}`,
+          description: `Aadhaar verified for ${result.data.name}. Data will be saved when you click Next.`,
         });
       } else {
+        const errorMsg = result.message || 'Invalid OTP. Please try again.';
+        setAadhaarError(errorMsg);
         toast({
           variant: "error",
           title: "Aadhaar Verification Failed",
-          description: result.message || 'Unable to verify Aadhaar. Please check the number and try again.',
+          description: errorMsg,
         });
       }
     } catch (error: any) {
+      const errorMsg = error.message || 'Failed to verify Aadhaar. Please try again.';
+      setAadhaarError(errorMsg);
       toast({
         variant: "error",
         title: "Verification Error",
-        description: error.message || 'Failed to verify Aadhaar. Please try again.',
+        description: errorMsg,
       });
     } finally {
       setAadhaarVerifying(false);
@@ -645,7 +698,7 @@ export default function QuickLoanApplication() {
       };
 
       if (step === 1) {
-        // Step 1: Basic Details
+        // Step 1: Basic Details (with verified PAN & Aadhaar data)
         const nameParts = formData.fullName.trim().split(/\s+/);
         const firstName = nameParts[0] || "";
         const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
@@ -659,6 +712,22 @@ export default function QuickLoanApplication() {
           isBasicDetailsFilled: true,
           isSubmit: false
         };
+
+        // Add address from Aadhaar if available
+        if (aadhaarAddress) {
+          payload.currentAddress = {
+            street: `${aadhaarAddress.house || ''} ${aadhaarAddress.street || ''}`.trim(),
+            city: aadhaarAddress.locality || aadhaarAddress.district || '',
+            state: aadhaarAddress.state || '',
+            pincode: aadhaarAddress.pincode || ''
+          };
+          console.log('📍 Saving address from Aadhaar:', payload.currentAddress);
+        }
+
+        // Add PAN verification data if available
+        if (panData?.data) {
+          console.log('🆔 Saving PAN verification data');
+        }
       } else if (step === 2) {
         // Step 2: Employment & Bank Details
         payload = {
@@ -687,7 +756,7 @@ export default function QuickLoanApplication() {
         };
       }
 
-      const response = await fetch(`https://77q1g1gk-5050.inc1.devtunnels.ms/api/application/loan/create`, {
+      const response = await fetch(`http://93.127.167.88:4050/api/application/loan/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -847,7 +916,7 @@ export default function QuickLoanApplication() {
           isSubmit: true // Final submission
         };
 
-        const response = await fetch(`https://77q1g1gk-5050.inc1.devtunnels.ms/api/application/loan/create`, {
+        const response = await fetch(`http://93.127.167.88:4050/api/application/loan/create`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1489,6 +1558,7 @@ export default function QuickLoanApplication() {
                         onChange={(e) => {
                           handleChange(e);
                           if (panVerified) setPanVerified(false); // Reset verification if changed
+                          if (panError) setPanError(""); // Clear error when typing
                         }}
                         disabled={panVerified}
                         maxLength={10}
@@ -1514,8 +1584,16 @@ export default function QuickLoanApplication() {
                     </div>
                     {panVerified && panData && (
                       <p className="mt-2 text-xs text-green-700">
-                        ✓ Verified for {panData.holderName}
+                        ✓ Verified for {panData.data?.pan || 'PAN holder'}
                       </p>
+                    )}
+                    {panError && (
+                      <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="text-sm text-red-700 flex items-start gap-2">
+                          <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                          <span>{panError}</span>
+                        </p>
+                      </div>
                     )}
                   </div>
                   <div>
@@ -1529,21 +1607,26 @@ export default function QuickLoanApplication() {
                         value={formData.aadhaar}
                         onChange={(e) => {
                           handleChange(e);
-                          if (aadhaarVerified) setAadhaarVerified(false); // Reset verification if changed
+                          if (aadhaarVerified || aadhaarOtpSent) {
+                            setAadhaarVerified(false);
+                            setAadhaarOtpSent(false);
+                            setAadhaarOtp("");
+                          }
+                          if (aadhaarError) setAadhaarError(""); // Clear error when typing
                         }}
-                        disabled={aadhaarVerified}
+                        disabled={aadhaarVerified || aadhaarOtpSent}
                         maxLength={12}
                         className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100"
                         placeholder="1234 5678 9012"
                       />
-                      {!aadhaarVerified && (
+                      {!aadhaarVerified && !aadhaarOtpSent && (
                         <button
                           type="button"
-                          onClick={verifyAadhaar}
+                          onClick={sendAadhaarOTP}
                           disabled={!formData.aadhaar || formData.aadhaar.length !== 12 || aadhaarVerifying}
                           className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
                         >
-                          {aadhaarVerifying ? "Verifying..." : "Verify"}
+                          {aadhaarVerifying ? "Sending..." : "Send OTP"}
                         </button>
                       )}
                       {aadhaarVerified && (
@@ -1555,8 +1638,48 @@ export default function QuickLoanApplication() {
                     </div>
                     {aadhaarVerified && aadhaarData && (
                       <p className="mt-2 text-xs text-green-700">
-                        ✓ Verified for {aadhaarData.holderName}
+                        ✓ Verified for {aadhaarData.name}
                       </p>
+                    )}
+
+                    {/* Aadhaar OTP Input */}
+                    {aadhaarOtpSent && !aadhaarVerified && (
+                      <div className="mt-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Enter Aadhaar OTP *
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={aadhaarOtp}
+                            onChange={(e) => setAadhaarOtp(e.target.value.replace(/\D/g, ''))}
+                            maxLength={6}
+                            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                            placeholder="Enter 6-digit OTP"
+                          />
+                          <button
+                            type="button"
+                            onClick={verifyAadhaarOTP}
+                            disabled={aadhaarOtp.length !== 6 || aadhaarVerifying}
+                            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
+                          >
+                            {aadhaarVerifying ? "Verifying..." : "Verify OTP"}
+                          </button>
+                        </div>
+                        <p className="mt-1 text-xs text-gray-500">
+                          OTP sent to Aadhaar-linked mobile number
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Aadhaar Error Message */}
+                    {aadhaarError && (
+                      <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="text-sm text-red-700 flex items-start gap-2">
+                          <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                          <span>{aadhaarError}</span>
+                        </p>
+                      </div>
                     )}
                   </div>
                 </div>

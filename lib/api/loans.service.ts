@@ -100,7 +100,7 @@ export interface NewLoanApplicationRequest {
 class LoansService {
   // Apply for a loan (original method)
 async applyLoan(data: LoanApplication): Promise<ApiResponse<any>> {
-  return apiClient.post('https://77q1g1gk-5050.inc1.devtunnels.ms/api/application/loan/create', data);
+  return apiClient.post('http://93.127.167.88:4050/api/application/loan/create', data);
 }
 
 

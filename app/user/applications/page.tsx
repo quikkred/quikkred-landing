@@ -82,7 +82,7 @@ export default function MyApplicationsPage() {
       const currentLimit = limit || pagination.limit;
 
       const response = await fetch(
-        `https://77q1g1gk-5050.inc1.devtunnels.ms/api/application/loan/get?page=${currentPage}&limit=${currentLimit}`,
+        `http://93.127.167.88:4050/api/application/loan/get?page=${currentPage}&limit=${currentLimit}`,
         {
           method: 'GET',
           headers: {
