@@ -13,12 +13,30 @@ import { useAuth } from '@/contexts/AuthContext';
 interface SupportTicket {
   _id: string;
   ticketNumber: string;
-  customerId: string;
+  customerId: {
+    _id: string;
+    email: string;
+    fullName: string;
+  } | string;
   category: string;
   subject: string;
   description: string;
   priority: string;
   status: string;
+  assignedDetails?: Array<{
+    assignedTo: {
+      _id: string;
+      fullName: string;
+      email: string;
+    };
+    assignedAt: string;
+    _id: string;
+  }>;
+  remarks?: Array<{
+    text: string;
+    remarkedAt: string;
+    _id: string;
+  }>;
   createdAt: string;
   updatedAt: string;
 }
@@ -138,18 +156,31 @@ export default function SupportPage() {
   };
 
   const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'TECHNICAL_ISSUE':
-        return 'text-[#4A66FF] bg-[#4A66FF]/10';
-      case 'BILLING':
-        return 'text-[#FF9C70] bg-[#FF9C70]/10';
-      case 'GENERAL_INQUIRY':
-        return 'text-[#25B181] bg-[#25B181]/10';
-      case 'COMPLAINT':
-        return 'text-red-600 bg-red-100';
-      default:
-        return 'text-gray-600 bg-gray-100';
-    }
+switch (category) {
+  case 'LOAN_INQUIRY':
+    return 'text-[#6C63FF] bg-[#6C63FF]/10'; // soft purple-blue
+  case 'PAYMENT_ISSUE':
+    return 'text-[#FF6B6B] bg-[#FF6B6B]/10'; // coral red
+  case 'GENERAL_INQUIRY':
+    return 'text-[#25B181] bg-[#25B181]/10'; // green
+  case 'TECHNICAL_ISSUE':
+    return 'text-[#4A66FF] bg-[#4A66FF]/10'; // blue
+  case 'KYC_VERIFICATION':
+    return 'text-[#FFC107] bg-[#FFC107]/10'; // yellow-gold
+  case 'DOCUMENT_UPLOAD':
+    return 'text-[#00B8D9] bg-[#00B8D9]/10'; // cyan
+  case 'ACCOUNT_ACCESS':
+    return 'text-[#8E44AD] bg-[#8E44AD]/10'; // violet
+  case 'COMPLAINT':
+    return 'text-red-600 bg-red-100'; // red tone
+  case 'OTHER':
+    return 'text-gray-500 bg-gray-100'; // neutral gray
+  case 'BILLING':
+    return 'text-[#FF9C70] bg-[#FF9C70]/10'; // orange-peach
+  default:
+    return 'text-gray-600 bg-gray-100'; // fallback
+}
+
   };
 
   const getPriorityColor = (priority: string) => {
@@ -276,10 +307,17 @@ export default function SupportPage() {
                 required
                 className="w-full px-4 py-2 border border-[#E0E0E0] rounded-lg focus:ring-2 focus:ring-[#25B181] focus:border-[#25B181] focus:outline-none"
               >
-                <option value="TECHNICAL_ISSUE">Technical Issue</option>
-                <option value="BILLING">Billing</option>
+               <option value="LOAN_INQUIRY">Loan Inquiry</option>
+                <option value="PAYMENT_ISSUE">Payment Issue</option>
                 <option value="GENERAL_INQUIRY">General Inquiry</option>
+                <option value="TECHNICAL_ISSUE">Technical Issue</option>
+                <option value="KYC_VERIFICATION">KYC Verification</option>
+                <option value="DOCUMENT_UPLOAD">Document Upload</option>
+                <option value="ACCOUNT_ACCESS">Account Access</option>
                 <option value="COMPLAINT">Complaint</option>
+                <option value="OTHER">Other</option>
+                <option value="BILLING">Billing</option>
+
               </select>
             </div>
 
@@ -601,6 +639,64 @@ export default function SupportPage() {
                   </div>
                 </div>
 
+                {/* Assigned To */}
+                {/* {selectedTicket.assignedDetails && selectedTicket.assignedDetails.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="text-sm font-medium text-gray-600 mb-3 flex items-center gap-2">
+                      <User className="w-4 h-4 text-[#4A66FF]" />
+                      Assigned To
+                    </h4>
+                    <div className="space-y-3">
+                      {selectedTicket.assignedDetails.map((assignment) => (
+                        <div key={assignment._id} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="font-semibold text-gray-900">{assignment.assignedTo.fullName}</p>
+                              <p className="text-sm text-gray-600">{assignment.assignedTo.email}</p>
+                            </div>
+                            <span className="text-xs text-gray-500">
+                              {new Date(assignment.assignedAt).toLocaleDateString('en-IN', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric'
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )} */}
+
+                {/* Remarks */}
+                {selectedTicket.remarks && selectedTicket.remarks.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="text-sm font-medium text-gray-600 mb-3 flex items-center gap-2">
+                      <MessageSquare className="w-4 h-4 text-[#4A66FF]" />
+                      Remarks ({selectedTicket.remarks.length})
+                    </h4>
+                    <div className="space-y-3">
+                      {selectedTicket.remarks.map((remark) => (
+                        <div key={remark._id} className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
+                          <p className="text-gray-800 mb-2">{remark.text}</p>
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <Clock className="w-3 h-3" />
+                            <span>
+                              {new Date(remark.remarkedAt).toLocaleString('en-IN', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Timeline */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="bg-[#FAFAFA] rounded-lg p-4 border border-[#E0E0E0]">
@@ -619,7 +715,7 @@ export default function SupportPage() {
                     </p>
                   </div>
 
-                  <div className="bg-[#FAFAFA] rounded-lg p-4 border border-[#E0E0E0]">
+                  {/* <div className="bg-[#FAFAFA] rounded-lg p-4 border border-[#E0E0E0]">
                     <div className="flex items-center mb-2">
                       <Clock className="w-4 h-4 text-[#4A66FF] mr-2" />
                       <span className="text-sm font-medium text-gray-600">Last Updated</span>
@@ -633,7 +729,7 @@ export default function SupportPage() {
                         minute: '2-digit'
                       })}
                     </p>
-                  </div>
+                  </div> */}
                 </div>
               </div>
 

@@ -79,6 +79,7 @@ export default function QuickLoanApplication() {
   const [panError, setPanError] = useState<string>("");
   const [aadhaarError, setAadhaarError] = useState<string>("");
   const [apiDeterminedStep, setApiDeterminedStep] = useState<number | null>(null);
+  const [redirectCountdown, setRedirectCountdown] = useState<number>(5);
 
   const [formData, setFormData] = useState({
     // Step 1: Basic Details
@@ -296,6 +297,25 @@ export default function QuickLoanApplication() {
     }
   }, [apiDeterminedStep]);
 
+  // Auto-redirect to dashboard after successful submission
+  useEffect(() => {
+    if (decision && decision.approved) {
+      setRedirectCountdown(5); // Reset countdown
+      const timer = setInterval(() => {
+        setRedirectCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            router.push('/user');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [decision, router]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setFormData(prev => ({
@@ -361,7 +381,7 @@ export default function QuickLoanApplication() {
         ? { email: formData.email, otp: formData.otp }
         : { mobile: formData.mobile, otp: formData.otp };
 
-      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/verify", {
+      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/verifyOtp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -377,11 +397,125 @@ export default function QuickLoanApplication() {
         } else {
           setFormData(prev => ({ ...prev, mobileVerified: true }));
         }
+
+        // Store access token if provided in response
+        if (data.data?.accessToken) {
+          localStorage.setItem('accessToken', data.data.accessToken);
+          localStorage.setItem('token', data.data.accessToken);
+          localStorage.setItem('authToken', data.data.accessToken);
+          console.log('✅ Access token stored');
+        }
+
         toast({
           variant: "success",
           title: "Verification Successful!",
           description: `Your ${verificationMethod === 'email' ? 'email' : 'mobile number'} has been verified successfully.`,
         });
+
+        // Auto-fill form with customer data after successful OTP verification
+        const token = data.data?.accessToken ||
+                      localStorage.getItem('accessToken') ||
+                      localStorage.getItem('token') ||
+                      localStorage.getItem('authToken');
+
+        if (token) {
+          try {
+            console.log('🔵 Fetching customer data after OTP verification...');
+            const customerResponse = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/customer/get', {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              }
+            });
+
+            const customerResult = await customerResponse.json();
+
+            if (customerResponse.ok && customerResult.success && customerResult.data) {
+              const profileData = customerResult.data;
+              console.log('✅ Customer data fetched successfully');
+
+              // Convert ISO date to YYYY-MM-DD format for input field
+              const formatDateForInput = (isoDate: string) => {
+                if (!isoDate) return '';
+                try {
+                  const date = new Date(isoDate);
+                  const year = date.getFullYear();
+                  const month = String(date.getMonth() + 1).padStart(2, '0');
+                  const day = String(date.getDate()).padStart(2, '0');
+                  return `${year}-${month}-${day}`;
+                } catch (error) {
+                  console.error('Error formatting date:', error);
+                  return '';
+                }
+              };
+
+              // Auto-fill form data from customer API response
+              setFormData(prev => ({
+                ...prev,
+                fullName: profileData.fullName || prev.fullName,
+                mobile: profileData.mobile || prev.mobile,
+                email: profileData.email || prev.email,
+                pan: profileData.panCard || prev.pan,
+                aadhaar: profileData.aadhaarNumber || prev.aadhaar,
+                dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
+                employmentType: profileData.employmentType || prev.employmentType,
+                monthlyIncome: profileData.monthlyIncome?.toString() || prev.monthlyIncome,
+                companyName: profileData.companyName || prev.companyName,
+                bankName: profileData.banks?.[0]?.bankName || prev.bankName,
+                accountNumber: profileData.banks?.[0]?.accountNumber || prev.accountNumber,
+                ifsc: profileData.banks?.[0]?.ifscCode || prev.ifsc,
+              }));
+
+              // Set verification flags from API if available
+              if (profileData.isPanVerify) {
+                setPanVerified(true);
+                console.log('✅ PAN already verified');
+              }
+              if (profileData.isAadhaarVerify) {
+                setAadhaarVerified(true);
+                console.log('✅ Aadhaar already verified');
+              }
+
+              // Auto-fill references if available
+              if (profileData.references && profileData.references.length > 0) {
+                const ref1 = profileData.references[0];
+                const ref2 = profileData.references[1];
+
+                if (ref1) {
+                  setFormData(prev => ({
+                    ...prev,
+                    reference1Name: ref1.name || prev.reference1Name,
+                    reference1Mobile: ref1.mobile || prev.reference1Mobile,
+                    reference1Relationship: ref1.relationship || prev.reference1Relationship,
+                  }));
+                }
+
+                if (ref2) {
+                  setFormData(prev => ({
+                    ...prev,
+                    reference2Name: ref2.name || prev.reference2Name,
+                    reference2Mobile: ref2.mobile || prev.reference2Mobile,
+                    reference2Relationship: ref2.relationship || prev.reference2Relationship,
+                  }));
+                }
+                console.log('✅ References auto-filled');
+              }
+
+              console.log('🟢 Form auto-filled with customer data');
+              toast({
+                variant: "success",
+                title: "Data Loaded!",
+                description: "Your profile information has been auto-filled. Please review and proceed.",
+              });
+            } else {
+              console.log('⚠️ Customer API returned no data');
+            }
+          } catch (error) {
+            console.error('❌ Error fetching customer data:', error);
+            // Non-blocking error - user can continue filling form manually
+          }
+        }
       } else {
         toast({
           variant: "error",
@@ -1063,10 +1197,30 @@ export default function QuickLoanApplication() {
                 <CheckCircle className="w-12 h-12 text-green-600" />
               </motion.div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Congratulations! 🎉</h1>
-              <p className="text-xl text-green-600 font-semibold">Your loan has been approved!</p>
+              <p className="text-xl text-green-600 font-semibold">Your loan has been submitted successfully!</p>
             </div>
 
-            <div className="bg-gradient-to-r from-[#25B181] to-[#51C9AF] rounded-xl p-6 text-white mb-6">
+            <div className="bg-gradient-to-r from-[#25B181]/10 via-[#51C9AF]/10 to-[#1F8F68]/10 border-2 border-[#25B181] rounded-xl p-6 mb-6">
+              <div className="text-center">
+                <p className="text-gray-700 mb-2">
+                  Our team will review your application and get back to you soon.
+                </p>
+                <p className="text-sm text-gray-600">
+                  Redirecting to dashboard in <span className="font-bold text-[#25B181] text-lg">{redirectCountdown}</span> seconds...
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => router.push('/user')}
+                className="flex-1 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all"
+              >
+                Go to Dashboard Now
+              </button>
+            </div>
+
+            {/* <div className="bg-gradient-to-r from-[#25B181] to-[#51C9AF] rounded-xl p-6 text-white mb-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm opacity-90">Approved Amount</p>
@@ -1137,7 +1291,7 @@ export default function QuickLoanApplication() {
 
             <p className="text-center text-sm text-gray-500 mt-4">
               By signing, you agree to our loan terms and conditions
-            </p>
+            </p> */}
           </motion.div>
         </div>
       );

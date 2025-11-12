@@ -282,7 +282,7 @@ const handleSubmit = async (e: React.FormEvent) => {
           {/* <Link href="/" className="inline-flex items-center justify-center mb-6">
             <Image src="/logo 2.png" alt="Quikkred" width={200} height={200} className="w-40 sm:w-48 md:w-56 lg:w-64 h-auto object-contain" />
           </Link> */}
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-[#006837] to-[#FFC107] rounded-full mb-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-[#27875a] to-[#1e98a6] rounded-full mb-6">
             <HeadphonesIcon className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold font-sora mb-4">

@@ -95,14 +95,14 @@ const UserLayout = ({ children }: UserLayoutProps) => {
     }
   }, [user]);
 
-  // Fetch credit score
+  // Fetch CIBIL score from customer API
   useEffect(() => {
-    const fetchCreditScore = async () => {
+    const fetchCibilScore = async () => {
       try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('token') || localStorage.getItem('accessToken');
         if (!token) return;
 
-        const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/creditScore/get', {
+        const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/customer/get', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -112,19 +112,21 @@ const UserLayout = ({ children }: UserLayoutProps) => {
 
         const result = await response.json();
         if (result.success && result.data) {
+          // Store full customer data for potential future use
           setCreditScoreData(result.data);
+          // Update CIBIL score in userData
           setUserData(prevData => ({
             ...prevData,
-            creditScore: result.data.internalScore
+            creditScore: result.data.cibilScore || 0
           }));
         }
       } catch (error) {
-        console.error('Error fetching credit score:', error);
+        console.error('Error fetching CIBIL score:', error);
       }
     };
 
     if (user) {
-      fetchCreditScore();
+      fetchCibilScore();
     }
   }, [user]);
 
@@ -421,9 +423,9 @@ const UserLayout = ({ children }: UserLayoutProps) => {
             <div className="flex items-center gap-4">
               {/* Quick Stats */}
               <div className="hidden md:flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-2 bg-[#FAFAFA] px-3 py-1.5 rounded-lg">
+                <div className="flex items-center gap-2 bg-gradient-to-r from-[#25B181]/10 to-[#51C9AF]/10 border border-[#25B181]/20 px-3 py-1.5 rounded-lg">
                   <Award className="w-4 h-4 text-[#25B181]" />
-                  <span className="text-gray-700 font-medium">Score: {userData.creditScore}</span>
+                  <span className="text-[#1F8F68] font-semibold">CIBIL: {userData.creditScore || 'N/A'}</span>
                 </div>
                 <div className="flex items-center gap-2 bg-[#FAFAFA] px-3 py-1.5 rounded-lg">
                   <Wallet className="w-4 h-4 text-[#4A66FF]" />

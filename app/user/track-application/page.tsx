@@ -202,7 +202,7 @@ export default function TrackApplicationPage() {
       case 'VERIFIED':
       case 'DISBURSED':
       case 'ACTIVE':
-        return 'text-[#2E7D32] bg-[#2E7D32]/10';
+        return 'text-[#25B181] bg-[#2E7D32]/10';
       case 'PENDING':
       case 'PROCESSING':
       case 'UNDER_REVIEW':
@@ -235,10 +235,10 @@ export default function TrackApplicationPage() {
         className="mb-8"
       >
         {/* <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-[#2E7D32] to-[#1B5E20] rounded-full mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] rounded-full mb-4">
             <Search className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl lg:text-4xl font-bold text-[#1B5E20] mb-2">
+          <h1 className="text-3xl lg:text-4xl font-bold text-[#1F8F68] mb-2">
             Track Your Application
           </h1>
           <p className="text-gray-600">
@@ -255,7 +255,7 @@ export default function TrackApplicationPage() {
             className="max-w-2xl mx-auto"
           >
             <div className="bg-white rounded-2xl p-6 sm:p-8 border border-[#E0E0E0] shadow-sm">
-              <h2 className="text-xl sm:text-2xl font-bold mb-6 text-center text-[#1B5E20]">Track Your Application</h2>
+              <h2 className="text-xl sm:text-2xl font-bold mb-6 text-center text-[#1F8F68]">Track Your Application</h2>
 
               <form onSubmit={handleTrackApplication} className="space-y-6">
                 {/* Search Type Toggle */}
@@ -343,7 +343,7 @@ export default function TrackApplicationPage() {
                 <button
                   type="submit"
                   disabled={isTracking || !searchValue}
-                  className="w-full bg-gradient-to-r from-[#2E7D32] to-[#1B5E20] text-white py-3 px-6 rounded-lg font-semibold flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-50"
+                  className="w-full bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white py-3 px-6 rounded-lg font-semibold flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-50"
                 >
                   {isTracking ? (
                     <>
@@ -360,7 +360,7 @@ export default function TrackApplicationPage() {
               </form>
 
               {/* Help Section */}
-              <div className="mt-6 p-4 bg-[#1976D2]/10 rounded-lg border border-[#1976D2]/20">
+              <div className="mt-6 p-4 bg-[#4A66FF]/10 rounded-lg border border-[#1976D2]/20">
                 <div className="flex items-start">
                   <AlertCircle className="w-5 h-5 text-[#1976D2] mr-2 mt-0.5 flex-shrink-0" />
                   <div className="text-sm">
@@ -384,7 +384,7 @@ export default function TrackApplicationPage() {
             <div className="bg-white rounded-2xl p-6 sm:p-8 border border-[#E0E0E0] shadow-sm">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-[#1B5E20]">Application #{applicationData.loanNumber}</h2>
+                  <h2 className="text-xl sm:text-2xl font-bold text-[#1F8F68]">Application #{applicationData.loanNumber}</h2>
                   <p className="text-gray-600 text-sm sm:text-base">
                     Submitted on {formatDate(applicationData.createdAt)}
                   </p>
@@ -403,7 +403,7 @@ export default function TrackApplicationPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                <div className="text-center p-4 sm:p-6 bg-gradient-to-r from-[#2E7D32] to-[#1B5E20] rounded-xl text-white">
+                <div className="text-center p-4 sm:p-6 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] rounded-xl text-white">
                   <p className="text-sm opacity-90">Loan Amount</p>
                   <p className="text-2xl sm:text-3xl font-bold flex items-center justify-center mt-1">
                     <IndianRupee className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -416,7 +416,7 @@ export default function TrackApplicationPage() {
                 </div>
                 <div className="text-center p-4 sm:p-6 bg-[#FAFAFA] border border-[#E0E0E0] rounded-xl">
                   <p className="text-sm text-gray-600">Application Date</p>
-                  <p className="text-lg sm:text-xl font-bold text-[#1B5E20] mt-1">
+                  <p className="text-lg sm:text-xl font-bold text-[#1F8F68] mt-1">
                     {new Date(applicationData.createdAt).toLocaleDateString('en-IN')}
                   </p>
                 </div>
@@ -435,7 +435,7 @@ export default function TrackApplicationPage() {
 
             {/* Progress Timeline */}
             <div className="bg-white rounded-2xl p-6 sm:p-8 border border-[#E0E0E0] shadow-sm">
-              <h3 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-8 text-[#1B5E20]">Application Progress</h3>
+              <h3 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-8 text-[#1F8F68]">Application Progress</h3>
 
               <div className="space-y-6">
                 {getApplicationStages(applicationData.status, applicationData.createdAt).map((stage, index, stages) => {
@@ -445,9 +445,9 @@ export default function TrackApplicationPage() {
                       <div className="flex flex-col items-center mr-4 sm:mr-6">
                         <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center ${
                           stage.status === 'completed'
-                            ? 'bg-[#2E7D32]/10 text-[#2E7D32]'
+                            ? 'bg-[#2E7D32]/10 text-[#25B181]'
                             : stage.status === 'current'
-                            ? 'bg-[#1976D2]/10 text-[#1976D2]'
+                            ? 'bg-[#4A66FF]/10 text-[#1976D2]'
                             : 'bg-gray-100 text-gray-400'
                         }`}>
                           <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -491,7 +491,7 @@ export default function TrackApplicationPage() {
             {applicationData.documentsStatus && (
               <div className="bg-white rounded-2xl p-6 sm:p-8 border border-[#E0E0E0] shadow-sm">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl sm:text-2xl font-bold flex items-center text-[#1B5E20]">
+                  <h3 className="text-xl sm:text-2xl font-bold flex items-center text-[#1F8F68]">
                     <Upload className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-[#1976D2]" />
                     Document Status
                   </h3>
@@ -521,7 +521,7 @@ export default function TrackApplicationPage() {
                         <div className="flex items-center">
                           <FileText className="w-5 h-5 text-gray-400 mr-3" />
                           <div>
-                            <p className="font-medium text-[#1B5E20] text-sm sm:text-base">{doc.name}</p>
+                            <p className="font-medium text-[#1F8F68] text-sm sm:text-base">{doc.name}</p>
                             {doc.uploadDate && (
                               <p className="text-xs sm:text-sm text-gray-500">
                                 Uploaded on {formatDate(doc.uploadDate)}
@@ -539,8 +539,8 @@ export default function TrackApplicationPage() {
 
                 <div className="mt-6 p-4 bg-[#2E7D32]/10 rounded-lg border border-[#2E7D32]/20">
                   <div className="flex items-center">
-                    <CheckCircle className="w-5 h-5 text-[#2E7D32] mr-2" />
-                    <span className="text-sm font-medium text-[#2E7D32]">
+                    <CheckCircle className="w-5 h-5 text-[#25B181] mr-2" />
+                    <span className="text-sm font-medium text-[#25B181]">
                       {getDocumentsFromAPI().filter(d => d.status === 'verified' || d.status === 'uploaded').length} of {getDocumentsFromAPI().length} documents uploaded
                     </span>
                   </div>
@@ -549,7 +549,7 @@ export default function TrackApplicationPage() {
             )}
 
             {/* Contact Support */}
-            <div className="bg-gradient-to-r from-[#2E7D32] to-[#1B5E20] rounded-2xl p-6 sm:p-8 text-white">
+            <div className="bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] rounded-2xl p-6 sm:p-8 text-white">
               <div className="text-center">
                 <h3 className="text-xl sm:text-2xl font-bold mb-4">Need Assistance?</h3>
                 <p className="text-sm sm:text-base mb-6 opacity-90">
@@ -558,11 +558,11 @@ export default function TrackApplicationPage() {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <button
                     onClick={() => router.push('/user/support')}
-                    className="px-6 sm:px-8 py-3 bg-white text-[#1B5E20] rounded-lg font-semibold hover:shadow-lg transition-all"
+                    className="px-6 sm:px-8 py-3 bg-white text-[#1F8F68] rounded-lg font-semibold hover:shadow-lg transition-all"
                   >
                     Contact Support
                   </button>
-                  <a href="tel:1800-123-4567" className="px-6 sm:px-8 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-[#1B5E20] transition-all">
+                  <a href="tel:1800-123-4567" className="px-6 sm:px-8 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-[#1F8F68] transition-all">
                     Call 1800-123-4567
                   </a>
                 </div>

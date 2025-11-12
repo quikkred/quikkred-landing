@@ -6,9 +6,12 @@ import { useRouter } from 'next/navigation';
 import {
   FileText, Search, Calendar, IndianRupee,
   Clock, CheckCircle, AlertCircle, Eye, RefreshCw,
-  ChevronLeft, ChevronRight, Filter
+  ChevronLeft, ChevronRight, Filter, X, User,
+  CreditCard, Building, Shield, MessageSquare,
+  Download, Users
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { loansService } from '@/lib/api/loans.service';
 
 interface Application {
   _id: string;
@@ -32,6 +35,98 @@ interface Application {
   };
 }
 
+interface DetailedApplication {
+  _id: string;
+  applicationNumber: string;
+  customerId: {
+    _id: string;
+    email: string;
+    fullName: string;
+    references?: Array<{
+      name: string;
+      mobile: string;
+      relationship: string;
+      _id: string;
+    }>;
+  };
+  isSubmit: boolean;
+  loanAmount: number;
+  requestedTenure: number;
+  interestRate: number;
+  processingFee: number;
+  gstOnProcessingFee: number;
+  totalInterest: number;
+  totalRepayment: number;
+  netDisbursalAmount: number;
+  status: string;
+  cibilScore: number;
+  riskScore: number;
+  fraudScore: number;
+  incomeScore: number;
+  autoDecisionScore: number;
+  statusHistory: any[];
+  documents: Array<{
+    documentId: {
+      _id: string;
+      s3Key: string;
+      s3URL: string;
+      status: string;
+    };
+    documentType: string;
+    documentName: string;
+    uploadedAt: string;
+  }>;
+  internalNotes: Array<{
+    note: string;
+    addedBy: {
+      _id: string;
+      fullName: string;
+      email: string;
+      mobile: string;
+    };
+    addedAt: string;
+  }>;
+  createdAt: string;
+  updatedAt: string;
+  disbursementBankAccount?: {
+    bankName: string;
+    accountNumber: string;
+    ifscCode: string;
+    accountHolderName: string;
+  };
+  priority: string;
+  purpose: string;
+  verificationChecklist?: {
+    identityVerification: {
+      panVerified: boolean;
+      aadhaarVerified: boolean;
+      bankAccountVerified: boolean;
+      faceMatchDone: boolean;
+      agreementSigned: boolean;
+      pdcChequesCollected: boolean;
+      insuranceOpted: boolean;
+      nachMandateRegistered: boolean;
+    };
+    creditBureauCheck?: {
+      status: string;
+      bureauPulled: boolean;
+      bureauSource: string;
+      bureauScore: number;
+      bureauReportId: string;
+      requestedAt: string;
+      requestedBy: string;
+      respondedAt: string;
+      cost: number;
+    };
+  };
+  lastModifiedBy?: {
+    _id: string;
+    fullName: string;
+    email: string;
+    mobile: string;
+  };
+}
+
 interface PaginationInfo {
   totalRecords: number;
   totalPages: number;
@@ -47,7 +142,9 @@ export default function MyApplicationsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'processing' | 'approved' | 'rejected'>('all');
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
+  const [detailedApplication, setDetailedApplication] = useState<DetailedApplication | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [loadingDetails, setLoadingDetails] = useState(false);
   const [pagination, setPagination] = useState<PaginationInfo>({
     totalRecords: 0,
     totalPages: 1,
@@ -125,6 +222,29 @@ export default function MyApplicationsPage() {
     setPagination(prev => ({ ...prev, limit: newLimit, currentPage: 1 }));
   };
 
+  // Fetch detailed application data
+  const fetchApplicationDetails = async (applicationNumber: string) => {
+    try {
+      setLoadingDetails(true);
+      const response = await loansService.getApplicationDetails(applicationNumber);
+
+      if (response.success && response.data) {
+        setDetailedApplication(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching application details:', error);
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
+  // Handle view details click
+  const handleViewDetails = async (app: Application) => {
+    setSelectedApplication(app);
+    setIsDetailModalOpen(true);
+    await fetchApplicationDetails(app.applicationNumber);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
       case 'PENDING':
@@ -160,7 +280,7 @@ export default function MyApplicationsPage() {
   if (isLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <RefreshCw className="w-8 h-8 text-[#2E7D32] animate-spin" />
+        <RefreshCw className="w-8 h-8 text-[#25B181] animate-spin" />
       </div>
     );
   }
@@ -175,17 +295,17 @@ export default function MyApplicationsPage() {
       >
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#1B5E20]">My Applications</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#1F8F68]">My Applications</h1>
             <p className="text-sm sm:text-base text-gray-600 mt-1">
               Track your loan application status and history
             </p>
           </div>
           <button
             onClick={() => fetchApplications()}
-            className="flex items-center gap-2 px-4 py-2 bg-[#2E7D32] text-white rounded-lg hover:bg-[#1B5E20] transition-colors"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white border border-[#E0E0E0] text-gray-700 rounded-lg hover:bg-[#FAFAFA] transition-colors shadow-sm"
           >
             <RefreshCw className="w-4 h-4" />
-            Refresh
+            <span className="hidden sm:inline">Refresh</span>
           </button>
         </div>
       </motion.div>
@@ -206,7 +326,7 @@ export default function MyApplicationsPage() {
               placeholder="Search by Application Number or Purpose..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-[#FAFAFA] text-[#1B5E20] rounded-lg border border-[#E0E0E0] focus:border-[#2E7D32] focus:ring-2 focus:ring-[#2E7D32]/20 focus:outline-none"
+              className="w-full pl-10 pr-4 py-2 bg-[#FAFAFA] text-[#1F8F68] rounded-lg border border-[#E0E0E0] focus:border-[#2E7D32] focus:ring-2 focus:ring-[#2E7D32]/20 focus:outline-none"
             />
           </div>
 
@@ -214,9 +334,9 @@ export default function MyApplicationsPage() {
           <div className="flex gap-2 overflow-x-auto pb-1">
             <button
               onClick={() => setFilterStatus('all')}
-              className={`flex-shrink-0 px-4 py-2 rounded-lg transition-colors text-sm ${
+              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${
                 filterStatus === 'all'
-                  ? 'bg-[#2E7D32] text-white'
+                  ? 'bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white'
                   : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
               }`}
             >
@@ -224,9 +344,9 @@ export default function MyApplicationsPage() {
             </button>
             <button
               onClick={() => setFilterStatus('pending')}
-              className={`flex-shrink-0 px-4 py-2 rounded-lg transition-colors text-sm ${
+              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${
                 filterStatus === 'pending'
-                  ? 'bg-yellow-500 text-white'
+                  ? 'bg-[#FF9C70] text-white'
                   : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
               }`}
             >
@@ -234,9 +354,9 @@ export default function MyApplicationsPage() {
             </button>
             <button
               onClick={() => setFilterStatus('processing')}
-              className={`flex-shrink-0 px-4 py-2 rounded-lg transition-colors text-sm ${
+              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${
                 filterStatus === 'processing'
-                  ? 'bg-blue-500 text-white'
+                  ? 'bg-[#4A66FF] text-white'
                   : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
               }`}
             >
@@ -244,9 +364,9 @@ export default function MyApplicationsPage() {
             </button>
             <button
               onClick={() => setFilterStatus('approved')}
-              className={`flex-shrink-0 px-4 py-2 rounded-lg transition-colors text-sm ${
+              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${
                 filterStatus === 'approved'
-                  ? 'bg-green-500 text-white'
+                  ? 'bg-[#25B181] text-white'
                   : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
               }`}
             >
@@ -254,9 +374,9 @@ export default function MyApplicationsPage() {
             </button>
             <button
               onClick={() => setFilterStatus('rejected')}
-              className={`flex-shrink-0 px-4 py-2 rounded-lg transition-colors text-sm ${
+              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${
                 filterStatus === 'rejected'
-                  ? 'bg-red-500 text-white'
+                  ? 'bg-[#FF6B6B] text-white'
                   : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
               }`}
             >
@@ -276,7 +396,7 @@ export default function MyApplicationsPage() {
         {filteredApplications.length === 0 ? (
           <div className="p-12 text-center">
             <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-[#1B5E20] mb-2">No Applications Found</h3>
+            <h3 className="text-xl font-semibold text-[#1F8F68] mb-2">No Applications Found</h3>
             <p className="text-gray-600 mb-6">
               {searchTerm || filterStatus !== 'all'
                 ? 'Try adjusting your filters or search term'
@@ -307,7 +427,7 @@ export default function MyApplicationsPage() {
                     className="hover:bg-[#FAFAFA] transition-colors"
                   >
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-[#1B5E20]">{app.applicationNumber}</div>
+                      <div className="text-sm font-medium text-[#1F8F68]">{app.applicationNumber}</div>
                       <div className="text-xs text-gray-500">
                         {new Date(app.createdAt).toLocaleDateString()}
                       </div>
@@ -316,7 +436,7 @@ export default function MyApplicationsPage() {
                       <div className="text-sm font-medium text-gray-900">{app.purpose}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm font-semibold text-[#1B5E20]">₹{app.loanAmount.toLocaleString()}</div>
+                      <div className="text-sm font-semibold text-[#1F8F68]">₹{app.loanAmount.toLocaleString()}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{app.requestedTenure} months</div>
@@ -337,11 +457,8 @@ export default function MyApplicationsPage() {
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-center">
                       <button
-                        onClick={() => {
-                          setSelectedApplication(app);
-                          setIsDetailModalOpen(true);
-                        }}
-                        className="inline-flex items-center px-3 py-1.5 bg-[#1976D2] text-white text-xs font-medium rounded-lg hover:bg-[#1565C0] transition-colors"
+                        onClick={() => handleViewDetails(app)}
+                        className="inline-flex items-center px-3 py-1.5 bg-[#4A66FF] text-white text-xs font-medium rounded-lg hover:bg-[#4A66FF]/90 transition-colors"
                       >
                         <Eye className="w-3.5 h-3.5 mr-1" />
                         View Details
@@ -366,11 +483,11 @@ export default function MyApplicationsPage() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             {/* Page Info */}
             <div className="text-sm text-gray-600">
-              Showing <span className="font-semibold text-[#1B5E20]">{(pagination.currentPage - 1) * pagination.limit + 1}</span> to{' '}
-              <span className="font-semibold text-[#1B5E20]">
+              Showing <span className="font-semibold text-[#1F8F68]">{(pagination.currentPage - 1) * pagination.limit + 1}</span> to{' '}
+              <span className="font-semibold text-[#1F8F68]">
                 {Math.min(pagination.currentPage * pagination.limit, pagination.totalRecords)}
               </span>{' '}
-              of <span className="font-semibold text-[#1B5E20]">{pagination.totalRecords}</span> applications
+              of <span className="font-semibold text-[#1F8F68]">{pagination.totalRecords}</span> applications
             </div>
 
             {/* Pagination Controls */}
@@ -399,7 +516,7 @@ export default function MyApplicationsPage() {
                         onClick={() => handlePageChange(pageNumber)}
                         className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                           pagination.currentPage === pageNumber
-                            ? 'bg-gradient-to-r from-[#2E7D32] to-[#1B5E20] text-white'
+                            ? 'bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white'
                             : 'text-gray-700 bg-white border border-[#E0E0E0] hover:bg-[#FAFAFA]'
                         }`}
                       >
@@ -444,96 +561,430 @@ export default function MyApplicationsPage() {
         </motion.div>
       )}
 
-      {/* Detail Modal */}
+      {/* Detailed Modal */}
       {isDetailModalOpen && selectedApplication && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
             <div
               className="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity"
-              onClick={() => setIsDetailModalOpen(false)}
+              onClick={() => {
+                setIsDetailModalOpen(false);
+                setDetailedApplication(null);
+              }}
             />
 
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="relative inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full"
+              className="relative inline-block align-bottom bg-white rounded-xl sm:rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl sm:w-full max-h-[90vh] overflow-y-auto"
             >
               {/* Modal Header */}
-              <div className="bg-gradient-to-r from-[#2E7D32] to-[#1B5E20] px-6 py-4">
+              <div className="sticky top-0 z-10 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] px-4 sm:px-6 py-3 sm:py-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-xl font-bold text-white">Application Details</h3>
-                    <p className="text-sm text-white/80">{selectedApplication.applicationNumber}</p>
+                    <h3 className="text-base sm:text-xl font-bold text-white">Application Details</h3>
+                    <p className="text-xs sm:text-sm text-white/80">{selectedApplication.applicationNumber}</p>
                   </div>
                   <button
-                    onClick={() => setIsDetailModalOpen(false)}
-                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                    onClick={() => {
+                      setIsDetailModalOpen(false);
+                      setDetailedApplication(null);
+                    }}
+                    className="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg transition-colors"
                   >
-                    <AlertCircle className="w-5 h-5 text-white" />
+                    <X className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </button>
                 </div>
               </div>
 
               {/* Modal Content */}
-              <div className="px-6 py-4 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-600">Purpose</p>
-                    <p className="font-semibold text-[#1B5E20]">{selectedApplication.purpose}</p>
+              {loadingDetails ? (
+                <div className="flex items-center justify-center py-12">
+                  <RefreshCw className="w-8 h-8 text-[#25B181] animate-spin" />
+                </div>
+              ) : detailedApplication ? (
+                <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
+                  {/* Customer Information */}
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-blue-200">
+                    <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                      <User className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                      <h4 className="text-base sm:text-lg font-bold text-gray-800">Customer Information</h4>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div>
+                        <p className="text-sm text-gray-600">Full Name</p>
+                        <p className="font-semibold text-gray-900">{detailedApplication.customerId.fullName}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Email</p>
+                        <p className="font-semibold text-gray-900">{detailedApplication.customerId.email}</p>
+                      </div>
+
+                      {/* References */}
+                      {detailedApplication.customerId.references && detailedApplication.customerId.references.length > 0 && (
+                        <div className="col-span-full mt-2">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
+                            <p className="text-xs sm:text-sm font-semibold text-gray-700">References</p>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                            {detailedApplication.customerId.references.map((ref, idx) => (
+                              <div key={ref._id} className="bg-white rounded-lg p-3 border border-blue-100">
+                                <p className="text-sm font-semibold text-gray-800">{ref.name}</p>
+                                <p className="text-xs text-gray-600">{ref.mobile}</p>
+                                <p className="text-xs text-blue-600">{ref.relationship}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Loan Amount</p>
-                    <p className="font-semibold text-[#1B5E20]">₹{selectedApplication.loanAmount.toLocaleString()}</p>
+
+                  {/* Loan Details */}
+                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-green-200">
+                    <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                      <IndianRupee className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                      <h4 className="text-base sm:text-lg font-bold text-gray-800">Loan Details</h4>
+                    </div>
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                      <div>
+                        <p className="text-sm text-gray-600">Loan Amount</p>
+                        <p className="text-lg font-bold text-green-700">₹{detailedApplication.loanAmount.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Tenure</p>
+                        <p className="font-semibold text-gray-900">{detailedApplication.requestedTenure} months</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Purpose</p>
+                        <p className="font-semibold text-gray-900">{detailedApplication.purpose}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Interest Rate</p>
+                        <p className="font-semibold text-gray-900">{detailedApplication.interestRate}%</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Processing Fee</p>
+                        <p className="font-semibold text-gray-900">₹{detailedApplication.processingFee.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">GST on Fee</p>
+                        <p className="font-semibold text-gray-900">₹{detailedApplication.gstOnProcessingFee.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Total Interest</p>
+                        <p className="font-semibold text-gray-900">₹{detailedApplication.totalInterest.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Total Repayment</p>
+                        <p className="font-semibold text-gray-900">₹{detailedApplication.totalRepayment.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Net Disbursal</p>
+                        <p className="text-lg font-bold text-green-700">₹{detailedApplication.netDisbursalAmount.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Priority</p>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          detailedApplication.priority === 'HIGH' ? 'text-red-600 bg-red-100' :
+                          detailedApplication.priority === 'MEDIUM' ? 'text-yellow-600 bg-yellow-100' :
+                          'text-gray-600 bg-gray-100'
+                        }`}>
+                          {detailedApplication.priority}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Status</p>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(detailedApplication.status)}`}>
+                          {detailedApplication.status}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Tenure</p>
-                    <p className="font-semibold text-[#1B5E20]">{selectedApplication.requestedTenure} months</p>
+
+                  {/* Scores */}
+                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-purple-200">
+                    <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                      <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                      <h4 className="text-base sm:text-lg font-bold text-gray-800">Credit & Risk Scores</h4>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+                      <div className="text-center">
+                        <p className="text-xs sm:text-sm text-gray-600 mb-1">CIBIL Score</p>
+                        <div className="text-xl sm:text-2xl font-bold text-purple-600">{detailedApplication.cibilScore}</div>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs sm:text-sm text-gray-600 mb-1">Risk Score</p>
+                        <div className="text-xl sm:text-2xl font-bold text-orange-600">{detailedApplication.riskScore}</div>
+                      </div>
+                      {/* <div className="text-center">
+                        <p className="text-xs sm:text-sm text-gray-600 mb-1">Fraud Score</p>
+                        <div className="text-xl sm:text-2xl font-bold text-red-600">{detailedApplication.fraudScore}</div>
+                      </div> */}
+                      <div className="text-center">
+                        <p className="text-xs sm:text-sm text-gray-600 mb-1">Income Score</p>
+                        <div className="text-xl sm:text-2xl font-bold text-green-600">{detailedApplication.incomeScore}</div>
+                      </div>
+                      {/* <div className="text-center">
+                        <p className="text-xs sm:text-sm text-gray-600 mb-1">Auto Decision</p>
+                        <div className="text-xl sm:text-2xl font-bold text-blue-600">{detailedApplication.autoDecisionScore}</div>
+                      </div> */}
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Status</p>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(selectedApplication.status)}`}>
-                      {selectedApplication.status}
-                    </span>
-                  </div>
-                  {selectedApplication.priority && (
-                    <div>
-                      <p className="text-sm text-gray-600">Priority</p>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        selectedApplication.priority === 'High' ? 'text-red-600 bg-red-100' : 'text-blue-600 bg-blue-100'
-                      }`}>
-                        {selectedApplication.priority}
-                      </span>
+
+                  {/* Credit Bureau Check */}
+                  {detailedApplication.verificationChecklist?.creditBureauCheck && (
+                    <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-indigo-200">
+                      <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                        <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
+                        <h4 className="text-base sm:text-lg font-bold text-gray-800">Credit Bureau Check</h4>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                        <div>
+                          <p className="text-sm text-gray-600">Status</p>
+                          <span className={`inline-block mt-1 px-3 py-1 rounded-full text-xs font-medium ${
+                            detailedApplication.verificationChecklist.creditBureauCheck.status === 'Completed'
+                              ? 'text-green-600 bg-green-100'
+                              : 'text-yellow-600 bg-yellow-100'
+                          }`}>
+                            {detailedApplication.verificationChecklist.creditBureauCheck.status}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Bureau Source</p>
+                          <p className="font-semibold text-gray-900">{detailedApplication.verificationChecklist.creditBureauCheck.bureauSource}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Bureau Score</p>
+                          <p className="text-xl font-bold text-indigo-600">{detailedApplication.verificationChecklist.creditBureauCheck.bureauScore}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Bureau Pulled</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            {detailedApplication.verificationChecklist.creditBureauCheck.bureauPulled ? (
+                              <CheckCircle className="w-5 h-5 text-green-600" />
+                            ) : (
+                              <AlertCircle className="w-5 h-5 text-red-600" />
+                            )}
+                            <span className="text-sm font-medium text-gray-900">
+                              {detailedApplication.verificationChecklist.creditBureauCheck.bureauPulled ? 'Yes' : 'No'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="col-span-2">
+                          <p className="text-sm text-gray-600">Bureau Report ID</p>
+                          <p className="font-mono text-xs text-gray-900 break-all">{detailedApplication.verificationChecklist.creditBureauCheck.bureauReportId}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Requested At</p>
+                          <p className="text-xs text-gray-900">{new Date(detailedApplication.verificationChecklist.creditBureauCheck.requestedAt).toLocaleString()}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Responded At</p>
+                          <p className="text-xs text-gray-900">{new Date(detailedApplication.verificationChecklist.creditBureauCheck.respondedAt).toLocaleString()}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Cost</p>
+                          <p className="font-semibold text-gray-900">₹{detailedApplication.verificationChecklist.creditBureauCheck.cost.toLocaleString()}</p>
+                        </div>
+                      </div>
                     </div>
                   )}
-                  <div>
-                    <p className="text-sm text-gray-600">Applied On</p>
-                    <p className="font-semibold text-[#1B5E20]">
-                      {new Date(selectedApplication.createdAt).toLocaleDateString('en-IN', {
-                        day: '2-digit',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
-                    </p>
-                  </div>
-                </div>
 
-                {selectedApplication.assignedTo && (
-                  <div className="bg-[#FAFAFA] rounded-lg p-4">
-                    <h4 className="font-semibold text-gray-800 mb-2">Assigned To</h4>
-                    <div className="space-y-1 text-sm">
-                      <p><span className="text-gray-600">Name:</span> <span className="font-medium">{selectedApplication.assignedTo.fullName}</span></p>
-                      <p><span className="text-gray-600">Email:</span> <span className="font-medium">{selectedApplication.assignedTo.email}</span></p>
-                      <p><span className="text-gray-600">Mobile:</span> <span className="font-medium">{selectedApplication.assignedTo.mobile}</span></p>
+                  {/* Verification Checklist */}
+                  {detailedApplication.verificationChecklist && (
+                    <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-teal-200">
+                      <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                        <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600" />
+                        <h4 className="text-base sm:text-lg font-bold text-gray-800">Identity Verification Status</h4>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+                        <div className="flex items-center gap-2">
+                          {detailedApplication.verificationChecklist.identityVerification.panVerified ? (
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                          ) : (
+                            <AlertCircle className="w-5 h-5 text-red-600" />
+                          )}
+                          <span className="text-sm font-medium text-gray-800">PAN Verified</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {detailedApplication.verificationChecklist.identityVerification.aadhaarVerified ? (
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                          ) : (
+                            <AlertCircle className="w-5 h-5 text-red-600" />
+                          )}
+                          <span className="text-sm font-medium text-gray-800">Aadhaar Verified</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {detailedApplication.verificationChecklist.identityVerification.bankAccountVerified ? (
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                          ) : (
+                            <AlertCircle className="w-5 h-5 text-red-600" />
+                          )}
+                          <span className="text-sm font-medium text-gray-800">Bank Verified</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {detailedApplication.verificationChecklist.identityVerification.faceMatchDone ? (
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                          ) : (
+                            <AlertCircle className="w-5 h-5 text-red-600" />
+                          )}
+                          <span className="text-sm font-medium text-gray-800">Face Match Done</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {detailedApplication.verificationChecklist.identityVerification.agreementSigned ? (
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                          ) : (
+                            <AlertCircle className="w-5 h-5 text-red-600" />
+                          )}
+                          <span className="text-sm font-medium text-gray-800">Agreement Signed</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {detailedApplication.verificationChecklist.identityVerification.pdcChequesCollected ? (
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                          ) : (
+                            <AlertCircle className="w-5 h-5 text-red-600" />
+                          )}
+                          <span className="text-sm font-medium text-gray-800">PDC Cheques Collected</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {detailedApplication.verificationChecklist.identityVerification.insuranceOpted ? (
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                          ) : (
+                            <AlertCircle className="w-5 h-5 text-red-600" />
+                          )}
+                          <span className="text-sm font-medium text-gray-800">Insurance Opted</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {detailedApplication.verificationChecklist.identityVerification.nachMandateRegistered ? (
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                          ) : (
+                            <AlertCircle className="w-5 h-5 text-red-600" />
+                          )}
+                          <span className="text-sm font-medium text-gray-800">NACH Mandate Registered</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Documents */}
+                  {detailedApplication.documents && detailedApplication.documents.length > 0 && (
+                    <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-amber-200">
+                      <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                        <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
+                        <h4 className="text-base sm:text-lg font-bold text-gray-800">Documents</h4>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                        {detailedApplication.documents.map((doc, idx) => (
+                          <div key={idx} className="bg-white rounded-lg p-4 border border-amber-100">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <p className="font-semibold text-gray-800">{doc.documentType.replace(/_/g, ' ')}</p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Uploaded: {new Date(doc.uploadedAt).toLocaleDateString()}
+                                </p>
+                                <span className={`inline-block mt-2 px-2 py-1 rounded-full text-xs font-medium ${
+                                  doc.documentId.status === 'VERIFIED' ? 'text-green-600 bg-green-100' :
+                                  doc.documentId.status === 'PENDING' ? 'text-yellow-600 bg-yellow-100' :
+                                  'text-red-600 bg-red-100'
+                                }`}>
+                                  {doc.documentId.status}
+                                </span>
+                              </div>
+                              <a
+                                href={doc.documentId.s3URL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="ml-2 p-2 text-amber-600 hover:bg-amber-100 rounded-lg transition-colors"
+                              >
+                                <Download className="w-4 h-4" />
+                              </a>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bank Account */}
+                  {detailedApplication.disbursementBankAccount && (
+                    <div className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-200">
+                      <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                        <Building className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
+                        <h4 className="text-base sm:text-lg font-bold text-gray-800">Disbursement Bank Account</h4>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                        <div>
+                          <p className="text-sm text-gray-600">Bank Name</p>
+                          <p className="font-semibold text-gray-900">{detailedApplication.disbursementBankAccount.bankName}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Account Holder</p>
+                          <p className="font-semibold text-gray-900">{detailedApplication.disbursementBankAccount.accountHolderName}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Account Number</p>
+                          <p className="font-semibold text-gray-900">{detailedApplication.disbursementBankAccount.accountNumber}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">IFSC Code</p>
+                          <p className="font-semibold text-gray-900">{detailedApplication.disbursementBankAccount.ifscCode}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Internal Notes */}
+                  {detailedApplication.internalNotes && detailedApplication.internalNotes.length > 0 && (
+                    <div className="bg-gradient-to-br from-rose-50 to-red-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-rose-200">
+                      <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                        <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 text-rose-600" />
+                        <h4 className="text-base sm:text-lg font-bold text-gray-800">Internal Notes</h4>
+                      </div>
+                      <div className="space-y-2 sm:space-y-3">
+                        {detailedApplication.internalNotes.map((note, idx) => (
+                          <div key={idx} className="bg-white rounded-lg p-4 border border-rose-100">
+                            <p className="text-sm text-gray-800 mb-2">{note.note}</p>
+                            <div className="flex items-center justify-between text-xs text-gray-500">
+                              <span className="font-medium">{note.addedBy.fullName}</span>
+                              <span>{new Date(note.addedAt).toLocaleString()}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Timestamps */}
+                  <div className="bg-[#FAFAFA] rounded-lg p-3 sm:p-4 border border-[#E0E0E0]">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
+                      <div>
+                        <p className="text-gray-600">Created At</p>
+                        <p className="font-semibold text-gray-900">{new Date(detailedApplication.createdAt).toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600">Last Updated</p>
+                        <p className="font-semibold text-gray-900">{new Date(detailedApplication.updatedAt).toLocaleString()}</p>
+                      </div>
                     </div>
                   </div>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="px-6 py-12 text-center">
+                  <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                  <p className="text-gray-600">Unable to load detailed information</p>
+                </div>
+              )}
 
               {/* Modal Footer */}
-              <div className="px-6 py-4 bg-[#FAFAFA] border-t border-[#E0E0E0]">
+              <div className="sticky bottom-0 px-4 sm:px-6 py-3 sm:py-4 bg-[#FAFAFA] border-t border-[#E0E0E0]">
                 <button
-                  onClick={() => setIsDetailModalOpen(false)}
-                  className="w-full px-4 py-2 bg-[#2E7D32] text-white rounded-lg hover:bg-[#1B5E20] transition-colors"
+                  onClick={() => {
+                    setIsDetailModalOpen(false);
+                    setDetailedApplication(null);
+                  }}
+                  className="w-full px-4 py-2 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg hover:shadow-lg transition-all text-sm sm:text-base"
                 >
                   Close
                 </button>
