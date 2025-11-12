@@ -89,7 +89,7 @@ export default function MyLoansPage() {
       const currentLimit = limit || pagination.limit;
 
       const response = await fetch(
-        `http://93.127.167.88:4050/api/loans/get?page=${currentPage}&limit=${currentLimit}`,
+        `https://77q1g1gk-5050.inc1.devtunnels.ms/api/loans/get?page=${currentPage}&limit=${currentLimit}`,
         {
           method: 'GET',
           headers: {
