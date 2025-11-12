@@ -2,7 +2,7 @@
 
 ## Base URL
 ```
-Production: http://93.127.167.88:4050/v1
+Production: https://77q1g1gk-5050.inc1.devtunnels.ms/v1
 Staging: https://api-staging.Quikkred.com/v1
 ```
 

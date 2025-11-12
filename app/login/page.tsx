@@ -92,7 +92,7 @@ export default function LoginPage() {
         ? { email: formData.emailOrPhone }
         : { mobile: formData.emailOrPhone };
 
-      const response = await fetch("http://93.127.167.88:4050/api/auth/customer/create", {
+      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -152,7 +152,7 @@ const verifyOtp = async () => {
         ? { email: formData.emailOrPhone, otp }
         : { mobile: formData.emailOrPhone, otp };
 
-    const response = await fetch("http://93.127.167.88:4050/api/auth/customer/verifyOtp", {
+    const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/verifyOtp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),

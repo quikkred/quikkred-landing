@@ -128,7 +128,7 @@ export default function QuickLoanApplication() {
 
           if (token) {
             // Fetch user profile data
-            const response = await fetch('http://93.127.167.88:4050/api/customer/get', {
+            const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/customer/get', {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
@@ -311,7 +311,7 @@ export default function QuickLoanApplication() {
         ? { email: formData.email }
         : { mobile: formData.mobile };
 
-      const response = await fetch("http://93.127.167.88:4050/api/auth/customer/create", {
+      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -361,7 +361,7 @@ export default function QuickLoanApplication() {
         ? { email: formData.email, otp: formData.otp }
         : { mobile: formData.mobile, otp: formData.otp };
 
-      const response = await fetch("http://93.127.167.88:4050/api/auth/customer/verify", {
+      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/verify", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -443,7 +443,7 @@ export default function QuickLoanApplication() {
         return dateStr;
       };
 
-      const response = await fetch('http://93.127.167.88:4050/api/kyc/pan/verification', {
+      const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/kyc/pan/verification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -541,7 +541,7 @@ export default function QuickLoanApplication() {
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      const response = await fetch('http://93.127.167.88:4050/api/kyc/aadhaar/otp', {
+      const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/kyc/aadhaar/otp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -601,7 +601,7 @@ export default function QuickLoanApplication() {
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      const response = await fetch('http://93.127.167.88:4050/api/kyc/aadhaar/verify', {
+      const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/kyc/aadhaar/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -756,7 +756,7 @@ export default function QuickLoanApplication() {
         };
       }
 
-      const response = await fetch(`http://93.127.167.88:4050/api/application/loan/create`, {
+      const response = await fetch(`https://77q1g1gk-5050.inc1.devtunnels.ms/api/application/loan/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -916,7 +916,7 @@ export default function QuickLoanApplication() {
           isSubmit: true // Final submission
         };
 
-        const response = await fetch(`http://93.127.167.88:4050/api/application/loan/create`, {
+        const response = await fetch(`https://77q1g1gk-5050.inc1.devtunnels.ms/api/application/loan/create`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

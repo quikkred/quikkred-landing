@@ -216,7 +216,7 @@ export default function ApplyPage() {
 
       console.log(`Uploading ${apiFieldName}...`, file.name, file.size, file.type);
 
-      const response = await fetch("http://93.127.167.88:4050/api/document/upload", {
+      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/document/upload", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -293,7 +293,7 @@ export default function ApplyPage() {
 
       console.log('Uploading all documents in one request...');
 
-      const response = await fetch("http://93.127.167.88:4050/api/document/upload", {
+      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/document/upload", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -413,7 +413,7 @@ export default function ApplyPage() {
         payload.mobile = formData.phone;
       }
 
-      const response = await fetch("http://93.127.167.88:4050/api/auth/customer/create", {
+      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -467,7 +467,7 @@ export default function ApplyPage() {
     setVerifying(prev => ({ ...prev, email: true }));
 
     try {
-      const response = await fetch("http://93.127.167.88:4050/api/auth/customer/verify", {
+      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/verify", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -547,7 +547,7 @@ export default function ApplyPage() {
         payload.email = formData.email;
       }
 
-      const response = await fetch("http://93.127.167.88:4050/api/auth/customer/create", {
+      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -601,7 +601,7 @@ export default function ApplyPage() {
     setVerifying(prev => ({ ...prev, phone: true }));
 
     try {
-      const response = await fetch("http://93.127.167.88:4050/api/auth/customer/verify", {
+      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/verify", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -773,7 +773,7 @@ export default function ApplyPage() {
       console.log('Sending payload:', JSON.stringify(payload, null, 2));
 
       // Always use the create endpoint (it handles both create and update)
-      const response = await fetch("http://93.127.167.88:4050/api/application/loan/create", {
+      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/application/loan/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
