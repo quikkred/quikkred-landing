@@ -402,15 +402,6 @@ export default function MyLoansPage() {
                 ? 'Try adjusting your filters or search term'
                 : 'You don\'t have any loans yet. Apply for a loan to get started!'}
             </p>
-            {!searchTerm && filterStatus === 'all' && (
-              <button
-                onClick={() => router.push('/apply')}
-                className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-[#2E7D32] to-[#1B5E20] text-white rounded-lg hover:shadow-lg transition-all inline-flex items-center gap-2 text-sm sm:text-base"
-              >
-                <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-                Apply for Loan
-              </button>
-            )}
           </div>
         ) : (
           <div className="overflow-x-auto">
