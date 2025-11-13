@@ -119,156 +119,7 @@ export default function UserDashboard() {
     }
   }, [user, isLoading, router]);
 
-  useEffect(() => {
-    fetchUserData();
-  }, []);
 
-  const fetchUserData = async () => {
-    try {
-      setLoading(true);
-
-      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
-
-      if (!token) {
-        console.error('No auth token found');
-        router.push('/login');
-        return;
-      }
-
-      const [loansResponse, documentsResponse, creditScoreResponse] = await Promise.all([
-        fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/loans/my-loans', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        }),
-        fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/document/get', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        }),
-        fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/creditScore/get', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        })
-      ]);
-
-      const loansResult = await loansResponse.json();
-      const documentsResult = await documentsResponse.json();
-      const creditScoreResult = await creditScoreResponse.json();
-
-      if (creditScoreResult.success && creditScoreResult.data) {
-        setCreditScoreData(creditScoreResult.data);
-      }
-
-      const allLoansList = loansResult.success && loansResult.data
-        ? loansResult.data.map((loan: any) => ({
-            id: loan.loanNumber,
-            type: loan.loanType,
-            amount: loan.requestedAmount,
-            emi: Math.round((loan.requestedAmount * (loan.interestRate / 100 / 12) * Math.pow(1 + loan.interestRate / 100 / 12, loan.tenure)) / (Math.pow(1 + loan.interestRate / 100 / 12, loan.tenure) - 1)),
-            nextDueDate: new Date(loan.applicationDate).toISOString(),
-            remainingAmount: loan.outstandingAmount,
-            status: loan.status,
-            interestRate: loan.interestRate,
-            tenure: loan.tenure,
-            completedMonths: 0
-          }))
-        : [];
-
-      const approvedLoansList = allLoansList.filter((loan: any) => {
-        const statusLower = loan.status.toLowerCase();
-        return statusLower === 'active' || statusLower === 'approved' || statusLower === 'disbursed';
-      });
-
-      const totalBorrowed = approvedLoansList.reduce((sum: number, loan: any) => sum + loan.amount, 0);
-      const currentOutstanding = approvedLoansList.reduce((sum: number, loan: any) => sum + loan.remainingAmount, 0);
-      const nextEmiAmount = approvedLoansList.reduce((sum: number, loan: any) => sum + loan.emi, 0);
-
-      const mappedData: UserDashboardData = {
-        profile: {
-          name: user?.name || 'User',
-          email: user?.email || '',
-          phone: user?.mobile || '',
-          kycStatus: user?.kycStatus || 'PENDING',
-          creditScore: creditScoreResult.success && creditScoreResult.data ? creditScoreResult.data.internalScore : 0,
-          tier: 'BRONZE',
-          memberSince: user?.createdAt ? new Date(user.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-          profileCompletion: 95,
-        },
-          loans: {
-            active: approvedLoansList.filter((loan: any) => {
-              const statusLower = loan.status.toLowerCase();
-              return statusLower !== 'closed' && statusLower !== 'completed';
-            }),
-            history: allLoansList.filter((loan: any) => {
-              const statusLower = loan.status.toLowerCase();
-              return statusLower === 'closed' || statusLower === 'completed';
-            }).map((loan: any) => ({
-              id: loan.id,
-              type: loan.type,
-              amount: loan.amount,
-              status: loan.status,
-              appliedDate: loan.nextDueDate,
-              disbursedDate: undefined,
-              closedDate: undefined
-            }))
-          },
-          financials: {
-            totalBorrowed,
-            totalRepaid: totalBorrowed - currentOutstanding,
-            currentOutstanding,
-            nextEmiAmount,
-            nextEmiDate: approvedLoansList.length > 0 ? approvedLoansList[0].nextDueDate : '',
-            creditLimit: 1000000,
-            availableCredit: 1000000 - currentOutstanding,
-            lastPaymentDate: '',
-            lastPaymentAmount: 0
-          },
-          rewards: {
-            totalPoints: 0,
-            currentTier: 'BRONZE',
-            nextTierRequirement: 0,
-            recentEarnings: []
-          },
-          notifications: [],
-          quickActions: [
-            {
-              title: 'Apply for Loan',
-              description: 'Get instant approval',
-              icon: 'plus',
-              action: '/apply',
-              enabled: true
-            },
-            {
-              title: 'Track Application',
-              description: 'Check loan status',
-              icon: 'search',
-              action: '/user/track-application',
-              enabled: true
-            }
-          ]
-      };
-
-      setData(mappedData);
- 
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-      toast({
-        variant: "error",
-        title: "Error Loading Data",
-        description: "Unable to fetch your dashboard data. Please try again."
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const formatCurrency = (amount: number) => {
     if (amount >= 10000000) {
@@ -323,22 +174,22 @@ export default function UserDashboard() {
     );
   }
 
-  if (loading) {
-    return (
-      <>
-        <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
-          <div className="text-center">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              className="w-16 h-16 border-4 border-[#10B4A3] border-t-transparent rounded-full mx-auto"
-            />
-            <p className="mt-4 text-[#737373]">Loading your dashboard...</p>
-          </div>
-        </div>
-      </>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <>
+  //       <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
+  //         <div className="text-center">
+  //           <motion.div
+  //             animate={{ rotate: 360 }}
+  //             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+  //             className="w-16 h-16 border-4 border-[#10B4A3] border-t-transparent rounded-full mx-auto"
+  //           />
+  //           <p className="mt-4 text-[#737373]">Loading your dashboard...</p>
+  //         </div>
+  //       </div>
+  //     </>
+  //   );
+  // }
 
   return (
     <>
@@ -540,7 +391,7 @@ export default function UserDashboard() {
                 </div>
                 <h3 className="text-lg font-semibold text-[#0A0A0A] mb-2">No Active Loans</h3>
                 <p className="text-[#737373] mb-6">Start your financial journey with us today</p>
-                <button
+                {/* <button
                   onClick={() => {
                     toast({
                       variant: "success",
@@ -552,7 +403,7 @@ export default function UserDashboard() {
                   className="px-6 py-3 bg-gradient-to-r from-[#10B4A3] to-[#0E9D8F] text-white rounded-lg hover:shadow-lg transition-all"
                 >
                   Apply for Your First Loan
-                </button>
+                </button> */}
               </div>
             </div>
           )}
