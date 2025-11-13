@@ -56,24 +56,12 @@ const UserLayout = ({ children }: UserLayoutProps) => {
       href: "/user/loans",
       color: "text-emerald-400"
     },
-    // {
-    //   title: "Apply for Loan",
-    //   icon: Plus,
-    //   href: "/apply",
-    //   color: "text-purple-400"
-    // },
     {
       title: "My Applications",
       icon: FileText,
       href: "/user/applications",
       color: "text-purple-400"
     },
-    // {
-    //   title: "Documents",
-    //   icon: FileText,
-    //   href: "/user/documents",
-    //   color: "text-indigo-400"
-    // },
     {
       title: "Support",
       icon: HelpCircle,
@@ -92,78 +80,6 @@ const UserLayout = ({ children }: UserLayoutProps) => {
         mobile: user.mobile || prevData.mobile,
         customerId: user.id || prevData.customerId,
       }));
-    }
-  }, [user]);
-
-  // Fetch credit score
-  useEffect(() => {
-    const fetchCreditScore = async () => {
-      try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
-        if (!token) return;
-
-        const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/creditScore/get', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        const result = await response.json();
-        if (result.success && result.data) {
-          setCreditScoreData(result.data);
-          setUserData(prevData => ({
-            ...prevData,
-            creditScore: result.data.internalScore
-          }));
-        }
-      } catch (error) {
-        console.error('Error fetching credit score:', error);
-      }
-    };
-
-    if (user) {
-      fetchCreditScore();
-    }
-  }, [user]);
-
-  // Fetch profile image
-  useEffect(() => {
-    const fetchProfileImage = async () => {
-      try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
-        if (!token) {
-          setProfileImage(null);
-          return;
-        }
-
-        const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/customer/profile', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        const result = await response.json();
-        if (response.ok && result.success && result.data?.profileImage) {
-          const imageUrl = typeof result.data.profileImage === 'string'
-            ? result.data.profileImage
-            : result.data.profileImage.url;
-          setProfileImage(imageUrl);
-          setImageLoadError(false);
-        } else {
-          setProfileImage(null);
-        }
-      } catch (error) {
-        console.error('Error fetching profile image:', error);
-        setProfileImage(null);
-      }
-    };
-
-    if (user) {
-      fetchProfileImage();
     }
   }, [user]);
 
