@@ -361,7 +361,7 @@ export default function QuickLoanApplication() {
         ? { email: formData.email, otp: formData.otp }
         : { mobile: formData.mobile, otp: formData.otp };
 
-      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/verify", {
+      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/verifyOtp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
