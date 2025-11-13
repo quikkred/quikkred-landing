@@ -135,7 +135,7 @@ export default function UserDashboard() {
             </div>
 
             <button
-              onClick={fetchUserData}
+              // onClick={fetchUserData}
               className="flex items-center gap-2 px-4 py-2 bg-white border border-[#E5E5E5] rounded-lg hover:shadow-md transition-all"
             >
               <RefreshCw className="w-4 h-4" />
