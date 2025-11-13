@@ -8,51 +8,80 @@ import {
   Edit2, Save, X, Camera, Shield, CheckCircle,
   AlertCircle, FileText, CreditCard, Briefcase,
   Home, Upload, Loader2, ArrowLeft, Clock,
-  CheckCircle2, XCircle, Globe, Users
+  CheckCircle2, XCircle, Globe, Users, RefreshCw
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
+interface Address {
+  city: string;
+  state: string;
+  pincode: string;
+  coordinates?: {
+    coordinates: number[];
+    type: string;
+  };
+}
+
+interface Bank {
+  bankName: string;
+  accountNumber: string;
+  ifscCode: string;
+  accountHolderName: string;
+  accountType: string;
+  _id: string;
+}
+
+interface Reference {
+  name: string;
+  mobile: string;
+  relationship: string;
+  _id: string;
+}
+
 interface ProfileData {
   _id: string;
-  fullName: string;
-  email: string;
-  mobile: string;
-  dateOfBirth: string;
-  gender: string;
-  maritalStatus: string;
-  profession: string;
-  education: string;
-  monthlyIncome: number;
-  dependents: number;
-  currentAddress?: {
-    line1: string;
-    line2: string;
-    city: string;
-    state: string;
-    pincode: string;
-  };
-  permanentAddress?: {
-    line1: string;
-    line2: string;
-    city: string;
-    state: string;
-    pincode: string;
-  };
-  permanentAddressSame: boolean;
-  emergencyContactName: string;
-  emergencyContactPhone: string;
-  emergencyContactRelation: string;
-  profileImage: string | { url: string; key: string };
+  customerUniqueId: string;
   role: string;
-  status: string;
-  kycStatus?: string;
-  isEmailVerified: boolean;
   isMobileVerified: boolean;
-  emailVerifiedAt?: string;
-  mobileVerifiedAt?: string;
-  preferredLanguage: string;
+  email: string;
+  isEmailVerified: boolean;
+  isPanVerify: boolean;
+  isAadhaarVerify: boolean;
+  currentAddress: Address;
+  permanentAddress: Address;
+  officeAddress: Address;
+  riskCategory: string;
+  fraudFlags: any[];
+  kycStatus: string;
+  isActive: boolean;
+  isBlocked: boolean;
+  isBasicDetailsFilled: boolean;
+  isEmploymentDetailsFilled: boolean;
+  isVerificationDetailsFilled: boolean;
+  previousEmployers: any[];
+  banks: Bank[];
+  cibilHistory: any[];
+  references: Reference[];
+  riskFactors: any[];
   createdAt: string;
-  verify: boolean;
+  updatedAt: string;
+  emailVerifiedAt?: string;
+  companyName?: string;
+  designation?: string;
+  employmentType?: string;
+  monthlyIncome?: number;
+  workExperienceMonths?: number;
+  dateOfBirth?: string;
+  firstName?: string;
+  fullName?: string;
+  gender?: string;
+  lastName?: string;
+  maritalStatus?: string;
+  panCard?: string;
+  aadhaarNumber?: string;
+  aadhaarReferenceId?: string;
+  mobile?: string;
+  profileImage?: string | { url: string; key: string };
 }
 
 export default function ProfilePage() {
@@ -268,14 +297,16 @@ export default function ProfilePage() {
     { id: "personal", label: "Personal Info", icon: User },
     { id: "address", label: "Address", icon: Home },
     { id: "employment", label: "Employment", icon: Briefcase },
-    { id: "emergency", label: "Emergency Contact", icon: Phone }
+    { id: "kyc", label: "KYC & Verification", icon: Shield },
+    { id: "banking", label: "Banking", icon: CreditCard },
+    { id: "references", label: "References", icon: Users }
   ];
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA]">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-[#2E7D32] mx-auto mb-4" />
+          <Loader2 className="w-12 h-12 animate-spin text-[#25B181] mx-auto mb-4" />
           <p className="text-gray-600">Loading profile...</p>
         </div>
       </div>
@@ -297,7 +328,7 @@ export default function ProfilePage() {
           <p className="text-gray-600 text-center mb-6">{error}</p>
           <button
             onClick={fetchProfile}
-            className="w-full py-3 bg-gradient-to-r from-[#2E7D32] to-[#1B5E20] text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+            className="w-full py-3 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg font-semibold hover:shadow-lg transition-all"
           >
             Retry
           </button>
@@ -317,55 +348,35 @@ export default function ProfilePage() {
           >
             <button
               onClick={() => router.back()}
-              className="flex items-center gap-2 text-[#1976D2] hover:text-[#1565C0] mb-4 transition-colors"
+              className="flex items-center gap-2 text-[#4A66FF] hover:text-[#1565C0] mb-4 transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
               <span className="font-medium">Back</span>
             </button>
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-[#1B5E20]">My Profile</h1>
+                <h1 className="text-3xl font-bold text-[#1F8F68]">My Profile</h1>
                 <p className="text-gray-600 mt-2">View and manage your personal information</p>
               </div>
 
-              {/* Edit/Save/Cancel Buttons */}
-              {!isEditing ? (
-                <button
-                  onClick={handleEdit}
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#1976D2] to-[#1565C0] text-white rounded-lg hover:shadow-lg transition-all"
-                >
-                  <Edit2 className="w-5 h-5" />
-                  Edit Profile
-                </button>
-              ) : (
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleCancel}
-                    disabled={isSaving}
-                    className="flex items-center gap-2 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all disabled:opacity-50"
-                  >
-                    <X className="w-5 h-5" />
-                    Cancel
-                  </button>
-                  <button
-                    onClick={updateProfile}
-                    disabled={isSaving}
-                    className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#2E7D32] to-[#1B5E20] text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-50"
-                  >
-                    {isSaving ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="w-5 h-5" />
-                        Save Changes
-                      </>
-                    )}
-                  </button>
-                </div>
-              )}
+              {/* Refresh Button (Edit disabled for read-only API) */}
+              <button
+                onClick={fetchProfile}
+                disabled={isLoading}
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white border border-[#E0E0E0] text-gray-700 rounded-lg hover:bg-[#FAFAFA] transition-colors shadow-sm disabled:opacity-50"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="hidden sm:inline">Loading...</span>
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-4 h-4" />
+                    <span className="hidden sm:inline">Refresh</span>
+                  </>
+                )}
+              </button>
             </div>
 
             {/* Success Message */}
@@ -432,7 +443,7 @@ export default function ProfilePage() {
                     {!selectedImage && (
                       <label
                         htmlFor="profile-image-upload"
-                        className="absolute bottom-0 right-0 w-10 h-10 bg-[#1976D2] rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:bg-[#1565C0] transition-colors group"
+                        className="absolute bottom-0 right-0 w-10 h-10 bg-[#4A66FF] rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:bg-[#1565C0] transition-colors group"
                       >
                         <Camera className="w-5 h-5 text-white" />
                         <input
@@ -489,10 +500,11 @@ export default function ProfilePage() {
                   )}
 
                   <h2 className="mt-4 text-xl font-semibold text-gray-800">
-                    {profileData.fullName || 'User'}
+                    {profileData.fullName || `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim() || 'User'}
                   </h2>
                   <p className="text-sm text-gray-600">{profileData.email}</p>
-                  <p className="text-sm text-gray-600">{profileData.mobile}</p>
+                  <p className="text-sm text-gray-600">{profileData.mobile || 'N/A'}</p>
+                  <p className="text-xs text-gray-500 mt-1">ID: {profileData.customerUniqueId}</p>
                 </div>
 
                 {/* Account Status */}
@@ -500,8 +512,8 @@ export default function ProfilePage() {
                   <div className="p-3 bg-[#FAFAFA] rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-gray-700">Account Status</span>
-                      <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(profileData.status)}`}>
-                        {profileData.status || 'UNKNOWN'}
+                      <span className={`px-3 py-1 text-xs font-semibold rounded-full ${profileData.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {profileData.isActive ? 'ACTIVE' : 'INACTIVE'}
                       </span>
                     </div>
                   </div>
@@ -514,7 +526,20 @@ export default function ProfilePage() {
                         {profileData.kycStatus || 'PENDING'}
                       </span>
                     </div>
+                  </div>
 
+                  {/* Risk Category */}
+                  <div className="p-3 bg-[#FAFAFA] rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700">Risk Category</span>
+                      <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                        profileData.riskCategory === 'LOW' ? 'bg-green-100 text-green-800' :
+                        profileData.riskCategory === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {profileData.riskCategory || 'N/A'}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -545,15 +570,19 @@ export default function ProfilePage() {
                 {/* Account Info */}
                 <div className="mt-6 space-y-2 text-sm text-gray-600">
                   <div className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-[#1976D2]" />
+                    <Shield className="w-4 h-4 text-[#4A66FF]" />
                     <span>Role: {profileData.role}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-[#1976D2]" />
-                    <span>Language: {profileData.preferredLanguage?.toUpperCase()}</span>
+                    <CheckCircle2 className="w-4 h-4 text-[#4A66FF]" />
+                    <span>PAN: {profileData.isPanVerify ? 'Verified' : 'Not Verified'}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-[#1976D2]" />
+                    <CheckCircle2 className="w-4 h-4 text-[#4A66FF]" />
+                    <span>Aadhaar: {profileData.isAadhaarVerify ? 'Verified' : 'Not Verified'}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-[#4A66FF]" />
                     <span>Member Since: {formatDate(profileData.createdAt)}</span>
                   </div>
                 </div>
@@ -577,7 +606,7 @@ export default function ProfilePage() {
                         onClick={() => setActiveTab(tab.id)}
                         className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors whitespace-nowrap ${
                           activeTab === tab.id
-                            ? "border-[#2E7D32] text-[#2E7D32]"
+                            ? "border-[#2E7D32] text-[#25B181]"
                             : "border-transparent text-gray-500 hover:text-gray-700"
                         }`}
                       >
@@ -593,59 +622,48 @@ export default function ProfilePage() {
                   {/* Personal Information Tab */}
                   {activeTab === "personal" && (
                     <div>
-                      <h3 className="text-lg font-semibold text-[#1B5E20] mb-6">Personal Information</h3>
+                      <h3 className="text-lg font-semibold text-[#1F8F68] mb-6">Personal Information</h3>
 
                       <div className="grid md:grid-cols-2 gap-6">
-                        <EditableField
-                          icon={<User className="w-5 h-5 text-[#1976D2]" />}
+                        <InfoField
+                          icon={<User className="w-5 h-5 text-[#4A66FF]" />}
                           label="Full Name"
-                          value={isEditing ? editedData?.fullName || '' : profileData.fullName || 'N/A'}
-                          isEditing={isEditing}
-                          onChange={(value) => handleInputChange('fullName', value)}
+                          value={profileData.fullName || `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim() || 'N/A'}
                         />
                         <InfoField
-                          icon={<Mail className="w-5 h-5 text-[#1976D2]" />}
+                          icon={<User className="w-5 h-5 text-[#4A66FF]" />}
+                          label="First Name"
+                          value={profileData.firstName || 'N/A'}
+                        />
+                        <InfoField
+                          icon={<User className="w-5 h-5 text-[#4A66FF]" />}
+                          label="Last Name"
+                          value={profileData.lastName || 'N/A'}
+                        />
+                        <InfoField
+                          icon={<Mail className="w-5 h-5 text-[#4A66FF]" />}
                           label="Email"
                           value={profileData.email || 'N/A'}
                         />
                         <InfoField
-                          icon={<Phone className="w-5 h-5 text-[#1976D2]" />}
+                          icon={<Phone className="w-5 h-5 text-[#4A66FF]" />}
                           label="Mobile"
                           value={profileData.mobile || 'N/A'}
                         />
-                        <EditableField
-                          icon={<Calendar className="w-5 h-5 text-[#1976D2]" />}
+                        <InfoField
+                          icon={<Calendar className="w-5 h-5 text-[#4A66FF]" />}
                           label="Date of Birth"
-                          value={isEditing ? (editedData?.dateOfBirth?.split('T')[0] || '') : profileData.dateOfBirth ? formatDate(profileData.dateOfBirth) : 'N/A'}
-                          isEditing={isEditing}
-                          type="date"
-                          onChange={(value) => handleInputChange('dateOfBirth', value)}
+                          value={profileData.dateOfBirth ? formatDate(profileData.dateOfBirth) : 'N/A'}
                         />
-                        <EditableField
-                          icon={<User className="w-5 h-5 text-[#1976D2]" />}
+                        <InfoField
+                          icon={<User className="w-5 h-5 text-[#4A66FF]" />}
                           label="Gender"
-                          value={isEditing ? editedData?.gender || '' : profileData.gender || 'N/A'}
-                          isEditing={isEditing}
-                          type="select"
-                          options={['MALE', 'FEMALE', 'OTHER']}
-                          onChange={(value) => handleInputChange('gender', value)}
+                          value={profileData.gender || 'N/A'}
                         />
-                        <EditableField
-                          icon={<Users className="w-5 h-5 text-[#1976D2]" />}
+                        <InfoField
+                          icon={<Users className="w-5 h-5 text-[#4A66FF]" />}
                           label="Marital Status"
-                          value={isEditing ? editedData?.maritalStatus || '' : profileData.maritalStatus || 'N/A'}
-                          isEditing={isEditing}
-                          type="select"
-                          options={['SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED']}
-                          onChange={(value) => handleInputChange('maritalStatus', value)}
-                        />
-                        <EditableField
-                          icon={<Users className="w-5 h-5 text-[#1976D2]" />}
-                          label="Dependents"
-                          value={isEditing ? editedData?.dependents?.toString() || '0' : profileData.dependents?.toString() || '0'}
-                          isEditing={isEditing}
-                          type="number"
-                          onChange={(value) => handleInputChange('dependents', parseInt(value) || 0)}
+                          value={profileData.maritalStatus || 'N/A'}
                         />
                       </div>
                     </div>
@@ -654,197 +672,270 @@ export default function ProfilePage() {
                   {/* Address Tab */}
                   {activeTab === "address" && (
                     <div>
-                      <h3 className="text-lg font-semibold text-[#1B5E20] mb-6">Address Information</h3>
+                      <h3 className="text-lg font-semibold text-[#1F8F68] mb-6">Address Information</h3>
 
                       {/* Current Address */}
                       <div className="mb-8">
                         <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                          <Home className="w-5 h-5 text-[#1976D2]" />
+                          <Home className="w-5 h-5 text-[#4A66FF]" />
                           Current Address
                         </h4>
-                        <div className="grid md:grid-cols-2 gap-6">
-                          <div className="md:col-span-2">
-                            <EditableField
-                              icon={<MapPin className="w-5 h-5 text-[#1976D2]" />}
-                              label="Address Line 1"
-                              value={isEditing ? editedData?.currentAddress?.line1 || '' : profileData.currentAddress?.line1 || 'N/A'}
-                              isEditing={isEditing}
-                              onChange={(value) => handleInputChange('currentAddress.line1', value)}
-                            />
-                          </div>
-                          <div className="md:col-span-2">
-                            <EditableField
-                              icon={<MapPin className="w-5 h-5 text-[#1976D2]" />}
-                              label="Address Line 2"
-                              value={isEditing ? editedData?.currentAddress?.line2 || '' : profileData.currentAddress?.line2 || 'N/A'}
-                              isEditing={isEditing}
-                              onChange={(value) => handleInputChange('currentAddress.line2', value)}
-                            />
-                          </div>
-                          <EditableField
-                            icon={<Building className="w-5 h-5 text-[#1976D2]" />}
+                        <div className="grid md:grid-cols-3 gap-6">
+                          <InfoField
+                            icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
                             label="City"
-                            value={isEditing ? editedData?.currentAddress?.city || '' : profileData.currentAddress?.city || 'N/A'}
-                            isEditing={isEditing}
-                            onChange={(value) => handleInputChange('currentAddress.city', value)}
+                            value={profileData.currentAddress?.city || 'N/A'}
                           />
-                          <EditableField
-                            icon={<MapPin className="w-5 h-5 text-[#1976D2]" />}
+                          <InfoField
+                            icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
                             label="State"
-                            value={isEditing ? editedData?.currentAddress?.state || '' : profileData.currentAddress?.state || 'N/A'}
-                            isEditing={isEditing}
-                            onChange={(value) => handleInputChange('currentAddress.state', value)}
+                            value={profileData.currentAddress?.state || 'N/A'}
                           />
-                          <EditableField
-                            icon={<MapPin className="w-5 h-5 text-[#1976D2]" />}
+                          <InfoField
+                            icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
                             label="Pincode"
-                            value={isEditing ? editedData?.currentAddress?.pincode || '' : profileData.currentAddress?.pincode || 'N/A'}
-                            isEditing={isEditing}
-                            onChange={(value) => handleInputChange('currentAddress.pincode', value)}
+                            value={profileData.currentAddress?.pincode || 'N/A'}
                           />
                         </div>
                       </div>
 
-                      {/* Permanent Address Same Checkbox */}
-                      {isEditing && (
-                        <div className="mb-6">
-                          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={editedData?.permanentAddressSame || false}
-                              onChange={(e) => handleInputChange('permanentAddressSame', e.target.checked)}
-                              className="w-4 h-4 text-[#2E7D32] border-gray-300 rounded focus:ring-[#2E7D32]"
-                            />
-                            Permanent address is same as current address
-                          </label>
-                        </div>
-                      )}
-
                       {/* Permanent Address */}
-                      {!((isEditing ? editedData?.permanentAddressSame : profileData.permanentAddressSame)) && (
-                        <div>
-                          <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                            <Home className="w-5 h-5 text-[#1976D2]" />
-                            Permanent Address
-                          </h4>
-                          <div className="grid md:grid-cols-2 gap-6">
-                            <div className="md:col-span-2">
-                              <EditableField
-                                icon={<MapPin className="w-5 h-5 text-[#1976D2]" />}
-                                label="Address Line 1"
-                                value={isEditing ? editedData?.permanentAddress?.line1 || '' : profileData.permanentAddress?.line1 || 'N/A'}
-                                isEditing={isEditing}
-                                onChange={(value) => handleInputChange('permanentAddress.line1', value)}
-                              />
-                            </div>
-                            <div className="md:col-span-2">
-                              <EditableField
-                                icon={<MapPin className="w-5 h-5 text-[#1976D2]" />}
-                                label="Address Line 2"
-                                value={isEditing ? editedData?.permanentAddress?.line2 || '' : profileData.permanentAddress?.line2 || 'N/A'}
-                                isEditing={isEditing}
-                                onChange={(value) => handleInputChange('permanentAddress.line2', value)}
-                              />
-                            </div>
-                            <EditableField
-                              icon={<Building className="w-5 h-5 text-[#1976D2]" />}
-                              label="City"
-                              value={isEditing ? editedData?.permanentAddress?.city || '' : profileData.permanentAddress?.city || 'N/A'}
-                              isEditing={isEditing}
-                              onChange={(value) => handleInputChange('permanentAddress.city', value)}
-                            />
-                            <EditableField
-                              icon={<MapPin className="w-5 h-5 text-[#1976D2]" />}
-                              label="State"
-                              value={isEditing ? editedData?.permanentAddress?.state || '' : profileData.permanentAddress?.state || 'N/A'}
-                              isEditing={isEditing}
-                              onChange={(value) => handleInputChange('permanentAddress.state', value)}
-                            />
-                            <EditableField
-                              icon={<MapPin className="w-5 h-5 text-[#1976D2]" />}
-                              label="Pincode"
-                              value={isEditing ? editedData?.permanentAddress?.pincode || '' : profileData.permanentAddress?.pincode || 'N/A'}
-                              isEditing={isEditing}
-                              onChange={(value) => handleInputChange('permanentAddress.pincode', value)}
-                            />
-                          </div>
+                      <div className="mb-8">
+                        <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                          <Home className="w-5 h-5 text-[#4A66FF]" />
+                          Permanent Address
+                        </h4>
+                        <div className="grid md:grid-cols-3 gap-6">
+                          <InfoField
+                            icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
+                            label="City"
+                            value={profileData.permanentAddress?.city || 'N/A'}
+                          />
+                          <InfoField
+                            icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                            label="State"
+                            value={profileData.permanentAddress?.state || 'N/A'}
+                          />
+                          <InfoField
+                            icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                            label="Pincode"
+                            value={profileData.permanentAddress?.pincode || 'N/A'}
+                          />
                         </div>
-                      )}
+                      </div>
 
-                      {((isEditing ? editedData?.permanentAddressSame : profileData.permanentAddressSame)) && (
-                        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                          <p className="text-sm text-blue-800 flex items-center gap-2">
-                            <CheckCircle className="w-4 h-4" />
-                            Permanent address is same as current address
-                          </p>
+                      {/* Office Address */}
+                      <div>
+                        <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                          <Building className="w-5 h-5 text-[#4A66FF]" />
+                          Office Address
+                        </h4>
+                        <div className="grid md:grid-cols-3 gap-6">
+                          <InfoField
+                            icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
+                            label="City"
+                            value={profileData.officeAddress?.city || 'N/A'}
+                          />
+                          <InfoField
+                            icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                            label="State"
+                            value={profileData.officeAddress?.state || 'N/A'}
+                          />
+                          <InfoField
+                            icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                            label="Pincode"
+                            value={profileData.officeAddress?.pincode || 'N/A'}
+                          />
                         </div>
-                      )}
+                      </div>
                     </div>
                   )}
 
                   {/* Employment Tab */}
                   {activeTab === "employment" && (
                     <div>
-                      <h3 className="text-lg font-semibold text-[#1B5E20] mb-6">Employment Information</h3>
+                      <h3 className="text-lg font-semibold text-[#1F8F68] mb-6">Employment Information</h3>
 
                       <div className="grid md:grid-cols-2 gap-6">
-                        <EditableField
-                          icon={<Briefcase className="w-5 h-5 text-[#1976D2]" />}
-                          label="Profession"
-                          value={isEditing ? editedData?.profession || '' : profileData.profession || 'N/A'}
-                          isEditing={isEditing}
-                          onChange={(value) => handleInputChange('profession', value)}
+                        <InfoField
+                          icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
+                          label="Company Name"
+                          value={profileData.companyName || 'N/A'}
                         />
-                        <EditableField
-                          icon={<FileText className="w-5 h-5 text-[#1976D2]" />}
-                          label="Education"
-                          value={isEditing ? editedData?.education || '' : profileData.education || 'N/A'}
-                          isEditing={isEditing}
-                          type="select"
-                          options={['HIGH_SCHOOL', 'DIPLOMA', 'GRADUATE', 'POSTGRADUATE', 'DOCTORATE']}
-                          onChange={(value) => handleInputChange('education', value)}
+                        <InfoField
+                          icon={<Briefcase className="w-5 h-5 text-[#4A66FF]" />}
+                          label="Designation"
+                          value={profileData.designation || 'N/A'}
                         />
-                        <EditableField
-                          icon={<CreditCard className="w-5 h-5 text-[#1976D2]" />}
+                        <InfoField
+                          icon={<FileText className="w-5 h-5 text-[#4A66FF]" />}
+                          label="Employment Type"
+                          value={profileData.employmentType || 'N/A'}
+                        />
+                        <InfoField
+                          icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
                           label="Monthly Income"
-                          value={isEditing ? editedData?.monthlyIncome?.toString() || '' : profileData.monthlyIncome ? `₹${profileData.monthlyIncome.toLocaleString('en-IN')}` : 'N/A'}
-                          isEditing={isEditing}
-                          type="number"
-                          onChange={(value) => handleInputChange('monthlyIncome', parseFloat(value) || 0)}
+                          value={profileData.monthlyIncome ? `₹${profileData.monthlyIncome.toLocaleString('en-IN')}` : 'N/A'}
+                        />
+                        <InfoField
+                          icon={<Clock className="w-5 h-5 text-[#4A66FF]" />}
+                          label="Work Experience"
+                          value={profileData.workExperienceMonths ? `${profileData.workExperienceMonths} months` : 'N/A'}
                         />
                       </div>
                     </div>
                   )}
 
-                  {/* Emergency Contact Tab */}
-                  {activeTab === "emergency" && (
+                  {/* KYC & Verification Tab */}
+                  {activeTab === "kyc" && (
                     <div>
-                      <h3 className="text-lg font-semibold text-[#1B5E20] mb-6">Emergency Contact</h3>
+                      <h3 className="text-lg font-semibold text-[#1F8F68] mb-6">KYC & Verification Details</h3>
 
                       <div className="grid md:grid-cols-2 gap-6">
-                        <EditableField
-                          icon={<User className="w-5 h-5 text-[#1976D2]" />}
-                          label="Contact Name"
-                          value={isEditing ? editedData?.emergencyContactName || '' : profileData.emergencyContactName || 'N/A'}
-                          isEditing={isEditing}
-                          onChange={(value) => handleInputChange('emergencyContactName', value)}
+                        <InfoField
+                          icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
+                          label="PAN Card"
+                          value={profileData.panCard || 'N/A'}
                         />
-                        <EditableField
-                          icon={<Phone className="w-5 h-5 text-[#1976D2]" />}
-                          label="Contact Phone"
-                          value={isEditing ? editedData?.emergencyContactPhone || '' : profileData.emergencyContactPhone || 'N/A'}
-                          isEditing={isEditing}
-                          type="tel"
-                          onChange={(value) => handleInputChange('emergencyContactPhone', value)}
+                        <div className="p-4 bg-[#FAFAFA] rounded-lg border border-[#E0E0E0]">
+                          <div className="flex items-start gap-3">
+                            {profileData.isPanVerify ? (
+                              <CheckCircle2 className="w-5 h-5 text-green-600" />
+                            ) : (
+                              <XCircle className="w-5 h-5 text-red-600" />
+                            )}
+                            <div className="flex-1">
+                              <p className="text-xs text-gray-500 mb-1">PAN Verification</p>
+                              <p className={`font-medium ${profileData.isPanVerify ? 'text-green-600' : 'text-red-600'}`}>
+                                {profileData.isPanVerify ? 'Verified' : 'Not Verified'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <InfoField
+                          icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
+                          label="Aadhaar Number"
+                          value={profileData.aadhaarNumber ? `XXXX-XXXX-${profileData.aadhaarNumber.slice(-4)}` : 'N/A'}
                         />
-                        <EditableField
-                          icon={<Users className="w-5 h-5 text-[#1976D2]" />}
-                          label="Relationship"
-                          value={isEditing ? editedData?.emergencyContactRelation || '' : profileData.emergencyContactRelation || 'N/A'}
-                          isEditing={isEditing}
-                          onChange={(value) => handleInputChange('emergencyContactRelation', value)}
-                        />
+                        <div className="p-4 bg-[#FAFAFA] rounded-lg border border-[#E0E0E0]">
+                          <div className="flex items-start gap-3">
+                            {profileData.isAadhaarVerify ? (
+                              <CheckCircle2 className="w-5 h-5 text-green-600" />
+                            ) : (
+                              <XCircle className="w-5 h-5 text-red-600" />
+                            )}
+                            <div className="flex-1">
+                              <p className="text-xs text-gray-500 mb-1">Aadhaar Verification</p>
+                              <p className={`font-medium ${profileData.isAadhaarVerify ? 'text-green-600' : 'text-red-600'}`}>
+                                {profileData.isAadhaarVerify ? 'Verified' : 'Not Verified'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {profileData.aadhaarReferenceId && (
+                          <InfoField
+                            icon={<FileText className="w-5 h-5 text-[#4A66FF]" />}
+                            label="Aadhaar Reference ID"
+                            value={profileData.aadhaarReferenceId}
+                          />
+                        )}
                       </div>
+                    </div>
+                  )}
+
+                  {/* Banking Tab */}
+                  {activeTab === "banking" && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-[#1F8F68] mb-6">Banking Information</h3>
+
+                      {profileData.banks && profileData.banks.length > 0 ? (
+                        <div className="space-y-6">
+                          {profileData.banks.map((bank, index) => (
+                            <div key={bank._id} className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200">
+                              <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <CreditCard className="w-5 h-5 text-[#4A66FF]" />
+                                Bank Account {index + 1}
+                              </h4>
+                              <div className="grid md:grid-cols-2 gap-4">
+                                <InfoField
+                                  icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
+                                  label="Bank Name"
+                                  value={bank.bankName}
+                                />
+                                <InfoField
+                                  icon={<User className="w-5 h-5 text-[#4A66FF]" />}
+                                  label="Account Holder Name"
+                                  value={bank.accountHolderName}
+                                />
+                                <InfoField
+                                  icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
+                                  label="Account Number"
+                                  value={`XXXX${bank.accountNumber.slice(-4)}`}
+                                />
+                                <InfoField
+                                  icon={<FileText className="w-5 h-5 text-[#4A66FF]" />}
+                                  label="IFSC Code"
+                                  value={bank.ifscCode}
+                                />
+                                <InfoField
+                                  icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
+                                  label="Account Type"
+                                  value={bank.accountType}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-12">
+                          <CreditCard className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                          <p className="text-gray-500">No bank accounts added yet</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* References Tab */}
+                  {activeTab === "references" && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-[#1F8F68] mb-6">References</h3>
+
+                      {profileData.references && profileData.references.length > 0 ? (
+                        <div className="space-y-6">
+                          {profileData.references.map((reference, index) => (
+                            <div key={reference._id} className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border-2 border-purple-200">
+                              <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <Users className="w-5 h-5 text-purple-600" />
+                                Reference {index + 1}
+                              </h4>
+                              <div className="grid md:grid-cols-3 gap-4">
+                                <InfoField
+                                  icon={<User className="w-5 h-5 text-purple-600" />}
+                                  label="Name"
+                                  value={reference.name}
+                                />
+                                <InfoField
+                                  icon={<Phone className="w-5 h-5 text-purple-600" />}
+                                  label="Mobile"
+                                  value={reference.mobile}
+                                />
+                                <InfoField
+                                  icon={<Users className="w-5 h-5 text-purple-600" />}
+                                  label="Relationship"
+                                  value={reference.relationship}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-12">
+                          <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                          <p className="text-gray-500">No references added yet</p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

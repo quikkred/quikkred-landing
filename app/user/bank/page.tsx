@@ -545,7 +545,7 @@ export default function BankAccountsPage() {
                       id="isPrimaryExisting"
                       checked={formData.isPrimary}
                       onChange={handleInputChange}
-                      className="w-4 h-4 text-[#2E7D32] border-gray-300 rounded focus:ring-[#2E7D32]"
+                      className="w-4 h-4 text-[#25B181] border-gray-300 rounded focus:ring-[#2E7D32]"
                     />
                     <label htmlFor="isPrimaryExisting" className="text-sm text-gray-700">
                       Set as primary account

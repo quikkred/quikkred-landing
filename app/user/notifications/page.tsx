@@ -123,7 +123,7 @@ export default function NotificationsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA]">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-[#2E7D32] mx-auto mb-4" />
+          <Loader2 className="w-12 h-12 animate-spin text-[#25B181] mx-auto mb-4" />
           <p className="text-gray-600">Loading notifications...</p>
         </div>
       </div>
@@ -148,9 +148,9 @@ export default function NotificationsPage() {
           </button>
 
           <div className="flex items-center gap-3">
-            <Bell className="w-8 h-8 text-[#2E7D32]" />
+            <Bell className="w-8 h-8 text-[#25B181]" />
             <div>
-              <h1 className="text-3xl font-bold text-[#1B5E20]">Notifications</h1>
+              <h1 className="text-3xl font-bold text-[#1F8F68]">Notifications</h1>
               <p className="text-gray-600 mt-1">Stay updated with your latest notifications</p>
             </div>
           </div>

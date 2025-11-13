@@ -475,7 +475,7 @@ export default function DocumentsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#1B5E20]">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#1F8F68]">
             Documents
           </h1>
           <p className="text-sm text-gray-600 mt-1">
@@ -485,7 +485,7 @@ export default function DocumentsPage() {
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-600">Progress:</span>
           <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-[#E0E0E0]">
-            <span className="text-lg font-bold text-[#2E7D32]">
+            <span className="text-lg font-bold text-[#25B181]">
               {documents.filter(d => requiredDocumentTypes.some(rt => rt.value === d.type)).length}/4
             </span>
             {documents.filter(d => requiredDocumentTypes.some(rt => rt.value === d.type)).length === 4 && (
@@ -506,7 +506,7 @@ export default function DocumentsPage() {
             <span className="text-xs sm:text-sm text-gray-600 font-medium">Total</span>
             <FolderOpen className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
           </div>
-          <p className="text-2xl sm:text-3xl font-bold text-[#1B5E20]">{statistics.total}</p>
+          <p className="text-2xl sm:text-3xl font-bold text-[#1F8F68]">{statistics.total}</p>
         </motion.div>
 
         <motion.div
@@ -562,16 +562,16 @@ export default function DocumentsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="bg-white border-2 border-dashed border-gray-300 rounded-xl overflow-hidden hover:border-[#2E7D32] transition-all"
+              className="bg-white border-2 border-dashed border-gray-300 rounded-lg sm:rounded-xl overflow-hidden hover:border-[#25B181] transition-all"
             >
-              <div className="p-6 text-center">
-                <div className="mb-4">
-                  <Upload className="w-12 h-12 mx-auto text-gray-400" />
+              <div className="p-4 sm:p-6 text-center">
+                <div className="mb-3 sm:mb-4">
+                  <Upload className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-gray-400" />
                 </div>
-                <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                <h4 className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">
                   {getDocumentTypeLabel(item.type)}
                 </h4>
-                <p className="text-xs text-gray-500 mb-4">
+                <p className="text-[10px] sm:text-xs text-gray-500 mb-3 sm:mb-4">
                   Click to upload
                 </p>
 
@@ -585,13 +585,13 @@ export default function DocumentsPage() {
                 />
                 <label
                   htmlFor={`upload-${item.type}`}
-                  className={`block px-4 py-2 bg-[#2E7D32] text-white text-sm rounded-lg hover:bg-[#1B5E20] transition-colors cursor-pointer ${
+                  className={`block px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white text-xs sm:text-sm rounded-lg hover:shadow-lg transition-all cursor-pointer ${
                     uploadingDocs[item.type] ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 >
                   {uploadingDocs[item.type] ? (
                     <div className="flex items-center justify-center gap-2">
-                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
                       Uploading...
                     </div>
                   ) : (
@@ -607,10 +607,10 @@ export default function DocumentsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="bg-white border border-[#E0E0E0] rounded-xl overflow-hidden hover:shadow-lg transition-all group"
+              className="bg-white border border-[#E0E0E0] rounded-lg sm:rounded-xl overflow-hidden hover:shadow-lg transition-all group"
             >
               {/* Document Preview */}
-              <div className="relative h-48 bg-gray-100 overflow-hidden">
+              <div className="relative h-40 sm:h-48 bg-gray-100 overflow-hidden">
                 <img
                   src={doc!.url}
                   alt={getDocumentTypeLabel(doc!.type)}
@@ -633,7 +633,7 @@ export default function DocumentsPage() {
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                   <button
                     onClick={() => window.open(doc!.url, '_blank')}
-                    className="px-4 py-2 bg-white text-[#1B5E20] rounded-lg font-medium shadow-lg flex items-center gap-2 cursor-pointer"
+                    className="px-4 py-2 bg-white text-[#1F8F68] rounded-lg font-medium shadow-lg flex items-center gap-2 cursor-pointer"
                   >
                     <Eye className="w-4 h-4" />
                     View Full
@@ -642,11 +642,11 @@ export default function DocumentsPage() {
               </div>
 
               {/* Document Info */}
-              <div className="p-4">
-                <h4 className="text-base font-semibold text-[#1B5E20] mb-1 truncate">
+              <div className="p-3 sm:p-4">
+                <h4 className="text-sm sm:text-base font-semibold text-[#1F8F68] mb-1 truncate">
                   {getDocumentTypeLabel(doc!.type)}
                 </h4>
-                <p className="text-xs text-gray-500 mb-3">
+                <p className="text-[10px] sm:text-xs text-gray-500 mb-2 sm:mb-3">
                   {new Date(doc!.uploadDate).toLocaleDateString('en-IN', {
                     year: 'numeric',
                     month: 'short',
@@ -655,34 +655,34 @@ export default function DocumentsPage() {
                 </p>
 
                 {/* Actions */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   <button
                     onClick={() => window.open(doc!.url, '_blank')}
-                    className="flex-1 px-3 py-2 bg-[#1976D2]/10 text-[#1976D2] rounded-lg hover:bg-[#1976D2]/20 transition-colors text-sm font-medium flex items-center justify-center gap-1 cursor-pointer"
+                    className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 bg-[#4A66FF]/10 text-[#4A66FF] rounded-lg hover:bg-[#4A66FF]/20 transition-colors text-xs sm:text-sm font-medium flex items-center justify-center gap-1 cursor-pointer"
                   >
-                    <Eye className="w-4 h-4" />
-                    View
+                    <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">View</span>
                   </button>
                   <button
                     onClick={() => handleDownload(doc!)}
-                    className="p-2 bg-green-500/10 text-green-600 rounded-lg hover:bg-green-500/20 transition-colors cursor-pointer"
+                    className="p-1.5 sm:p-2 bg-green-500/10 text-green-600 rounded-lg hover:bg-green-500/20 transition-colors cursor-pointer"
                     title="Download"
                   >
-                    <Download className="w-4 h-4" />
+                    <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </button>
                   <button
                     onClick={() => handleShare(doc!)}
-                    className="p-2 bg-blue-500/10 text-blue-600 rounded-lg hover:bg-blue-500/20 transition-colors cursor-pointer"
+                    className="p-1.5 sm:p-2 bg-blue-500/10 text-blue-600 rounded-lg hover:bg-blue-500/20 transition-colors cursor-pointer"
                     title="Share"
                   >
-                    <Share2 className="w-4 h-4" />
+                    <Share2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </button>
                   <button
                     onClick={() => handleDelete(doc!)}
-                    className="p-2 bg-red-500/10 text-red-600 rounded-lg hover:bg-red-500/20 transition-colors cursor-pointer"
+                    className="p-1.5 sm:p-2 bg-red-500/10 text-red-600 rounded-lg hover:bg-red-500/20 transition-colors cursor-pointer"
                     title="Delete"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </button>
                 </div>
               </div>
@@ -702,34 +702,34 @@ export default function DocumentsPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+              className="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-6"
             >
               {/* Icon */}
-              <div className="flex items-center justify-center mb-4">
-                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
-                  <AlertCircle className="w-8 h-8 text-red-600" />
+              <div className="flex items-center justify-center mb-3 sm:mb-4">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center">
+                  <AlertCircle className="w-7 h-7 sm:w-8 sm:h-8 text-red-600" />
                 </div>
               </div>
 
               {/* Content */}
-              <h3 className="text-xl font-bold text-gray-900 text-center mb-2">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 text-center mb-2">
                 Delete Document?
               </h3>
-              <p className="text-gray-600 text-center mb-6">
+              <p className="text-sm sm:text-base text-gray-600 text-center mb-5 sm:mb-6">
                 Are you sure you want to delete <strong>{getDocumentTypeLabel(deleteConfirm.doc.type)}</strong>? This action cannot be undone.
               </p>
 
               {/* Actions */}
-              <div className="flex gap-3">
+              <div className="flex gap-2 sm:gap-3">
                 <button
                   onClick={cancelDelete}
-                  className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all font-medium cursor-pointer"
+                  className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all font-medium cursor-pointer text-sm sm:text-base"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmDelete}
-                  className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all font-medium cursor-pointer"
+                  className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all font-medium cursor-pointer text-sm sm:text-base"
                 >
                   Delete
                 </button>
