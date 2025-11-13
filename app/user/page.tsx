@@ -18,88 +18,22 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast, Toaster } from '@/components/ui/toast';
 
-interface UserDashboardData {
-  profile: {
-    name: string;
-    email: string;
-    phone: string;
-    kycStatus: 'PENDING' | 'VERIFIED' | 'REJECTED';
-    creditScore: number;
-    tier: 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM';
-    memberSince: string;
-    profileCompletion: number;
-    avatar?: string;
-  };
-  loans: {
-    active: Array<{
-      id: string;
-      type: string;
-      amount: number;
-      emi: number;
-      nextDueDate: string;
-      remainingAmount: number;
-      status: string;
-      interestRate: number;
-      tenure: number;
-      completedMonths: number;
-    }>;
-    history: Array<{
-      id: string;
-      type: string;
-      amount: number;
-      status: string;
-      appliedDate: string;
-      disbursedDate?: string;
-      closedDate?: string;
-    }>;
-  };
-  financials: {
-    totalBorrowed: number;
-    totalRepaid: number;
-    currentOutstanding: number;
-    nextEmiAmount: number;
-    nextEmiDate: string;
-    creditLimit: number;
-    availableCredit: number;
-    lastPaymentDate: string;
-    lastPaymentAmount: number;
-  };
-  rewards: {
-    totalPoints: number;
-    currentTier: string;
-    nextTierRequirement: number;
-    recentEarnings: Array<{
-      points: number;
-      reason: string;
-      date: string;
-    }>;
-  };
-  notifications: Array<{
-    id: string;
-    title: string;
-    message: string;
-    type: 'INFO' | 'WARNING' | 'SUCCESS' | 'PAYMENT';
-    isRead: boolean;
-    createdAt: string;
-  }>;
-  quickActions: Array<{
-    title: string;
-    description: string;
-    icon: string;
-    action: string;
-    enabled: boolean;
-  }>;
+interface DashboardData {
+  customerId: string;
+  oldApplication: boolean;
+  oldApplicationNumber: string | null;
+  oldApplicationDate: string | null;
+  isBasicDetailsFilled: boolean;
+  isEmploymentDetailsFilled: boolean;
+  isVerificationDetailsFilled: boolean;
 }
 
 export default function UserDashboard() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-  const [data, setData] = useState<UserDashboardData | null>(null);
+  const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showBalance, setShowBalance] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'loans' | 'payments' | 'profile'>('overview');
-  const [creditScoreData, setCreditScoreData] = useState<any>(null);
 
   useEffect(() => {
     if (!isLoading) {
@@ -121,32 +55,23 @@ export default function UserDashboard() {
 
 
 
-  const formatCurrency = (amount: number) => {
-    if (amount >= 10000000) {
-      return `₹${(amount / 10000000).toFixed(2)}Cr`;
-    } else if (amount >= 100000) {
-      return `₹${(amount / 100000).toFixed(2)}L`;
-    }
-    return `₹${amount.toLocaleString()}`;
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
   };
 
-  const getKycStatusColor = (status: string) => {
-    switch (status) {
-      case 'VERIFIED': return 'text-[#2E7D32] bg-[#E7F5E7]';
-      case 'PENDING': return 'text-[#FF9800] bg-[#FFF3E0]';
-      case 'REJECTED': return 'text-[#F44336] bg-[#FFEBEE]';
-      default: return 'text-[#737373] bg-[#F5F5F5]';
-    }
-  };
-
-  const getTierColor = (tier: string) => {
-    switch (tier) {
-      case 'PLATINUM': return 'from-purple-600 to-pink-600';
-      case 'GOLD': return 'from-yellow-600 to-orange-600';
-      case 'SILVER': return 'from-gray-400 to-gray-600';
-      case 'BRONZE': return 'from-orange-700 to-red-700';
-      default: return 'from-gray-600 to-gray-800';
-    }
+  const calculateCompletion = () => {
+    if (!data) return 0;
+    let completed = 0;
+    if (data.isBasicDetailsFilled) completed++;
+    if (data.isEmploymentDetailsFilled) completed++;
+    if (data.isVerificationDetailsFilled) completed++;
+    return Math.round((completed / 3) * 100);
   };
 
   if (isLoading) {
@@ -193,7 +118,7 @@ export default function UserDashboard() {
 
   return (
     <>
-      <div className="p-4 sm:p-6 bg-[#FAFAFA]">
+      <div className="p-4 sm:p-6 bg-[#FAFAFA] min-h-screen">
         {/* Header with Welcome */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -204,190 +129,155 @@ export default function UserDashboard() {
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-[#0A0A0A] flex items-center gap-2 sm:gap-3">
                 <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-[#FF9800]" />
-                <span className="break-words">Welcome back, {data?.profile.name?.split(' ')[0]}!</span>
+                <span className="break-words">Welcome back, {user?.name?.split(' ')[0]}!</span>
               </h1>
-              <p className="text-[#737373] mt-1 text-sm sm:text-base">Here's your financial overview</p>
+              <p className="text-[#737373] mt-1 text-sm sm:text-base">Complete your profile to apply for loans</p>
             </div>
 
-            <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
-              <div className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm ${getKycStatusColor(data?.profile.kycStatus || 'PENDING')} border border-current/20`}>
-                <UserCheck className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1" />
-                {data?.profile.kycStatus}
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Quick Stats Cards */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
-        >
-          {/* Current Outstanding */}
-          <div className="bg-white rounded-2xl p-6 border border-[#E5E5E5] hover:shadow-lg transition-all">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-[#E8F0FF] rounded-xl">
-                <IndianRupee className="w-6 h-6 text-[#4084FF]" />
-              </div>
-              <span className="text-xs text-[#737373]">Outstanding</span>
-            </div>
-            <p className="text-3xl font-bold text-[#0A0A0A] mb-2">
-              {showBalance ? formatCurrency(data?.financials.currentOutstanding || 0) : '••••••'}
-            </p>
             <button
-              onClick={() => setShowBalance(!showBalance)}
-              className="flex items-center gap-1 text-sm text-[#737373] hover:text-[#0A0A0A] transition-colors"
+              onClick={fetchUserData}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-[#E5E5E5] rounded-lg hover:shadow-md transition-all"
             >
-              {showBalance ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              {showBalance ? 'Hide' : 'Show'}
+              <RefreshCw className="w-4 h-4" />
+              <span className="text-sm">Refresh</span>
             </button>
           </div>
-
-          {/* Next EMI */}
-          {data?.financials && data.financials.nextEmiAmount > 0 && (
-            <div className="bg-white rounded-2xl p-6 border border-[#E5E5E5] hover:shadow-lg transition-all">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-[#FFF3E0] rounded-xl">
-                  <Calendar className="w-6 h-6 text-[#FF9800]" />
-                </div>
-                <span className="text-xs text-[#737373]">Next EMI</span>
-              </div>
-              <p className="text-3xl font-bold text-[#0A0A0A] mb-2">
-                {formatCurrency(data?.financials.nextEmiAmount || 0)}
-              </p>
-              <div className="flex items-center gap-1 text-sm">
-                <Clock className="w-4 h-4 text-[#FF9800]" />
-                <span className="text-[#737373]">
-                  Due {new Date(data?.financials.nextEmiDate || '').toLocaleDateString()}
-                </span>
-              </div>
-            </div>
-          )}
         </motion.div>
 
-        {/* Active Loans */}
+        {/* Old Application Info - Show only if oldApplication is true */}
+        {data?.oldApplication && data?.oldApplicationNumber && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border-2 border-amber-200 mb-4 sm:mb-6"
+          >
+            <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
+              <div className="p-2 sm:p-3 bg-amber-500/20 rounded-lg sm:rounded-xl">
+                <History className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600" />
+              </div>
+              <div className="flex-1 w-full">
+                <h3 className="text-base sm:text-lg font-semibold text-amber-900 mb-2 sm:mb-3">Previous Application Found</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
+                  <div>
+                    <p className="text-sm text-amber-700 mb-1">Application Number</p>
+                    <p className="text-base font-semibold text-amber-900">{data.oldApplicationNumber}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-amber-700 mb-1">Application Date</p>
+                    <p className="text-base font-semibold text-amber-900">{formatDate(data.oldApplicationDate)}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => router.push('/apply/quick')}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg hover:shadow-lg transition-all font-medium text-sm sm:text-base"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  <span>Continue Application</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Profile Completion Overview */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border-2 border-blue-200 mb-4 sm:mb-6"
+        >
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4">
+            <div className="flex-1">
+              <h2 className="text-lg sm:text-xl font-semibold text-blue-900 mb-1">Profile Completion</h2>
+              <p className="text-xs sm:text-sm text-blue-700">Complete all steps to apply for loans</p>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl sm:text-4xl font-bold text-blue-900">{calculateCompletion()}%</div>
+              <p className="text-xs text-blue-700">Complete</p>
+            </div>
+          </div>
+
+          <div className="w-full bg-blue-200 rounded-full h-2 sm:h-3 mb-2">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${calculateCompletion()}%` }}
+              transition={{ duration: 1, delay: 0.3 }}
+              className="h-2 sm:h-3 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600"
+            />
+          </div>
+        </motion.div>
+
+        {/* Customer Details Status */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mb-6 sm:mb-8"
+          className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#E5E5E5] mb-6 sm:mb-8"
         >
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 sm:mb-6">
-            <h2 className="text-lg sm:text-xl font-semibold text-[#0A0A0A] flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-[#10B4A3]" />
-              Active Loans ({data?.loans.active.length || 0})
-            </h2>
-          </div>
+          <h2 className="text-lg sm:text-xl font-semibold text-[#0A0A0A] mb-4 sm:mb-6 flex items-center gap-2">
+            <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-[#10B4A3]" />
+            Application Status
+          </h2>
 
-          {data?.loans.active && data.loans.active.length > 0 ? (
-            <div className="grid gap-4 sm:gap-6">
-              {data.loans.active.map((loan) => (
-              <motion.div
-                key={loan.id}
-                whileHover={{ scale: 1.01 }}
-                className="bg-white rounded-xl p-4 sm:p-6 border border-[#E5E5E5] hover:shadow-lg transition-all"
-              >
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-base sm:text-lg font-semibold text-[#0A0A0A]">{loan.type}</h3>
-                    <div className="flex items-center gap-2">
-                      <p className="text-[#737373] text-xs sm:text-sm">Loan ID: {loan.id}</p>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(loan.id);
-                          toast({
-                            variant: "success",
-                            title: "Copied!",
-                            description: "Loan ID copied to clipboard"
-                          });
-                        }}
-                        className="text-[#A3A3A3] hover:text-[#737373] transition-colors"
-                      >
-                        <CopyIcon className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="text-left sm:text-right">
-                    <p className="text-xl sm:text-2xl font-bold text-[#10B4A3]">{formatCurrency(loan.amount)}</p>
-                    <p className="text-[#737373] text-xs sm:text-sm">Principal Amount</p>
-                  </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div className={`p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 transition-all ${
+              data?.isBasicDetailsFilled
+                ? 'bg-green-50 border-green-300 shadow-sm'
+                : 'bg-gray-50 border-gray-200'
+            }`}>
+              <div className="flex items-center gap-2 sm:gap-3">
+                {data?.isBasicDetailsFilled ? (
+                  <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-green-600" />
+                ) : (
+                  <Clock className="w-6 h-6 sm:w-7 sm:h-7 text-gray-400" />
+                )}
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm sm:text-base">Basic Details</p>
+                  <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                    {data?.isBasicDetailsFilled ? 'Completed ✓' : 'Pending'}
+                  </p>
                 </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
-                  <div>
-                    <p className="text-[#737373] text-xs sm:text-sm">Monthly EMI</p>
-                    <p className="text-[#0A0A0A] font-semibold text-sm sm:text-base">{formatCurrency(loan.emi)}</p>
-                  </div>
-                  <div>
-                    <p className="text-[#737373] text-xs sm:text-sm">Interest Rate</p>
-                    <p className="text-[#0A0A0A] font-semibold text-sm sm:text-base">{loan.interestRate}%</p>
-                  </div>
-                  <div>
-                    <p className="text-[#737373] text-xs sm:text-sm">Remaining</p>
-                    <p className="text-[#0A0A0A] font-semibold text-sm sm:text-base">{formatCurrency(loan.remainingAmount)}</p>
-                  </div>
-                  <div>
-                    <p className="text-[#737373] text-xs sm:text-sm">Progress</p>
-                    <p className="text-[#0A0A0A] font-semibold text-sm sm:text-base">{loan.completedMonths}/{loan.tenure} months</p>
-                  </div>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="mb-4">
-                  <div className="flex justify-between text-xs sm:text-sm text-[#737373] mb-2">
-                    <span>Repayment Progress</span>
-                    <span className="text-[#2E7D32] font-medium">{Math.round((loan.completedMonths / loan.tenure) * 100)}%</span>
-                  </div>
-                  <div className="w-full bg-[#E5E5E5] rounded-full h-2">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${(loan.completedMonths / loan.tenure) * 100}%` }}
-                      transition={{ duration: 1, delay: 0.5 }}
-                      className="h-2 rounded-full bg-gradient-to-r from-[#4CAF50] to-[#2E7D32]"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pt-4 border-t border-[#E5E5E5]">
-                  <div className="flex items-center gap-2 text-xs sm:text-sm">
-                    <Calendar className="w-4 h-4 text-[#FF9800]" />
-                    <span className="text-[#737373]">
-                      Next Due: {new Date(loan.nextDueDate).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <div className="flex gap-2 w-full sm:w-auto">
-                    <button
-                      onClick={() => router.push('/user/loans')}
-                      className="flex-1 sm:flex-none px-3 py-2 bg-[#F5F5F5] border border-[#E5E5E5] text-[#0A0A0A] rounded text-xs sm:text-sm hover:bg-[#E5E5E5] transition-colors">
-                      View Details
-                    </button>
-                    {(loan.status.toLowerCase() === 'approved' ||
-                      loan.status.toLowerCase() === 'active' ||
-                      loan.status.toLowerCase() === 'disbursed') && (
-                      <button
-                        onClick={() => {
-                          toast({
-                            variant: "info",
-                            title: "Payment Gateway",
-                            description: "Redirecting to payment gateway..."
-                          });
-                        }}
-                        className="flex-1 sm:flex-none px-3 py-2 bg-gradient-to-r from-[#10B4A3] to-[#0E9D8F] text-white rounded text-xs sm:text-sm hover:shadow-lg transition-all">
-                        Pay EMI
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-              ))}
+              </div>
             </div>
-          ) : (
-            <div className="bg-white rounded-xl p-8 sm:p-12 border border-[#E5E5E5] text-center">
-              <div className="max-w-md mx-auto">
-                <div className="w-16 h-16 bg-[#F5F5F5] rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CreditCard className="w-8 h-8 text-[#A3A3A3]" />
+
+            <div className={`p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 transition-all ${
+              data?.isEmploymentDetailsFilled
+                ? 'bg-green-50 border-green-300 shadow-sm'
+                : 'bg-gray-50 border-gray-200'
+            }`}>
+              <div className="flex items-center gap-2 sm:gap-3">
+                {data?.isEmploymentDetailsFilled ? (
+                  <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-green-600" />
+                ) : (
+                  <Clock className="w-6 h-6 sm:w-7 sm:h-7 text-gray-400" />
+                )}
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm sm:text-base">Employment Details</p>
+                  <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                    {data?.isEmploymentDetailsFilled ? 'Completed ✓' : 'Pending'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className={`p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 transition-all ${
+              data?.isVerificationDetailsFilled
+                ? 'bg-green-50 border-green-300 shadow-sm'
+                : 'bg-gray-50 border-gray-200'
+            }`}>
+              <div className="flex items-center gap-2 sm:gap-3">
+                {data?.isVerificationDetailsFilled ? (
+                  <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-green-600" />
+                ) : (
+                  <Clock className="w-6 h-6 sm:w-7 sm:h-7 text-gray-400" />
+                )}
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm sm:text-base">Verification</p>
+                  <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                    {data?.isVerificationDetailsFilled ? 'Completed ✓' : 'Pending'}
+                  </p>
                 </div>
                 <h3 className="text-lg font-semibold text-[#0A0A0A] mb-2">No Active Loans</h3>
                 <p className="text-[#737373] mb-6">Start your financial journey with us today</p>
@@ -406,8 +296,9 @@ export default function UserDashboard() {
                 </button> */}
               </div>
             </div>
-          )}
+          </div>
         </motion.div>
+
       </div>
       <Toaster />
     </>

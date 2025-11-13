@@ -181,6 +181,21 @@ async applyLoan(data: LoanApplication): Promise<ApiResponse<any>> {
     return apiClient.get(`/api/loans/track/${applicationId}`);
   }
 
+  // Get detailed application by application number
+  async getApplicationDetails(applicationNumber: string): Promise<ApiResponse<any>> {
+    return apiClient.get(`/api/application/loan/${applicationNumber}`, true);
+  }
+
+  // Get loan calculation stats
+  async getLoanCalculation(): Promise<ApiResponse<any>> {
+    return apiClient.get('/api/loans/calculation', true);
+  }
+
+  // Get loan by loan number
+  async getLoanByLoanNumber(loanNumber: string): Promise<ApiResponse<any>> {
+    return apiClient.get(`/api/loans/get/${loanNumber}`, true);
+  }
+
   // Cancel loan application
   async cancelApplication(loanId: string, reason: string): Promise<ApiResponse<any>> {
     return apiClient.post(`/api/loans/${loanId}/cancel`, { reason });

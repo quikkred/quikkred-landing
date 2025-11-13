@@ -348,7 +348,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     document.cookie = 'user-role=; path=/; max-age=0';
 
     setUser(null);
-    router.push('/login');
+
+    // Use window.location.href for immediate redirect without intermediate states
+    window.location.href = '/login';
   };
 
   const hasPermission = (permission: string): boolean => {

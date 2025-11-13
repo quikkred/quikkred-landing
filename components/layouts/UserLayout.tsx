@@ -337,9 +337,9 @@ const UserLayout = ({ children }: UserLayoutProps) => {
             <div className="flex items-center gap-4">
               {/* Quick Stats */}
               <div className="hidden md:flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-2 bg-[#FAFAFA] px-3 py-1.5 rounded-lg">
+                <div className="flex items-center gap-2 bg-gradient-to-r from-[#25B181]/10 to-[#51C9AF]/10 border border-[#25B181]/20 px-3 py-1.5 rounded-lg">
                   <Award className="w-4 h-4 text-[#25B181]" />
-                  <span className="text-gray-700 font-medium">Score: {userData.creditScore}</span>
+                  <span className="text-[#1F8F68] font-semibold">CIBIL: {userData.creditScore || 'N/A'}</span>
                 </div>
                 <div className="flex items-center gap-2 bg-[#FAFAFA] px-3 py-1.5 rounded-lg">
                   <Wallet className="w-4 h-4 text-[#4A66FF]" />

@@ -8,10 +8,11 @@ import {
   TrendingUp, Target, CheckCircle, Eye,
   EyeOff, Download, Search,
   FileText, AlertCircle, Wallet,
-  RefreshCw, Activity, BarChart3, X,
-  ChevronLeft, ChevronRight
+  RefreshCw, BarChart3, X,
+  ChevronLeft, ChevronRight, Building, User
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { loansService } from '@/lib/api/loans.service';
 
 interface Loan {
   id: string;
@@ -30,6 +31,108 @@ interface Loan {
   customerId?: string;
 }
 
+interface DetailedLoan {
+  _id: string;
+  loanNumber: string;
+  applicationId: string;
+  customerId: {
+    _id: string;
+    email: string;
+    fullName: string;
+  };
+  productName: string;
+  principalAmount: number;
+  interestRate: number;
+  tenure: number;
+  tenureUnit: string;
+  isSubmit: boolean;
+  totalRepayment: number;
+  emiAmount: number;
+  numberOfEMIs: number;
+  repaymentType: string;
+  disbursementAmount: number;
+  disbursementDate: string;
+  disbursementMode: string;
+  disbursementTransactionId: string;
+  disbursementUTR: string;
+  maturityDate: string;
+  principalOutstanding: number;
+  interestOutstanding: number;
+  totalOutstanding: number;
+  firstDueDate: string;
+  nextDueDate: string | null;
+  dpd: number;
+  dpdBucket: string;
+  status: string;
+  paymentBehavior: {
+    totalEMIsPaid: number;
+    totalEMIsMissed: number;
+    onTimePayments: number;
+    latePayments: number;
+    bounceCount: number;
+    partialPaymentCount: number;
+  };
+  schedule: Array<{
+    installmentNo: number;
+    dueDate: string;
+    emiAmount: number;
+    principal: number;
+    interest: number;
+    totalDue: number;
+    paidAmount: number;
+    status: string;
+    balance: number;
+    lateCharges: number;
+    _id: string;
+  }>;
+  createdBy: {
+    _id: string;
+    fullName: string;
+    email: string;
+    mobile: string;
+  };
+  branch: string;
+  ptpHistory: any[];
+  restructuringHistory: any[];
+  createdAt: string;
+  updatedAt: string;
+  lastPaymentDate?: string;
+  lateChargesOutstanding: number;
+}
+
+interface LoanCalculation {
+  ACTIVE: {
+    totalLoanAmount: number;
+    totalInterest: number;
+    totalCount: number;
+  };
+  OVERDUE: {
+    totalLoanAmount: number;
+    totalInterest: number;
+    totalCount: number;
+  };
+  NPA: {
+    totalLoanAmount: number;
+    totalInterest: number;
+    totalCount: number;
+  };
+  CLOSED: {
+    totalLoanAmount: number;
+    totalInterest: number;
+    totalCount: number;
+  };
+  WRITTEN_OFF: {
+    totalLoanAmount: number;
+    totalInterest: number;
+    totalCount: number;
+  };
+  PENDING: {
+    totalLoanAmount: number;
+    totalInterest: number;
+    totalCount: number;
+  };
+}
+
 interface PaginationInfo {
   total: number;
   totalPages: number;
@@ -46,7 +149,10 @@ export default function MyLoansPage() {
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'closed'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
+  const [detailedLoan, setDetailedLoan] = useState<DetailedLoan | null>(null);
+  const [loanCalculation, setLoanCalculation] = useState<LoanCalculation | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [loadingDetails, setLoadingDetails] = useState(false);
   const [pagination, setPagination] = useState<PaginationInfo>({
     total: 0,
     totalPages: 1,
@@ -72,7 +178,19 @@ export default function MyLoansPage() {
   // Fetch loans data
   useEffect(() => {
     fetchLoans();
+    fetchLoanCalculation();
   }, [pagination.page, pagination.limit]);
+
+  const fetchLoanCalculation = async () => {
+    try {
+      const response = await loansService.getLoanCalculation();
+      if (response.success && response.data) {
+        setLoanCalculation(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching loan calculation:', error);
+    }
+  };
 
   const fetchLoans = async (page?: number, limit?: number) => {
     try {
@@ -149,6 +267,27 @@ export default function MyLoansPage() {
     setPagination(prev => ({ ...prev, limit: newLimit, page: 1 }));
   };
 
+  // Fetch detailed loan by loan number
+  const fetchDetailedLoan = async (loanNumber: string) => {
+    try {
+      setLoadingDetails(true);
+      const response = await loansService.getLoanByLoanNumber(loanNumber);
+      if (response.success && response.data) {
+        setDetailedLoan(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching detailed loan:', error);
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
+  // Handle view details
+  const handleViewDetails = async (loan: Loan) => {
+    setSelectedLoan(loan);
+    setIsDetailModalOpen(true);
+    await fetchDetailedLoan(loan.loanNumber);
+  };
 
   const formatCurrency = (amount: number) => {
     if (amount >= 10000000) {
@@ -163,11 +302,11 @@ export default function MyLoansPage() {
     switch (status.toUpperCase()) {
       case 'ACTIVE':
       case 'DISBURSED':
-        return 'text-[#2E7D32] bg-[#2E7D32]/10';
+        return 'text-[#25B181] bg-[#2E7D32]/10';
       case 'PENDING':
         return 'text-[#FBC02D] bg-[#FBC02D]/10';
       case 'PROCESSING':
-        return 'text-[#1976D2] bg-[#1976D2]/10';
+        return 'text-[#4A66FF] bg-[#4A66FF]/10';
       case 'CLOSED':
       case 'COMPLETED':
         return 'text-gray-600 bg-gray-100';
@@ -175,7 +314,7 @@ export default function MyLoansPage() {
       case 'CANCELLED':
         return 'text-red-600 bg-red-100';
       case 'APPROVED':
-        return 'text-[#2E7D32] bg-[#2E7D32]/10';
+        return 'text-[#25B181] bg-[#2E7D32]/10';
       default:
         return 'text-gray-600 bg-gray-100';
     }
@@ -195,11 +334,8 @@ export default function MyLoansPage() {
     return matchesStatus && matchesSearch;
   });
 
-  // Calculate totals - only count active loans
+  // Get active loans for filter count
   const activeLoans = loans.filter(loan => loan.status.toUpperCase() === 'ACTIVE');
-  const totalBorrowed = activeLoans.reduce((sum, loan) => sum + loan.principalAmount, 0);
-  const totalOutstanding = activeLoans.reduce((sum, loan) => sum + loan.totalRepayment, 0);
-  const totalEMI = activeLoans.reduce((sum, loan) => sum + loan.emiAmount, 0);
 
   // Show loading while checking authentication
   if (isLoading || loading) {
@@ -238,8 +374,8 @@ export default function MyLoansPage() {
       >
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#1B5E20] flex items-center gap-2 sm:gap-3">
-              <CreditCard className="w-6 h-6 sm:w-8 sm:h-8 text-[#1976D2]" />
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#1F8F68] flex items-center gap-2 sm:gap-3">
+              <CreditCard className="w-6 h-6 sm:w-8 sm:h-8 text-[#4A66FF]" />
               My Loans
             </h1>
             <p className="text-gray-600 mt-1 text-sm sm:text-base">Manage all your loans in one place</p>
@@ -247,7 +383,10 @@ export default function MyLoansPage() {
 
           <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <button
-              onClick={() => fetchLoans()}
+              onClick={() => {
+                fetchLoans();
+                fetchLoanCalculation();
+              }}
               className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-white border border-[#E0E0E0] text-gray-700 rounded-lg hover:bg-[#FAFAFA] transition-colors flex items-center justify-center gap-2 text-sm sm:text-base shadow-sm"
             >
               <RefreshCw className="w-4 h-4" />
@@ -256,7 +395,7 @@ export default function MyLoansPage() {
             {/* Apply New button */}
             <button
               onClick={() => router.push('/apply/quick')}
-              className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-gradient-to-r from-[#2E7D32] to-[#1B5E20] text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
+              className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
             >
               <Plus className="w-4 h-4" />
               <span>Apply New</span>
@@ -265,65 +404,160 @@ export default function MyLoansPage() {
         </div>
       </motion.div>
 
-      {/* Summary Cards */}
+      {/* Summary Cards - New Layout */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+        className="mb-4 sm:mb-6"
       >
-        {/* Total Borrowed */}
-        <div className="bg-white rounded-2xl p-6 border border-[#E0E0E0] hover:shadow-lg transition-all">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-[#1976D2]/10 rounded-xl">
-              <IndianRupee className="w-6 h-6 text-[#1976D2]" />
+        {/* All Cards in One Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {/* Active Loans */}
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-green-200 hover:shadow-lg transition-all">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <div className="p-1.5 sm:p-2 bg-green-500/20 rounded-lg">
+                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+              </div>
+              <span className="px-2 py-0.5 sm:py-1 bg-green-500 text-white text-[10px] sm:text-xs font-semibold rounded-full">
+                ACTIVE
+              </span>
             </div>
-            <span className="text-xs text-gray-500">Total Borrowed</span>
+            <div className="space-y-1.5 sm:space-y-2">
+              <div>
+                <p className="text-[10px] sm:text-xs text-gray-600 mb-0.5 sm:mb-1">Loan Amount</p>
+                <p className="text-lg sm:text-2xl font-bold text-green-700">
+                  {showBalance ? formatCurrency(loanCalculation?.ACTIVE?.totalLoanAmount || 0) : '••••••'}
+                </p>
+              </div>
+              <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-green-200">
+                <div>
+                  <p className="text-[10px] sm:text-xs text-gray-600">Interest</p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-900">
+                    {showBalance ? formatCurrency(loanCalculation?.ACTIVE?.totalInterest || 0) : '••••••'}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] sm:text-xs text-gray-600">Count</p>
+                  <p className="text-base sm:text-lg font-bold text-green-600">
+                    {loanCalculation?.ACTIVE?.totalCount || 0}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-          <p className="text-3xl font-bold text-[#1B5E20] mb-2">
-            {showBalance ? formatCurrency(totalBorrowed) : '••••••'}
-          </p>
+
+          {/* Overdue Loans */}
+          <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-orange-200 hover:shadow-lg transition-all">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <div className="p-1.5 sm:p-2 bg-orange-500/20 rounded-lg">
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+              </div>
+              <span className="px-2 py-0.5 sm:py-1 bg-orange-500 text-white text-[10px] sm:text-xs font-semibold rounded-full">
+                OVERDUE
+              </span>
+            </div>
+            <div className="space-y-1.5 sm:space-y-2">
+              <div>
+                <p className="text-[10px] sm:text-xs text-gray-600 mb-0.5 sm:mb-1">Overdue Amount</p>
+                <p className="text-lg sm:text-2xl font-bold text-orange-700">
+                  {showBalance ? formatCurrency(loanCalculation?.OVERDUE?.totalLoanAmount || 0) : '••••••'}
+                </p>
+              </div>
+              <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-orange-200">
+                <div>
+                  <p className="text-[10px] sm:text-xs text-gray-600">Interest</p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-900">
+                    {showBalance ? formatCurrency(loanCalculation?.OVERDUE?.totalInterest || 0) : '••••••'}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] sm:text-xs text-gray-600">Count</p>
+                  <p className="text-base sm:text-lg font-bold text-orange-600">
+                    {loanCalculation?.OVERDUE?.totalCount || 0}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Closed Loans */}
+          <div className="bg-gradient-to-br from-gray-50 to-slate-50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-gray-200 hover:shadow-lg transition-all">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <div className="p-1.5 sm:p-2 bg-gray-500/20 rounded-lg">
+                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
+              </div>
+              <span className="px-2 py-0.5 sm:py-1 bg-gray-500 text-white text-[10px] sm:text-xs font-semibold rounded-full">
+                CLOSED
+              </span>
+            </div>
+            <div className="space-y-1.5 sm:space-y-2">
+              <div>
+                <p className="text-[10px] sm:text-xs text-gray-600 mb-0.5 sm:mb-1">Loan Amount</p>
+                <p className="text-lg sm:text-2xl font-bold text-gray-700">
+                  {showBalance ? formatCurrency(loanCalculation?.CLOSED?.totalLoanAmount || 0) : '••••••'}
+                </p>
+              </div>
+              <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-gray-200">
+                <div>
+                  <p className="text-[10px] sm:text-xs text-gray-600">Interest</p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-900">
+                    {showBalance ? formatCurrency(loanCalculation?.CLOSED?.totalInterest || 0) : '••••••'}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] sm:text-xs text-gray-600">Count</p>
+                  <p className="text-base sm:text-lg font-bold text-gray-600">
+                    {loanCalculation?.CLOSED?.totalCount || 0}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Pending Loans */}
+          <div className="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-yellow-200 hover:shadow-lg transition-all">
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <div className="p-1.5 sm:p-2 bg-yellow-500/20 rounded-lg">
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" />
+              </div>
+              <span className="px-2 py-0.5 sm:py-1 bg-yellow-500 text-white text-[10px] sm:text-xs font-semibold rounded-full">
+                PENDING
+              </span>
+            </div>
+            <div className="space-y-1.5 sm:space-y-2">
+              <div>
+                <p className="text-[10px] sm:text-xs text-gray-600 mb-0.5 sm:mb-1">Loan Amount</p>
+                <p className="text-lg sm:text-2xl font-bold text-yellow-700">
+                  {showBalance ? formatCurrency(loanCalculation?.PENDING?.totalLoanAmount || 0) : '••••••'}
+                </p>
+              </div>
+              <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-yellow-200">
+                <div>
+                  <p className="text-[10px] sm:text-xs text-gray-600">Interest</p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-900">
+                    {showBalance ? formatCurrency(loanCalculation?.PENDING?.totalInterest || 0) : '••••••'}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] sm:text-xs text-gray-600">Count</p>
+                  <p className="text-base sm:text-lg font-bold text-yellow-600">
+                    {loanCalculation?.PENDING?.totalCount || 0}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Show/Hide Balance Toggle - Moved Below Cards */}
+        <div className="mt-3 sm:mt-4 flex justify-end">
           <button
             onClick={() => setShowBalance(!showBalance)}
-            className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+            className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white border border-[#E0E0E0] text-gray-700 rounded-lg hover:bg-[#FAFAFA] transition-colors text-xs sm:text-sm shadow-sm"
           >
-            {showBalance ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            {showBalance ? <EyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
             {showBalance ? 'Hide' : 'Show'} Balance
           </button>
-        </div>
-
-        {/* Total Outstanding */}
-        <div className="bg-white rounded-2xl p-6 border border-[#E0E0E0] hover:shadow-lg transition-all">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-[#FBC02D]/20 rounded-xl">
-              <Target className="w-6 h-6 text-[#FBC02D]" />
-            </div>
-            <span className="text-xs text-gray-500">Outstanding</span>
-          </div>
-          <p className="text-3xl font-bold text-[#1B5E20] mb-2">
-            {showBalance ? formatCurrency(totalOutstanding) : '••••••'}
-          </p>
-          <div className="flex items-center gap-1 text-sm">
-            <Activity className="w-4 h-4 text-[#FBC02D]" />
-            <span className="text-[#FBC02D]">{activeLoans.length} Active</span>
-          </div>
-        </div>
-
-        {/* Total Monthly EMI */}
-        <div className="bg-white rounded-2xl p-6 border border-[#E0E0E0] hover:shadow-lg transition-all">
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-[#2E7D32]/10 rounded-xl">
-              <Wallet className="w-6 h-6 text-[#2E7D32]" />
-            </div>
-            <span className="text-xs text-gray-500">Monthly EMI</span>
-          </div>
-          <p className="text-3xl font-bold text-[#1B5E20] mb-2">
-            {formatCurrency(totalEMI)}
-          </p>
-          <div className="flex items-center gap-1 text-sm">
-            <Calendar className="w-4 h-4 text-[#2E7D32]" />
-            <span className="text-[#2E7D32]">Combined</span>
-          </div>
         </div>
       </motion.div>
 
@@ -343,7 +577,7 @@ export default function MyLoansPage() {
               placeholder="Search by Loan Number, Customer Name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 sm:pl-10 pr-4 py-2 bg-[#FAFAFA] text-[#1B5E20] rounded-lg border border-[#E0E0E0] focus:border-[#2E7D32] focus:ring-2 focus:ring-[#2E7D32]/20 focus:outline-none text-sm sm:text-base"
+              className="w-full pl-9 sm:pl-10 pr-4 py-2 bg-[#FAFAFA] text-[#1F8F68] rounded-lg border border-[#E0E0E0] focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-sm sm:text-base"
             />
           </div>
 
@@ -353,7 +587,7 @@ export default function MyLoansPage() {
               onClick={() => setFilterStatus('all')}
               className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${
                 filterStatus === 'all'
-                  ? 'bg-gradient-to-r from-[#2E7D32] to-[#1B5E20] text-white'
+                  ? 'bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white'
                   : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
               }`}
             >
@@ -363,7 +597,7 @@ export default function MyLoansPage() {
               onClick={() => setFilterStatus('active')}
               className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${
                 filterStatus === 'active'
-                  ? 'bg-[#2E7D32] text-white'
+                  ? 'bg-[#4A66FF] text-white'
                   : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
               }`}
             >
@@ -373,7 +607,7 @@ export default function MyLoansPage() {
               onClick={() => setFilterStatus('closed')}
               className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${
                 filterStatus === 'closed'
-                  ? 'bg-gray-600 text-white'
+                  ? 'bg-[#25B181] text-white'
                   : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
               }`}
             >
@@ -396,7 +630,7 @@ export default function MyLoansPage() {
         {filteredLoans.length === 0 ? (
           <div className="p-8 sm:p-12 text-center">
             <AlertCircle className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg sm:text-xl font-semibold text-[#1B5E20] mb-2">No Loans Found</h3>
+            <h3 className="text-lg sm:text-xl font-semibold text-[#1F8F68] mb-2">No Loans Found</h3>
             <p className="text-sm sm:text-base text-gray-600 mb-6">
               {searchTerm || filterStatus !== 'all'
                 ? 'Try adjusting your filters or search term'
@@ -427,13 +661,13 @@ export default function MyLoansPage() {
                     className="hover:bg-[#FAFAFA] transition-colors"
                   >
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-[#1B5E20]">{loan.loanNumber}</div>
+                      <div className="text-sm font-medium text-[#1F8F68]">{loan.loanNumber}</div>
                       <div className="text-xs text-gray-500">
                         {new Date(loan.createdAt).toLocaleDateString()}
                       </div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm font-semibold text-[#1B5E20]">{formatCurrency(loan.principalAmount)}</div>
+                      <div className="text-sm font-semibold text-[#1F8F68]">{formatCurrency(loan.principalAmount)}</div>
                       <div className="text-xs text-gray-500">Disbursed: {formatCurrency(loan.disbursementAmount)}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
@@ -452,11 +686,8 @@ export default function MyLoansPage() {
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-center">
                       <button
-                        onClick={() => {
-                          setSelectedLoan(loan);
-                          setIsDetailModalOpen(true);
-                        }}
-                        className="inline-flex items-center px-3 py-1.5 bg-[#1976D2] text-white text-xs font-medium rounded-lg hover:bg-[#1565C0] transition-colors"
+                        onClick={() => handleViewDetails(loan)}
+                        className="inline-flex items-center px-3 py-1.5 bg-[#4A66FF] text-white text-xs font-medium rounded-lg hover:bg-[#4A66FF]/90 transition-colors"
                       >
                         <Eye className="w-3.5 h-3.5 mr-1" />
                         View Details
@@ -481,11 +712,11 @@ export default function MyLoansPage() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             {/* Page Info */}
             <div className="text-sm text-gray-600">
-              Showing <span className="font-semibold text-[#1B5E20]">{(pagination.page - 1) * pagination.limit + 1}</span> to{' '}
-              <span className="font-semibold text-[#1B5E20]">
+              Showing <span className="font-semibold text-[#1F8F68]">{(pagination.page - 1) * pagination.limit + 1}</span> to{' '}
+              <span className="font-semibold text-[#1F8F68]">
                 {Math.min(pagination.page * pagination.limit, pagination.total)}
               </span>{' '}
-              of <span className="font-semibold text-[#1B5E20]">{pagination.total}</span> loans
+              of <span className="font-semibold text-[#1F8F68]">{pagination.total}</span> loans
             </div>
 
             {/* Pagination Controls */}
@@ -525,7 +756,7 @@ export default function MyLoansPage() {
                         onClick={() => handlePageChange(pageNumber)}
                         className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                           pagination.page === pageNumber
-                            ? 'bg-gradient-to-r from-[#2E7D32] to-[#1B5E20] text-white'
+                            ? 'bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white'
                             : 'text-gray-700 bg-white border border-[#E0E0E0] hover:bg-[#FAFAFA]'
                         }`}
                       >
@@ -568,7 +799,7 @@ export default function MyLoansPage() {
               <select
                 value={pagination.limit}
                 onChange={(e) => handleLimitChange(Number(e.target.value))}
-                className="px-3 py-2 text-sm bg-white border border-[#E0E0E0] rounded-lg focus:border-[#2E7D32] focus:ring-2 focus:ring-[#2E7D32]/20 focus:outline-none"
+                className="px-3 py-2 text-sm bg-white border border-[#E0E0E0] rounded-lg focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none"
               >
                 <option value={5}>5</option>
                 <option value={10}>10</option>
@@ -587,7 +818,10 @@ export default function MyLoansPage() {
             {/* Background overlay */}
             <div
               className="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity"
-              onClick={() => setIsDetailModalOpen(false)}
+              onClick={() => {
+                setIsDetailModalOpen(false);
+                setDetailedLoan(null);
+              }}
             />
 
             {/* Modal panel */}
@@ -595,156 +829,315 @@ export default function MyLoansPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full"
+              className="relative inline-block align-bottom bg-white rounded-xl sm:rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-7xl sm:w-full max-h-[90vh] overflow-y-auto"
             >
               {/* Header */}
-              <div className="bg-gradient-to-r from-[#2E7D32] to-[#1B5E20] px-6 py-4">
+              <div className="sticky top-0 z-10 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] px-4 sm:px-6 py-3 sm:py-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-xl font-bold text-white">Loan Details</h3>
-                    <p className="text-sm text-white/80">Loan No: {selectedLoan.loanNumber}</p>
+                    <h3 className="text-base sm:text-xl font-bold text-white">Loan Details</h3>
+                    <p className="text-xs sm:text-sm text-white/80">Loan No: {selectedLoan.loanNumber}</p>
                   </div>
                   <button
-                    onClick={() => setIsDetailModalOpen(false)}
-                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                    onClick={() => {
+                      setIsDetailModalOpen(false);
+                      setDetailedLoan(null);
+                    }}
+                    className="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg transition-colors"
                   >
-                    <X className="w-5 h-5 text-white" />
+                    <X className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </button>
                 </div>
               </div>
 
               {/* Content */}
-              <div className="px-6 py-4 max-h-[70vh] overflow-y-auto">
-                {/* Status Badge */}
-                <div className="mb-6">
-                  <span className={`px-4 py-2 rounded-full text-sm font-medium ${getStatusColor(selectedLoan.status)}`}>
-                    Status: {selectedLoan.status}
-                  </span>
+              {loadingDetails ? (
+                <div className="flex items-center justify-center py-12">
+                  <RefreshCw className="w-8 h-8 text-[#25B181] animate-spin" />
                 </div>
-
-                {/* Main Details Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  {/* Principal Amount */}
-                  <div className="bg-[#FAFAFA] rounded-xl p-4 border border-[#E0E0E0]">
-                    <div className="flex items-center mb-2">
-                      <IndianRupee className="w-5 h-5 text-[#1976D2] mr-2" />
-                      <p className="text-sm text-gray-600">Principal Amount</p>
+              ) : detailedLoan ? (
+                <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
+                  {/* Customer & Product Info */}
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-blue-200">
+                    <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                      <User className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                      <h4 className="text-base sm:text-lg font-bold text-gray-800">Customer & Product Information</h4>
                     </div>
-                    <p className="text-lg font-semibold text-[#1B5E20]">{formatCurrency(selectedLoan.principalAmount)}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                      <div>
+                        <p className="text-sm text-gray-600">Customer Name</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.customerId.fullName}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Customer Email</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.customerId.email}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Product Name</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.productName}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Branch</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.branch.replace(/_/g, ' ')}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Status</p>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(detailedLoan.status)}`}>
+                          {detailedLoan.status}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Repayment Type</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.repaymentType}</p>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Disbursement Amount */}
-                  <div className="bg-[#FAFAFA] rounded-xl p-4 border border-[#E0E0E0]">
-                    <div className="flex items-center mb-2">
-                      <Target className="w-5 h-5 text-[#FBC02D] mr-2" />
-                      <p className="text-sm text-gray-600">Disbursed Amount</p>
+                  {/* Loan Overview */}
+                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-green-200">
+                    <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                      <IndianRupee className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                      <h4 className="text-base sm:text-lg font-bold text-gray-800">Loan Overview</h4>
                     </div>
-                    <p className="text-lg font-semibold text-[#1B5E20]">{formatCurrency(selectedLoan.disbursementAmount)}</p>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                      <div>
+                        <p className="text-sm text-gray-600">Principal Amount</p>
+                        <p className="text-lg font-bold text-green-700">{formatCurrency(detailedLoan.principalAmount)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Interest Rate</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.interestRate}% p.a.</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Tenure</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.tenure} {detailedLoan.tenureUnit}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Number of EMIs</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.numberOfEMIs}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">EMI Amount</p>
+                        <p className="text-lg font-bold text-green-700">{formatCurrency(detailedLoan.emiAmount)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Total Repayment</p>
+                        <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.totalRepayment)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Total Interest</p>
+                        <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.totalRepayment - detailedLoan.principalAmount)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Late Charges</p>
+                        <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.lateChargesOutstanding)}</p>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Monthly EMI */}
-                  <div className="bg-[#FAFAFA] rounded-xl p-4 border border-[#E0E0E0]">
-                    <div className="flex items-center mb-2">
-                      <Wallet className="w-5 h-5 text-[#2E7D32] mr-2" />
-                      <p className="text-sm text-gray-600">Monthly EMI</p>
+                  {/* Disbursement Information */}
+                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-purple-200">
+                    <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                      <Building className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                      <h4 className="text-base sm:text-lg font-bold text-gray-800">Disbursement Information</h4>
                     </div>
-                    <p className="text-lg font-semibold text-[#1B5E20]">{formatCurrency(selectedLoan.emiAmount)}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                      <div>
+                        <p className="text-sm text-gray-600">Disbursed Amount</p>
+                        <p className="text-lg font-bold text-purple-700">{formatCurrency(detailedLoan.disbursementAmount)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Disbursement Date</p>
+                        <p className="font-semibold text-gray-900">{new Date(detailedLoan.disbursementDate).toLocaleDateString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Mode</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.disbursementMode}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Transaction ID</p>
+                        <p className="font-mono text-xs text-gray-900 break-all">{detailedLoan.disbursementTransactionId}</p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-sm text-gray-600">UTR Number</p>
+                        <p className="font-mono text-xs text-gray-900">{detailedLoan.disbursementUTR}</p>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Total Repayment */}
-                  <div className="bg-[#FAFAFA] rounded-xl p-4 border border-[#E0E0E0]">
-                    <div className="flex items-center mb-2">
-                      <IndianRupee className="w-5 h-5 text-[#1976D2] mr-2" />
-                      <p className="text-sm text-gray-600">Total Repayment</p>
+                  {/* Outstanding & Payment Tracking */}
+                  <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-amber-200">
+                    <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                      <Target className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
+                      <h4 className="text-base sm:text-lg font-bold text-gray-800">Outstanding & Payment Tracking</h4>
                     </div>
-                    <p className="text-lg font-semibold text-[#1B5E20]">{formatCurrency(selectedLoan.totalRepayment)}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                      <div>
+                        <p className="text-sm text-gray-600">Principal Outstanding</p>
+                        <p className="text-lg font-bold text-amber-700">{formatCurrency(detailedLoan.principalOutstanding)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Interest Outstanding</p>
+                        <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.interestOutstanding)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Total Outstanding</p>
+                        <p className="text-lg font-bold text-red-600">{formatCurrency(detailedLoan.totalOutstanding)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">DPD (Days Past Due)</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.dpd} days</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">DPD Bucket</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.dpdBucket}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">First Due Date</p>
+                        <p className="font-semibold text-gray-900">{new Date(detailedLoan.firstDueDate).toLocaleDateString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Next Due Date</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.nextDueDate ? new Date(detailedLoan.nextDueDate).toLocaleDateString() : 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Maturity Date</p>
+                        <p className="font-semibold text-gray-900">{new Date(detailedLoan.maturityDate).toLocaleDateString()}</p>
+                      </div>
+                      {detailedLoan.lastPaymentDate && (
+                        <div>
+                          <p className="text-sm text-gray-600">Last Payment Date</p>
+                          <p className="font-semibold text-gray-900">{new Date(detailedLoan.lastPaymentDate).toLocaleDateString()}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Interest Rate */}
-                  <div className="bg-[#FAFAFA] rounded-xl p-4 border border-[#E0E0E0]">
-                    <div className="flex items-center mb-2">
-                      <TrendingUp className="w-5 h-5 text-[#1976D2] mr-2" />
-                      <p className="text-sm text-gray-600">Interest Rate</p>
+                  {/* Payment Behavior */}
+                  <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-teal-200">
+                    <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                      <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600" />
+                      <h4 className="text-base sm:text-lg font-bold text-gray-800">Payment Behavior</h4>
                     </div>
-                    <p className="text-lg font-semibold text-[#1B5E20]">{selectedLoan.interestRate}% per annum</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                      <div className="text-center">
+                        <p className="text-xs sm:text-sm text-gray-600 mb-1">EMIs Paid</p>
+                        <div className="text-xl sm:text-2xl font-bold text-green-600">{detailedLoan.paymentBehavior.totalEMIsPaid}</div>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs sm:text-sm text-gray-600 mb-1">EMIs Missed</p>
+                        <div className="text-xl sm:text-2xl font-bold text-red-600">{detailedLoan.paymentBehavior.totalEMIsMissed}</div>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs sm:text-sm text-gray-600 mb-1">On-Time Payments</p>
+                        <div className="text-xl sm:text-2xl font-bold text-green-600">{detailedLoan.paymentBehavior.onTimePayments}</div>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs sm:text-sm text-gray-600 mb-1">Late Payments</p>
+                        <div className="text-xl sm:text-2xl font-bold text-orange-600">{detailedLoan.paymentBehavior.latePayments}</div>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs sm:text-sm text-gray-600 mb-1">Bounce Count</p>
+                        <div className="text-xl sm:text-2xl font-bold text-red-600">{detailedLoan.paymentBehavior.bounceCount}</div>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-xs sm:text-sm text-gray-600 mb-1">Partial Payments</p>
+                        <div className="text-xl sm:text-2xl font-bold text-blue-600">{detailedLoan.paymentBehavior.partialPaymentCount}</div>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Tenure */}
-                  <div className="bg-[#FAFAFA] rounded-xl p-4 border border-[#E0E0E0]">
-                    <div className="flex items-center mb-2">
-                      <Clock className="w-5 h-5 text-[#1976D2] mr-2" />
-                      <p className="text-sm text-gray-600">Loan Tenure</p>
+                  {/* EMI Schedule */}
+                  {detailedLoan.schedule && detailedLoan.schedule.length > 0 && (
+                    <div className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-200">
+                      <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                        <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
+                        <h4 className="text-base sm:text-lg font-bold text-gray-800">EMI Schedule</h4>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs sm:text-sm">
+                          <thead className="bg-slate-200">
+                            <tr>
+                              <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Installment</th>
+                              <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Due Date</th>
+                              <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">EMI Amount</th>
+                              <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Principal</th>
+                              <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Interest</th>
+                              <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Paid Amount</th>
+                              <th className="px-3 py-2 text-center text-xs font-semibold text-gray-700">Status</th>
+                              <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Balance</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-200">
+                            {detailedLoan.schedule.map((installment) => (
+                              <tr key={installment._id} className="hover:bg-slate-50">
+                                <td className="px-3 py-2 font-medium text-gray-900">{installment.installmentNo}</td>
+                                <td className="px-3 py-2 text-gray-900">{new Date(installment.dueDate).toLocaleDateString()}</td>
+                                <td className="px-3 py-2 text-right font-semibold text-gray-900">{formatCurrency(installment.emiAmount)}</td>
+                                <td className="px-3 py-2 text-right text-gray-900">{formatCurrency(installment.principal)}</td>
+                                <td className="px-3 py-2 text-right text-gray-900">{formatCurrency(installment.interest)}</td>
+                                <td className="px-3 py-2 text-right font-semibold text-green-600">{formatCurrency(installment.paidAmount)}</td>
+                                <td className="px-3 py-2 text-center">
+                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    installment.status === 'PAID' ? 'text-green-600 bg-green-100' :
+                                    installment.status === 'PENDING' ? 'text-yellow-600 bg-yellow-100' :
+                                    'text-red-600 bg-red-100'
+                                  }`}>
+                                    {installment.status}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-2 text-right text-gray-900">{formatCurrency(installment.balance)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                    <p className="text-lg font-semibold text-[#1B5E20]">{selectedLoan.tenure} {selectedLoan.tenureUnit}</p>
-                  </div>
+                  )}
 
-                  {/* Loan Created Date */}
-                  <div className="bg-[#FAFAFA] rounded-xl p-4 border border-[#E0E0E0]">
-                    <div className="flex items-center mb-2">
-                      <Calendar className="w-5 h-5 text-[#FBC02D] mr-2" />
-                      <p className="text-sm text-gray-600">Loan Created Date</p>
+                  {/* Created By & Timestamps */}
+                  <div className="bg-[#FAFAFA] rounded-lg p-3 sm:p-4 border border-[#E0E0E0]">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-xs sm:text-sm">
+                      <div>
+                        <p className="text-gray-600">Created By</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.createdBy.fullName}</p>
+                        <p className="text-xs text-gray-500">{detailedLoan.createdBy.email}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600">Created At</p>
+                        <p className="font-semibold text-gray-900">{new Date(detailedLoan.createdAt).toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600">Last Updated</p>
+                        <p className="font-semibold text-gray-900">{new Date(detailedLoan.updatedAt).toLocaleString()}</p>
+                      </div>
                     </div>
-                    <p className="text-lg font-semibold text-[#1B5E20]">
-                      {new Date(selectedLoan.createdAt).toLocaleDateString('en-IN', {
-                        day: '2-digit',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
-                    </p>
                   </div>
                 </div>
-
-                {/* Financial Summary */}
-                <div className="bg-[#1976D2]/10 rounded-xl p-4 border border-[#1976D2]/20 mb-6">
-                  <h4 className="text-sm font-semibold text-[#1976D2] mb-3 flex items-center">
-                    <BarChart3 className="w-4 h-4 mr-2" />
-                    Financial Summary
-                  </h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-700">Principal Amount:</span>
-                      <span className="font-semibold text-[#1B5E20]">
-                        {formatCurrency(selectedLoan.principalAmount)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-700">Total Interest:</span>
-                      <span className="font-semibold text-[#1B5E20]">
-                        {formatCurrency(selectedLoan.totalRepayment - selectedLoan.principalAmount)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-700">Total Repayment:</span>
-                      <span className="font-semibold text-[#2E7D32]">
-                        {formatCurrency(selectedLoan.totalRepayment)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-700">Disbursed Amount:</span>
-                      <span className="font-semibold text-[#2E7D32]">
-                        {formatCurrency(selectedLoan.disbursementAmount)}
-                      </span>
-                    </div>
-                  </div>
+              ) : (
+                <div className="px-6 py-12 text-center">
+                  <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                  <p className="text-gray-600">Unable to load detailed information</p>
                 </div>
-              </div>
+              )}
 
               {/* Footer Actions */}
-              <div className="bg-[#FAFAFA] px-6 py-4 border-t border-[#E0E0E0] flex flex-col sm:flex-row gap-3 sm:justify-end">
+              <div className="sticky bottom-0 bg-[#FAFAFA] px-4 sm:px-6 py-3 sm:py-4 border-t border-[#E0E0E0] flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-end">
                 <button
-                  onClick={() => setIsDetailModalOpen(false)}
-                  className="px-4 py-2 bg-white border border-[#E0E0E0] text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  onClick={() => {
+                    setIsDetailModalOpen(false);
+                    setDetailedLoan(null);
+                  }}
+                  className="w-full sm:w-auto px-4 py-2 bg-white border border-[#E0E0E0] text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
                 >
                   Close
                 </button>
-                <button className="px-4 py-2 bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 rounded-lg hover:bg-white transition-colors flex items-center justify-center">
+                <button className="w-full sm:w-auto px-4 py-2 bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 rounded-lg hover:bg-white transition-colors flex items-center justify-center text-sm">
                   <Download className="w-4 h-4 mr-2" />
                   Download Statement
                 </button>
-                {(selectedLoan.status.toLowerCase() === 'approved' ||
-                  selectedLoan.status.toLowerCase() === 'active' ||
-                  selectedLoan.status.toLowerCase() === 'disbursed') && (
-                  <button className="px-4 py-2 bg-gradient-to-r from-[#2E7D32] to-[#1B5E20] text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center">
+                {detailedLoan && (detailedLoan.status.toLowerCase() === 'active') && (
+                  <button className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center text-sm">
                     <Wallet className="w-4 h-4 mr-2" />
                     Pay EMI
                   </button>
