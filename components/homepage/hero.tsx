@@ -32,8 +32,8 @@ export default function Hero() {
   ]
 
   return (
-    <section className="bg-white py-16 md:py-24 px-4">
-      <div className="max-w-7xl mx-auto">
+    <section className="min-h-[calc(100vh-80px)] flex items-center bg-white py-16 md:py-24 px-4">
+      <div className="max-w-7xl mx-auto w-full">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
           <motion.div

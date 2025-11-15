@@ -8,8 +8,8 @@ export default function LoansGrid() {
   }));
 
   return (
-    <section className="py-12 sm:py-16 md:py-24 px-4">
-      <div className="max-w-7xl mx-auto">
+    <section className="min-h-[calc(100vh-80px)] flex items-center py-12 sm:py-16 md:py-24 px-4 bg-gradient-to-b from-white to-gray-50">
+      <div className="max-w-7xl mx-auto w-full">
         <div
           // initial={{ opacity: 0, y: 20 }}
           // whileInView={{ opacity: 1, y: 0 }}

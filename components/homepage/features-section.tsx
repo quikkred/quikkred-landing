@@ -11,8 +11,8 @@ export default function FeaturesSection() {
   }))
 
   return (
-    <section className="bg-white py-12 sm:py-16 md:py-24 px-4">
-      <div className="max-w-7xl mx-auto">
+    <section className="min-h-[calc(100vh-80px)] flex items-center bg-white py-12 sm:py-16 md:py-24 px-4">
+      <div className="max-w-7xl mx-auto w-full">
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-slate-900 mb-3 sm:mb-4 px-2">
           {t.homepage.featuresSection.heading} <span className="text-teal-500">{t.homepage.featuresSection.headingHighlight}</span>
         </h2>

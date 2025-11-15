@@ -27,7 +27,7 @@ export function FinancialCTA({
   }
 
   return (
-    <div className="flex items-center justify-center bg-[#f6f6f6] py-12 sm:py-16 md:py-24 px-4">
+    <div className="min-h-[calc(100vh-80px)] flex items-center justify-center bg-[#f6f6f6] py-12 sm:py-16 md:py-24 px-4">
       <div
         className="w-full max-w-4xl rounded-2xl sm:rounded-3xl p-8 sm:p-12 md:p-16 lg:p-20 text-center"
         style={{
