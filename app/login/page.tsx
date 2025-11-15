@@ -24,14 +24,13 @@ import {
   KeyRound
 } from "lucide-react";
 import Link from "next/link";
-import { useAuth, type UserRole } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast, Toaster } from "@/components/ui/toast";
 
 interface LoginForm {
   emailOrPhone: string;
   password: string;
   rememberMe: boolean;
-  selectedRole?: UserRole;
 }
 
 export default function LoginPage() {
@@ -176,7 +175,6 @@ const verifyOtp = async () => {
       const success = await login(
         formData.emailOrPhone,
         otp,
-        formData.selectedRole,
         data.data // API response data
       );
 
@@ -230,7 +228,6 @@ const verifyOtp = async () => {
         const success = await login(
           formData.emailOrPhone,
           formData.password,
-          formData.selectedRole
         );
 
         if (success) {

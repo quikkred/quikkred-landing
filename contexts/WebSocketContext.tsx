@@ -5,7 +5,7 @@ import io, { Socket } from 'socket.io-client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { WS_EVENTS, WSMessage, DEFAULT_WS_OPTIONS } from '@/lib/websocket-client';
-import { UserRole } from '@/types/auth';
+
 
 interface WebSocketContextType {
   socket: Socket | null;
@@ -66,7 +66,7 @@ export function WebSocketProvider({ children, url }: WebSocketProviderProps) {
       ...DEFAULT_WS_OPTIONS,
       auth: {
         userId: user.id,
-        role: user.role
+        role: 'USER'
       }
     });
 
@@ -81,7 +81,7 @@ export function WebSocketProvider({ children, url }: WebSocketProviderProps) {
       // Authenticate with server
       newSocket.emit(WS_EVENTS.AUTH, {
         userId: user.id,
-        role: user.role,
+        role: 'USER',
         token: localStorage.getItem('token') // If using JWT
       });
 
@@ -243,7 +243,7 @@ export function WebSocketProvider({ children, url }: WebSocketProviderProps) {
 }
 
 // Hook for real-time dashboard updates
-export function useRealtimeDashboard(role: UserRole) {
+export function useRealtimeDashboard(role: string) {
   const { subscribe, connected } = useWebSocket();
   const [realtimeData, setRealtimeData] = useState<any>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
