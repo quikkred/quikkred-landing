@@ -104,7 +104,7 @@ export default function SupportPage() {
         return;
       }
 
-      const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/supportTicket/getAll', {
+      const response = await fetch('https://api.bluechipfinmax.com/api/supportTicket/getAll', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -146,7 +146,7 @@ export default function SupportPage() {
         return;
       }
 
-      const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/supportTicket/create', {
+      const response = await fetch('https://api.bluechipfinmax.com/api/supportTicket/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -203,7 +203,7 @@ export default function SupportPage() {
         return;
       }
 
-      const response = await fetch(`https://77q1g1gk-5050.inc1.devtunnels.ms/api/supportTicket/update/${selectedTicket._id}`, {
+      const response = await fetch(`https://api.bluechipfinmax.com/api/supportTicket/update/${selectedTicket._id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

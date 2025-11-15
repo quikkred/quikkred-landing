@@ -2,7 +2,7 @@
 
 ## Base URL
 ```
-Production: https://77q1g1gk-5050.inc1.devtunnels.ms/v1
+Production: https://api.bluechipfinmax.com/v1
 Staging: https://api-staging.Quikkred.com/v1
 ```
 

@@ -91,7 +91,7 @@ export default function LoginPage() {
         ? { email: formData.emailOrPhone }
         : { mobile: formData.emailOrPhone };
 
-      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/create", {
+      const response = await fetch("https://api.bluechipfinmax.com/api/auth/customer/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -151,7 +151,7 @@ const verifyOtp = async () => {
         ? { email: formData.emailOrPhone, otp }
         : { mobile: formData.emailOrPhone, otp };
 
-    const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/verifyOtp", {
+    const response = await fetch("https://api.bluechipfinmax.com/api/auth/customer/verifyOtp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -346,7 +346,7 @@ const verifyOtp = async () => {
               className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100"
             >
               {/* Tab Switcher */}
-              <div className="flex mb-8">
+              {/* <div className="flex mb-8">
                 <button
                   onClick={() => setActiveTab('login')}
                   className={`flex-1 py-3 px-4 text-center font-semibold rounded-l-lg transition-colors ${
@@ -357,7 +357,7 @@ const verifyOtp = async () => {
                 >
                   Sign In
                 </button>
-                {/* <button
+                <button
                   onClick={() => setActiveTab('register')}
                   className={`flex-1 py-3 px-4 text-center font-semibold rounded-r-lg transition-colors ${
                     activeTab === 'register'
@@ -366,8 +366,8 @@ const verifyOtp = async () => {
                   }`}
                 >
                   Register
-                </button> */}
-              </div>
+                </button>
+              </div> */}
 
               {activeTab === 'login' ? (
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -647,7 +647,7 @@ const verifyOtp = async () => {
                       Start Your Application
                     </button>
                   </Link>
-                  <p className="text-sm text-gray-500">
+                  {/* <p className="text-sm text-gray-500">
                     Already have an account?{' '}
                     <button
                       onClick={() => setActiveTab('login')}
@@ -655,7 +655,7 @@ const verifyOtp = async () => {
                     >
                       Sign in here
                     </button>
-                  </p>
+                  </p> */}
                 </div>
               )}
 

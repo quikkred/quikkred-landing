@@ -124,7 +124,7 @@ const handleSubmit = async (e: React.FormEvent) => {
 
       const apiSubject = formData.subject ? subjectMap[formData.subject] : "GENERAL_INQUIRY";
 
-      const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/contactUs/create', {
+      const response = await fetch('https://api.bluechipfinmax.com/api/contactUs/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

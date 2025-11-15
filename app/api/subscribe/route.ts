@@ -4,7 +4,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/subscribe/create', {
+    const response = await fetch('https://api.bluechipfinmax.com/api/subscribe/create', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

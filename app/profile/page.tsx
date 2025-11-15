@@ -252,7 +252,7 @@ export default function ProfilePage() {
       formData.append('profileImage', selectedImage);
 
       console.log('🔵 Uploading profile image...');
-      const response = await fetch(`https://77q1g1gk-5050.inc1.devtunnels.ms/api/customer/update/${profileData._id}`, {
+      const response = await fetch(`https://api.bluechipfinmax.com/api/customer/update/${profileData._id}`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`

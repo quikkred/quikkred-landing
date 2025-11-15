@@ -39,7 +39,7 @@ export default function DocumentsPage() {
         return;
       }
 
-      const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/document/get', {
+      const response = await fetch('https://api.bluechipfinmax.com/api/document/get', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -320,7 +320,7 @@ export default function DocumentsPage() {
         return;
       }
 
-      const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/document/delete', {
+      const response = await fetch('https://api.bluechipfinmax.com/api/document/delete', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -396,7 +396,7 @@ export default function DocumentsPage() {
       const formData = new FormData();
       formData.append(docType, file);
 
-      const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/document/upload', {
+      const response = await fetch('https://api.bluechipfinmax.com/api/document/upload', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

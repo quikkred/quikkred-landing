@@ -40,11 +40,8 @@ const PUBLIC_ROUTES = [
   '/terms'
 ];
 
-// Routes that should NOT show header/footer (full-page experiences)
-const FULL_SCREEN_ROUTES = ['/select-language'];
-
-// Routes that should be full-screen for logged-in users only
-const LOGGED_IN_FULL_SCREEN_ROUTES = ['/apply/quick', '/apply/loan'];
+// Routes that should NOT show header/footer (full-page experiences for all users)
+const FULL_SCREEN_ROUTES = ['/select-language', '/apply/quick', '/apply/loan'];
 
 // Check if current path should use public layout
 const isPublicRoute = (pathname: string): boolean => {
@@ -60,17 +57,8 @@ const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
   const pathname = usePathname();
   const { user } = useAuth();
 
-  // If it's a full-screen route, render without header/footer
-  if (FULL_SCREEN_ROUTES.includes(pathname)) {
-    return (
-      <>
-        {children}
-      </>
-    );
-  }
-
-  // If user is logged in and on an application form page, show full-screen
-  if (user && LOGGED_IN_FULL_SCREEN_ROUTES.some(route => pathname.startsWith(route))) {
+  // If it's a full-screen route, render without header/footer (for all users)
+  if (FULL_SCREEN_ROUTES.some(route => pathname.startsWith(route))) {
     return (
       <>
         {children}
