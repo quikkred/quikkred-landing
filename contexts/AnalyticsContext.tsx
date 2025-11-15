@@ -1,13 +1,13 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useAuth, UserRole } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 
 export interface PageView {
   id: string;
   userId: string;
-  role: UserRole;
+  role: string;
   path: string;
   title: string;
   timestamp: string;
@@ -28,7 +28,7 @@ export interface PageView {
 export interface UserAction {
   id: string;
   userId: string;
-  role: UserRole;
+  role: string;
   action: string;
   category: 'navigation' | 'interaction' | 'form' | 'api' | 'error';
   label?: string;
@@ -42,7 +42,7 @@ export interface UserAction {
 export interface SessionData {
   id: string;
   userId: string;
-  role: UserRole;
+  role: string;
   startTime: string;
   endTime?: string;
   duration?: number;
@@ -92,7 +92,7 @@ interface AnalyticsContextType {
     avgTimeOnPage: number;
   };
 
-  getDashboardMetrics: (role: UserRole) => {
+  getDashboardMetrics: (role: string) => {
     dailyActiveUsers: number;
     avgSessionDuration: number;
     mostVisitedPages: Array<{ path: string; views: number }>;
@@ -172,7 +172,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     const newSession: SessionData = {
       id: sessionId,
       userId: user.id,
-      role: user.role,
+      role: 'USER',
       startTime: new Date().toISOString(),
       pageViews: 0,
       actions: 0,
@@ -239,7 +239,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     const pageView: PageView = {
       id: `pv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       userId: user.id,
-      role: user.role,
+      role: 'USER',
       path,
       title,
       timestamp: new Date().toISOString(),
@@ -276,7 +276,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     const userAction: UserAction = {
       id: `action_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       userId: user.id,
-      role: user.role,
+      role: 'USER',
       action,
       category,
       metadata,
@@ -342,7 +342,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     };
   }, [session, pageViews, userActions]);
 
-  const getDashboardMetrics = useCallback((role: UserRole) => {
+  const getDashboardMetrics = useCallback((role: string) => {
     const rolePageViews = pageViews.filter(pv => pv.role === role);
     const roleActions = userActions.filter(ua => ua.role === role);
 

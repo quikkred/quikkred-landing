@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useAuth, UserRole } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface Notification {
   id: string;
@@ -18,7 +18,7 @@ export interface Notification {
   persistency?: 'SESSION' | 'PERMANENT';
   category?: string;
   userId?: string;
-  role?: UserRole;
+  role?: string;
 }
 
 interface NotificationContextType {
@@ -38,7 +38,7 @@ interface NotificationContextType {
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 // Role-specific notification preferences
-const ROLE_NOTIFICATION_CONFIG: Record<UserRole, {
+const ROLE_NOTIFICATION_CONFIG: Record<string, {
   maxNotifications: number;
   autoHideDelay: number;
   enabledTypes: Notification['type'][];
@@ -95,14 +95,14 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isConnected, setIsConnected] = useState(false);
 
-  const config = user ? ROLE_NOTIFICATION_CONFIG[user.role] : ROLE_NOTIFICATION_CONFIG.USER;
+  const config = user ? ROLE_NOTIFICATION_CONFIG['USER'] : ROLE_NOTIFICATION_CONFIG['USER'];
 
   // Simulate real-time connection
   useEffect(() => {
     if (user && isConnected) {
       // Simulate receiving notifications based on role
       const interval = setInterval(() => {
-        const mockNotifications = generateMockNotifications(user.role);
+        const mockNotifications = generateMockNotifications('USER');
         if (mockNotifications.length > 0) {
           const randomNotification = mockNotifications[Math.floor(Math.random() * mockNotifications.length)];
           addNotification(randomNotification);
@@ -123,7 +123,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       timestamp: new Date().toISOString(),
       read: false,
       userId: user?.id,
-      role: user?.role
+      role: 'USER'
     };
 
     // Check if notification type is enabled for current role
@@ -209,7 +209,7 @@ export function useNotifications() {
 }
 
 // Mock notification generator for demonstration
-function generateMockNotifications(role: UserRole): Omit<Notification, 'id' | 'timestamp' | 'read'>[] {
+function generateMockNotifications(role: string): Omit<Notification, 'id' | 'timestamp' | 'read'>[] {
   const baseNotifications = {
     USER: [
       {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback, memo } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
@@ -207,7 +207,7 @@ export function Header() {
       }`}
     >
       {/* Top Bar */}
-      <div
+      {/* <div
         className={`border-b border-slate-700 transition-all duration-300 ${
           isScrolled
             ? "opacity-0 max-h-0 overflow-hidden"
@@ -240,8 +240,7 @@ export function Header() {
                 </span>
               </span>
             </div>
-            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">
-              {/* Language Selector - Only show on non-language-selection pages */}
+            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">  
               {!isLanguageSelectionPage && (
                 <Link
                   href="/select-language"
@@ -257,13 +256,13 @@ export function Header() {
                 </Link>
               )}
 
-              {/* <Link href="/track-application" className="hover:text-emerald-500 transition-colors hidden md:inline">
+               <Link href="/track-application" className="hover:text-emerald-500 transition-colors hidden md:inline">
                 {t.navigation.track}
-              </Link> */}
+              </Link> 
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Main Navigation */}
       <nav className="container mx-auto sm:px-6">
@@ -271,7 +270,7 @@ export function Header() {
           {/* Logo */}
          <Link href="/" className="flex p-[20px] items-center group">
   <img
-    src="https://quikkred.in/logo.png"
+    src="/logo.svg"
     alt={t.common.appName}
     className="h-auto object-contain"
     style={{ imageRendering: '-webkit-optimize-contrast',maxHeight: '50px' }}
@@ -445,14 +444,14 @@ export function Header() {
                   )}
                 </div>
               ))}
-              <Link
+              {/* <Link
                 href="/contact"
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
               >
                 <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
                 {t.navigation.contact}
-              </Link>
+              </Link> */}
               <div className="mt-4 pt-4 border-t border-slate-700">
                 {/* Mobile Language Selector Link - Only show on non-language-selection pages */}
                 {!isLanguageSelectionPage && (

@@ -27,19 +27,19 @@ export function FinancialCTA({
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#f6f6f6] py-16 md:py-24 px-4">
+    <div className="flex items-center justify-center bg-[#f6f6f6] py-12 sm:py-16 md:py-24 px-4">
       <div
-        className="w-full max-w-4xl rounded-3xl p-12 md:p-20 text-center"
+        className="w-full max-w-4xl rounded-2xl sm:rounded-3xl p-8 sm:p-12 md:p-16 lg:p-20 text-center"
         style={{
           background: "linear-gradient(180deg, #6D9DFF 0%, #415E99 100%)",
         }}
       >
         <h1
-          className="text-white mb-4 text-balance"
+          className="text-white mb-3 sm:mb-4 text-balance px-2"
           style={{
             fontFamily: "'Cabin', sans-serif",
             fontWeight: 600,
-            fontSize: "47px",
+            fontSize: "clamp(24px, 5vw, 47px)",
             lineHeight: "130%",
             letterSpacing: "0.24px",
             textAlign: "center",
@@ -48,20 +48,22 @@ export function FinancialCTA({
           {heading}
         </h1>
 
-        <p className="text-lg md:text-xl text-white/90 mb-8 text-balance">{description}</p>
+        <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 mb-6 sm:mb-8 text-balance px-2">
+          {description}
+        </p>
 
-        <div className="flex flex-col md:flex-row gap-3 justify-center items-center w-full">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center items-stretch sm:items-center w-full max-w-md mx-auto">
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder={inputPlaceholder}
-            className="h-12 px-6 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/50 w-full md:w-80 font-sans border-0"
+            className="h-11 sm:h-12 px-4 sm:px-6 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/50 w-full text-sm sm:text-base font-sans border-0"
             onKeyPress={(e) => e.key === "Enter" && handleSubscribe()}
           />
           <button
             onClick={handleSubscribe}
-            className="h-12 bg-gray-900 hover:bg-gray-800 text-white px-8 rounded-lg font-semibold transition-colors w-full md:w-auto border-0 cursor-pointer"
+            className="h-11 sm:h-12 bg-gray-900 hover:bg-gray-800 text-white px-6 sm:px-8 rounded-lg font-semibold transition-colors w-full sm:w-auto border-0 cursor-pointer text-sm sm:text-base whitespace-nowrap"
           >
             {buttonText}
           </button>
