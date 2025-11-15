@@ -11,6 +11,7 @@ import {
 import { loansService } from "@/lib/api/loans.service";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast, Toaster } from "@/components/ui/toast";
+import SelfieCapture from "@/components/camera/SelfieCapture";
 
 // Auto-decision engine
 const autoDecisionEngine = (data: any) => {
@@ -65,6 +66,8 @@ export default function QuickLoanApplication() {
   const [loading, setLoading] = useState(false);
   const [decision, setDecision] = useState<any>(null);
   const [selfieCapture, setSelfieCapture] = useState(false);
+  const [selfieCaptured, setSelfieCaptured] = useState(false);
+  const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
   const [verificationMethod, setVerificationMethod] = useState<'mobile' | 'email'>('email');
   const [userDataLoaded, setUserDataLoaded] = useState(false);
   const [panVerifying, setPanVerifying] = useState(false);
@@ -804,15 +807,26 @@ export default function QuickLoanApplication() {
 
   const captureSelfi = () => {
     setSelfieCapture(true);
-    // In real app, this would open camera
-    setTimeout(() => {
-      setSelfieCapture(false);
-      toast({
-        variant: "success",
-        title: "Selfie Captured!",
-        description: "Your selfie has been captured successfully.",
-      });
-    }, 2000);
+  };
+
+  const handleSelfieCapture = (imageFile: File) => {
+    // Store the file in form data
+    setFormData(prev => ({ ...prev, selfie: imageFile }));
+
+    // Create preview URL
+    const previewUrl = URL.createObjectURL(imageFile);
+    setSelfiePreview(previewUrl);
+    setSelfieCaptured(true);
+
+    toast({
+      variant: "success",
+      title: "Selfie Captured!",
+      description: "Your selfie has been captured successfully.",
+    });
+  };
+
+  const handleCloseSelfieModal = () => {
+    setSelfieCapture(false);
   };
 
   // Save customer data to backend via loan application API
@@ -990,15 +1004,16 @@ export default function QuickLoanApplication() {
     }
 
     if (currentStep === 3) {
-      // Validate loan details, references and consents
+      // Validate loan details, references, selfie and consents
       if (!formData.loanAmount || !formData.purpose ||
           !formData.reference1Name || !formData.reference1Mobile || !formData.reference1Relationship ||
           !formData.reference2Name || !formData.reference2Mobile || !formData.reference2Relationship ||
+          !formData.selfie || !selfieCaptured ||
           !formData.creditBureauConsent || !formData.termsConsent) {
         toast({
           variant: "warning",
           title: "Incomplete Information",
-          description: "Please complete all loan details, references, and accept required consents.",
+          description: "Please complete all loan details, capture selfie, provide references, and accept required consents.",
         });
         return;
       }
@@ -1027,36 +1042,46 @@ export default function QuickLoanApplication() {
         const tenureMonths = parseInt(formData.tenure);
         const emi = Math.round((principal * rate * Math.pow(1 + rate, tenureMonths)) / (Math.pow(1 + rate, tenureMonths) - 1));
 
-        // Submit only Step 3 data with isSubmit: true (Steps 1 & 2 already saved)
-        const payload = {
-          loanAmount: principal,
-          requestedTenure: tenureMonths,
-          tenureUnit: 'months',
-          emiAmount: emi,
-          purpose: formData.purpose,
-          references: [
-            {
-              name: formData.reference1Name,
-              mobile: formData.reference1Mobile,
-              relationship: formData.reference1Relationship
-            },
-            {
-              name: formData.reference2Name,
-              mobile: formData.reference2Mobile,
-              relationship: formData.reference2Relationship
-            }
-          ],
-          isVerificationDetailsFilled: true,
-          isSubmit: true // Final submission
-        };
+        // Create FormData to include selfie file
+        const formDataToSend = new FormData();
+
+        // Add loan application data
+        formDataToSend.append('loanAmount', principal.toString());
+        formDataToSend.append('requestedTenure', tenureMonths.toString());
+        formDataToSend.append('tenureUnit', 'months');
+        formDataToSend.append('emiAmount', emi.toString());
+        formDataToSend.append('purpose', formData.purpose);
+        formDataToSend.append('isVerificationDetailsFilled', 'true');
+        formDataToSend.append('isSubmit', 'true');
+
+        // Add references as JSON string
+        formDataToSend.append('references', JSON.stringify([
+          {
+            name: formData.reference1Name,
+            mobile: formData.reference1Mobile,
+            relationship: formData.reference1Relationship
+          },
+          {
+            name: formData.reference2Name,
+            mobile: formData.reference2Mobile,
+            relationship: formData.reference2Relationship
+          }
+        ]));
+
+        // Add selfie photo file
+        if (formData.selfie) {
+          formDataToSend.append('photo', formData.selfie, formData.selfie.name);
+          console.log('✅ Adding selfie photo to form data:', formData.selfie.name);
+        }
 
         const response = await fetch(`https://77q1g1gk-5050.inc1.devtunnels.ms/api/application/loan/create`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
+            // Note: Do NOT set Content-Type header when sending FormData
+            // Browser will automatically set it with boundary
           },
-          body: JSON.stringify(payload)
+          body: formDataToSend
         });
 
         const result = await response.json();
@@ -1379,6 +1404,13 @@ export default function QuickLoanApplication() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5] py-8 px-4">
       <Toaster />
+
+      {/* Selfie Capture Modal */}
+      <SelfieCapture
+        isOpen={selfieCapture}
+        onClose={handleCloseSelfieModal}
+        onCapture={handleSelfieCapture}
+      />
       <div className="max-w-3xl mx-auto">
         {/* Close button for logged-in users */}
         {user && (
@@ -2122,15 +2154,50 @@ export default function QuickLoanApplication() {
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
                   <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <Camera className="w-5 h-5" />
-                    Upload Selfie
+                    Capture Live Selfie *
                   </h3>
-                  <button
-                    onClick={captureSelfi}
-                    disabled={selfieCapture}
-                    className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {selfieCapture ? "Capturing..." : "Click to Capture Selfie"}
-                  </button>
+
+                  {!selfieCaptured ? (
+                    <>
+                      <p className="text-sm text-gray-600 mb-4">
+                        Take a clear photo of your face for identity verification
+                      </p>
+                      <button
+                        type="button"
+                        onClick={captureSelfi}
+                        className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg hover:shadow-lg transition-all font-semibold flex items-center justify-center gap-2"
+                      >
+                        <Camera className="w-5 h-5" />
+                        Open Camera & Capture Selfie
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="mb-4">
+                        <div className="relative bg-black rounded-lg overflow-hidden aspect-video">
+                          {selfiePreview && (
+                            <img
+                              src={selfiePreview}
+                              alt="Captured selfie preview"
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                          <div className="absolute top-2 right-2 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
+                            <CheckCircle className="w-4 h-4" />
+                            Captured
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={captureSelfi}
+                        className="w-full border-2 border-blue-500 text-blue-600 py-3 rounded-lg hover:bg-blue-50 transition-all font-semibold flex items-center justify-center gap-2"
+                      >
+                        <Camera className="w-5 h-5" />
+                        Retake Selfie
+                      </button>
+                    </>
+                  )}
                 </div>
 
                 <div className="space-y-4">
