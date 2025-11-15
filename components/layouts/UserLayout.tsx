@@ -210,7 +210,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                   className="flex items-center justify-center w-full py-4"
                 >
                   <Image
-                    src="/logo.png"
+                    src="/logo.svg"
                     alt="Quikkred Logo"
                     width={160}
                     height={80}
@@ -236,13 +236,13 @@ const UserLayout = ({ children }: UserLayoutProps) => {
               <>
                 <div className="rounded-xl flex items-center justify-center">
                   <Image
-                    src="/favicon.ico"
+                    src="/i.svg"
                     alt="Quikkred Logo"
                     width={54}
                     height={54}
                     className="object-contain"
                   />
-                  
+
                 </div>
                 <motion.button
                   whileHover={{ scale: 1.1 }}
