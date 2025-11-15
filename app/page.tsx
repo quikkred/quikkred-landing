@@ -142,12 +142,17 @@ export default function Home() {
   return (
     <>
       <div className="min-h-screen" ref={containerRef}>
+        {/* Hero Section - Full Screen */}
         <Hero/>
-          <StepsSection/>
+
+        {/* Steps Section - Full Screen */}
+        <StepsSection/>
+
+        {/* Features Section - Full Screen */}
         <FeaturesSection/>
-        
-             {/* Interactive Loan Calculator Section */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-[#F6F6F6]">
+
+        {/* Interactive Loan Calculator Section - Full Screen */}
+        <section className="min-h-[calc(100vh-80px)] flex items-center py-12 sm:py-16 lg:py-20 bg-[#F6F6F6]">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
               <motion.div
@@ -196,18 +201,14 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Loan Products Showcase */}
-        {/* <section className="py-12 sm:py-16 lg:py-20 bg-white"> */}
-            <LoansGrid/>
-        {/* </section> */}
+        {/* Loan Products Showcase - Full Screen */}
+        <LoansGrid/>
 
-   <FinancialCTA/>
+        {/* Financial CTA - Full Screen */}
+        <FinancialCTA/>
 
-   
-
-
-        {/* FAQ Section */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-white">
+        {/* FAQ Section - Full Screen */}
+        <section className="min-h-[calc(100vh-80px)] flex items-center py-12 sm:py-16 lg:py-20 bg-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
             <motion.div
               initial={{ opacity: 0, y: 20 }}

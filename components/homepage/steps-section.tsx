@@ -11,8 +11,8 @@ export default function StepsSection() {
   }))
 
   return (
-    <section className="bg-[#f6f6f6] py-12 sm:py-16 md:py-24 px-4">
-      <div className="max-w-6xl mx-auto">
+    <section className="min-h-[calc(100vh-80px)] flex items-center bg-[#f6f6f6] py-12 sm:py-16 md:py-24 px-4">
+      <div className="max-w-6xl mx-auto w-full">
          <div
               className="text-center mb-8 sm:mb-10 md:mb-12 lg:mb-16"
             >
