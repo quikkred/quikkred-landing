@@ -12,38 +12,9 @@ export default function DashboardPage() {
   useEffect(() => {
     if (isLoading) return;
 
-    // Redirect based on user role
-    if (user && user.role) {
-      switch (user.role) {
-        case 'ADMIN':
-        case 'SUPER_ADMIN':
-          router.push('/admin');
-          break;
-        case 'USER':
-        case 'CUSTOMER':
-          router.push('/user');
-          break;
-        case 'UNDERWRITER':
-          router.push('/underwriter');
-          break;
-        case 'COLLECTION_AGENT':
-          router.push('/collection-agent');
-          break;
-        case 'FINANCE_MANAGER':
-          router.push('/finance-manager');
-          break;
-        case 'RISK_ANALYST':
-          router.push('/risk-analyst');
-          break;
-        case 'SUPPORT_AGENT':
-          router.push('/support-agent');
-          break;
-        default:
-          router.push('/login');
-      }
-    } else {
-      // If no user, redirect to login
-      router.push('/login');
+    // Redirect to user dashboard or login
+    if (user) {
+      router.push('/user');
     }
   }, [user, isLoading, router]);
 

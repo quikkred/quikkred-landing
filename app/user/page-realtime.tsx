@@ -111,7 +111,7 @@ function UserDashboardRealtimeContent() {
 
   // Check authentication
   useEffect(() => {
-    if (!authLoading && (!user || user.role !== 'USER')) {
+    if (!authLoading && !user) {
       router.push('/login');
     }
   }, [user, authLoading, router]);

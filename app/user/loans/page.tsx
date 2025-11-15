@@ -168,7 +168,7 @@ export default function MyLoansPage() {
         return;
       }
 
-      if (user.role !== 'USER' && user.role !== 'CUSTOMER') {
+      if (false) {
         router.push('/login');
         return;
       }
@@ -289,7 +289,10 @@ export default function MyLoansPage() {
     await fetchDetailedLoan(loan.loanNumber);
   };
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | undefined | null) => {
+    if (!amount && amount !== 0) {
+      return '₹0';
+    }
     if (amount >= 10000000) {
       return `₹${(amount / 10000000).toFixed(2)}Cr`;
     } else if (amount >= 100000) {
@@ -354,7 +357,7 @@ export default function MyLoansPage() {
   }
 
   // If not authenticated or not authorized
-  if (!user || (user.role !== 'USER' && user.role !== 'CUSTOMER')) {
+  if (!user) {
     return (
       <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
         <div className="text-center">
@@ -1100,16 +1103,16 @@ export default function MyLoansPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-xs sm:text-sm">
                       <div>
                         <p className="text-gray-600">Created By</p>
-                        <p className="font-semibold text-gray-900">{detailedLoan.createdBy.fullName}</p>
-                        <p className="text-xs text-gray-500">{detailedLoan.createdBy.email}</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.createdBy?.fullName || 'N/A'}</p>
+                        <p className="text-xs text-gray-500">{detailedLoan.createdBy?.email || 'N/A'}</p>
                       </div>
                       <div>
                         <p className="text-gray-600">Created At</p>
-                        <p className="font-semibold text-gray-900">{new Date(detailedLoan.createdAt).toLocaleString()}</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.createdAt ? new Date(detailedLoan.createdAt).toLocaleString() : 'N/A'}</p>
                       </div>
                       <div>
                         <p className="text-gray-600">Last Updated</p>
-                        <p className="font-semibold text-gray-900">{new Date(detailedLoan.updatedAt).toLocaleString()}</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.updatedAt ? new Date(detailedLoan.updatedAt).toLocaleString() : 'N/A'}</p>
                       </div>
                     </div>
                   </div>
