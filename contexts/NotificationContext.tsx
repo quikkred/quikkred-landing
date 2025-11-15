@@ -210,7 +210,7 @@ export function useNotifications() {
 
 // Mock notification generator for demonstration
 function generateMockNotifications(role: string): Omit<Notification, 'id' | 'timestamp' | 'read'>[] {
-  const baseNotifications = {
+  const baseNotifications: Record<string, Omit<Notification, 'id' | 'timestamp' | 'read'>[]> = {
     USER: [
       {
         type: 'PAYMENT_REMINDER' as const,
