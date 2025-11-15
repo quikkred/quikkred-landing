@@ -1,4 +1,5 @@
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { motion } from "framer-motion";
 
 export default function LoansGrid() {
   const { t } = useLanguage();
@@ -8,12 +9,13 @@ export default function LoansGrid() {
   }));
 
   return (
-    <section className="min-h-[calc(100vh-80px)] flex items-center py-12 sm:py-16 md:py-24 px-4 bg-gradient-to-b from-white to-gray-50">
+    <section className="min-h-[calc(100vh-80px)] flex items-center py-12 sm:py-16 md:py-24 px-4 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
       <div className="max-w-7xl mx-auto w-full">
-        <div
-          // initial={{ opacity: 0, y: 20 }}
-          // whileInView={{ opacity: 1, y: 0 }}
-          // viewport={{ once: true }}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
           className="text-center mb-8 sm:mb-10 md:mb-12 lg:mb-16"
         >
           <span className="inline-block px-4 py-2 bg-[#D3F1EB] text-[#25B181] rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
@@ -28,12 +30,17 @@ export default function LoansGrid() {
           <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto px-4">
             {t.homepage.sections.products.subtitle}
           </p>
-        </div>
+        </motion.div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
           {loans.map((loan, idx) => (
-            <div
+            <motion.div
               key={idx}
-              className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow"
+              initial={{ opacity: 0, y: 50, rotate: -2 }}
+              whileInView={{ opacity: 1, y: 0, rotate: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: idx * 0.15, duration: 0.6 }}
+              whileHover={{ y: -12, scale: 1.03, rotate: 1 }}
+              className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-2xl transition-all"
             >
               <div
                 className={`${loan.color} p-4 sm:p-6 text-white flex flex-col items-start text-left`}
@@ -57,11 +64,15 @@ export default function LoansGrid() {
                 <p className="text-slate-600 text-xs sm:text-sm mb-4 sm:mb-6 line-clamp-3">
                   {loan.description}
                 </p>
-                <button className="w-full py-2 sm:py-2.5 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors text-xs sm:text-sm font-medium">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-full py-2 sm:py-2.5 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors text-xs sm:text-sm font-medium"
+                >
                   {t.homepage.loansGrid.button}
-                </button>
+                </motion.button>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
