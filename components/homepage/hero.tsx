@@ -32,14 +32,14 @@ export default function Hero() {
   ]
 
   return (
-    <section className="min-h-[calc(100vh-80px)] flex items-center bg-white py-16 md:py-24 px-4">
+    <section className="min-h-[calc(100vh-80px)] flex items-center bg-white py-16 md:py-24 px-4 overflow-hidden">
       <div className="max-w-7xl mx-auto w-full">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
             className="space-y-6"
           >
             {/* Trust Badge - matching steps section style */}
@@ -129,9 +129,9 @@ export default function Hero() {
 
           {/* Right - 3 Steps Visual - matching steps section exactly */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
+            transition={{ delay: 0.4, duration: 0.8, ease: "easeOut" }}
             className="relative"
           >
             <div className="space-y-6">
@@ -140,10 +140,10 @@ export default function Hero() {
                 return (
                   <motion.div
                     key={index}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.5 + index * 0.1 }}
-                    whileHover={{ scale: 1.02 }}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 + index * 0.15, duration: 0.6 }}
+                    whileHover={{ scale: 1.03, y: -5 }}
                     className="relative"
                   >
                     <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">

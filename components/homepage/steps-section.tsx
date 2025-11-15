@@ -1,5 +1,6 @@
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { FileText, CheckCircle, DollarSign } from "lucide-react"
+import { motion } from "framer-motion"
 
 export default function StepsSection() {
   const { t } = useLanguage();
@@ -11,9 +12,13 @@ export default function StepsSection() {
   }))
 
   return (
-    <section className="min-h-[calc(100vh-80px)] flex items-center bg-[#f6f6f6] py-12 sm:py-16 md:py-24 px-4">
+    <section className="min-h-[calc(100vh-80px)] flex items-center bg-[#f6f6f6] py-12 sm:py-16 md:py-24 px-4 overflow-hidden">
       <div className="max-w-6xl mx-auto w-full">
-         <div
+         <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
               className="text-center mb-8 sm:mb-10 md:mb-12 lg:mb-16"
             >
               <span className="inline-block px-4 py-2 bg-[#14b8a642] text-teal-500 rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
@@ -25,15 +30,20 @@ export default function StepsSection() {
               <p className="text-center text-slate-700 text-sm sm:text-base md:text-lg mb-8 sm:mb-12 md:mb-16 max-w-2xl mx-auto px-4">
           {t.homepage.stepsSection.subtitle}
         </p>
-            </div>
+            </motion.div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
   {steps.map((step, idx) => {
     const IconComponent = step.icon
     return (
-      <div
+      <motion.div
         key={idx}
-        className="bg-white rounded-xl p-6 sm:p-8 text-left shadow-sm hover:shadow-md transition-shadow relative"
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: idx * 0.2, duration: 0.6 }}
+        whileHover={{ y: -10, scale: 1.02 }}
+        className="bg-white rounded-xl p-6 sm:p-8 text-left shadow-sm hover:shadow-xl transition-all relative"
       >
         {/* Number badge */}
         <div className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4">
@@ -56,7 +66,7 @@ export default function StepsSection() {
         <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
           {step.description}
         </p>
-      </div>
+      </motion.div>
     )
   })}
 </div>
