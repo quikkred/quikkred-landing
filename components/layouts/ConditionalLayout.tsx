@@ -8,8 +8,7 @@ import { SecurityBanner } from "@/components/security-banner";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
 
-// Lazy load all dashboard layouts - they're only needed when authenticated
-const AdminLayout = dynamic(() => import("./AdminLayout"), { ssr: false });
+// Lazy load user dashboard layout - only needed when authenticated
 const UserLayout = dynamic(() => import("./UserLayout"), { ssr: false });
 
 interface ConditionalLayoutProps {
@@ -99,29 +98,9 @@ const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
     return <>{children}</>;
   }
 
-  // Render appropriate dashboard layout based on user role
-  switch (user.role) {
-    case 'ADMIN':
-    case 'SUPER_ADMIN':
-      return <AdminLayout>{children}</AdminLayout>;
 
-    case 'USER':
-    case 'CUSTOMER':
-      return <UserLayout>{children}</UserLayout>;
-
-    default:
-      // Fallback to public layout
-      return (
-        <>
-          <Header />
-          <main className="min-h-screen">
-            {children}
-          </main>
-          <Footer />
-          <SecurityBanner />
-        </>
-      );
-  }
+  // Render user dashboard layout for authenticated users
+  return <UserLayout>{children}</UserLayout>;
 };
 
 export default ConditionalLayout;

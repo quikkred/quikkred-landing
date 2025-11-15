@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
   MessageSquare, Plus, RefreshCw, Send, AlertCircle,
   CheckCircle, Clock, X, Eye, Filter, Search,
-  FileText, User, Calendar, Tag, AlertTriangle
+  FileText, User, Calendar, Tag, AlertTriangle, Mail, Phone
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -20,7 +20,20 @@ interface SupportTicket {
   } | string;
   category: string;
   subject: string;
-  description: string;
+  chatDetails: string | Array<{
+    message: string;
+    addedAt: string;
+    assignedTo?: {
+      _id: string;
+      fullName: string;
+      email: string;
+      mobile?: string;
+    };
+    assignedAt?: string;
+    remarkedAt?: string;
+    remarks?: string;
+    _id: string;
+  }>;
   priority: string;
   status: string;
   assignedDetails?: Array<{
@@ -33,6 +46,7 @@ interface SupportTicket {
     _id: string;
   }>;
   remarks?: Array<{
+    addedBy?: string;
     text: string;
     remarkedAt: string;
     _id: string;
@@ -51,6 +65,10 @@ export default function SupportPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [showReopenForm, setShowReopenForm] = useState(false);
+  const [reopenDescription, setReopenDescription] = useState('');
+  const [reopenLoading, setReopenLoading] = useState(false);
+  const [reopenError, setReopenError] = useState('');
 
   // Form state
   const [formData, setFormData] = useState({
@@ -70,7 +88,9 @@ export default function SupportPage() {
   const fetchTickets = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const token = localStorage.getItem('accessToken') ||
+                    localStorage.getItem('authToken') ||
+                    localStorage.getItem('token');
 
       if (!token) {
         router.push('/login');
@@ -103,7 +123,9 @@ export default function SupportPage() {
     setFormLoading(true);
 
     try {
-      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const token = localStorage.getItem('accessToken') ||
+                    localStorage.getItem('authToken') ||
+                    localStorage.getItem('token');
       const customerId = localStorage.getItem('userId');
 
       if (!token) {
@@ -152,6 +174,56 @@ export default function SupportPage() {
       setFormError(error.message || 'Failed to create ticket');
     } finally {
       setFormLoading(false);
+    }
+  };
+
+  const handleReopenTicket = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedTicket || !reopenDescription.trim()) {
+      setReopenError('Please provide a description for reopening this ticket');
+      return;
+    }
+
+    setReopenError('');
+    setReopenLoading(true);
+
+    try {
+      const token = localStorage.getItem('accessToken')
+      console.log('accessToken', token);
+
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
+      const response = await fetch(`https://77q1g1gk-5050.inc1.devtunnels.ms/api/supportTicket/update/${selectedTicket._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          description: reopenDescription.trim()
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // Update selected ticket with new data
+        setSelectedTicket(result.data);
+        // Reset form
+        setReopenDescription('');
+        setShowReopenForm(false);
+        // Refresh tickets list
+        fetchTickets();
+      } else {
+        setReopenError(result.message || 'Failed to reopen ticket');
+      }
+    } catch (error: any) {
+      setReopenError(error.message || 'Failed to reopen ticket');
+    } finally {
+      setReopenLoading(false);
     }
   };
 
@@ -631,13 +703,165 @@ switch (category) {
                   <p className="text-lg font-semibold text-[#1F8F68]">{selectedTicket.subject}</p>
                 </div>
 
-                {/* Description */}
+                {/* Conversation History */}
                 <div className="mb-6">
-                  <h4 className="text-sm font-medium text-gray-600 mb-2">Description</h4>
-                  <div className="bg-[#FAFAFA] rounded-lg p-4 border border-[#E0E0E0]">
-                    <p className="text-gray-700 whitespace-pre-wrap">{selectedTicket.description}</p>
+                  <h4 className="text-sm font-medium text-gray-600 mb-3 flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4 text-[#4A66FF]" />
+                    Conversation History
+                  </h4>
+                  <div className="space-y-4">
+                    {Array.isArray(selectedTicket.chatDetails) ? (
+                      selectedTicket.chatDetails?.map((desc, index) => (
+                        <div key={desc._id} className="space-y-3">
+                          {/* Customer Message */}
+                          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                                  Query #{index + 1}
+                                </span>
+                                <span className="text-xs text-blue-600 font-medium">You</span>
+                              </div>
+                              <span className="text-xs text-gray-500">
+                                {new Date(desc.addedAt).toLocaleString('en-IN', {
+                                  day: '2-digit',
+                                  month: 'short',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </span>
+                            </div>
+                            <p className="text-gray-800 whitespace-pre-wrap">{desc.message}</p>
+                          </div>
+
+                          {/* Support Agent Response */}
+                          {desc.remarks && (
+                            <div className="ml-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
+                              <div className="flex items-start justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <CheckCircle className="w-4 h-4 text-green-600" />
+                                  <span className="text-xs font-semibold text-green-700">Response</span>
+                                  {desc.assignedTo && (
+                                    <span className="text-xs text-gray-600">
+                                      by {desc.assignedTo.fullName}
+                                    </span>
+                                  )}
+                                </div>
+                                {desc.remarkedAt && (
+                                  <span className="text-xs text-gray-500">
+                                    {new Date(desc.remarkedAt).toLocaleString('en-IN', {
+                                      day: '2-digit',
+                                      month: 'short',
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-gray-800 whitespace-pre-wrap">{desc.remarks}</p>
+                              {desc.assignedTo && (
+                                <div className="flex items-center gap-3 text-xs text-gray-600 mt-3 pt-3 border-t border-green-200">
+                                  <div className="flex items-center gap-1">
+                                    <User className="w-3 h-3" />
+                                    <span>{desc.assignedTo.fullName}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Mail className="w-3 h-3" />
+                                    <span>{desc.assignedTo.email}</span>
+                                  </div>
+                                  {desc.assignedTo.mobile && (
+                                    <div className="flex items-center gap-1">
+                                      <Phone className="w-3 h-3" />
+                                      <span>{desc.assignedTo.mobile}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="bg-[#FAFAFA] rounded-lg p-4 border border-[#E0E0E0]">
+                        <p className="text-gray-700 whitespace-pre-wrap">{selectedTicket.chatDetails}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
+
+                {/* Reopen Ticket Form */}
+                {!showReopenForm && (
+                  <div className="mb-6">
+                    <button
+                      onClick={() => setShowReopenForm(true)}
+                      className="w-full px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 font-semibold"
+                    >
+                      <RefreshCw className="w-5 h-5" />
+                      Reopen Ticket / Add Follow-up
+                    </button>
+                  </div>
+                )}
+
+                {showReopenForm && (
+                  <div className="mb-6">
+                    <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-sm font-semibold text-orange-800 flex items-center gap-2">
+                          <AlertTriangle className="w-4 h-4" />
+                          Reopen Ticket
+                        </h4>
+                        <button
+                          onClick={() => {
+                            setShowReopenForm(false);
+                            setReopenDescription('');
+                            setReopenError('');
+                          }}
+                          className="p-1 hover:bg-orange-100 rounded transition-colors"
+                        >
+                          <X className="w-4 h-4 text-orange-600" />
+                        </button>
+                      </div>
+                      <p className="text-xs text-orange-700 mb-3">
+                        Not satisfied with the response? Describe why you need to reopen this ticket.
+                      </p>
+                      <form onSubmit={handleReopenTicket}>
+                        <textarea
+                          value={reopenDescription}
+                          onChange={(e) => setReopenDescription(e.target.value)}
+                          required
+                          rows={4}
+                          placeholder="E.g., Still having some issue with document upload..."
+                          className="w-full px-4 py-2 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none resize-none mb-3"
+                        />
+                        {reopenError && (
+                          <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700 flex items-center gap-2">
+                            <AlertCircle className="w-4 h-4" />
+                            {reopenError}
+                          </div>
+                        )}
+                        <button
+                          type="submit"
+                          disabled={reopenLoading}
+                          className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 font-semibold"
+                        >
+                          {reopenLoading ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              Reopening...
+                            </>
+                          ) : (
+                            <>
+                              <Send className="w-4 h-4" />
+                              Submit & Reopen Ticket
+                            </>
+                          )}
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                )}
 
                 {/* Assigned To */}
                 {/* {selectedTicket.assignedDetails && selectedTicket.assignedDetails.length > 0 && (
@@ -668,17 +892,18 @@ switch (category) {
                   </div>
                 )} */}
 
-                {/* Remarks */}
+                {/* Additional Remarks (Global ticket remarks not tied to specific messages) */}
                 {selectedTicket.remarks && selectedTicket.remarks.length > 0 && (
                   <div className="mb-6">
                     <h4 className="text-sm font-medium text-gray-600 mb-3 flex items-center gap-2">
-                      <MessageSquare className="w-4 h-4 text-[#4A66FF]" />
-                      Remarks ({selectedTicket.remarks.length})
+                      <FileText className="w-4 h-4 text-[#4A66FF]" />
+                      Additional Notes ({selectedTicket.remarks.length})
                     </h4>
+                    <p className="text-xs text-gray-600 mb-3">General remarks and notes added to this ticket</p>
                     <div className="space-y-3">
                       {selectedTicket.remarks.map((remark) => (
-                        <div key={remark._id} className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
-                          <p className="text-gray-800 mb-2">{remark.text}</p>
+                        <div key={remark._id} className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200">
+                          <p className="text-gray-800 mb-2 font-medium">{remark.text}</p>
                           <div className="flex items-center gap-2 text-xs text-gray-500">
                             <Clock className="w-3 h-3" />
                             <span>
@@ -690,6 +915,13 @@ switch (category) {
                                 minute: '2-digit'
                               })}
                             </span>
+                            {remark.addedBy && (
+                              <>
+                                <span className="mx-1">•</span>
+                                <User className="w-3 h-3" />
+                                <span>Agent ID: {remark.addedBy.slice(-8)}</span>
+                              </>
+                            )}
                           </div>
                         </div>
                       ))}

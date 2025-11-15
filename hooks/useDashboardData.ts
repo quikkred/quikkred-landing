@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useAuth, UserRole } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface DashboardHookOptions {
   refreshInterval?: number;
@@ -18,7 +18,7 @@ interface DashboardHookReturn<T> {
 
 // Generic dashboard data fetcher
 export function useDashboardData<T = any>(
-  role: UserRole,
+  role: string,
   options: DashboardHookOptions = {}
 ): DashboardHookReturn<T> {
   const { refreshInterval = 30000, enabled = true } = options;
@@ -30,11 +30,7 @@ export function useDashboardData<T = any>(
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const fetchData = useCallback(async () => {
-    if (!enabled || !user || user.role !== role) {
-      setLoading(false);
-      return;
-    }
-
+    
     try {
       setError(null);
       const endpoint = `/api/dashboard/${role.toLowerCase().replace('_', '-')}`;
@@ -142,7 +138,7 @@ export function useSupportAgentDashboard(options?: DashboardHookOptions) {
 
 // Real-time updates hook
 export function useRealtimeDashboard<T>(
-  role: UserRole,
+  role: string,
   pollingInterval: number = 5000
 ) {
   const [isRealtime, setIsRealtime] = useState(false);

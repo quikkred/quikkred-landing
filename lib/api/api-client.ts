@@ -16,6 +16,8 @@ class ApiClient {
     this.baseURL = '';
     // External API URL
     this.externalBaseURL = 'https://77q1g1gk-5050.inc1.devtunnels.ms';
+    // 'https://77q1g1gk-5050.inc1.devtunnels.m's;
+    // http://93.127.167.88:505
     if (typeof window !== 'undefined') {
       this.token = localStorage.getItem('authToken') || localStorage.getItem('token');
     }

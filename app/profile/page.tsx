@@ -267,7 +267,7 @@ export default function ProfilePage() {
         setSuccessMessage('Profile image updated successfully!');
 
         // Refresh profile data to get the new image URL
-        await fetchProfile();
+        // await fetchProfile(); // TODO: Implement fetchProfile function
 
         // Clear preview and selected image
         setSelectedImage(null);
@@ -327,7 +327,7 @@ export default function ProfilePage() {
           </h2>
           <p className="text-gray-600 text-center mb-6">{error}</p>
           <button
-            onClick={fetchProfile}
+            onClick={() => window.location.reload()}
             className="w-full py-3 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg font-semibold hover:shadow-lg transition-all"
           >
             Retry
@@ -361,7 +361,7 @@ export default function ProfilePage() {
 
               {/* Refresh Button (Edit disabled for read-only API) */}
               <button
-                onClick={fetchProfile}
+                onClick={() => window.location.reload()}
                 disabled={isLoading}
                 className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white border border-[#E0E0E0] text-gray-700 rounded-lg hover:bg-[#FAFAFA] transition-colors shadow-sm disabled:opacity-50"
               >

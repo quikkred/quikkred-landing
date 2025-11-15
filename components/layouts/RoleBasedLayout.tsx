@@ -2,7 +2,6 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import AdminLayout from "./AdminLayout";
 import UserLayout from "./UserLayout";
 
 interface RoleBasedLayoutProps {
@@ -83,9 +82,6 @@ const RoleBasedLayout = ({ children }: RoleBasedLayoutProps) => {
 
   // Render appropriate layout based on user role
   switch (userRole) {
-    case USER_ROLES.ADMIN:
-      return <AdminLayout>{children}</AdminLayout>;
-
     case USER_ROLES.USER:
       return <UserLayout>{children}</UserLayout>;
 

@@ -26,30 +26,34 @@ export default function FAQ() {
   ]
 
   return (
-    <section className="bg-white py-16 md:py-24 px-4">
+    <section className="bg-white py-12 sm:py-16 md:py-24 px-4">
       <div className="max-w-3xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold text-center text-slate-900 mb-4">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-slate-900 mb-3 sm:mb-4 px-2">
           Got Questions? <span className="text-teal-500">We've Got Answers.</span>
         </h2>
-        <p className="text-center text-slate-600 mb-12">
+        <p className="text-center text-slate-600 text-sm sm:text-base mb-8 sm:mb-10 md:mb-12 px-4">
           Find answers to common questions about our loan products and process
         </p>
 
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {faqs.map((faq, idx) => (
             <div key={idx} className="border border-slate-200 rounded-lg overflow-hidden">
               <button
                 onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
-                className="w-full p-6 flex items-center justify-between hover:bg-slate-50 transition-colors"
+                className="w-full p-4 sm:p-6 flex items-center justify-between hover:bg-slate-50 transition-colors text-left"
               >
-                <h3 className="font-semibold text-slate-900 text-left">{faq.question}</h3>
+                <h3 className="font-semibold text-slate-900 text-sm sm:text-base pr-4">{faq.question}</h3>
                 <ChevronDown
-                  className={`w-5 h-5 text-slate-600 transition-transform ${
+                  className={`w-5 h-5 text-slate-600 transition-transform flex-shrink-0 ${
                     openIndex === idx ? "transform rotate-180" : ""
                   }`}
                 />
               </button>
-              {openIndex === idx && <div className="px-6 pb-6 text-slate-600">{faq.answer}</div>}
+              {openIndex === idx && (
+                <div className="px-4 sm:px-6 pb-4 sm:pb-6 text-slate-600 text-xs sm:text-sm leading-relaxed">
+                  {faq.answer}
+                </div>
+              )}
             </div>
           ))}
         </div>

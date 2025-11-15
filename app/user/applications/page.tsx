@@ -58,6 +58,7 @@ interface DetailedApplication {
   totalInterest: number;
   totalRepayment: number;
   netDisbursalAmount: number;
+  emiAmount?: number;
   status: string;
   cibilScore: number;
   riskScore: number;
@@ -222,6 +223,17 @@ export default function MyApplicationsPage() {
     setPagination(prev => ({ ...prev, limit: newLimit, currentPage: 1 }));
   };
 
+  // Calculate EMI
+  const calculateEMI = (principal: number, annualRate: number, tenureMonths: number): number => {
+    if (!principal || !annualRate || !tenureMonths) return 0;
+
+    const monthlyRate = annualRate / 12 / 100;
+    const emi = (principal * monthlyRate * Math.pow(1 + monthlyRate, tenureMonths)) /
+                (Math.pow(1 + monthlyRate, tenureMonths) - 1);
+
+    return Math.round(emi);
+  };
+
   // Fetch detailed application data
   const fetchApplicationDetails = async (applicationNumber: string) => {
     try {
@@ -229,7 +241,16 @@ export default function MyApplicationsPage() {
       const response = await loansService.getApplicationDetails(applicationNumber);
 
       if (response.success && response.data) {
-        setDetailedApplication(response.data);
+        // Calculate EMI if not provided by API
+        const applicationData = response.data;
+        if (!applicationData.emiAmount && applicationData.loanAmount && applicationData.interestRate && applicationData.requestedTenure) {
+          applicationData.emiAmount = calculateEMI(
+            applicationData.loanAmount,
+            applicationData.interestRate,
+            applicationData.requestedTenure
+          );
+        }
+        setDetailedApplication(applicationData);
       }
     } catch (error) {
       console.error('Error fetching application details:', error);
@@ -655,6 +676,10 @@ export default function MyApplicationsPage() {
                       <div>
                         <p className="text-sm text-gray-600">Tenure</p>
                         <p className="font-semibold text-gray-900">{detailedApplication.requestedTenure} months</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">EMI Amount</p>
+                        <p className="text-lg font-bold text-blue-700">₹{detailedApplication.emiAmount?.toLocaleString() || 'N/A'}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Purpose</p>

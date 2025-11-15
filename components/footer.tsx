@@ -185,17 +185,17 @@ export function Footer() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 mt-12 sm:mt-16 lg:mt-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-6 sm:gap-8 lg:gap-8">
           {/* Company Info */}
-          <div className="col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-2">
+          <div className="col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-2 text-center sm:text-left">
 <Link
   href="/"
-  className="flex items-start mb-4 sm:mb-6"
+  className="flex items-center justify-center sm:items-start sm:justify-start mb-4 sm:mb-6"
 >
   <Image
-    src="/logo.png"
+    src="/QuikkredLogoWhite.svg"
     alt={t.common.appName}
-    width={150}
-    height={150}
-    className="w-72 sm:w-80 md:w-96 lg:w-full xl:w-full h-auto object-contain object-left max-w-2xl"
+    width={200}
+    height={50}
+    className="w-48 sm:w-56 md:w-64 lg:w-72 h-auto object-contain mx-auto sm:mx-0"
   />
 </Link>
 
@@ -208,10 +208,10 @@ export function Footer() {
   />
 </Link> */}
 
-            <p className="text-slate-400 mb-4 sm:mb-6 text-sm sm:text-base">
+            <p className="text-slate-400 mb-4 sm:mb-6 text-sm sm:text-base mx-auto sm:mx-0 max-w-md sm:max-w-none">
               {t.footer.about.description}
             </p>
-            <div className="flex gap-2 sm:gap-3 flex-wrap">
+            <div className="flex gap-2 sm:gap-3 flex-wrap justify-center sm:justify-start">
               {socialLinks.map((social) => (
                 <a
                   key={social.label}
@@ -228,12 +228,12 @@ export function Footer() {
           </div>
 
           {/* Products */}
-          <div className="col-span-1">
-            <h4 className="font-semibold text-slate-100 mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base">
+          <div className="col-span-1 text-center sm:text-left">
+            <h4 className="font-semibold text-slate-100 mb-3 sm:mb-4 flex items-center justify-center sm:justify-start gap-2 text-sm sm:text-base">
               <CreditCard className="w-4 h-4 text-[#25B181]" />
               {t.footer.products.title}
             </h4>
-            <ul className="space-y-2 sm:space-y-3">
+            <ul className="space-y-2 sm:space-y-3 flex flex-col items-center sm:items-start">
               {footerLinks.products.slice(0, 6).map((link) => (
                 <li key={link.name}>
                   <Link
@@ -249,9 +249,9 @@ export function Footer() {
           </div>
 
           {/* Company */}
-          <div className="col-span-1">
+          <div className="col-span-1 text-center sm:text-left">
             <h4 className="font-semibold text-slate-100 mb-3 sm:mb-4 text-sm sm:text-base">{t.footer.quickLinks.title}</h4>
-            <ul className="space-y-2 sm:space-y-3">
+            <ul className="space-y-2 sm:space-y-3 flex flex-col items-center sm:items-start">
               {footerLinks.company.slice(0, 6).map((link) => (
                 <li key={link.name}>
                   <Link
@@ -267,9 +267,9 @@ export function Footer() {
           </div>
 
           {/* Resources */}
-          <div className="col-span-1">
+          <div className="col-span-1 text-center sm:text-left">
             <h4 className="font-semibold text-slate-100 mb-3 sm:mb-4 text-sm sm:text-base">{t.navigation.resources}</h4>
-            <ul className="space-y-2 sm:space-y-3">
+            <ul className="space-y-2 sm:space-y-3 flex flex-col items-center sm:items-start">
               {footerLinks.resources.slice(0, 6).map((link) => (
                 <li key={link.name}>
                   <Link
@@ -285,9 +285,9 @@ export function Footer() {
           </div>
 
           {/* Support */}
-          <div className="col-span-1">
+          <div className="col-span-1 text-center sm:text-left">
             <h4 className="font-semibold text-slate-100 mb-3 sm:mb-4 text-sm sm:text-base">{t.footer.support.title}</h4>
-            <ul className="space-y-2 sm:space-y-3">
+            <ul className="space-y-2 sm:space-y-3 flex flex-col items-center sm:items-start">
               {footerLinks.support.slice(0, 6).map((link) => (
                 <li key={link.name}>
                   <Link
@@ -303,9 +303,9 @@ export function Footer() {
           </div>
 
           {/* Contact Info */}
-          <div className="col-span-1">
+          <div className="col-span-1 text-center sm:text-left">
             <h4 className="font-semibold text-slate-100 mb-3 sm:mb-4 text-sm sm:text-base">{t.footer.contact.title}</h4>
-            <ul className="space-y-2 sm:space-y-3">
+            <ul className="space-y-2 sm:space-y-3 flex flex-col items-center sm:items-start">
               <li>
                 <a
                   href={`tel:${t.footer.contact.phone}`}
