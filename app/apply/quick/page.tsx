@@ -132,7 +132,7 @@ export default function QuickLoanApplication() {
 
           if (token) {
             // Fetch user profile data
-            const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/customer/get', {
+            const response = await fetch('https://api.bluechipfinmax.com/api/customer/get', {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
@@ -334,7 +334,7 @@ export default function QuickLoanApplication() {
         ? { email: formData.email }
         : { mobile: formData.mobile };
 
-      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/create", {
+      const response = await fetch("https://api.bluechipfinmax.com/api/auth/customer/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -384,7 +384,7 @@ export default function QuickLoanApplication() {
         ? { email: formData.email, otp: formData.otp }
         : { mobile: formData.mobile, otp: formData.otp };
 
-      const response = await fetch("https://77q1g1gk-5050.inc1.devtunnels.ms/api/auth/customer/verifyOtp", {
+      const response = await fetch("https://api.bluechipfinmax.com/api/auth/customer/verifyOtp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -424,7 +424,7 @@ export default function QuickLoanApplication() {
         if (token) {
           try {
             console.log('🔵 Fetching customer data after OTP verification...');
-            const customerResponse = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/customer/get', {
+            const customerResponse = await fetch('https://api.bluechipfinmax.com/api/customer/get', {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
@@ -580,7 +580,7 @@ export default function QuickLoanApplication() {
         return dateStr;
       };
 
-      const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/kyc/pan/verification', {
+      const response = await fetch('https://api.bluechipfinmax.com/api/kyc/pan/verification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -678,7 +678,7 @@ export default function QuickLoanApplication() {
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/kyc/aadhaar/otp', {
+      const response = await fetch('https://api.bluechipfinmax.com/api/kyc/aadhaar/otp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -738,7 +738,7 @@ export default function QuickLoanApplication() {
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/kyc/aadhaar/verify', {
+      const response = await fetch('https://api.bluechipfinmax.com/api/kyc/aadhaar/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -854,6 +854,7 @@ export default function QuickLoanApplication() {
         payload = {
           firstName,
           lastName,
+          mobile: formData.mobile,
           dateOfBirth: formData.dob,
           panCard: formData.pan,
           aadhaarNumber: formData.aadhaar,
@@ -904,7 +905,7 @@ export default function QuickLoanApplication() {
         };
       }
 
-      const response = await fetch(`https://77q1g1gk-5050.inc1.devtunnels.ms/api/application/loan/create`, {
+      const response = await fetch(`https://api.bluechipfinmax.com/api/application/loan/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1074,7 +1075,7 @@ export default function QuickLoanApplication() {
           console.log('✅ Adding selfie photo to form data:', formData.selfie.name);
         }
 
-        const response = await fetch(`https://77q1g1gk-5050.inc1.devtunnels.ms/api/application/loan/create`, {
+        const response = await fetch(`https://api.bluechipfinmax.com/api/application/loan/create`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -1412,18 +1413,22 @@ export default function QuickLoanApplication() {
         onCapture={handleSelfieCapture}
       />
       <div className="max-w-3xl mx-auto">
-        {/* Close button for logged-in users */}
-        {user && (
-          <div className="flex justify-end mb-4">
-            <button
-              onClick={() => router.push('/user')}
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-white rounded-lg transition-all"
-            >
-              <X className="w-5 h-5" />
-              <span className="text-sm font-medium">Close</span>
-            </button>
-          </div>
-        )}
+        {/* Close button - redirect based on login status */}
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={() => {
+              if (user) {
+                router.push('/user'); // Redirect to dashboard if logged in
+              } else {
+                router.push('/login'); // Redirect to login if not logged in
+              }
+            }}
+            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-white rounded-lg transition-all shadow-sm"
+          >
+            <X className="w-5 h-5" />
+            <span className="text-sm font-medium">Close</span>
+          </button>
+        </div>
 
         {/* Header */}
         <div className="text-center mb-8">
@@ -1732,56 +1737,7 @@ export default function QuickLoanApplication() {
                 )}
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      PAN Number *
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        name="pan"
-                        value={formData.pan}
-                        onChange={(e) => {
-                          handleChange(e);
-                          if (panVerified) setPanVerified(false); // Reset verification if changed
-                          if (panError) setPanError(""); // Clear error when typing
-                        }}
-                        disabled={panVerified}
-                        maxLength={10}
-                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 uppercase"
-                        placeholder="ABCDE1234F"
-                      />
-                      {!panVerified && (
-                        <button
-                          type="button"
-                          onClick={verifyPAN}
-                          disabled={!formData.pan || formData.pan.length !== 10 || panVerifying}
-                          className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
-                        >
-                          {panVerifying ? "Verifying..." : "Verify"}
-                        </button>
-                      )}
-                      {panVerified && (
-                        <div className="flex items-center gap-2 px-3 py-3 bg-green-50 border border-green-200 rounded-lg">
-                          <CheckCircle className="w-5 h-5 text-green-600" />
-                          <span className="text-sm text-green-700 font-medium">Verified</span>
-                        </div>
-                      )}
-                    </div>
-                    {panVerified && panData && (
-                      <p className="mt-2 text-xs text-green-700">
-                        ✓ Verified for {panData.data?.pan || 'PAN holder'}
-                      </p>
-                    )}
-                    {panError && (
-                      <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                        <p className="text-sm text-red-700 flex items-start gap-2">
-                          <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                          <span>{panError}</span>
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                  {/* Aadhaar Verification - FIRST */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Aadhaar Number *
@@ -1864,6 +1820,63 @@ export default function QuickLoanApplication() {
                         <p className="text-sm text-red-700 flex items-start gap-2">
                           <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
                           <span>{aadhaarError}</span>
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* PAN Verification - SECOND (After Aadhaar) */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      PAN Number *
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        name="pan"
+                        value={formData.pan}
+                        onChange={(e) => {
+                          handleChange(e);
+                          if (panVerified) setPanVerified(false);
+                          if (panError) setPanError("");
+                        }}
+                        disabled={!aadhaarVerified || panVerified}
+                        maxLength={10}
+                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 uppercase"
+                        placeholder="ABCDE1234F"
+                      />
+                      {!panVerified && (
+                        <button
+                          type="button"
+                          onClick={verifyPAN}
+                          disabled={!aadhaarVerified || !formData.pan || formData.pan.length !== 10 || panVerifying}
+                          className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
+                        >
+                          {panVerifying ? "Verifying..." : "Verify"}
+                        </button>
+                      )}
+                      {panVerified && (
+                        <div className="flex items-center gap-2 px-3 py-3 bg-green-50 border border-green-200 rounded-lg">
+                          <CheckCircle className="w-5 h-5 text-green-600" />
+                          <span className="text-sm text-green-700 font-medium">Verified</span>
+                        </div>
+                      )}
+                    </div>
+                    {!aadhaarVerified && (
+                      <p className="mt-2 text-xs text-orange-600">
+                        ⚠ Please verify Aadhaar first before verifying PAN
+                      </p>
+                    )}
+                    {panVerified && panData && (
+                      <p className="mt-2 text-xs text-green-700">
+                        ✓ Verified for {panData.data?.pan || 'PAN holder'}
+                      </p>
+                    )}
+                    {panError && (
+                      <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="text-sm text-red-700 flex items-start gap-2">
+                          <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                          <span>{panError}</span>
                         </p>
                       </div>
                     )}
@@ -2009,10 +2022,22 @@ export default function QuickLoanApplication() {
                       Loan Amount *
                     </label>
                     <input
-                      type="number"
+                      type="text"
                       name="loanAmount"
-                      value={formData.loanAmount}
-                      onChange={handleChange}
+                      value={formData.loanAmount ? parseFloat(formData.loanAmount.replace(/,/g, '')).toLocaleString('en-IN') : ''}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/,/g, '');
+                        if (/^\d*$/.test(value)) {
+                          handleChange({
+                            ...e,
+                            target: {
+                              ...e.target,
+                              name: 'loanAmount',
+                              value: value
+                            }
+                          } as any);
+                        }
+                      }}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
                       placeholder="₹ 50,000"
                     />

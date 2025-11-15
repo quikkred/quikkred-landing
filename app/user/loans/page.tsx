@@ -207,7 +207,7 @@ export default function MyLoansPage() {
       const currentLimit = limit || pagination.limit;
 
       const response = await fetch(
-        `https://77q1g1gk-5050.inc1.devtunnels.ms/api/loans/get?page=${currentPage}&limit=${currentLimit}`,
+        `https://api.bluechipfinmax.com/api/loans/get?page=${currentPage}&limit=${currentLimit}`,
         {
           method: 'GET',
           headers: {

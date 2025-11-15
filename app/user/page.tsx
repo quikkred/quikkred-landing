@@ -114,7 +114,7 @@ export default function UserDashboard() {
         return;
       }
 
-      const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/customer/dashboard', {
+      const response = await fetch('https://api.bluechipfinmax.com/api/customer/dashboard', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -231,7 +231,7 @@ export default function UserDashboard() {
         description: `Processing payment of ₹${totalAmount.toLocaleString()} for ${selectedEmiCount} EMI(s)...`
       });
 
-      const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/payment/customerEmiPayment', {
+      const response = await fetch('https://api.bluechipfinmax.com/api/payment/customerEmiPayment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

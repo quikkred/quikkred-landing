@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUserProfile = async (token: string, currentUser: User) => {
     console.log('🔵 Fetching user profile from API...');
     try {
-      const response = await fetch('https://77q1g1gk-5050.inc1.devtunnels.ms/api/customer/get', {
+      const response = await fetch('https://api.bluechipfinmax.com/api/customer/get', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
