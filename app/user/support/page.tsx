@@ -22,6 +22,13 @@ interface SupportTicket {
   subject: string;
   chatDetails: string | Array<{
     message: string;
+    addedBy?: {
+      _id: string;
+      fullName: string;
+      email: string;
+      mobile?: string;
+    };
+    addedByModel?: string;
     addedAt: string;
     assignedTo?: {
       _id: string;
@@ -707,88 +714,144 @@ switch (category) {
                 <div className="mb-6">
                   <h4 className="text-sm font-medium text-gray-600 mb-3 flex items-center gap-2">
                     <MessageSquare className="w-4 h-4 text-[#4A66FF]" />
-                    Conversation History
+                    Support Conversation
+                    {Array.isArray(selectedTicket.chatDetails) && (
+                      <span className="ml-auto text-xs text-gray-500">
+                        {selectedTicket.chatDetails.length} messages
+                      </span>
+                    )}
                   </h4>
-                  <div className="space-y-4">
+                  <div className="space-y-4 max-h-[400px] overflow-y-auto bg-gradient-to-b from-gray-50 to-white rounded-lg p-4 border border-gray-200">
                     {Array.isArray(selectedTicket.chatDetails) ? (
-                      selectedTicket.chatDetails?.map((desc, index) => (
-                        <div key={desc._id} className="space-y-3">
-                          {/* Customer Message */}
-                          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
-                            <div className="flex items-start justify-between mb-2">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded">
-                                  Query #{index + 1}
-                                </span>
-                                <span className="text-xs text-blue-600 font-medium">You</span>
-                              </div>
-                              <span className="text-xs text-gray-500">
-                                {new Date(desc.addedAt).toLocaleString('en-IN', {
-                                  day: '2-digit',
-                                  month: 'short',
-                                  year: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
-                              </span>
-                            </div>
-                            <p className="text-gray-800 whitespace-pre-wrap">{desc.message}</p>
-                          </div>
+                      selectedTicket.chatDetails?.map((chat, index) => {
+                        const isCustomer = chat.addedByModel === 'Customer';
 
-                          {/* Support Agent Response */}
-                          {desc.remarks && (
-                            <div className="ml-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
-                              <div className="flex items-start justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-600" />
-                                  <span className="text-xs font-semibold text-green-700">Response</span>
-                                  {desc.assignedTo && (
-                                    <span className="text-xs text-gray-600">
-                                      by {desc.assignedTo.fullName}
-                                    </span>
-                                  )}
+                        return (
+                          <div key={chat._id} className="space-y-3">
+                            {/* Customer/User Message */}
+                            <div className={`flex ${isCustomer ? 'justify-start' : 'justify-end'}`}>
+                              <div className={`flex ${isCustomer ? 'flex-row' : 'flex-row-reverse'} items-end gap-2 max-w-[80%]`}>
+                                {/* Avatar */}
+                                <div className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-md ${
+                                  isCustomer
+                                    ? 'bg-gradient-to-br from-blue-500 to-blue-600'
+                                    : 'bg-gradient-to-br from-[#25B181] to-[#1F8F68]'
+                                }`}>
+                                  {isCustomer ? 'You' : (chat.addedBy?.fullName?.charAt(0).toUpperCase() || 'S')}
                                 </div>
-                                {desc.remarkedAt && (
-                                  <span className="text-xs text-gray-500">
-                                    {new Date(desc.remarkedAt).toLocaleString('en-IN', {
-                                      day: '2-digit',
+
+                                {/* Message Bubble */}
+                                <div className={`flex flex-col ${isCustomer ? 'items-start' : 'items-end'}`}>
+                                  {/* Sender Label */}
+                                  <div className={`flex items-center gap-2 mb-1 px-2 text-xs font-semibold ${
+                                    isCustomer ? 'text-blue-600' : 'text-[#25B181]'
+                                  }`}>
+                                    <span>
+                                      {isCustomer ? 'Your Query' : `${chat.addedBy?.fullName || chat.assignedTo?.fullName || 'Support'} (Support)`}
+                                    </span>
+                                  </div>
+
+                                  <div className={`rounded-2xl px-4 py-3 shadow-md ${
+                                    isCustomer
+                                      ? 'bg-white border-2 border-blue-200 rounded-bl-none'
+                                      : 'bg-gradient-to-br from-[#25B181] to-[#1F8F68] text-white rounded-br-none'
+                                  }`}>
+                                    <p className={`text-sm leading-relaxed ${isCustomer ? 'text-gray-800' : 'text-white'}`}>
+                                      {chat.message}
+                                    </p>
+                                  </div>
+
+                                  {/* Timestamp */}
+                                  <div className="mt-1 px-2 text-xs text-gray-500">
+                                    {new Date(chat.addedAt).toLocaleString('en-IN', {
                                       month: 'short',
+                                      day: 'numeric',
                                       year: 'numeric',
                                       hour: '2-digit',
                                       minute: '2-digit'
                                     })}
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-gray-800 whitespace-pre-wrap">{desc.remarks}</p>
-                              {desc.assignedTo && (
-                                <div className="flex items-center gap-3 text-xs text-gray-600 mt-3 pt-3 border-t border-green-200">
-                                  <div className="flex items-center gap-1">
-                                    <User className="w-3 h-3" />
-                                    <span>{desc.assignedTo.fullName}</span>
                                   </div>
-                                  <div className="flex items-center gap-1">
-                                    <Mail className="w-3 h-3" />
-                                    <span>{desc.assignedTo.email}</span>
-                                  </div>
-                                  {desc.assignedTo.mobile && (
-                                    <div className="flex items-center gap-1">
-                                      <Phone className="w-3 h-3" />
-                                      <span>{desc.assignedTo.mobile}</span>
-                                    </div>
-                                  )}
                                 </div>
-                              )}
+                              </div>
                             </div>
-                          )}
-                        </div>
-                      ))
+
+                            {/* Support Agent Response (if remarks exist) */}
+                            {chat.remarks && (
+                              <div className="flex justify-end">
+                                <div className="flex flex-row-reverse items-end gap-2 max-w-[80%]">
+                                  {/* Avatar */}
+                                  <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-md bg-gradient-to-br from-[#25B181] to-[#1F8F68]">
+                                    {chat.assignedTo?.fullName?.charAt(0).toUpperCase() || 'S'}
+                                  </div>
+
+                                  {/* Message Bubble */}
+                                  <div className="flex flex-col items-end">
+                                    {/* Sender Label */}
+                                    <div className="flex items-center gap-2 mb-1 px-2 text-xs font-semibold text-[#25B181]">
+                                      <span>{chat.assignedTo?.fullName || 'Support'} (Support)</span>
+                                    </div>
+
+                                    <div className="rounded-2xl px-4 py-3 shadow-md bg-gradient-to-br from-[#25B181] to-[#1F8F68] text-white rounded-br-none">
+                                      <p className="text-sm leading-relaxed text-white">
+                                        {chat.remarks}
+                                      </p>
+                                    </div>
+
+                                    {/* Timestamp and Agent Info */}
+                                    <div className="mt-1 px-2 text-xs text-gray-500">
+                                      {chat.remarkedAt && new Date(chat.remarkedAt).toLocaleString('en-IN', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        year: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })}
+                                    </div>
+
+                                    {/* Agent Contact Info */}
+                                    {chat.assignedTo && (
+                                      <div className="flex flex-wrap items-center gap-2 mt-2 px-2 text-xs text-gray-600">
+                                        <div className="flex items-center gap-1">
+                                          <Mail className="w-3 h-3" />
+                                          <span>{chat.assignedTo.email}</span>
+                                        </div>
+                                        {chat.assignedTo.mobile && (
+                                          <div className="flex items-center gap-1">
+                                            <Phone className="w-3 h-3" />
+                                            <span>{chat.assignedTo.mobile}</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })
                     ) : (
-                      <div className="bg-[#FAFAFA] rounded-lg p-4 border border-[#E0E0E0]">
+                      <div className="bg-white rounded-lg p-4 border border-gray-200">
                         <p className="text-gray-700 whitespace-pre-wrap">{selectedTicket.chatDetails}</p>
                       </div>
                     )}
                   </div>
+
+                  {/* Conversation Legend */}
+                  {Array.isArray(selectedTicket.chatDetails) && (
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <div className="flex items-center gap-4 text-xs text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-gradient-to-br from-blue-500 to-blue-600"></div>
+                          <span>Your messages</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-gradient-to-br from-[#25B181] to-[#1F8F68]"></div>
+                          <span>Support team responses</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Reopen Ticket Form */}
