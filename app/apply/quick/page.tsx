@@ -696,29 +696,6 @@ export default function QuickLoanApplication() {
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      // First, check if Aadhaar already exists
-      const checkResponse = await fetch(`https://api.bluechipfinmax.com/api/customer/check-aadhaar/${formData.aadhaar}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : '',
-        },
-      });
-
-      const checkResult = await checkResponse.json();
-
-      if (checkResult.exists) {
-        const errorMsg = "This Aadhaar number is already registered with another customer. Please use a different Aadhaar number.";
-        setAadhaarError(errorMsg);
-        toast({
-          variant: "error",
-          title: "Aadhaar Already Exists",
-          description: errorMsg,
-        });
-        setAadhaarVerifying(false);
-        return;
-      }
-
       // Proceed with OTP send
       const response = await fetch('https://api.bluechipfinmax.com/api/kyc/aadhaar/otp', {
         method: 'POST',
