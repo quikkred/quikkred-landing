@@ -1081,32 +1081,34 @@ export default function QuickLoanApplication() {
         }
       }
 
-      // PAN validation
-      if (!formData.pan) {
-        errors.pan = "PAN number is required";
-        hasError = true;
-      } else {
-        const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-        if (!panRegex.test(formData.pan)) {
-          errors.pan = "Enter a valid PAN (e.g., ABCDE1234F)";
-          hasError = true;
-        } else if (!panVerified) {
-          errors.pan = "Please verify your PAN";
-          hasError = true;
-        }
-      }
-
-      // Aadhaar validation
+      // Aadhaar validation - only validate if not already verified
       if (!formData.aadhaar) {
         errors.aadhaar = "Aadhaar number is required";
         hasError = true;
-      } else {
+      } else if (!aadhaarVerified) {
+        // Only check format and ask for verification if not already verified
         const aadhaarRegex = /^\d{12}$/;
         if (!aadhaarRegex.test(formData.aadhaar)) {
           errors.aadhaar = "Enter a valid 12-digit Aadhaar number";
           hasError = true;
-        } else if (!aadhaarVerified) {
+        } else {
           errors.aadhaar = "Please verify your Aadhaar";
+          hasError = true;
+        }
+      }
+
+      // PAN validation - only validate if not already verified
+      if (!formData.pan) {
+        errors.pan = "PAN number is required";
+        hasError = true;
+      } else if (!panVerified) {
+        // Only check format and ask for verification if not already verified
+        const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+        if (!panRegex.test(formData.pan)) {
+          errors.pan = "Enter a valid PAN (e.g., ABCDE1234F)";
+          hasError = true;
+        } else {
+          errors.pan = "Please verify your PAN";
           hasError = true;
         }
       }
@@ -2002,9 +2004,10 @@ export default function QuickLoanApplication() {
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
+                        disabled={formData.emailVerified || !!formData.email}
                         className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
                           fieldErrors.email ? 'border-red-500' : 'border-gray-300'
-                        }`}
+                        } ${(formData.emailVerified || !!formData.email) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                         placeholder="your@email.com"
                       />
                       {fieldErrors.email ? (
@@ -2069,9 +2072,10 @@ export default function QuickLoanApplication() {
                           name="email"
                           value={formData.email}
                           onChange={handleChange}
+                          disabled={formData.emailVerified}
                           className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
                             fieldErrors.email ? 'border-red-500' : 'border-gray-300'
-                          }`}
+                          } ${formData.emailVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           placeholder="your@email.com"
                         />
                         {fieldErrors.email ? (
