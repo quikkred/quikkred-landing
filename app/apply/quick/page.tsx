@@ -84,6 +84,16 @@ export default function QuickLoanApplication() {
   const [apiDeterminedStep, setApiDeterminedStep] = useState<number | null>(null);
   const [redirectCountdown, setRedirectCountdown] = useState<number>(5);
 
+  // Field validation errors for Step 1
+  const [fieldErrors, setFieldErrors] = useState({
+    email: "",
+    mobile: "",
+    fullName: "",
+    dob: "",
+    aadhaar: "",
+    pan: ""
+  });
+
   const [formData, setFormData] = useState({
     // Step 1: Basic Details
     mobile: "",
@@ -325,6 +335,14 @@ export default function QuickLoanApplication() {
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
     }));
+
+    // Clear field error when user starts typing
+    if (fieldErrors[name as keyof typeof fieldErrors]) {
+      setFieldErrors(prev => ({
+        ...prev,
+        [name]: ""
+      }));
+    }
   };
 
   const sendOTP = async () => {
@@ -678,6 +696,30 @@ export default function QuickLoanApplication() {
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
+      // First, check if Aadhaar already exists
+      const checkResponse = await fetch(`https://api.bluechipfinmax.com/api/customer/check-aadhaar/${formData.aadhaar}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+      });
+
+      const checkResult = await checkResponse.json();
+
+      if (checkResult.exists) {
+        const errorMsg = "This Aadhaar number is already registered with another customer. Please use a different Aadhaar number.";
+        setAadhaarError(errorMsg);
+        toast({
+          variant: "error",
+          title: "Aadhaar Already Exists",
+          description: errorMsg,
+        });
+        setAadhaarVerifying(false);
+        return;
+      }
+
+      // Proceed with OTP send
       const response = await fetch('https://api.bluechipfinmax.com/api/kyc/aadhaar/otp', {
         method: 'POST',
         headers: {
@@ -695,23 +737,23 @@ export default function QuickLoanApplication() {
         toast({
           variant: "success",
           title: "OTP Sent Successfully!",
-          description: "Please enter the OTP sent to your Aadhaar-linked mobile number.",
+          description: result.message || "OTP has been sent to your Aadhaar-linked mobile number. Please enter it below.",
         });
       } else {
-        const errorMsg = result.message || 'Unable to send OTP. Please check the Aadhaar number and try again.';
+        const errorMsg = result.message || result.error || 'Unable to send OTP. Please check the Aadhaar number and try again.';
         setAadhaarError(errorMsg);
         toast({
           variant: "error",
-          title: "Failed to Send OTP",
+          title: "OTP Send Failed",
           description: errorMsg,
         });
       }
     } catch (error: any) {
-      const errorMsg = error.message || 'Failed to send OTP. Please try again.';
+      const errorMsg = error.message || 'Network error. Please check your connection and try again.';
       setAadhaarError(errorMsg);
       toast({
         variant: "error",
-        title: "Error",
+        title: "Error Sending OTP",
         description: errorMsg,
       });
     } finally {
@@ -753,6 +795,7 @@ export default function QuickLoanApplication() {
         setAadhaarVerified(true);
         setAadhaarData(result.data);
         setAadhaarError(""); // Clear any errors
+        setAadhaarOtp(""); // Clear OTP field
 
         // Parse date format from DD-MM-YYYY to YYYY-MM-DD
         const formatDOB = (dateStr: string) => {
@@ -780,20 +823,20 @@ export default function QuickLoanApplication() {
 
         toast({
           variant: "success",
-          title: "Aadhaar Verified Successfully!",
-          description: `Aadhaar verified for ${result.data.name}. Data will be saved when you click Next.`,
+          title: "Aadhaar Verified Successfully! ✓",
+          description: `Aadhaar verified for ${result.data.name}. Your details have been auto-filled.`,
         });
       } else {
-        const errorMsg = result.message || 'Invalid OTP. Please try again.';
+        const errorMsg = result.message || result.error || 'Invalid OTP. Please check and try again.';
         setAadhaarError(errorMsg);
         toast({
           variant: "error",
-          title: "Aadhaar Verification Failed",
+          title: "Verification Failed",
           description: errorMsg,
         });
       }
     } catch (error: any) {
-      const errorMsg = error.message || 'Failed to verify Aadhaar. Please try again.';
+      const errorMsg = error.message || 'Network error. Please check your connection and try again.';
       setAadhaarError(errorMsg);
       toast({
         variant: "error",
@@ -810,6 +853,46 @@ export default function QuickLoanApplication() {
   };
 
   const handleSelfieCapture = (imageFile: File) => {
+    // Validate image file
+    if (!imageFile) {
+      toast({
+        variant: "error",
+        title: "Invalid Selfie",
+        description: "Please capture a valid selfie photo.",
+      });
+      return;
+    }
+
+    // Check file size (max 5MB)
+    if (imageFile.size > 5 * 1024 * 1024) {
+      toast({
+        variant: "error",
+        title: "File Too Large",
+        description: "Selfie photo must be less than 5MB.",
+      });
+      return;
+    }
+
+    // Check file type
+    if (!imageFile.type.startsWith('image/')) {
+      toast({
+        variant: "error",
+        title: "Invalid File Type",
+        description: "Please capture a valid image file.",
+      });
+      return;
+    }
+
+    // Validate image is not blank/empty by checking file size
+    if (imageFile.size < 1000) { // Less than 1KB is likely a blank/corrupt image
+      toast({
+        variant: "error",
+        title: "Blank Image Detected",
+        description: "The selfie appears to be blank. Please capture a clear photo of your face.",
+      });
+      return;
+    }
+
     // Store the file in form data
     setFormData(prev => ({ ...prev, selfie: imageFile }));
 
@@ -820,8 +903,8 @@ export default function QuickLoanApplication() {
 
     toast({
       variant: "success",
-      title: "Selfie Captured!",
-      description: "Your selfie has been captured successfully.",
+      title: "Selfie Captured Successfully! ✓",
+      description: "Your selfie has been captured and validated.",
     });
   };
 
@@ -949,35 +1032,117 @@ export default function QuickLoanApplication() {
   const handleNext = async () => {
     // Validate current step
     if (currentStep === 1) {
+      // Clear previous errors
+      const errors = {
+        email: "",
+        mobile: "",
+        fullName: "",
+        dob: "",
+        aadhaar: "",
+        pan: ""
+      };
+      let hasError = false;
+
       // For logged-in users, skip verification check
       const isVerified = user ? true : (verificationMethod === 'email' ? formData.emailVerified : formData.mobileVerified);
 
-      if (!isVerified || !formData.fullName || !formData.email || !formData.mobile) {
-        toast({
-          variant: "warning",
-          title: "Incomplete Information",
-          description: user
-            ? "Please complete all required fields."
-            : "Please verify your email/mobile and complete all required fields.",
-        });
-        return;
-      }
-
-      // Check if PAN and Aadhaar are provided and verified
-      if (!formData.pan || !formData.aadhaar) {
-        toast({
-          variant: "warning",
-          title: "Documents Required",
-          description: "Please provide both PAN and Aadhaar numbers.",
-        });
-        return;
-      }
-
-      if (!panVerified || !aadhaarVerified) {
+      // Verification check for non-logged in users
+      if (!user && !isVerified) {
         toast({
           variant: "warning",
           title: "Verification Required",
-          description: "Please verify both PAN and Aadhaar before proceeding.",
+          description: "Please verify your email or mobile to proceed.",
+        });
+        return;
+      }
+
+      // Full Name validation
+      if (!formData.fullName) {
+        errors.fullName = "Full name is required";
+        hasError = true;
+      } else if (formData.fullName.trim().length < 3) {
+        errors.fullName = "Full name must be at least 3 characters";
+        hasError = true;
+      }
+
+      // Email validation
+      if (!formData.email) {
+        errors.email = "Email is required";
+        hasError = true;
+      } else {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+          errors.email = "Please enter a valid email address";
+          hasError = true;
+        }
+      }
+
+      // Mobile validation
+      if (!formData.mobile) {
+        errors.mobile = "Mobile number is required";
+        hasError = true;
+      } else {
+        const mobileRegex = /^[6-9]\d{9}$/;
+        if (!mobileRegex.test(formData.mobile)) {
+          errors.mobile = "Enter a valid 10-digit mobile number";
+          hasError = true;
+        }
+      }
+
+      // DOB validation
+      if (!formData.dob) {
+        errors.dob = "Date of birth is required";
+        hasError = true;
+      } else {
+        // Age validation (must be 18+)
+        const dob = new Date(formData.dob);
+        const today = new Date();
+        const age = today.getFullYear() - dob.getFullYear();
+        if (age < 18 || (age === 18 && today < new Date(dob.setFullYear(dob.getFullYear() + 18)))) {
+          errors.dob = "You must be at least 18 years old";
+          hasError = true;
+        }
+      }
+
+      // PAN validation
+      if (!formData.pan) {
+        errors.pan = "PAN number is required";
+        hasError = true;
+      } else {
+        const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+        if (!panRegex.test(formData.pan)) {
+          errors.pan = "Enter a valid PAN (e.g., ABCDE1234F)";
+          hasError = true;
+        } else if (!panVerified) {
+          errors.pan = "Please verify your PAN";
+          hasError = true;
+        }
+      }
+
+      // Aadhaar validation
+      if (!formData.aadhaar) {
+        errors.aadhaar = "Aadhaar number is required";
+        hasError = true;
+      } else {
+        const aadhaarRegex = /^\d{12}$/;
+        if (!aadhaarRegex.test(formData.aadhaar)) {
+          errors.aadhaar = "Enter a valid 12-digit Aadhaar number";
+          hasError = true;
+        } else if (!aadhaarVerified) {
+          errors.aadhaar = "Please verify your Aadhaar";
+          hasError = true;
+        }
+      }
+
+      // Update field errors
+      setFieldErrors(errors);
+
+      // If there are errors, don't proceed
+      if (hasError) {
+        toast({
+          variant: "warning",
+          title: "Validation Errors",
+          description: "Please fix the errors in the form before proceeding.",
         });
         return;
       }
@@ -989,13 +1154,66 @@ export default function QuickLoanApplication() {
     }
 
     if (currentStep === 2) {
-      if (!formData.monthlyIncome || !formData.bankName) {
+      // Employment Type validation
+      if (!formData.employmentType) {
         toast({
           variant: "warning",
-          title: "Incomplete Information",
-          description: "Please complete all required fields.",
+          title: "Employment Type Required",
+          description: "Please select your employment type.",
         });
         return;
+      }
+
+      // Monthly Income validation
+      if (!formData.monthlyIncome || parseFloat(formData.monthlyIncome) <= 0) {
+        toast({
+          variant: "warning",
+          title: "Invalid Monthly Income",
+          description: "Please enter a valid monthly income.",
+        });
+        return;
+      }
+
+      if (parseFloat(formData.monthlyIncome) < 10000) {
+        toast({
+          variant: "warning",
+          title: "Minimum Income Required",
+          description: "Minimum monthly income should be ₹10,000.",
+        });
+        return;
+      }
+
+      // Company Name validation
+      if (!formData.companyName || formData.companyName.trim().length < 2) {
+        toast({
+          variant: "warning",
+          title: "Company Name Required",
+          description: "Please enter your company name.",
+        });
+        return;
+      }
+
+      // Bank Name validation
+      if (!formData.bankName) {
+        toast({
+          variant: "warning",
+          title: "Bank Name Required",
+          description: "Please select your bank name.",
+        });
+        return;
+      }
+
+      // IFSC Code validation (if provided)
+      if (formData.ifsc) {
+        const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+        if (!ifscRegex.test(formData.ifsc)) {
+          toast({
+            variant: "warning",
+            title: "Invalid IFSC Code",
+            description: "Please enter a valid IFSC code (e.g., SBIN0001234).",
+          });
+          return;
+        }
       }
 
       // Save Step 2 data before proceeding
@@ -1005,16 +1223,129 @@ export default function QuickLoanApplication() {
     }
 
     if (currentStep === 3) {
-      // Validate loan details, references, selfie and consents
-      if (!formData.loanAmount || !formData.purpose ||
-          !formData.reference1Name || !formData.reference1Mobile || !formData.reference1Relationship ||
-          !formData.reference2Name || !formData.reference2Mobile || !formData.reference2Relationship ||
-          !formData.selfie || !selfieCaptured ||
-          !formData.creditBureauConsent || !formData.termsConsent) {
+      // Loan Amount validation
+      if (!formData.loanAmount || parseFloat(formData.loanAmount) <= 0) {
         toast({
           variant: "warning",
-          title: "Incomplete Information",
-          description: "Please complete all loan details, capture selfie, provide references, and accept required consents.",
+          title: "Invalid Loan Amount",
+          description: "Please enter a valid loan amount.",
+        });
+        return;
+      }
+
+      const loanAmount = parseFloat(formData.loanAmount);
+      if (loanAmount < 10000) {
+        toast({
+          variant: "warning",
+          title: "Minimum Loan Amount",
+          description: "Minimum loan amount is ₹10,000.",
+        });
+        return;
+      }
+
+      if (loanAmount > 10000000) {
+        toast({
+          variant: "warning",
+          title: "Maximum Loan Amount",
+          description: "Maximum loan amount is ₹1,00,00,000.",
+        });
+        return;
+      }
+
+      // Purpose validation
+      if (!formData.purpose || formData.purpose.trim().length < 3) {
+        toast({
+          variant: "warning",
+          title: "Purpose Required",
+          description: "Please enter the purpose of loan (minimum 3 characters).",
+        });
+        return;
+      }
+
+      // Reference 1 validation
+      if (!formData.reference1Name || formData.reference1Name.trim().length < 3) {
+        toast({
+          variant: "warning",
+          title: "Reference 1 Name Required",
+          description: "Please enter reference 1 full name.",
+        });
+        return;
+      }
+
+      const ref1MobileRegex = /^[6-9]\d{9}$/;
+      if (!formData.reference1Mobile || !ref1MobileRegex.test(formData.reference1Mobile)) {
+        toast({
+          variant: "warning",
+          title: "Invalid Reference 1 Mobile",
+          description: "Please enter a valid 10-digit mobile number for reference 1.",
+        });
+        return;
+      }
+
+      if (!formData.reference1Relationship) {
+        toast({
+          variant: "warning",
+          title: "Reference 1 Relationship Required",
+          description: "Please select relationship with reference 1.",
+        });
+        return;
+      }
+
+      // Reference 2 validation
+      if (!formData.reference2Name || formData.reference2Name.trim().length < 3) {
+        toast({
+          variant: "warning",
+          title: "Reference 2 Name Required",
+          description: "Please enter reference 2 full name.",
+        });
+        return;
+      }
+
+      const ref2MobileRegex = /^[6-9]\d{9}$/;
+      if (!formData.reference2Mobile || !ref2MobileRegex.test(formData.reference2Mobile)) {
+        toast({
+          variant: "warning",
+          title: "Invalid Reference 2 Mobile",
+          description: "Please enter a valid 10-digit mobile number for reference 2.",
+        });
+        return;
+      }
+
+      if (!formData.reference2Relationship) {
+        toast({
+          variant: "warning",
+          title: "Reference 2 Relationship Required",
+          description: "Please select relationship with reference 2.",
+        });
+        return;
+      }
+
+      // Check if reference mobiles are different
+      if (formData.reference1Mobile === formData.reference2Mobile) {
+        toast({
+          variant: "warning",
+          title: "Duplicate Reference Mobile",
+          description: "Reference 1 and Reference 2 must have different mobile numbers.",
+        });
+        return;
+      }
+
+      // Selfie validation
+      if (!formData.selfie || !selfieCaptured) {
+        toast({
+          variant: "warning",
+          title: "Selfie Required",
+          description: "Please capture your selfie.",
+        });
+        return;
+      }
+
+      // Consent validation
+      if (!formData.creditBureauConsent || !formData.termsConsent) {
+        toast({
+          variant: "warning",
+          title: "Consent Required",
+          description: "Please accept all required consents to proceed.",
         });
         return;
       }
@@ -1545,7 +1876,9 @@ export default function QuickLoanApplication() {
                           value={formData.email}
                           onChange={handleChange}
                           disabled={formData.emailVerified}
-                          className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100"
+                          className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${
+                            fieldErrors.email ? 'border-red-500' : 'border-gray-300'
+                          }`}
                           placeholder="your@email.com"
                         />
                         {!formData.emailVerified && (
@@ -1561,7 +1894,11 @@ export default function QuickLoanApplication() {
                           <CheckCircle className="w-10 h-10 text-green-600" />
                         )}
                       </div>
-                      <p className="mt-1 text-xs text-gray-500">We'll use this email for all loan communication</p>
+                      {fieldErrors.email ? (
+                        <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+                      ) : (
+                        <p className="mt-1 text-xs text-gray-500">We'll use this email for all loan communication</p>
+                      )}
                     </div>
 
                     {!formData.emailVerified && formData.email && (
@@ -1606,7 +1943,9 @@ export default function QuickLoanApplication() {
                           value={formData.mobile}
                           onChange={handleChange}
                           disabled={formData.mobileVerified}
-                          className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100"
+                          className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${
+                            fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
+                          }`}
                           placeholder="+91 98765 43210"
                         />
                         {!formData.mobileVerified && (
@@ -1622,6 +1961,9 @@ export default function QuickLoanApplication() {
                           <CheckCircle className="w-10 h-10 text-green-600" />
                         )}
                       </div>
+                      {fieldErrors.mobile && (
+                        <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
+                      )}
                     </div>
 
                     {!formData.mobileVerified && formData.mobile && (
@@ -1661,9 +2003,14 @@ export default function QuickLoanApplication() {
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                      fieldErrors.fullName ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="Enter your full name"
                   />
+                  {fieldErrors.fullName && (
+                    <p className="mt-1 text-xs text-red-600">{fieldErrors.fullName}</p>
+                  )}
                 </div>
 
                 {/* Show additional fields - always show both for logged-in users */}
@@ -1678,10 +2025,16 @@ export default function QuickLoanApplication() {
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                          fieldErrors.email ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         placeholder="your@email.com"
                       />
-                      <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
+                      {fieldErrors.email ? (
+                        <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+                      ) : (
+                        <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1692,10 +2045,16 @@ export default function QuickLoanApplication() {
                         name="mobile"
                         value={formData.mobile}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                          fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         placeholder="+91 98765 43210"
                       />
-                      <p className="mt-1 text-xs text-gray-500">For SMS notifications</p>
+                      {fieldErrors.mobile ? (
+                        <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
+                      ) : (
+                        <p className="mt-1 text-xs text-gray-500">For SMS notifications</p>
+                      )}
                     </div>
                   </>
                 ) : (
@@ -1710,10 +2069,16 @@ export default function QuickLoanApplication() {
                           name="mobile"
                           value={formData.mobile}
                           onChange={handleChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                            fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
+                          }`}
                           placeholder="+91 98765 43210"
                         />
-                        <p className="mt-1 text-xs text-gray-500">For SMS notifications</p>
+                        {fieldErrors.mobile ? (
+                          <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
+                        ) : (
+                          <p className="mt-1 text-xs text-gray-500">For SMS notifications</p>
+                        )}
                       </div>
                     )}
 
@@ -1727,14 +2092,41 @@ export default function QuickLoanApplication() {
                           name="email"
                           value={formData.email}
                           onChange={handleChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                            fieldErrors.email ? 'border-red-500' : 'border-gray-300'
+                          }`}
                           placeholder="your@email.com"
                         />
-                        <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
+                        {fieldErrors.email ? (
+                          <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+                        ) : (
+                          <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
+                        )}
                       </div>
                     )}
                   </>
                 )}
+
+                {/* Date of Birth - ABOVE Aadhaar and PAN */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Date of Birth *
+                  </label>
+                  <input
+                    type="date"
+                    name="dob"
+                    value={formData.dob}
+                    onChange={handleChange}
+                    max={new Date().toISOString().split('T')[0]}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                      fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    required
+                  />
+                  {fieldErrors.dob && (
+                    <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
+                  )}
+                </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   {/* Aadhaar Verification - FIRST */}
@@ -1758,7 +2150,9 @@ export default function QuickLoanApplication() {
                         }}
                         disabled={aadhaarVerified || aadhaarOtpSent}
                         maxLength={12}
-                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100"
+                        className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${
+                          fieldErrors.aadhaar || aadhaarError ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         placeholder="1234 5678 9012"
                       />
                       {!aadhaarVerified && !aadhaarOtpSent && (
@@ -1815,11 +2209,11 @@ export default function QuickLoanApplication() {
                     )}
 
                     {/* Aadhaar Error Message */}
-                    {aadhaarError && (
+                    {(aadhaarError || fieldErrors.aadhaar) && (
                       <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
                         <p className="text-sm text-red-700 flex items-start gap-2">
                           <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                          <span>{aadhaarError}</span>
+                          <span>{aadhaarError || fieldErrors.aadhaar}</span>
                         </p>
                       </div>
                     )}
@@ -1842,7 +2236,9 @@ export default function QuickLoanApplication() {
                         }}
                         disabled={!aadhaarVerified || panVerified}
                         maxLength={10}
-                        className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 uppercase"
+                        className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 uppercase ${
+                          fieldErrors.pan || panError ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         placeholder="ABCDE1234F"
                       />
                       {!panVerified && (
@@ -1872,28 +2268,15 @@ export default function QuickLoanApplication() {
                         ✓ Verified for {panData.data?.pan || 'PAN holder'}
                       </p>
                     )}
-                    {panError && (
+                    {(panError || fieldErrors.pan) && (
                       <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
                         <p className="text-sm text-red-700 flex items-start gap-2">
                           <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                          <span>{panError}</span>
+                          <span>{panError || fieldErrors.pan}</span>
                         </p>
                       </div>
                     )}
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Date of Birth *
-                  </label>
-                  <input
-                    type="date"
-                    name="dob"
-                    value={formData.dob}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                  />
                 </div>
               </motion.div>
             )}
