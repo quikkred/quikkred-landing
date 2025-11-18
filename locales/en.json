@@ -72,6 +72,34 @@
       "disbursed": "+ Disbursed",
       "rating": " Rating",
       "branches": "+ Partner Branches"
+    },
+    "form": {
+      "heading": "Get",
+      "headingHighlight": "Instant",
+      "headingLine2": "Personal Loans",
+      "getStarted": "Get Started",
+      "getInstantLoan": "Get Instant Loan →",
+      "step1": {
+        "question": "Enter your Mobile number?",
+        "placeholder": "Enter your mobile number"
+      },
+      "step2": {
+        "question": "What's your name?",
+        "placeholder": "Enter your name"
+      },
+      "step3": {
+        "question": "How much do you need?",
+        "placeholder": "Enter Amount in ₹"
+      },
+      "step4": {
+        "question": "Enter email address?",
+        "placeholder": "Enter your email"
+      },
+      "next": "Next →",
+      "submit": "Submit",
+      "thankYou": "Thank You!",
+      "successMessage": "Your application has been submitted successfully. We'll contact you soon.",
+      "submitAnother": "Submit Another"
     }
   },
   "products": {
@@ -1115,28 +1143,62 @@
           "awardWinning": "Award Winning"
         }
       }
+    },
+    "financialCta": {
+      "heading": "Ready to Transform Your Financial Future?",
+      "description": "Get your instant, no-obligation quote in 60 seconds.",
+      "placeholder": "Enter Your email",
+      "buttonText": "Subscribe"
     }
   },
+  "error404": {
+    "title": "Page Not Found",
+    "description": "Oops! The page you're looking for doesn't exist or has been moved.",
+    "suggestion": "Don't worry, you can find your way back home or explore our services.",
+    "backHome": "Back to Home",
+    "goBack": "Go Back",
+    "quickLinks": "Quick Links",
+    "exploreProducts": "Explore Products",
+    "helpCenter": "Help Center",
+    "contactUs": "Contact Us",
+    "funFact": "Fun Fact: 404 errors got their name from room 404 at CERN where the first web server was located!"
+  },
   "calculator": {
-    "title": "EMI Calculator",
-    "subtitle": "See your monthly payment instantly",
+    "title": "Loan Calculator",
+    "subtitle": "Calculate Your Total Repayment Amount",
+    "loanPurpose": "Select Loan Purpose",
+    "purposes": {
+      "Personal": "Personal",
+      "Medical": "Medical",
+      "Education": "Education",
+      "Business": "Business",
+      "Travel": "Travel",
+      "Wedding": "Wedding"
+    },
     "loanAmount": "Loan Amount",
-    "tenure": "Tenure",
+    "tenure": "Loan Tenure",
+    "tenureDays": "days",
+    "dailyInterestRate": "Daily Interest Rate",
+    "perDay": "per day",
     "interestRate": "Interest Rate (per month)",
     "months": "months",
     "month": "month",
     "processingFee": "Processing Fee",
+    "principalAmount": "Principal Amount",
+    "interest": "Interest",
     "totalInterest": "Total Interest",
+    "totalRepayment": "Total Repayment",
     "totalPayable": "Total Payable",
     "monthlyEMI": "Your Monthly EMI",
     "for": "for",
+    "applyButton": "Apply for This Loan",
     "applyNowFor": "Apply Now for",
     "trustMessages": {
       "noHiddenCharges": "No hidden charges",
       "flexibleRepayment": "Flexible repayment options",
       "instantDisbursal": "Instant disbursal on approval"
     },
-    "footer": "Get approval in 30 seconds • Money in bank within minutes"
+    "footer": "Get Instant Approval • Money in Bank Within Minutes"
   },
   "newsletter": {
     "title": "Stay Updated with Quikkred",

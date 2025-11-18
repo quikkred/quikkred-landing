@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { usePathname } from 'next/navigation';
 import enData from '@/locales/en.json';
 
 type TranslationData = typeof enData;
@@ -75,43 +76,92 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 // Helper function to get initial language - runs during component init
 function getInitialLanguageForState() {
   // This function is called during component render, both on server and client
-  // On server: window is undefined, return 'en'
-  // On client during hydration: window.__initialLanguage is set by pre-hydration script
+  // On server: window is undefined, return null (no language)
+  // On client during hydration: prioritize localStorage over window.__initialLanguage
   if (typeof window === 'undefined') {
-    return 'en';
+    return null;
   }
   try {
-    return (window as any).__initialLanguage || localStorage.getItem('language') || 'en';
+    // First check localStorage (user's persistent preference)
+    const savedLang = localStorage.getItem('language');
+    if (savedLang) {
+      // Also update window.__initialLanguage to match
+      (window as any).__initialLanguage = savedLang;
+      return savedLang;
+    }
+    // Fall back to window.__initialLanguage if no localStorage
+    return (window as any).__initialLanguage || null;
   } catch {
-    return 'en';
+    return null;
   }
 }
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const { i18n } = useTranslation();
+  const pathname = usePathname();
 
-  // Use initializer functions to read language and translations synchronously
-  // Initializer runs once when component mounts, not during SSR
-  const [language, setLanguageState] = useState<string>(() => {
-    const lang = getInitialLanguageForState();
-    // Also update window.__initialLanguage if needed
-    if (typeof window !== 'undefined') {
-      (window as any).__initialLanguage = lang;
-    }
-    return lang;
-  });
+  // Initialize with a stable default to avoid hydration mismatch
+  const [language, setLanguageState] = useState<string>('en');
+  const [t, setT] = useState<TranslationData>(enData);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  const [t, setT] = useState<TranslationData>(() => {
-    const lang = getInitialLanguageForState();
-    return translationCache[lang] || enData;
-  });
-
-  // Sync i18n language on mount
+  // Initialize language on client side only (after hydration)
   useEffect(() => {
-    if (i18n && language) {
-      i18n.changeLanguage(language);
-    }
-  }, []);
+    const initializeLanguage = async () => {
+      try {
+        // Check if user has selected a language before
+        const hasLanguageSelected = typeof window !== 'undefined' &&
+          document.cookie.includes('languageSelected=true');
+
+        // If no language selected yet, mark as initialized immediately
+        // User will be redirected to language selector by LanguageGuard
+        if (!hasLanguageSelected) {
+          // Make sure i18next doesn't have a language set
+          if (i18n && i18n.language) {
+            // Remove any auto-detected language
+            document.cookie = 'i18nextLng=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          }
+          setIsInitialized(true);
+          return;
+        }
+
+        // Get the saved language preference
+        const savedLang = getInitialLanguageForState();
+
+        // If no saved language, something went wrong - redirect to selector
+        if (!savedLang) {
+          setIsInitialized(true);
+          return;
+        }
+
+        // Update state first
+        setLanguageState(savedLang);
+
+        // Load translation if not English - this happens in parallel with i18n
+        const translationPromise = savedLang !== 'en' ? getTranslation(savedLang) : Promise.resolve(enData);
+        const i18nPromise = i18n ? i18n.changeLanguage(savedLang) : Promise.resolve();
+
+        // Wait for both to complete in parallel
+        const [translation] = await Promise.all([translationPromise, i18nPromise]);
+
+        if (savedLang !== 'en') {
+          setT(translation);
+        }
+
+        // Small delay to ensure smooth transition
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Mark as initialized after language is loaded
+        setIsInitialized(true);
+      } catch (error) {
+        console.error('Language initialization error:', error);
+        // Don't fallback to English if no language selected
+        setIsInitialized(true);
+      }
+    };
+
+    initializeLanguage();
+  }, [i18n]);
 
   // Synchronize document attributes when language changes
   useEffect(() => {
@@ -148,6 +198,53 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Show loader only if not initialized AND not on language selector page AND has language cookie
+  if (!isInitialized && pathname !== '/select-language') {
+    const hasLanguageSelected = typeof window !== 'undefined' &&
+      document.cookie.includes('languageSelected=true');
+
+    // Only show loader if user has previously selected a language
+    if (hasLanguageSelected) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-white via-[#F0FDF4] to-white flex items-center justify-center">
+          <div className="text-center">
+            {/* Animated Logo with rotating ring */}
+            <div className="relative mb-8">
+              {/* Rotating outer ring */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-32 h-32 border-4 border-[#25B181]/20 border-t-[#25B181] rounded-full animate-spin"></div>
+              </div>
+
+              {/* Logo icon with pulse animation */}
+              <div className="relative z-10 animate-pulse">
+                <img
+                  src="/i.svg"
+                  alt="Quikkred Logo"
+                  className="w-24 h-24 mx-auto"
+                  style={{
+                    filter: 'drop-shadow(0 4px 6px rgba(37, 177, 129, 0.2))',
+                    animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Loading dots and text */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-2.5 h-2.5 bg-[#25B181] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="w-2.5 h-2.5 bg-[#25B181] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="w-2.5 h-2.5 bg-[#25B181] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+              </div>
+              <p className="text-gray-700 font-semibold text-lg">Quikkred</p>
+              <p className="text-gray-500 text-sm">Loading your experience...</p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  }
+
   return (
     <LanguageContext.Provider
       value={{
@@ -157,7 +254,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         availableLanguages,
       }}
     >
-      {children}
+      <div className="animate-fadeIn">
+        {children}
+      </div>
     </LanguageContext.Provider>
   );
 }
