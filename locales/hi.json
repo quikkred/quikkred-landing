@@ -72,6 +72,34 @@
       "disbursed": "+ वितरित",
       "rating": " रेटिंग",
       "branches": "+ पार्टनर शाखाएं"
+    },
+    "form": {
+      "heading": "पाएं",
+      "headingHighlight": "तुरंत",
+      "headingLine2": "पर्सनल लोन",
+      "getStarted": "शुरू करें",
+      "getInstantLoan": "तुरंत लोन पाएं →",
+      "step1": {
+        "question": "अपना मोबाइल नंबर दर्ज करें?",
+        "placeholder": "अपना मोबाइल नंबर दर्ज करें"
+      },
+      "step2": {
+        "question": "आपका नाम क्या है?",
+        "placeholder": "अपना नाम दर्ज करें"
+      },
+      "step3": {
+        "question": "आपको कितनी राशि चाहिए?",
+        "placeholder": "₹ में राशि दर्ज करें"
+      },
+      "step4": {
+        "question": "ईमेल पता दर्ज करें?",
+        "placeholder": "अपना ईमेल दर्ज करें"
+      },
+      "next": "आगे →",
+      "submit": "जमा करें",
+      "thankYou": "धन्यवाद!",
+      "successMessage": "आपका आवेदन सफलतापूर्वक जमा हो गया है। हम जल्द ही आपसे संपर्क करेंगे।",
+      "submitAnother": "एक और जमा करें"
     }
   },
   "products": {
@@ -1115,28 +1143,62 @@
           "awardWinning": "पुरस्कार विजेता"
         }
       }
+    },
+    "financialCta": {
+      "heading": "अपने वित्तीय भविष्य को बदलने के लिए तैयार हैं?",
+      "description": "60 सेकंड में अपना तत्काल, बिना किसी बाध्यता के उद्धरण प्राप्त करें।",
+      "placeholder": "अपना ईमेल दर्ज करें",
+      "buttonText": "सदस्यता लें"
     }
   },
+  "error404": {
+    "title": "पेज नहीं मिला",
+    "description": "क्षमा करें! आप जिस पेज को खोज रहे हैं वह मौजूद नहीं है या स्थानांतरित कर दिया गया है।",
+    "suggestion": "चिंता न करें, आप होम पेज पर वापस जा सकते हैं या हमारी सेवाओं का अन्वेषण कर सकते हैं।",
+    "backHome": "होम पर वापस जाएं",
+    "goBack": "वापस जाएं",
+    "quickLinks": "त्वरित लिंक",
+    "exploreProducts": "उत्पाद देखें",
+    "helpCenter": "सहायता केंद्र",
+    "contactUs": "संपर्क करें",
+    "funFact": "रोचक तथ्य: 404 त्रुटि का नाम CERN के कमरा 404 से मिला जहां पहला वेब सर्वर स्थित था!"
+  },
   "calculator": {
-    "title": "ईएमआई कैलकुलेटर",
-    "subtitle": "अपनी मासिक किस्त तुरंत देखें",
+    "title": "ऋण कैलकुलेटर",
+    "subtitle": "अपनी कुल चुकौती राशि की गणना करें",
+    "loanPurpose": "ऋण उद्देश्य चुनें",
+    "purposes": {
+      "Personal": "व्यक्तिगत",
+      "Medical": "चिकित्सा",
+      "Education": "शिक्षा",
+      "Business": "व्यवसाय",
+      "Travel": "यात्रा",
+      "Wedding": "विवाह"
+    },
     "loanAmount": "ऋण राशि",
-    "tenure": "अवधि",
+    "tenure": "ऋण अवधि",
+    "tenureDays": "दिन",
+    "dailyInterestRate": "दैनिक ब्याज दर",
+    "perDay": "प्रति दिन",
     "interestRate": "ब्याज दर (प्रति माह)",
     "months": "महीने",
     "month": "महीना",
     "processingFee": "प्रोसेसिंग शुल्क",
+    "principalAmount": "मूल राशि",
+    "interest": "ब्याज",
     "totalInterest": "कुल ब्याज",
+    "totalRepayment": "कुल चुकौती",
     "totalPayable": "कुल देय राशि",
     "monthlyEMI": "आपकी मासिक ईएमआई",
     "for": "के लिए",
+    "applyButton": "इस ऋण के लिए आवेदन करें",
     "applyNowFor": "के लिए अभी आवेदन करें",
     "trustMessages": {
       "noHiddenCharges": "कोई छिपे हुए शुल्क नहीं",
       "flexibleRepayment": "लचीले पुनर्भुगतान विकल्प",
       "instantDisbursal": "मंजूरी पर तुरंत वितरण"
     },
-    "footer": "30 सेकंड में मंजूरी पाएं • मिनटों में बैंक में पैसा"
+    "footer": "तुरंत मंजूरी प्राप्त करें • मिनटों में बैंक में पैसा"
   },
   "newsletter": {
     "title": "लक्ष्मी के साथ अपडेट रहें",
