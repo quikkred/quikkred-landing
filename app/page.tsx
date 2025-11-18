@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   ArrowRight, Zap, Shield, Clock, Smartphone, Brain, Award, TrendingUp,
   Star, Users, CheckCircle, Play, ChevronDown, Globe, Briefcase, Heart,
@@ -27,14 +27,7 @@ export default function Home() {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const containerRef = useRef(null);
 
-  // Simplify scroll animations to reduce initial load
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"]
-  });
-
-  // Reduce complexity of transforms
-  const opacity = useTransform(scrollYProgress, [0, 0.3], [1, 0.8]);
+  // Removed scroll animations for better initial load performance
 
   // Data arrays using translations
   const trustBadges = [
@@ -152,40 +145,40 @@ export default function Home() {
         <FeaturesSection/>
 
         {/* Interactive Loan Calculator Section - Full Screen */}
-        <section className="min-h-[calc(100vh-80px)] flex items-center py-12 sm:py-16 lg:py-20 bg-[#F6F6F6]">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+        <section className="h-screen max-h-screen flex items-center py-8 sm:py-10 lg:py-12 bg-[#F6F6F6] overflow-hidden">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
+            <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 items-center w-full">
               <motion.div
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 className="order-2 lg:order-1"
               >
-                <span className="inline-block px-4 py-2 glass rounded-full text-xs sm:text-sm font-semibold mb-4">
-                  <Sparkles className="inline w-4 h-4 mr-1 text-yellow-500" />
+                <span className="inline-block px-3 py-1.5 glass rounded-full text-xs font-semibold mb-3">
+                  <Sparkles className="inline w-3.5 h-3.5 mr-1 text-yellow-500" />
                   {t.homepage.sections.calculator.badge}
                 </span>
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold font-sora mb-4 sm:mb-6">
+                <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold font-sora mb-3 sm:mb-4">
                   {t.homepage.sections.calculator.title}
                   <span className="block text-[#25B181]">
                     {t.homepage.sections.calculator.titleHighlight}
                   </span>
                 </h2>
-                <p className="text-base sm:text-lg lg:text-xl text-gray-600 mb-6 sm:mb-8">
+                <p className="text-sm sm:text-base lg:text-lg text-gray-600 mb-4 sm:mb-6">
                   {t.homepage.sections.calculator.subtitle}
                 </p>
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-[#25B181] flex-shrink-0" />
-                    <span className="text-sm sm:text-base text-gray-600">{t.homepage.sections.calculator.features.noHiddenCharges}</span>
+                <div className="space-y-2 sm:space-y-3">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-[#25B181] flex-shrink-0" />
+                    <span className="text-xs sm:text-sm text-gray-600">{t.homepage.sections.calculator.features.noHiddenCharges}</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-[#25B181] flex-shrink-0" />
-                    <span className="text-sm sm:text-base text-gray-600">{t.homepage.sections.calculator.features.flexibleTenure}</span>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-[#25B181] flex-shrink-0" />
+                    <span className="text-xs sm:text-sm text-gray-600">{t.homepage.sections.calculator.features.flexibleTenure}</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <CheckCircle className="w-5 h-5 text-[#25B181] flex-shrink-0" />
-                    <span className="text-sm sm:text-base text-gray-600">{t.homepage.sections.calculator.features.lowestRates}</span>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-[#25B181] flex-shrink-0" />
+                    <span className="text-xs sm:text-sm text-gray-600">{t.homepage.sections.calculator.features.lowestRates}</span>
                   </div>
                 </div>
               </motion.div>

@@ -6,6 +6,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { SecurityBanner } from "@/components/security-banner";
 import ConditionalLayout from "@/components/layouts/ConditionalLayout";
+import LanguageGuard from "@/components/LanguageGuard";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -80,21 +81,30 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
+                  // Hide body initially to prevent language flash
+                  document.documentElement.style.visibility = 'hidden';
+
                   const hasCookie = document.cookie.includes('languageSelected=true');
                   if (hasCookie) {
-                    const saved = localStorage.getItem('language') || 'en';
-                    window.__initialLanguage = saved;
-                    document.documentElement.lang = saved;
-                    if (saved === 'ur') {
-                      document.documentElement.dir = 'rtl';
-                    } else {
-                      document.documentElement.dir = 'ltr';
+                    const saved = localStorage.getItem('language');
+                    if (saved) {
+                      window.__initialLanguage = saved;
+                      document.documentElement.lang = saved;
+                      if (saved === 'ur') {
+                        document.documentElement.dir = 'rtl';
+                      } else {
+                        document.documentElement.dir = 'ltr';
+                      }
                     }
-                  } else {
-                    window.__initialLanguage = 'en';
                   }
+                  // Don't set any default language if user hasn't selected one
+
+                  // Show body after script runs
+                  requestAnimationFrame(() => {
+                    document.documentElement.style.visibility = 'visible';
+                  });
                 } catch (e) {
-                  window.__initialLanguage = 'en';
+                  document.documentElement.style.visibility = 'visible';
                 }
               })();
             `,
@@ -137,9 +147,11 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased">
         <Providers>
-          <ConditionalLayout>
-            {children}
-          </ConditionalLayout>
+          <LanguageGuard>
+            <ConditionalLayout>
+              {children}
+            </ConditionalLayout>
+          </LanguageGuard>
         </Providers>
       </body>
     </html>

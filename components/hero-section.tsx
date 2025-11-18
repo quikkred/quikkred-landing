@@ -121,73 +121,130 @@ export function HeroSection() {
           <motion.div
             initial={{ x: 50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            className="bg-white/95 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl relative border border-white/50 order-1 lg:order-2"
+            className="bg-white/95 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-8 sm:p-10 lg:p-12 shadow-2xl relative border border-white/50 order-1 lg:order-2 max-w-2xl mx-auto lg:mx-0"
           >
-            {/* Language Selector Link - Only show on non-language-selection pages */}
-            {!isLanguageSelectionPage && (
-              <Link
-                href="/select-language"
-                className="absolute top-4 right-4 sm:top-8 sm:right-8 flex items-center gap-2 px-3 sm:px-4 py-2 bg-white/80 backdrop-blur-sm text-gray-700 border border-gray-200 rounded-full hover:bg-white hover:shadow-soft transition-all duration-200"
-              >
-                <Globe className="w-4 h-4" />
-                <span className="text-xs sm:text-sm font-medium hidden sm:inline">{t.common.language}</span>
-              </Link>
-            )}
+            {/* Decorative Circles around the form - Well spread out */}
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="hidden lg:flex absolute -top-10 -right-12 w-16 h-16 bg-gradient-to-br from-[#38bdf8] to-[#0ea5e9] rounded-full items-center justify-center text-white text-2xl font-bold shadow-lg"
+            >
+              💰
+            </motion.div>
 
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 pr-20 sm:pr-32">
-              {t.hero.cta.primary}
-            </h3>
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+              className="hidden lg:flex absolute -bottom-8 -left-10 w-12 h-12 bg-gradient-to-br from-[#34d399] to-[#10b981] rounded-full items-center justify-center text-white text-xl shadow-lg"
+            >
+              ⚡
+            </motion.div>
 
-            <form className="space-y-3 sm:space-y-4">
+            <motion.div
+              initial={{ scale: 0, rotate: 90 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ duration: 0.6, delay: 0.7 }}
+              className="hidden lg:flex absolute top-20 -left-16 w-14 h-14 bg-gradient-to-br from-[#38bdf8] to-[#34d399] rounded-full items-center justify-center text-white text-2xl shadow-lg"
+            >
+              ✓
+            </motion.div>
+
+            <motion.div
+              initial={{ scale: 0, rotate: -90 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ duration: 0.6, delay: 0.9 }}
+              className="hidden lg:flex absolute top-1/2 -right-14 w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full items-center justify-center text-white text-lg shadow-lg"
+            >
+              🎯
+            </motion.div>
+
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.6, delay: 1.1 }}
+              className="hidden lg:flex absolute -top-8 left-16 w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full items-center justify-center text-white text-lg shadow-lg"
+            >
+              ⏱
+            </motion.div>
+
+            <motion.div
+              initial={{ scale: 0, rotate: 180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ duration: 0.6, delay: 1.3 }}
+              className="hidden lg:flex absolute bottom-16 -right-12 w-12 h-12 bg-gradient-to-br from-pink-500 to-pink-600 rounded-full items-center justify-center text-white text-xl shadow-lg"
+            >
+              $
+            </motion.div>
+            {/* Header with Language Selector */}
+            <div className="flex items-start justify-between mb-6 sm:mb-8">
+              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 flex-1">
+                {t.hero.cta.primary}
+              </h3>
+
+              {/* Language Selector Link - Only show on non-language-selection pages */}
+              {!isLanguageSelectionPage && (
+                <Link
+                  href="/select-language"
+                  className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#38bdf8]/10 to-[#34d399]/10 text-gray-700 border border-[#38bdf8]/30 rounded-full hover:bg-gradient-to-r hover:from-[#38bdf8]/20 hover:to-[#34d399]/20 hover:shadow-md transition-all duration-200 ml-3"
+                >
+                  <Globe className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="text-xs sm:text-sm font-medium">{t.common.language}</span>
+                </Link>
+              )}
+            </div>
+
+            <form className="space-y-5 sm:space-y-6">
               <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm sm:text-base font-semibold text-gray-700 mb-2">
                   {t.application.fields.fullName}
                 </label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all duration-200 text-sm sm:text-base"
+                  className="w-full px-4 sm:px-5 py-3.5 sm:py-4 rounded-xl border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#38bdf8] focus:border-[#38bdf8] transition-all duration-200 text-base sm:text-lg"
                   placeholder={t.application.placeholders.fullName}
                 />
               </div>
 
               <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm sm:text-base font-semibold text-gray-700 mb-2">
                   {t.application.fields.mobile}
                 </label>
                 <input
                   type="tel"
                   value={formData.mobile}
                   onChange={(e) => setFormData({...formData, mobile: e.target.value})}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all duration-200 text-sm sm:text-base"
+                  className="w-full px-4 sm:px-5 py-3.5 sm:py-4 rounded-xl border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#38bdf8] focus:border-[#38bdf8] transition-all duration-200 text-base sm:text-lg"
                   placeholder={t.application.placeholders.mobile}
                   maxLength={10}
                 />
               </div>
 
               <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm sm:text-base font-semibold text-gray-700 mb-2">
                   {t.application.fields.loanAmount}
                 </label>
                 <input
                   type="number"
                   value={formData.amount}
                   onChange={(e) => setFormData({...formData, amount: e.target.value})}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all duration-200 text-sm sm:text-base"
+                  className="w-full px-4 sm:px-5 py-3.5 sm:py-4 rounded-xl border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#38bdf8] focus:border-[#38bdf8] transition-all duration-200 text-base sm:text-lg"
                   placeholder={t.application.placeholders.amount}
                 />
               </div>
 
               <div>
-                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm sm:text-base font-semibold text-gray-700 mb-2">
                   {t.application.fields.email}
                 </label>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all duration-200 text-sm sm:text-base"
+                  className="w-full px-4 sm:px-5 py-3.5 sm:py-4 rounded-xl border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#38bdf8] focus:border-[#38bdf8] transition-all duration-200 text-base sm:text-lg"
                   placeholder={t.application.placeholders.email}
                 />
               </div>
@@ -196,13 +253,13 @@ export function HeroSection() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
-                className="w-full py-3 sm:py-4 bg-gradient-to-r from-[#38bdf8] to-[#34d399] text-white rounded-full font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
+                className="w-full py-4 sm:py-5 bg-gradient-to-r from-[#38bdf8] to-[#34d399] text-white rounded-full font-bold text-lg sm:text-xl shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2 mt-8"
               >
                 {t.hero.cta.primary}
-                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
               </motion.button>
 
-              <p className="text-xs text-gray-600 text-center leading-relaxed">
+              <p className="text-xs sm:text-sm text-gray-600 text-center leading-relaxed pt-2">
                 By clicking submit, you agree to our {t.navigation.terms} and {t.navigation.privacy}
               </p>
             </form>

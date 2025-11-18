@@ -13,9 +13,12 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 
 interface Address {
-  city: string;
-  state: string;
-  pincode: string;
+  street?: string;
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
   coordinates?: {
     coordinates: number[];
     type: string;
@@ -42,14 +45,16 @@ interface ProfileData {
   _id: string;
   customerUniqueId: string;
   role: string;
-  isMobileVerified: boolean;
+  points: number;
   email: string;
   isEmailVerified: boolean;
+  isMobileVerified: boolean;
   isPanVerify: boolean;
   isAadhaarVerify: boolean;
-  currentAddress: Address;
-  permanentAddress: Address;
-  officeAddress: Address;
+  currentAddress?: Address;
+  permanentAddress?: Address;
+  permanentAddressSame?: boolean;
+  officeAddress?: Address;
   riskCategory: string;
   fraudFlags: any[];
   kycStatus: string;
@@ -60,28 +65,40 @@ interface ProfileData {
   isVerificationDetailsFilled: boolean;
   previousEmployers: any[];
   banks: Bank[];
-  cibilHistory: any[];
   references: Reference[];
   riskFactors: any[];
   createdAt: string;
   updatedAt: string;
   emailVerifiedAt?: string;
-  companyName?: string;
-  designation?: string;
-  employmentType?: string;
-  monthlyIncome?: number;
-  workExperienceMonths?: number;
+  aadhaarNumber?: string;
+  aadhaarReferenceId?: string;
+  panCard?: string;
   dateOfBirth?: string;
   firstName?: string;
   fullName?: string;
-  gender?: string;
   lastName?: string;
-  maritalStatus?: string;
-  panCard?: string;
-  aadhaarNumber?: string;
-  aadhaarReferenceId?: string;
   mobile?: string;
+  companyName?: string;
+  employmentType?: string;
+  monthlyIncome?: number;
+  cibilScore?: number;
   profileImage?: string | { url: string; key: string };
+  gender?: string;
+  maritalStatus?: string;
+  dependents?: number;
+  education?: string;
+  profession?: string;
+  employerName?: string;
+  designation?: string;
+  officeEmail?: string;
+  officePhone?: string;
+  annualIncome?: number;
+  workExperience?: number;
+  residenceType?: string;
+  yearsAtCurrentAddress?: number;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  emergencyContactRelation?: string;
 }
 
 export default function ProfilePage() {
@@ -101,6 +118,137 @@ export default function ProfilePage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+      if (!token) {
+        setError("No authentication token found");
+        return;
+      }
+
+      console.log('🔵 Fetching profile from API...');
+      const response = await fetch('https://api.bluechipfinmax.com/api/customer/get', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const result = await response.json();
+      console.log('🟢 Profile API Response:', result);
+
+      if (response.ok && result.success && result.data) {
+        setProfileData(result.data);
+        setEditedData(result.data);
+        setImageLoadError(false); // Reset image error state on new profile load
+      } else {
+        setError(result.message || 'Failed to load profile data');
+      }
+    } catch (err: any) {
+      console.error("❌ Failed to fetch profile:", err);
+      setError(err.message || "Failed to load profile data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateProfile = async () => {
+    if (!editedData) return;
+
+    try {
+      setIsSaving(true);
+      setError(null);
+      setSuccessMessage(null);
+
+      const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+      if (!token) {
+        setError("No authentication token found");
+        return;
+      }
+
+      // Prepare payload according to API format with null checks
+      const currentAddress = editedData.currentAddress || {
+        line1: '',
+        line2: '',
+        city: '',
+        state: '',
+        pincode: ''
+      };
+
+      const permanentAddress = editedData.permanentAddressSame
+        ? currentAddress
+        : (editedData.permanentAddress || currentAddress);
+
+      const payload = {
+        fullName: editedData.fullName,
+        dateOfBirth: editedData.dateOfBirth,
+        gender: editedData.gender,
+        maritalStatus: editedData.maritalStatus,
+        dependents: editedData.dependents,
+        education: editedData.education,
+        profession: editedData.profession,
+        monthlyIncome: editedData.monthlyIncome,
+        currentAddress: {
+          line1: currentAddress.line1 || '',
+          line2: currentAddress.line2 || '',
+          city: currentAddress.city || '',
+          state: currentAddress.state || '',
+          pincode: currentAddress.pincode || ''
+        },
+        permanentAddressSame: editedData.permanentAddressSame,
+        permanentAddress: {
+          line1: permanentAddress.line1 || '',
+          line2: permanentAddress.line2 || '',
+          city: permanentAddress.city || '',
+          state: permanentAddress.state || '',
+          pincode: permanentAddress.pincode || ''
+        },
+        emergencyContactName: editedData.emergencyContactName,
+        emergencyContactPhone: editedData.emergencyContactPhone,
+        emergencyContactRelation: editedData.emergencyContactRelation,
+        profileImage: editedData.profileImage || ""
+      };
+
+      console.log('🔵 Updating profile...', payload);
+      const response = await fetch('https://api.bluechipfinmax.com/api/customer/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+      console.log('🟢 Update Profile Response:', result);
+
+      if (response.ok && result.success) {
+        // Re-fetch profile data from API instead of using editedData
+        await fetchProfile();
+        setIsEditing(false);
+        setSuccessMessage(result.message || 'Profile updated successfully');
+
+        // Clear success message after 3 seconds
+        setTimeout(() => setSuccessMessage(null), 3000);
+      } else {
+        setError(result.message || 'Failed to update profile');
+      }
+    } catch (err: any) {
+      console.error("❌ Failed to update profile:", err);
+      setError(err.message || "Failed to update profile");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -267,7 +415,7 @@ export default function ProfilePage() {
         setSuccessMessage('Profile image updated successfully!');
 
         // Refresh profile data to get the new image URL
-        // await fetchProfile(); // TODO: Implement fetchProfile function
+        await fetchProfile();
 
         // Clear preview and selected image
         setSelectedImage(null);
@@ -327,7 +475,7 @@ export default function ProfilePage() {
           </h2>
           <p className="text-gray-600 text-center mb-6">{error}</p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={fetchProfile}
             className="w-full py-3 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg font-semibold hover:shadow-lg transition-all"
           >
             Retry
@@ -361,7 +509,7 @@ export default function ProfilePage() {
 
               {/* Refresh Button (Edit disabled for read-only API) */}
               <button
-                onClick={() => window.location.reload()}
+                onClick={fetchProfile}
                 disabled={isLoading}
                 className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white border border-[#E0E0E0] text-gray-700 rounded-lg hover:bg-[#FAFAFA] transition-colors shadow-sm disabled:opacity-50"
               >
@@ -507,6 +655,66 @@ export default function ProfilePage() {
                   <p className="text-xs text-gray-500 mt-1">ID: {profileData.customerUniqueId}</p>
                 </div>
 
+                {/* CIBIL Score Section */}
+                {profileData.cibilScore && (
+                  <div className="mb-6 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200">
+                    <div className="text-center">
+                      <p className="text-xs font-medium text-gray-600 mb-2">CIBIL Score</p>
+                      <div className="relative inline-block">
+                        <svg className="w-24 h-24" viewBox="0 0 100 100">
+                          {/* Background Circle */}
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="40"
+                            fill="none"
+                            stroke="#E5E7EB"
+                            strokeWidth="8"
+                          />
+                          {/* Progress Circle */}
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="40"
+                            fill="none"
+                            stroke={
+                              profileData.cibilScore >= 750 ? '#10B981' :
+                              profileData.cibilScore >= 650 ? '#F59E0B' :
+                              '#EF4444'
+                            }
+                            strokeWidth="8"
+                            strokeDasharray={`${(profileData.cibilScore / 900) * 251.2} 251.2`}
+                            strokeLinecap="round"
+                            transform="rotate(-90 50 50)"
+                            className="transition-all duration-1000"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className={`text-2xl font-bold ${
+                            profileData.cibilScore >= 750 ? 'text-green-600' :
+                            profileData.cibilScore >= 650 ? 'text-yellow-600' :
+                            'text-red-600'
+                          }`}>
+                            {profileData.cibilScore}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="mt-2">
+                        <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                          profileData.cibilScore >= 750 ? 'bg-green-100 text-green-700' :
+                          profileData.cibilScore >= 650 ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {profileData.cibilScore >= 750 ? 'Excellent' :
+                           profileData.cibilScore >= 650 ? 'Good' :
+                           'Fair'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2">Out of 900</p>
+                    </div>
+                  </div>
+                )}
+
                 {/* Account Status */}
                 <div className="space-y-3 mb-6">
                   <div className="p-3 bg-[#FAFAFA] rounded-lg">
@@ -631,16 +839,6 @@ export default function ProfilePage() {
                           value={profileData.fullName || `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim() || 'N/A'}
                         />
                         <InfoField
-                          icon={<User className="w-5 h-5 text-[#4A66FF]" />}
-                          label="First Name"
-                          value={profileData.firstName || 'N/A'}
-                        />
-                        <InfoField
-                          icon={<User className="w-5 h-5 text-[#4A66FF]" />}
-                          label="Last Name"
-                          value={profileData.lastName || 'N/A'}
-                        />
-                        <InfoField
                           icon={<Mail className="w-5 h-5 text-[#4A66FF]" />}
                           label="Email"
                           value={profileData.email || 'N/A'}
@@ -657,13 +855,13 @@ export default function ProfilePage() {
                         />
                         <InfoField
                           icon={<User className="w-5 h-5 text-[#4A66FF]" />}
-                          label="Gender"
-                          value={profileData.gender || 'N/A'}
+                          label="Customer ID"
+                          value={profileData.customerUniqueId || 'N/A'}
                         />
                         <InfoField
-                          icon={<Users className="w-5 h-5 text-[#4A66FF]" />}
-                          label="Marital Status"
-                          value={profileData.maritalStatus || 'N/A'}
+                          icon={<CheckCircle className="w-5 h-5 text-[#4A66FF]" />}
+                          label="Reward Points"
+                          value={profileData.points ? profileData.points.toLocaleString('en-IN') : '0'}
                         />
                       </div>
                     </div>
@@ -674,80 +872,114 @@ export default function ProfilePage() {
                     <div>
                       <h3 className="text-lg font-semibold text-[#1F8F68] mb-6">Address Information</h3>
 
-                      {/* Current Address */}
-                      <div className="mb-8">
-                        <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                          <Home className="w-5 h-5 text-[#4A66FF]" />
-                          Current Address
-                        </h4>
-                        <div className="grid md:grid-cols-3 gap-6">
-                          <InfoField
-                            icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
-                            label="City"
-                            value={profileData.currentAddress?.city || 'N/A'}
-                          />
-                          <InfoField
-                            icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
-                            label="State"
-                            value={profileData.currentAddress?.state || 'N/A'}
-                          />
-                          <InfoField
-                            icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
-                            label="Pincode"
-                            value={profileData.currentAddress?.pincode || 'N/A'}
-                          />
-                        </div>
-                      </div>
+                      {(profileData.currentAddress?.city || profileData.currentAddress?.state || profileData.currentAddress?.pincode) ? (
+                        <>
+                          {/* Current Address */}
+                          <div className="mb-8">
+                            <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                              <Home className="w-5 h-5 text-[#4A66FF]" />
+                              Current Address
+                            </h4>
+                            <div className="grid md:grid-cols-3 gap-6">
+                              {profileData.currentAddress?.street && (
+                                <InfoField
+                                  icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                                  label="Street"
+                                  value={profileData.currentAddress.street}
+                                />
+                              )}
+                              <InfoField
+                                icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
+                                label="City"
+                                value={profileData.currentAddress?.city || 'N/A'}
+                              />
+                              <InfoField
+                                icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                                label="State"
+                                value={profileData.currentAddress?.state || 'N/A'}
+                              />
+                              <InfoField
+                                icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                                label="Pincode"
+                                value={profileData.currentAddress?.pincode || 'N/A'}
+                              />
+                            </div>
+                          </div>
 
-                      {/* Permanent Address */}
-                      <div className="mb-8">
-                        <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                          <Home className="w-5 h-5 text-[#4A66FF]" />
-                          Permanent Address
-                        </h4>
-                        <div className="grid md:grid-cols-3 gap-6">
-                          <InfoField
-                            icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
-                            label="City"
-                            value={profileData.permanentAddress?.city || 'N/A'}
-                          />
-                          <InfoField
-                            icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
-                            label="State"
-                            value={profileData.permanentAddress?.state || 'N/A'}
-                          />
-                          <InfoField
-                            icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
-                            label="Pincode"
-                            value={profileData.permanentAddress?.pincode || 'N/A'}
-                          />
-                        </div>
-                      </div>
+                          {/* Permanent Address */}
+                          {(profileData.permanentAddress?.city || profileData.permanentAddress?.state || profileData.permanentAddress?.pincode) && (
+                            <div className="mb-8">
+                              <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <Home className="w-5 h-5 text-[#4A66FF]" />
+                                Permanent Address
+                              </h4>
+                              <div className="grid md:grid-cols-3 gap-6">
+                                {profileData.permanentAddress?.street && (
+                                  <InfoField
+                                    icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                                    label="Street"
+                                    value={profileData.permanentAddress.street}
+                                  />
+                                )}
+                                <InfoField
+                                  icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
+                                  label="City"
+                                  value={profileData.permanentAddress?.city || 'N/A'}
+                                />
+                                <InfoField
+                                  icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                                  label="State"
+                                  value={profileData.permanentAddress?.state || 'N/A'}
+                                />
+                                <InfoField
+                                  icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                                  label="Pincode"
+                                  value={profileData.permanentAddress?.pincode || 'N/A'}
+                                />
+                              </div>
+                            </div>
+                          )}
 
-                      {/* Office Address */}
-                      <div>
-                        <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                          <Building className="w-5 h-5 text-[#4A66FF]" />
-                          Office Address
-                        </h4>
-                        <div className="grid md:grid-cols-3 gap-6">
-                          <InfoField
-                            icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
-                            label="City"
-                            value={profileData.officeAddress?.city || 'N/A'}
-                          />
-                          <InfoField
-                            icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
-                            label="State"
-                            value={profileData.officeAddress?.state || 'N/A'}
-                          />
-                          <InfoField
-                            icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
-                            label="Pincode"
-                            value={profileData.officeAddress?.pincode || 'N/A'}
-                          />
+                          {/* Office Address */}
+                          {(profileData.officeAddress?.city || profileData.officeAddress?.state || profileData.officeAddress?.pincode) && (
+                            <div>
+                              <h4 className="text-md font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                <Building className="w-5 h-5 text-[#4A66FF]" />
+                                Office Address
+                              </h4>
+                              <div className="grid md:grid-cols-3 gap-6">
+                                {profileData.officeAddress?.street && (
+                                  <InfoField
+                                    icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                                    label="Street"
+                                    value={profileData.officeAddress.street}
+                                  />
+                                )}
+                                <InfoField
+                                  icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
+                                  label="City"
+                                  value={profileData.officeAddress?.city || 'N/A'}
+                                />
+                                <InfoField
+                                  icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                                  label="State"
+                                  value={profileData.officeAddress?.state || 'N/A'}
+                                />
+                                <InfoField
+                                  icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                                  label="Pincode"
+                                  value={profileData.officeAddress?.pincode || 'N/A'}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="text-center py-12">
+                          <Home className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                          <p className="text-gray-500">No address information added yet</p>
                         </div>
-                      </div>
+                      )}
                     </div>
                   )}
 
@@ -756,33 +988,30 @@ export default function ProfilePage() {
                     <div>
                       <h3 className="text-lg font-semibold text-[#1F8F68] mb-6">Employment Information</h3>
 
-                      <div className="grid md:grid-cols-2 gap-6">
-                        <InfoField
-                          icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
-                          label="Company Name"
-                          value={profileData.companyName || 'N/A'}
-                        />
-                        <InfoField
-                          icon={<Briefcase className="w-5 h-5 text-[#4A66FF]" />}
-                          label="Designation"
-                          value={profileData.designation || 'N/A'}
-                        />
-                        <InfoField
-                          icon={<FileText className="w-5 h-5 text-[#4A66FF]" />}
-                          label="Employment Type"
-                          value={profileData.employmentType || 'N/A'}
-                        />
-                        <InfoField
-                          icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
-                          label="Monthly Income"
-                          value={profileData.monthlyIncome ? `₹${profileData.monthlyIncome.toLocaleString('en-IN')}` : 'N/A'}
-                        />
-                        <InfoField
-                          icon={<Clock className="w-5 h-5 text-[#4A66FF]" />}
-                          label="Work Experience"
-                          value={profileData.workExperienceMonths ? `${profileData.workExperienceMonths} months` : 'N/A'}
-                        />
-                      </div>
+                      {profileData.isEmploymentDetailsFilled ? (
+                        <div className="grid md:grid-cols-2 gap-6">
+                          <InfoField
+                            icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
+                            label="Company Name"
+                            value={profileData.companyName || 'N/A'}
+                          />
+                          <InfoField
+                            icon={<FileText className="w-5 h-5 text-[#4A66FF]" />}
+                            label="Employment Type"
+                            value={profileData.employmentType || 'N/A'}
+                          />
+                          <InfoField
+                            icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
+                            label="Monthly Income"
+                            value={profileData.monthlyIncome ? `₹${profileData.monthlyIncome.toLocaleString('en-IN')}` : 'N/A'}
+                          />
+                        </div>
+                      ) : (
+                        <div className="text-center py-12">
+                          <Briefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                          <p className="text-gray-500">No employment information added yet</p>
+                        </div>
+                      )}
                     </div>
                   )}
 

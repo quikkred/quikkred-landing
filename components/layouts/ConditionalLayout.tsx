@@ -9,7 +9,17 @@ import dynamic from "next/dynamic";
 import { Suspense } from "react";
 
 // Lazy load user dashboard layout - only needed when authenticated
-const UserLayout = dynamic(() => import("./UserLayout"), { ssr: false });
+const UserLayout = dynamic(() => import("./UserLayout"), {
+  ssr: false,
+  loading: () => (
+    <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-12 h-12 border-4 border-[#25B181] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    </div>
+  )
+});
 
 interface ConditionalLayoutProps {
   children: React.ReactNode;
@@ -55,7 +65,19 @@ const isPublicRoute = (pathname: string): boolean => {
 
 const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, isLoggingOut } = useAuth();
+
+  // Show loading screen when logging out to prevent UI flash
+  if (isLoggingOut) {
+    return (
+      <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#25B181] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Logging out...</p>
+        </div>
+      </div>
+    );
+  }
 
   // If it's a full-screen route, render without header/footer (for all users)
   if (FULL_SCREEN_ROUTES.some(route => pathname.startsWith(route))) {

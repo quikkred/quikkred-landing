@@ -84,33 +84,33 @@ export function Header() {
       name: t.navigation.about,
       href: "/about",
       icon: Info,
-      submenu: [
-        {
-          name: t.about.ourStory,
-          href: "/about#story",
-          description: t.about.ourStoryDesc,
-        },
-        {
-          name: t.about.leadershipTeam,
-          href: "/about#leadership",
-          description: t.about.leadershipDesc,
-        },
-        {
-          name: t.about.missionVision,
-          href: "/about#mission",
-          description: t.about.missionVisionDesc,
-        },
-        {
-          name: t.about.timeline,
-          href: "/about#timeline",
-          description: t.about.timelineDesc,
-        },
-        {
-          name: t.about.values,
-          href: "/about#values",
-          description: t.about.valuesDesc,
-        },
-      ],
+      // submenu: [
+      //   {
+      //     name: t.about.ourStory,
+      //     href: "/about#story",
+      //     description: t.about.ourStoryDesc,
+      //   },
+      //   {
+      //     name: t.about.leadershipTeam,
+      //     href: "/about#leadership",
+      //     description: t.about.leadershipDesc,
+      //   },
+      //   {
+      //     name: t.about.missionVision,
+      //     href: "/about#mission",
+      //     description: t.about.missionVisionDesc,
+      //   },
+      //   {
+      //     name: t.about.timeline,
+      //     href: "/about#timeline",
+      //     description: t.about.timelineDesc,
+      //   },
+      //   {
+      //     name: t.about.values,
+      //     href: "/about#values",
+      //     description: t.about.valuesDesc,
+      //   },
+      // ],
     },
     {
       name: t.navigation.resources,
@@ -137,16 +137,16 @@ export function Header() {
           href: "/resources/intrest-rate",
           description: t.eligibility.interestRatesDesc,
         },
-        {
-          name: t.navigation.blog,
-          href: "/resources/blog",
-          description: t.navigation.blogDesc,
-        },
-        {
-          name: t.navigation.faqs,
-          href: "/resources/faqs",
-          description: t.faqs.description,
-        },
+        // {
+        //   name: t.navigation.blog,
+        //   href: "/resources/blog",
+        //   description: t.navigation.blogDesc,
+        // },
+        // {
+        //   name: t.navigation.faqs,
+        //   href: "/resources/faqs",
+        //   description: t.faqs.description,
+        // },
       ],
     },
     {
@@ -159,16 +159,16 @@ export function Header() {
           href: "/partners/channel",
           description: t.navigation.channelPartnersDesc,
         },
-        {
-          name: t.navigation.corporateTieups,
-          href: "/partners/corporate",
-          description: t.navigation.corporateTieupsDesc,
-        },
-        {
-          name: t.navigation.apiIntegration,
-          href: "/partners/api",
-          description: t.navigation.apiIntegrationDesc,
-        },
+        // {
+        //   name: t.navigation.corporateTieups,
+        //   href: "/partners/corporate",
+        //   description: t.navigation.corporateTieupsDesc,
+        // },
+        // {
+        //   name: t.navigation.apiIntegration,
+        //   href: "/partners/api",
+        //   description: t.navigation.apiIntegrationDesc,
+        // },
         {
           name: t.navigation.investorRelations,
           href: "/partners/investors",
@@ -270,10 +270,12 @@ export function Header() {
           {/* Logo */}
          <Link href="/" className="flex p-[20px] items-center group">
   <img
-    src="/logo.svg"
+    src="https://quikkred.in/logo.svg"
     alt={t.common.appName}
-    className="h-auto object-contain"
-    style={{ imageRendering: '-webkit-optimize-contrast',maxHeight: '50px' }}
+    className="h-auto object-contain transition-transform duration-300 group-hover:scale-105"
+    style={{ imageRendering: '-webkit-optimize-contrast', maxHeight: '45px' }}
+    width={180}
+    height={45}
   />
 </Link>
           {/* <div className="flex"> */}
@@ -339,13 +341,13 @@ export function Header() {
                 </div>
               ))}
 
-              <Link
+              {/* <Link
                 href="/contact"
                 className="flex items-center gap-1.5 px-2 xl:px-3 py-2 text-sm xl:text-base text-slate-700 hover:text-blue-400 transition-colors"
               >
                 <Phone className="w-4 h-4" />
                 {t.navigation.contact}
-              </Link>
+              </Link> */}
 
               {/* Smart Button: Login on homepage (hero has Apply), Apply/Dashboard on other pages */}
               {user ? (

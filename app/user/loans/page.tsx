@@ -370,11 +370,7 @@ export default function MyLoansPage() {
   return (
     <div className="p-4 sm:p-6">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-6 sm:mb-8"
-      >
+      <div className="mb-6 sm:mb-8">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-[#1F8F68] flex items-center gap-2 sm:gap-3">
@@ -405,15 +401,10 @@ export default function MyLoansPage() {
             </button>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Summary Cards - New Layout */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="mb-4 sm:mb-6"
-      >
+      <div className="mb-4 sm:mb-6">
         {/* All Cards in One Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {/* Active Loans */}
@@ -562,15 +553,10 @@ export default function MyLoansPage() {
             {showBalance ? 'Hide' : 'Show'} Balance
           </button>
         </div>
-      </motion.div>
+      </div>
 
       {/* Filters and Search */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="bg-white rounded-xl p-3 sm:p-4 border border-[#E0E0E0] mb-4 sm:mb-6 shadow-sm"
-      >
+      <div className="bg-white rounded-xl p-3 sm:p-4 border border-[#E0E0E0] mb-4 sm:mb-6 shadow-sm">
         <div className="flex flex-col gap-3 sm:gap-4">
           {/* Search */}
           <div className="flex-1 relative">
@@ -621,15 +607,10 @@ export default function MyLoansPage() {
             </button>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Loans Table */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="bg-white rounded-xl border border-[#E0E0E0] shadow-sm overflow-hidden"
-      >
+      <div className="bg-white rounded-xl border border-[#E0E0E0] shadow-sm overflow-hidden">
         {filteredLoans.length === 0 ? (
           <div className="p-8 sm:p-12 text-center">
             <AlertCircle className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
@@ -656,11 +637,8 @@ export default function MyLoansPage() {
               </thead>
               <tbody className="divide-y divide-[#E0E0E0]">
                 {filteredLoans.map((loan, index) => (
-                  <motion.tr
+                  <tr
                     key={loan.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.05 * index }}
                     className="hover:bg-[#FAFAFA] transition-colors"
                   >
                     <td className="px-4 py-4 whitespace-nowrap">
@@ -696,22 +674,17 @@ export default function MyLoansPage() {
                         View Details
                       </button>
                     </td>
-                  </motion.tr>
+                  </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
-      </motion.div>
+      </div>
 
       {/* Pagination */}
       {filteredLoans.length > 0 && pagination.totalPages > 1 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="mt-6 bg-white rounded-xl border border-[#E0E0E0] shadow-sm p-4"
-        >
+        <div className="mt-6 bg-white rounded-xl border border-[#E0E0E0] shadow-sm p-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             {/* Page Info */}
             <div className="text-sm text-gray-600">
@@ -811,7 +784,7 @@ export default function MyLoansPage() {
               </select>
             </div>
           </div>
-        </motion.div>
+        </div>
       )}
 
       {/* Loan Detail Modal */}
@@ -1101,11 +1074,11 @@ export default function MyLoansPage() {
                   {/* Created By & Timestamps */}
                   <div className="bg-[#FAFAFA] rounded-lg p-3 sm:p-4 border border-[#E0E0E0]">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-xs sm:text-sm">
-                      <div>
+                      {/* <div>
                         <p className="text-gray-600">Created By</p>
                         <p className="font-semibold text-gray-900">{detailedLoan.createdBy?.fullName || 'N/A'}</p>
                         <p className="text-xs text-gray-500">{detailedLoan.createdBy?.email || 'N/A'}</p>
-                      </div>
+                      </div> */}
                       <div>
                         <p className="text-gray-600">Created At</p>
                         <p className="font-semibold text-gray-900">{detailedLoan.createdAt ? new Date(detailedLoan.createdAt).toLocaleString() : 'N/A'}</p>
@@ -1139,12 +1112,12 @@ export default function MyLoansPage() {
                   <Download className="w-4 h-4 mr-2" />
                   Download Statement
                 </button>
-                {detailedLoan && (detailedLoan.status.toLowerCase() === 'active') && (
+                {/* {detailedLoan && (detailedLoan.status.toLowerCase() === 'active') && (
                   <button className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center text-sm">
                     <Wallet className="w-4 h-4 mr-2" />
                     Pay EMI
                   </button>
-                )}
+                )} */}
               </div>
             </motion.div>
           </div>
