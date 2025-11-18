@@ -1,11 +1,25 @@
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 export default function LoansGrid() {
   const { t } = useLanguage();
+  const router = useRouter();
+
+  // Map loan index to their product page URLs (order matches translations)
+  const loanRoutes = [
+    "/products/salary-advance",    // 0: Salary Advance
+    "/products/personal-loan",     // 1: Personal Loan
+    "/products/emergency",         // 2: Emergency Fund
+    "/products/festival",          // 3: Festival Advance
+    "/products/medical",           // 4: Medical Loan
+    "/products/travel"             // 5: Travel Now Pay Later
+  ];
+
   const loans = t.homepage.loansGrid.loans.map((loan: any, idx: number) => ({
     ...loan,
-    color: idx % 3 === 0 ? "bg-teal-500" : idx % 3 === 1 ? "bg-blue-600" : "bg-teal-600"
+    color: idx % 3 === 0 ? "bg-teal-500" : idx % 3 === 1 ? "bg-blue-600" : "bg-teal-600",
+    route: loanRoutes[idx] || "/products"
   }));
 
   return (
@@ -67,7 +81,8 @@ export default function LoansGrid() {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="w-full py-2 sm:py-2.5 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors text-xs sm:text-sm font-medium"
+                  onClick={() => router.push(loan.route)}
+                  className="w-full py-2 sm:py-2.5 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors text-xs sm:text-sm font-medium cursor-pointer"
                 >
                   {t.homepage.loansGrid.button}
                 </motion.button>

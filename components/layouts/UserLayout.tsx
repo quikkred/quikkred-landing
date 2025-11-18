@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
@@ -20,7 +20,7 @@ interface UserLayoutProps {
 const UserLayout = ({ children }: UserLayoutProps) => {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, logout, isLoggingOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [userData, setUserData] = useState({
@@ -186,10 +186,30 @@ const UserLayout = ({ children }: UserLayoutProps) => {
     setNotificationDropdownOpen(false);
   }, [pathname]);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     // Use the logout function from AuthContext to ensure all cleanup is done properly
     logout();
-  };
+  }, [logout]);
+
+  // Memoize navigation handler for better performance
+  const handleNavigation = useCallback((href: string) => {
+    if (pathname !== href) {
+      router.push(href);
+    }
+  }, [pathname, router]);
+
+  // Show loading screen when logging out
+  if (isLoggingOut) {
+    return (
+      <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#25B181] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600 font-medium">Logging out...</p>
+          <p className="text-gray-500 text-sm mt-2">Please wait</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex">
@@ -197,7 +217,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
       <motion.div
         initial={false}
         animate={{ width: sidebarOpen ? 280 : 80 }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: 0.2, ease: "easeInOut" }}
         className="bg-white border-r border-[#E0E0E0] flex flex-col shadow-lg"
       >
         {/* Sidebar Header */}
@@ -262,11 +282,10 @@ const UserLayout = ({ children }: UserLayoutProps) => {
 {/* Navigation */}
         <nav className={`flex-1 p-4 space-y-2 overflow-y-auto ${!sidebarOpen ? 'px-2' : ''}`}>
           {navigationItems.map((item) => (
-            <motion.button
+            <button
               key={item.title}
-              whileHover={{ scale: 1.02 }}
-              onClick={() => router.push(item.href)}
-              className={`w-full flex items-center ${sidebarOpen ? 'gap-3 justify-start' : 'justify-center'} p-3 rounded-lg transition-all cursor-pointer ${
+              onClick={() => handleNavigation(item.href)}
+              className={`w-full flex items-center ${sidebarOpen ? 'gap-3 justify-start' : 'justify-center'} p-3 rounded-lg transition-colors duration-150 cursor-pointer ${
                 pathname === item.href
                   ? 'bg-gradient-to-r from-[#10B4A3] to-[#0E9D8F] text-white shadow-md'
                   : 'hover:bg-[#FAFAFA] text-[#0A0A0A]'
@@ -282,7 +301,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                   {item.title}
                 </span>
               )}
-            </motion.button>
+            </button>
           ))}
         </nav>
 
@@ -337,14 +356,14 @@ const UserLayout = ({ children }: UserLayoutProps) => {
             <div className="flex items-center gap-4">
               {/* Quick Stats */}
               <div className="hidden md:flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-2 bg-gradient-to-r from-[#25B181]/10 to-[#51C9AF]/10 border border-[#25B181]/20 px-3 py-1.5 rounded-lg">
+                {/* <div className="flex items-center gap-2 bg-gradient-to-r from-[#25B181]/10 to-[#51C9AF]/10 border border-[#25B181]/20 px-3 py-1.5 rounded-lg">
                   <Award className="w-4 h-4 text-[#25B181]" />
                   <span className="text-[#1F8F68] font-semibold">CIBIL: {userData.creditScore || 'N/A'}</span>
-                </div>
-                <div className="flex items-center gap-2 bg-[#FAFAFA] px-3 py-1.5 rounded-lg">
+                </div> */}
+                {/* <div className="flex items-center gap-2 bg-[#FAFAFA] px-3 py-1.5 rounded-lg">
                   <Wallet className="w-4 h-4 text-[#4A66FF]" />
                   <span className="text-gray-700 font-medium">₹{(userData.availableCredit / 1000).toFixed(0)}K</span>
-                </div>
+                </div> */}
                 {/* <div className="flex items-center gap-2 bg-[#FAFAFA] px-3 py-1.5 rounded-lg">
                   <Gift className="w-4 h-4 text-[#FFD700]" />
                   <span className="text-gray-700 font-medium">{userData.rewardPoints} pts</span>

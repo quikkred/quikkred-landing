@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
+import { useLanguage } from "@/lib/contexts/LanguageContext"
 
 interface FinancialCTAProps {
   heading?: string
@@ -12,12 +13,13 @@ interface FinancialCTAProps {
 }
 
 export function FinancialCTA({
-  heading = "Ready to Transform Your Financial Future?",
-  description = "Get your instant, no-obligation quote in 60 seconds.",
-  inputPlaceholder = "Enter Your email",
-  buttonText = "Subscribe",
+  heading,
+  description,
+  inputPlaceholder,
+  buttonText,
   onSubscribe,
 }: FinancialCTAProps) {
+  const { t } = useLanguage()
   const [email, setEmail] = useState("")
 
   const handleSubscribe = () => {
@@ -54,7 +56,7 @@ export function FinancialCTA({
             textAlign: "center",
           }}
         >
-          {heading}
+          {heading || t.homepage.financialCta.heading}
         </motion.h1>
 
         <motion.p
@@ -64,7 +66,7 @@ export function FinancialCTA({
           transition={{ delay: 0.4, duration: 0.6 }}
           className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 mb-6 sm:mb-8 text-balance px-2"
         >
-          {description}
+          {description || t.homepage.financialCta.description}
         </motion.p>
 
         <motion.div
@@ -79,7 +81,7 @@ export function FinancialCTA({
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder={inputPlaceholder}
+            placeholder={inputPlaceholder || t.homepage.financialCta.placeholder}
             className="h-11 sm:h-12 px-4 sm:px-6 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/50 w-full text-sm sm:text-base font-sans border-0"
             onKeyPress={(e) => e.key === "Enter" && handleSubscribe()}
           />
@@ -89,7 +91,7 @@ export function FinancialCTA({
             onClick={handleSubscribe}
             className="h-11 sm:h-12 bg-gray-900 hover:bg-gray-800 text-white px-6 sm:px-8 rounded-lg font-semibold transition-colors w-full sm:w-auto border-0 cursor-pointer text-sm sm:text-base whitespace-nowrap"
           >
-            {buttonText}
+            {buttonText || t.homepage.financialCta.buttonText}
           </motion.button>
         </motion.div>
       </motion.div>

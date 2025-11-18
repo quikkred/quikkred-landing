@@ -26,6 +26,7 @@ interface AuthContextType {
   login: (email: string, password: string, apiData?: any) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
+  isLoggingOut: boolean;
   updateUser: (userData: Partial<User>) => void;
 }
 
@@ -34,6 +35,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -176,6 +178,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
+    // Set logging out state immediately to hide UI
+    setIsLoggingOut(true);
+    setUser(null);
+
     // Clear all localStorage items
     localStorage.removeItem('token');
     localStorage.removeItem('authToken');
@@ -195,10 +201,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     document.cookie = 'auth-token=; path=/; max-age=0';
     document.cookie = 'user-role=; path=/; max-age=0';
 
-    setUser(null);
-
-    // Use window.location.href for immediate redirect without intermediate states
-    window.location.href = '/login';
+    // Use setTimeout to ensure state is updated before redirect
+    setTimeout(() => {
+      window.location.href = '/login';
+    }, 0);
   };
 
   const updateUser = (userData: Partial<User>) => {
@@ -220,6 +226,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login,
     logout,
     isLoading,
+    isLoggingOut,
     updateUser
   };
 
