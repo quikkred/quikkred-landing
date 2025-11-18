@@ -39,7 +39,7 @@ export function LanguageSwitcher() {
         />
       </button>
 
-      {/* <AnimatePresence>
+      <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -63,7 +63,7 @@ export function LanguageSwitcher() {
                     className={`w-full flex items-center justify-between px-3 py-2.5 text-left rounded-lg transition-all duration-200 ${
                       language === lang.code
                         ? 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-600'
-                        : 'hover:bg-gray-100:bg-gray-700 text-gray-700'
+                        : 'hover:bg-gray-100 text-gray-700'
                     }`}
                   >
                     <div className="flex flex-col">
@@ -81,7 +81,7 @@ export function LanguageSwitcher() {
             </div>
           </motion.div>
         )}
-      </AnimatePresence> */}
+      </AnimatePresence>
     </div>
   );
 }
