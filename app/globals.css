@@ -2,6 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Performance Optimizations */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Faster page transitions */
+body {
+  overflow-x: hidden;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Optimize rendering performance */
+.will-change-transform {
+  will-change: transform;
+}
+
+.will-change-opacity {
+  will-change: opacity;
+}
+
+/* GPU acceleration for smooth animations */
+.gpu-accelerate {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Fade in animation for smooth content appearance */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
 /* 🎨 Quikkred Brand Colors - New Design Palette */
 :root {
   /* Primary Brand Colors - New Green Palette */
@@ -537,4 +580,53 @@ img[src*="logo"] {
   image-rendering: high-quality;
   image-rendering: -webkit-optimize-contrast;
   -ms-interpolation-mode: bicubic;
+}
+
+/* Consistent Section Padding - Adds space inside backgrounds */
+section,
+.section-container,
+header,
+footer {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  section,
+  .section-container,
+  header,
+  footer {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  section,
+  .section-container,
+  header,
+  footer {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  section,
+  .section-container,
+  header,
+  footer {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  section,
+  .section-container,
+  header,
+  footer {
+    padding-left: 4rem;
+    padding-right: 4rem;
+  }
 }
