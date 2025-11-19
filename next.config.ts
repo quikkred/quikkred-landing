@@ -10,10 +10,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: false,
 
   // Disable dev indicators
-  devIndicators: {
-    buildActivity: false,
-    buildActivityPosition: 'bottom-right',
-  },
+devIndicators: false,
 
   // Environment variables exposed to browser
   env: {
