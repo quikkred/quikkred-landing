@@ -7,6 +7,8 @@ import {
   CheckCircle, Globe, Briefcase, Clock, Star, Building
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import SalaryAdvance from "@/components/SalaryAdvance";
+import { useTranslation } from "react-i18next";
 
 const stats = [
   { label: "Years of Excellence", value: "Since ", icon: Clock },
@@ -99,31 +101,32 @@ const leadership: any[] = [
 ];
 
 export default function AboutPage() {
-  const { t } = useLanguage();
+  const { t: tLang } = useLanguage();
+    const { t } = useTranslation();
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative py-20 bg-gradient-to-br from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white">
-        <div className="absolute inset-0 bg-black/10" />
-        <div className="container mx-auto px-4 relative">
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="text-center max-w-4xl mx-auto"
-          >
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-sora mb-6 text-white">
-              About Quikkred
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 text-white">
-              Transforming Lives Through Responsible Lending
-            </p>
-            <p className="text-lg leading-relaxed text-white/90">
-              We are India's most trusted AI-powered NBFC, committed to making credit accessible,
-              affordable, and transparent for every Indian. Our mission is to empower dreams and
-              enable financial inclusion through technology and trust.
-            </p>
-          </motion.div>
-        </div>
+
+      <section className="py-12 sm:py-16 lg:py-20">
+        <SalaryAdvance
+          title="About QuikKred"
+          // {t('products.pages.personalLoan.hero.title')}
+          // highlightWord="Kred"
+          // {t('products.pages.personalLoan.hero.highlightWord')}
+          // title1={t('products.pages.personalLoan.hero.title1')}
+          subtitle="We are India's most trusted AI-powered NBFC, committed to making credit accessible, affordable, and transparent for every Indian. Our mission is to empower dreams and enable financial inclusion through technology and trust."
+          // {t('products.pages.personalLoan.hero.subtitle')}
+          buttonPrimaryText="Contact Us"
+          // {t('products.pages.personalLoan.hero.buttonPrimary')}
+          buttonSecondaryText="Call Us Now"
+          // {t('products.pages.personalLoan.hero.buttonSecondary')}
+          imageSrc="/Peronalloan_hero_image.jpg"
+          // features={[
+          //   t('products.pages.personalLoan.hero.features.loansUpTo'),
+          //   t('products.pages.personalLoan.hero.features.instant'),
+          //   t('products.pages.personalLoan.hero.features.disbursal'),
+          // ]}
+          primaryColor="emerald"
+        />
       </section>
 
       {/* Stats Section */}
