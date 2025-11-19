@@ -1861,7 +1861,7 @@ console.log('Sending OTP with payload:', payload);
             email: "Please enter a valid email address",
           }));
         } else {
-          setFieldErrors((prev) => ({ ...prev, email: null }));
+          setFieldErrors((prev) => ({ ...prev, email: "" }));
         }
       }}
       disabled={formData.emailVerified}
@@ -1888,7 +1888,7 @@ console.log('Sending OTP with payload:', payload);
           }
 
           // Clear error
-          setFieldErrors((prev) => ({ ...prev, email: null }));
+          setFieldErrors((prev) => ({ ...prev, email: "" }));
 
           setLoading(true);
           try {
@@ -1897,7 +1897,7 @@ console.log('Sending OTP with payload:', payload);
             setLoading(false);
           }
         }}
-        disabled={!formData.email || fieldErrors.email || loading}
+        disabled={!formData.email || !!fieldErrors.email || loading}
         className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50"
       >
         {loading ? "Sending..." : "Send OTP"}
