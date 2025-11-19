@@ -26,6 +26,7 @@ import {
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast, Toaster } from "@/components/ui/toast";
+import { useLanguage } from "@/lib/contexts/LanguageContext";
 
 interface LoginForm {
   emailOrPhone: string;
@@ -34,6 +35,7 @@ interface LoginForm {
 }
 
 export default function LoginPage() {
+  const { t } = useLanguage();
   const { login, isLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -91,7 +93,7 @@ export default function LoginPage() {
         ? { email: formData.emailOrPhone }
         : { mobile: formData.emailOrPhone };
 
-      const response = await fetch("https://api.bluechipfinmax.com/api/auth/customer/create", {
+      const response = await fetch("https://api.bluechipfinmax.com/api/auth/customer/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -529,7 +531,7 @@ const verifyOtp = async () => {
                               value={otp}
                               onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                               maxLength={6}
-                              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white text-center text-2xl tracking-widest font-bold"
+                              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] focus:border-[#25B181] bg-white text-center text-2xl tracking-widest font-bold"
                               placeholder="000000"
                             />
                           </div>
@@ -539,7 +541,7 @@ const verifyOtp = async () => {
                               type="button"
                               onClick={sendOtp}
                               disabled={sendingOtp || resendTimer > 0}
-                              className="text-emerald-600 hover:text-emerald-700 font-medium hover:underline disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:no-underline"
+                              className="text-[#25B181] hover:text-[#1F8F68] font-medium hover:underline disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:no-underline"
                             >
                               {sendingOtp
                                 ? 'Sending...'
@@ -563,11 +565,11 @@ const verifyOtp = async () => {
                           name="rememberMe"
                           checked={formData.rememberMe}
                           onChange={handleInputChange}
-                          className="rounded border-gray-300 text-[#34d399] focus:ring-[#34d399]"
+                          className="rounded border-gray-300 text-[#25B181] focus:ring-[#25B181]"
                         />
                         <span className="ml-2 text-sm text-gray-700">Remember me</span>
                       </label>
-                      <Link href="/forgot-password" className="text-sm text-[#0ea5e9] hover:underline">
+                      <Link href="/forgot-password" className="text-sm text-[#25B181] hover:text-[#1F8F68] hover:underline">
                         Forgot password?
                       </Link>
                     </div>
@@ -585,24 +587,41 @@ const verifyOtp = async () => {
                     </motion.div>
                   )}
 
-                  {/* Login Button */}
-                  <button
-                    type="submit"
-                    disabled={isLoading || sendingOtp || verifyingOtp || (authMethod === 'otp' && otpSent && otp.length !== 6)}
-                    className="w-full bg-gradient-to-r from-[#38bdf8] to-[#34d399] text-white py-3 px-6 rounded-lg font-semibold flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-50"
-                  >
-                    {(isLoading || sendingOtp || verifyingOtp) ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                    ) : (
-                      <User className="w-5 h-5 mr-2" />
-                    )}
-                    {authMethod === 'otp'
-                      ? (otpSent
-                          ? (verifyingOtp ? 'Verifying...' : 'Verify OTP & Login')
-                          : (sendingOtp ? 'Sending OTP...' : 'Send OTP'))
-                      : (isLoading ? 'Signing In...' : 'Sign In')
-                    }
-                  </button>
+                  {/* Buttons Container */}
+                  <div className="space-y-3">
+                   
+
+                    {/* Login Button */}
+                    <button
+                      type="submit"
+                      disabled={isLoading || sendingOtp || verifyingOtp || (authMethod === 'otp' && otpSent && otp.length !== 6)}
+                      className="w-full bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white py-3 px-6 rounded-xl font-semibold flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-50"
+                    >
+                      {(isLoading || sendingOtp || verifyingOtp) ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                      ) : (
+                        <User className="w-5 h-5 mr-2" />
+                      )}
+                      {authMethod === 'otp'
+                        ? (otpSent
+                            ? (verifyingOtp ? 'Verifying...' : 'Verify OTP & Login')
+                            : (sendingOtp ? 'Sending OTP...' : 'Send OTP'))
+                        : (isLoading ? 'Signing In...' : 'Sign In')
+                      }
+                    </button>
+
+                     {/* Apply Now Button */}
+                    <Link href="/apply/quick" className="block">
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="w-full bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white py-3 px-6 rounded-xl font-semibold flex items-center justify-center gap-2 hover:shadow-lg transition-all"
+                      >
+                        {t.common.apply}
+                        <ArrowRight className="w-4 h-4" />
+                      </motion.button>
+                    </Link>
+                  </div>
 
                   {/* Divider */}
                   {/* <div className="relative">
@@ -635,7 +654,7 @@ const verifyOtp = async () => {
               ) : (
                 /* Registration Form */
                 <div className="text-center py-12">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-[#fbbf24] to-[#38bdf8] rounded-full mb-6 shadow-lg">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-[#25B181] to-[#51C9AF] rounded-full mb-6 shadow-lg">
                     <User className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-2xl font-bold mb-4 text-gray-900">New to Quikkred?</h3>
@@ -643,7 +662,7 @@ const verifyOtp = async () => {
                     Join thousands who have already transformed their financial journey with instant AI-powered loans.
                   </p>
                   <Link href="/apply/quick">
-                    <button className="w-full bg-gradient-to-r from-[#fbbf24] to-[#38bdf8] text-white py-3 px-6 rounded-full font-semibold hover:shadow-lg transition-all mb-4">
+                    <button className="w-full bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all mb-4">
                       Start Your Application
                     </button>
                   </Link>

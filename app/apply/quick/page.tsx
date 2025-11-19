@@ -295,7 +295,7 @@ export default function QuickLoanApplication() {
     }
   }, [apiDeterminedStep]);
 
-  // Auto-redirect to dashboard after successful submission
+  // Auto-redirect to dashboard or login after successful submission
   useEffect(() => {
     if (decision && decision.approved) {
       setRedirectCountdown(5); // Reset countdown
@@ -303,7 +303,12 @@ export default function QuickLoanApplication() {
         setRedirectCountdown((prev) => {
           if (prev <= 1) {
             clearInterval(timer);
-            router.push('/user');
+            // Redirect based on login status
+            if (user) {
+              router.push('/user');
+            } else {
+              router.push('/login');
+            }
             return 0;
           }
           return prev - 1;
@@ -946,8 +951,8 @@ console.log('Sending OTP with payload:', payload);
         console.error(`❌ Failed to save step ${step} data:`, result.message);
         toast({
           variant: "error",
-          title: "Save Failed",
-          description: result.message || "Failed to save your data. You can continue, but please try again later.",
+          title: "Data Save Failed",
+          description: result.message || `Failed to save step ${step} data. Please check your information and try again.`,
         });
         return false;
       }
@@ -955,8 +960,8 @@ console.log('Sending OTP with payload:', payload);
       console.error('Error saving customer data:', error);
       toast({
         variant: "error",
-        title: "Save Error",
-        description: "Failed to save your data. You can continue, but please try again later.",
+        title: "Network Error",
+        description: error.message || "Unable to connect to server. Please check your internet connection and try again.",
       });
       return false;
     }
@@ -1079,8 +1084,18 @@ console.log('Sending OTP with payload:', payload);
 
       // Save Step 1 data before proceeding
       setLoading(true);
-      await saveCustomerData(1);
+      const saveSuccess = await saveCustomerData(1);
       setLoading(false);
+
+      // If save failed, don't proceed to next step
+      if (!saveSuccess) {
+        toast({
+          variant: "error",
+          title: "Cannot Proceed",
+          description: "Please fix the errors before moving to the next step.",
+        });
+        return;
+      }
     }
 
     if (currentStep === 2) {
@@ -1161,8 +1176,18 @@ console.log('Sending OTP with payload:', payload);
 
       // Save Step 2 data before proceeding
       setLoading(true);
-      await saveCustomerData(2);
+      const saveSuccess = await saveCustomerData(2);
       setLoading(false);
+
+      // If save failed, don't proceed to next step
+      if (!saveSuccess) {
+        toast({
+          variant: "error",
+          title: "Cannot Proceed",
+          description: "Please fix the errors before moving to the next step.",
+        });
+        return;
+      }
     }
 
     if (currentStep === 3) {
@@ -1506,17 +1531,23 @@ console.log('Sending OTP with payload:', payload);
                   Our team will review your application and get back to you soon.
                 </p>
                 <p className="text-sm text-gray-600">
-                  Redirecting to dashboard in <span className="font-bold text-[#25B181] text-lg">{redirectCountdown}</span> seconds...
+                  Redirecting to {user ? 'dashboard' : 'login'} in <span className="font-bold text-[#25B181] text-lg">{redirectCountdown}</span> seconds...
                 </p>
               </div>
             </div>
 
             <div className="flex gap-3">
               <button
-                onClick={() => router.push('/user')}
+                onClick={() => {
+                  if (user) {
+                    router.push('/user');
+                  } else {
+                    router.push('/login');
+                  }
+                }}
                 className="flex-1 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all"
               >
-                Go to Dashboard Now
+                {user ? 'Go to Dashboard Now' : 'Login to Continue'}
               </button>
             </div>
 
