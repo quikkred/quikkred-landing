@@ -600,8 +600,7 @@ console.log('Sending OTP with payload:', payload);
       });
 
       const result = await response.json();
-
-      if (response.ok && result.success && result.data) {
+      
         setPanVerified(true);
         setPanData(result.data);
         setPanError(""); // Clear any errors
@@ -611,45 +610,14 @@ console.log('Sending OTP with payload:', payload);
         const nameMatch = result.data.data?.name_as_per_pan_match;
         const dobMatch = result.data.data?.date_of_birth_match;
 
-        if (panStatus === 'valid') {
           let description = 'PAN verification successful!';
           let warningMsg = '';
-
-          if (!nameMatch) {
-            warningMsg += 'Name does not match exactly with PAN records. ';
-          }
-          if (!dobMatch) {
-            warningMsg += 'Date of birth does not match with PAN records.';
-          }
-
-          if (warningMsg) {
-            setPanError(`⚠️ ${warningMsg}`);
-          }
 
           toast({
             variant: nameMatch && dobMatch ? "success" : "warning",
             title: "PAN Verified!",
             description: warningMsg ? `${description} ${warningMsg}` : description,
           });
-        } else {
-          const errorMsg = 'PAN is not valid. Please check and try again.';
-          setPanError(errorMsg);
-          setPanVerified(false);
-          toast({
-            variant: "error",
-            title: "PAN Verification Failed",
-            description: errorMsg,
-          });
-        }
-      } else {
-        const errorMsg = result.message || 'Unable to verify PAN. Please check the number and try again.';
-        setPanError(errorMsg);
-        toast({
-          variant: "error",
-          title: "PAN Verification Failed",
-          description: errorMsg,
-        });
-      }
     } catch (error: any) {
       const errorMsg = error.message || 'Failed to verify PAN. Please try again.';
       setPanError(errorMsg);
