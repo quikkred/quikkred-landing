@@ -92,7 +92,9 @@ export default function QuickLoanApplication() {
     fullName: "",
     dob: "",
     aadhaar: "",
-    pan: ""
+    pan: "",
+    accountNumber: "",
+    ifsc: ""
   });
 
   const [formData, setFormData] = useState({
@@ -1002,7 +1004,9 @@ console.log('Sending OTP with payload:', payload);
         fullName: "",
         dob: "",
         aadhaar: "",
-        pan: ""
+        pan: "",
+        accountNumber: "",
+        ifsc: ""
       };
       let hasError = false;
 
