@@ -545,28 +545,28 @@ console.log('Sending OTP with payload:', payload);
   const verifyPAN = async () => {
     setPanError(""); // Clear previous errors
 
-    if (!formData.pan || formData.pan.length !== 10) {
-      const errorMsg = "Please enter a valid 10-character PAN number.";
+    if (!formData.pan) {
+      const errorMsg = "Please enter a PAN number.";
       setPanError(errorMsg);
       toast({
         variant: "warning",
-        title: "Invalid PAN",
+        title: "PAN Required",
         description: errorMsg,
       });
       return;
     }
 
     // Check if name and DOB are filled (from Aadhaar)
-    if (!formData.fullName || !formData.dob) {
-      const errorMsg = "Please verify Aadhaar first to get name and date of birth.";
-      setPanError(errorMsg);
-      toast({
-        variant: "warning",
-        title: "Missing Information",
-        description: errorMsg,
-      });
-      return;
-    }
+    // if (!formData.fullName || !formData.dob) {
+    //   const errorMsg = "Please verify Aadhaar first to get name and date of birth.";
+    //   setPanError(errorMsg);
+    //   toast({
+    //     variant: "warning",
+    //     title: "Missing Information",
+    //     description: errorMsg,
+    //   });
+    //   return;
+    // }
 
     setPanVerifying(true);
     try {
@@ -1088,15 +1088,8 @@ console.log('Sending OTP with payload:', payload);
         errors.pan = "PAN number is required";
         hasError = true;
       } else if (!panVerified) {
-        // Only check format and ask for verification if not already verified
-        const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-        if (!panRegex.test(formData.pan)) {
-          errors.pan = "Enter a valid PAN (e.g., ABCDE1234F)";
-          hasError = true;
-        } else {
-          errors.pan = "Please verify your PAN";
-          hasError = true;
-        }
+        errors.pan = "Please verify your PAN";
+        hasError = true;
       }
 
       // Update field errors
@@ -2139,7 +2132,11 @@ console.log('Sending OTP with payload:', payload);
                     name="dob"
                     value={formData.dob}
                     onChange={handleChange}
-                    max={new Date().toISOString().split('T')[0]}
+                    max={(() => {
+                      const date = new Date();
+                      date.setFullYear(date.getFullYear() - 18);
+                      return date.toISOString().split('T')[0];
+                    })()}
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
                       fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
                     }`}
