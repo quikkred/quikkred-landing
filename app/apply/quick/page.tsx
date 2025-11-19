@@ -79,6 +79,7 @@ export default function QuickLoanApplication() {
   const [aadhaarAddress, setAadhaarAddress] = useState<any>(null);
   const [aadhaarOtpSent, setAadhaarOtpSent] = useState(false);
   const [aadhaarOtp, setAadhaarOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
   const [panError, setPanError] = useState<string>("");
   const [aadhaarError, setAadhaarError] = useState<string>("");
   const [apiDeterminedStep, setApiDeterminedStep] = useState<number | null>(null);
@@ -208,22 +209,10 @@ export default function QuickLoanApplication() {
               // Auto-jump to next incomplete step based on completion flags
               let nextStep = 1; // Default to step 1
 
-              console.log('🔍 Checking step completion...');
-              console.log('  isBasicDetailsFilled:', profileData.isBasicDetailsFilled);
-              console.log('  isEmploymentDetailsFilled:', profileData.isEmploymentDetailsFilled);
-
               // Check completion status and determine next step
               if (profileData.isBasicDetailsFilled === true && profileData.isEmploymentDetailsFilled === true) {
-                // Both Step 1 and Step 2 completed - go to Step 3
-                console.log('✅ Step 1 (Basic Details) completed');
-                console.log('✅ Step 2 (Employment Details) completed');
-                console.log('🎯 Determined: Jump to Step 3');
                 nextStep = 3;
               } else if (profileData.isBasicDetailsFilled === true) {
-                // Only Step 1 completed - go to Step 2
-                console.log('✅ Step 1 (Basic Details) completed');
-                console.log('⏭️ Moving to Step 2 (Employment Details)');
-                console.log('🎯 Determined: Jump to Step 2');
                 nextStep = 2;
               } else {
                 console.log('ℹ️ No steps completed yet - starting from Step 1');
@@ -231,17 +220,13 @@ export default function QuickLoanApplication() {
 
               // Set the API determined step if it's different from default
               if (nextStep > 1) {
-                console.log(`🚀 Setting API determined step to: ${nextStep}`);
                 setApiDeterminedStep(nextStep);
               } else {
                 console.log('📍 Staying at Step 1 (default)');
               }
 
               setUserDataLoaded(true);
-              console.log('🟢 Form pre-filled with user data');
             } else {
-              console.log('⚠️ Profile API returned no data, using basic user info');
-              // Still mark as verified even if profile fetch fails
               setFormData(prev => ({
                 ...prev,
                 fullName: user.name || prev.fullName,
@@ -254,8 +239,6 @@ export default function QuickLoanApplication() {
             }
           }
         } catch (error) {
-          console.error('❌ Error loading user data:', error);
-          // Still mark as verified even if error occurs
           setFormData(prev => ({
             ...prev,
             fullName: user.name || prev.fullName,
@@ -351,6 +334,7 @@ export default function QuickLoanApplication() {
       const payload = verificationMethod === 'email'
         ? { email: formData.email }
         : { mobile: formData.mobile };
+console.log('Sending OTP with payload:', payload);
 
       const response = await fetch("https://api.bluechipfinmax.com/api/auth/customer/create", {
         method: "POST",
@@ -363,6 +347,7 @@ export default function QuickLoanApplication() {
       const data = await response.json();
 
       if (response.ok && data.success) {
+        setOtpSent(true);
         toast({
           variant: "success",
           title: "OTP Sent Successfully!",
@@ -418,6 +403,7 @@ export default function QuickLoanApplication() {
         } else {
           setFormData(prev => ({ ...prev, mobileVerified: true }));
         }
+        setOtpSent(false); // Reset OTP sent state after successful verification
 
         // Store access token if provided in response
         if (data.data?.accessToken) {
@@ -1814,7 +1800,11 @@ export default function QuickLoanApplication() {
                       <div className="flex gap-3">
                         <button
                           type="button"
-                          onClick={() => setVerificationMethod('email')}
+                          onClick={() => {
+                            setVerificationMethod('email');
+                            setOtpSent(false);
+                            setFormData(prev => ({ ...prev, otp: '' })); // Clear OTP field
+                          }}
                           className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
                             verificationMethod === 'email'
                               ? 'bg-[#25B181] text-white shadow-md'
@@ -1826,7 +1816,11 @@ export default function QuickLoanApplication() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => setVerificationMethod('mobile')}
+                          onClick={() => {
+                            setVerificationMethod('mobile');
+                            setOtpSent(false);
+                            setFormData(prev => ({ ...prev, otp: '' })); // Clear OTP field
+                          }}
                           className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
                             verificationMethod === 'mobile'
                               ? 'bg-[#25B181] text-white shadow-md'
@@ -1845,42 +1839,89 @@ export default function QuickLoanApplication() {
                 {!user && verificationMethod === 'email' && (
                   <>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Email Address *
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          type="email"
-                          name="email"
-                          value={formData.email}
-                          onChange={handleChange}
-                          disabled={formData.emailVerified}
-                          className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${
-                            fieldErrors.email ? 'border-red-500' : 'border-gray-300'
-                          }`}
-                          placeholder="your@email.com"
-                        />
-                        {!formData.emailVerified && (
-                          <button
-                            onClick={sendOTP}
-                            disabled={!formData.email || loading}
-                            className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50"
-                          >
-                            {loading ? "Sending..." : "Send OTP"}
-                          </button>
-                        )}
-                        {formData.emailVerified && (
-                          <CheckCircle className="w-10 h-10 text-green-600" />
-                        )}
-                      </div>
-                      {fieldErrors.email ? (
-                        <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
-                      ) : (
-                        <p className="mt-1 text-xs text-gray-500">We'll use this email for all loan communication</p>
-                      )}
-                    </div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Email Address *
+  </label>
 
-                    {!formData.emailVerified && formData.email && (
+  <div className="flex gap-2">
+    <input
+      type="email"
+      name="email"
+      value={formData.email}
+      onChange={(e) => {
+        const value = e.target.value;
+
+        setFormData((prev) => ({ ...prev, email: value }));
+
+        // Email validation
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!regex.test(value)) {
+          setFieldErrors((prev) => ({
+            ...prev,
+            email: "Please enter a valid email address",
+          }));
+        } else {
+          setFieldErrors((prev) => ({ ...prev, email: null }));
+        }
+      }}
+      disabled={formData.emailVerified}
+      className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${
+        fieldErrors.email ? "border-red-500" : "border-gray-300"
+      }`}
+      placeholder="your@email.com"
+    />
+
+    {/* Send OTP button (only if not verified) */}
+    {!formData.emailVerified && (
+      <button
+        onClick={async () => {
+          const email = formData.email;
+          const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+          // Validate email before sending OTP
+          if (!regex.test(email)) {
+            setFieldErrors((prev) => ({
+              ...prev,
+              email: "Please enter a valid email address",
+            }));
+            return;
+          }
+
+          // Clear error
+          setFieldErrors((prev) => ({ ...prev, email: null }));
+
+          setLoading(true);
+          try {
+            await sendOTP(); // call your API
+          } finally {
+            setLoading(false);
+          }
+        }}
+        disabled={!formData.email || fieldErrors.email || loading}
+        className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50"
+      >
+        {loading ? "Sending..." : "Send OTP"}
+      </button>
+    )}
+
+    {/* If email verified show green check */}
+    {formData.emailVerified && (
+      <CheckCircle className="w-10 h-10 text-green-600" />
+    )}
+  </div>
+
+  {/* Error or helper text */}
+  {fieldErrors.email ? (
+    <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+  ) : (
+    <p className="mt-1 text-xs text-gray-500">
+      We'll use this email for all loan communication
+    </p>
+  )}
+</div>
+
+
+                    {!formData.emailVerified && otpSent && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Enter OTP *
@@ -1945,7 +1986,7 @@ export default function QuickLoanApplication() {
                       )}
                     </div>
 
-                    {!formData.mobileVerified && formData.mobile && (
+                    {!formData.mobileVerified && otpSent && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Enter OTP *
