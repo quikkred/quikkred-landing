@@ -1161,10 +1161,23 @@ console.log('Sending OTP with payload:', payload);
         return;
       }
 
+      // Account Number validation (if provided)
+      if (formData.accountNumber) {
+        const accountRegex = /^[0-9]{9,18}$/;
+        if (!accountRegex.test(formData.accountNumber)) {
+          toast({
+            variant: "warning",
+            title: "Invalid Account Number",
+            description: "Account number must be 9-18 digits.",
+          });
+          return;
+        }
+      }
+
       // IFSC Code validation (if provided)
       if (formData.ifsc) {
         const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
-        if (!ifscRegex.test(formData.ifsc)) {
+        if (!ifscRegex.test(formData.ifsc.toUpperCase())) {
           toast({
             variant: "warning",
             title: "Invalid IFSC Code",
@@ -2385,9 +2398,17 @@ console.log('Sending OTP with payload:', payload);
                       name="accountNumber"
                       value={formData.accountNumber}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                      placeholder="Account number"
+                      pattern="[0-9]{9,18}"
+                      minLength={9}
+                      maxLength={18}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                        fieldErrors.accountNumber ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="9-18 digit account number"
                     />
+                    {fieldErrors.accountNumber && (
+                      <p className="mt-1 text-xs text-red-600">{fieldErrors.accountNumber}</p>
+                    )}
                   </div>
                 </div>
 
@@ -2399,11 +2420,21 @@ console.log('Sending OTP with payload:', payload);
                     type="text"
                     name="ifsc"
                     value={formData.ifsc}
-                    onChange={handleChange}
+                    onChange={(e) => {
+                      const upperValue = e.target.value.toUpperCase();
+                      handleChange({ ...e, target: { ...e.target, name: 'ifsc', value: upperValue } });
+                    }}
+                    pattern="[A-Z]{4}0[A-Z0-9]{6}"
                     maxLength={11}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                      fieldErrors.ifsc ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="SBIN0001234"
+                    style={{ textTransform: 'uppercase' }}
                   />
+                  {fieldErrors.ifsc && (
+                    <p className="mt-1 text-xs text-red-600">{fieldErrors.ifsc}</p>
+                  )}
                 </div>
               </motion.div>
             )}
