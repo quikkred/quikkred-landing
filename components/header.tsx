@@ -202,70 +202,13 @@ export function Header() {
 
   return (
     <header
-      className={`sticky bg-white top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`sticky top-0 bg-white z-50 transition-all duration-300 ${
         isScrolled ? "glass shadow-xl-dark" : "bg-transparent"
       }`}
     >
-      {/* Top Bar */}
-      {/* <div
-        className={`border-b border-slate-700 transition-all duration-300 ${
-          isScrolled
-            ? "opacity-0 max-h-0 overflow-hidden"
-            : "opacity-100 max-h-20"
-        }`}
-      >
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-0 text-xs sm:text-sm">
-            <div className="flex items-center gap-2 sm:gap-4 lg:gap-6 text-slate-700">
-              <a
-                href={`tel:${t.footer.contact.phone}`}
-                className="flex items-center gap-1 hover:text-emerald-500 transition-colors"
-              >
-                <Phone className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                <span className="hidden sm:inline">
-                  {t.footer.contact.phone}
-                </span>
-              </a>
-              <a
-                href={`mailto:${t.footer.contact.email}`}
-                className="hidden sm:flex items-center gap-1 hover:text-emerald-500 transition-colors"
-              >
-                <Mail className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                <span>{t.footer.contact.email}</span>
-              </a>
-              <span className="hidden lg:flex items-center gap-1">
-                <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                <span className="truncate max-w-[200px] xl:max-w-none">
-                  {t.footer.contact.address}
-                </span>
-              </span>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3 lg:gap-4">  
-              {!isLanguageSelectionPage && (
-                <Link
-                  href="/select-language"
-                  className="flex items-center gap-1 hover:text-emerald-500 transition-colors"
-                >
-                  <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                  {isHydrated && (
-                    <span className="text-xs hidden sm:inline">
-                      {availableLanguages.find((l) => l.code === language)
-                        ?.nativeName || "English"}
-                    </span>
-                  )}
-                </Link>
-              )}
-
-               <Link href="/track-application" className="hover:text-emerald-500 transition-colors hidden md:inline">
-                {t.navigation.track}
-              </Link> 
-            </div>
-          </div>
-        </div>
-      </div> */}
 
       {/* Main Navigation */}
-      <nav className="container mx-auto sm:px-6">
+      <nav className="container mx-auto">
         <div className="flex justify-between items-center py-0">
           {/* Logo */}
          <Link href="/" className="flex p-[20px] items-center group">
@@ -283,27 +226,35 @@ export function Header() {
             <div className="hidden lg:flex items-center gap-1">
               <Link
                 href="/"
-                className="flex items-center px-2 xl:px-3 py-2 text-sm xl:text-base text-slate-700 hover:text-blue-400 transition-colors"
+                className={`flex items-center gap-1 px-2 xl:px-3 py-2 text-sm xl:text-base transition-colors rounded-lg ${
+                  pathname === '/'
+                    ? 'text-blue-600 bg-blue-50 font-semibold'
+                    : 'text-slate-700 hover:text-blue-400 hover:bg-slate-50'
+                }`}
               >
                 <Home className="w-4 h-4" />
                 {t.navigation.home}
               </Link>
 
               {navigation.map((item) => (
-                <div
-                  key={item.name}
-                  className="relative"
-                  onMouseEnter={() => setActiveDropdown(item.name)}
-                  onMouseLeave={() => setActiveDropdown(null)}
-                >
-                  <Link
-                    href={item.href}
-                    className="flex items-center px-2 py-2 text-sm xl:text-base text-slate-700 hover:text-blue-400 transition-colors"
+                  <div
+                    key={item.name}
+                    className="relative"
+                    onMouseEnter={() => setActiveDropdown(item.name)}
+                    onMouseLeave={() => setActiveDropdown(null)}
                   >
-                    <item.icon className="w-4 h-4" />
-                    {item.name}
-                    {item.submenu && <ChevronDown className="w-3 h-3" />}
-                  </Link>
+                    <Link
+                      href={item.href}
+                      className={`flex items-center gap-1 px-2 py-2 text-sm xl:text-base transition-colors rounded-lg ${
+                        pathname.startsWith(item.href)
+                          ? 'text-blue-600 bg-blue-50 font-semibold'
+                          : 'text-slate-700 hover:text-blue-400 hover:bg-slate-50'
+                      }`}
+                    >
+                      <item.icon className="w-4 h-4" />
+                      {item.name}
+                      {item.submenu && <ChevronDown className="w-3 h-3" />}
+                    </Link>
 
                   {/* Dropdown Menu */}
                   <AnimatePresence>
@@ -350,7 +301,9 @@ export function Header() {
               </Link> */}
 
               {/* Smart Button: Login on homepage (hero has Apply), Apply/Dashboard on other pages */}
-              {user ? (
+
+
+              {/* {user ? (
                 <Link href="/user" className="ml-2">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
@@ -383,8 +336,46 @@ export function Header() {
                     <ArrowRight className="w-3 h-3 xl:w-3.5 xl:h-3.5" />
                   </motion.button>
                 </Link>
-              )}
+              )} */}
             </div>
+
+            <div className="flex pr-[20px]">
+   {user ? (
+                <Link href="/user" className="ml-2">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="btn-primary flex items-center gap-1 !rounded-[5px] text-xs xl:text-sm !py-2 xl:!py-2.5 !px-4 xl:!px-5"
+                  >
+                    Dashboard
+                    <ArrowRight className="w-3 h-3 xl:w-3.5 xl:h-3.5" />
+                  </motion.button>
+                </Link>
+              ) : isHomePage ? (
+                <Link href="/login" className="ml-2">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="btn-primary flex items-center !rounded-[5px] gap-1 text-xs xl:text-sm !py-2 xl:!py-2.5 !px-4 xl:!px-5"
+                  >
+                    {t.navigation.login}
+                    <ArrowRight className="w-3 h-3 xl:w-3.5 xl:h-3.5" />
+                  </motion.button>
+                </Link>
+              ) : (
+                <Link href="/apply/quick" className="ml-2">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="btn-primary flex items-center !rounded-[5px] gap-1 text-xs xl:text-sm !py-2 xl:!py-2.5 !px-4 xl:!px-5"
+                  >
+                    {t.common.apply}
+                    <ArrowRight className="w-3 h-3 xl:w-3.5 xl:h-3.5" />
+                  </motion.button>
+                </Link>
+              )}</div>
+
+
           {/* </div> */}
           {/* Mobile Menu Toggle */}
           <div className="flex lg:hidden items-center gap-2 sm:gap-3">
@@ -415,21 +406,29 @@ export function Header() {
               <Link
                 href="/"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
+                className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg transition-colors ${
+                  pathname === '/'
+                    ? 'text-blue-400 bg-slate-800 font-semibold'
+                    : 'text-slate-200 hover:bg-slate-800'
+                }`}
               >
                 <Home className="w-4 h-4 sm:w-5 sm:h-5" />
                 {t.navigation.home}
               </Link>
               {navigation.map((item) => (
-                <div key={item.name}>
-                  <Link
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
-                  >
-                    <item.icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                    {item.name}
-                  </Link>
+                  <div key={item.name}>
+                    <Link
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg transition-colors ${
+                        pathname.startsWith(item.href)
+                          ? 'text-blue-400 bg-slate-800 font-semibold'
+                          : 'text-slate-200 hover:bg-slate-800'
+                      }`}
+                    >
+                      <item.icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                      {item.name}
+                    </Link>
                   {item.submenu && (
                     <div className="ml-6 sm:ml-8 space-y-1">
                       {item.submenu.map((subitem) => (
