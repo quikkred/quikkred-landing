@@ -12,20 +12,20 @@ export default function BranchesPage() {
 
   const branches = [
     {
-      city: "Mumbai",
-      name: "Mumbai Head Office",
-      address: "123 Business Hub, Andheri East, Mumbai - 400069",
-      phone: "+91-22-1234-5678",
-      email: "mumbai@Quikkred.com",
+      city: "Delhi",
+      name: "New Delhi Head Office",
+      address: "1008, 10th floor, Vikrant tower, Rajendra Place, New Delhi, Delhi, Pin Code 110005",
+      phone: "+91-11-4567-8900",
+      email: "delhi@Quikkred.com",
       hours: "Mon-Sat: 9:00 AM - 6:00 PM",
       isHeadOffice: true
     },
     {
-      city: "Delhi",
-      name: "Delhi Branch",
-      address: "456 Connaught Place, New Delhi - 110001",
-      phone: "+91-11-2345-6789",
-      email: "delhi@Quikkred.com",
+      city: "Mumbai",
+      name: "Mumbai Branch",
+      address: "Level 15, One World Center, Tower 2A, Jupiter Mill Compound, Senapati Bapat Marg, Lower Parel, Mumbai - 400013",
+      phone: "+91-22-4567-8900",
+      email: "mumbai@Quikkred.com",
       hours: "Mon-Sat: 9:00 AM - 6:00 PM"
     },
     {
