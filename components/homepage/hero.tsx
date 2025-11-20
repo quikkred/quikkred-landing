@@ -437,64 +437,7 @@ export default function Hero() {
   }
 
   return (
-    <section className="bg-white min-h-[calc(100vh-90px)] flex items-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16 relative">
-      {/* Language Selector - Top Right Corner */}
-      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10">
-        <div className="relative" ref={languageDropdownRef}>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-white border-2 border-teal-500 text-teal-600 rounded-lg shadow-md hover:bg-teal-50 transition-all"
-          >
-            <Globe className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="text-xs sm:text-sm font-semibold">
-              {availableLanguages.find((l) => l.code === language)?.nativeName || "English"}
-            </span>
-            <ChevronDown className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform ${languageDropdownOpen ? "rotate-180" : ""}`} />
-          </motion.button>
-
-          {/* Language Dropdown */}
-          <AnimatePresence>
-            {languageDropdownOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-                className="absolute top-full right-0 mt-2 w-48 sm:w-56 bg-white rounded-lg shadow-2xl border border-slate-200 max-h-80 overflow-y-auto z-50"
-              >
-                <div className="p-2">
-                  {availableLanguages.map((lang) => (
-                    <motion.button
-                      key={lang.code}
-                      whileHover={{ backgroundColor: "#f0fdfa" }}
-                      onClick={() => {
-                        setLanguage(lang.code)
-                        setLanguageDropdownOpen(false)
-                      }}
-                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left transition-all ${
-                        language === lang.code
-                          ? "bg-teal-50 text-teal-700"
-                          : "text-slate-700 hover:bg-teal-50"
-                      }`}
-                    >
-                      <div className="flex flex-col">
-                        <span className="text-sm font-semibold">{lang.nativeName}</span>
-                        <span className="text-xs text-slate-500">{lang.name}</span>
-                      </div>
-                      {language === lang.code && (
-                        <Check className="w-4 h-4 text-teal-600" />
-                      )}
-                    </motion.button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
-
+    <section className="container m-auto bg-white min-h-[calc(100vh-90px)] md:min-h-[calc(100vh-120px)] sm:md:min-h-[calc(100vh-120px)] flex items-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16 relative">
       <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8 sm:gap-10 lg:gap-12 items-center w-full">
         {/* Left Content */}
         <div className="space-y-4 sm:space-y-6 order-2 md:order-1">
@@ -529,6 +472,65 @@ export default function Hero() {
             transition={{ duration: 0.5 }}
             className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-100 p-6 sm:p-7 md:p-8"
           >
+            {/* Language Selector at Top of Form */}
+            <div className="flex justify-end mb-4">
+              <div className="relative" ref={languageDropdownRef}>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  type="button"
+                  onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
+                  className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-200 text-teal-700 rounded-full hover:from-teal-100 hover:to-emerald-100 transition-all shadow-sm"
+                >
+                  <Globe className="w-4 h-4" />
+                  <span className="text-xs font-medium">
+                    {availableLanguages.find((l) => l.code === language)?.nativeName || "English"}
+                  </span>
+                  <ChevronDown className={`w-3 h-3 transition-transform ${languageDropdownOpen ? "rotate-180" : ""}`} />
+                </motion.button>
+
+                {/* Language Dropdown */}
+                <AnimatePresence>
+                  {languageDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute top-full right-0 mt-2 w-52 bg-white rounded-xl shadow-2xl border border-slate-200 max-h-72 overflow-y-auto z-50"
+                    >
+                      <div className="p-2">
+                        {availableLanguages.map((lang) => (
+                          <motion.button
+                            key={lang.code}
+                            type="button"
+                            whileHover={{ backgroundColor: "#f0fdfa" }}
+                            onClick={() => {
+                              setLanguage(lang.code)
+                              setLanguageDropdownOpen(false)
+                            }}
+                            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left transition-all ${
+                              language === lang.code
+                                ? "bg-teal-50 text-teal-700"
+                                : "text-slate-700 hover:bg-teal-50"
+                            }`}
+                          >
+                            <div className="flex flex-col">
+                              <span className="text-sm font-semibold">{lang.nativeName}</span>
+                              <span className="text-xs text-slate-500">{lang.name}</span>
+                            </div>
+                            {language === lang.code && (
+                              <div className="w-2 h-2 bg-teal-500 rounded-full"></div>
+                            )}
+                          </motion.button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+
             {/* Progress Indicators with Step Number */}
             <div className="flex items-center gap-2 mb-4 sm:mb-5">
               {/* Animated Step Number */}

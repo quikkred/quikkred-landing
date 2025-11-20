@@ -28,9 +28,9 @@ export const metadata: Metadata = {
   keywords: "instant loan, quick loan, personal loan online, instant approval, fast loan disbursal, digital loan application, minimal documentation loan, online personal loan India, quick cash loan, emergency loan",
   metadataBase: new URL('https://www.quikkred.in'),
   icons: {
-    icon: "./favicons.ico",
-    shortcut: "./favicons.ico",
-    apple: "./apple-touch-icon.png"
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png"
   },
   authors: [{ name: "Quikkred" }],
   robots: {

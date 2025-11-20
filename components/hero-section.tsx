@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { usePathname, useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Globe, ChevronDown, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 
@@ -32,15 +32,29 @@ const floatingDotsData = [
 ];
 
 export function HeroSection() {
-  const { t } = useLanguage();
+  const { t, language, setLanguage, availableLanguages } = useLanguage();
   const pathname = usePathname();
+  const router = useRouter();
   const isLanguageSelectionPage = pathname === '/select-language';
+  const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     mobile: "",
     amount: "",
     email: "",
   });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Save form data to localStorage for pre-filling in apply page
+    if (formData.name || formData.mobile || formData.amount || formData.email) {
+      localStorage.setItem('heroFormData', JSON.stringify(formData));
+    }
+
+    // Navigate to apply page
+    router.push('/apply/quick');
+  };
 
   return (
     <div className="relative w-full overflow-hidden bg-gradient-to-br from-white via-[#e8f4fd] to-[#ecfdf5]">
@@ -70,7 +84,7 @@ export function HeroSection() {
 
 
       <div className="relative z-10 w-full">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+        <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 lg:py-16">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left Content */}
           <motion.div
@@ -121,7 +135,7 @@ export function HeroSection() {
           <motion.div
             initial={{ x: 50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            className="bg-white/95 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-8 sm:p-10 lg:p-12 shadow-2xl relative border border-white/50 order-1 lg:order-2 max-w-2xl mx-auto lg:mx-0"
+            className="bg-white/95 backdrop-blur-lg rounded-2xl sm:rounded-3xl p-6 sm:p-8 lg:p-10 shadow-2xl relative border border-white/50 order-1 lg:order-2 max-w-2xl mx-auto lg:mx-0 overflow-visible"
           >
             {/* Decorative Circles around the form - Well spread out */}
             <motion.div
@@ -178,24 +192,66 @@ export function HeroSection() {
               $
             </motion.div>
             {/* Header with Language Selector */}
-            <div className="flex items-start justify-between mb-6 sm:mb-8">
-              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 flex-1">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-6 sm:mb-8">
+              <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 flex-shrink-0">
                 {t.hero.cta.primary}
               </h3>
 
-              {/* Language Selector Link - Only show on non-language-selection pages */}
-              {!isLanguageSelectionPage && (
-                <Link
-                  href="/select-language"
-                  className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#38bdf8]/10 to-[#34d399]/10 text-gray-700 border border-[#38bdf8]/30 rounded-full hover:bg-gradient-to-r hover:from-[#38bdf8]/20 hover:to-[#34d399]/20 hover:shadow-md transition-all duration-200 ml-3"
+              {/* Language Selector Dropdown */}
+              <div className="relative flex-shrink-0">
+                <button
+                  onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
+                  type="button"
+                  className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-gradient-to-r from-[#38bdf8]/10 to-[#34d399]/10 text-gray-700 border border-[#38bdf8]/30 rounded-full hover:bg-gradient-to-r hover:from-[#38bdf8]/20 hover:to-[#34d399]/20 hover:shadow-md transition-all duration-200"
                 >
                   <Globe className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="text-xs sm:text-sm font-medium">{t.common.language}</span>
-                </Link>
-              )}
+                  <span className="text-xs sm:text-sm font-medium whitespace-nowrap">
+                    {availableLanguages.find(lang => lang.code === language)?.nativeName || 'English'}
+                  </span>
+                  <ChevronDown className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 ${languageDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                  {languageDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-50"
+                    >
+                      <div className="max-h-80 overflow-y-auto py-2">
+                        {availableLanguages.map((lang) => (
+                          <button
+                            key={lang.code}
+                            type="button"
+                            onClick={() => {
+                              setLanguage(lang.code);
+                              setLanguageDropdownOpen(false);
+                            }}
+                            className={`w-full px-4 py-3 text-left hover:bg-gradient-to-r hover:from-[#38bdf8]/10 hover:to-[#34d399]/10 transition-all duration-200 ${
+                              language === lang.code ? 'bg-gradient-to-r from-[#38bdf8]/20 to-[#34d399]/20 font-semibold' : ''
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">{lang.nativeName}</p>
+                                <p className="text-xs text-gray-500">{lang.name}</p>
+                              </div>
+                              {language === lang.code && (
+                                <div className="w-2 h-2 bg-gradient-to-r from-[#38bdf8] to-[#34d399] rounded-full"></div>
+                              )}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
 
-            <form className="space-y-5 sm:space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
               <div>
                 <label className="block text-sm sm:text-base font-semibold text-gray-700 mb-2">
                   {t.application.fields.fullName}
@@ -253,6 +309,10 @@ export function HeroSection() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSubmit(e);
+                }}
                 className="w-full py-4 sm:py-5 bg-gradient-to-r from-[#38bdf8] to-[#34d399] text-white rounded-full font-bold text-lg sm:text-xl shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2 mt-8"
               >
                 {t.hero.cta.primary}
