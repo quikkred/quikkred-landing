@@ -85,6 +85,10 @@ export default function QuickLoanApplication() {
   const [apiDeterminedStep, setApiDeterminedStep] = useState<number | null>(null);
   const [redirectCountdown, setRedirectCountdown] = useState<number>(5);
 
+  // OTP Resend timers
+  const [emailOtpTimer, setEmailOtpTimer] = useState(0);
+  const [aadhaarOtpTimer, setAadhaarOtpTimer] = useState(0);
+
   // Field validation errors for Step 1
   const [fieldErrors, setFieldErrors] = useState({
     email: "",
@@ -319,6 +323,66 @@ export default function QuickLoanApplication() {
     }
   }, [decision, router]);
 
+  // OTP timer countdown for Email/Mobile
+  useEffect(() => {
+    if (emailOtpTimer > 0) {
+      const timer = setTimeout(() => setEmailOtpTimer(emailOtpTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [emailOtpTimer]);
+
+  // OTP timer countdown for Aadhaar
+  useEffect(() => {
+    if (aadhaarOtpTimer > 0) {
+      const timer = setTimeout(() => setAadhaarOtpTimer(aadhaarOtpTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [aadhaarOtpTimer]);
+
+  // Save form data to localStorage on change (excluding sensitive fields)
+  useEffect(() => {
+    const dataToSave = {
+      fullName: formData.fullName,
+      email: formData.email,
+      mobile: formData.mobile,
+      dob: formData.dob,
+      employmentType: formData.employmentType,
+      monthlyIncome: formData.monthlyIncome,
+      companyName: formData.companyName,
+      bankName: formData.bankName,
+      loanAmount: formData.loanAmount,
+      tenure: formData.tenure,
+      purpose: formData.purpose,
+      reference1Name: formData.reference1Name,
+      reference1Mobile: formData.reference1Mobile,
+      reference1Relationship: formData.reference1Relationship,
+      reference2Name: formData.reference2Name,
+      reference2Mobile: formData.reference2Mobile,
+      reference2Relationship: formData.reference2Relationship,
+      currentStep
+    };
+    localStorage.setItem('quickLoanFormData', JSON.stringify(dataToSave));
+  }, [formData, currentStep]);
+
+  // Load form data from localStorage on mount
+  useEffect(() => {
+    const savedData = localStorage.getItem('quickLoanFormData');
+    if (savedData && !user) {
+      try {
+        const parsed = JSON.parse(savedData);
+        setFormData(prev => ({
+          ...prev,
+          ...parsed
+        }));
+        if (parsed.currentStep) {
+          setCurrentStep(parsed.currentStep);
+        }
+      } catch (error) {
+        console.error('Error loading saved form data:', error);
+      }
+    }
+  }, [user]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setFormData(prev => ({
@@ -355,6 +419,7 @@ console.log('Sending OTP with payload:', payload);
 
       if (response.ok && data.success) {
         setOtpSent(true);
+        setEmailOtpTimer(60); // Start 60 second countdown
         toast({
           variant: "success",
           title: "OTP Sent Successfully!",
@@ -671,6 +736,7 @@ console.log('Sending OTP with payload:', payload);
 
       if (response.ok && result.success) {
         setAadhaarOtpSent(true);
+        setAadhaarOtpTimer(60); // Start 60 second countdown
         setAadhaarError(""); // Clear any errors
         toast({
           variant: "success",
@@ -1948,10 +2014,28 @@ console.log('Sending OTP with payload:', payload);
                           <button
                             onClick={verifyOTP}
                             disabled={formData.otp.length !== 6 || loading}
-                            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
                           >
                             Verify
                           </button>
+                        </div>
+                        <div className="mt-2 flex items-center justify-between">
+                          <p className="text-xs text-gray-500">
+                            Didn't receive OTP?
+                          </p>
+                          {emailOtpTimer > 0 ? (
+                            <p className="text-xs text-gray-600">
+                              Resend in {emailOtpTimer}s
+                            </p>
+                          ) : (
+                            <button
+                              onClick={sendOTP}
+                              disabled={loading}
+                              className="text-xs text-[#25B181] hover:underline disabled:opacity-50"
+                            >
+                              Resend OTP
+                            </button>
+                          )}
                         </div>
                       </div>
                     )}
@@ -2013,10 +2097,28 @@ console.log('Sending OTP with payload:', payload);
                           <button
                             onClick={verifyOTP}
                             disabled={formData.otp.length !== 6 || loading}
-                            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
                           >
                             Verify
                           </button>
+                        </div>
+                        <div className="mt-2 flex items-center justify-between">
+                          <p className="text-xs text-gray-500">
+                            Didn't receive OTP?
+                          </p>
+                          {emailOtpTimer > 0 ? (
+                            <p className="text-xs text-gray-600">
+                              Resend in {emailOtpTimer}s
+                            </p>
+                          ) : (
+                            <button
+                              onClick={sendOTP}
+                              disabled={loading}
+                              className="text-xs text-[#25B181] hover:underline disabled:opacity-50"
+                            >
+                              Resend OTP
+                            </button>
+                          )}
                         </div>
                       </div>
                     )}
@@ -2201,9 +2303,24 @@ console.log('Sending OTP with payload:', payload);
                         </button>
                       )}
                       {aadhaarVerified && (
-                        <div className="flex items-center gap-2 px-3 py-3 bg-green-50 border border-green-200 rounded-lg">
-                          <CheckCircle className="w-5 h-5 text-green-600" />
-                          <span className="text-sm text-green-700 font-medium">Verified</span>
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center gap-2 px-3 py-3 bg-green-50 border border-green-200 rounded-lg">
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                            <span className="text-sm text-green-700 font-medium">Verified</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAadhaarVerified(false);
+                              setAadhaarOtpSent(false);
+                              setAadhaarOtp("");
+                              setAadhaarData(null);
+                              setAadhaarAddress(null);
+                            }}
+                            className="px-3 py-2 text-xs text-[#25B181] border border-[#25B181] rounded-lg hover:bg-[#25B181] hover:text-white transition-colors"
+                          >
+                            Reverify
+                          </button>
                         </div>
                       )}
                     </div>
@@ -2237,9 +2354,25 @@ console.log('Sending OTP with payload:', payload);
                             {aadhaarVerifying ? "Verifying..." : "Verify OTP"}
                           </button>
                         </div>
-                        <p className="mt-1 text-xs text-gray-500">
-                          OTP sent to Aadhaar-linked mobile number
-                        </p>
+                        <div className="mt-2 flex items-center justify-between">
+                          <p className="text-xs text-gray-500">
+                            OTP sent to Aadhaar-linked mobile
+                          </p>
+                          {aadhaarOtpTimer > 0 ? (
+                            <p className="text-xs text-gray-600">
+                              Resend in {aadhaarOtpTimer}s
+                            </p>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={sendAadhaarOTP}
+                              disabled={aadhaarVerifying}
+                              className="text-xs text-[#25B181] hover:underline disabled:opacity-50"
+                            >
+                              Resend OTP
+                            </button>
+                          )}
+                        </div>
                       </div>
                     )}
 
@@ -2287,9 +2420,22 @@ console.log('Sending OTP with payload:', payload);
                         </button>
                       )}
                       {panVerified && (
-                        <div className="flex items-center gap-2 px-3 py-3 bg-green-50 border border-green-200 rounded-lg">
-                          <CheckCircle className="w-5 h-5 text-green-600" />
-                          <span className="text-sm text-green-700 font-medium">Verified</span>
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center gap-2 px-3 py-3 bg-green-50 border border-green-200 rounded-lg">
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                            <span className="text-sm text-green-700 font-medium">Verified</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPanVerified(false);
+                              setPanData(null);
+                              setPanError("");
+                            }}
+                            className="px-3 py-2 text-xs text-[#25B181] border border-[#25B181] rounded-lg hover:bg-[#25B181] hover:text-white transition-colors"
+                          >
+                            Reverify
+                          </button>
                         </div>
                       )}
                     </div>
