@@ -242,7 +242,8 @@ export default function Hero() {
   }
 
   const handleNext = () => {
-    const currentField = Object.keys(formData)[currentStep - 1]
+    // Get the current field from the steps array instead of formData keys
+    const currentField = steps[currentStep - 1].field
     if (formData[currentField as keyof typeof formData]) {
       if (currentStep === 4) {
         // Submit on last step

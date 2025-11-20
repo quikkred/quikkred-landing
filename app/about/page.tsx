@@ -129,32 +129,6 @@ export default function AboutPage() {
         />
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 bg-[rgb(var(--bg-primary))]">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                initial={{ y: 20, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="text-center"
-              >
-                <div className="w-16 h-16 bg-gradient-to-br from-[#25B181] to-[#51C9AF] rounded-full flex items-center justify-center mx-auto mb-4">
-                  <stat.icon className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-3xl font-bold text-[rgb(var(--text-primary))] mb-2">
-                  {stat.value}
-                </h3>
-                <p className="text-[rgb(var(--text-secondary))]">{stat.label}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Our Story */}
       <section id="story" className="py-12 sm:py-16 lg:py-20 bg-[rgb(var(--bg-secondary))]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -266,52 +240,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Timeline Section */}
-      <section id="timeline" className="py-12 sm:py-16 lg:py-20 bg-[rgb(var(--bg-secondary))]">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4 text-[rgb(var(--text-primary))]">Our Journey</h2>
-            <p className="text-base sm:text-lg lg:text-xl text-[rgb(var(--text-secondary))]">
-              Milestones in our mission to transform lending
-            </p>
-          </motion.div>
-
-          <div className="max-w-4xl mx-auto">
-            {milestones.map((milestone, index) => (
-              <motion.div
-                key={milestone.title}
-                initial={{ x: index % 2 === 0 ? -50 : 50, opacity: 0 }}
-                whileInView={{ x: 0, opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.2 }}
-                className={`flex items-center gap-8 mb-12 ${
-                  index % 2 === 0 ? "flex-row" : "flex-row-reverse"
-                }`}
-              >
-                <div className="flex-1">
-                  <div className={`bg-[rgb(var(--bg-primary))] border border-[rgb(var(--border-default))] p-6 rounded-xl shadow-card ${
-                    index % 2 === 0 ? "text-right" : "text-left"
-                  }`}>
-                    <span className="text-[#4A66FF] font-bold text-lg">
-                      {milestone.year}
-                    </span>
-                    <h3 className="text-xl font-bold mt-2 mb-3 text-[rgb(var(--text-primary))]">{milestone.title}</h3>
-                    <p className="text-[rgb(var(--text-secondary))]">{milestone.description}</p>
-                  </div>
-                </div>
-                <div className="w-4 h-4 bg-[#4A66FF] rounded-full flex-shrink-0" />
-                <div className="flex-1" />
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Leadership Section */}
       <section id="leadership" className="py-12 sm:py-16 lg:py-20 bg-[rgb(var(--bg-primary))]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -356,42 +284,6 @@ export default function AboutPage() {
               </motion.div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-[#25B181] to-[#4A66FF] text-white">
-        <div className="container mx-auto px-4 text-center">
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4 text-white">
-              Join Us in Our Mission
-            </h2>
-            <p className="text-xl mb-8 text-white/90">
-              Be part of India's financial inclusion revolution
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <motion.a
-                href="/apply/quick"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 bg-white text-[#25B181] rounded-full font-semibold text-lg hover:shadow-xl transition-all"
-              >
-                Apply for Loan
-              </motion.a>
-              <motion.a
-                href="/careers"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 bg-transparent border-2 border-white text-white rounded-full font-semibold text-lg hover:bg-white hover:text-[#25B181] transition-all"
-              >
-                Join Our Team
-              </motion.a>
-            </div>
-          </motion.div>
         </div>
       </section>
     </div>

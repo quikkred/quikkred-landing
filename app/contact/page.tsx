@@ -185,8 +185,8 @@ const handleSubmit = async (e: React.FormEvent) => {
     {
       icon: MapPin,
       title: "Visit Us",
-      primary: "Mumbai Head Office",
-      secondary: "Bangalore Branch",
+      primary: "New Delhi Head Office",
+      secondary: "Mumbai & Bangalore Branches",
       description: "Meet us in person",
       available: "Mon-Sat: 9 AM - 6 PM"
     }
@@ -194,8 +194,16 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   const offices = [
     {
-      city: "Mumbai",
+      city: "New Delhi",
       type: "Head Office",
+      address: "1008, 10th floor, Vikrant tower, Rajendra Place, New Delhi, Delhi, Pin Code 110005",
+      phone: "+91-11-4567-8900",
+      email: "delhi@Quikkred.com",
+      hours: "Mon-Sat: 9:00 AM - 6:00 PM"
+    },
+    {
+      city: "Mumbai",
+      type: "Branch Office",
       address: "Level 15, One World Center, Tower 2A, Jupiter Mill Compound, Senapati Bapat Marg, Lower Parel, Mumbai - 400013",
       phone: "+91-22-4567-8900",
       email: "mumbai@Quikkred.com",
@@ -207,14 +215,6 @@ const handleSubmit = async (e: React.FormEvent) => {
       address: "4th Floor, Prestige Meridian, No. 29, MG Road, Bangalore - 560001",
       phone: "+91-80-4567-8900",
       email: "bangalore@Quikkred.com",
-      hours: "Mon-Sat: 9:00 AM - 6:00 PM"
-    },
-    {
-      city: "Delhi",
-      type: "Branch Office",
-      address: "8th Floor, DLF Cyber City, Phase III, Gurgaon, Delhi NCR - 122002",
-      phone: "+91-124-4567-8900",
-      email: "delhi@Quikkred.com",
       hours: "Mon-Sat: 9:00 AM - 6:00 PM"
     }
   ];

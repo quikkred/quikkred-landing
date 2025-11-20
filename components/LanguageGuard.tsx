@@ -17,22 +17,24 @@ export default function LanguageGuard({ children }: { children: React.ReactNode 
 
     // Check if user has selected a language before
     const hasLanguageSelected = document.cookie.includes('languageSelected=true');
+    const savedLang = localStorage.getItem('language');
 
-    console.log('LanguageGuard check:', { pathname, hasLanguageSelected, cookies: document.cookie });
+    console.log('LanguageGuard check:', { pathname, hasLanguageSelected, savedLang, cookies: document.cookie });
 
-    if (!hasLanguageSelected) {
-      // First time visitor - redirect to language selector immediately
-      console.log('Redirecting to /select-language');
-      router.replace('/select-language');
-      // Don't set checking to false - keep showing nothing until redirect completes
-    } else {
-      // User has selected language - allow rendering
-      console.log('Language selected, rendering content');
-      setChecking(false);
+    if (!hasLanguageSelected && !savedLang) {
+      // First time visitor - set English as default
+      console.log('First time visitor - setting English as default');
+      localStorage.setItem('language', 'en');
+      document.cookie = 'languageSelected=true; path=/; max-age=31536000'; // 1 year
+      (window as any).__initialLanguage = 'en';
     }
+
+    // User has language (either selected or default) - allow rendering
+    console.log('Language available, rendering content');
+    setChecking(false);
   }, [pathname, router]);
 
-  // Show nothing while checking or redirecting
+  // Show nothing while checking
   if (checking) {
     return null;
   }

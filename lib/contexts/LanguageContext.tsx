@@ -109,29 +109,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const initializeLanguage = async () => {
       try {
-        // Check if user has selected a language before
-        const hasLanguageSelected = typeof window !== 'undefined' &&
-          document.cookie.includes('languageSelected=true');
+        // Get the saved language preference (defaults to 'en' if not set)
+        const savedLang = getInitialLanguageForState() || 'en';
 
-        // If no language selected yet, mark as initialized immediately
-        // User will be redirected to language selector by LanguageGuard
-        if (!hasLanguageSelected) {
-          // Make sure i18next doesn't have a language set
-          if (i18n && i18n.language) {
-            // Remove any auto-detected language
-            document.cookie = 'i18nextLng=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-          }
-          setIsInitialized(true);
-          return;
-        }
-
-        // Get the saved language preference
-        const savedLang = getInitialLanguageForState();
-
-        // If no saved language, something went wrong - redirect to selector
-        if (!savedLang) {
-          setIsInitialized(true);
-          return;
+        // If no language in localStorage, set English as default
+        if (!localStorage.getItem('language')) {
+          localStorage.setItem('language', 'en');
+          document.cookie = 'languageSelected=true; path=/; max-age=31536000';
         }
 
         // Update state first

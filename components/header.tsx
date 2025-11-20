@@ -377,7 +377,7 @@ export function Header() {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="btn-primary flex items-center gap-1 text-xs xl:text-sm !py-2 xl:!py-2.5 !px-4 xl:!px-5"
+                    className="btn-primary flex items-center rounded-[5px] gap-1 text-xs xl:text-sm !py-2 xl:!py-2.5 !px-4 xl:!px-5"
                   >
                     {t.common.apply}
                     <ArrowRight className="w-3 h-3 xl:w-3.5 xl:h-3.5" />
