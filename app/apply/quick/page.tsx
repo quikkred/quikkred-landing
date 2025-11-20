@@ -89,6 +89,12 @@ export default function QuickLoanApplication() {
   const [emailOtpTimer, setEmailOtpTimer] = useState(0);
   const [aadhaarOtpTimer, setAadhaarOtpTimer] = useState(0);
 
+  // Loan Products
+  const [loanProducts, setLoanProducts] = useState<any[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [emiCalculation, setEmiCalculation] = useState<any>(null);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+
   // Field validation errors for Step 1
   const [fieldErrors, setFieldErrors] = useState({
     email: "",
@@ -124,6 +130,7 @@ export default function QuickLoanApplication() {
     // Step 3: Loan & Consent
     loanAmount: "",
     tenure: "12",
+    loanProductId: "",
     purpose: "",
     reference1Name: "",
     reference1Mobile: "",
@@ -382,6 +389,112 @@ export default function QuickLoanApplication() {
       }
     }
   }, [user]);
+
+  // Fetch loan products
+  useEffect(() => {
+    const fetchLoanProducts = async () => {
+      const token =   localStorage.getItem('accessToken') ||
+                      localStorage.getItem('token') ||
+                      localStorage.getItem('authToken');
+      setLoadingProducts(true);
+      try {
+        const response = await fetch('https://api.bluechipfinmax.com/api/loanProduct/allLoanProductsNameOnly', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success && result.data) {
+          setLoanProducts(result.data);
+          console.log('✅ Loan products loaded:', result.data);
+        } else {
+          console.error('Failed to fetch loan products:', result.message);
+          toast({
+            title: "Error",
+            description: "Failed to load loan products. Please refresh the page.",
+            variant: "error"
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching loan products:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load loan products. Please refresh the page.",
+          variant: "error"
+        });
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    fetchLoanProducts();
+  }, []);
+
+  // Calculate EMI when loan amount, tenure, or product changes
+  useEffect(() => {
+    if (formData.loanAmount && formData.tenure && selectedProduct) {
+      calculateEMI();
+    }
+  }, [formData.loanAmount, formData.tenure, selectedProduct]);
+
+  const calculateEMI = () => {
+    if (!selectedProduct || !formData.loanAmount || !formData.tenure) {
+      setEmiCalculation(null);
+      return;
+    }
+
+    const principal = parseFloat(formData.loanAmount.replace(/,/g, ''));
+    const tenureMonths = parseInt(formData.tenure);
+    const dailyRate = selectedProduct.dailyInterestRate / 100;
+    const processingFeePercent = selectedProduct.processingFee / 100;
+    const gstPercent = selectedProduct.gst / 100;
+
+    // Calculate daily interest for the tenure (365 days per year)
+    const totalDays = Math.round((tenureMonths / 12) * 365);
+    const totalInterest = principal * dailyRate * totalDays;
+
+    // Calculate processing fee and GST
+    const processingFee = principal * processingFeePercent;
+    const gstOnProcessingFee = processingFee * gstPercent;
+    const totalProcessingFee = processingFee + gstOnProcessingFee;
+
+    // Total amount to be repaid
+    const totalAmount = principal + totalInterest;
+
+    // EMI calculation
+    const emi = Math.round(totalAmount / tenureMonths);
+
+    setEmiCalculation({
+      principal: principal,
+      dailyInterestRate: selectedProduct.dailyInterestRate,
+      totalDays: totalDays,
+      totalInterest: Math.round(totalInterest),
+      processingFee: Math.round(processingFee),
+      gst: Math.round(gstOnProcessingFee),
+      totalProcessingFee: Math.round(totalProcessingFee),
+      totalAmount: Math.round(totalAmount),
+      emi: emi,
+      tenureMonths: tenureMonths
+    });
+  };
+
+  const handleProductChange = (productId: string) => {
+    const product = loanProducts.find(p => p._id === productId);
+    setSelectedProduct(product || null);
+
+    // Automatically set purpose based on selected product
+    const purpose = product ? `${product.productName} - ${product.category}` : '';
+
+    setFormData(prev => ({
+      ...prev,
+      loanProductId: productId,
+      purpose: purpose
+    }));
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -1257,6 +1370,16 @@ console.log('Sending OTP with payload:', payload);
     }
 
     if (currentStep === 3) {
+      // Loan Product validation
+      if (!formData.loanProductId) {
+        toast({
+          variant: "warning",
+          title: "Loan Product Required",
+          description: "Please select a loan product.",
+        });
+        return;
+      }
+
       // Loan Amount validation
       if (!formData.loanAmount || parseFloat(formData.loanAmount) <= 0) {
         toast({
@@ -1282,16 +1405,6 @@ console.log('Sending OTP with payload:', payload);
           variant: "warning",
           title: "Maximum Loan Amount",
           description: "Maximum loan amount is ₹1,00,00,000.",
-        });
-        return;
-      }
-
-      // Purpose validation
-      if (!formData.purpose || formData.purpose.trim().length < 3) {
-        toast({
-          variant: "warning",
-          title: "Purpose Required",
-          description: "Please enter the purpose of loan (minimum 3 characters).",
         });
         return;
       }
@@ -1402,11 +1515,21 @@ console.log('Sending OTP with payload:', payload);
           return;
         }
 
-        // Calculate EMI
+        // Use the correctly calculated EMI from emiCalculation
         const principal = parseFloat(formData.loanAmount);
-        const rate = 12.5 / 100 / 12; // 12.5% annual rate
         const tenureMonths = parseInt(formData.tenure);
-        const emi = Math.round((principal * rate * Math.pow(1 + rate, tenureMonths)) / (Math.pow(1 + rate, tenureMonths) - 1));
+        const emi = emiCalculation?.emi || 0;
+
+        // Validate that EMI has been calculated
+        if (!emi || !emiCalculation) {
+          toast({
+            variant: "error",
+            title: "EMI Calculation Error",
+            description: "Please ensure loan amount and tenure are properly set.",
+          });
+          setLoading(false);
+          return;
+        }
 
         // Create FormData to include selfie file
         const formDataToSend = new FormData();
@@ -1417,6 +1540,15 @@ console.log('Sending OTP with payload:', payload);
         formDataToSend.append('tenureUnit', 'months');
         formDataToSend.append('emiAmount', emi.toString());
         formDataToSend.append('purpose', formData.purpose);
+        formDataToSend.append('productId', formData.loanProductId);
+
+        // Add product details (interestRate, processingFee, gstOnProcessingFee)
+        if (selectedProduct) {
+          formDataToSend.append('interestRate', selectedProduct.dailyInterestRate.toString());
+          formDataToSend.append('processingFee', selectedProduct.processingFee.toString());
+          formDataToSend.append('gstOnProcessingFee', selectedProduct.gst.toString());
+        }
+
         formDataToSend.append('isVerificationDetailsFilled', 'true');
         formDataToSend.append('isSubmit', 'true');
 
@@ -2598,6 +2730,38 @@ console.log('Sending OTP with payload:', payload);
               >
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Loan Details & References (1 minute)</h2>
 
+                {/* Loan Product Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Select Loan Product *
+                  </label>
+                  <select
+                    name="loanProductId"
+                    value={formData.loanProductId}
+                    onChange={(e) => handleProductChange(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                    disabled={loadingProducts}
+                  >
+                    <option value="">
+                      {loadingProducts ? 'Loading products...' : 'Select a loan product'}
+                    </option>
+                    {loanProducts.map((product) => (
+                      <option key={product._id} value={product._id}>
+                        {product.productName} - {product.category} (Rate: {product.dailyInterestRate}% daily)
+                      </option>
+                    ))}
+                  </select>
+                  {selectedProduct && (
+                    <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm text-blue-800">
+                        <span className="font-semibold">Daily Interest Rate:</span> {selectedProduct.dailyInterestRate}% |
+                        <span className="font-semibold ml-2">Processing Fee:</span> {selectedProduct.processingFee}% |
+                        <span className="font-semibold ml-2">GST:</span> {selectedProduct.gst}%
+                      </p>
+                    </div>
+                  )}
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -2642,19 +2806,84 @@ console.log('Sending OTP with payload:', payload);
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Purpose of Loan *
-                  </label>
-                  <input
-                    type="text"
-                    name="purpose"
-                    value={formData.purpose}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                    placeholder="e.g., Home Renovation, Medical Emergency, Education"
-                  />
-                </div>
+                {/* EMI Calculation Display */}
+                {emiCalculation && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-6 shadow-lg"
+                  >
+                    <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                      <Sparkles className="w-5 h-5 text-green-600 mr-2" />
+                      EMI Calculation Details
+                    </h3>
+
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="bg-white rounded-lg p-4 shadow-sm">
+                        <p className="text-xs text-gray-600 mb-1">Principal Amount</p>
+                        <p className="text-2xl font-bold text-gray-900">
+                          ₹{emiCalculation.principal.toLocaleString('en-IN')}
+                        </p>
+                      </div>
+                      <div className="bg-white rounded-lg p-4 shadow-sm">
+                        <p className="text-xs text-gray-600 mb-1">Monthly EMI</p>
+                        <p className="text-2xl font-bold text-green-600">
+                          ₹{emiCalculation.emi.toLocaleString('en-IN')}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3 mb-4">
+                      <div className="bg-white rounded-lg p-3 shadow-sm">
+                        <p className="text-xs text-gray-600 mb-1">Total Interest</p>
+                        <p className="text-lg font-semibold text-gray-900">
+                          ₹{emiCalculation.totalInterest.toLocaleString('en-IN')}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          @ {emiCalculation.dailyInterestRate}% daily
+                        </p>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 shadow-sm">
+                        <p className="text-xs text-gray-600 mb-1">Processing Fee</p>
+                        <p className="text-lg font-semibold text-gray-900">
+                          ₹{emiCalculation.processingFee.toLocaleString('en-IN')}
+                        </p>
+                      </div>
+                      <div className="bg-white rounded-lg p-3 shadow-sm">
+                        <p className="text-xs text-gray-600 mb-1">GST</p>
+                        <p className="text-lg font-semibold text-gray-900">
+                          ₹{emiCalculation.gst.toLocaleString('en-IN')}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg p-4 text-white">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="text-sm opacity-90 mb-1">Total Amount Payable</p>
+                          <p className="text-3xl font-bold">
+                            ₹{emiCalculation.totalAmount.toLocaleString('en-IN')}
+                          </p>
+                          <p className="text-xs opacity-80 mt-1">
+                            Over {emiCalculation.tenureMonths} months ({emiCalculation.totalDays} days)
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm opacity-90 mb-1">Processing Fee (incl. GST)</p>
+                          <p className="text-xl font-bold">
+                            ₹{emiCalculation.totalProcessingFee.toLocaleString('en-IN')}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <p className="text-xs text-yellow-800">
+                        <span className="font-semibold">Note:</span> This is an indicative calculation. Final EMI may vary based on approval terms and conditions.
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
 
                 {/* Reference 1 */}
                 <div className="bg-gray-50 rounded-lg p-4">
