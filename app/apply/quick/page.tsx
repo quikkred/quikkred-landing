@@ -741,18 +741,6 @@ console.log('Sending OTP with payload:', payload);
       return;
     }
 
-    // Check if name and DOB are filled (from Aadhaar)
-    // if (!formData.fullName || !formData.dob) {
-    //   const errorMsg = "Please verify Aadhaar first to get name and date of birth.";
-    //   setPanError(errorMsg);
-    //   toast({
-    //     variant: "warning",
-    //     title: "Missing Information",
-    //     description: errorMsg,
-    //   });
-    //   return;
-    // }
-
     setPanVerifying(true);
     try {
       const token = localStorage.getItem('accessToken') ||
@@ -783,7 +771,9 @@ console.log('Sending OTP with payload:', payload);
       });
 
       const result = await response.json();
-      
+
+      // Check if API returned success
+      if (result.success && result.data) {
         setPanVerified(true);
         setPanData(result.data);
         setPanError(""); // Clear any errors
@@ -793,14 +783,24 @@ console.log('Sending OTP with payload:', payload);
         const nameMatch = result.data.data?.name_as_per_pan_match;
         const dobMatch = result.data.data?.date_of_birth_match;
 
-          let description = 'PAN verification successful!';
-          let warningMsg = '';
+        let description = 'PAN verification successful!';
+        let warningMsg = '';
 
-          toast({
-            variant: nameMatch && dobMatch ? "success" : "warning",
-            title: "PAN Verified!",
-            description: warningMsg ? `${description} ${warningMsg}` : description,
-          });
+        toast({
+          variant: nameMatch && dobMatch ? "success" : "warning",
+          title: "PAN Verified!",
+          description: warningMsg ? `${description} ${warningMsg}` : description,
+        });
+      } else {
+        // API returned error
+        const errorMsg = result.message || 'Failed to verify PAN. Please check the PAN number and try again.';
+        setPanError(errorMsg);
+        toast({
+          variant: "error",
+          title: "Verification Failed",
+          description: errorMsg,
+        });
+      }
     } catch (error: any) {
       const errorMsg = error.message || 'Failed to verify PAN. Please try again.';
       setPanError(errorMsg);
