@@ -49,7 +49,18 @@ export function HeroSection() {
 
     // Save form data to localStorage for pre-filling in apply page
     if (formData.name || formData.mobile || formData.amount || formData.email) {
-      localStorage.setItem('heroFormData', JSON.stringify(formData));
+      const dataToSave = {
+        name: formData.name,
+        mobile: formData.mobile,
+        amount: formData.amount,
+        email: formData.email
+      };
+      console.log('💾 Saving hero form data:', dataToSave);
+      localStorage.setItem('heroFormData', JSON.stringify(dataToSave));
+
+      // Verify data was saved
+      const saved = localStorage.getItem('heroFormData');
+      console.log('✅ Verified saved data:', saved);
     }
 
     // Navigate to apply page
