@@ -135,6 +135,7 @@ export default function QuickLoanApplication() {
       // Step 3: Loan & Consent
       loanAmount: "",
       tenure: "12",
+      requestedTenureUnit: "months", // days or months
       productId: "",
       purpose: "",
       reference1Name: "",
@@ -448,12 +449,12 @@ export default function QuickLoanApplication() {
     fetchLoanProducts();
   }, []);
 
-  // Calculate EMI when loan amount, tenure, or product changes
+  // Calculate EMI when loan amount, tenure, tenure unit, or product changes
   useEffect(() => {
     if (formData.loanAmount && formData.tenure && selectedProduct) {
       calculateEMI();
     }
-  }, [formData.loanAmount, formData.tenure, selectedProduct]);
+  }, [formData.loanAmount, formData.tenure, formData.requestedTenureUnit, selectedProduct]);
 
   const calculateEMI = () => {
     if (!selectedProduct || !formData.loanAmount || !formData.tenure) {
@@ -462,13 +463,25 @@ export default function QuickLoanApplication() {
     }
 
     const principal = parseFloat(formData.loanAmount.replace(/,/g, ''));
-    const tenureMonths = parseInt(formData.tenure);
+    const tenureValue = parseInt(formData.tenure);
+    const tenureUnit = formData.requestedTenureUnit;
     const dailyRate = selectedProduct.dailyInterestRate / 100;
     const processingFeePercent = selectedProduct.processingFee / 100;
     const gstPercent = selectedProduct.gst / 100;
 
-    // Calculate daily interest for the tenure (365 days per year)
-    const totalDays = Math.round((tenureMonths / 12) * 365);
+    // Calculate total days based on tenure unit
+    let totalDays: number;
+    let tenureMonths: number;
+
+    if (tenureUnit === 'days') {
+      totalDays = tenureValue;
+      tenureMonths = Math.ceil(tenureValue / 30); // Convert days to months for EMI
+    } else {
+      tenureMonths = tenureValue;
+      totalDays = Math.round((tenureMonths / 12) * 365);
+    }
+
+    // Calculate daily interest for the tenure
     const totalInterest = principal * dailyRate * totalDays;
 
     // Calculate processing fee and GST
@@ -479,8 +492,16 @@ export default function QuickLoanApplication() {
     // Total amount to be repaid
     const totalAmount = principal + totalInterest;
 
-    // EMI calculation
-    const emi = Math.round(totalAmount / tenureMonths);
+    // EMI calculation - For tenure <= 45 days, it's lump sum payment
+    let emi: number;
+    let isLumpSum = false;
+
+    if (tenureUnit === 'days' && tenureValue <= 45) {
+      emi = Math.round(totalAmount); // Full amount in one payment
+      isLumpSum = true;
+    } else {
+      emi = Math.round(totalAmount / tenureMonths);
+    }
 
     setEmiCalculation({
       principal: principal,
@@ -492,7 +513,10 @@ export default function QuickLoanApplication() {
       totalProcessingFee: Math.round(totalProcessingFee),
       totalAmount: Math.round(totalAmount),
       emi: emi,
-      tenureMonths: tenureMonths
+      tenureMonths: tenureMonths,
+      isLumpSum: isLumpSum,
+      tenureUnit: tenureUnit,
+      tenureValue: tenureValue
     });
   };
 
@@ -1602,7 +1626,8 @@ console.log('Sending OTP with payload:', payload);
 
         // Use the correctly calculated EMI from emiCalculation
         const principal = parseFloat(formData.loanAmount);
-        const tenureMonths = parseInt(formData.tenure);
+        const tenureValue = parseInt(formData.tenure);
+        const tenureUnit = formData.requestedTenureUnit;
         const emi = emiCalculation?.emi || 0;
 
         // Validate that EMI has been calculated
@@ -1621,8 +1646,8 @@ console.log('Sending OTP with payload:', payload);
 
         // Add loan application data
         formDataToSend.append('loanAmount', principal.toString());
-        formDataToSend.append('requestedTenure', tenureMonths.toString());
-        formDataToSend.append('tenureUnit', 'months');
+        formDataToSend.append('requestedTenure', tenureValue.toString());
+        formDataToSend.append('requestedTenureUnit', tenureUnit);
         formDataToSend.append('emiAmount', emi.toString());
         formDataToSend.append('purpose', formData.purpose);
         formDataToSend.append('productId', formData.productId);
@@ -2881,19 +2906,40 @@ console.log('Sending OTP with payload:', payload);
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Tenure (months) *
+                      Tenure *
                     </label>
-                    <select
-                      name="tenure"
-                      value={formData.tenure}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                    >
-                      <option value="3">3 Months</option>
-                      <option value="6">6 Months</option>
-                      <option value="12">12 Months</option>
-                      <option value="24">24 Months</option>
-                    </select>
+                    <div className="grid grid-cols-2 gap-3">
+
+ {/* Tenure Value Selector - Changes based on unit */}
+                        <input
+                          type="number"
+                          name="tenure"
+                          value={formData.tenure}
+                          onChange={handleChange}
+                          min="1"
+                          max="365"
+                          className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                          placeholder="Enter days (1-365)"
+                        />
+
+                      {/* Tenure Unit Selector */}
+                      <select
+                        name="requestedTenureUnit"
+                        value={formData.requestedTenureUnit}
+                        onChange={handleChange}
+                        className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] bg-white"
+                      >
+                        <option value="days">Days</option>
+                        <option value="months">Months</option>
+                      </select>
+                   
+                    </div>
+                    {formData.requestedTenureUnit === 'days' && parseInt(formData.tenure) <= 45 && parseInt(formData.tenure) > 0 && (
+                      <p className="mt-2 text-xs text-amber-600 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        Loans with tenure ≤ 45 days require lump sum payment (no EMI)
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -2906,7 +2952,7 @@ console.log('Sending OTP with payload:', payload);
                   >
                     <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
                       <Sparkles className="w-5 h-5 text-green-600 mr-2" />
-                      EMI Calculation Details
+                      {emiCalculation.isLumpSum ? 'Repayment Calculation' : 'EMI Calculation Details'}
                     </h3>
 
                     <div className="grid grid-cols-2 gap-4 mb-4">
@@ -2917,12 +2963,23 @@ console.log('Sending OTP with payload:', payload);
                         </p>
                       </div>
                       <div className="bg-white rounded-lg p-4 shadow-sm">
-                        <p className="text-xs text-gray-600 mb-1">Monthly EMI</p>
+                        <p className="text-xs text-gray-600 mb-1">
+                          {emiCalculation.isLumpSum ? 'Lump Sum Payment' : 'Monthly EMI'}
+                        </p>
                         <p className="text-2xl font-bold text-green-600">
                           ₹{emiCalculation.emi.toLocaleString('en-IN')}
                         </p>
                       </div>
                     </div>
+
+                    {emiCalculation.isLumpSum && (
+                      <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                        <p className="text-sm text-amber-800 flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4" />
+                          <span>This loan requires <strong>full payment at once</strong> (tenure ≤ 45 days)</span>
+                        </p>
+                      </div>
+                    )}
 
                     <div className="grid grid-cols-3 gap-3 mb-4">
                       <div className="bg-white rounded-lg p-3 shadow-sm">
