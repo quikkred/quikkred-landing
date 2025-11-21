@@ -3,18 +3,18 @@ import { NextRequest, NextResponse } from 'next/server';
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Only apply redirect logic to root path
-  if (pathname !== '/') {
-    return NextResponse.next();
-  }
-
   // Check if user has already selected a language (via cookie)
   const languageSelected = request.cookies.get('languageSelected');
 
-  // If language not selected and visiting home page, redirect to language selection
+  // If language not selected, set English as default (no redirect needed)
   if (!languageSelected) {
-    // Redirect WITHOUT setting cookie yet - let the select-language page set it
-    return NextResponse.redirect(new URL('/select-language', request.url));
+    const response = NextResponse.next();
+    // Set cookie to indicate language has been set (default: English)
+    response.cookies.set('languageSelected', 'true', {
+      path: '/',
+      maxAge: 31536000, // 1 year
+    });
+    return response;
   }
 
   return NextResponse.next();
