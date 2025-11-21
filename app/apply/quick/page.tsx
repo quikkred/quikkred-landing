@@ -107,42 +107,70 @@ export default function QuickLoanApplication() {
     ifsc: ""
   });
 
-  const [formData, setFormData] = useState({
-    // Step 1: Basic Details
-    mobile: "",
-    otp: "",
-    mobileVerified: false,
-    emailVerified: false,
-    fullName: "",
-    pan: "",
-    aadhaar: "",
-    dob: "",
-    email: "",
+  // Consent validation error
+  const [consentError, setConsentError] = useState(false);
 
-    // Step 2: Employment & Bank
-    employmentType: "SALARIED",
-    monthlyIncome: "",
-    companyName: "",
-    bankName: "",
-    accountNumber: "",
-    ifsc: "",
+  // Load hero form data FIRST (before useState)
+  const getInitialFormData = () => {
+    const initialData = {
+      // Step 1: Basic Details
+      mobile: "",
+      otp: "",
+      mobileVerified: false,
+      emailVerified: false,
+      fullName: "",
+      pan: "",
+      aadhaar: "",
+      dob: "",
+      email: "",
 
-    // Step 3: Loan & Consent
-    loanAmount: "",
-    tenure: "12",
-    productId: "",
-    purpose: "",
-    reference1Name: "",
-    reference1Mobile: "",
-    reference1Relationship: "",
-    reference2Name: "",
-    reference2Mobile: "",
-    reference2Relationship: "",
-    selfie: null as File | null,
-    creditBureauConsent: false,
-    termsConsent: false,
-    eSignConsent: false
-  });
+      // Step 2: Employment & Bank
+      employmentType: "SALARIED",
+      monthlyIncome: "",
+      companyName: "",
+      bankName: "",
+      accountNumber: "",
+      ifsc: "",
+
+      // Step 3: Loan & Consent
+      loanAmount: "",
+      tenure: "12",
+      productId: "",
+      purpose: "",
+      reference1Name: "",
+      reference1Mobile: "",
+      reference1Relationship: "",
+      reference2Name: "",
+      reference2Mobile: "",
+      reference2Relationship: "",
+      selfie: null as File | null,
+      creditBureauConsent: false,
+      termsConsent: false,
+      eSignConsent: false
+    };
+
+    // Try to load hero form data from localStorage
+    if (typeof window !== 'undefined') {
+      try {
+        const heroData = localStorage.getItem('heroFormData');
+        if (heroData) {
+          const data = JSON.parse(heroData);
+          console.log('💾 Loading hero data into initial state:', data);
+          initialData.fullName = data.name || initialData.fullName;
+          initialData.mobile = data.mobile || initialData.mobile;
+          initialData.loanAmount = data.amount || initialData.loanAmount;
+          initialData.email = data.email || initialData.email;
+          // Don't clear yet - will clear after component mounts
+        }
+      } catch (error) {
+        console.error('Error loading hero data:', error);
+      }
+    }
+
+    return initialData;
+  };
+
+  const [formData, setFormData] = useState(getInitialFormData());
 
   // Load user data if logged in
   useEffect(() => {
@@ -193,7 +221,7 @@ export default function QuickLoanApplication() {
               // Pre-fill form data
               setFormData(prev => ({
                 ...prev,
-                fullName: profileData.fullName || user.name || prev.fullName,
+                fullName: profileData.fullName || prev.fullName,
                 mobile: profileData.mobile || user.mobile || prev.mobile,
                 email: profileData.email || user.email || prev.email,
                 pan: profileData.panCard || prev.pan,
@@ -205,8 +233,8 @@ export default function QuickLoanApplication() {
                 bankName: profileData.banks?.[0]?.bankName || prev.bankName,
                 accountNumber: profileData.banks?.[0]?.accountNumber || prev.accountNumber,
                 ifsc: profileData.banks?.[0]?.ifscCode || prev.ifsc,
-                mobileVerified: true, // Already logged in = verified
-                emailVerified: true
+                mobileVerified: profileData.isMobileVerified || true, // True if logged in with mobile
+                emailVerified: profileData.isEmailVerified || false // Only true if email is actually verified
               }));
 
               // Set verification flags from API
@@ -242,11 +270,11 @@ export default function QuickLoanApplication() {
             } else {
               setFormData(prev => ({
                 ...prev,
-                fullName: user.name || prev.fullName,
+                fullName: prev.fullName, // Keep existing or empty
                 mobile: user.mobile || prev.mobile,
                 email: user.email || prev.email,
-                mobileVerified: true,
-                emailVerified: true
+                mobileVerified: !!user.mobile, // Only if mobile exists
+                emailVerified: false // Email not verified if API fails
               }));
               setUserDataLoaded(true);
             }
@@ -254,11 +282,11 @@ export default function QuickLoanApplication() {
         } catch (error) {
           setFormData(prev => ({
             ...prev,
-            fullName: user.name || prev.fullName,
+            fullName: prev.fullName, // Keep existing or empty
             mobile: user.mobile || prev.mobile,
             email: user.email || prev.email,
-            mobileVerified: true,
-            emailVerified: true
+            mobileVerified: !!user.mobile, // Only if mobile exists
+            emailVerified: false // Email not verified if API fails
           }));
           setUserDataLoaded(true);
         }
@@ -270,28 +298,14 @@ export default function QuickLoanApplication() {
     }
   }, [user, isLoading, userDataLoaded]);
 
-  // Pre-fill data from hero section (for non-logged-in users)
+  // Clean up hero form data from localStorage after component mounts
   useEffect(() => {
-    if (!user) {
-      try {
-        const heroData = localStorage.getItem('heroFormData');
-        if (heroData) {
-          const data = JSON.parse(heroData);
-          setFormData(prev => ({
-            ...prev,
-            fullName: data.name || prev.fullName,
-            mobile: data.mobile || prev.mobile,
-            loanAmount: data.amount || prev.loanAmount,
-            email: data.email || prev.email
-          }));
-          // Clear the localStorage after reading
-          localStorage.removeItem('heroFormData');
-        }
-      } catch (error) {
-        console.error('Error reading hero form data:', error);
-      }
+    // Clear the localStorage after reading (already loaded in initial state)
+    if (localStorage.getItem('heroFormData')) {
+      console.log('🗑️ Clearing hero form data from localStorage');
+      localStorage.removeItem('heroFormData');
     }
-  }, [user]);
+  }, []);
 
   // Apply API-determined step after data is loaded
   useEffect(() => {
@@ -498,6 +512,71 @@ export default function QuickLoanApplication() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
+
+    // Special handling for mobile - only allow numbers
+    if (name === 'mobile' && value && !/^\d*$/.test(value)) {
+      return; // Don't update if non-numeric
+    }
+
+    // Special handling for accountNumber - only allow numbers
+    if (name === 'accountNumber' && value && !/^\d*$/.test(value)) {
+      return; // Don't update if non-numeric
+    }
+
+    // Special handling for fullName - don't allow numbers
+    if (name === 'fullName' && value && /\d/.test(value)) {
+      setFieldErrors(prev => ({
+        ...prev,
+        fullName: "Full name cannot contain numbers"
+      }));
+      return; // Don't update if contains numbers
+    }
+
+    // Special handling for IFSC - auto uppercase and validate format
+    if (name === 'ifsc') {
+      const upperValue = value.toUpperCase();
+      setFormData(prev => ({
+        ...prev,
+        ifsc: upperValue
+      }));
+
+      // Real-time IFSC validation
+      if (upperValue.length > 0) {
+        const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+        if (upperValue.length === 11) {
+          if (!ifscRegex.test(upperValue)) {
+            setFieldErrors(prev => ({
+              ...prev,
+              ifsc: "Invalid IFSC code format (e.g., SBIN0001234)"
+            }));
+          } else {
+            setFieldErrors(prev => ({
+              ...prev,
+              ifsc: ""
+            }));
+          }
+        } else if (upperValue.length > 11) {
+          setFieldErrors(prev => ({
+            ...prev,
+            ifsc: "IFSC code must be exactly 11 characters"
+          }));
+        } else {
+          // Clear error while typing if less than 11 characters
+          setFieldErrors(prev => ({
+            ...prev,
+            ifsc: ""
+          }));
+        }
+      } else {
+        // Clear error when field is empty
+        setFieldErrors(prev => ({
+          ...prev,
+          ifsc: ""
+        }));
+      }
+      return;
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
@@ -509,6 +588,11 @@ export default function QuickLoanApplication() {
         ...prev,
         [name]: ""
       }));
+    }
+
+    // Clear consent error when user checks consent checkboxes
+    if ((name === 'creditBureauConsent' || name === 'termsConsent' || name === 'eSignConsent') && consentError) {
+      setConsentError(false);
     }
   };
 
@@ -1182,6 +1266,12 @@ console.log('Sending OTP with payload:', payload);
       } else if (formData.fullName.trim().length < 3) {
         errors.fullName = "Full name must be at least 3 characters";
         hasError = true;
+      } else if (/\d/.test(formData.fullName)) {
+        errors.fullName = "Full name cannot contain numbers";
+        hasError = true;
+      } else if (!/^[a-zA-Z\s]+$/.test(formData.fullName)) {
+        errors.fullName = "Full name can only contain letters and spaces";
+        hasError = true;
       }
 
       // Email validation
@@ -1200,12 +1290,15 @@ console.log('Sending OTP with payload:', payload);
       if (!formData.mobile) {
         errors.mobile = "Mobile number is required";
         hasError = true;
-      } else {
-        const mobileRegex = /^[6-9]\d{9}$/;
-        if (!mobileRegex.test(formData.mobile)) {
-          errors.mobile = "Enter a valid 10-digit mobile number";
-          hasError = true;
-        }
+      } else if (!/^\d+$/.test(formData.mobile)) {
+        errors.mobile = "Mobile number can only contain numbers";
+        hasError = true;
+      } else if (formData.mobile.length !== 10) {
+        errors.mobile = "Mobile number must be exactly 10 digits";
+        hasError = true;
+      } else if (!/^[6-9]\d{9}$/.test(formData.mobile)) {
+        errors.mobile = "Enter a valid mobile number starting with 6-9";
+        hasError = true;
       }
 
       // DOB validation
@@ -1253,11 +1346,6 @@ console.log('Sending OTP with payload:', payload);
 
       // If there are errors, don't proceed
       if (hasError) {
-        toast({
-          variant: "warning",
-          title: "Validation Errors",
-          description: "Please fix the errors in the form before proceeding.",
-        });
         return;
       }
 
@@ -1331,11 +1419,10 @@ console.log('Sending OTP with payload:', payload);
       if (formData.accountNumber) {
         const accountRegex = /^[0-9]{9,18}$/;
         if (!accountRegex.test(formData.accountNumber)) {
-          toast({
-            variant: "warning",
-            title: "Invalid Account Number",
-            description: "Account number must be 9-18 digits.",
-          });
+          setFieldErrors(prev => ({
+            ...prev,
+            accountNumber: "Account number must be 9-18 digits"
+          }));
           return;
         }
       }
@@ -1344,11 +1431,10 @@ console.log('Sending OTP with payload:', payload);
       if (formData.ifsc) {
         const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
         if (!ifscRegex.test(formData.ifsc.toUpperCase())) {
-          toast({
-            variant: "warning",
-            title: "Invalid IFSC Code",
-            description: "Please enter a valid IFSC code (e.g., SBIN0001234).",
-          });
+          setFieldErrors(prev => ({
+            ...prev,
+            ifsc: "Invalid IFSC code format (e.g., SBIN0001234)"
+          }));
           return;
         }
       }
@@ -1489,13 +1575,12 @@ console.log('Sending OTP with payload:', payload);
 
       // Consent validation
       if (!formData.creditBureauConsent || !formData.termsConsent) {
-        toast({
-          variant: "warning",
-          title: "Consent Required",
-          description: "Please accept all required consents to proceed.",
-        });
+        setConsentError(true);
         return;
       }
+
+      // Clear consent error if validation passes
+      setConsentError(false);
 
       // Final step - submit only Step 3 data (Step 1 & 2 already saved)
       setLoading(true);
@@ -2189,6 +2274,7 @@ console.log('Sending OTP with payload:', payload);
                           value={formData.mobile}
                           onChange={handleChange}
                           disabled={formData.mobileVerified}
+                          maxLength={10}
                           className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${
                             fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
                           }`}
@@ -2289,10 +2375,10 @@ console.log('Sending OTP with payload:', payload);
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
-                        disabled={formData.emailVerified || !!formData.email}
+                        disabled={formData.emailVerified}
                         className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
                           fieldErrors.email ? 'border-red-500' : 'border-gray-300'
-                        } ${(formData.emailVerified || !!formData.email) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                        } ${formData.emailVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                         placeholder="your@email.com"
                       />
                       {fieldErrors.email ? (
@@ -2310,9 +2396,11 @@ console.log('Sending OTP with payload:', payload);
                         name="mobile"
                         value={formData.mobile}
                         onChange={handleChange}
+                        disabled={formData.mobileVerified}
+                        maxLength={10}
                         className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
                           fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
-                        }`}
+                        } ${formData.mobileVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                         placeholder="+91 98765 43210"
                       />
                       {fieldErrors.mobile ? (
@@ -2334,6 +2422,7 @@ console.log('Sending OTP with payload:', payload);
                           name="mobile"
                           value={formData.mobile}
                           onChange={handleChange}
+                          maxLength={10}
                           className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
                             fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
                           }`}
@@ -2688,8 +2777,10 @@ console.log('Sending OTP with payload:', payload);
                       }`}
                       placeholder="9-18 digit account number"
                     />
-                    {fieldErrors.accountNumber && (
+                    {fieldErrors.accountNumber ? (
                       <p className="mt-1 text-xs text-red-600">{fieldErrors.accountNumber}</p>
+                    ) : (
+                      <p className="mt-1 text-xs text-gray-500">Enter 9-18 digit bank account number</p>
                     )}
                   </div>
                 </div>
@@ -2702,10 +2793,7 @@ console.log('Sending OTP with payload:', payload);
                     type="text"
                     name="ifsc"
                     value={formData.ifsc}
-                    onChange={(e) => {
-                      const upperValue = e.target.value.toUpperCase();
-                      handleChange({ ...e, target: { ...e.target, name: 'ifsc', value: upperValue } });
-                    }}
+                    onChange={handleChange}
                     pattern="[A-Z]{4}0[A-Z0-9]{6}"
                     maxLength={11}
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
@@ -2714,8 +2802,10 @@ console.log('Sending OTP with payload:', payload);
                     placeholder="SBIN0001234"
                     style={{ textTransform: 'uppercase' }}
                   />
-                  {fieldErrors.ifsc && (
+                  {fieldErrors.ifsc ? (
                     <p className="mt-1 text-xs text-red-600">{fieldErrors.ifsc}</p>
+                  ) : (
+                    <p className="mt-1 text-xs text-gray-500">11-character bank code (e.g., SBIN0001234)</p>
                   )}
                 </div>
               </motion.div>
@@ -3038,31 +3128,51 @@ console.log('Sending OTP with payload:', payload);
                 </div>
 
                 <div className="space-y-4">
-                  <label className="flex items-start gap-3 cursor-pointer">
+                  <label className={`flex items-start gap-3 cursor-pointer p-3 rounded-lg border ${
+                    consentError && !formData.creditBureauConsent
+                      ? 'border-red-300 bg-red-50'
+                      : 'border-transparent'
+                  }`}>
                     <input
                       type="checkbox"
                       name="creditBureauConsent"
                       checked={formData.creditBureauConsent}
                       onChange={handleChange}
-                      className="mt-1"
+                      className={`mt-1 ${consentError && !formData.creditBureauConsent ? 'accent-red-500' : ''}`}
                     />
-                    <span className="text-sm text-gray-700">
-                      I authorize Quikkred to pull my credit bureau report
+                    <span className={`text-sm ${
+                      consentError && !formData.creditBureauConsent
+                        ? 'text-red-700 font-medium'
+                        : 'text-gray-700'
+                    }`}>
+                      I authorize Quikkred to pull my credit bureau report *
                     </span>
                   </label>
-                  <label className="flex items-start gap-3 cursor-pointer">
+                  <label className={`flex items-start gap-3 cursor-pointer p-3 rounded-lg border ${
+                    consentError && !formData.termsConsent
+                      ? 'border-red-300 bg-red-50'
+                      : 'border-transparent'
+                  }`}>
                     <input
                       type="checkbox"
                       name="termsConsent"
                       checked={formData.termsConsent}
                       onChange={handleChange}
-                      className="mt-1"
+                      className={`mt-1 ${consentError && !formData.termsConsent ? 'accent-red-500' : ''}`}
                     />
-                    <span className="text-sm text-gray-700">
-                      I agree to the Terms & Conditions and Privacy Policy
+                    <span className={`text-sm ${
+                      consentError && !formData.termsConsent
+                        ? 'text-red-700 font-medium'
+                        : 'text-gray-700'
+                    }`}>
+                      I agree to the Terms & Conditions and Privacy Policy *
                     </span>
                   </label>
-                  <label className="flex items-start gap-3 cursor-pointer">
+                  <label className={`flex items-start gap-3 cursor-pointer p-3 rounded-lg border ${
+                    consentError && !formData.eSignConsent
+                      ? 'border-red-300 bg-red-50'
+                      : 'border-transparent'
+                  }`}>
                     <input
                       type="checkbox"
                       name="eSignConsent"
@@ -3074,6 +3184,13 @@ console.log('Sending OTP with payload:', payload);
                       I consent to digitally sign the loan agreement
                     </span>
                   </label>
+
+                  {consentError && (!formData.creditBureauConsent || !formData.termsConsent) && (
+                    <div className="flex items-center gap-2 text-red-600 text-sm mt-2">
+                      <AlertCircle className="w-4 h-4" />
+                      <span>Please accept all required consents marked with * to proceed</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">

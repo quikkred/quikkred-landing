@@ -131,23 +131,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (apiData && apiData.userId && (apiData.token || apiData.accessToken)) {
         const authToken = apiData.accessToken || apiData.token;
 
+        // Determine if login was with email or mobile
+        const isEmailLogin = email.includes('@');
+        const isMobileLogin = /^\+?\d{10,}$/.test(email);
+
         // Create user object from API data
         const userData: User = {
           id: apiData.userId,
-          name: apiData.mobile || email,
-          email: email,
-          mobile: apiData.mobile,
+          name: apiData.fullName || apiData.name || 'User',
+          email: isEmailLogin ? email : (apiData.email || ''),
+          mobile: isMobileLogin ? email : (apiData.mobile || ''),
         };
 
         // Store session in localStorage
         localStorage.setItem('token', authToken);
         localStorage.setItem('authToken', authToken);
         localStorage.setItem('accessToken', authToken);
-        localStorage.setItem('userEmail', email);
+        localStorage.setItem('userEmail', userData.email);
         localStorage.setItem('userName', userData.name);
         localStorage.setItem('userId', apiData.userId);
-        if (apiData.mobile) {
-          localStorage.setItem('userMobile', apiData.mobile);
+        if (userData.mobile) {
+          localStorage.setItem('userMobile', userData.mobile);
         }
         if (apiData.role) {
           localStorage.setItem('role', apiData.role);
