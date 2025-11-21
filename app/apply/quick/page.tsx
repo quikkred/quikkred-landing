@@ -130,7 +130,7 @@ export default function QuickLoanApplication() {
     // Step 3: Loan & Consent
     loanAmount: "",
     tenure: "12",
-    loanProductId: "",
+    productId: "",
     purpose: "",
     reference1Name: "",
     reference1Mobile: "",
@@ -491,7 +491,7 @@ export default function QuickLoanApplication() {
 
     setFormData(prev => ({
       ...prev,
-      loanProductId: productId,
+      productId: productId,
       purpose: purpose
     }));
   };
@@ -1371,7 +1371,7 @@ console.log('Sending OTP with payload:', payload);
 
     if (currentStep === 3) {
       // Loan Product validation
-      if (!formData.loanProductId) {
+      if (!formData.productId) {
         toast({
           variant: "warning",
           title: "Loan Product Required",
@@ -1540,7 +1540,7 @@ console.log('Sending OTP with payload:', payload);
         formDataToSend.append('tenureUnit', 'months');
         formDataToSend.append('emiAmount', emi.toString());
         formDataToSend.append('purpose', formData.purpose);
-        formDataToSend.append('productId', formData.loanProductId);
+        formDataToSend.append('productId', formData.productId);
 
         // Add product details (interestRate, processingFee, gstOnProcessingFee)
         if (selectedProduct) {
@@ -1874,6 +1874,7 @@ console.log('Sending OTP with payload:', payload);
                     ifsc: "",
                     loanAmount: "",
                     tenure: "12",
+                    productId: "",
                     purpose: "",
                     reference1Name: "",
                     reference1Mobile: "",
@@ -2736,8 +2737,8 @@ console.log('Sending OTP with payload:', payload);
                     Select Loan Product *
                   </label>
                   <select
-                    name="loanProductId"
-                    value={formData.loanProductId}
+                    name="productId"
+                    value={formData.productId}
                     onChange={(e) => handleProductChange(e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
                     disabled={loadingProducts}
