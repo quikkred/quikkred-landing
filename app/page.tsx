@@ -197,10 +197,7 @@ export default function Home() {
         {/* Loan Products Showcase - Full Screen */}
         <LoansGrid/>
 
-        {/* Financial CTA - Full Screen */}
-        <FinancialCTA/>
-
-        {/* FAQ Section - Full Screen */}
+          {/* FAQ Section - Full Screen */}
         <section className="min-h-[calc(100vh-80px)] flex items-center py-12 sm:py-16 lg:py-20 bg-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
             <motion.div
@@ -262,68 +259,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Final CTA Section */}
-        {/* <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-[#25B181] via-[#51C9AF] to-[#7CDAC3] text-white relative overflow-hidden shadow-2xl">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#25B181]/20 via-[#51C9AF]/20 to-[#7CDAC3]/20" />
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute inset-0" style={{
-              backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.1) 35px, rgba(255,255,255,.1) 70px)`,
-            }} />
-          </div>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="container mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10"
-          >
-            <Rocket className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 mx-auto mb-4 sm:mb-6 text-yellow-300" />
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold font-sora mb-4 sm:mb-6 px-4">
-              {t.homepage.sections.cta.title}
-            </h2>
-            <p className="text-base sm:text-lg lg:text-xl mb-6 sm:mb-8 text-white/90 max-w-2xl mx-auto px-4">
-              {t.homepage.sections.cta.subtitle}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center max-w-lg mx-auto">
-              <Link href="/apply" className="w-full sm:w-auto">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white text-[#25B181] rounded-full font-semibold text-base sm:text-lg shadow-xl hover:shadow-2xl hover:bg-[#D3F1EB] transition-all duration-300 flex items-center justify-center gap-2"
-                >
-                  {t.homepage.sections.cta.applyButton}
-                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                </motion.button>
-              </Link>
-              <Link href="/contact" className="w-full sm:w-auto">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-transparent border-2 border-white text-white rounded-full font-semibold text-base sm:text-lg hover:bg-white/20 transition-all duration-300 flex items-center justify-center gap-2"
-                >
-                  <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
-                  {t.homepage.sections.cta.talkButton}
-                </motion.button>
-              </Link>
-            </div>
-            <div className="mt-8 sm:mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 lg:gap-8 text-white/90 text-sm sm:text-base">
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span>{t.homepage.sections.cta.badges.rbiLicensed}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <BadgeCheck className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span>{t.homepage.sections.cta.badges.isoCertified}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
-                <span>{t.homepage.sections.cta.badges.awardWinning}</span>
-              </div>
-            </div>
-          </motion.div>
-        </section> */}
-
-        {/* Feature Comparison Table */}
-        {/* <FeatureCards /> */}
+        {/* Financial CTA - Full Screen */}
+        <FinancialCTA/>
 
 
 
@@ -344,4 +281,31 @@ const testimonials: {
 const faqs: {
   question: string;
   answer: string;
-}[] = [];
+}[] = [
+  {
+    question: "What is an NBFC loan?",
+    answer:
+      "An NBFC loan is a financial product offered by a Non-Banking Financial Company that provides credit for personal, business, or vehicle needs without requiring a traditional bank."
+  },
+  {
+    question: "How is an NBFC loan different from a bank loan?",
+    answer:
+      "NBFCs offer faster processing, flexible eligibility, and simpler documentation compared to banks. However, interest rates may be slightly higher."
+  },
+  {
+    question: "What are the eligibility criteria for an NBFC loan?",
+    answer:
+      "Eligibility typically includes age, stable income, valid ID/address proof, and a minimum credit score. Criteria may vary depending on the NBFC and loan type."
+  },
+  {
+    question: "How long does it take to get an NBFC loan approved?",
+    answer:
+      "Most NBFCs provide quick approval—often within a few hours to 48 hours—depending on document verification."
+  },
+  {
+    question: "Is it safe to take a loan from an NBFC?",
+    answer:
+      "Yes, as long as the NBFC is registered with the RBI. Always verify the company’s registration status and review the loan terms."
+  }
+];
+;
