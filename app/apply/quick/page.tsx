@@ -1712,7 +1712,8 @@ console.log('Sending OTP with payload:', payload);
             apiResponse: result.data,
             approvedAmount: principal,
             interestRate: 12.5,
-            tenure: tenureMonths,
+            tenure: emiCalculation.tenureMonths,
+            tenureUnit: tenureUnit,
             emi: emi,
             processingFee: Math.round(principal * 0.02)
           });
