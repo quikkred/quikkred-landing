@@ -40,7 +40,7 @@ export default function LoanCalculatorAll() {
             <p className="text-slate-600 text-xs">{t.calculator.subtitle}</p>
           </div>
 
-          <div className="mb-4 sm:mb-5">
+          {/* <div className="mb-4 sm:mb-5">
             <label className="block text-xs font-semibold text-slate-900 mb-2">{t.calculator.loanPurpose}</label>
             <div className="flex flex-wrap gap-1.5">
               {purposes.map((purpose) => (
@@ -57,7 +57,7 @@ export default function LoanCalculatorAll() {
                 </button>
               ))}
             </div>
-          </div>
+          </div> */}
 
           <div className="mb-3 sm:mb-4">
             <div className="flex justify-between items-center mb-1.5">
