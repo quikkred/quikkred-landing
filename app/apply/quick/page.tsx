@@ -1732,7 +1732,7 @@ console.log('Sending OTP with payload:', payload);
             loanAmount: principal,
             pan: formData.pan,
             aadhaar: formData.aadhaar,
-            tenure: tenureMonths
+            tenure: emiCalculation.tenureMonths
           });
           setDecision(decisionResult);
         }
@@ -1985,6 +1985,7 @@ console.log('Sending OTP with payload:', payload);
                     ifsc: "",
                     loanAmount: "",
                     tenure: "12",
+                    requestedTenureUnit: "months",
                     productId: "",
                     purpose: "",
                     reference1Name: "",
