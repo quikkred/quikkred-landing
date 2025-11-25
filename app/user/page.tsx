@@ -30,6 +30,8 @@ interface LoanDetails {
   status: string;
   overdueCount: number;
   npaDate?: string;
+  installment: number;
+  paidAmount: number;
   totalEMIsPaid: number;
 }
 
@@ -77,6 +79,15 @@ export default function UserDashboard() {
   const [selectedEmiCount, setSelectedEmiCount] = useState<number>(1);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [customAmount, setCustomAmount] = useState<string>('');
+
+  // Set default amount to remaining amount when loan details are loaded
+  useEffect(() => {
+    if (data?.loanDetails && !customAmount) {
+      const remaining = getTotalLoanAmount() - (data.loanDetails.paidAmount || 0);
+      setCustomAmount(remaining.toString());
+    }
+  }, [data?.loanDetails]);
 
   // useEffect(() => {
   //   if (!isLoading) {
@@ -175,32 +186,35 @@ export default function UserDashboard() {
 
   const calculateTotalPayment = () => {
     if (!data?.loanDetails) return 0;
-    return data.loanDetails.emiAmount * selectedEmiCount;
-  };
-
-  const getRemainingEMIs = () => {
-    if (!data?.loanDetails) return 0;
-    return data.loanDetails.tenure - data.loanDetails.totalEMIsPaid;
-  };
-
-  const getEMIProgress = () => {
-    if (!data?.loanDetails) return 0;
-    return Math.round((data.loanDetails.totalEMIsPaid / data.loanDetails.tenure) * 100);
+    const amount = parseFloat(customAmount);
+    return isNaN(amount) ? 0 : amount;
   };
 
   const getTotalLoanAmount = () => {
     if (!data?.loanDetails) return 0;
-    return data.loanDetails.emiAmount * data.loanDetails.tenure;
+    return data.loanDetails.emiAmount; // emiAmount is the total loan amount
   };
 
   const getPaidAmount = () => {
     if (!data?.loanDetails) return 0;
-    return data.loanDetails.emiAmount * data.loanDetails.totalEMIsPaid;
+    return data.loanDetails.paidAmount || 0;
   };
 
   const getRemainingAmount = () => {
     if (!data?.loanDetails) return 0;
-    return data.loanDetails.emiAmount * getRemainingEMIs();
+    return getTotalLoanAmount() - getPaidAmount();
+  };
+
+  const getPaymentProgress = () => {
+    if (!data?.loanDetails) return 0;
+    const total = getTotalLoanAmount();
+    if (total === 0) return 0;
+    return Math.round((getPaidAmount() / total) * 100);
+  };
+
+  const getCurrentInstallment = () => {
+    if (!data?.loanDetails) return 0;
+    return data.loanDetails.installment || 1;
   };
 
   const handlePayment = async () => {
@@ -209,6 +223,39 @@ export default function UserDashboard() {
     try {
       setProcessingPayment(true);
       const totalAmount = calculateTotalPayment();
+
+      // Validation for payment amount
+      if (!customAmount || customAmount.trim() === '') {
+        toast({
+          variant: "error",
+          title: "Invalid Amount",
+          description: "Please enter a payment amount."
+        });
+        setProcessingPayment(false);
+        return;
+      }
+
+      const amount = parseFloat(customAmount);
+      if (isNaN(amount) || amount <= 0) {
+        toast({
+          variant: "error",
+          title: "Invalid Amount",
+          description: "Please enter a valid payment amount greater than 0."
+        });
+        setProcessingPayment(false);
+        return;
+      }
+
+      const remainingAmount = getRemainingAmount();
+      if (amount > remainingAmount) {
+        toast({
+          variant: "error",
+          title: "Amount Exceeds Limit",
+          description: `Payment amount cannot exceed remaining balance of ₹${remainingAmount.toLocaleString()}.`
+        });
+        setProcessingPayment(false);
+        return;
+      }
 
       const token = localStorage.getItem('authToken') ||
                     localStorage.getItem('token') ||
@@ -228,10 +275,10 @@ export default function UserDashboard() {
       toast({
         variant: "default",
         title: "Processing Payment",
-        description: `Processing payment of ₹${totalAmount.toLocaleString()} for ${selectedEmiCount} EMI(s)...`
+        description: `Processing payment of ₹${totalAmount.toLocaleString()}...`
       });
 
-      const response = await fetch('https://api.bluechipfinmax.com/api/payment/customerEmiPayment', {
+      const response = await fetch('https://api.bluechipfinmax.com/api/emi/customerEmiPayment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -267,8 +314,9 @@ export default function UserDashboard() {
         // Refresh dashboard data after successful payment
         await fetchUserData();
 
-        // Reset selected EMI count
+        // Reset form - Clear amount so it recalculates from new remaining balance
         setSelectedEmiCount(1);
+        setCustomAmount('');
 
       } else {
         throw new Error(result.message || 'Payment failed');
@@ -454,15 +502,15 @@ export default function UserDashboard() {
               </span>
             </div>
 
-            {/* EMI Progress Overview */}
+            {/* Payment Progress Overview */}
             <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-4 sm:p-6 border border-purple-200 mb-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm sm:text-base font-semibold text-purple-900 flex items-center gap-2">
                   <Activity className="w-4 h-4" />
-                  EMI Payment Progress
+                  Loan Payment Progress
                 </h3>
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-purple-900">{getEMIProgress()}%</p>
+                  <p className="text-2xl font-bold text-purple-900">{getPaymentProgress()}%</p>
                   <p className="text-xs text-purple-700">Completed</p>
                 </div>
               </div>
@@ -471,25 +519,33 @@ export default function UserDashboard() {
               <div className="w-full bg-purple-200 rounded-full h-3 mb-4">
                 <motion.div
                   initial={{ width: 0 }}
-                  animate={{ width: `${getEMIProgress()}%` }}
+                  animate={{ width: `${getPaymentProgress()}%` }}
                   transition={{ duration: 1, delay: 0.4 }}
                   className="h-3 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600"
                 />
               </div>
 
-              {/* EMI Stats Grid */}
+              {/* Payment Stats Grid */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="text-center p-3 bg-white/50 rounded-lg">
-                  <p className="text-xs text-purple-700 mb-1">Total EMIs</p>
-                  <p className="text-lg font-bold text-purple-900">{data.loanDetails.tenure}</p>
+                  <p className="text-xs text-purple-700 mb-1">Total Loan</p>
+                  <p className="text-lg font-bold text-purple-900">₹{getTotalLoanAmount().toLocaleString()}</p>
                 </div>
                 <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
-                  <p className="text-xs text-green-700 mb-1">Paid EMIs</p>
-                  <p className="text-lg font-bold text-green-900">{data.loanDetails.totalEMIsPaid}</p>
+                  <p className="text-xs text-green-700 mb-1">Amount Paid</p>
+                  <p className="text-lg font-bold text-green-900">₹{getPaidAmount().toLocaleString()}</p>
                 </div>
                 <div className="text-center p-3 bg-orange-50 rounded-lg border border-orange-200">
                   <p className="text-xs text-orange-700 mb-1">Remaining</p>
-                  <p className="text-lg font-bold text-orange-900">{getRemainingEMIs()}</p>
+                  <p className="text-lg font-bold text-orange-900">₹{getRemainingAmount().toLocaleString()}</p>
+                </div>
+              </div>
+
+              {/* Current Installment */}
+              <div className="mt-4 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-indigo-700">Current Installment</p>
+                  <p className="text-lg font-bold text-indigo-900">#{getCurrentInstallment()}</p>
                 </div>
               </div>
             </div>
@@ -502,7 +558,7 @@ export default function UserDashboard() {
                   Total Loan Amount
                 </p>
                 <p className="text-lg sm:text-xl font-bold text-blue-900">₹{getTotalLoanAmount().toLocaleString()}</p>
-                <p className="text-xs text-blue-600 mt-1">{data.loanDetails.tenure} x ₹{data.loanDetails.emiAmount.toLocaleString()}</p>
+                <p className="text-xs text-blue-600 mt-1">Total loan disbursed</p>
               </div>
 
               <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
@@ -511,7 +567,7 @@ export default function UserDashboard() {
                   Amount Paid
                 </p>
                 <p className="text-lg sm:text-xl font-bold text-green-900">₹{getPaidAmount().toLocaleString()}</p>
-                <p className="text-xs text-green-600 mt-1">{data.loanDetails.totalEMIsPaid} EMIs paid</p>
+                <p className="text-xs text-green-600 mt-1">Installment #{getCurrentInstallment()}</p>
               </div>
 
               <div className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg border border-orange-200">
@@ -520,7 +576,7 @@ export default function UserDashboard() {
                   Amount Remaining
                 </p>
                 <p className="text-lg sm:text-xl font-bold text-orange-900">₹{getRemainingAmount().toLocaleString()}</p>
-                <p className="text-xs text-orange-600 mt-1">{getRemainingEMIs()} EMIs left</p>
+                <p className="text-xs text-orange-600 mt-1">Balance to pay</p>
               </div>
             </div>
 
@@ -537,7 +593,7 @@ export default function UserDashboard() {
               <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
                 <p className="text-xs sm:text-sm text-green-700 mb-1 flex items-center gap-1">
                   <IndianRupee className="w-3 h-3" />
-                  EMI Amount
+                  Total Loan Amount
                 </p>
                 <p className="text-sm sm:text-base font-semibold text-green-900">₹{data.loanDetails.emiAmount.toLocaleString()}</p>
               </div>
@@ -545,9 +601,9 @@ export default function UserDashboard() {
               <div className="p-4 bg-gradient-to-br from-purple-50 to-violet-50 rounded-lg border border-purple-200">
                 <p className="text-xs sm:text-sm text-purple-700 mb-1 flex items-center gap-1">
                   <Clock className="w-3 h-3" />
-                  Tenure
+                  Current Installment
                 </p>
-                <p className="text-sm sm:text-base font-semibold text-purple-900">{data.loanDetails.tenure} {data.loanDetails.tenureUnit}</p>
+                <p className="text-sm sm:text-base font-semibold text-purple-900">#{getCurrentInstallment()}</p>
               </div>
 
               <div className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg border border-orange-200">
@@ -578,12 +634,12 @@ export default function UserDashboard() {
               )}
             </div>
 
-            {/* Payment Section - Show only if there are remaining EMIs */}
-            {getRemainingEMIs() > 0 && (
+            {/* Payment Section - Show only if there is remaining amount */}
+            {getRemainingAmount() > 0 && (
               <div className="border-t border-gray-200 pt-4 sm:pt-6">
                 <h3 className="text-base sm:text-lg font-semibold text-[#0A0A0A] mb-4 flex items-center gap-2">
                   <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-[#10B4A3]" />
-                  Pay Remaining EMI
+                  Pay Installment
                 </h3>
 
                 {data.loanDetails.overdueCount > 0 && (
@@ -594,7 +650,7 @@ export default function UserDashboard() {
                         <p className="text-sm font-semibold text-red-900">Payment Failed Alert</p>
                         <p className="text-xs text-red-700 mt-1">
                           {data.loanDetails.overdueCount} payment attempt{data.loanDetails.overdueCount > 1 ? 's' : ''} failed.
-                          You have {getRemainingEMIs()} remaining EMI{getRemainingEMIs() > 1 ? 's' : ''} to pay. Please complete payment to avoid penalties.
+                          You have ₹{getRemainingAmount().toLocaleString()} remaining to pay. Please complete payment to avoid penalties.
                         </p>
                       </div>
                     </div>
@@ -606,46 +662,72 @@ export default function UserDashboard() {
                     <div className="flex items-start gap-2 mb-2">
                       <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="text-sm font-semibold text-blue-900">Pay Your Next EMI</p>
+                        <p className="text-sm font-semibold text-blue-900">Pay Your Installment</p>
                         <p className="text-xs text-blue-700 mt-1">
-                          You have {getRemainingEMIs()} remaining EMI{getRemainingEMIs() > 1 ? 's' : ''} to complete your loan.
+                          You have ₹{getRemainingAmount().toLocaleString()} remaining to complete your loan (Installment #{getCurrentInstallment()}).
                         </p>
                       </div>
                     </div>
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* EMI Selection */}
+                <div className="space-y-4">
+                  {/* Payment Amount Input */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Select Number of EMIs to Pay
+                      Enter Payment Amount
                     </label>
-                    <select
-                      value={selectedEmiCount}
-                      onChange={(e) => setSelectedEmiCount(Number(e.target.value))}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10B4A3] focus:border-transparent outline-none transition-all"
-                    >
-                      {Array.from({ length: getRemainingEMIs() }, (_, i) => i + 1).map((num) => (
-                        <option key={num} value={num}>
-                          {num} EMI{num > 1 ? 's' : ''}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                      <input
+                        type="number"
+                        value={customAmount}
+                        onChange={(e) => setCustomAmount(e.target.value)}
+                        placeholder={getRemainingAmount().toLocaleString()}
+                        min="1"
+                        max={getRemainingAmount()}
+                        className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10B4A3] focus:border-transparent outline-none transition-all"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-600 mt-1">
+                      You can reduce the amount to pay partially
+                    </p>
                   </div>
 
-                  {/* Payment Summary */}
-                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
-                    <p className="text-sm text-green-700 mb-2">Total Payment Amount</p>
-                    <div className="flex items-center gap-2">
-                      <IndianRupee className="w-5 h-5 text-green-700" />
-                      <p className="text-2xl font-bold text-green-900">
-                        {calculateTotalPayment().toLocaleString()}
-                      </p>
+                  {/* Payment Summary Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {/* Current Balance */}
+                    <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-3 border border-blue-200">
+                      <p className="text-xs text-blue-700 mb-1">Current Balance</p>
+                      <div className="flex items-center gap-1">
+                        <IndianRupee className="w-4 h-4 text-blue-700" />
+                        <p className="text-lg font-bold text-blue-900">
+                          {getRemainingAmount().toLocaleString()}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-xs text-green-600 mt-2">
-                      {selectedEmiCount} x ₹{data.loanDetails.emiAmount.toLocaleString()}
-                    </p>
+
+                    {/* Paying Now */}
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-3 border border-green-200">
+                      <p className="text-xs text-green-700 mb-1">Paying Now</p>
+                      <div className="flex items-center gap-1">
+                        <IndianRupee className="w-4 h-4 text-green-700" />
+                        <p className="text-lg font-bold text-green-900">
+                          {calculateTotalPayment().toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Remaining After Payment */}
+                    <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-3 border border-orange-200">
+                      <p className="text-xs text-orange-700 mb-1">Remaining After</p>
+                      <div className="flex items-center gap-1">
+                        <IndianRupee className="w-4 h-4 text-orange-700" />
+                        <p className="text-lg font-bold text-orange-900">
+                          {(getRemainingAmount() - calculateTotalPayment()).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
