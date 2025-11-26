@@ -23,6 +23,7 @@ interface Application {
   };
   loanAmount: number;
   requestedTenure: number;
+  requestedTenureUnit: number;
   purpose: string;
   priority?: string;
   status: string;
@@ -460,7 +461,7 @@ export default function MyApplicationsPage() {
                       <div className="text-sm font-semibold text-[#1F8F68]">₹{app.loanAmount.toLocaleString()}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{app.requestedTenure} months</div>
+                      <div className="text-sm text-gray-900">{app.requestedTenure}-{app.requestedTenureUnit}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       {app.priority && (

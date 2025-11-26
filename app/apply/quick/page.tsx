@@ -1663,18 +1663,25 @@ console.log('Sending OTP with payload:', payload);
         formDataToSend.append('isSubmit', 'true');
 
         // Add references as JSON string
-        formDataToSend.append('references', JSON.stringify([
-          {
-            name: formData.reference1Name,
-            mobile: formData.reference1Mobile,
-            relationship: formData.reference1Relationship
-          },
-          {
-            name: formData.reference2Name,
-            mobile: formData.reference2Mobile,
-            relationship: formData.reference2Relationship
-          }
-        ]));
+      const references = [
+  {
+    name: formData.reference1Name,
+    mobile: formData.reference1Mobile,
+    relationship: formData.reference1Relationship
+  },
+  {
+    name: formData.reference2Name,
+    mobile: formData.reference2Mobile,
+    relationship: formData.reference2Relationship
+  }
+];
+
+references.forEach((ref, index) => {
+  formDataToSend.append(`references[${index}][name]`, ref.name);
+  formDataToSend.append(`references[${index}][mobile]`, ref.mobile);
+  formDataToSend.append(`references[${index}][relationship]`, ref.relationship);
+});
+
 
         // Add selfie photo file
         if (formData.selfie) {
