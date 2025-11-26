@@ -53,6 +53,7 @@ interface DetailedApplication {
   isSubmit: boolean;
   loanAmount: number;
   requestedTenure: number;
+  requestedTenureUnit: number;
   interestRate: number;
   processingFee: number;
   gstOnProcessingFee: number;
@@ -676,7 +677,7 @@ export default function MyApplicationsPage() {
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Tenure</p>
-                        <p className="font-semibold text-gray-900">{detailedApplication.requestedTenure} months</p>
+                        <p className="font-semibold text-gray-900">{detailedApplication.requestedTenure}{" "}{detailedApplication.requestedTenureUnit}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">EMI Amount</p>
