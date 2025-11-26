@@ -333,7 +333,7 @@ export default function QuickLoanApplication() {
             if (user) {
               router.push('/user');
             } else {
-              router.push('/login');
+              router.push('/user');
             }
             return 0;
           }
@@ -2312,7 +2312,7 @@ references.forEach((ref, index) => {
                           className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${
                             fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
                           }`}
-                          placeholder="+91 98765 43210"
+                          placeholder="enter mobile number"
                         />
                         {!formData.mobileVerified && (
                           <button
@@ -2527,9 +2527,10 @@ references.forEach((ref, index) => {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Aadhaar Number *
                     </label>
+                    
                     <div className="flex gap-2">
                       <input
-                        type="text"
+                        type="number"
                         name="aadhaar"
                         value={formData.aadhaar}
                         onChange={(e) => {
@@ -2541,9 +2542,9 @@ references.forEach((ref, index) => {
                           }
                           if (aadhaarError) setAadhaarError(""); // Clear error when typing
                         }}
-                        disabled={aadhaarVerified || aadhaarOtpSent}
+                        disabled={aadhaarVerified || aadhaarOtpSent || (!formData.mobileVerified && !formData.emailVerified)}
                         maxLength={12}
-                        className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${
+                        className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 disabled:cursor-not-allowed ${
                           fieldErrors.aadhaar || aadhaarError ? 'border-red-500' : 'border-gray-300'
                         }`}
                         placeholder="1234 5678 9012"
@@ -2552,8 +2553,8 @@ references.forEach((ref, index) => {
                         <button
                           type="button"
                           onClick={sendAadhaarOTP}
-                          disabled={!formData.aadhaar || formData.aadhaar.length !== 12 || aadhaarVerifying}
-                          className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
+                          disabled={!formData.aadhaar || formData.aadhaar.length !== 12 || aadhaarVerifying || (!formData.mobileVerified && !formData.emailVerified)}
+                          className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                         >
                           {aadhaarVerifying ? "Sending..." : "Send OTP"}
                         </button>
@@ -2629,6 +2630,17 @@ references.forEach((ref, index) => {
                             </button>
                           )}
                         </div>
+                      </div>
+                    )}
+
+                    {/* Show warning if mobile/email not verified */}
+                    {!formData.mobileVerified && !formData.emailVerified && (
+                      <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+                        <p className="text-xs text-amber-700 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          Please verify your {verificationMethod === 'email' ? 'email' : 'mobile'} first to enable Aadhaar verification
+                        </p>
+                        
                       </div>
                     )}
 
@@ -2799,7 +2811,7 @@ references.forEach((ref, index) => {
                       Account Number
                     </label>
                     <input
-                      type="text"
+                      type="number"
                       name="accountNumber"
                       value={formData.accountNumber}
                       onChange={handleChange}
@@ -3064,13 +3076,13 @@ references.forEach((ref, index) => {
                         Mobile
                       </label>
                       <input
-                        type="tel"
+                        type="number"
                         name="reference1Mobile"
                         value={formData.reference1Mobile}
                         onChange={handleChange}
                         maxLength={10}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                        placeholder="9876543210"
+                        placeholder="enter mobile number"
                       />
                     </div>
                     <div>
@@ -3115,13 +3127,13 @@ references.forEach((ref, index) => {
                         Mobile
                       </label>
                       <input
-                        type="tel"
+                        type="number"
                         name="reference2Mobile"
                         value={formData.reference2Mobile}
                         onChange={handleChange}
                         maxLength={10}
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                        placeholder="9876543210"
+                        placeholder="enter mobile number"
                       />
                     </div>
                     <div>
