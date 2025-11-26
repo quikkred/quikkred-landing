@@ -16,7 +16,7 @@ import {
   CopyIcon, ExternalLink, ChevronRight, Sparkles
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast, Toaster } from '@/components/ui/toast';
+import { useToast } from '@/components/ui/toast';
 
 interface LoanDetails {
   _id: string;
@@ -301,11 +301,12 @@ export default function UserDashboard() {
             <div className="space-y-1">
               <p className="font-semibold">{result.message}</p>
               <div className="text-xs mt-2 space-y-1">
+            
                 <p>Transaction ID: {result.data.transactionId}</p>
                 <p>Amount Paid: ₹{result.data.paymentAmount.toLocaleString()}</p>
-                <p>EMIs Paid: {result.data.emisPaid}</p>
+                {/* <p>EMIs Paid: {result.data.emisPaid}</p>
                 <p>Remaining EMIs: {result.data.remainingEMIs}</p>
-                <p>Current Balance: ₹{result.data.customerBalance.toLocaleString()}</p>
+                <p>Current Balance: ₹{result.data.customerBalance.toLocaleString()}</p> */}
               </div>
             </div>
           )
@@ -319,6 +320,7 @@ export default function UserDashboard() {
         setCustomAmount('');
 
       } else {
+        console.log('❌ Payment failed', result);
         throw new Error(result.message || 'Payment failed');
       }
 
@@ -540,45 +542,8 @@ export default function UserDashboard() {
                   <p className="text-lg font-bold text-orange-900">₹{getRemainingAmount().toLocaleString()}</p>
                 </div>
               </div>
-
-              {/* Current Installment */}
-              <div className="mt-4 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-indigo-700">Current Installment</p>
-                  <p className="text-lg font-bold text-indigo-900">#{getCurrentInstallment()}</p>
-                </div>
-              </div>
             </div>
 
-            {/* Loan Amount Summary */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-              <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg border border-blue-200">
-                <p className="text-xs sm:text-sm text-blue-700 mb-1 flex items-center gap-1">
-                  <DollarSign className="w-3 h-3" />
-                  Total Loan Amount
-                </p>
-                <p className="text-lg sm:text-xl font-bold text-blue-900">₹{getTotalLoanAmount().toLocaleString()}</p>
-                <p className="text-xs text-blue-600 mt-1">Total loan disbursed</p>
-              </div>
-
-              <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
-                <p className="text-xs sm:text-sm text-green-700 mb-1 flex items-center gap-1">
-                  <CheckCircle className="w-3 h-3" />
-                  Amount Paid
-                </p>
-                <p className="text-lg sm:text-xl font-bold text-green-900">₹{getPaidAmount().toLocaleString()}</p>
-                <p className="text-xs text-green-600 mt-1">Installment #{getCurrentInstallment()}</p>
-              </div>
-
-              <div className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg border border-orange-200">
-                <p className="text-xs sm:text-sm text-orange-700 mb-1 flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  Amount Remaining
-                </p>
-                <p className="text-lg sm:text-xl font-bold text-orange-900">₹{getRemainingAmount().toLocaleString()}</p>
-                <p className="text-xs text-orange-600 mt-1">Balance to pay</p>
-              </div>
-            </div>
 
             {/* Loan Details Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
@@ -621,6 +586,17 @@ export default function UserDashboard() {
                 </p>
                 <p className="text-sm sm:text-base font-semibold text-teal-900">{formatDateTime(data.loanDetails.maturityDate)}</p>
               </div>
+
+                   {/* Remaining After Payment */}
+                    <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-3 border border-orange-200">
+                      <p className="text-xs text-orange-700 mb-1">Remaining After</p>
+                      <div className="flex items-center gap-1">
+                        <IndianRupee className="w-4 h-4 text-orange-700" />
+                        <p className="text-lg font-bold text-orange-900">
+                          {(getRemainingAmount() - calculateTotalPayment()).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
 
               {data.loanDetails.overdueCount > 0 && (
                 <div className="p-4 bg-gradient-to-br from-red-50 to-rose-50 rounded-lg border border-red-200">
@@ -696,38 +672,11 @@ export default function UserDashboard() {
 
                   {/* Payment Summary Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {/* Current Balance */}
-                    <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-3 border border-blue-200">
-                      <p className="text-xs text-blue-700 mb-1">Current Balance</p>
-                      <div className="flex items-center gap-1">
-                        <IndianRupee className="w-4 h-4 text-blue-700" />
-                        <p className="text-lg font-bold text-blue-900">
-                          {getRemainingAmount().toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
+                 
 
-                    {/* Paying Now */}
-                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-3 border border-green-200">
-                      <p className="text-xs text-green-700 mb-1">Paying Now</p>
-                      <div className="flex items-center gap-1">
-                        <IndianRupee className="w-4 h-4 text-green-700" />
-                        <p className="text-lg font-bold text-green-900">
-                          {calculateTotalPayment().toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
+                 
 
-                    {/* Remaining After Payment */}
-                    <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-3 border border-orange-200">
-                      <p className="text-xs text-orange-700 mb-1">Remaining After</p>
-                      <div className="flex items-center gap-1">
-                        <IndianRupee className="w-4 h-4 text-orange-700" />
-                        <p className="text-lg font-bold text-orange-900">
-                          {(getRemainingAmount() - calculateTotalPayment()).toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
+               
                   </div>
                 </div>
 
@@ -837,7 +786,6 @@ export default function UserDashboard() {
         </motion.div>
 
       </div>
-      <Toaster />
     </>
   );
 }

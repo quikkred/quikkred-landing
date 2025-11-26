@@ -7,6 +7,7 @@ import { Footer } from "@/components/footer";
 import { SecurityBanner } from "@/components/security-banner";
 import ConditionalLayout from "@/components/layouts/ConditionalLayout";
 import LanguageGuard from "@/components/LanguageGuard";
+import { Toaster } from "@/components/ui/toast";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -152,6 +153,7 @@ export default function RootLayout({
               {children}
             </ConditionalLayout>
           </LanguageGuard>
+          <Toaster />
         </Providers>
       </body>
     </html>

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import * as ReactDOM from "react-dom";
 import * as ToastPrimitives from "@radix-ui/react-toast";
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from "lucide-react";
 
@@ -12,7 +13,7 @@ const ToastViewport = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Viewport
     ref={ref}
-    className={`fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:top-0 sm:right-0 sm:flex-col md:max-w-[420px] ${className || ""}`}
+    className={`fixed top-4 right-4 z-[9999] flex max-h-screen w-full max-w-sm flex-col gap-2 ${className || ""}`}
     {...props}
   />
 ));
@@ -300,9 +301,14 @@ function useToast() {
 
 export { useToast, toast };
 
-// Toaster Component with Icons
+// Toaster Component with Icons - uses Portal to render to body
 export function Toaster() {
   const { toasts } = useToast();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const getIcon = (variant?: string) => {
     switch (variant) {
@@ -334,32 +340,43 @@ export function Toaster() {
     }
   };
 
-  return (
-    <ToastProvider>
-      {toasts.map(function ({ id, title, description, action, variant, ...props }) {
-        return (
-          <Toast key={id} variant={variant} {...props}>
-            <div className="flex gap-3 items-start">
-              {getIcon(variant)}
-              <div className="grid gap-1 flex-1">
-                {title && (
-                  <ToastTitle className={getTextColor(variant)}>
-                    {title}
-                  </ToastTitle>
-                )}
-                {description && (
-                  <ToastDescription className={getTextColor(variant)}>
-                    {description}
-                  </ToastDescription>
-                )}
-              </div>
+  const toasterContent = (
+    <ToastProvider swipeDirection="right">
+      {toasts.map(({ id, title, description, action, variant, open, onOpenChange, ...props }) => (
+        <Toast
+          key={id}
+          variant={variant}
+          open={open}
+          onOpenChange={onOpenChange}
+          {...props}
+        >
+          <div className="flex gap-3 items-start">
+            {getIcon(variant)}
+            <div className="grid gap-1 flex-1">
+              {title && (
+                <ToastTitle className={getTextColor(variant)}>
+                  {title}
+                </ToastTitle>
+              )}
+              {description && (
+                <ToastDescription className={getTextColor(variant)}>
+                  {description}
+                </ToastDescription>
+              )}
             </div>
-            {action}
-            <ToastClose />
-          </Toast>
-        );
-      })}
+          </div>
+
+          {action}
+          <ToastClose />
+        </Toast>
+      ))}
+
       <ToastViewport />
     </ToastProvider>
   );
+
+  // Use portal to render directly to document.body
+  if (!mounted) return null;
+
+  return ReactDOM.createPortal(toasterContent, document.body);
 }
