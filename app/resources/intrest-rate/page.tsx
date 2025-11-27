@@ -289,7 +289,7 @@ export default function InterestRatesPage() {
             <div className="flex flex-wrap gap-4 sm:gap-6 text-sm sm:text-base">
               <div className="flex items-center gap-2">
                 <TrendingDown className="w-5 h-5" />
-                <span>From 8.99% p.a.</span>
+                <span>From 8.99% p.d.</span>
               </div>
               <div className="flex items-center gap-2">
                 <Shield className="w-5 h-5" />
@@ -318,7 +318,7 @@ export default function InterestRatesPage() {
               <div>
                 <TrendingDown className="w-10 h-10 mx-auto mb-3" />
                 <div className="text-3xl font-bold mb-1">8.99%</div>
-                <div className="text-sm opacity-90">Starting Rate p.a.</div>
+                <div className="text-sm opacity-90">Starting Rate p.d.</div>
               </div>
               <div>
                 <Clock className="w-10 h-10 mx-auto mb-3" />
