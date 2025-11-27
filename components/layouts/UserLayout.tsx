@@ -9,7 +9,7 @@ import {
   LogOut, Menu, User, Wallet, Calculator, HelpCircle,
   ChevronDown, Award, Gift, Receipt, Phone, Mail,
   Target, Activity, History, Download, Star,
-  Sparkles, Plus, Send, Shield, UserCheck, Eye
+  Sparkles, Plus, Send, Shield, UserCheck, Eye, X
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -22,6 +22,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
   const pathname = usePathname();
   const { user, logout, isLoggingOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [userData, setUserData] = useState({
     name: user?.name || "User",
@@ -180,10 +181,11 @@ const UserLayout = ({ children }: UserLayoutProps) => {
     };
   }, [profileDropdownOpen, notificationDropdownOpen]);
 
-  // Close dropdown when pathname changes (navigation)
+  // Close dropdown and mobile sidebar when pathname changes (navigation)
   useEffect(() => {
     setProfileDropdownOpen(false);
     setNotificationDropdownOpen(false);
+    setMobileSidebarOpen(false);
   }, [pathname]);
 
   const handleLogout = useCallback(() => {
@@ -212,13 +214,26 @@ const UserLayout = ({ children }: UserLayoutProps) => {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex">
-      {/* Sidebar */}
+    <div className="h-screen bg-[#FAFAFA] flex overflow-hidden">
+      {/* Mobile Sidebar Overlay */}
+      <AnimatePresence>
+        {mobileSidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setMobileSidebarOpen(false)}
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar - Desktop (hidden on mobile) */}
       <motion.div
         initial={false}
         animate={{ width: sidebarOpen ? 280 : 80 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
-        className="bg-white border-r border-[#E0E0E0] flex flex-col shadow-lg"
+        className="hidden lg:flex bg-white border-r border-[#E0E0E0] flex-col shadow-lg h-screen flex-shrink-0"
       >
         {/* Sidebar Header */}
         <div className={` border-b border-[#E0E0E0] ${!sidebarOpen ? 'px-4' : ''}`}>
@@ -278,8 +293,8 @@ const UserLayout = ({ children }: UserLayoutProps) => {
         </div>
 
         {/* User Info */}
-      
-{/* Navigation */}
+
+        {/* Navigation */}
         <nav className={`flex-1 p-4 space-y-2 overflow-y-auto ${!sidebarOpen ? 'px-2' : ''}`}>
           {navigationItems.map((item) => (
             <button
@@ -342,18 +357,108 @@ const UserLayout = ({ children }: UserLayoutProps) => {
         </div>
       </motion.div>
 
+      {/* Mobile Sidebar - Slide from left */}
+      <AnimatePresence>
+        {mobileSidebarOpen && (
+          <motion.div
+            initial={{ x: -280 }}
+            animate={{ x: 0 }}
+            exit={{ x: -280 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            className="fixed left-0 top-0 w-[280px] h-screen bg-white border-r border-[#E0E0E0] flex flex-col shadow-lg z-50 lg:hidden"
+          >
+            {/* Mobile Sidebar Header */}
+            <div className="border-b border-[#E0E0E0]">
+              <div className="flex items-center justify-between p-4">
+                <Image
+                  src="/logo.svg"
+                  alt="Quikkred Logo"
+                  width={140}
+                  height={70}
+                  priority
+                  quality={100}
+                  className="h-auto max-w-[140px]"
+                  style={{
+                    objectFit: 'contain',
+                    imageRendering: '-webkit-optimize-contrast',
+                  }}
+                />
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setMobileSidebarOpen(false)}
+                  className="p-2 hover:bg-[#FAFAFA] rounded-lg transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5 text-gray-600" />
+                </motion.button>
+              </div>
+            </div>
+
+            {/* Mobile Navigation */}
+            <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+              {navigationItems.map((item) => (
+                <button
+                  key={item.title}
+                  onClick={() => {
+                    handleNavigation(item.href);
+                    setMobileSidebarOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors duration-150 cursor-pointer ${
+                    pathname === item.href
+                      ? 'bg-gradient-to-r from-[#10B4A3] to-[#0E9D8F] text-white shadow-md'
+                      : 'hover:bg-[#FAFAFA] text-[#0A0A0A]'
+                  }`}
+                >
+                  <item.icon className={`w-5 h-5 ${
+                    pathname === item.href ? 'text-white' : 'text-[#4084FF]'
+                  }`} />
+                  <span className={`font-medium ${
+                    pathname === item.href ? 'text-white' : 'text-[#0A0A0A]'
+                  }`}>
+                    {item.title}
+                  </span>
+                </button>
+              ))}
+            </nav>
+
+            {/* Mobile Sidebar Footer */}
+            <div className="p-4 border-t border-[#E5E5E5]">
+              <motion.button
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  setMobileSidebarOpen(false);
+                  handleLogout();
+                }}
+                className="w-full flex items-center gap-3 p-3 text-[#F44336] hover:bg-[#FFEBEE] rounded-lg transition-all cursor-pointer"
+              >
+                <LogOut className="w-5 h-5" />
+                <span className="font-medium">Logout</span>
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Top Header */}
-        <header className="bg-white border-b border-[#E0E0E0] p-4 shadow-sm">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        {/* Top Header - Fixed */}
+        <header className="bg-white border-b border-[#E0E0E0] px-3 py-3 sm:p-4 shadow-sm flex-shrink-0">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <h2 className="text-xl font-semibold text-[#25B181]">
+            <div className="flex items-center gap-2 sm:gap-4">
+              {/* Mobile Menu Button */}
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setMobileSidebarOpen(true)}
+                className="p-2 hover:bg-[#FAFAFA] rounded-lg transition-colors cursor-pointer lg:hidden"
+              >
+                <Menu className="w-5 h-5 text-gray-600" />
+              </motion.button>
+
+              <h2 className="text-base sm:text-xl font-semibold text-[#25B181]">
                 {navigationItems.find(item => item.href === pathname)?.title || "Dashboard"}
               </h2>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               {/* Quick Stats */}
               <div className="hidden md:flex items-center gap-4 text-sm">
                 {/* <div className="flex items-center gap-2 bg-gradient-to-r from-[#25B181]/10 to-[#51C9AF]/10 border border-[#25B181]/20 px-3 py-1.5 rounded-lg">
@@ -376,7 +481,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setNotificationDropdownOpen(!notificationDropdownOpen)}
-                  className="relative p-2 bg-[#FAFAFA] hover:bg-[#E0E0E0] rounded-lg transition-colors cursor-pointer"
+                  className="relative p-1.5 sm:p-2 bg-[#FAFAFA] hover:bg-[#E0E0E0] rounded-lg transition-colors cursor-pointer"
                 >
                   <Bell className="w-5 h-5 text-[#4A66FF]" />
                   {userData.notifications > 0 && (
@@ -392,7 +497,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="absolute right-0 top-full mt-2 w-96 bg-white rounded-xl shadow-xl border border-[#E0E0E0] z-50 max-h-[500px] overflow-hidden flex flex-col"
+                      className="absolute right-0 top-full mt-2 w-[calc(100vw-24px)] sm:w-96 max-w-[384px] bg-white rounded-xl shadow-xl border border-[#E0E0E0] z-50 max-h-[70vh] sm:max-h-[500px] overflow-hidden flex flex-col"
                     >
                       {/* Notification Header */}
                       <div className="p-4 border-b border-[#E0E0E0]">
@@ -505,7 +610,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                  className="flex items-center gap-3 p-2 bg-[#FAFAFA] hover:bg-[#E0E0E0] rounded-lg transition-colors cursor-pointer"
+                  className="flex items-center gap-1 sm:gap-3 p-1.5 sm:p-2 bg-[#FAFAFA] hover:bg-[#E0E0E0] rounded-lg transition-colors cursor-pointer"
                 >
                   {profileImage && !imageLoadError ? (
                     <div
@@ -538,7 +643,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                     <p className="text-sm font-medium text-gray-800">{userData.name.split(' ')[0]}</p>
                     {/* <p className="text-xs text-gray-500">ID: {userData.customerId}</p> */}
                   </div>
-                  <ChevronDown className="w-4 h-4 text-gray-600" />
+                  <ChevronDown className="w-4 h-4 text-gray-600 hidden sm:block" />
                 </motion.button>
 
                 <AnimatePresence>
@@ -547,7 +652,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-xl border border-[#E0E0E0] p-2 z-50"
+                      className="absolute right-0 top-full mt-2 w-[calc(100vw-24px)] sm:w-64 max-w-[256px] bg-white rounded-xl shadow-xl border border-[#E0E0E0] p-2 z-50"
                     >
                       <div className="p-3 border-b border-[#E0E0E0]">
                         <p className="font-medium text-gray-800">{userData.name}</p>
@@ -619,8 +724,8 @@ const UserLayout = ({ children }: UserLayoutProps) => {
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-auto">
+        {/* Page Content - Scrollable */}
+        <main className="flex-1 overflow-y-auto">
           {children}
         </main>
       </div>

@@ -1057,22 +1057,22 @@
       "personal": {
         "name": "Personal Loan",
         "description": "For all your personal needs",
-        "rate": "10.5% p.a. onwards"
+        "rate": "10.5% p.d. onwards"
       },
       "business": {
         "name": "Business Loan",
         "description": "Grow your business faster",
-        "rate": "12% p.a. onwards"
+        "rate": "12% p.d. onwards"
       },
       "emergency": {
         "name": "Emergency Loan",
         "description": "Instant cash for urgencies",
-        "rate": "15% p.a. onwards"
+        "rate": "15% p.d. onwards"
       },
       "education": {
         "name": "Education Loan",
         "description": "Invest in your future",
-        "rate": "9% p.a. onwards"
+        "rate": "9% p.d. onwards"
       }
     },
     "steps": {

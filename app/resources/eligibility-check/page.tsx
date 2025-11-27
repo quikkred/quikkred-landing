@@ -583,7 +583,7 @@ export default function EligibilityCheckPage() {
                     <TrendingUp className="w-8 h-8 text-green-600 mx-auto mb-2" />
                     <div className="text-sm text-gray-600 mb-1">Interest Rate</div>
                     <div className="text-2xl font-bold text-green-600">
-                      {result.estimatedInterestRate}% p.a.
+                      {result.estimatedInterestRate}% p.d.
                     </div>
                   </div>
                   <div className="text-center p-4 bg-purple-50 rounded-xl">

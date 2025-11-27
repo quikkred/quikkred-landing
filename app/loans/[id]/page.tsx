@@ -413,7 +413,7 @@ export default function LoanDetailsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex justify-between py-2 border-b">
                     <span className="text-gray-600">Interest Rate</span>
-                    <span className="font-medium">{loanDetails.interestRate}% p.a.</span>
+                    <span className="font-medium">{loanDetails.interestRate}% p.d.</span>
                   </div>
                   <div className="flex justify-between py-2 border-b">
                     <span className="text-gray-600">Tenure</span>

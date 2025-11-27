@@ -1879,7 +1879,7 @@ references.forEach((ref, index) => {
                 </div>
                 <div>
                   <p className="text-sm opacity-90">Interest Rate</p>
-                  <p className="text-xl font-semibold">{decision.interestRate}% p.a.</p>
+                  <p className="text-xl font-semibold">{decision.interestRate}% p.d.</p>
                 </div>
                 <div>
                   <p className="text-sm opacity-90">Tenure</p>
