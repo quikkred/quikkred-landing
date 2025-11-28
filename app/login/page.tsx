@@ -54,6 +54,7 @@ export default function LoginPage() {
     password: "",
     rememberMe: false
   });
+  const [mobileError, setMobileError] = useState("");
 
   // Countdown timer for resend OTP
   useEffect(() => {
@@ -70,6 +71,24 @@ export default function LoginPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
+
+    // Special handling for phone number - only allow numbers and validate 10 digits
+    if (name === 'emailOrPhone' && loginMethod === 'phone') {
+      if (value && !/^\d*$/.test(value)) {
+        setMobileError("Mobile number can only contain numbers");
+        return; // Don't update if non-numeric
+      } else if (value && value.length > 0 && value.length !== 10) {
+        // Show error if not exactly 10 digits (but allow typing)
+        setMobileError("Mobile number must be exactly 10 digits");
+      } else if (value && value.length === 10 && !/^[6-9]\d{9}$/.test(value)) {
+        // Validate Indian mobile number format
+        setMobileError("Mobile number must start with 6, 7, 8, or 9");
+      } else {
+        // Clear error when valid input
+        setMobileError("");
+      }
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
@@ -383,6 +402,7 @@ const verifyOtp = async () => {
                         setOtpSent(false);
                         setOtp("");
                         setResendTimer(0);
+                        setMobileError("");
                       }}
                       className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
                         loginMethod === 'email'
@@ -400,6 +420,7 @@ const verifyOtp = async () => {
                         setOtpSent(false);
                         setOtp("");
                         setResendTimer(0);
+                        setMobileError("");
                       }}
                       className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
                         loginMethod === 'phone'
@@ -463,11 +484,17 @@ const verifyOtp = async () => {
                         name="emailOrPhone"
                         value={formData.emailOrPhone}
                         onChange={handleInputChange}
+                        maxLength={loginMethod === 'phone' ? 10 : undefined}
                         required
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white"
-                        placeholder={loginMethod === 'email' ? 'Enter your email' : '+91 98765 43210'}
+                        className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white ${
+                          loginMethod === 'phone' && mobileError ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder={loginMethod === 'email' ? 'Enter your email' : 'Enter 10-digit mobile number'}
                       />
                     </div>
+                    {loginMethod === 'phone' && mobileError && (
+                      <p className="mt-1 text-xs text-red-600">{mobileError}</p>
+                    )}
                   </div>
 
                   {/* Password Input or OTP Section */}
@@ -589,7 +616,7 @@ const verifyOtp = async () => {
 
                   {/* Buttons Container */}
                   <div className="space-y-3">
-                   
+
 
                     {/* Login Button */}
                     <button

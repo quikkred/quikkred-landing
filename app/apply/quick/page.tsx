@@ -537,14 +537,55 @@ export default function QuickLoanApplication() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
 
-    // Special handling for mobile - only allow numbers
-    if (name === 'mobile' && value && !/^\d*$/.test(value)) {
-      return; // Don't update if non-numeric
+    // Special handling for mobile - only allow numbers and validate 10 digits
+    if (name === 'mobile') {
+      if (value && !/^\d*$/.test(value)) {
+        setFieldErrors(prev => ({
+          ...prev,
+          mobile: "Mobile number can only contain numbers"
+        }));
+        return; // Don't update if non-numeric
+      } else if (value && value.length > 0 && value.length !== 10) {
+        // Show error if not exactly 10 digits (but allow typing)
+        setFieldErrors(prev => ({
+          ...prev,
+          mobile: "Mobile number must be exactly 10 digits"
+        }));
+      } else if (value && value.length === 10 && !/^[6-9]\d{9}$/.test(value)) {
+        // Validate Indian mobile number format
+        setFieldErrors(prev => ({
+          ...prev,
+          mobile: "Mobile number must start with 6, 7, 8, or 9"
+        }));
+      } else {
+        // Clear error when valid input
+        setFieldErrors(prev => ({
+          ...prev,
+          mobile: ""
+        }));
+      }
     }
 
     // Special handling for accountNumber - only allow numbers
     if (name === 'accountNumber' && value && !/^\d*$/.test(value)) {
       return; // Don't update if non-numeric
+    }
+
+    // Special handling for aadhaar - only allow numbers
+    if (name === 'aadhaar') {
+      if (value && !/^\d*$/.test(value)) {
+        setFieldErrors(prev => ({
+          ...prev,
+          aadhaar: "Aadhaar number can only contain numbers"
+        }));
+        return; // Don't update if non-numeric
+      } else {
+        // Clear error when valid input
+        setFieldErrors(prev => ({
+          ...prev,
+          aadhaar: ""
+        }));
+      }
     }
 
     // Special handling for fullName - don't allow numbers
@@ -2198,7 +2239,7 @@ references.forEach((ref, index) => {
       placeholder="your@email.com"
     />
 
-    {/* Send OTP button (only if not verified) */}
+    {/* Send/Resend OTP button (only if not verified) */}
     {!formData.emailVerified && (
       <button
         onClick={async () => {
@@ -2224,10 +2265,10 @@ references.forEach((ref, index) => {
             setLoading(false);
           }
         }}
-        disabled={!formData.email || !!fieldErrors.email || loading}
+        disabled={!formData.email || !!fieldErrors.email || loading || (otpSent && emailOtpTimer > 0)}
         className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50"
       >
-        {loading ? "Sending..." : "Send OTP"}
+        {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Send OTP"}
       </button>
     )}
 
@@ -2271,24 +2312,6 @@ references.forEach((ref, index) => {
                             Verify
                           </button>
                         </div>
-                        <div className="mt-2 flex items-center justify-between">
-                          <p className="text-xs text-gray-500">
-                            Didn't receive OTP?
-                          </p>
-                          {emailOtpTimer > 0 ? (
-                            <p className="text-xs text-gray-600">
-                              Resend in {emailOtpTimer}s
-                            </p>
-                          ) : (
-                            <button
-                              onClick={sendOTP}
-                              disabled={loading}
-                              className="text-xs text-[#25B181] hover:underline disabled:opacity-50"
-                            >
-                              Resend OTP
-                            </button>
-                          )}
-                        </div>
                       </div>
                     )}
                   </>
@@ -2317,10 +2340,10 @@ references.forEach((ref, index) => {
                         {!formData.mobileVerified && (
                           <button
                             onClick={sendOTP}
-                            disabled={!formData.mobile || loading}
+                            disabled={!formData.mobile || loading || (otpSent && emailOtpTimer > 0)}
                             className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50"
                           >
-                            {loading ? "Sending..." : "Send OTP"}
+                            {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Send OTP"}
                           </button>
                         )}
                         {formData.mobileVerified && (
@@ -2354,24 +2377,6 @@ references.forEach((ref, index) => {
                           >
                             Verify
                           </button>
-                        </div>
-                        <div className="mt-2 flex items-center justify-between">
-                          <p className="text-xs text-gray-500">
-                            Didn't receive OTP?
-                          </p>
-                          {emailOtpTimer > 0 ? (
-                            <p className="text-xs text-gray-600">
-                              Resend in {emailOtpTimer}s
-                            </p>
-                          ) : (
-                            <button
-                              onClick={sendOTP}
-                              disabled={loading}
-                              className="text-xs text-[#25B181] hover:underline disabled:opacity-50"
-                            >
-                              Resend OTP
-                            </button>
-                          )}
                         </div>
                       </div>
                     )}
@@ -2530,7 +2535,7 @@ references.forEach((ref, index) => {
                     
                     <div className="flex gap-2">
                       <input
-                        type="number"
+                        type="tel"
                         name="aadhaar"
                         value={formData.aadhaar}
                         onChange={(e) => {
@@ -2547,16 +2552,16 @@ references.forEach((ref, index) => {
                         className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 disabled:cursor-not-allowed ${
                           fieldErrors.aadhaar || aadhaarError ? 'border-red-500' : 'border-gray-300'
                         }`}
-                        placeholder="1234 5678 9012"
+                        placeholder="123456789012"
                       />
-                      {!aadhaarVerified && !aadhaarOtpSent && (
+                      {!aadhaarVerified && (
                         <button
                           type="button"
                           onClick={sendAadhaarOTP}
-                          disabled={!formData.aadhaar || formData.aadhaar.length !== 12 || aadhaarVerifying || (!formData.mobileVerified && !formData.emailVerified)}
+                          disabled={!formData.aadhaar || formData.aadhaar.length !== 12 || aadhaarVerifying || (!formData.mobileVerified && !formData.emailVerified) || (aadhaarOtpSent && aadhaarOtpTimer > 0)}
                           className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                         >
-                          {aadhaarVerifying ? "Sending..." : "Send OTP"}
+                          {aadhaarVerifying ? "Sending..." : aadhaarOtpSent ? (aadhaarOtpTimer > 0 ? `Resend (${aadhaarOtpTimer}s)` : "Resend OTP") : "Send OTP"}
                         </button>
                       )}
                       {aadhaarVerified && (
@@ -2611,25 +2616,9 @@ references.forEach((ref, index) => {
                             {aadhaarVerifying ? "Verifying..." : "Verify OTP"}
                           </button>
                         </div>
-                        <div className="mt-2 flex items-center justify-between">
-                          <p className="text-xs text-gray-500">
-                            OTP sent to Aadhaar-linked mobile
-                          </p>
-                          {aadhaarOtpTimer > 0 ? (
-                            <p className="text-xs text-gray-600">
-                              Resend in {aadhaarOtpTimer}s
-                            </p>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={sendAadhaarOTP}
-                              disabled={aadhaarVerifying}
-                              className="text-xs text-[#25B181] hover:underline disabled:opacity-50"
-                            >
-                              Resend OTP
-                            </button>
-                          )}
-                        </div>
+                        <p className="mt-2 text-xs text-gray-500">
+                          OTP sent to Aadhaar-linked mobile
+                        </p>
                       </div>
                     )}
 

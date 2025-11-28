@@ -2,16 +2,38 @@ import { Star, Quote } from "lucide-react";
 import Image from "next/image";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 
+const testimonialData = [
+  {
+    quote: "The bullet loan let me stock up for the festival season. I paid it back easily after my sales. A total game-changer.",
+    name: "Rajesh Kumar",
+    rating: 3,
+    image: "/testimonials/rajesh_kumar_avatar.png"
+  },
+  {
+    quote: "Finally, a loan that understands freelancers! No monthly EMI pressure, just one payment when my project invoice clears.",
+    name: "Priya Sharma",
+    rating: 4,
+    image: "/testimonials/priya_sharma_avatar.png",
+    highlighted: true
+  },
+  {
+    quote: "Emergency medical loan saved my father's life. The quick disbursal and hassle-free process was a blessing.",
+    name: "Amit Patel",
+    rating: 3,
+    image: "/testimonials/amit_patel_avatar.png"
+  }
+];
+
 export default function Testimonials() {
   const { t } = useLanguage();
 
-  const testimonials = t.homepage.testimonials.items.map((item: any, idx: number) => ({
+  const testimonials = testimonialData.map((item) => ({
     ...item,
-    color: idx === 1 ? "from-blue-500 to-indigo-500 text-white" : "white",
-    gradient: idx === 1
+    text: item.quote,
+    gradient: item.highlighted || false
   }));
   return (
-    <section className="bg-slate-50 py-12 sm:py-16">
+    <section className="bg-gray-100 py-12 sm:py-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-8 sm:mb-10 md:mb-12 px-2">
           {t.homepage.testimonials.heading} <span className="text-teal-500">{t.homepage.testimonials.headingHighlight}</span> {t.homepage.testimonials.subheading}
@@ -23,7 +45,7 @@ export default function Testimonials() {
               key={i}
               className={`rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-md transition-all ${
                 t.gradient
-                  ? `bg-gradient-to-br ${t.color}`
+                  ? "bg-gradient-to-br from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white"
                   : "bg-white text-slate-700"
               }`}
             >
@@ -58,7 +80,7 @@ export default function Testimonials() {
                       <Star
                         key={idx}
                         size={12}
-                        className={`sm:w-3.5 sm:h-3.5 ${idx < 4 ? "fill-current" : ""}`}
+                        className={`sm:w-3.5 sm:h-3.5 ${idx < t.rating ? "fill-current" : ""}`}
                       />
                     ))}
                   </div>

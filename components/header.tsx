@@ -232,7 +232,6 @@ export function Header() {
                     : 'text-slate-700 hover:text-blue-400 hover:bg-slate-50'
                 }`}
               >
-                <Home className="w-4 h-4" />
                 {t.navigation.home}
               </Link>
 
@@ -251,7 +250,6 @@ export function Header() {
                           : 'text-slate-700 hover:text-blue-400 hover:bg-slate-50'
                       }`}
                     >
-                      <item.icon className="w-4 h-4" />
                       {item.name}
                       {item.submenu && <ChevronDown className="w-3 h-3" />}
                     </Link>
@@ -412,7 +410,6 @@ export function Header() {
                     : 'text-slate-200 hover:bg-slate-800'
                 }`}
               >
-                <Home className="w-4 h-4 sm:w-5 sm:h-5" />
                 {t.navigation.home}
               </Link>
               {navigation.map((item) => (
@@ -426,7 +423,6 @@ export function Header() {
                           : 'text-slate-200 hover:bg-slate-800'
                       }`}
                     >
-                      <item.icon className="w-4 h-4 sm:w-5 sm:h-5" />
                       {item.name}
                     </Link>
                   {item.submenu && (

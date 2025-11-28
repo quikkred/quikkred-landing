@@ -197,6 +197,9 @@ export default function Home() {
         {/* Loan Products Showcase - Full Screen */}
         <LoansGrid/>
 
+        {/* Testimonials Section */}
+        <Testimonials/>
+
           {/* FAQ Section - Full Screen */}
         <section className="min-h-[calc(100vh-80px)] flex items-center py-12 sm:py-16 lg:py-20 bg-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
@@ -225,11 +228,11 @@ export default function Home() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-white rounded-2xl overflow-hidden shadow-soft"
+                  className="bg-gray-100 rounded-2xl overflow-hidden shadow-soft"
                 >
                   <button
                     onClick={() => setActiveFaq(activeFaq === index ? null : index)}
-                    className="w-full px-4 sm:px-6 py-3 sm:py-4 text-left flex items-center justify-between hover:bg-gray-100 transition-colors"
+                    className="w-full px-4 sm:px-6 py-3 sm:py-4 text-left flex items-center justify-between hover:bg-gray-200 transition-colors"
                   >
                     <span className="font-semibold text-sm sm:text-base text-gray-900 pr-4">
                       {faq.question}

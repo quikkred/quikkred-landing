@@ -213,6 +213,7 @@ export default function Hero() {
   })
   const [currentStep, setCurrentStep] = useState(1)
   const [submitted, setSubmitted] = useState(false)
+  const [fieldError, setFieldError] = useState("")
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false)
   const languageDropdownRef = useRef<HTMLDivElement>(null)
 
@@ -235,6 +236,36 @@ export default function Hero() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
+
+    // Validation for mobile - only allow numbers
+    if (name === 'mobile') {
+      if (value && !/^\d*$/.test(value)) {
+        setFieldError("Mobile number can only contain numbers")
+        return
+      } else if (value && value.length > 0 && value.length !== 10) {
+        setFieldError("Mobile number must be exactly 10 digits")
+      } else if (value && value.length === 10 && !/^[6-9]\d{9}$/.test(value)) {
+        setFieldError("Mobile number must start with 6, 7, 8, or 9")
+      } else {
+        setFieldError("")
+      }
+    }
+
+    // Validation for name - don't allow numbers
+    if (name === 'name') {
+      if (value && /\d/.test(value)) {
+        setFieldError("Name cannot contain numbers")
+        return
+      } else {
+        setFieldError("")
+      }
+    }
+
+    // Clear error for other fields
+    if (name !== 'mobile' && name !== 'name') {
+      setFieldError("")
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -244,11 +275,36 @@ export default function Hero() {
   const handleNext = () => {
     // Get the current field from the steps array instead of formData keys
     const currentField = steps[currentStep - 1].field
-    if (formData[currentField as keyof typeof formData]) {
+    const fieldValue = formData[currentField as keyof typeof formData]
+
+    // Validate before proceeding
+    if (currentField === 'mobile') {
+      if (!fieldValue || fieldValue.length !== 10) {
+        setFieldError("Mobile number must be exactly 10 digits")
+        return
+      }
+      if (!/^[6-9]\d{9}$/.test(fieldValue)) {
+        setFieldError("Mobile number must start with 6, 7, 8, or 9")
+        return
+      }
+    }
+
+    if (currentField === 'name' && !fieldValue) {
+      setFieldError("Name is required")
+      return
+    }
+
+    // Don't proceed if there's an error
+    if (fieldError) {
+      return
+    }
+
+    if (fieldValue) {
       if (currentStep === 4) {
         // Submit on last step
         handleSubmit()
       } else {
+        setFieldError("") // Clear error when moving to next step
         setCurrentStep(currentStep + 1)
       }
     }
@@ -579,14 +635,21 @@ export default function Hero() {
                   {currentStepData.question}
                 </label>
                 <input
-                  type={currentStepData.field === "email" ? "email" : "text"}
+                  type={currentStepData.field === "email" ? "email" : currentStepData.field === "mobile" ? "tel" : "text"}
                   name={currentStepData.field}
                   placeholder={currentStepData.placeholder}
                   value={formData[currentStepData.field as keyof typeof formData]}
                   onChange={handleChange}
-                  className="w-full px-4 sm:px-5 py-3 sm:py-4 text-base sm:text-lg border-2 border-slate-300 rounded-xl mb-4 sm:mb-5 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 placeholder-slate-400 transition-all"
+                  maxLength={currentStepData.field === "mobile" ? 10 : undefined}
+                  className={`w-full px-4 sm:px-5 py-3 sm:py-4 text-base sm:text-lg border-2 rounded-xl mb-2 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 placeholder-slate-400 transition-all ${
+                    fieldError ? 'border-red-500' : 'border-slate-300'
+                  }`}
                   autoFocus
                 />
+                {fieldError && (
+                  <p className="text-red-500 text-xs sm:text-sm mb-3">{fieldError}</p>
+                )}
+                {!fieldError && <div className="mb-4 sm:mb-5"></div>}
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
