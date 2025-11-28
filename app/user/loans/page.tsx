@@ -145,7 +145,10 @@ export default function MyLoansPage() {
   const router = useRouter();
   const [loans, setLoans] = useState<Loan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showBalance, setShowBalance] = useState(false);
+  const [showBalanceActive, setShowBalanceActive] = useState(false);
+  const [showBalanceOverdue, setShowBalanceOverdue] = useState(false);
+  const [showBalanceClosed, setShowBalanceClosed] = useState(false);
+  const [showBalancePending, setShowBalancePending] = useState(false);
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'closed'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLoan, setSelectedLoan] = useState<Loan | null>(null);
@@ -216,6 +219,33 @@ export default function MyLoansPage() {
           }
         }
       );
+
+      // Check if token expired (401 Unauthorized) - Full logout and redirect
+      if (response.status === 401) {
+        // Clear all authentication tokens
+        localStorage.removeItem('token');
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+
+        // Clear user data
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('role');
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('email');
+        localStorage.removeItem('userName');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userMobile');
+        localStorage.removeItem('customerUniqueId');
+
+        // Clear cookies
+        document.cookie = 'auth-token=; path=/; max-age=0';
+        document.cookie = 'user-role=; path=/; max-age=0';
+
+        // Redirect to login
+        window.location.href = '/login';
+        return;
+      }
 
       const result = await response.json();
 
@@ -413,22 +443,31 @@ export default function MyLoansPage() {
               <div className="p-1.5 sm:p-2 bg-green-500/20 rounded-lg">
                 <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
               </div>
-              <span className="px-2 py-0.5 sm:py-1 bg-green-500 text-white text-[10px] sm:text-xs font-semibold rounded-full">
-                ACTIVE
-              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowBalanceActive(!showBalanceActive)}
+                  className="p-1 hover:bg-green-200/50 rounded transition-colors"
+                  title={showBalanceActive ? 'Hide Balance' : 'Show Balance'}
+                >
+                  {showBalanceActive ? <EyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600" /> : <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600" />}
+                </button>
+                <span className="px-2 py-0.5 sm:py-1 bg-green-500 text-white text-[10px] sm:text-xs font-semibold rounded-full">
+                  ACTIVE
+                </span>
+              </div>
             </div>
             <div className="space-y-1.5 sm:space-y-2">
               <div>
                 <p className="text-[10px] sm:text-xs text-gray-600 mb-0.5 sm:mb-1">Loan Amount</p>
                 <p className="text-lg sm:text-2xl font-bold text-green-700">
-                  {showBalance ? formatCurrency(loanCalculation?.ACTIVE?.totalLoanAmount || 0) : '••••••'}
+                  {showBalanceActive ? formatCurrency(loanCalculation?.ACTIVE?.totalLoanAmount || 0) : '••••••'}
                 </p>
               </div>
               <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-green-200">
                 <div>
                   <p className="text-[10px] sm:text-xs text-gray-600">Interest</p>
                   <p className="text-xs sm:text-sm font-semibold text-gray-900">
-                    {showBalance ? formatCurrency(loanCalculation?.ACTIVE?.totalInterest || 0) : '••••••'}
+                    {showBalanceActive ? formatCurrency(loanCalculation?.ACTIVE?.totalInterest || 0) : '••••••'}
                   </p>
                 </div>
                 <div className="text-right">
@@ -447,22 +486,31 @@ export default function MyLoansPage() {
               <div className="p-1.5 sm:p-2 bg-orange-500/20 rounded-lg">
                 <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
               </div>
-              <span className="px-2 py-0.5 sm:py-1 bg-orange-500 text-white text-[10px] sm:text-xs font-semibold rounded-full">
-                OVERDUE
-              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowBalanceOverdue(!showBalanceOverdue)}
+                  className="p-1 hover:bg-orange-200/50 rounded transition-colors"
+                  title={showBalanceOverdue ? 'Hide Balance' : 'Show Balance'}
+                >
+                  {showBalanceOverdue ? <EyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-600" /> : <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-600" />}
+                </button>
+                <span className="px-2 py-0.5 sm:py-1 bg-orange-500 text-white text-[10px] sm:text-xs font-semibold rounded-full">
+                  OVERDUE
+                </span>
+              </div>
             </div>
             <div className="space-y-1.5 sm:space-y-2">
               <div>
                 <p className="text-[10px] sm:text-xs text-gray-600 mb-0.5 sm:mb-1">Overdue Amount</p>
                 <p className="text-lg sm:text-2xl font-bold text-orange-700">
-                  {showBalance ? formatCurrency(loanCalculation?.OVERDUE?.totalLoanAmount || 0) : '••••••'}
+                  {showBalanceOverdue ? formatCurrency(loanCalculation?.OVERDUE?.totalLoanAmount || 0) : '••••••'}
                 </p>
               </div>
               <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-orange-200">
                 <div>
                   <p className="text-[10px] sm:text-xs text-gray-600">Interest</p>
                   <p className="text-xs sm:text-sm font-semibold text-gray-900">
-                    {showBalance ? formatCurrency(loanCalculation?.OVERDUE?.totalInterest || 0) : '••••••'}
+                    {showBalanceOverdue ? formatCurrency(loanCalculation?.OVERDUE?.totalInterest || 0) : '••••••'}
                   </p>
                 </div>
                 <div className="text-right">
@@ -481,22 +529,31 @@ export default function MyLoansPage() {
               <div className="p-1.5 sm:p-2 bg-gray-500/20 rounded-lg">
                 <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
               </div>
-              <span className="px-2 py-0.5 sm:py-1 bg-gray-500 text-white text-[10px] sm:text-xs font-semibold rounded-full">
-                CLOSED
-              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowBalanceClosed(!showBalanceClosed)}
+                  className="p-1 hover:bg-gray-200/50 rounded transition-colors"
+                  title={showBalanceClosed ? 'Hide Balance' : 'Show Balance'}
+                >
+                  {showBalanceClosed ? <EyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-600" /> : <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-600" />}
+                </button>
+                <span className="px-2 py-0.5 sm:py-1 bg-gray-500 text-white text-[10px] sm:text-xs font-semibold rounded-full">
+                  CLOSED
+                </span>
+              </div>
             </div>
             <div className="space-y-1.5 sm:space-y-2">
               <div>
                 <p className="text-[10px] sm:text-xs text-gray-600 mb-0.5 sm:mb-1">Loan Amount</p>
                 <p className="text-lg sm:text-2xl font-bold text-gray-700">
-                  {showBalance ? formatCurrency(loanCalculation?.CLOSED?.totalLoanAmount || 0) : '••••••'}
+                  {showBalanceClosed ? formatCurrency(loanCalculation?.CLOSED?.totalLoanAmount || 0) : '••••••'}
                 </p>
               </div>
               <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-gray-200">
                 <div>
                   <p className="text-[10px] sm:text-xs text-gray-600">Interest</p>
                   <p className="text-xs sm:text-sm font-semibold text-gray-900">
-                    {showBalance ? formatCurrency(loanCalculation?.CLOSED?.totalInterest || 0) : '••••••'}
+                    {showBalanceClosed ? formatCurrency(loanCalculation?.CLOSED?.totalInterest || 0) : '••••••'}
                   </p>
                 </div>
                 <div className="text-right">
@@ -514,22 +571,31 @@ export default function MyLoansPage() {
               <div className="p-1.5 sm:p-2 bg-yellow-500/20 rounded-lg">
                 <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" />
               </div>
-              <span className="px-2 py-0.5 sm:py-1 bg-yellow-500 text-white text-[10px] sm:text-xs font-semibold rounded-full">
-                PENDING
-              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowBalancePending(!showBalancePending)}
+                  className="p-1 hover:bg-yellow-200/50 rounded transition-colors"
+                  title={showBalancePending ? 'Hide Balance' : 'Show Balance'}
+                >
+                  {showBalancePending ? <EyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-600" /> : <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-600" />}
+                </button>
+                <span className="px-2 py-0.5 sm:py-1 bg-yellow-500 text-white text-[10px] sm:text-xs font-semibold rounded-full">
+                  PENDING
+                </span>
+              </div>
             </div>
             <div className="space-y-1.5 sm:space-y-2">
               <div>
                 <p className="text-[10px] sm:text-xs text-gray-600 mb-0.5 sm:mb-1">Loan Amount</p>
                 <p className="text-lg sm:text-2xl font-bold text-yellow-700">
-                  {showBalance ? formatCurrency(loanCalculation?.PENDING?.totalLoanAmount || 0) : '••••••'}
+                  {showBalancePending ? formatCurrency(loanCalculation?.PENDING?.totalLoanAmount || 0) : '••••••'}
                 </p>
               </div>
               <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-yellow-200">
                 <div>
                   <p className="text-[10px] sm:text-xs text-gray-600">Interest</p>
                   <p className="text-xs sm:text-sm font-semibold text-gray-900">
-                    {showBalance ? formatCurrency(loanCalculation?.PENDING?.totalInterest || 0) : '••••••'}
+                    {showBalancePending ? formatCurrency(loanCalculation?.PENDING?.totalInterest || 0) : '••••••'}
                   </p>
                 </div>
                 <div className="text-right">
@@ -541,17 +607,6 @@ export default function MyLoansPage() {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Show/Hide Balance Toggle - Moved Below Cards */}
-        <div className="mt-3 sm:mt-4 flex justify-end">
-          <button
-            onClick={() => setShowBalance(!showBalance)}
-            className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white border border-[#E0E0E0] text-gray-700 rounded-lg hover:bg-[#FAFAFA] transition-colors text-xs sm:text-sm shadow-sm"
-          >
-            {showBalance ? <EyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-            {showBalance ? 'Hide' : 'Show'} Balance
-          </button>
         </div>
       </div>
 

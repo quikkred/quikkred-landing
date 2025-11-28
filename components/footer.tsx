@@ -132,7 +132,7 @@ export function Footer() {
   };
 
   return (
-    <footer className="bg-slate-900 pb-6 sm:pb-8 border-t border-slate-700">
+    <footer className="bg-black pb-6 sm:pb-8 border-t border-slate-700">
       {/* Newsletter Section */}
       {/* <div className="container mx-auto px-4 sm:px-6 lg:px-8 -mt-24 sm:-mt-28 lg:-mt-32">
         <motion.div
