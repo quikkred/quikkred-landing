@@ -1365,7 +1365,11 @@ console.log('Sending OTP with payload:', payload);
         aadhaar: "",
         pan: "",
         accountNumber: "",
-        ifsc: ""
+        ifsc: "",
+        reference1Name: "",
+        reference1Mobile: "",
+        reference2Name: "",
+        reference2Mobile: ""
       };
       let hasError = false;
 

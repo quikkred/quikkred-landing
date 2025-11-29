@@ -47,38 +47,38 @@ export function Header() {
       name: t.navigation.products,
       href: "/products",
       icon: CreditCard,
-      submenu: [
-        {
-          name: t.products.types.salary.name,
-          href: "/products/salary-advance",
-          description: t.products.types.salary.description,
-        },
-        {
-          name: t.products.types.personal.name,
-          href: "/products/personal-loan",
-          description: t.products.types.personal.description,
-        },
-        {
-          name: t.products.types.emergency.name,
-          href: "/products/emergency",
-          description: t.products.types.emergency.description,
-        },
-        {
-          name: t.products.types.festival.name,
-          href: "/products/festival",
-          description: t.products.types.festival.description,
-        },
-        {
-          name: t.products.types.medical.name,
-          href: "/products/medical",
-          description: t.products.types.medical.description,
-        },
-        {
-          name: t.products.types.travel.name,
-          href: "/products/travel",
-          description: t.products.types.travel.description,
-        },
-      ],
+      // submenu: [
+      //   {
+      //     name: t.products.types.salary.name,
+      //     href: "/products/salary-advance",
+      //     description: t.products.types.salary.description,
+      //   },
+      //   {
+      //     name: t.products.types.personal.name,
+      //     href: "/products/personal-loan",
+      //     description: t.products.types.personal.description,
+      //   },
+      //   {
+      //     name: t.products.types.emergency.name,
+      //     href: "/products/emergency",
+      //     description: t.products.types.emergency.description,
+      //   },
+      //   {
+      //     name: t.products.types.festival.name,
+      //     href: "/products/festival",
+      //     description: t.products.types.festival.description,
+      //   },
+      //   {
+      //     name: t.products.types.medical.name,
+      //     href: "/products/medical",
+      //     description: t.products.types.medical.description,
+      //   },
+      //   {
+      //     name: t.products.types.travel.name,
+      //     href: "/products/travel",
+      //     description: t.products.types.travel.description,
+      //   },
+      // ],
     },
     {
       name: t.navigation.about,

@@ -424,12 +424,6 @@ input:focus, textarea:focus, select:focus {
   transition-timing-function: ease-in-out;
 }
 
-/* Override hardcoded Tailwind colors with CSS variables */
-/* Blue -> Primary */
-.text-blue-400, .text-blue-500, .text-blue-600 {
-  color: rgb(var(--primary-500)) !important;
-}
-
 .bg-blue-50 { background-color: rgb(var(--primary-50)) !important; }
 .bg-blue-500, .bg-blue-600 { background-color: rgb(var(--primary-500)) !important; }
 .bg-blue-700 { background-color: rgb(var(--primary-700)) !important; }

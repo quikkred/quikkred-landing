@@ -31,137 +31,137 @@ import Products from "@/components/Product/Products";
 
 const loanProducts = [
   {
-    id: "salary-advance",
-    title: "Salary Advance",
-    description: "Get advance up to 2x your monthly salary instantly",
-    icon: Wallet,
-    amount: "₹5,000 - ₹2,00,000",
-    tenure: "1 - 3 months",
-    rate: "1.5% per month",
+    id: "lightning-payday",
+    title: "Lightning Payday",
+    tagline: "Salary aa gaya? Abhi nahi? Le lo abhi!",
+    description: "Quick payday loan before your salary arrives",
+    icon: Zap,
+    amount: "₹10,000 - ₹75,000",
+    tenure: "7 - 30 days",
+    rate: "1% per day",
+    processingFee: "10% + GST",
     features: [
-      "Instant approval for salaried employees",
-      "Auto-deduction from next salary",
-      "No collateral required",
-      "500+ partner companies",
+      "2-min approval",
+      "Same-day cash",
+      "Zero paper",
     ],
     eligibility: [
       "Age: 21-58 years",
-      "Monthly income: ₹15,000+",
-      "6+ months employment",
-      "Salary account required",
+      "Salaried employee",
+      "Basic KYC documents",
+      "Bank account required",
     ],
-    color: "from-[#25B181] to-[#51C9AF]",
+    color: "from-[#25B181] to-[#1F8F68]",
     popular: true,
   },
   {
-    id: "personal",
-    title: "Personal Loan",
-    description: "Quick cash for all your personal needs",
-    icon: CreditCard,
-    amount: "₹10,000 - ₹5,00,000",
-    tenure: "3 - 24 months",
-    rate: "1.5% per month",
+    id: "instant-cash",
+    title: "Instant Cash",
+    tagline: "Paisa abhi, tension khatam!",
+    description: "Instant money transfer directly to your bank",
+    icon: Banknote,
+    amount: "₹15,000 - ₹1,00,000",
+    tenure: "15 - 45 days",
+    rate: "0.99% per day",
+    processingFee: "9% + GST",
     features: [
-      "30-second approval",
-      "Flexible repayment options",
-      "Minimal documentation",
-      "100% paperless process",
+      "UPI direct in bank",
+      "No salary slip needed",
     ],
     eligibility: [
       "Age: 21-60 years",
-      "Monthly income: ₹15,000+",
-      "CIBIL Score: 650+",
-      "Indian citizen",
+      "Any income source",
+      "Valid Aadhaar & PAN",
+      "Active bank account",
     ],
-    color: "from-[#4A66FF] to-[#25B181]",
+    color: "from-[#25B181] to-[#1F8F68]",
   },
   {
-    id: "emergency",
-    title: "Emergency Fund",
-    description: "24-hour support for medical and urgent needs",
-    icon: AlertCircle,
-    amount: "₹10,000 - ₹2,00,000",
-    tenure: "3 - 12 months",
-    rate: "1.2% per month",
-    features: [
-      "24-hour approval",
-      "Direct hospital payment",
-      "Compassionate support",
-      "No questions asked",
-    ],
-    eligibility: [
-      "Emergency proof",
-      "Basic KYC documents",
-      "Income proof",
-      "Medical documents",
-    ],
-    color: "from-[#FF9C70] to-[#25B181]",
-  },
-  {
-    id: "festival",
-    title: "Festival Advance",
-    description: "Celebrate every festival without financial worry",
+    id: "weekend-booster",
+    title: "Weekend Booster",
+    tagline: "Friday night? Party on us!",
+    description: "Get cash on Friday, repay next salary",
     icon: PartyPopper,
-    amount: "₹5,000 - ₹1,00,000",
-    tenure: "1 - 6 months",
-    rate: "1.2% per month",
+    amount: "₹20,000 - ₹1,00,000",
+    tenure: "10 - 25 days",
+    rate: "1.1% per day",
+    processingFee: "8% + GST",
     features: [
-      "Special festival rates",
-      "Quick disbursal",
-      "Flexible repayment",
-      "All festivals covered",
+      "Friday 5 PM disbursal",
+      "Repay next salary",
     ],
     eligibility: [
-      "Regular income proof",
+      "Salaried professional",
+      "Regular salary credit",
       "Basic KYC",
-      "3 months bank statement",
-      "Employment proof",
+      "3 months employment",
     ],
-    color: "from-[#FF9C70] to-[#FFD700]",
+    color: "from-[#25B181] to-[#1F8F68]",
   },
   {
-    id: "medical",
-    title: "Medical Loan",
-    description: "Healthcare financing for planned treatments",
+    id: "emergency-24x7",
+    title: "Emergency 24×7",
+    tagline: "Hospital bill? Bike repair? We're open!",
+    description: "Round the clock emergency funding",
+    icon: AlertCircle,
+    amount: "₹10,000 - ₹50,000",
+    tenure: "7 - 15 days",
+    rate: "1.5% per day",
+    processingFee: "12% + GST",
+    features: [
+      "3 AM approval also",
+      "Highest speed",
+    ],
+    eligibility: [
+      "Emergency situation",
+      "Basic KYC documents",
+      "Any income proof",
+      "Active mobile number",
+    ],
+    color: "from-[#25B181] to-[#1F8F68]",
+  },
+  {
+    id: "festival-fire",
+    title: "Festival Fire",
+    tagline: "Diwali, Eid, Xmas – celebrate bindaas",
+    description: "Special festival loans at lower rates",
     icon: Heart,
-    amount: "₹25,000 - ₹10,00,000",
-    tenure: "6 - 48 months",
-    rate: "1.0% per month",
+    amount: "₹25,000 - ₹1,00,000",
+    tenure: "30 - 62 days",
+    rate: "0.95% per day",
+    processingFee: "8% + GST",
     features: [
-      "Lowest interest rates",
-      "Hospital tie-ups",
-      "Insurance coordination",
-      "Cashless facility",
+      "Special low rate",
+      "Extra ₹5K bonus possible",
     ],
     eligibility: [
-      "Treatment estimate",
-      "Doctor prescription",
-      "Income documents",
-      "Insurance papers",
+      "Festival season only",
+      "Regular income proof",
+      "Valid ID documents",
+      "6 months bank statement",
     ],
-    color: "from-[#25B181] to-[#4A66FF]",
+    color: "from-[#25B181] to-[#1F8F68]",
   },
   {
-    id: "travel",
-    title: "Travel Now Pay Later",
-    description: "Book your dream vacation today, pay next month",
-    icon: Plane,
-    amount: "₹25,000 - ₹3,00,000",
-    tenure: "3 - 12 months",
-    rate: "1.3% per month",
+    id: "topup-turbo",
+    title: "Top-Up Turbo",
+    tagline: "Already took loan? Take extra now!",
+    description: "Extra cash for existing borrowers instantly",
+    icon: TrendingUp,
+    amount: "+30-70% of current loan",
+    tenure: "Same as running",
+    rate: "Same rate",
+    processingFee: "+2% extra PF",
     features: [
-      "Instant booking credit",
-      "Travel insurance included",
-      "Partner discounts",
-      "Zero down payment",
+      "Instant repeat cash – no new documents",
     ],
     eligibility: [
-      "Travel itinerary",
-      "Valid passport/visa",
-      "Income: ₹25,000+",
-      "Return tickets",
+      "Existing Quikkred customer",
+      "Good repayment history",
+      "Running loan active",
+      "No overdue payments",
     ],
-    color: "from-[#4A66FF] to-[#FF9C70]",
+    color: "from-[#25B181] to-[#1F8F68]",
   },
 ];
 
@@ -197,8 +197,8 @@ export default function ProductsPage() {
         />
       </section>
 
-      {/* Featured Product - Salary Advance */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-[#ecfdf5] to-[#f0fdfa]">
+      {/* Featured Product - Lightning Payday */}
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-[#E6F7F2] to-[#D1F0E6]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -210,12 +210,11 @@ export default function ProductsPage() {
               <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
               Most Popular
             </div>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-3 sm:mb-4 bg-gradient-to-r from-[#25B181] to-[#FF9C70] bg-clip-text text-transparent px-4">
-              Salary Advance - Our Flagship Product
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-3 sm:mb-4 bg-gradient-to-r from-[#25B181] to-[#1F8F68] bg-clip-text text-transparent px-4">
+              Lightning Payday - Our Flagship Product
             </h2>
             <p className="text-base sm:text-lg lg:text-xl text-gray-700 max-w-3xl mx-auto px-4">
-              Specially designed for salaried employees. Get up to 2 months
-              salary in advance with auto-deduction facility.
+              "Salary aa gaya? Abhi nahi? Le lo abhi!" - Get instant cash before your payday arrives.
             </p>
           </motion.div>
 
@@ -228,26 +227,26 @@ export default function ProductsPage() {
             <div className="grid md:grid-cols-2 gap-6 sm:gap-8 items-center">
               <div>
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-14 h-14 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <Wallet className="w-7 h-7 text-white" />
+                  <div className="w-14 h-14 bg-gradient-to-r from-[#25B181] to-[#1F8F68] rounded-xl flex items-center justify-center shadow-lg">
+                    <Zap className="w-7 h-7 text-white" />
                   </div>
                   <div>
                     <h3 className="text-2xl font-bold text-gray-900">
-                      Instant Salary Advance
+                      Lightning Payday
                     </h3>
                     <p className="text-gray-700">
-                      For all salaried professionals
+                      Quick payday loan before your salary arrives
                     </p>
                   </div>
                 </div>
 
                 <div className="space-y-4 mb-6">
                   {[
-                    "Get 2X your monthly salary instantly",
-                    "Auto-deduction from next salary",
-                    "No paperwork or collateral",
-                    "500+ partner companies",
-                    "Lowest interest rates",
+                    "2-minute approval process",
+                    "Same-day cash in your account",
+                    "Zero paperwork required",
+                    "No salary slip needed",
+                    "Repay on your next payday",
                   ].map((feature, index) => (
                     <div key={index} className="flex items-start gap-3">
                       <CheckCircle className="w-5 h-5 text-[#25B181] mt-0.5 flex-shrink-0" />
@@ -256,35 +255,39 @@ export default function ProductsPage() {
                   ))}
                 </div>
 
-                <Link href="/products/salary-advance">
-                  <button className="px-8 py-3 bg-gradient-to-r from-[#25B181] to-[#25B181] text-white rounded-full font-semibold hover:shadow-lg transition-all flex items-center gap-2">
-                    Apply for Salary Advance
+                <Link href="/apply/quick">
+                  <button className="px-8 py-3 bg-gradient-to-r from-[#25B181] to-[#1F8F68] text-white rounded-full font-semibold hover:shadow-lg transition-all flex items-center gap-2">
+                    Apply for Lightning Payday
                     <ArrowRight className="w-5 h-5" />
                   </button>
                 </Link>
               </div>
 
-              <div className="bg-gradient-to-br from-[#ecfdf5] to-[#f0fdfa] rounded-2xl p-6 border border-gray-100">
+              <div className="bg-gradient-to-br from-[#E6F7F2] to-[#D1F0E6] rounded-2xl p-6 border border-[#25B181]/20">
                 <h4 className="font-semibold mb-4 text-lg">Quick Stats</h4>
                 <div className="space-y-4">
-                  <div className="flex justify-between pb-3 border-b border-gray-200">
+                  <div className="flex justify-between pb-3 border-b border-[#25B181]/20">
                     <span className="text-gray-700">Amount Range</span>
-                    <span className="font-semibold">₹5,000 - ₹2,00,000</span>
+                    <span className="font-semibold">₹10,000 - ₹75,000</span>
                   </div>
-                  <div className="flex justify-between pb-3 border-b border-gray-200">
+                  <div className="flex justify-between pb-3 border-b border-[#25B181]/20">
                     <span className="text-gray-700">Interest Rate</span>
                     <span className="font-semibold text-[#25B181]">
-                      1.5% per month
+                      1% per day
                     </span>
                   </div>
-                  <div className="flex justify-between pb-3 border-b border-gray-200">
+                  <div className="flex justify-between pb-3 border-b border-[#25B181]/20">
                     <span className="text-gray-700">Tenure</span>
-                    <span className="font-semibold">1-3 months</span>
+                    <span className="font-semibold">7 - 30 days</span>
+                  </div>
+                  <div className="flex justify-between pb-3 border-b border-[#25B181]/20">
+                    <span className="text-gray-700">Processing Fee</span>
+                    <span className="font-semibold">10% + GST</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-700">Processing Time</span>
+                    <span className="text-gray-700">Approval Time</span>
                     <span className="font-semibold text-[#25B181]">
-                      30 seconds
+                      2 minutes
                     </span>
                   </div>
                 </div>
@@ -303,7 +306,7 @@ export default function ProductsPage() {
             viewport={{ once: true }}
             className="text-center mb-8 sm:mb-10 lg:mb-12"
           >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-3 sm:mb-4 bg-gradient-to-r from-[#25B181] to-[#FF9C70] bg-clip-text text-transparent px-4">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-3 sm:mb-4 bg-gradient-to-r from-[#25B181] to-[#1F8F68] bg-clip-text text-transparent px-4">
               All Loan Products
             </h2>
             <p className="text-base sm:text-lg lg:text-xl text-gray-700 max-w-3xl mx-auto px-4">
@@ -328,29 +331,36 @@ export default function ProductsPage() {
                 >
                   {product.popular && (
                     <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold">
-                      POPULAR
+                      🔥 POPULAR
                     </div>
                   )}
                   <product.icon className="w-12 h-12 mb-4" />
-                  <h3 className="text-2xl font-bold mb-2">{product.title}</h3>
-                  <p className="opacity-90">{product.description}</p>
+                  <h3 className="text-2xl font-bold mb-1">{product.title}</h3>
+                  <p className="text-sm opacity-80 italic mb-2">"{product.tagline}"</p>
+                  <p className="opacity-90 text-sm">{product.description}</p>
                 </div>
 
                 {/* Product Details */}
                 <div className="p-6 flex-1 flex flex-col">
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div>
-                      <p className="text-sm text-gray-600">Amount</p>
-                      <p className="font-semibold text-sm">{product.amount}</p>
+                  <div className="grid grid-cols-2 gap-3 mb-6">
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <p className="text-xs text-gray-500 mb-1">Amount</p>
+                      <p className="font-semibold text-sm text-gray-800">{product.amount}</p>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Tenure</p>
-                      <p className="font-semibold text-sm">{product.tenure}</p>
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <p className="text-xs text-gray-500 mb-1">Tenure</p>
+                      <p className="font-semibold text-sm text-gray-800">{product.tenure}</p>
                     </div>
-                    <div className="col-span-2">
-                      <p className="text-sm text-gray-600">Interest Rate</p>
-                      <p className="font-semibold text-lg text-[#25B181]">
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <p className="text-xs text-gray-500 mb-1">Interest Rate</p>
+                      <p className="font-semibold text-sm text-[#25B181]">
                         {product.rate}
+                      </p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <p className="text-xs text-gray-500 mb-1">Processing Fee</p>
+                      <p className="font-semibold text-sm text-gray-800">
+                        {product.processingFee}
                       </p>
                     </div>
                   </div>
@@ -418,7 +428,7 @@ export default function ProductsPage() {
                             key={idx}
                             className="flex items-start gap-2 text-sm"
                           >
-                            <CheckCircle className="w-4 h-4 text-[#4A66FF] mt-0.5 flex-shrink-0" />
+                            <CheckCircle className="w-4 h-4 text-[#25B181] mt-0.5 flex-shrink-0" />
                             <span className="text-gray-600">{item}</span>
                           </li>
                         ))}
@@ -460,7 +470,7 @@ export default function ProductsPage() {
                 transition={{ delay: index * 0.1 }}
                 className="text-center"
               >
-                <div className="w-16 h-16 bg-gradient-to-r from-[#25B181] to-[#FF9C70] rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-gradient-to-r from-[#25B181] to-[#1F8F68] rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <item.icon className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2 text-gray-900">
@@ -477,7 +487,7 @@ export default function ProductsPage() {
       <div
         className="w-full max-w-4xl rounded-3xl p-12 md:p-20 text-center"
         style={{
-          background: "linear-gradient(180deg, #6D9DFF 0%, #415E99 100%)",
+          background: "linear-gradient(180deg, #25B181 0%, #1F8F68 100%)",
         }}
       >
         <h1
