@@ -15,10 +15,7 @@ Your concern: **"Any file has default color or inline color it will conflict wit
 All hardcoded Tailwind colors are automatically overridden:
 
 ```css
-/* Blue colors -> Primary brand color */
-.text-blue-400, .text-blue-500, .text-blue-600 {
-  color: rgb(var(--primary-500)) !important;
-}
+
 
 .bg-blue-500, .bg-blue-600 {
   background-color: rgb(var(--primary-500)) !important;
