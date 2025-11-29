@@ -95,7 +95,7 @@ export default function QuickLoanApplication() {
   const [emiCalculation, setEmiCalculation] = useState<any>(null);
   const [loadingProducts, setLoadingProducts] = useState(false);
 
-  // Field validation errors for Step 1
+  // Field validation errors for Step 1 and Step 3
   const [fieldErrors, setFieldErrors] = useState({
     email: "",
     mobile: "",
@@ -104,7 +104,11 @@ export default function QuickLoanApplication() {
     aadhaar: "",
     pan: "",
     accountNumber: "",
-    ifsc: ""
+    ifsc: "",
+    reference1Name: "",
+    reference1Mobile: "",
+    reference2Name: "",
+    reference2Mobile: ""
   });
 
   // Consent validation error
@@ -463,40 +467,28 @@ export default function QuickLoanApplication() {
     }
 
     const principal = parseFloat(formData.loanAmount.replace(/,/g, ''));
-    const tenureValue = parseInt(formData.tenure);
-    const tenureUnit = formData.requestedTenureUnit;
+    const tenureDays = parseInt(formData.tenure); // Tenure is always in days for products
     const dailyRate = selectedProduct.dailyInterestRate / 100;
     const processingFeePercent = selectedProduct.processingFee / 100;
     const gstPercent = selectedProduct.gst / 100;
 
-    // Calculate total days based on tenure unit
-    let totalDays: number;
-    let tenureMonths: number;
-
-    if (tenureUnit === 'days') {
-      totalDays = tenureValue;
-      tenureMonths = Math.ceil(tenureValue / 30); // Convert days to months for EMI
-    } else {
-      tenureMonths = tenureValue;
-      totalDays = Math.round((tenureMonths / 12) * 365);
-    }
-
-    // Calculate daily interest for the tenure
-    const totalInterest = principal * dailyRate * totalDays;
+    // Calculate total interest based on daily rate and tenure days
+    const totalInterest = principal * dailyRate * tenureDays;
 
     // Calculate processing fee and GST
     const processingFee = principal * processingFeePercent;
     const gstOnProcessingFee = processingFee * gstPercent;
     const totalProcessingFee = processingFee + gstOnProcessingFee;
 
-    // Total amount to be repaid
+    // Total amount to be repaid (principal + interest)
     const totalAmount = principal + totalInterest;
 
     // EMI calculation - For tenure <= 45 days, it's lump sum payment
     let emi: number;
     let isLumpSum = false;
+    const tenureMonths = Math.ceil(tenureDays / 30); // Convert days to months for display
 
-    if (tenureUnit === 'days' && tenureValue <= 45) {
+    if (tenureDays <= 45) {
       emi = Math.round(totalAmount); // Full amount in one payment
       isLumpSum = true;
     } else {
@@ -506,7 +498,7 @@ export default function QuickLoanApplication() {
     setEmiCalculation({
       principal: principal,
       dailyInterestRate: selectedProduct.dailyInterestRate,
-      totalDays: totalDays,
+      totalDays: tenureDays,
       totalInterest: Math.round(totalInterest),
       processingFee: Math.round(processingFee),
       gst: Math.round(gstOnProcessingFee),
@@ -515,8 +507,8 @@ export default function QuickLoanApplication() {
       emi: emi,
       tenureMonths: tenureMonths,
       isLumpSum: isLumpSum,
-      tenureUnit: tenureUnit,
-      tenureValue: tenureValue
+      tenureUnit: 'days',
+      tenureValue: tenureDays
     });
   };
 
@@ -527,10 +519,22 @@ export default function QuickLoanApplication() {
     // Automatically set purpose based on selected product
     const purpose = product ? `${product.productName} - ${product.category}` : '';
 
+    // Reset tenure when product changes and set default from allowedTenures or minTenure
+    let defaultTenure = '';
+    if (product) {
+      if (product.allowedTenures && product.allowedTenures.length > 0) {
+        defaultTenure = product.allowedTenures[0].toString();
+      } else {
+        defaultTenure = product.minTenure?.toString() || '';
+      }
+    }
+
     setFormData(prev => ({
       ...prev,
       productId: productId,
-      purpose: purpose
+      purpose: purpose,
+      tenure: defaultTenure,
+      requestedTenureUnit: 'days' // Products use days for tenure
     }));
   };
 
@@ -595,6 +599,60 @@ export default function QuickLoanApplication() {
         fullName: "Full name cannot contain numbers"
       }));
       return; // Don't update if contains numbers
+    }
+
+    // Special handling for reference names - don't allow numbers, only letters and spaces
+    if ((name === 'reference1Name' || name === 'reference2Name') && value) {
+      if (/\d/.test(value)) {
+        setFieldErrors(prev => ({
+          ...prev,
+          [name]: "Name cannot contain numbers"
+        }));
+        return; // Don't update if contains numbers
+      }
+      if (!/^[a-zA-Z\s]*$/.test(value)) {
+        setFieldErrors(prev => ({
+          ...prev,
+          [name]: "Name can only contain letters and spaces"
+        }));
+        return; // Don't update if contains special characters
+      }
+      // Clear error if valid
+      setFieldErrors(prev => ({
+        ...prev,
+        [name]: ""
+      }));
+    }
+
+    // Special handling for reference mobile numbers - only allow numbers, validate 10 digits starting with 6-9
+    if ((name === 'reference1Mobile' || name === 'reference2Mobile')) {
+      if (value && !/^\d*$/.test(value)) {
+        setFieldErrors(prev => ({
+          ...prev,
+          [name]: "Mobile number can only contain numbers"
+        }));
+        return; // Don't update if non-numeric
+      }
+      if (value && value.length > 10) {
+        return; // Don't allow more than 10 digits
+      }
+      if (value && value.length > 0 && value.length !== 10) {
+        setFieldErrors(prev => ({
+          ...prev,
+          [name]: "Mobile number must be exactly 10 digits"
+        }));
+      } else if (value && value.length === 10 && !/^[6-9]\d{9}$/.test(value)) {
+        setFieldErrors(prev => ({
+          ...prev,
+          [name]: "Mobile number must start with 6, 7, 8, or 9"
+        }));
+      } else {
+        // Clear error when valid
+        setFieldErrors(prev => ({
+          ...prev,
+          [name]: ""
+        }));
+      }
     }
 
     // Special handling for IFSC - auto uppercase and validate format
@@ -1542,22 +1600,80 @@ console.log('Sending OTP with payload:', payload);
       }
 
       const loanAmount = parseFloat(formData.loanAmount);
-      if (loanAmount < 10000) {
+
+      // Validate against product limits
+      if (selectedProduct) {
+        if (loanAmount < selectedProduct.minAmount) {
+          toast({
+            variant: "warning",
+            title: "Minimum Loan Amount",
+            description: `Minimum loan amount for ${selectedProduct.productName} is ₹${selectedProduct.minAmount.toLocaleString('en-IN')}.`,
+          });
+          return;
+        }
+
+        if (loanAmount > selectedProduct.maxAmount) {
+          toast({
+            variant: "warning",
+            title: "Maximum Loan Amount",
+            description: `Maximum loan amount for ${selectedProduct.productName} is ₹${selectedProduct.maxAmount.toLocaleString('en-IN')}.`,
+          });
+          return;
+        }
+      } else {
+        // Fallback validation if no product selected
+        if (loanAmount < 10000) {
+          toast({
+            variant: "warning",
+            title: "Minimum Loan Amount",
+            description: "Minimum loan amount is ₹10,000.",
+          });
+          return;
+        }
+
+        if (loanAmount > 10000000) {
+          toast({
+            variant: "warning",
+            title: "Maximum Loan Amount",
+            description: "Maximum loan amount is ₹1,00,00,000.",
+          });
+          return;
+        }
+      }
+
+      // Tenure validation against product limits
+      const tenureValue = parseInt(formData.tenure);
+      if (!formData.tenure || tenureValue <= 0) {
         toast({
           variant: "warning",
-          title: "Minimum Loan Amount",
-          description: "Minimum loan amount is ₹10,000.",
+          title: "Invalid Tenure",
+          description: "Please select or enter a valid tenure.",
         });
         return;
       }
 
-      if (loanAmount > 10000000) {
-        toast({
-          variant: "warning",
-          title: "Maximum Loan Amount",
-          description: "Maximum loan amount is ₹1,00,00,000.",
-        });
-        return;
+      if (selectedProduct) {
+        // Check if tenure is within allowed range
+        if (tenureValue < selectedProduct.minTenure || tenureValue > selectedProduct.maxTenure) {
+          toast({
+            variant: "warning",
+            title: "Invalid Tenure",
+            description: `Tenure for ${selectedProduct.productName} must be between ${selectedProduct.minTenure} and ${selectedProduct.maxTenure} days.`,
+          });
+          return;
+        }
+
+        // If product has specific allowed tenures, validate against them
+        if (selectedProduct.allowedTenures && selectedProduct.allowedTenures.length > 0) {
+          if (!selectedProduct.allowedTenures.includes(tenureValue)) {
+            toast({
+              variant: "warning",
+              title: "Invalid Tenure",
+              description: `Please select a valid tenure from the available options: ${selectedProduct.allowedTenures.join(', ')} days.`,
+            });
+            return;
+          }
+        }
       }
 
       // Reference 1 validation
@@ -1754,7 +1870,7 @@ references.forEach((ref, index) => {
             if (result.data.loanNumber) localStorage.setItem('loanNumber', result.data.loanNumber);
           }
 
-          // Use API response for decision
+          // Use API response for decision - only on success
           setDecision({
             approved: true,
             apiResponse: result.data,
@@ -1766,35 +1882,26 @@ references.forEach((ref, index) => {
             processingFee: Math.round(principal * 0.02)
           });
         } else {
-          // API returned error
+          // API returned error - show error and stay on step 3
           console.error('❌ Loan application failed:', result.message);
           toast({
             variant: "error",
             title: "Application Failed",
             description: result.message || "Failed to submit loan application. Please try again.",
           });
-
-          // Use local decision engine as fallback
-          const decisionResult = autoDecisionEngine({
-            monthlyIncome: parseFloat(formData.monthlyIncome),
-            loanAmount: principal,
-            pan: formData.pan,
-            aadhaar: formData.aadhaar,
-            tenure: emiCalculation.tenureMonths
-          });
-          setDecision(decisionResult);
+          setLoading(false);
+          return; // Don't proceed, stay on step 3
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error submitting loan application:', error);
-        // Fallback to local decision engine
-        const result = autoDecisionEngine({
-          monthlyIncome: parseFloat(formData.monthlyIncome),
-          loanAmount: parseFloat(formData.loanAmount),
-          pan: formData.pan,
-          aadhaar: formData.aadhaar,
-          tenure: parseInt(formData.tenure)
+        // Show error toast and stay on step 3
+        toast({
+          variant: "error",
+          title: "Submission Error",
+          description: error.message || "Network error occurred. Please check your connection and try again.",
         });
-        setDecision(result);
+        setLoading(false);
+        return; // Don't proceed, stay on step 3
       }
 
       setLoading(false);
@@ -2911,40 +3018,52 @@ references.forEach((ref, index) => {
                         }
                       }}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                      placeholder="₹ 50,000"
+                      placeholder={selectedProduct ? `₹ ${selectedProduct.minAmount.toLocaleString('en-IN')} - ₹ ${selectedProduct.maxAmount.toLocaleString('en-IN')}` : '₹ 50,000'}
                     />
+                    {selectedProduct && (
+                      <p className="mt-1 text-xs text-gray-500">
+                        Min: ₹{selectedProduct.minAmount.toLocaleString('en-IN')} | Max: ₹{selectedProduct.maxAmount.toLocaleString('en-IN')}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Tenure *
+                      Tenure (Days) *
                     </label>
-                    <div className="grid grid-cols-2 gap-3">
-
- {/* Tenure Value Selector - Changes based on unit */}
-                        <input
-                          type="number"
-                          name="tenure"
-                          value={formData.tenure}
-                          onChange={handleChange}
-                          min="1"
-                          max="365"
-                          className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                          placeholder="Enter days (1-365)"
-                        />
-
-                      {/* Tenure Unit Selector */}
+                    {/* Show dropdown if product has allowedTenures, otherwise show input */}
+                    {selectedProduct && selectedProduct.allowedTenures && selectedProduct.allowedTenures.length > 0 ? (
                       <select
-                        name="requestedTenureUnit"
-                        value={formData.requestedTenureUnit}
+                        name="tenure"
+                        value={formData.tenure}
                         onChange={handleChange}
-                        className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] bg-white"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] bg-white"
                       >
-                        <option value="days">Days</option>
-                        <option value="months">Months</option>
+                        <option value="">Select Tenure</option>
+                        {selectedProduct.allowedTenures.map((tenure: number) => (
+                          <option key={tenure} value={tenure}>
+                            {tenure} Days
+                          </option>
+                        ))}
                       </select>
-                   
-                    </div>
-                    {formData.requestedTenureUnit === 'days' && parseInt(formData.tenure) <= 45 && parseInt(formData.tenure) > 0 && (
+                    ) : (
+                      <input
+                        type="number"
+                        name="tenure"
+                        value={formData.tenure}
+                        onChange={handleChange}
+                        min={selectedProduct?.minTenure || 1}
+                        max={selectedProduct?.maxTenure || 365}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                        placeholder={selectedProduct ? `${selectedProduct.minTenure} - ${selectedProduct.maxTenure} days` : 'Enter days'}
+                        disabled={!selectedProduct}
+                      />
+                    )}
+                    {selectedProduct && (!selectedProduct.allowedTenures || selectedProduct.allowedTenures.length === 0) && (
+                      <p className="mt-1 text-xs text-gray-500">
+                        Min: {selectedProduct.minTenure} days | Max: {selectedProduct.maxTenure} days
+                      </p>
+                    )}
+                    {parseInt(formData.tenure) <= 45 && parseInt(formData.tenure) > 0 && (
                       <p className="mt-2 text-xs text-amber-600 flex items-center gap-1">
                         <AlertCircle className="w-3 h-3" />
                         Loans with tenure ≤ 45 days require lump sum payment (no EMI)
@@ -3023,7 +3142,7 @@ references.forEach((ref, index) => {
                             ₹{emiCalculation.totalAmount.toLocaleString('en-IN')}
                           </p>
                           <p className="text-xs opacity-80 mt-1">
-                            Over {emiCalculation.tenureMonths} months ({emiCalculation.totalDays} days)
+                            Over {emiCalculation.totalDays} days {emiCalculation.totalDays > 45 ? `(~${emiCalculation.tenureMonths} month${emiCalculation.tenureMonths > 1 ? 's' : ''})` : ''}
                           </p>
                         </div>
                         <div className="text-right">
@@ -3056,23 +3175,33 @@ references.forEach((ref, index) => {
                         name="reference1Name"
                         value={formData.reference1Name}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                          fieldErrors.reference1Name ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         placeholder="Full Name"
                       />
+                      {fieldErrors.reference1Name && (
+                        <p className="mt-1 text-xs text-red-600">{fieldErrors.reference1Name}</p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Mobile
                       </label>
                       <input
-                        type="number"
+                        type="text"
                         name="reference1Mobile"
                         value={formData.reference1Mobile}
                         onChange={handleChange}
                         maxLength={10}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                        placeholder="enter mobile number"
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                          fieldErrors.reference1Mobile ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="10-digit mobile number"
                       />
+                      {fieldErrors.reference1Mobile && (
+                        <p className="mt-1 text-xs text-red-600">{fieldErrors.reference1Mobile}</p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -3107,23 +3236,33 @@ references.forEach((ref, index) => {
                         name="reference2Name"
                         value={formData.reference2Name}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                          fieldErrors.reference2Name ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         placeholder="Full Name"
                       />
+                      {fieldErrors.reference2Name && (
+                        <p className="mt-1 text-xs text-red-600">{fieldErrors.reference2Name}</p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Mobile
                       </label>
                       <input
-                        type="number"
+                        type="text"
                         name="reference2Mobile"
                         value={formData.reference2Mobile}
                         onChange={handleChange}
                         maxLength={10}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                        placeholder="enter mobile number"
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                          fieldErrors.reference2Mobile ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="10-digit mobile number"
                       />
+                      {fieldErrors.reference2Mobile && (
+                        <p className="mt-1 text-xs text-red-600">{fieldErrors.reference2Mobile}</p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">

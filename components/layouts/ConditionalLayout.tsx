@@ -6,7 +6,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { SecurityBanner } from "@/components/security-banner";
 import dynamic from "next/dynamic";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 // Lazy load user dashboard layout - only needed when authenticated
 const UserLayout = dynamic(() => import("./UserLayout"), {
@@ -66,6 +66,15 @@ const isPublicRoute = (pathname: string): boolean => {
 const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
   const pathname = usePathname();
   const { user, isLoggingOut } = useAuth();
+  const [hasToken, setHasToken] = useState(false);
+
+  // Check for token in localStorage on mount (for users who just completed form submission)
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken') ||
+                  localStorage.getItem('token') ||
+                  localStorage.getItem('authToken');
+    setHasToken(!!token);
+  }, [pathname]);
 
   // Show loading screen when logging out to prevent UI flash
   if (isLoggingOut) {
@@ -102,15 +111,15 @@ const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
     );
   }
 
-  // If user is not authenticated, just render children
-  // Individual dashboard pages will handle authentication checks and redirects
-  if (!user) {
-    return <>{children}</>;
+  // For /user routes: Show UserLayout if user is authenticated OR has a token
+  // This handles the case where user just submitted form and has token but AuthContext hasn't loaded yet
+  if (user || (hasToken && pathname.startsWith('/user'))) {
+    return <UserLayout>{children}</UserLayout>;
   }
 
-
-  // Render user dashboard layout for authenticated users
-  return <UserLayout>{children}</UserLayout>;
+  // If user is not authenticated and no token, just render children
+  // Individual dashboard pages will handle authentication checks and redirects
+  return <>{children}</>;
 };
 
 export default ConditionalLayout;
