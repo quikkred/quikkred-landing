@@ -1163,10 +1163,10 @@ export default function MyLoansPage() {
                 >
                   Close
                 </button>
-                <button className="w-full sm:w-auto px-4 py-2 bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 rounded-lg hover:bg-white transition-colors flex items-center justify-center text-sm">
+                {/* <button className="w-full sm:w-auto px-4 py-2 bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 rounded-lg hover:bg-white transition-colors flex items-center justify-center text-sm">
                   <Download className="w-4 h-4 mr-2" />
                   Download Statement
-                </button>
+                </button> */}
                 {/* {detailedLoan && (detailedLoan.status.toLowerCase() === 'active') && (
                   <button className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center text-sm">
                     <Wallet className="w-4 h-4 mr-2" />
