@@ -30,13 +30,20 @@ export function FinancialCTA({
   }
 
   return (
-    <div className="min-h-[calc(100vh-80px)] flex items-center justify-center bg-[#f6f6f6] py-12 sm:py-16 md:py-24 px-4 overflow-hidden">
+    <div className=" xl:min-h-[calc(100vh-80px)]  flex items-center justify-center bg-[#f6f6f6] md:py-24 overflow-hidden">
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 50 }}
         whileInView={{ opacity: 1, scale: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
-        className="w-full max-w-4xl rounded-2xl sm:rounded-3xl p-8 sm:p-12 md:p-16 lg:p-20 text-center"
+       className="
+  w-full max-w-4xl 
+  rounded-none        
+  sm:rounded-none      
+  md:rounded-2xl        
+  p-8 sm:p-12 md:p-16 lg:p-20 
+  text-center
+"
         style={{
           background: "linear-gradient(180deg, #6D9DFF 0%, #415E99 100%)",
         }}

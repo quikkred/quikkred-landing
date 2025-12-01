@@ -334,7 +334,7 @@ export default function Hero() {
 
   if (submitted) {
     return (
-      <section className="bg-white min-h-[calc(100vh-90px)] flex items-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16 relative">
+      <section className="bg-white md:min-h-[calc(100vh-90px)] flex items-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16 relative">
         {/* Language Selector - Top Right Corner */}
         <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10">
           <div className="relative" ref={languageDropdownRef}>
@@ -493,7 +493,7 @@ export default function Hero() {
   }
 
   return (
-    <section className="container m-auto bg-white min-h-[calc(100vh-90px)] md:min-h-[calc(100vh-120px)] sm:md:min-h-[calc(100vh-120px)] flex items-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16 relative">
+    <section className="container m-auto bg-white lg:min-h-[calc(100vh-90px)] md:min-h-[calc(100vh-120px)] flex items-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16 relative">
       <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8 sm:gap-10 lg:gap-12 items-center w-full">
         {/* Left Content */}
         <div className="space-y-4 sm:space-y-6 order-2 md:order-1">
@@ -511,7 +511,7 @@ export default function Hero() {
         </div>
 
         {/* Right - Form Card with Decorative Elements */}
-        <div className="relative flex justify-center items-start pt-8 md:pt-0 order-1 md:order-2">
+        <div className="relative flex justify-center items-start order-1 md:order-2">
           {/* Decorative elements - hidden on mobile */}
           <motion.div
             initial={{ scale: 0, rotate: -180 }}
@@ -526,7 +526,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-100 p-6 sm:p-7 md:p-8"
+            className="w-full max-w-md bg-white rounded-2xl md:shadow-2xl border border-slate-100 p-6 sm:p-7 md:p-8"
           >
             {/* Language Selector at Top of Form */}
             <div className="flex justify-end mb-4">
