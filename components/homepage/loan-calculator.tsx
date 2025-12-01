@@ -33,7 +33,7 @@ export default function LoanCalculatorAll() {
   return (
     <section className="py-0 px-0">
       <div className="max-w-full mx-auto">
-        <div className="max-w-2xl mx-auto bg-white rounded-lg p-4 sm:p-5 shadow-sm max-h-[85vh] overflow-y-auto">
+        <div className="max-w-2xl mx-auto bg-white rounded-lg p-4 sm:p-5 shadow-sm lg:max-h-[85vh] lg:overflow-y-auto">
           {/* Payday Loan Calculator Header */}
           <div className="mb-4 sm:mb-5">
             <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-1">{t.calculator.title}</h3>
