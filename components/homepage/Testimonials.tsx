@@ -32,7 +32,7 @@ const testimonialData = [
     image: "/testimonials/sunita_devi_avatar.png"
   },
   {
-    quote: "As a small business owner, cash flow is always tight. Their flexible repayment options helped me grow my shop without stress.",
+    quote: "As a small business owner, cash flow is always tight?. Their flexible repayment options helped me grow my shop without stress.",
     name: "Mohammed Farhan",
     rating: 4,
     image: "/testimonials/mohammed_farhan_avatar.png"
@@ -215,7 +215,7 @@ export default function Testimonials() {
           transition={{ duration: 0.6 }}
           className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-12 sm:mb-16 px-2"
         >
-          {t.homepage.testimonials.heading} <span className="text-teal-500">{t.homepage.testimonials.headingHighlight}</span> {t.homepage.testimonials.subheading}
+          {t?.homepage?.testimonials?.heading} <span className="text-teal-500">{t?.homepage?.testimonials?.headingHighlight}</span> {t?.homepage?.testimonials?.subheading}
         </motion.h2>
 
         {/* Carousel Container */}

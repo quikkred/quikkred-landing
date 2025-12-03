@@ -28,20 +28,18 @@ export default function LoanCalculatorAll() {
   const processingFee = (loanAmount * (processingFeePercent / 100)).toFixed(0)
   const totalRepay = (Number(loanAmount) + Number(totalInterest) + Number(processingFee)).toFixed(0)
 
-  const purposes = ["Personal", "Medical", "Education", "Business", "Travel", "Wedding"]
-
   return (
     <section className="py-0 px-0">
       <div className="max-w-full mx-auto">
         <div className="max-w-2xl mx-auto bg-white rounded-lg p-4 sm:p-5 shadow-sm lg:max-h-[85vh] lg:overflow-y-auto">
           {/* Payday Loan Calculator Header */}
           <div className="mb-4 sm:mb-5">
-            <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-1">{t.calculator.title}</h3>
-            <p className="text-slate-600 text-xs">{t.calculator.subtitle}</p>
+            <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-1">{t?.calculator?.title}</h3>
+            <p className="text-slate-600 text-xs">{t?.calculator?.subtitle}</p>
           </div>
 
           {/* <div className="mb-4 sm:mb-5">
-            <label className="block text-xs font-semibold text-slate-900 mb-2">{t.calculator.loanPurpose}</label>
+            <label className="block text-xs font-semibold text-slate-900 mb-2">{t?.calculator?.loanPurpose}</label>
             <div className="flex flex-wrap gap-1.5">
               {purposes.map((purpose) => (
                 <button
@@ -53,7 +51,7 @@ export default function LoanCalculatorAll() {
                       : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                   }`}
                 >
-                  {t.calculator.purposes[purpose as keyof typeof t.calculator.purposes]}
+                  {t?.calculator?.purposes[purpose as keyof typeof t?.calculator?.purposes]}
                 </button>
               ))}
             </div>
@@ -61,7 +59,7 @@ export default function LoanCalculatorAll() {
 
           <div className="mb-3 sm:mb-4">
             <div className="flex justify-between items-center mb-1.5">
-              <label className="block text-xs font-semibold text-slate-900">{t.calculator.loanAmount}</label>
+              <label className="block text-xs font-semibold text-slate-900">{t?.calculator?.loanAmount}</label>
               <span className="text-slate-900 font-semibold text-xs sm:text-sm">₹{loanAmount.toLocaleString()}</span>
             </div>
             <input
@@ -81,8 +79,8 @@ export default function LoanCalculatorAll() {
 
           <div className="mb-3 sm:mb-4">
             <div className="flex justify-between items-center mb-1.5">
-              <label className="block text-xs font-semibold text-slate-900">{t.calculator.tenure}</label>
-              <span className="text-slate-900 font-semibold text-xs sm:text-sm">{tenureDays} {t.calculator.tenureDays}</span>
+              <label className="block text-xs font-semibold text-slate-900">{t?.calculator?.tenure}</label>
+              <span className="text-slate-900 font-semibold text-xs sm:text-sm">{tenureDays} {t?.calculator?.tenureDays}</span>
             </div>
             <input
               type="range"
@@ -94,15 +92,15 @@ export default function LoanCalculatorAll() {
               className="w-full h-1.5 bg-gradient-to-r from-teal-400 via-teal-400 to-slate-300 rounded-lg appearance-none cursor-pointer accent-teal-500"
             />
             <div className="flex justify-between text-[10px] text-slate-500 mt-0.5">
-              <span>7 {t.calculator.tenureDays}</span>
-              <span>45 {t.calculator.tenureDays}</span>
+              <span>7 {t?.calculator?.tenureDays}</span>
+              <span>45 {t?.calculator?.tenureDays}</span>
             </div>
           </div>
 
           <div className="mb-3 sm:mb-4">
             <div className="flex justify-between items-center mb-1.5">
-              <label className="block text-xs font-semibold text-slate-900">{t.calculator.dailyInterestRate}</label>
-              <span className="text-slate-900 font-semibold text-xs sm:text-sm">{dailyInterestRate.toFixed(1)}% {t.calculator.perDay}</span>
+              <label className="block text-xs font-semibold text-slate-900">{t?.calculator?.dailyInterestRate}</label>
+              <span className="text-slate-900 font-semibold text-xs sm:text-sm">{dailyInterestRate.toFixed(1)}% {t?.calculator?.perDay}</span>
             </div>
             <input
               type="range"
@@ -121,7 +119,7 @@ export default function LoanCalculatorAll() {
 
           <div className="mb-3 sm:mb-4">
             <div className="flex justify-between items-center mb-1.5">
-              <label className="block text-xs font-semibold text-slate-900">{t.calculator.processingFee}</label>
+              <label className="block text-xs font-semibold text-slate-900">{t?.calculator?.processingFee}</label>
               <span className="text-slate-900 font-semibold text-xs sm:text-sm">{processingFeePercent}%</span>
             </div>
             <input
@@ -141,19 +139,19 @@ export default function LoanCalculatorAll() {
 
           <div className="space-y-2 mb-4 pb-3 border-b border-slate-200">
             <div className="flex justify-between items-center">
-              <span className="text-slate-700 text-xs">{t.calculator.principalAmount}</span>
+              <span className="text-slate-700 text-xs">{t?.calculator?.principalAmount}</span>
               <span className="text-slate-900 font-semibold text-xs sm:text-sm">₹{loanAmount.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-slate-700 text-xs">{t.calculator.interest} ({dailyInterestRate.toFixed(1)}% × {tenureDays} {t.calculator.tenureDays})</span>
+              <span className="text-slate-700 text-xs">{t?.calculator?.interest} ({dailyInterestRate.toFixed(1)}% × {tenureDays} {t?.calculator?.tenureDays})</span>
               <span className="text-slate-900 font-semibold text-xs sm:text-sm">₹{totalInterest}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-slate-700 text-xs">{t.calculator.processingFee} ({processingFeePercent}%)</span>
+              <span className="text-slate-700 text-xs">{t?.calculator?.processingFee} ({processingFeePercent}%)</span>
               <span className="text-slate-900 font-semibold text-xs sm:text-sm">₹{processingFee}</span>
             </div>
             <div className="flex justify-between items-center pt-2 border-t border-slate-200">
-              <span className="text-slate-900 font-bold text-sm sm:text-base">{t.calculator.totalRepayment}</span>
+              <span className="text-slate-900 font-bold text-sm sm:text-base">{t?.calculator?.totalRepayment}</span>
               <span className="text-teal-500 font-bold text-lg sm:text-xl">₹{totalRepay}</span>
             </div>
           </div>
@@ -162,9 +160,9 @@ export default function LoanCalculatorAll() {
             onClick={() => window.location.href = '/apply/quick'}
             className="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 sm:py-2.5 rounded-md mb-2 transition-all duration-300 text-xs sm:text-sm"
           >
-            {t.calculator.applyButton}
+            {t?.calculator?.applyButton}
           </Button>
-          <p className="text-center text-[10px] sm:text-xs text-slate-600">{t.calculator.footer}</p>
+          <p className="text-center text-[10px] sm:text-xs text-slate-600">{t?.calculator?.footer}</p>
         </div>
       </div>
     </section>

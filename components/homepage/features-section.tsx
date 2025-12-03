@@ -6,7 +6,7 @@ export default function FeaturesSection() {
   const { t } = useLanguage()
 
   const icons = [FileText, RotateCcw, Lock, Zap]
-  const features = t.homepage.featuresSection.features.map((feature: any, idx: number) => ({
+  const features = t?.homepage?.featuresSection?.features?.map((feature: any, idx: number) => ({
     ...feature,
     icon: icons[idx]
   }))
@@ -21,15 +21,15 @@ export default function FeaturesSection() {
           transition={{ duration: 0.6 }}
         >
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-slate-900 mb-3 sm:mb-4 px-2">
-            {t.homepage.featuresSection.heading} <span className="text-teal-500">{t.homepage.featuresSection.headingHighlight}</span>
+            {t?.homepage?.featuresSection?.heading} <span className="text-teal-500">{t?.homepage?.featuresSection?.headingHighlight}</span>
           </h2>
           <p className="text-center text-slate-600 text-sm sm:text-base mb-8 sm:mb-10 md:mb-12 max-w-2xl mx-auto px-4">
-            {t.homepage.featuresSection.subtitle}
+            {t?.homepage?.featuresSection?.subtitle}
           </p>
         </motion.div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {features.map((feature, idx) => {
+          {features?.map((feature, idx) => {
             const Icon = feature.icon
             return (
               <motion.div

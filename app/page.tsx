@@ -31,81 +31,81 @@ export default function Home() {
 
   // Data arrays using translations
   const trustBadges = [
-    { icon: Users, value: t.homepage.trustBadges.customers.value, title: t.homepage.trustBadges.customers.title },
-    { icon: IndianRupee, value: t.homepage.trustBadges.disbursed.value, title: t.homepage.trustBadges.disbursed.title },
-    { icon: Clock, value: t.homepage.trustBadges.approvalTime.value, title: t.homepage.trustBadges.approvalTime.title },
-    { icon: Star, value: t.homepage.trustBadges.rating.value, title: t.homepage.trustBadges.rating.title }
+    { icon: Users, value: t?.homepage?.trustBadges?.customers.value, title: t?.homepage?.trustBadges?.customers?.title },
+    { icon: IndianRupee, value: t?.homepage?.trustBadges?.disbursed.value, title: t?.homepage?.trustBadges?.disbursed?.title },
+    { icon: Clock, value: t?.homepage?.trustBadges?.approvalTime.value, title: t?.homepage?.trustBadges?.approvalTime?.title },
+    { icon: Star, value: t?.homepage?.trustBadges?.rating.value, title: t?.homepage?.trustBadges?.rating?.title }
   ];
 
   const features = [
     {
       icon: Zap,
-      title: t.homepage.features.fast.title,
-      description: t.homepage.features.fast.description
+      title: t?.homepage?.features?.fast?.title,
+      description: t?.homepage?.features?.fast?.description
     },
     {
       icon: Shield,
-      title: t.homepage.features.secure.title,
-      description: t.homepage.features.secure.description
+      title: t?.homepage?.features?.secure?.title,
+      description: t?.homepage?.features?.secure?.description
     },
     {
       icon: Brain,
-      title: t.homepage.features.aiScore.title,
-      description: t.homepage.features.aiScore.description
+      title: t?.homepage?.features?.aiScore?.title,
+      description: t?.homepage?.features?.aiScore?.description
     },
     {
       icon: Clock,
-      title: t.homepage.features.available.title,
-      description: t.homepage.features.available.description
+      title: t?.homepage?.features?.available?.title,
+      description: t?.homepage?.features?.available?.description
     },
     {
       icon: Smartphone,
-      title: t.homepage.features.mobile.title,
-      description: t.homepage.features.mobile.description
+      title: t?.homepage?.features?.mobile?.title,
+      description: t?.homepage?.features?.mobile?.description
     },
     {
       icon: Award,
-      title: t.homepage.features.licensed.title,
-      description: t.homepage.features.licensed.description
+      title: t?.homepage?.features?.licensed?.title,
+      description: t?.homepage?.features?.licensed?.description
     },
     {
       icon: TrendingUp,
-      title: t.homepage.features.flexible.title,
-      description: t.homepage.features.flexible.description
+      title: t?.homepage?.features?.flexible?.title,
+      description: t?.homepage?.features?.flexible?.description
     },
     {
       icon: Rocket,
-      title: t.homepage.features.instant.title,
-      description: t.homepage.features.instant.description
+      title: t?.homepage?.features?.instant?.title,
+       description: t?.homepage?.features?.instant?.description
     }
   ];
 
   const loanProducts = [
     {
-      name: t.homepage.loanProducts.personal.name,
-      description: t.homepage.loanProducts.personal.description,
-      rate: t.homepage.loanProducts.personal.rate,
+      name: t?.homepage?.loanProducts?.personal?.name,
+      description: t?.homepage?.loanProducts?.personal?.description,
+      rate: t?.homepage?.loanProducts?.personal?.rate,
       icon: Heart,
       link: "/products/personal-loan"
     },
     {
-      name: t.homepage.loanProducts.business.name,
-      description: t.homepage.loanProducts.business.description,
-      rate: t.homepage.loanProducts.business.rate,
+      name: t?.homepage?.loanProducts?.business?.name,
+      description: t?.homepage?.loanProducts?.business?.description,
+      rate: t?.homepage?.loanProducts?.business?.rate,
       icon: Briefcase,
       link: "/products/business-loan"
     },
     {
-      name: t.homepage.loanProducts.emergency.name,
-      description: t.homepage.loanProducts.emergency.description,
-      rate: t.homepage.loanProducts.emergency.rate,
+      name: t?.homepage?.loanProducts?.emergency?.name,
+      description: t?.homepage?.loanProducts?.emergency?.description,
+      rate: t?.homepage?.loanProducts?.emergency?.rate,
       icon: Zap,
       link: "/products/emergency"
     },
     {
-      name: t.homepage.loanProducts.education.name,
-      description: t.homepage.loanProducts.education.description,
-      rate: t.homepage.loanProducts.education.rate,
+      name: t?.homepage?.loanProducts?.education?.name,
+      description: t?.homepage?.loanProducts?.education?.description,
+      rate: t?.homepage?.loanProducts?.education?.rate,
       icon: Globe,
       link: "/products/education-loan"
     }
@@ -113,21 +113,21 @@ export default function Home() {
 
   const steps = [
     {
-      title: t.homepage.steps.apply.title,
-      description: t.homepage.steps.apply.description,
-      time: t.homepage.steps.apply.time,
+      title: t?.homepage?.steps?.apply?.title,
+      description: t?.homepage?.steps?.apply?.description,
+      time: t?.homepage?.steps?.apply?.time,
       icon: FileCheck
     },
     {
-      title: t.homepage.steps.approval.title,
-      description: t.homepage.steps.approval.description,
-      time: t.homepage.steps.approval.time,
+      title: t?.homepage?.steps.approval.title,
+      description: t?.homepage?.steps.approval.description,
+      time: t?.homepage?.steps.approval.time,
       icon: Brain
     },
     {
-      title: t.homepage.steps.money.title,
-      description: t.homepage.steps.money.description,
-      time: t.homepage.steps.money.time,
+      title: t?.homepage?.steps.money.title,
+      description: t?.homepage?.steps.money.description,
+      time: t?.homepage?.steps.money.time,
       icon: PiggyBank
     }
   ];
@@ -156,29 +156,29 @@ export default function Home() {
               >
                 <span className="inline-block px-3 py-1.5 glass rounded-full text-xs font-semibold mb-3">
                   <Sparkles className="inline w-3.5 h-3.5 mr-1 text-yellow-500" />
-                  {t.homepage.sections.calculator.badge}
+                  {t?.homepage?.sections?.calculator?.badge}
                 </span>
                 <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold font-sora mb-3 sm:mb-4">
-                  {t.homepage.sections.calculator.title}
+                  {t?.homepage?.sections?.calculator?.title}
                   <span className="block text-[#25B181]">
-                    {t.homepage.sections.calculator.titleHighlight}
+                    {t?.homepage?.sections?.calculator?.titleHighlight}
                   </span>
                 </h2>
                 <p className="text-sm sm:text-base lg:text-lg text-gray-600 mb-4 sm:mb-6">
-                  {t.homepage.sections.calculator.subtitle}
+                  {t?.homepage?.sections?.calculator?.subtitle}
                 </p>
                 <div className="space-y-2 sm:space-y-3">
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-[#25B181] flex-shrink-0" />
-                    <span className="text-xs sm:text-sm text-gray-600">{t.homepage.sections.calculator.features.noHiddenCharges}</span>
+                    <span className="text-xs sm:text-sm text-gray-600">{t?.homepage?.sections?.calculator?.features.noHiddenCharges}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-[#25B181] flex-shrink-0" />
-                    <span className="text-xs sm:text-sm text-gray-600">{t.homepage.sections.calculator.features.flexibleTenure}</span>
+                    <span className="text-xs sm:text-sm text-gray-600">{t?.homepage?.sections?.calculator?.features.flexibleTenure}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-[#25B181] flex-shrink-0" />
-                    <span className="text-xs sm:text-sm text-gray-600">{t.homepage.sections.calculator.features.lowestRates}</span>
+                    <span className="text-xs sm:text-sm text-gray-600">{t?.homepage?.sections?.calculator?.features.lowestRates}</span>
                   </div>
                 </div>
               </motion.div>
@@ -213,15 +213,14 @@ export default function Home() {
                 FAQs
               </span>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold font-sora mb-3 sm:mb-4 px-4">
-                {t.homepage.faqs.title}
-              </h2>
+                {t?.homepage?.faq?.heading}</h2>
               <p className="text-base sm:text-lg lg:text-xl text-gray-600 px-4">
-                {t.homepage.faqs.subtitle}
-              </p>
+                {t?.homepage?.faq?.subtitle}
+    ?          </p>
             </motion.div>
 
             <div className="space-y-3 sm:space-y-4">
-              {faqs.map((faq, index) => (
+              {t?.homepage?.faq?.faqs.map((faq, index) => (
                 <motion.div
                   key={faq.question}
                   initial={{ opacity: 0, y: 20 }}
@@ -264,10 +263,6 @@ export default function Home() {
 
         {/* Financial CTA - Full Screen */}
         <FinancialCTA/>
-
-
-
-
       </div>
     </>
   );

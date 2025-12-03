@@ -8,19 +8,26 @@ export default function LoansGrid() {
 
   // Map loan index to their product page URLs (order matches translations)
   const loanRoutes = [
-    "/products/salary-advance",    // 0: Salary Advance
-    "/products/personal-loan",     // 1: Personal Loan
-    "/products/emergency",         // 2: Emergency Fund
-    "/products/festival",          // 3: Festival Advance
-    "/products/medical",           // 4: Medical Loan
-    "/products/travel"             // 5: Travel Now Pay Later
+    "/products/salary-advance", // 0: Salary Advance
+    "/products/personal-loan", // 1: Personal Loan
+    "/products/emergency", // 2: Emergency Fund
+    "/products/festival", // 3: Festival Advance
+    "/products/medical", // 4: Medical Loan
+    "/products/travel", // 5: Travel Now Pay Later
   ];
 
-  const loans = t.homepage.loansGrid.loans.map((loan: any, idx: number) => ({
-    ...loan,
-    color: idx % 3 === 0 ? "bg-teal-500" : idx % 3 === 1 ? "bg-blue-600" : "bg-teal-600",
-    route: loanRoutes[idx] || "/products"
-  }));
+  const loans = t?.homepage?.loansGrid?.loans?.map(
+    (loan: any, idx: number) => ({
+      ...loan,
+      color:
+        idx % 3 === 0
+          ? "bg-teal-500"
+          : idx % 3 === 1
+          ? "bg-blue-600"
+          : "bg-teal-600",
+      route: loanRoutes[idx] || "/products",
+    })
+  );
 
   return (
     <section className="min-h-[calc(100vh-80px)] flex items-center py-12 sm:py-16 md:py-24 px-4 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
@@ -33,20 +40,20 @@ export default function LoansGrid() {
           className="text-center mb-8 sm:mb-10 md:mb-12 lg:mb-16"
         >
           <span className="inline-block px-4 py-2 bg-[#D3F1EB] text-[#25B181] rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
-            {t.homepage.sections.products.badge}
+            {t?.homepage?.sections?.products?.badge}
           </span>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold font-sora mb-3 sm:mb-4 px-4">
-            {t.homepage.sections.products.title}{" "}
+            {t?.homepage?.sections?.products?.title}{" "}
             <span className="text-[#25B181]">
-              {t.homepage.sections.products.titleHighlight}
+              {t?.homepage?.sections?.products?.titleHighlight}
             </span>
           </h2>
           <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto px-4">
-            {t.homepage.sections.products.subtitle}
+            {t?.homepage?.sections?.products?.subtitle}
           </p>
         </motion.div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-          {loans.map((loan, idx) => (
+          {loans?.map((loan, idx) => (
             <motion.div
               key={idx}
               initial={{ opacity: 0, y: 50, rotate: -2 }}
@@ -69,7 +76,9 @@ export default function LoansGrid() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg sm:text-xl font-bold mb-1">{loan.title}</h3>
+                  <h3 className="text-lg sm:text-xl font-bold mb-1">
+                    {loan.title}
+                  </h3>
                   <p className="text-xs sm:text-sm opacity-90">{loan.amount}</p>
                 </div>
               </div>
@@ -84,7 +93,7 @@ export default function LoansGrid() {
                   onClick={() => router.push(loan.route)}
                   className="w-full py-2 sm:py-2.5 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors text-xs sm:text-sm font-medium cursor-pointer"
                 >
-                  {t.homepage.loansGrid.button}
+                  {t?.homepage?.loansGrid?.button}
                 </motion.button>
               </div>
             </motion.div>

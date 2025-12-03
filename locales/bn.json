@@ -17,8 +17,8 @@
     "success": "সফল",
     "warning": "সতর্কতা",
     "info": "তথ্য",
-    "language": "Select Language",
-    "support": "Support"
+    "language": "ভাষা নির্বাচন করুন",
+    "support": "সহায়তা"
   },
   "navigation": {
     "home": "হোম",
@@ -41,16 +41,16 @@
     "careers": "ক্যারিয়ার",
     "privacy": "গোপনীয়তা নীতি",
     "terms": "নিয়ম ও শর্তাবলী",
-    "emiCalculatorDesc": "Calculate your EMI",
-    "blogDesc": "Financial insights",
-    "channelPartners": "Channel Partners",
-    "channelPartnersDesc": "Join our network",
-    "corporateTieups": "Corporate Tie-ups",
-    "corporateTieupsDesc": "Business partnerships",
-    "apiIntegration": "API Integration",
-    "apiIntegrationDesc": "Developer resources",
-    "investorRelations": "Investor Relations",
-    "investorRelationsDesc": "For investors"
+    "emiCalculatorDesc": "আপনার EMI গণনা করুন",
+    "blogDesc": "আর্থিক অন্তর্দৃষ্টি",
+    "channelPartners": "চ্যানেল পার্টনার",
+    "channelPartnersDesc": "আমাদের নেটওয়ার্কে যোগ দিন",
+    "corporateTieups": "কর্পোরেট টাই-আপ",
+    "corporateTieupsDesc": "ব্যবসায়িক অংশীদারিত্ব",
+    "apiIntegration": "API ইন্টিগ্রেশন",
+    "apiIntegrationDesc": "ডেভেলপার সম্পদ",
+    "investorRelations": "বিনিয়োগকারী সম্পর্ক",
+    "investorRelationsDesc": "বিনিয়োগকারীদের জন্য"
   },
   "hero": {
     "title": "তাৎক্ষণিক ব্যক্তিগত ঋণ পান",
@@ -72,6 +72,63 @@
       "disbursed": "৫০০ কোটি+ বিতরণ",
       "rating": "৪.৮/৫ রেটিং",
       "branches": "৫০০+ অংশীদার শাখা"
+    },
+    "form": {
+      "heading": "পান",
+      "headingHighlight": "তাৎক্ষণিক",
+      "headingLine2": "ব্যক্তিগত ঋণ",
+      "getStarted": "শুরু করুন",
+      "getInstantLoan": "তাৎক্ষণিক ঋণ পান →",
+      "step1": {
+        "question": "আপনার মোবাইল নম্বর লিখুন?",
+        "placeholder": "আপনার মোবাইল নম্বর লিখুন"
+      },
+      "step2": {
+        "question": "আপনার নাম কি?",
+        "placeholder": "আপনার নাম লিখুন"
+      },
+      "step3": {
+        "question": "আপনার কত টাকা প্রয়োজন?",
+        "placeholder": "টাকায় পরিমাণ লিখুন"
+      },
+      "step4": {
+        "question": "ইমেইল ঠিকানা লিখুন?",
+        "placeholder": "আপনার ইমেইল লিখুন"
+      },
+      "next": "পরবর্তী →",
+      "submit": "জমা দিন",
+      "thankYou": "ধন্যবাদ!",
+      "successMessage": "আপনার আবেদন সফলভাবে জমা হয়েছে। আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।",
+      "submitAnother": "আরেকটি জমা দিন",
+      "trustBadge": "RBI নিবন্ধিত NBFC • ১০০% নিরাপদ",
+      "headingHighlight1": "অনুমোদন",
+      "description": "কোনো কাগজপত্র নেই। কোনো অপেক্ষা নেই। শুধু তাৎক্ষণিক অনুমোদন এবং দ্রুত বিতরণ। মিনিটেই আপনার আর্থিক জরুরি অবস্থার সমাধান।",
+      "features": {
+        "instantApproval": "তাৎক্ষণিক অনুমোদন",
+        "secure": "১০০% নিরাপদ",
+        "sameDayDisbursal": "একই দিনে বিতরণ"
+      },
+      "buttons": {
+        "applyNow": "এখনই আবেদন করুন",
+        "talkToExpert": "বিশেষজ্ঞের সাথে কথা বলুন"
+      },
+      "steps": [
+        {
+          "number": "1",
+          "title": "তথ্য পূরণ করুন",
+          "description": "৬০ সেকেন্ডে মৌলিক তথ্য"
+        },
+        {
+          "number": "2",
+          "title": "অনুমোদন পান",
+          "description": "স্ক্রিনে তাৎক্ষণিক সিদ্ধান্ত"
+        },
+        {
+          "number": "3",
+          "title": "টাকা পান",
+          "description": "সরাসরি আপনার অ্যাকাউন্টে"
+        }
+      ]
     }
   },
   "products": {
@@ -268,12 +325,12 @@
         "partners": "অংশীদার",
         "careers": "ক্যারিয়ার",
         "contact": "আমাদের সাথে যোগাযোগ করুন",
-        "ourStory": "Our Story",
-        "leadershipTeam": "Leadership Team",
-        "pressMedia": "Press & Media",
-        "awardsRecognition": "Awards & Recognition",
-        "csrInitiatives": "CSR Initiatives",
-        "testimonials": "Testimonials"
+        "ourStory": "আমাদের গল্প",
+        "leadershipTeam": "নেতৃত্ব দল",
+        "pressMedia": "প্রেস ও মিডিয়া",
+        "awardsRecognition": "পুরস্কার ও স্বীকৃতি",
+        "csrInitiatives": "CSR উদ্যোগ",
+        "testimonials": "প্রশংসাপত্র"
       }
     },
     "products": {
@@ -283,8 +340,8 @@
         "salary": "বেতন অগ্রিম",
         "emergency": "জরুরি তহবিল",
         "medical": "চিকিৎসা ঋণ",
-        "travel": "Travel Loan",
-        "festival": "Festival Advance"
+        "travel": "ভ্রমণ ঋণ",
+        "festival": "উৎসব অগ্রিম"
       }
     },
     "legal": {
@@ -294,11 +351,11 @@
         "terms": "নিয়ম ও শর্তাবলী",
         "disclaimer": "দাবিত্যাগ",
         "grievance": "অভিযোগ নিষ্পত্তি",
-        "cookiePolicy": "Cookie Policy",
-        "fairPracticeCode": "Fair Practice Code",
-        "interestRatePolicy": "Interest Rate Policy",
-        "kycPolicy": "KYC Policy",
-        "rbiGuidelines": "RBI Guidelines"
+        "cookiePolicy": "কুকি নীতি",
+        "fairPracticeCode": "ন্যায্য অনুশীলন কোড",
+        "interestRatePolicy": "সুদের হার নীতি",
+        "kycPolicy": "KYC নীতি",
+        "rbiGuidelines": "RBI নির্দেশিকা"
       }
     },
     "contact": {
@@ -318,32 +375,32 @@
     "copyright": "© ২০২৪ লক্ষ্মীওয়ান। সব অধিকার সংরক্ষিত।",
     "disclaimer": "লক্ষ্মীওয়ান RBI দ্বারা নিয়ন্ত্রিত নিবন্ধিত NBFC",
     "resources": {
-      "title": "Resources",
+      "title": "সংস্থান",
       "items": {
-        "eligibilityCheck": "Eligibility Check",
-        "interestRates": "Interest Rates",
-        "documentChecklist": "Document Checklist",
-        "howToApply": "How to Apply",
-        "financialLiteracy": "Financial Literacy"
+        "eligibilityCheck": "যোগ্যতা পরীক্ষা",
+        "interestRates": "সুদের হার",
+        "documentChecklist": "নথি চেকলিস্ট",
+        "howToApply": "কিভাবে আবেদন করবেন",
+        "financialLiteracy": "আর্থিক সাক্ষরতা"
       }
     },
     "support": {
-      "title": "Support",
+      "title": "সহায়তা",
       "items": {
-        "customerSupport": "Customer Support",
-        "grievanceRedressal": "Grievance Redressal",
-        "nodalOfficer": "Nodal Officer",
-        "locateBranch": "Locate Branch",
-        "downloadForms": "Download Forms",
-        "reportFraud": "Report Fraud"
+        "customerSupport": "গ্রাহক সহায়তা",
+        "grievanceRedressal": "অভিযোগ নিষ্পত্তি",
+        "nodalOfficer": "নোডাল অফিসার",
+        "locateBranch": "শাখা খুঁজুন",
+        "downloadForms": "ফর্ম ডাউনলোড করুন",
+        "reportFraud": "জালিয়াতি রিপোর্ট করুন"
       }
     },
     "mobileApp": {
-      "title": "Download our mobile app",
-      "appStore": "App Store",
-      "playStore": "Play Store",
-      "comingSoon": "Coming Soon!",
-      "comingSoonMessage": "Our mobile app will be available soon. Stay tuned!"
+      "title": "আমাদের মোবাইল অ্যাপ ডাউনলোড করুন",
+      "appStore": "অ্যাপ স্টোর",
+      "playStore": "প্লে স্টোর",
+      "comingSoon": "শীঘ্রই আসছে!",
+      "comingSoonMessage": "আমাদের মোবাইল অ্যাপ শীঘ্রই উপলব্ধ হবে। সাথে থাকুন!"
     }
   },
   "contact": {
@@ -412,12 +469,12 @@
     "employment": "চাকরি: বেতনভুক্ত/স্ব-কর্মসংস্থান",
     "credit": "CIBIL স্কোর: ৬৫০+",
     "documents": "বৈধ KYC নথি",
-    "check": "Eligibility Check",
-    "checkDesc": "Check loan eligibility",
-    "documentGuide": "Document Guide",
-    "documentGuideDesc": "Required documents",
-    "interestRates": "Interest Rates",
-    "interestRatesDesc": "Current rates"
+    "check": "যোগ্যতা পরীক্ষা",
+    "checkDesc": "ঋণ যোগ্যতা পরীক্ষা করুন",
+    "documentGuide": "নথি গাইড",
+    "documentGuideDesc": "প্রয়োজনীয় নথি",
+    "interestRates": "সুদের হার",
+    "interestRatesDesc": "বর্তমান হার"
   },
   "process": {
     "title": "এটি কিভাবে কাজ করে",
@@ -474,6 +531,79 @@
     }
   },
   "homepage": {
+    "hero": {
+      "trustBadge": "RBI নিবন্ধিত NBFC • ১০০% নিরাপদ",
+      "heading": "ঋণ",
+      "headingHighlight1": "অনুমোদন",
+      "headingLine2": "পান",
+      "headingHighlight2": "৩ সহজ ধাপে",
+      "description": "কোনো কাগজপত্র নেই। কোনো অপেক্ষা নেই। শুধু তাৎক্ষণিক অনুমোদন এবং দ্রুত বিতরণ। মিনিটেই আপনার আর্থিক জরুরি অবস্থার সমাধান।",
+      "features": {
+        "instantApproval": "তাৎক্ষণিক অনুমোদন",
+        "secure": "১০০% নিরাপদ",
+        "sameDayDisbursal": "একই দিনে বিতরণ"
+      },
+      "buttons": {
+        "applyNow": "এখনই আবেদন করুন",
+        "talkToExpert": "বিশেষজ্ঞের সাথে কথা বলুন"
+      },
+      "steps": [
+        {
+          "number": "1",
+          "title": "তথ্য পূরণ করুন",
+          "description": "৬০ সেকেন্ডে মৌলিক তথ্য"
+        },
+        {
+          "number": "2",
+          "title": "অনুমোদন পান",
+          "description": "স্ক্রিনে তাৎক্ষণিক সিদ্ধান্ত"
+        },
+        {
+          "number": "3",
+          "title": "টাকা পান",
+          "description": "সরাসরি আপনার অ্যাকাউন্টে"
+        }
+      ]
+    },
+    "loansGrid": {
+      "badge": "আমাদের পণ্য",
+      "title": "প্রতিটি প্রয়োজনের জন্য",
+      "titleHighlight": "ঋণ তৈরি",
+      "subtitle": "আপনার প্রয়োজন অনুযায়ী তৈরি নমনীয় ঋণ নির্বাচন করুন",
+      "loans": [
+        {
+          "title": "বেতন অগ্রিম",
+          "amount": "৫,০০০ - ৫,০০,০০০ টাকা",
+          "description": "আপনার বেতনের ২ গুণ পর্যন্ত তাৎক্ষণিক পান"
+        },
+        {
+          "title": "ব্যক্তিগত ঋণ",
+          "amount": "১০,০০০ - ৫০,০০,০০০ টাকা",
+          "description": "আপনার সকল ব্যক্তিগত প্রয়োজনের জন্য দ্রুত নগদ"
+        },
+        {
+          "title": "জরুরি তহবিল",
+          "amount": "১০,০০০ - ২,০০,০০০ টাকা",
+          "description": "চিকিৎসা ও জরুরি প্রয়োজনের জন্য ২৪ ঘণ্টা সহায়তা"
+        },
+        {
+          "title": "উৎসব অগ্রিম",
+          "amount": "৫,০০০ - ১,০০,০০০ টাকা",
+          "description": "আর্থিক চিন্তা ছাড়াই প্রতিটি উৎসব উদযাপন করুন"
+        },
+        {
+          "title": "চিকিৎসা ঋণ",
+          "amount": "২৫,০০০ - ১০,০০,০০০ টাকা",
+          "description": "চিকিৎসার জন্য স্বাস্থ্য অর্থায়ন"
+        },
+        {
+          "title": "এখন ভ্রমণ পরে পেমেন্ট",
+          "amount": "২৫,০০০ - ৩,০০,০০০ টাকা",
+          "description": "আজই বুক করুন, পরের মাসে পেমেন্ট করুন"
+        }
+      ],
+      "button": "আরো জানুন"
+    },
     "trustBadges": {
       "customers": {
         "value": "+",
@@ -565,9 +695,137 @@
         "time": "তাৎক্ষণিক"
       }
     },
+    "featuresSection": {
+      "heading": "ধার নেওয়ার একটি ভালো, স্মার্ট",
+      "headingHighlight": "পদ্ধতি",
+      "subtitle": "আমাদের উদ্ভাবনী পদ্ধতির সাথে ঋণের ভবিষ্যতের অভিজ্ঞতা নিন",
+      "features": [
+        {
+          "title": "অনলাইন আবেদন করুন",
+          "description": "দেখানো মূল্যই আপনি যা দেবেন, কোনো লুকানো ফি নেই"
+        },
+        {
+          "title": "নমনীয় পরিশোধ",
+          "description": "আপনার জীবনধারা এবং বাজেটের সাথে মানানসই পরিশোধ সময়সূচী নির্বাচন করুন।"
+        },
+        {
+          "title": "১০০% নিরাপদ",
+          "description": "ব্যাংক-স্তরের এনক্রিপশন আপনার ব্যক্তিগত এবং আর্থিক ডেটা সুরক্ষিত রাখে।"
+        },
+        {
+          "title": "বিদ্যুতের মতো দ্রুত",
+          "description": "মিনিটেই অনুমোদন পান এবং ২৪ ঘণ্টার মধ্যে তহবিল পান।"
+        }
+      ]
+    },
+    "stepsSection": {
+      "badge": "এটি কিভাবে কাজ করে",
+      "heading": "আপনার ঋণ পান",
+      "headingHighlight": "সহজ ধাপে",
+      "subtitle": "সবচেয়ে দ্রুত এবং সবচেয়ে স্বচ্ছ ঋণ প্রক্রিয়ার অভিজ্ঞতা নিন",
+      "steps": [
+        {
+          "number": "1",
+          "title": "অনলাইন আবেদন করুন",
+          "description": "চাকরির তথ্য দিয়ে একটি সহজ ফর্ম পূরণ করুন এবং বেতন স্লিপ আপলোড করুন"
+        },
+        {
+          "number": "2",
+          "title": "তাৎক্ষণিক যাচাইকরণ",
+          "description": "আমাদের AI আপনার তথ্য নিশ্চিত করে এবং সেকেন্ডেই অনুমোদন দেয়"
+        },
+        {
+          "number": "3",
+          "title": "টাকা পান",
+          "description": "৫ মিনিটেই আপনার ব্যাংক অ্যাকাউন্টে টাকা স্থানান্তর"
+        }
+      ]
+    },
+    "testimonials": {
+      "heading": "শুধু আমাদের",
+      "headingHighlight": "কথায়",
+      "subheading": "বিশ্বাস করবেন না",
+      "items": [
+        {
+          "name": "রাজেশ কুমার",
+          "text": "বুলেট লোন আমাকে উৎসবের মরসুমের জন্য স্টক করতে দিয়েছে। আমি আমার বিক্রির পর সহজেই পরিশোধ করেছি। সম্পূর্ণ গেম-চেঞ্জার।",
+          "image": "https://randomuser.me/api/portraits/men/32.jpg"
+        },
+        {
+          "name": "প্রিয়া শর্মা",
+          "text": "অবশেষে, একটি লোন যা ফ্রিল্যান্সারদের বোঝে! কোনো মাসিক EMI চাপ নেই, শুধু আমার প্রজেক্ট ইনভয়েস ক্লিয়ার হলে একটি পেমেন্ট।",
+          "image": "https://randomuser.me/api/portraits/women/44.jpg"
+        },
+        {
+          "name": "অমিত পটেল",
+          "text": "জরুরি চিকিৎসা ঋণ আমার বাবার জীবন বাঁচিয়েছে। দ্রুত বিতরণ এবং ঝামেলামুক্ত প্রক্রিয়া একটি আশীর্বাদ ছিল।",
+          "image": "https://randomuser.me/api/portraits/men/40.jpg"
+        }
+      ]
+    },
+    "loanCalculator": {
+      "heading": "ঋণ ক্যালকুলেটর",
+      "subtitle": "আপনার মোট পরিশোধের পরিমাণ গণনা করুন",
+      "labels": {
+        "loanPurpose": "ঋণের উদ্দেশ্য নির্বাচন করুন",
+        "loanAmount": "ঋণের পরিমাণ",
+        "loanTenure": "ঋণের মেয়াদ",
+        "dailyInterestRate": "দৈনিক সুদের হার",
+        "processingFee": "প্রসেসিং ফি",
+        "principalAmount": "মূল পরিমাণ",
+        "interest": "সুদ",
+        "totalRepayment": "মোট পরিশোধ"
+      },
+      "purposes": ["ব্যক্তিগত", "চিকিৎসা", "শিক্ষা", "ব্যবসা", "ভ্রমণ", "বিবাহ"],
+      "button": "এই ঋণের জন্য আবেদন করুন",
+      "disclaimer": "তাৎক্ষণিক অনুমোদন পান • মিনিটেই ব্যাংকে টাকা",
+      "units": {
+        "perDay": "প্রতিদিন",
+        "days": "দিন"
+      }
+    },
+    "financialCTA": {
+      "heading": "আপনার আর্থিক ভবিষ্যত পরিবর্তন করতে প্রস্তুত?",
+      "description": "৬০ সেকেন্ডে আপনার তাৎক্ষণিক, কোনো বাধ্যবাধকতা ছাড়া উদ্ধৃতি পান।",
+      "inputPlaceholder": "আপনার ইমেইল লিখুন",
+      "buttonText": "সাবস্ক্রাইব করুন"
+    },
+    "financialCta": {
+      "heading": "আপনার আর্থিক ভবিষ্যত পরিবর্তন করতে প্রস্তুত?",
+      "description": "৬০ সেকেন্ডে আপনার তাৎক্ষণিক, কোনো বাধ্যবাধকতা ছাড়া উদ্ধৃতি পান।",
+      "placeholder": "আপনার ইমেইল লিখুন",
+      "buttonText": "সাবস্ক্রাইব করুন"
+    },
     "faqs": {
       "title": "প্রশ্ন আছে?",
-      "subtitle": "আমাদের সেবা সম্পর্কে আপনার জানা প্রয়োজন সব কিছু"
+      "subtitle": "আমাদের সেবা সম্পর্কে আপনার যা জানা দরকার"
+    },
+    "faq": {
+      "heading": "আপনার কি প্রশ্ন আছে?",
+      "headingHighlight": "আমাদের কাছে উত্তর আছে।",
+      "subtitle": "আমাদের লোন পণ্য এবং প্রক্রিয়া সম্পর্কে সাধারণ প্রশ্নগুলোর উত্তর জানুন",
+      "faqs": [
+        {
+          "question": "NBFC লোন কি?",
+          "answer": "NBFC লোন হল একটি নন-ব্যাংকিং ফাইন্যান্স কোম্পানির দেওয়া ঋণ।"
+        },
+        {
+          "question": "NBFC লোন ব্যাংক লোনের থেকে কিভাবে আলাদা?",
+          "answer": "NBFC দ্রুত প্রসেসিং, সহজ ডকুমেন্টেশন এবং নমনীয় যোগ্যতা দেয়।"
+        },
+        {
+          "question": "NBFC লোনের যোগ্যতা কি?",
+          "answer": "বয়স, আয়, পরিচয়/ঠিকানা প্রমাণ এবং ন্যূনতম ক্রেডিট স্কোর লাগে।"
+        },
+        {
+          "question": "NBFC লোন অনুমোদন হতে কত সময় লাগে?",
+          "answer": "কয়েক ঘণ্টা থেকে 48 ঘণ্টা সময় লাগে।"
+        },
+        {
+          "question": "NBFC থেকে লোন নেওয়া কি নিরাপদ?",
+          "answer": "হ্যাঁ, যদি NBFC RBI-তে নিবন্ধিত হয়।"
+        }
+      ]
     },
     "sections": {
       "whyChoose": {
@@ -618,39 +876,67 @@
       }
     }
   },
+  "error404": {
+    "title": "পৃষ্ঠা পাওয়া যায়নি",
+    "description": "দুঃখিত! আপনি যে পৃষ্ঠাটি খুঁজছেন তা বিদ্যমান নেই বা সরানো হয়েছে।",
+    "suggestion": "চিন্তা করবেন না, আপনি হোম পেজে ফিরে যেতে পারেন বা আমাদের সেবাগুলো অন্বেষণ করতে পারেন।",
+    "backHome": "হোমে ফিরে যান",
+    "goBack": "ফিরে যান",
+    "quickLinks": "দ্রুত লিংক",
+    "exploreProducts": "পণ্য দেখুন",
+    "helpCenter": "সাহায্য কেন্দ্র",
+    "contactUs": "আমাদের সাথে যোগাযোগ করুন",
+    "funFact": "মজার তথ্য: 404 ত্রুটির নাম CERN-এর রুম 404 থেকে এসেছে যেখানে প্রথম ওয়েব সার্ভার ছিল!"
+  },
   "calculator": {
-    "title": "EMI Calculator",
-    "subtitle": "See your monthly payment instantly",
-    "loanAmount": "Loan Amount",
-    "tenure": "Tenure",
-    "interestRate": "Interest Rate (per month)",
-    "months": "months",
-    "month": "month",
-    "processingFee": "Processing Fee",
-    "totalInterest": "Total Interest",
-    "totalPayable": "Total Payable",
-    "monthlyEMI": "Your Monthly EMI",
-    "for": "for",
-    "applyNowFor": "Apply Now for",
-    "trustMessages": {
-      "noHiddenCharges": "No hidden charges",
-      "flexibleRepayment": "Flexible repayment options",
-      "instantDisbursal": "Instant disbursal on approval"
+    "title": "ঋণ ক্যালকুলেটর",
+    "subtitle": "আপনার মোট পরিশোধের পরিমাণ গণনা করুন",
+    "loanPurpose": "ঋণের উদ্দেশ্য নির্বাচন করুন",
+    "purposes": {
+      "Personal": "ব্যক্তিগত",
+      "Medical": "চিকিৎসা",
+      "Education": "শিক্ষা",
+      "Business": "ব্যবসা",
+      "Travel": "ভ্রমণ",
+      "Wedding": "বিবাহ"
     },
-    "footer": "Get approval in 30 seconds • Money in bank within minutes"
+    "loanAmount": "ঋণের পরিমাণ",
+    "tenure": "ঋণের মেয়াদ",
+    "tenureDays": "দিন",
+    "dailyInterestRate": "দৈনিক সুদের হার",
+    "perDay": "প্রতিদিন",
+    "interestRate": "সুদের হার (প্রতি মাস)",
+    "months": "মাস",
+    "month": "মাস",
+    "processingFee": "প্রসেসিং ফি",
+    "principalAmount": "মূল পরিমাণ",
+    "interest": "সুদ",
+    "totalInterest": "মোট সুদ",
+    "totalRepayment": "মোট পরিশোধ",
+    "totalPayable": "মোট প্রদেয়",
+    "monthlyEMI": "আপনার মাসিক EMI",
+    "for": "জন্য",
+    "applyButton": "এই ঋণের জন্য আবেদন করুন",
+    "applyNowFor": "এখনই আবেদন করুন",
+    "trustMessages": {
+      "noHiddenCharges": "কোনো লুকানো চার্জ নেই",
+      "flexibleRepayment": "নমনীয় পরিশোধ বিকল্প",
+      "instantDisbursal": "অনুমোদনে তাৎক্ষণিক বিতরণ"
+    },
+    "footer": "তাৎক্ষণিক অনুমোদন পান • মিনিটেই ব্যাংকে টাকা"
   },
   "newsletter": {
-    "title": "Stay Updated with Finmax",
-    "subtitle": "Get exclusive offers, financial tips, and updates on new loan products",
-    "placeholder": "Enter your email",
-    "button": "Subscribe",
-    "subscribing": "Subscribing...",
-    "successTitle": "Subscribed Successfully!",
-    "successMessage": "Thank you for subscribing to our newsletter.",
+    "title": "লক্ষ্মীর সাথে আপডেট থাকুন",
+    "subtitle": "একচেটিয়া অফার, আর্থিক টিপস এবং নতুন ঋণ পণ্যের আপডেট পান",
+    "placeholder": "আপনার ইমেইল লিখুন",
+    "button": "সাবস্ক্রাইব করুন",
+    "subscribing": "সাবস্ক্রাইব হচ্ছে...",
+    "successTitle": "সফলভাবে সাবস্ক্রাইব হয়েছে!",
+    "successMessage": "আমাদের নিউজলেটারে সাবস্ক্রাইব করার জন্য ধন্যবাদ।",
     "errors": {
-      "required": "Email is required",
-      "invalid": "Please enter a valid email",
-      "failed": "Failed to subscribe. Please try again."
+      "required": "ইমেইল প্রয়োজন",
+      "invalid": "অনুগ্রহ করে একটি বৈধ ইমেইল লিখুন",
+      "failed": "সাবস্ক্রাইব করতে ব্যর্থ। অনুগ্রহ করে আবার চেষ্টা করুন।"
     }
   }
 }
