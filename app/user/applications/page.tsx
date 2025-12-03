@@ -50,6 +50,12 @@ interface DetailedApplication {
       _id: string;
     }>;
   };
+   productId?: {
+    processingFee: number;
+    dailyInterestRate: number;
+    gst: number;
+    };
+  
   isSubmit: boolean;
   loanAmount: number;
   requestedTenure: number;
@@ -688,19 +694,19 @@ export default function MyApplicationsPage() {
                         <p className="font-semibold text-gray-900">{detailedApplication.purpose}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">Interest Rate</p>
+                        <p className="text-sm text-gray-600">Interest Rate (p.d%)</p>
                         <p className="font-semibold text-gray-900">{detailedApplication.interestRate}%</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">Processing Fee</p>
+                        <p className="text-sm text-gray-600">Processing Fee({detailedApplication.productId?.processingFee}%)</p>
                         <p className="font-semibold text-gray-900">₹{detailedApplication.processingFee.toLocaleString()}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">GST on Fee</p>
+                        <p className="text-sm text-gray-600">GST on Fee({detailedApplication.productId?.gst}%)</p>
                         <p className="font-semibold text-gray-900">₹{detailedApplication.gstOnProcessingFee.toLocaleString()}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">Total Interest</p>
+                        <p className="text-sm text-gray-600">Total Interest({detailedApplication.interestRate*detailedApplication.requestedTenure}%)</p>
                         <p className="font-semibold text-gray-900">₹{detailedApplication.totalInterest.toLocaleString()}</p>
                       </div>
                       <div>
