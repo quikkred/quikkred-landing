@@ -24,9 +24,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useState } from "react";
-import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { useTranslation } from "react-i18next";
-import SalaryAdvance from "@/components/SalaryAdvance";
 import Products from "@/components/Product/Products";
 
 const loanProducts = [
