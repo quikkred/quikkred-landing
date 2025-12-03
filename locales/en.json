@@ -708,6 +708,7 @@
       "button": "Learn more"
     },
     "featuresSection": {
+      "badge":"Why Choose Us",
       "heading": "A Better, Smarter Way to",
       "headingHighlight": "Borrow",
       "subtitle": "Experience the future of lending with our innovative approach",
@@ -776,6 +777,7 @@
       ]
     },
     "faq": {
+      "badge": "FAQs",
       "heading": "Got Questions?",
       "headingHighlight": "We've Got Answers.",
       "subtitle": "Find answers to common questions about our loan products and process",

@@ -19,11 +19,15 @@ export default function FeaturesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
+          className="text-center mb-8 sm:mb-10 md:mb-12"
         >
+          <span className="inline-block px-4 py-2 bg-[#14b8a642] text-teal-500 rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
+            {t?.homepage?.featuresSection?.badge || "Why Choose Us"}
+          </span>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-slate-900 mb-3 sm:mb-4 px-2">
             {t?.homepage?.featuresSection?.heading} <span className="text-teal-500">{t?.homepage?.featuresSection?.headingHighlight}</span>
           </h2>
-          <p className="text-center text-slate-600 text-sm sm:text-base mb-8 sm:mb-10 md:mb-12 max-w-2xl mx-auto px-4">
+          <p className="text-center text-slate-600 text-sm sm:text-base max-w-2xl mx-auto px-4">
             {t?.homepage?.featuresSection?.subtitle}
           </p>
         </motion.div>

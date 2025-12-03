@@ -6,37 +6,11 @@ import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, useInView } from "framer-motion";
 
-const testimonialData = [
-  {
-    quote: "The bullet loan let me stock up for the festival season. I paid it back easily after my sales. A total game-changer.",
-    name: "Rajesh Kumar",
-    rating: 3,
-    image: "/testimonials/rajesh_kumar_avatar.png"
-  },
-  {
-    quote: "Finally, a loan that understands freelancers! No monthly EMI pressure, just one payment when my project invoice clears.",
-    name: "Priya Sharma",
-    rating: 4,
-    image: "/testimonials/priya_sharma_avatar.png"
-  },
-  {
-    quote: "Emergency medical loan saved my father's life. The quick disbursal and hassle-free process was a blessing.",
-    name: "Amit Patel",
-    rating: 3,
-    image: "/testimonials/amit_patel_avatar.png"
-  },
-  {
-    quote: "I needed funds urgently for my daughter's education. Quikkred approved my loan in just 2 hours. Highly recommended!",
-    name: "Sunita Devi",
-    rating: 5,
-    image: "/testimonials/sunita_devi_avatar.png"
-  },
-  {
-    quote: "As a small business owner, cash flow is always tight?. Their flexible repayment options helped me grow my shop without stress.",
-    name: "Mohammed Farhan",
-    rating: 4,
-    image: "/testimonials/mohammed_farhan_avatar.png"
-  }
+// Static data for ratings and images (not translated)
+const testimonialStaticData = [
+  { rating: 3, image: "https://randomuser.me/api/portraits/men/32.jpg" },
+  { rating: 4, image: "https://randomuser.me/api/portraits/women/44.jpg" },
+  { rating: 5, image: "https://randomuser.me/api/portraits/men/40.jpg" }
 ];
 
 // Default avatar component for fallback
@@ -48,6 +22,14 @@ const DefaultAvatar = ({ name, isActive }: { name: string; isActive: boolean }) 
   </div>
 );
 
+// Testimonial item interface
+interface TestimonialItem {
+  name: string;
+  text: string;
+  image: string;
+  rating: number;
+}
+
 // Card component
 const TestimonialCard = ({
   item,
@@ -57,7 +39,7 @@ const TestimonialCard = ({
   imageError,
   onImageError
 }: {
-  item: typeof testimonialData[0];
+  item: TestimonialItem;
   isActive: boolean;
   position: 'left' | 'center' | 'right';
   onClick: () => void;
@@ -110,7 +92,7 @@ const TestimonialCard = ({
           isActive ? "text-white/90" : "text-slate-600"
         }`}
       >
-        "{item.quote}"
+        "{item.text}"
       </p>
 
       <div className="flex items-center gap-3">
@@ -166,6 +148,39 @@ export default function Testimonials() {
   const sectionRef = useRef<HTMLElement>(null);
   const isInView = useInView(sectionRef, { amount: 0.4 });
 
+  // Default fallback data in case language data is not available
+  const defaultTestimonials: TestimonialItem[] = [
+    {
+      name: "Rajesh Kumar",
+      text: "The bullet loan let me stock up for the festival season. I paid it back easily after my sales. A total game-changer.",
+      image: "https://randomuser.me/api/portraits/men/32.jpg",
+      rating: 3
+    },
+    {
+      name: "Priya Sharma",
+      text: "Finally, a loan that understands freelancers! No monthly EMI pressure, just one payment when my project invoice clears.",
+      image: "https://randomuser.me/api/portraits/women/44.jpg",
+      rating: 4
+    },
+    {
+      name: "Amit Patel",
+      text: "Emergency medical loan saved my father's life. The quick disbursal and hassle-free process was a blessing.",
+      image: "https://randomuser.me/api/portraits/men/40.jpg",
+      rating: 5
+    }
+  ];
+
+  // Merge language data with static data (ratings and images)
+  const languageItems = t?.homepage?.testimonials?.items;
+  const testimonialData: TestimonialItem[] = languageItems && languageItems.length > 0
+    ? languageItems.map((item: any, index: number) => ({
+        name: item?.name || '',
+        text: item?.text || '',
+        image: item?.image || testimonialStaticData[index % testimonialStaticData.length]?.image || '',
+        rating: testimonialStaticData[index % testimonialStaticData.length]?.rating || 5
+      }))
+    : defaultTestimonials;
+
   const totalItems = testimonialData.length;
 
   // Get circular indices
@@ -208,15 +223,23 @@ export default function Testimonials() {
       onMouseLeave={() => setIsPaused(false)}
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 text-center">
-        <motion.h2
+        <motion.div
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mb-12 sm:mb-16 px-2"
+          className="mb-12 sm:mb-16"
         >
-          {t?.homepage?.testimonials?.heading} <span className="text-teal-500">{t?.homepage?.testimonials?.headingHighlight}</span> {t?.homepage?.testimonials?.subheading}
-        </motion.h2>
+          <span className="inline-block px-4 py-2 bg-[#14b8a642] text-teal-500 rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
+            {t?.homepage?.sections?.testimonials?.badge || "Customer Stories"}
+          </span>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 px-2">
+            {t?.homepage?.testimonials?.heading} <span className="text-teal-500">{t?.homepage?.testimonials?.headingHighlight}</span> {t?.homepage?.testimonials?.subheading}
+          </h2>
+          <p className="text-slate-700 text-sm sm:text-base md:text-lg mt-3 max-w-2xl mx-auto px-4">
+            {t?.homepage?.sections?.testimonials?.subtitle || "Real stories from real customers who transformed their lives with Quikkred"}
+          </p>
+        </motion.div>
 
         {/* Carousel Container */}
         <div
