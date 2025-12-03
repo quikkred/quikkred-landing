@@ -94,6 +94,7 @@ export default function QuickLoanApplication() {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [emiCalculation, setEmiCalculation] = useState<any>(null);
   const [loadingProducts, setLoadingProducts] = useState(false);
+  const [amountError, setAmountError] = useState("")
 
   // Field validation errors for Step 1 and Step 3
   const [fieldErrors, setFieldErrors] = useState({
@@ -571,9 +572,36 @@ export default function QuickLoanApplication() {
     }
 
     // Special handling for accountNumber - only allow numbers
-    if (name === 'accountNumber' && value && !/^\d*$/.test(value)) {
-      return; // Don't update if non-numeric
+  if (name === 'accountNumber') {
+
+    // Block non-numeric input
+    if (value && !/^\d*$/.test(value)) {
+      return;
     }
+
+    // Length validation
+    if (value.length < 9) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        accountNumber: "Account number must be at least 9 digits"
+      }));
+    } else if (value.length > 18) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        accountNumber: "Account number cannot exceed 18 digits"
+      }));
+    } else {
+      setFieldErrors((prev) => ({ ...prev, accountNumber: "" }));
+    }
+  }
+
+
+
+  // Update form normally
+  setFormData((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
 
     // Special handling for aadhaar - only allow numbers
     if (name === 'aadhaar') {
@@ -2859,19 +2887,40 @@ references.forEach((ref, index) => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Monthly Income *
-                    </label>
-                    <input
-                      type="number"
-                      name="monthlyIncome"
-                      value={formData.monthlyIncome}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                      placeholder="₹ 50,000"
-                    />
-                  </div>
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Monthly Income *
+  </label>
+
+  <input
+    type="text"
+    name="monthlyIncome"
+    value={
+      formData.monthlyIncome
+        ? parseFloat(formData.monthlyIncome.replace(/,/g, '')).toLocaleString('en-IN')
+        : ''
+    }
+    onChange={(e) => {
+      const value = e.target.value.replace(/,/g, '');
+
+      // allow only digits
+      if (/^\d*$/.test(value)) {
+        handleChange({
+          ...e,
+          target: {
+            ...e.target,
+            name: 'monthlyIncome',
+            value: value
+          }
+        });
+      }
+    }}
+    onWheel={(e) => e.currentTarget.blur()} 
+    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+    placeholder="₹ 50,000"
+  />
+</div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Company Name *
@@ -3000,36 +3049,77 @@ references.forEach((ref, index) => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Loan Amount *
-                    </label>
-                    <input
-                      type="text"
-                      name="loanAmount"
-                      value={formData.loanAmount ? parseFloat(formData.loanAmount.replace(/,/g, '')).toLocaleString('en-IN') : ''}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/,/g, '');
-                        if (/^\d*$/.test(value)) {
-                          handleChange({
-                            ...e,
-                            target: {
-                              ...e.target,
-                              name: 'loanAmount',
-                              value: value
-                            }
-                          } as any);
-                        }
-                      }}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                      placeholder={selectedProduct ? `₹ ${selectedProduct.minAmount.toLocaleString('en-IN')} - ₹ ${selectedProduct.maxAmount.toLocaleString('en-IN')}` : '₹ 50,000'}
-                    />
-                    {selectedProduct && (
-                      <p className="mt-1 text-xs text-gray-500">
-                        Min: ₹{selectedProduct.minAmount.toLocaleString('en-IN')} | Max: ₹{selectedProduct.maxAmount.toLocaleString('en-IN')}
-                      </p>
-                    )}
-                  </div>
+               <div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Loan Amount *
+  </label>
+
+  <input
+    type="text"
+    name="loanAmount"
+    value={
+      formData.loanAmount
+        ? parseFloat(formData.loanAmount.replace(/,/g, "")).toLocaleString("en-IN")
+        : ""
+    }
+    onChange={(e) => {
+      const raw = e.target.value.replace(/,/g, "");
+
+      // Allow only digits
+      if (!/^\d*$/.test(raw)) return;
+
+      const num = Number(raw);
+
+      // Update input normally (no blocking)
+      handleChange({
+        ...e,
+        target: {
+          ...e.target,
+          name: "loanAmount",
+          value: raw,
+        },
+      } as any);
+
+      // Validation check
+      if (selectedProduct) {
+        const min = selectedProduct.minAmount;
+        const max = selectedProduct.maxAmount;
+
+        if (num < min) {
+          setAmountError(
+            `Amount should be minimum ₹${min.toLocaleString("en-IN")}`
+          );
+        } else if (num > max) {
+          setAmountError(
+            `Amount cannot exceed ₹${max.toLocaleString("en-IN")}`
+          );
+        } else {
+          setAmountError("");
+        }
+      }
+    }}
+    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+      amountError ? "border-red-500" : "border-gray-300"
+    }`}
+    placeholder={
+      selectedProduct
+        ? `₹ ${selectedProduct.minAmount.toLocaleString("en-IN")} - ₹ ${selectedProduct.maxAmount.toLocaleString("en-IN")}`
+        : "₹ 50,000"
+    }
+  />
+
+  {/* Error message below input */}
+  {amountError && (
+    <p className="mt-1 text-xs text-red-500 font-medium">{amountError}</p>
+  )}
+
+  {/* Min–Max display */}
+  {selectedProduct && (
+    <p className="mt-1 text-xs text-gray-500">
+      Min: ₹{selectedProduct.minAmount.toLocaleString("en-IN")} | Max: ₹{selectedProduct.maxAmount.toLocaleString("en-IN")}
+    </p>
+  )}
+</div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Tenure (Days) *

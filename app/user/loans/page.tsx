@@ -980,7 +980,7 @@ export default function MyLoansPage() {
                         <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.totalRepayment)}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">Total Interest</p>
+                        <p className="text-sm text-gray-600">Total Interest ({detailedLoan.interestRate*detailedLoan.tenure}%)</p>
                         <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.totalRepayment - detailedLoan.principalAmount)}</p>
                       </div>
                       <div>
