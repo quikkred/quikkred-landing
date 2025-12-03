@@ -767,7 +767,7 @@ console.log('Sending OTP with payload:', payload);
 
       if (response.ok && data.success) {
         setOtpSent(true);
-        setEmailOtpTimer(60); // Start 60 second countdown
+        setEmailOtpTimer(30); // Start 30 second countdown
         toast({
           variant: "success",
           title: "OTP Sent Successfully!",
@@ -1084,7 +1084,7 @@ console.log('Sending OTP with payload:', payload);
 
       if (response.ok && result.success) {
         setAadhaarOtpSent(true);
-        setAadhaarOtpTimer(60); // Start 60 second countdown
+        setAadhaarOtpTimer(30); // Start 30 second countdown
         setAadhaarError(""); // Clear any errors
         toast({
           variant: "success",
@@ -2676,9 +2676,16 @@ references.forEach((ref, index) => {
                       <input
                         type="tel"
                         name="aadhaar"
-                        value={formData.aadhaar}
+                        value={formData.aadhaar.replace(/(\d{4})(?=\d)/g, '$1 ')}
                         onChange={(e) => {
-                          handleChange(e);
+                          const rawValue = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
+                          const syntheticEvent = {
+                            target: {
+                              name: 'aadhaar',
+                              value: rawValue.slice(0, 12)
+                            }
+                          } as React.ChangeEvent<HTMLInputElement>;
+                          handleChange(syntheticEvent);
                           if (aadhaarVerified || aadhaarOtpSent) {
                             setAadhaarVerified(false);
                             setAadhaarOtpSent(false);
@@ -2687,11 +2694,11 @@ references.forEach((ref, index) => {
                           if (aadhaarError) setAadhaarError(""); // Clear error when typing
                         }}
                         disabled={aadhaarVerified || aadhaarOtpSent || (!formData.mobileVerified && !formData.emailVerified)}
-                        maxLength={12}
-                        className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 disabled:cursor-not-allowed ${
+                        maxLength={14}
+                        className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 disabled:cursor-not-allowed tracking-widest ${
                           fieldErrors.aadhaar || aadhaarError ? 'border-red-500' : 'border-gray-300'
                         }`}
-                        placeholder="123456789012"
+                        placeholder="1234 5678 9012"
                       />
                       {!aadhaarVerified && (
                         <button
@@ -2704,25 +2711,20 @@ references.forEach((ref, index) => {
                         </button>
                       )}
                       {aadhaarVerified && (
-                        <div className="flex flex-col gap-2">
-                          <div className="flex items-center gap-2 px-3 py-3 bg-green-50 border border-green-200 rounded-lg">
-                            <CheckCircle className="w-5 h-5 text-green-600" />
-                            <span className="text-sm text-green-700 font-medium">Verified</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setAadhaarVerified(false);
-                              setAadhaarOtpSent(false);
-                              setAadhaarOtp("");
-                              setAadhaarData(null);
-                              setAadhaarAddress(null);
-                            }}
-                            className="px-3 py-2 text-xs text-[#25B181] border border-[#25B181] rounded-lg hover:bg-[#25B181] hover:text-white transition-colors"
-                          >
-                            Reverify
-                          </button>
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAadhaarVerified(false);
+                            setAadhaarOtpSent(false);
+                            setAadhaarOtp("");
+                            setAadhaarData(null);
+                            setAadhaarAddress(null);
+                          }}
+                          className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap flex items-center gap-2"
+                        >
+                          <CheckCircle className="w-5 h-5" />
+                          Reverify
+                        </button>
                       )}
                     </div>
                     {aadhaarVerified && aadhaarData && (
@@ -2816,23 +2818,18 @@ references.forEach((ref, index) => {
                         </button>
                       )}
                       {panVerified && (
-                        <div className="flex flex-col gap-2">
-                          <div className="flex items-center gap-2 px-3 py-3 bg-green-50 border border-green-200 rounded-lg">
-                            <CheckCircle className="w-5 h-5 text-green-600" />
-                            <span className="text-sm text-green-700 font-medium">Verified</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setPanVerified(false);
-                              setPanData(null);
-                              setPanError("");
-                            }}
-                            className="px-3 py-2 text-xs text-[#25B181] border border-[#25B181] rounded-lg hover:bg-[#25B181] hover:text-white transition-colors"
-                          >
-                            Reverify
-                          </button>
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPanVerified(false);
+                            setPanData(null);
+                            setPanError("");
+                          }}
+                          className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap flex items-center gap-2"
+                        >
+                          <CheckCircle className="w-5 h-5" />
+                          Reverify
+                        </button>
                       )}
                     </div>
                     {!aadhaarVerified && (
@@ -2960,12 +2957,19 @@ references.forEach((ref, index) => {
                       Account Number
                     </label>
                     <input
-                      type="number"
+                      type="tel"
                       name="accountNumber"
                       value={formData.accountNumber}
-                      onChange={handleChange}
-                      pattern="[0-9]{9,18}"
-                      minLength={9}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '').slice(0, 18);
+                        const syntheticEvent = {
+                          target: {
+                            name: 'accountNumber',
+                            value: value
+                          }
+                        } as React.ChangeEvent<HTMLInputElement>;
+                        handleChange(syntheticEvent);
+                      }}
                       maxLength={18}
                       className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
                         fieldErrors.accountNumber ? 'border-red-500' : 'border-gray-300'
