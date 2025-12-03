@@ -139,8 +139,8 @@ export default function QuickLoanApplication() {
 
       // Step 3: Loan & Consent
       loanAmount: "",
-      tenure: "12",
-      requestedTenureUnit: "months", // days or months
+      tenure: "",
+      requestedTenureUnit: "",
       productId: "",
       purpose: "",
       reference1Name: "",
