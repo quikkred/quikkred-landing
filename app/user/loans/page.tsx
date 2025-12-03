@@ -105,31 +105,55 @@ interface LoanCalculation {
     totalLoanAmount: number;
     totalInterest: number;
     totalCount: number;
+    totalOutstanding: number;
+    principalOutstanding: number;
+    interestOutstanding: number;
+    lateChargesOutstanding: number;
   };
   OVERDUE: {
     totalLoanAmount: number;
     totalInterest: number;
     totalCount: number;
+    totalOutstanding: number;
+    principalOutstanding: number;
+    interestOutstanding: number;
+    lateChargesOutstanding: number;
   };
   NPA: {
     totalLoanAmount: number;
     totalInterest: number;
     totalCount: number;
+    totalOutstanding: number;
+    principalOutstanding: number;
+    interestOutstanding: number;
+    lateChargesOutstanding: number;
   };
   CLOSED: {
     totalLoanAmount: number;
     totalInterest: number;
     totalCount: number;
+    totalOutstanding: number;
+    principalOutstanding: number;
+    interestOutstanding: number;
+    lateChargesOutstanding: number;
   };
   WRITTEN_OFF: {
     totalLoanAmount: number;
     totalInterest: number;
     totalCount: number;
+    totalOutstanding: number;
+    principalOutstanding: number;
+    interestOutstanding: number;
+    lateChargesOutstanding: number;
   };
   PENDING: {
     totalLoanAmount: number;
     totalInterest: number;
     totalCount: number;
+    totalOutstanding: number;
+    principalOutstanding: number;
+    interestOutstanding: number;
+    lateChargesOutstanding: number;
   };
 }
 
@@ -565,11 +589,11 @@ export default function MyLoansPage() {
               </div>
             </div>
           </div>
-          {/* Pending Loans */}
+          {/* Outstanding Amount Card */}
           <div className="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-yellow-200 hover:shadow-lg transition-all">
             <div className="flex items-center justify-between mb-2 sm:mb-3">
               <div className="p-1.5 sm:p-2 bg-yellow-500/20 rounded-lg">
-                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" />
+                <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" />
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -580,28 +604,28 @@ export default function MyLoansPage() {
                   {showBalancePending ? <EyeOff className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-600" /> : <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-600" />}
                 </button>
                 <span className="px-2 py-0.5 sm:py-1 bg-yellow-500 text-white text-[10px] sm:text-xs font-semibold rounded-full">
-                  PENDING
+                  OUTSTANDING
                 </span>
               </div>
             </div>
             <div className="space-y-1.5 sm:space-y-2">
               <div>
-                <p className="text-[10px] sm:text-xs text-gray-600 mb-0.5 sm:mb-1">Loan Amount</p>
+                <p className="text-[10px] sm:text-xs text-gray-600 mb-0.5 sm:mb-1">Outstanding Amount</p>
                 <p className="text-lg sm:text-2xl font-bold text-yellow-700">
-                  {showBalancePending ? formatCurrency(loanCalculation?.PENDING?.totalLoanAmount || 0) : '••••••'}
+                  {showBalancePending ? formatCurrency(loanCalculation?.ACTIVE?.totalOutstanding || 0) : '••••••'}
                 </p>
               </div>
               <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-yellow-200">
                 <div>
-                  <p className="text-[10px] sm:text-xs text-gray-600">Interest</p>
+                  <p className="text-[10px] sm:text-xs text-gray-600">Interest Outstanding</p>
                   <p className="text-xs sm:text-sm font-semibold text-gray-900">
-                    {showBalancePending ? formatCurrency(loanCalculation?.PENDING?.totalInterest || 0) : '••••••'}
+                    {showBalancePending ? formatCurrency(loanCalculation?.ACTIVE?.interestOutstanding || 0) : '••••••'}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] sm:text-xs text-gray-600">Count</p>
+                  <p className="text-[10px] sm:text-xs text-gray-600">Late Charges</p>
                   <p className="text-base sm:text-lg font-bold text-yellow-600">
-                    {loanCalculation?.PENDING?.totalCount || 0}
+                    {showBalancePending ? formatCurrency(loanCalculation?.ACTIVE?.lateChargesOutstanding || 0) : '••••••'}
                   </p>
                 </div>
               </div>
