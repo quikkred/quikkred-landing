@@ -830,12 +830,6 @@
         "days": "days"
       }
     },
-    "financialCTA": {
-      "heading": "Ready to Transform Your Financial Future?",
-      "description": "Get your instant, no-obligation quote in 60 seconds.",
-      "inputPlaceholder": "Enter Your email",
-      "buttonText": "Subscribe"
-    },
     "trustBadges": {
       "customers": {
         "value": "+",
