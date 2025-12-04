@@ -267,7 +267,7 @@ export default function MyLoansPage() {
         document.cookie = 'user-role=; path=/; max-age=0';
 
         // Redirect to login
-        window.location.href = '/login';
+        router.push('/login');
         return;
       }
 

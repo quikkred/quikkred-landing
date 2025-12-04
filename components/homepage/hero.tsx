@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
+import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { useLanguage } from "@/lib/contexts/LanguageContext"
 import { Globe, ChevronDown, Check } from "lucide-react"
@@ -20,6 +21,7 @@ const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ child
 )
 
 export default function Hero() {
+  const router = useRouter()
   const { t, language, setLanguage, availableLanguages } = useLanguage()
   const [formData, setFormData] = useState({
     name: "",
@@ -136,7 +138,7 @@ export default function Hero() {
       email: formData.email
     }));
     // Redirect to quick application
-    window.location.href = '/apply/quick';
+    router.push('/apply/quick');
   }
 
   const steps = [
@@ -219,7 +221,7 @@ export default function Hero() {
               {t?.hero?.description}
             </p>
             <Button
-              onClick={() => window.location.href = '/apply/quick'}
+              onClick={() => router.push('/apply/quick')}
               className="bg-teal-500 hover:bg-teal-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base font-semibold rounded w-full sm:w-auto"
             >
               {t?.hero?.form?.getInstantLoan}
@@ -321,7 +323,10 @@ export default function Hero() {
           <p className="text-sm sm:text-base text-slate-700 leading-relaxed max-w-md">
             {t?.hero?.description}
           </p>
-          <Button className="bg-teal-500 hover:bg-teal-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base font-semibold rounded w-full sm:w-auto">
+          <Button
+            onClick={() => router.push('/apply/quick')}
+            className="bg-teal-500 hover:bg-teal-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base font-semibold rounded w-full sm:w-auto"
+          >
             {t?.hero?.form?.getStarted}
           </Button>
         </div>
@@ -473,7 +478,7 @@ export default function Hero() {
                   className="w-full bg-teal-500 hover:bg-teal-600 text-white py-3.5 sm:py-4 text-base sm:text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
                 >
                   {currentStep === 4 ? t?.hero?.form?.submit : t?.hero?.form?.next}
-                </motion.button>f
+                </motion.button>
               </motion.div>
             </AnimatePresence>
           </motion.div>

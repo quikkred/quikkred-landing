@@ -13,6 +13,7 @@ interface SalaryAdvanceProps {
   imageSrc?: string;
   features?: string[];
   primaryColor?: string; // Tailwind color name e.g. "teal"
+  reverse?: boolean;
 }
 
 export default function SalaryAdvance({
@@ -27,6 +28,7 @@ export default function SalaryAdvance({
   imageSrc = "/salary-advance.jpg",
   features,
   primaryColor = "teal",
+  reverse= false,
 }: SalaryAdvanceProps) {
   const primary = `text-${primaryColor}-600`;
   const primaryBg = `bg-${primaryColor}-600`;
@@ -35,7 +37,10 @@ export default function SalaryAdvance({
   const bgHover = `hover:bg-${primaryColor}-50`;
 
   return (
-    <div className="w-full bg-white py-12 px-6 md:px-16 flex flex-col md:flex-row items-center justify-between gap-10">
+    <div
+  className={`w-full bg-white py-12 px-6 md:px-16 flex flex-col items-center justify-between gap-10
+    ${reverse ? "md:flex-row-reverse" : "md:flex-row"}`}
+>
       {/* Left Section */}
       <div className="md:w-1/2 space-y-6">
         {/* Title */}

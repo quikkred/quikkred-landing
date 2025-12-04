@@ -288,7 +288,7 @@ const verifyOtp = async () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5]">
       {/* Breadcrumbs */}
-      <div className="container mx-auto px-4 pt-8">
+      {/* <div className="container mx-auto px-4 pt-8">
         <motion.nav
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -300,7 +300,7 @@ const verifyOtp = async () => {
           <ArrowRight className="w-3 h-3" />
           <span className="text-[#0ea5e9] font-medium">Login</span>
         </motion.nav>
-      </div>
+      </div> */}
 
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
@@ -729,27 +729,31 @@ const verifyOtp = async () => {
           className="mt-16 max-w-4xl mx-auto"
         >
           <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-2xl p-6 shadow-sm text-center border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 shadow-sm text-center border border-gray-100 flex flex-col h-full">
               <Smartphone className="w-12 h-12 text-[#0ea5e9] mx-auto mb-4" />
               <h3 className="text-lg font-bold mb-2 text-gray-900">Mobile App</h3>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-700 flex-grow">
                 Download our mobile app for quick access to your account on the go.
               </p>
             </div>
 
-            <div className="bg-white rounded-2xl p-6 shadow-sm text-center border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 shadow-sm text-center border border-gray-100 flex flex-col h-full">
               <Shield className="w-12 h-12 text-[#34d399] mx-auto mb-4" />
               <h3 className="text-lg font-bold mb-2 text-gray-900">Secure & Safe</h3>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-700 flex-grow">
                 Your data is protected with industry-leading security measures.
               </p>
             </div>
 
-            <div className="bg-white rounded-2xl p-6 shadow-sm text-center border border-gray-100">
+            <div className="bg-white rounded-2xl p-6 shadow-sm text-center border border-gray-100 flex flex-col h-full">
               <Award className="w-12 h-12 text-[#fbbf24] mx-auto mb-4" />
-              <h3 className="text-lg font-bold mb-2 text-gray-900">RBI Licensed</h3>
-              <p className="text-sm text-gray-700">
-                We're a fully regulated NBFC licensed by the Reserve Bank of India.
+              <h3 className="text-lg font-bold mb-2 text-gray-900">RBI Regulated</h3>
+              <p className="text-sm text-gray-700 flex-grow">
+                All loans are provided by Satsai Finlease Private Limited, an RBI registered NBFC.
+              </p>
+              <br/>
+              <p className="text-sm text-gray-700 flex-grow"> 
+                Quikkred is the technology and servicing partner.
               </p>
             </div>
           </div>

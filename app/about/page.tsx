@@ -9,6 +9,8 @@ import {
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import SalaryAdvance from "@/components/SalaryAdvance";
 import { useTranslation } from "react-i18next";
+import { DocumentIcon } from "@/components/feature-icon";
+import { FinancialFeatureSection } from "@/components/financial-feature-section";
 
 const stats = [
   { label: "Years of Excellence", value: "Since ", icon: Clock },
@@ -48,29 +50,6 @@ const values = [
     title: "Social Impact",
     description: "Empowering communities and contributing to India's economic growth."
   }
-];
-
-const milestones: any[] = [
-  // {
-  //   year: "2024",
-  //   title: "Foundation",
-  //   description: "Quikkred was founded with a vision to revolutionize lending in India"
-  // },
-  // {
-  //   year: "2024",
-  //   title: "RBI License",
-  //   description: "Received NBFC license from Reserve Bank of India"
-  // },
-  // {
-  //   year: "2024",
-  //   title: "AI Integration",
-  //   description: "Launched India's first fully AI-powered lending platform"
-  // },
-  // {
-  //   year: "2024",
-  //   title: "Pan India Launch",
-  //   description: "Expanded operations across 28 states and 8 union territories"
-  // }
 ];
 
 const leadership: any[] = [
@@ -128,117 +107,73 @@ export default function AboutPage() {
           primaryColor="emerald"
         />
       </section>
+      <section className="py-12 sm:py-16 lg:py-20">
+        <SalaryAdvance
+          title="Our Story"
+          // {t('products.pages.personalLoan.hero.title')}
+          // highlightWord="Kred"
+          // {t('products.pages.personalLoan.hero.highlightWord')}
+          // title1={t('products.pages.personalLoan.hero.title1')}
+          subtitle="QuikKred began in 2018 as a leading RBI-registered NBFC with a clear goal: to build a seamless lending experience for the underserved population of India. We recognized that millions of individuals and small businesses were excluded from traditional financial systems, facing complex processes and limited access to credit.
 
-      {/* Our Story */}
-      <section id="story" className="py-12 sm:py-16 lg:py-20 bg-[rgb(var(--bg-secondary))]">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            viewport={{ once: true }}
-            className="max-w-4xl mx-auto"
-          >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora text-[#25B181] text-center mb-12">Our Story</h2>
-
-            <div className="prose prose-lg mx-auto">
-              <p className="text-[rgb(var(--text-secondary))] leading-relaxed mb-6">
-                Quikkred was born from a simple observation: millions of Indians need quick,
-                small-ticket loans for emergencies, opportunities, and dreams, but traditional
-                banking systems weren't designed to serve them efficiently.
-              </p>
-
-              <p className="text-[rgb(var(--text-secondary))] leading-relaxed mb-6">
-                Founded in 2024 by a team of fintech veterans and AI experts, we set out to
-                build a lending platform that could make credit decisions in seconds, not days.
-                By leveraging artificial intelligence and alternative data, we've created a system
-                that's not just faster, but fairer and more inclusive.
-              </p>
-
-              <p className="text-[rgb(var(--text-secondary))] leading-relaxed mb-6">
-                Today, we're proud to be RBI-licensed NBFC serving customers across India.
-                Our AI-powered platform processes applications in 30 seconds, making us the
-                fastest lending platform in the country. But speed is just the beginning -
-                we're building a financial ecosystem that truly understands and serves the
-                needs of modern India.
-              </p>
-
-              <div className="bg-gradient-to-br from-[#25B181] to-[#51C9AF] text-white p-8 rounded-2xl mt-8">
-                <h3 className="text-2xl font-bold mb-4 text-white">Our Vision</h3>
-                <p className="text-lg text-white">
-                  To be India's most trusted financial partner, making credit accessible to
-                  every Indian through technology, transparency, and trust.
-                </p>
-              </div>
-
-              <div className="bg-[rgb(var(--bg-primary))] p-8 rounded-2xl mt-6 shadow-card border border-[rgb(var(--border-default))]">
-                <h3 className="text-2xl font-bold mb-4 text-[rgb(var(--text-primary))]">Our Mission</h3>
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-6 h-6 text-[#3AC6A0] flex-shrink-0 mt-1" />
-                    <span className="text-[rgb(var(--text-secondary))]">
-                      Provide instant, affordable credit to millions of Indians
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-6 h-6 text-[#3AC6A0] flex-shrink-0 mt-1" />
-                    <span className="text-[rgb(var(--text-secondary))]">
-                      Use AI to make lending decisions fair and unbiased
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-6 h-6 text-[#3AC6A0] flex-shrink-0 mt-1" />
-                    <span className="text-[rgb(var(--text-secondary))]">
-                      Maintain complete transparency in our operations
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <CheckCircle className="w-6 h-6 text-[#3AC6A0] flex-shrink-0 mt-1" />
-                    <span className="text-[rgb(var(--text-secondary))]">
-                      Contribute to India's financial inclusion goals
-                    </span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </motion.div>
-        </div>
+We saw the challenges many faced with traditional financing and knew that by leveraging cutting-edge technology, we could offer accessible and fair loan products. Our digital-first approach removes barriers, simplifies the lending process, and empowers individuals to achieve their financial goals with dignity and ease."
+          imageSrc="/Peronalloan_hero_image.jpg"
+          // features={[
+          //   t('products.pages.personalLoan.hero.features.loansUpTo'),
+          //   t('products.pages.personalLoan.hero.features.instant'),
+          //   t('products.pages.personalLoan.hero.features.disbursal'),
+          // ]}
+          primaryColor="emerald"
+          reverse
+        />
       </section>
 
-      {/* Values Section */}
-      <section id="values" className="py-12 sm:py-16 lg:py-20 bg-[rgb(var(--bg-primary))]">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4 text-[rgb(var(--text-primary))]">Our Values</h2>
-            <p className="text-base sm:text-lg lg:text-xl text-[rgb(var(--text-secondary))]">
-              The principles that guide everything we do
-            </p>
-          </motion.div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {values.map((value, index) => (
-              <motion.div
-                key={value.title}
-                initial={{ y: 20, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-[rgb(var(--bg-secondary))] border border-[rgb(var(--border-default))] rounded-2xl p-8 hover:shadow-card transition-shadow"
-              >
-                <div className="w-14 h-14 bg-gradient-to-br from-[#25B181] to-[#51C9AF] rounded-xl flex items-center justify-center mb-6">
-                  <value.icon className="w-7 h-7 text-white" />
-                </div>
-                <h3 className="text-xl font-bold mb-3 text-[rgb(var(--text-primary))]">{value.title}</h3>
-                <p className="text-[rgb(var(--text-secondary))]">{value.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+      <section className="py-12 sm:py-16 lg:py-20">
+        <SalaryAdvance
+          title="Our Vision"
+          // {t('products.pages.personalLoan.hero.title')}
+          // highlightWord="Kred"
+          // {t('products.pages.personalLoan.hero.highlightWord')}
+          // title1={t('products.pages.personalLoan.hero.title1')}
+          subtitle="We are India's most trusted AI-powered NBFC, committed to making credit accessible, affordable, and transparent for every Indian. Our mission is to empower dreams and enable financial inclusion through technology and trust."
+          // {t('products.pages.personalLoan.hero.subtitle')}
+          buttonPrimaryText="Contact Us"
+          // {t('products.pages.personalLoan.hero.buttonPrimary')}
+          buttonSecondaryText="Call Us Now"
+          // {t('products.pages.personalLoan.hero.buttonSecondary')}
+          imageSrc="/Peronalloan_hero_image.jpg"
+          // features={[
+          //   t('products.pages.personalLoan.hero.features.loansUpTo'),
+          //   t('products.pages.personalLoan.hero.features.instant'),
+          //   t('products.pages.personalLoan.hero.features.disbursal'),
+          // ]}
+          primaryColor="emerald"
+        />
       </section>
+
+         <FinancialFeatureSection
+        image="/Salaryadvance_sub_image.jpg"
+        imageAlt="Man in green sweater looking at phone"
+      heading="Our Mission"
+        description="To make our vision a reality, we are on a mission to:"
+        features={[
+          {
+            icon: <DocumentIcon />,
+            title: "",
+            description: "Provide innovative, accessible, and responsible lending solutions.",
+          },
+          {
+            icon: <DocumentIcon />,
+            title: "",
+            description: "Leverage technology for a seamless customer experience.",
+          },
+          {
+            icon: <DocumentIcon />,
+            title: "",
+            description: "Foster financial inclusion across all of India.",
+          },
+        ]}
+      />
 
       {/* Leadership Section */}
       <section id="leadership" className="py-12 sm:py-16 lg:py-20 bg-[rgb(var(--bg-primary))]">

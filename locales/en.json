@@ -809,27 +809,6 @@
   }
       ]
     },
-    "loanCalculator": {
-      "heading": "Loan Calculator",
-      "subtitle": "Calculate Your Total Repayment Amount",
-      "labels": {
-        "loanPurpose": "Select Loan Purpose",
-        "loanAmount": "Loan Amount",
-        "loanTenure": "Loan Tenure",
-        "dailyInterestRate": "Daily Interest Rate",
-        "processingFee": "Processing Fee",
-        "principalAmount": "Principal Amount",
-        "interest": "Interest",
-        "totalRepayment": "Total Repayment"
-      },
-      "purposes": ["Personal", "Medical", "Education", "Business", "Travel", "Wedding"],
-      "button": "Apply for This Loan",
-      "disclaimer": "Get Instant Approval • Money in Bank Within Minutes",
-      "units": {
-        "perDay": "per day",
-        "days": "days"
-      }
-    },
     "trustBadges": {
       "customers": {
         "value": "+",
@@ -1038,33 +1017,5 @@
       "invalid": "Please enter a valid email",
       "failed": "Failed to subscribe. Please try again."
     }
-  },
-    "loanCalculator": {
-      "heading": "Loan Calculator",
-      "subtitle": "Calculate Your Total Repayment Amount",
-      "labels": {
-        "loanPurpose": "Select Loan Purpose",
-        "loanAmount": "Loan Amount",
-        "loanTenure": "Loan Tenure",
-        "dailyInterestRate": "Daily Interest Rate",
-        "processingFee": "Processing Fee",
-        "principalAmount": "Principal Amount",
-        "interest": "Interest",
-        "totalRepayment": "Total Repayment"
-      },
-      "purposes": [
-        "Personal",
-        "Medical",
-        "Education",
-        "Business",
-        "Travel",
-        "Wedding"
-      ],
-      "button": "Apply for This Loan",
-      "disclaimer": "Get Instant Approval • Money in Bank Within Minutes",
-      "units": {
-        "perDay": "per day",
-        "days": "days"
-      }
-    }
+  }
 }

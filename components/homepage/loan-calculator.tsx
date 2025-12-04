@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { useLanguage } from "@/lib/contexts/LanguageContext"
 
 const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ children, className, ...props }) => (
@@ -16,6 +17,7 @@ const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ child
 )
 
 export default function LoanCalculatorAll() {
+  const router = useRouter()
   const { t } = useLanguage()
   const [loanPurpose, setLoanPurpose] = useState("Personal")
   const [loanAmount, setLoanAmount] = useState(25000)
@@ -157,7 +159,7 @@ export default function LoanCalculatorAll() {
           </div>
 
           <Button
-            onClick={() => window.location.href = '/apply/quick'}
+            onClick={() => router.push('/apply/quick')}
             className="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 sm:py-2.5 rounded-md mb-2 transition-all duration-300 text-xs sm:text-sm"
           >
             {t?.calculator?.applyButton}
