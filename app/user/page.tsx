@@ -13,12 +13,18 @@ import {
   Shield, UserCheck, History, Gift, HelpCircle,
   Smartphone, Globe, Heart, Zap, Activity,
   PieChart, BarChart3, TrendingDown, Package,
-  CopyIcon, ExternalLink, ChevronRight, Sparkles
+  CopyIcon, ExternalLink, ChevronRight, Sparkles, ChevronDown
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/toast';
 
-interface LoanDetails {
+interface LoanSummary {
+  _id: string;
+  loanNumber: string;
+  principalAmount: number;
+}
+
+interface ActiveLoanDetails {
   _id: string;
   loanNumber: string;
   tenure: number;
@@ -29,10 +35,10 @@ interface LoanDetails {
   nextDueDate: string;
   status: string;
   overdueCount: number;
-  npaDate?: string;
-  installment: number;
+  lateCharges: number;
   paidAmount: number;
   totalEMIsPaid: number;
+  installment: number;
 }
 
 interface DashboardData {
@@ -44,7 +50,7 @@ interface DashboardData {
   isEmploymentDetailsFilled: boolean;
   isVerificationDetailsFilled: boolean;
   activeLoan: boolean;
-  loanDetails?: LoanDetails;
+  loans: LoanSummary[];
 }
 
 interface PaymentResponse {
@@ -80,14 +86,79 @@ export default function UserDashboard() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [customAmount, setCustomAmount] = useState<string>('');
+  const [selectedLoanNumber, setSelectedLoanNumber] = useState<string>('');
+  const [activeLoanDetails, setActiveLoanDetails] = useState<ActiveLoanDetails | null>(null);
+  const [loadingLoanDetails, setLoadingLoanDetails] = useState(false);
 
   // Set default amount to remaining amount when loan details are loaded
   useEffect(() => {
-    if (data?.loanDetails && !customAmount) {
-      const remaining = getTotalLoanAmount() - (data.loanDetails.paidAmount || 0);
+    if (activeLoanDetails && !customAmount) {
+      const remaining = getTotalLoanAmount() - (activeLoanDetails.paidAmount || 0);
       setCustomAmount(remaining.toString());
     }
-  }, [data?.loanDetails]);
+  }, [activeLoanDetails]);
+
+  // Fetch active loan details when selected loan changes
+  const fetchActiveLoanDetails = async (loanNumber: string) => {
+    if (!loanNumber) return;
+
+    try {
+      setLoadingLoanDetails(true);
+      setCustomAmount(''); // Reset custom amount
+
+      const token = localStorage.getItem('authToken') ||
+                    localStorage.getItem('token') ||
+                    localStorage.getItem('accessToken');
+
+      if (!token) {
+        console.error('No auth token found');
+        return;
+      }
+
+      const response = await fetch(`https://api.bluechipfinmax.com/api/loans/active/${loanNumber}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success && result.data) {
+        setActiveLoanDetails(result.data);
+        console.log('✅ Active loan details loaded successfully');
+      } else {
+        throw new Error(result.message || 'Failed to fetch loan details');
+      }
+
+    } catch (error) {
+      console.error('Error fetching active loan details:', error);
+      toast({
+        variant: "error",
+        title: "Error Loading Loan",
+        description: "Unable to fetch loan details. Please try again."
+      });
+    } finally {
+      setLoadingLoanDetails(false);
+    }
+  };
+
+  // When loans data is available, select first loan by default
+  useEffect(() => {
+    if (data?.activeLoan && data?.loans?.length > 0 && !selectedLoanNumber) {
+      const firstLoanNumber = data.loans[0].loanNumber;
+      setSelectedLoanNumber(firstLoanNumber);
+      fetchActiveLoanDetails(firstLoanNumber);
+    }
+  }, [data?.loans]);
+
+  // Fetch loan details when selected loan changes
+  useEffect(() => {
+    if (selectedLoanNumber) {
+      fetchActiveLoanDetails(selectedLoanNumber);
+    }
+  }, [selectedLoanNumber]);
 
   // useEffect(() => {
   //   if (!isLoading) {
@@ -185,40 +256,40 @@ export default function UserDashboard() {
   };
 
   const calculateTotalPayment = () => {
-    if (!data?.loanDetails) return 0;
+    if (!activeLoanDetails) return 0;
     const amount = parseFloat(customAmount);
     return isNaN(amount) ? 0 : amount;
   };
 
   const getTotalLoanAmount = () => {
-    if (!data?.loanDetails) return 0;
-    return data.loanDetails.emiAmount; // emiAmount is the total loan amount
+    if (!activeLoanDetails) return 0;
+    return activeLoanDetails.emiAmount; // emiAmount is the total loan amount
   };
 
   const getPaidAmount = () => {
-    if (!data?.loanDetails) return 0;
-    return data.loanDetails.paidAmount || 0;
+    if (!activeLoanDetails) return 0;
+    return activeLoanDetails.paidAmount || 0;
   };
 
   const getRemainingAmount = () => {
-    if (!data?.loanDetails) return 0;
+    if (!activeLoanDetails) return 0;
     return getTotalLoanAmount() - getPaidAmount();
   };
 
   const getPaymentProgress = () => {
-    if (!data?.loanDetails) return 0;
+    if (!activeLoanDetails) return 0;
     const total = getTotalLoanAmount();
     if (total === 0) return 0;
     return Math.round((getPaidAmount() / total) * 100);
   };
 
   const getCurrentInstallment = () => {
-    if (!data?.loanDetails) return 0;
-    return data.loanDetails.installment || 1;
+    if (!activeLoanDetails) return 0;
+    return activeLoanDetails.installment || 1;
   };
 
   const handlePayment = async () => {
-    if (!data?.loanDetails) return;
+    if (!activeLoanDetails) return;
 
     try {
       setProcessingPayment(true);
@@ -286,7 +357,7 @@ export default function UserDashboard() {
         },
         body: JSON.stringify({
           paymentAmount: totalAmount,
-          loanId: data.loanDetails._id
+          loanId: activeLoanDetails._id
         })
       });
 
@@ -312,8 +383,11 @@ export default function UserDashboard() {
           )
         });
 
-        // Refresh dashboard data after successful payment
+        // Refresh dashboard data and active loan details after successful payment
         await fetchUserData();
+        if (selectedLoanNumber) {
+          await fetchActiveLoanDetails(selectedLoanNumber);
+        }
 
         // Reset form - Clear amount so it recalculates from new remaining balance
         setSelectedEmiCount(1);
@@ -487,22 +561,60 @@ export default function UserDashboard() {
         </motion.div>
 
             {/* Active Loan Section */}
-        {data?.activeLoan && data?.loanDetails && (
+        {data?.activeLoan && data?.loans?.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#E5E5E5] mb-6"
           >
-            <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 sm:mb-6">
               <h2 className="text-lg sm:text-xl font-semibold text-[#0A0A0A] flex items-center gap-2">
                 <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-[#10B4A3]" />
                 Active Loan
               </h2>
-              <span className={`px-3 py-1 rounded-full text-xs sm:text-sm font-semibold border ${getStatusColor(data.loanDetails.status)}`}>
-                {data.loanDetails.status}
-              </span>
+
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                {/* Loan Selector Dropdown */}
+                {data.loans.length > 1 && (
+                  <div className="relative flex-1 sm:flex-none">
+                    <select
+                      value={selectedLoanNumber}
+                      onChange={(e) => setSelectedLoanNumber(e.target.value)}
+                      className="w-full sm:w-auto appearance-none bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg px-4 py-2 pr-10 text-sm font-medium text-blue-900 focus:ring-2 focus:ring-[#10B4A3] focus:border-transparent outline-none cursor-pointer"
+                    >
+                      {data.loans.map((loan) => (
+                        <option key={loan._id} value={loan.loanNumber}>
+                          {loan.loanNumber} (₹{loan.principalAmount.toLocaleString()})
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-700 pointer-events-none" />
+                  </div>
+                )}
+
+                {activeLoanDetails && (
+                  <span className={`px-3 py-1 rounded-full text-xs sm:text-sm font-semibold border whitespace-nowrap ${getStatusColor(activeLoanDetails.status)}`}>
+                    {activeLoanDetails.status}
+                  </span>
+                )}
+              </div>
             </div>
+
+            {/* Loading State for Loan Details */}
+            {loadingLoanDetails && (
+              <div className="flex items-center justify-center py-12">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="w-8 h-8 border-3 border-[#10B4A3] border-t-transparent rounded-full"
+                />
+                <p className="ml-3 text-[#737373]">Loading loan details...</p>
+              </div>
+            )}
+
+            {!loadingLoanDetails && activeLoanDetails && (
+              <>
 
             {/* Payment Progress Overview */}
             <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-4 sm:p-6 border border-purple-200 mb-6">
@@ -552,7 +664,7 @@ export default function UserDashboard() {
                   <FileText className="w-3 h-3" />
                   Loan Number
                 </p>
-                <p className="text-sm sm:text-base font-semibold text-blue-900 break-all">{data.loanDetails.loanNumber}</p>
+                <p className="text-sm sm:text-base font-semibold text-blue-900 break-all">{activeLoanDetails.loanNumber}</p>
               </div>
 
               <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
@@ -560,35 +672,35 @@ export default function UserDashboard() {
                   <IndianRupee className="w-3 h-3" />
                   Total Loan Amount
                 </p>
-                <p className="text-sm sm:text-base font-semibold text-green-900">₹{data.loanDetails.emiAmount.toLocaleString()}</p>
+                <p className="text-sm sm:text-base font-semibold text-green-900">₹{activeLoanDetails.emiAmount.toLocaleString()}</p>
               </div>
 
-              <div className="p-4 bg-gradient-to-br from-purple-50 to-violet-50 rounded-lg border border-purple-200">
+              {/* <div className="p-4 bg-gradient-to-br from-purple-50 to-violet-50 rounded-lg border border-purple-200">
                 <p className="text-xs sm:text-sm text-purple-700 mb-1 flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   Current Installment
                 </p>
                 <p className="text-sm sm:text-base font-semibold text-purple-900">#{getCurrentInstallment()}</p>
-              </div>
+              </div> */}
 
               <div className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg border border-orange-200">
                 <p className="text-xs sm:text-sm text-orange-700 mb-1 flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
                   Next Due Date
                 </p>
-                <p className="text-sm sm:text-base font-semibold text-orange-900">{formatDateTime(data.loanDetails.nextDueDate)}</p>
+                <p className="text-sm sm:text-base font-semibold text-orange-900">{formatDateTime(activeLoanDetails.nextDueDate)}</p>
               </div>
 
-              <div className="p-4 bg-gradient-to-br from-teal-50 to-cyan-50 rounded-lg border border-teal-200">
+              {/* <div className="p-4 bg-gradient-to-br from-teal-50 to-cyan-50 rounded-lg border border-teal-200">
                 <p className="text-xs sm:text-sm text-teal-700 mb-1 flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
                   Maturity Date
                 </p>
-                <p className="text-sm sm:text-base font-semibold text-teal-900">{formatDateTime(data.loanDetails.maturityDate)}</p>
-              </div>
+                <p className="text-sm sm:text-base font-semibold text-teal-900">{formatDateTime(activeLoanDetails.maturityDate)}</p>
+              </div> */}
 
                    {/* Remaining After Payment */}
-                    <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-3 border border-orange-200">
+                    {/* <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-3 border border-orange-200">
                       <p className="text-xs text-orange-700 mb-1">Remaining After</p>
                       <div className="flex items-center gap-1">
                         <IndianRupee className="w-4 h-4 text-orange-700" />
@@ -596,15 +708,15 @@ export default function UserDashboard() {
                           {(getRemainingAmount() - calculateTotalPayment()).toLocaleString()}
                         </p>
                       </div>
-                    </div>
+                    </div> */}
 
-              {data.loanDetails.overdueCount > 0 && (
+              {activeLoanDetails.overdueCount > 0 && (
                 <div className="p-4 bg-gradient-to-br from-red-50 to-rose-50 rounded-lg border border-red-200">
                   <p className="text-xs sm:text-sm text-red-700 mb-1 flex items-center gap-1">
                     <AlertTriangle className="w-3 h-3" />
                     Overdue Count
                   </p>
-                  <p className="text-sm sm:text-base font-semibold text-red-900">{data.loanDetails.overdueCount} EMI(s)</p>
+                  <p className="text-sm sm:text-base font-semibold text-red-900">{activeLoanDetails.overdueCount} EMI(s)</p>
                   <p className="text-xs text-red-600 mt-1">Payment attempts failed</p>
                 </div>
               )}
@@ -618,14 +730,14 @@ export default function UserDashboard() {
                   Pay Installment
                 </h3>
 
-                {data.loanDetails.overdueCount > 0 && (
+                {activeLoanDetails.overdueCount > 0 && (
                   <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-lg p-4 mb-4 border border-red-200">
                     <div className="flex items-start gap-2 mb-2">
                       <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="text-sm font-semibold text-red-900">Payment Failed Alert</p>
                         <p className="text-xs text-red-700 mt-1">
-                          {data.loanDetails.overdueCount} payment attempt{data.loanDetails.overdueCount > 1 ? 's' : ''} failed.
+                          {activeLoanDetails.overdueCount} payment attempt{activeLoanDetails.overdueCount > 1 ? 's' : ''} failed.
                           You have ₹{getRemainingAmount().toLocaleString()} remaining to pay. Please complete payment to avoid penalties.
                         </p>
                       </div>
@@ -633,7 +745,7 @@ export default function UserDashboard() {
                   </div>
                 )}
 
-                {data.loanDetails.overdueCount === 0 && (
+                {activeLoanDetails.overdueCount === 0 && (
                   <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-4 mb-4 border border-blue-200">
                     <div className="flex items-start gap-2 mb-2">
                       <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
@@ -706,6 +818,8 @@ export default function UserDashboard() {
                   )}
                 </button>
               </div>
+            )}
+            </>
             )}
           </motion.div>
         )}
