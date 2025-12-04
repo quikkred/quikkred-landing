@@ -714,6 +714,7 @@
       "button": "অধিক জানক"
     },
     "featuresSection": {
+      "badge": "আমাক কিয় বাছনি কৰিব",
       "heading": "ধাৰ কৰাৰ এক উন্নত, স্মাৰ্ট",
       "headingHighlight": "উপায়",
       "subtitle": "আমাৰ উদ্ভাৱনী পদ্ধতিৰে ঋণৰ ভৱিষ্যত অনুভৱ কৰক",
@@ -780,27 +781,6 @@
           "image": "https://randomuser.me/api/portraits/men/40.jpg"
         }
       ]
-    },
-    "loanCalculator": {
-      "heading": "ঋণ কেলকুলেটৰ",
-      "subtitle": "আপোনাৰ মুঠ পৰিশোধ পৰিমাণ গণনা কৰক",
-      "labels": {
-        "loanPurpose": "ঋণৰ উদ্দেশ্য বাছক",
-        "loanAmount": "ঋণৰ পৰিমাণ",
-        "loanTenure": "ঋণৰ কাৰ্যকাল",
-        "dailyInterestRate": "দৈনিক সুতৰ হাৰ",
-        "processingFee": "প্ৰসেছিং ফি",
-        "principalAmount": "মূল পৰিমাণ",
-        "interest": "সুত",
-        "totalRepayment": "মুঠ পৰিশোধ"
-      },
-      "purposes": ["ব্যক্তিগত", "চিকিৎসা", "শিক্ষা", "ব্যৱসায়", "ভ্ৰমণ", "বিবাহ"],
-      "button": "এই ঋণৰ বাবে আবেদন কৰক",
-      "disclaimer": "তাৎক্ষণিক অনুমোদন পাওক • মিনিটৰ ভিতৰত বেংকত টকা",
-      "units": {
-        "perDay": "প্ৰতি দিন",
-        "days": "দিন"
-      }
     },
     "financialCta": {
       "heading": "আপোনাৰ আৰ্থিক ভৱিষ্যত পৰিৱৰ্তন কৰিবলৈ সাজু?",
@@ -1036,27 +1016,6 @@
     "required": "ইমেইল প্ৰয়োজন",
     "invalid": "অনুগ্ৰহ কৰি এটা বৈধ ইমেইল লিখক",
     "failed": "ছাবস্ক্ৰাইব কৰিব পৰা নগ'ল। অনুগ্ৰহ কৰি আকৌ চেষ্টা কৰক।"
-  }
-},
-"loanCalculator": {
-  "heading": "ঋণ কেলকুলেটৰ",
-  "subtitle": "আপোনাৰ মুঠ পৰিশোধ পৰিমাণ গণনা কৰক",
-  "labels": {
-    "loanPurpose": "ঋণৰ উদ্দেশ্য বাছক",
-    "loanAmount": "ঋণৰ পৰিমাণ",
-    "loanTenure": "ঋণৰ কাৰ্যকাল",
-    "dailyInterestRate": "দৈনিক সুতৰ হাৰ",
-    "processingFee": "প্ৰসেছিং ফি",
-    "principalAmount": "মূল পৰিমাণ",
-    "interest": "সুত",
-    "totalRepayment": "মুঠ পৰিশোধ"
-  },
-  "purposes": ["ব্যক্তিগত", "চিকিৎসা", "শিক্ষা", "ব্যৱসায়", "ভ্ৰমণ", "বিবাহ"],
-  "button": "এই ঋণৰ বাবে আবেদন কৰক",
-  "disclaimer": "তাৎক্ষণিক অনুমোদন পাওক • মিনিটৰ ভিতৰত বেংকত টকা",
-  "units": {
-    "perDay": "প্ৰতি দিন",
-    "days": "দিন"
   }
 }
 }

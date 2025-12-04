@@ -251,7 +251,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                     height={80}
                     priority
                     quality={100}
-                    className="w-full h-auto max-w-[260px]"
+                    className="h-auto max-w-[260px]"
                     style={{
                       objectFit: 'contain',
                       imageRendering: '-webkit-optimize-contrast',
@@ -441,7 +441,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* Top Header - Fixed */}
-        <header className="bg-white border-b border-[#E0E0E0] px-3 py-3 sm:p-4 shadow-sm flex-shrink-0">
+        <header className="bg-white border-b border-[#E0E0E0] px-3 py-3 shadow-sm flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-4">
               {/* Mobile Menu Button */}
