@@ -198,7 +198,7 @@ export default function Home() {
         <LoansGrid/>
 
         {/* Testimonials Section */}
-        <Testimonials/>
+        {/* <Testimonials/> */}
 
           {/* FAQ Section - Full Screen */}
         <section className="min-h-[calc(100vh-80px)] flex items-center py-12 sm:py-16 lg:py-20 bg-white">
