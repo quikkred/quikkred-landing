@@ -3,40 +3,25 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Menu,
   X,
-  Phone,
-  Mail,
-  MapPin,
-  Home,
+  ChevronDown,
+  ArrowRight,
   CreditCard,
   Info,
   FileText,
   Users,
-  Briefcase,
-  Shield,
-  HelpCircle,
-  ArrowRight,
-  Sparkles,
-  Calculator,
-  TrendingUp,
-  Award,
-  Globe,
-  ChevronDown,
+  Phone,
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
-import { useIsHydrated } from "@/lib/hooks/useIsHydrated";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function Header() {
-  const { t, language, setLanguage, availableLanguages } = useLanguage();
+  const { t } = useLanguage();
   const { user } = useAuth();
-  const isHydrated = useIsHydrated();
   const pathname = usePathname();
-  const isLanguageSelectionPage = pathname === '/select-language';
   const isHomePage = pathname === '/';
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -47,70 +32,11 @@ export function Header() {
       name: t.navigation.products,
       href: "/products",
       icon: CreditCard,
-      // submenu: [
-      //   {
-      //     name: t.products.types.salary.name,
-      //     href: "/products/salary-advance",
-      //     description: t.products.types.salary.description,
-      //   },
-      //   {
-      //     name: t.products.types.personal.name,
-      //     href: "/products/personal-loan",
-      //     description: t.products.types.personal.description,
-      //   },
-      //   {
-      //     name: t.products.types.emergency.name,
-      //     href: "/products/emergency",
-      //     description: t.products.types.emergency.description,
-      //   },
-      //   {
-      //     name: t.products.types.festival.name,
-      //     href: "/products/festival",
-      //     description: t.products.types.festival.description,
-      //   },
-      //   {
-      //     name: t.products.types.medical.name,
-      //     href: "/products/medical",
-      //     description: t.products.types.medical.description,
-      //   },
-      //   {
-      //     name: t.products.types.travel.name,
-      //     href: "/products/travel",
-      //     description: t.products.types.travel.description,
-      //   },
-      // ],
     },
     {
       name: t.navigation.about,
       href: "/about",
       icon: Info,
-      // submenu: [
-      //   {
-      //     name: t.about.ourStory,
-      //     href: "/about#story",
-      //     description: t.about.ourStoryDesc,
-      //   },
-      //   {
-      //     name: t.about.leadershipTeam,
-      //     href: "/about#leadership",
-      //     description: t.about.leadershipDesc,
-      //   },
-      //   {
-      //     name: t.about.missionVision,
-      //     href: "/about#mission",
-      //     description: t.about.missionVisionDesc,
-      //   },
-      //   {
-      //     name: t.about.timeline,
-      //     href: "/about#timeline",
-      //     description: t.about.timelineDesc,
-      //   },
-      //   {
-      //     name: t.about.values,
-      //     href: "/about#values",
-      //     description: t.about.valuesDesc,
-      //   },
-      // ],
     },
     {
       name: t.navigation.resources,
@@ -137,16 +63,6 @@ export function Header() {
           href: "/resources/intrest-rate",
           description: t.eligibility.interestRatesDesc,
         },
-        // {
-        //   name: t.navigation.blog,
-        //   href: "/resources/blog",
-        //   description: t.navigation.blogDesc,
-        // },
-        // {
-        //   name: t.navigation.faqs,
-        //   href: "/resources/faqs",
-        //   description: t.faqs.description,
-        // },
       ],
     },
     {
@@ -159,16 +75,6 @@ export function Header() {
           href: "/partners/channel",
           description: t.navigation.channelPartnersDesc,
         },
-        // {
-        //   name: t.navigation.corporateTieups,
-        //   href: "/partners/corporate",
-        //   description: t.navigation.corporateTieupsDesc,
-        // },
-        // {
-        //   name: t.navigation.apiIntegration,
-        //   href: "/partners/api",
-        //   description: t.navigation.apiIntegrationDesc,
-        // },
         {
           name: t.navigation.investorRelations,
           href: "/partners/investors",
@@ -184,11 +90,10 @@ export function Header() {
       if (!ticking) {
         window.requestAnimationFrame(() => {
           const scrollY = window.scrollY;
-          // Use hysteresis to prevent toggling: hide at 50px, show at 30px
           setIsScrolled((prev) => {
             if (scrollY > 50) return true;
             if (scrollY < 30) return false;
-            return prev; // Keep current state in the dead zone
+            return prev;
           });
           ticking = false;
         });
@@ -199,192 +104,153 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-
   return (
     <header
-      className={`sticky top-0 bg-white z-50 transition-all duration-300 ${
-        isScrolled ? "glass shadow-xl-dark" : "bg-transparent"
+      className={`sticky top-0 z-50 transition-all duration-300 ${
+        isScrolled
+          ? "bg-white/95 backdrop-blur-xl shadow-lg border-b border-slate-100"
+          : "bg-white"
       }`}
     >
-
-      {/* Main Navigation */}
-      <nav className="container mx-auto">
-        <div className="flex justify-between items-center py-0">
+      <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16 lg:h-20">
           {/* Logo */}
-         <Link href="/" className="flex p-[20px] items-center group">
-  <img
-    src="https://quikkred.in/logo.svg"
-    alt={t.common.appName}
-    className="h-auto object-contain transition-transform duration-300 group-hover:scale-105"
-    style={{ imageRendering: '-webkit-optimize-contrast', maxHeight: '45px' }}
-    width={180}
-    height={45}
-  />
-</Link>
-          {/* <div className="flex"> */}
-            {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-1">
-              <Link
-                href="/"
-                className={`flex items-center gap-1 px-2 xl:px-3 py-2 text-sm xl:text-base transition-colors rounded-lg ${
-                  pathname === '/'
-                    ? 'text-blue-600 bg-blue-50 font-semibold'
-                    : 'text-slate-700 hover:text-blue-400 hover:bg-slate-50'
-                }`}
-              >
-                {t.navigation.home}
-              </Link>
+          <Link href="/" className="flex items-center group">
+            <img
+              src="https://quikkred.in/logo.svg"
+              alt={t.common.appName}
+              className="h-10 lg:h-11 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+            />
+          </Link>
 
-              {navigation.map((item) => (
-                  <div
-                    key={item.name}
-                    className="relative"
-                    onMouseEnter={() => setActiveDropdown(item.name)}
-                    onMouseLeave={() => setActiveDropdown(null)}
-                  >
-                    <Link
-                      href={item.href}
-                      className={`flex items-center gap-1 px-2 py-2 text-sm xl:text-base transition-colors rounded-lg ${
-                        pathname.startsWith(item.href)
-                          ? 'text-blue-600 bg-blue-50 font-semibold'
-                          : 'text-slate-700 hover:text-blue-400 hover:bg-slate-50'
-                      }`}
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center gap-1">
+            <Link
+              href="/"
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                pathname === '/'
+                  ? 'text-teal-600 bg-teal-50'
+                  : 'text-slate-600 hover:text-teal-600 hover:bg-slate-50'
+              }`}
+            >
+              {t.navigation.home}
+            </Link>
+
+            {navigation.map((item) => (
+              <div
+                key={item.name}
+                className="relative"
+                onMouseEnter={() => setActiveDropdown(item.name)}
+                onMouseLeave={() => setActiveDropdown(null)}
+              >
+                <Link
+                  href={item.href}
+                  className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                    pathname.startsWith(item.href)
+                      ? 'text-teal-600 bg-teal-50'
+                      : 'text-slate-600 hover:text-teal-600 hover:bg-slate-50'
+                  }`}
+                >
+                  {item.name}
+                  {item.submenu && (
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${
+                      activeDropdown === item.name ? 'rotate-180' : ''
+                    }`} />
+                  )}
+                </Link>
+
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                  {item.submenu && activeDropdown === item.name && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute top-full left-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden"
                     >
-                      {item.name}
-                      {item.submenu && <ChevronDown className="w-3 h-3" />}
-                    </Link>
+                      <div className="p-2">
+                        {item.submenu.map((subitem) => (
+                          <Link
+                            key={subitem.name}
+                            href={subitem.href}
+                            className="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 group transition-all duration-200"
+                          >
+                            <div>
+                              <p className="font-medium text-sm text-slate-800 group-hover:text-teal-700">
+                                {subitem.name}
+                              </p>
+                              <p className="text-xs text-slate-500 mt-0.5">
+                                {subitem.description}
+                              </p>
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-teal-500 group-hover:translate-x-1 transition-all duration-200" />
+                          </Link>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ))}
+          </div>
 
-                  {/* Dropdown Menu */}
-                  <AnimatePresence>
-                    {item.submenu && activeDropdown === item.name && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="absolute top-full left-0 mt-2 w-64 xl:w-72 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/20 overflow-hidden z-50"
-                      >
-                        <div className="p-2">
-                          {item.submenu.map((subitem) => (
-                            <Link
-                              key={subitem.name}
-                              href={subitem.href}
-                              className="block px-3 xl:px-4 py-2.5 xl:py-3 rounded-xl hover:bg-slate-100 group transition-all"
-                            >
-                              <div className="flex justify-between items-center">
-                                <div>
-                                  <p className="font-semibold text-sm xl:text-base text-slate-900 group-hover:text-blue-600">
-                                    {subitem.name}
-                                  </p>
-                                  <p className="text-xs xl:text-sm text-slate-600">
-                                    {subitem.description}
-                                  </p>
-                                </div>
-                                <ArrowRight className="w-3.5 h-3.5 xl:w-4 xl:h-4 text-slate-700 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
-                              </div>
-                            </Link>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ))}
+          {/* Right Side - CTA Button */}
+          <div className="flex items-center gap-3">
+            {/* Contact - Desktop Only */}
+            <a
+              href="tel:+911800123456"
+              className="hidden lg:flex items-center gap-2 text-sm text-slate-600 hover:text-teal-600 transition-colors"
+            >
+              <Phone className="w-4 h-4" />
+              <span className="font-medium">1800-123-456</span>
+            </a>
 
-              {/* <Link
-                href="/contact"
-                className="flex items-center gap-1.5 px-2 xl:px-3 py-2 text-sm xl:text-base text-slate-700 hover:text-blue-400 transition-colors"
-              >
-                <Phone className="w-4 h-4" />
-                {t.navigation.contact}
-              </Link> */}
+            {/* CTA Button */}
+            {user ? (
+              <Link href="/user">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white text-sm font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200"
+                >
+                  Dashboard
+                  <ArrowRight className="w-4 h-4" />
+                </motion.button>
+              </Link>
+            ) : isHomePage ? (
+              <Link href="/login">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white text-sm font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200"
+                >
+                  {t.navigation.login}
+                  <ArrowRight className="w-4 h-4" />
+                </motion.button>
+              </Link>
+            ) : (
+              <Link href="/apply/quick">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white text-sm font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200"
+                >
+                  {t.common.apply}
+                  <ArrowRight className="w-4 h-4" />
+                </motion.button>
+              </Link>
+            )}
 
-              {/* Smart Button: Login on homepage (hero has Apply), Apply/Dashboard on other pages */}
-
-
-              {/* {user ? (
-                <Link href="/user" className="ml-2">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="btn-primary flex items-center gap-1 text-xs xl:text-sm !py-2 xl:!py-2.5 !px-4 xl:!px-5"
-                  >
-                    Dashboard
-                    <ArrowRight className="w-3 h-3 xl:w-3.5 xl:h-3.5" />
-                  </motion.button>
-                </Link>
-              ) : isHomePage ? (
-                <Link href="/login" className="ml-2">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="btn-primary flex items-center gap-1 text-xs xl:text-sm !py-2 xl:!py-2.5 !px-4 xl:!px-5"
-                  >
-                    {t.navigation.login}
-                    <ArrowRight className="w-3 h-3 xl:w-3.5 xl:h-3.5" />
-                  </motion.button>
-                </Link>
-              ) : (
-                <Link href="/apply/quick" className="ml-2">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="btn-primary flex items-center rounded-[5px] gap-1 text-xs xl:text-sm !py-2 xl:!py-2.5 !px-4 xl:!px-5"
-                  >
-                    {t.common.apply}
-                    <ArrowRight className="w-3 h-3 xl:w-3.5 xl:h-3.5" />
-                  </motion.button>
-                </Link>
-              )} */}
-            </div>
-
-            <div className="flex pr-[20px]">
-   {user ? (
-                <Link href="/user" className="ml-2">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="btn-primary flex items-center gap-1 !rounded-[5px] text-xs xl:text-sm !py-2 xl:!py-2.5 !px-4 xl:!px-5"
-                  >
-                    Dashboard
-                    <ArrowRight className="w-3 h-3 xl:w-3.5 xl:h-3.5" />
-                  </motion.button>
-                </Link>
-              ) : isHomePage ? (
-                <Link href="/login" className="ml-2">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="btn-primary flex items-center !rounded-[5px] gap-1 text-xs xl:text-sm !py-2 xl:!py-2.5 !px-4 xl:!px-5"
-                  >
-                    {t.navigation.login}
-                    <ArrowRight className="w-3 h-3 xl:w-3.5 xl:h-3.5" />
-                  </motion.button>
-                </Link>
-              ) : (
-                <Link href="/apply/quick" className="ml-2">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="btn-primary flex items-center !rounded-[5px] gap-1 text-xs xl:text-sm !py-2 xl:!py-2.5 !px-4 xl:!px-5"
-                  >
-                    {t.common.apply}
-                    <ArrowRight className="w-3 h-3 xl:w-3.5 xl:h-3.5" />
-                  </motion.button>
-                </Link>
-              )}</div>
-
-
-          {/* </div> */}
-          {/* Mobile Menu Toggle */}
-          <div className="flex lg:hidden items-center gap-2 sm:gap-3">
+            {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-slate-700 hover:text-blue-400 transition-colors"
+              className="lg:hidden p-2 text-slate-600 hover:text-teal-600 hover:bg-slate-100 rounded-lg transition-colors"
             >
               {mobileMenuOpen ? (
-                <X className="w-5 h-5 sm:w-6 sm:h-6" />
+                <X className="w-6 h-6" />
               ) : (
-                <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
+                <Menu className="w-6 h-6" />
               )}
             </button>
           </div>
@@ -398,41 +264,44 @@ export function Header() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-slate-900/95 border-t border-slate-700"
+            transition={{ duration: 0.2 }}
+            className="lg:hidden bg-white border-t border-slate-100"
           >
-            <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6 max-h-[70vh] overflow-y-auto">
+            <div className="container mx-auto px-4 py-4 max-h-[70vh] overflow-y-auto">
               <Link
                 href="/"
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg transition-colors ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
                   pathname === '/'
-                    ? 'text-blue-400 bg-slate-800 font-semibold'
-                    : 'text-slate-200 hover:bg-slate-800'
+                    ? 'text-teal-600 bg-teal-50 font-semibold'
+                    : 'text-slate-700 hover:bg-slate-50'
                 }`}
               >
                 {t.navigation.home}
               </Link>
+
               {navigation.map((item) => (
-                  <div key={item.name}>
-                    <Link
-                      href={item.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg transition-colors ${
-                        pathname.startsWith(item.href)
-                          ? 'text-blue-400 bg-slate-800 font-semibold'
-                          : 'text-slate-200 hover:bg-slate-800'
-                      }`}
-                    >
-                      {item.name}
-                    </Link>
+                <div key={item.name} className="mt-1">
+                  <Link
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
+                      pathname.startsWith(item.href)
+                        ? 'text-teal-600 bg-teal-50 font-semibold'
+                        : 'text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    <item.icon className="w-5 h-5" />
+                    {item.name}
+                  </Link>
                   {item.submenu && (
-                    <div className="ml-6 sm:ml-8 space-y-1">
+                    <div className="ml-8 mt-1 space-y-1 border-l-2 border-slate-100 pl-4">
                       {item.submenu.map((subitem) => (
                         <Link
                           key={subitem.name}
                           href={subitem.href}
                           onClick={() => setMobileMenuOpen(false)}
-                          className="block px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm text-slate-400 hover:text-emerald-500 transition-colors"
+                          className="block px-3 py-2 text-sm text-slate-600 hover:text-teal-600 transition-colors"
                         >
                           {subitem.name}
                         </Link>
@@ -441,35 +310,24 @@ export function Header() {
                   )}
                 </div>
               ))}
-              {/* <Link
-                href="/contact"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
-              >
-                <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
-                {t.navigation.contact}
-              </Link> */}
-              <div className="mt-4 pt-4 border-t border-slate-700">
-                {/* Mobile Language Selector Link - Only show on non-language-selection pages */}
-                {!isLanguageSelectionPage && (
-                  <Link
-                    href="/select-language"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
-                  >
-                    <Globe className="w-4 h-4 sm:w-5 sm:h-5" />
-                    {t.common.language}
-                  </Link>
-                )}
 
-                {/* Mobile: Login on homepage, Apply/Dashboard on other pages */}
+              {/* Mobile CTA */}
+              <div className="mt-4 pt-4 border-t border-slate-100">
+                <a
+                  href="tel:+911800123456"
+                  className="flex items-center gap-3 px-4 py-3 text-slate-600"
+                >
+                  <Phone className="w-5 h-5" />
+                  <span className="font-medium">1800-123-456</span>
+                </a>
+
                 {user ? (
                   <Link
                     href="/user"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block px-3 sm:px-4"
+                    className="block mt-2"
                   >
-                    <button className="w-full mt-2 btn-primary text-sm sm:text-base py-2.5 sm:py-3">
+                    <button className="w-full py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-semibold rounded-xl">
                       Dashboard
                     </button>
                   </Link>
@@ -477,9 +335,9 @@ export function Header() {
                   <Link
                     href="/login"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block px-3 sm:px-4"
+                    className="block mt-2"
                   >
-                    <button className="w-full mt-2 btn-primary text-sm sm:text-base py-2.5 sm:py-3">
+                    <button className="w-full py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-semibold rounded-xl">
                       {t.navigation.login}
                     </button>
                   </Link>
@@ -487,9 +345,9 @@ export function Header() {
                   <Link
                     href="/apply/quick"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block px-3 sm:px-4"
+                    className="block mt-2"
                   >
-                    <button className="w-full mt-2 btn-primary text-sm sm:text-base py-2.5 sm:py-3">
+                    <button className="w-full py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-semibold rounded-xl">
                       {t.common.apply}
                     </button>
                   </Link>
