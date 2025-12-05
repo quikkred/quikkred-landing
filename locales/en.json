@@ -55,7 +55,7 @@
   "hero": {
     "title": "Get Instant Personal Loans",
     "subtitle": "Up to ₹5,00,000 with minimal documentation",
-    "description": "Quick approval, minimal documentation, transparent process. Your trusted partner for all financial needs.",
+    "description": "Quick loans up to ₹5 Lakhs with minimal documentation. Get approved in minutes, not days.",
     "cta": {
       "primary": "Get Instant Approval",
       "secondary": "Check Eligibility"
@@ -67,12 +67,27 @@
       "rating": " Rating",
       "branches": "+ Partner Branches"
     },
+    "benefits": {
+      "quick": "Quick Approval",
+      "secure": "100% Secure",
+      "paperless": "Paperless Process"
+    },
+    "trustedBy": "Trusted by thousands of customers",
+    "dataProtected": "Data Protected",
+    "rbiCompliant": "RBI Compliant NBFC Partnered",
     "form": {
       "heading": "Get",
-      "headingHighlight": "Instant",
-      "headingLine2": "Personal Loans",
+      "headingHighlight": "Instant Cash",
+      "headingLine2": "When You Need It",
       "getStarted": "Get Started",
       "getInstantLoan": "Get Instant Loan →",
+      "phonePlaceholder": "Enter your mobile number",
+      "cta": "Check Eligibility",
+      "errors": {
+        "numbersOnly": "Mobile number can only contain numbers",
+        "tenDigits": "Mobile number must be exactly 10 digits",
+        "validStart": "Mobile number must start with 6, 7, 8, or 9"
+      },
       "step1": {
         "question": "Enter your Mobile number?",
         "placeholder": "Enter your mobile number"
