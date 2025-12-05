@@ -17,7 +17,6 @@ interface Ticket {
   ticketNumber: string;
   subject: string;
   category: string;
-  priority: "low" | "medium" | "high" | "critical";
   status: "open" | "in_progress" | "resolved" | "closed" | "reopened";
   createdAt: string;
   lastUpdate: string;
@@ -59,7 +58,6 @@ export default function SupportPage() {
   const [newTicket, setNewTicket] = useState({
     subject: "",
     category: "general",
-    priority: "medium",
     description: ""
   });
 
@@ -109,7 +107,6 @@ export default function SupportPage() {
           ticketNumber: ticket.ticketNumber,
           subject: ticket.subject,
           category: ticket.category,
-          priority: ticket.priority,
           status: ticket.status,
           createdAt: ticket.createdAt,
           lastUpdate: ticket.updatedAt,
@@ -124,7 +121,6 @@ export default function SupportPage() {
             ticketNumber: "TKT001",
             subject: "Unable to make payment",
             category: "payment",
-            priority: "high",
             status: "open",
             createdAt: new Date().toISOString(),
             lastUpdate: new Date().toISOString(),
@@ -199,8 +195,7 @@ export default function SupportPage() {
       const response = await supportService.createTicket({
         subject: newTicket.subject,
         description: newTicket.description,
-        category: newTicket.category,
-        priority: newTicket.priority
+        category: newTicket.category
       });
 
       if (response.success && response.data) {
@@ -209,7 +204,6 @@ export default function SupportPage() {
           ticketNumber: response.data.ticketNumber,
           subject: response.data.subject,
           category: response.data.category,
-          priority: response.data.priority,
           status: response.data.status,
           createdAt: response.data.createdAt,
           lastUpdate: response.data.updatedAt,
@@ -228,7 +222,6 @@ export default function SupportPage() {
         setNewTicket({
           subject: "",
           category: "general",
-          priority: "medium",
           description: ""
         });
       }
@@ -301,11 +294,6 @@ export default function SupportPage() {
       case "closed": return "bg-gray-100 text-gray-800";
       default: return "bg-gray-100 text-gray-800";
     }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    const p = priorities.find(p => p.value === priority);
-    return p?.color || "bg-gray-100 text-gray-800";
   };
 
   if (isLoading) {
@@ -453,16 +441,6 @@ export default function SupportPage() {
                               </span>
                             </div>
                             <p className="text-sm text-gray-600 mb-2">#{ticket.ticketNumber}</p>
-                            <div className="flex items-center justify-between">
-                              <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                                getPriorityColor(ticket.priority)
-                              }`}>
-                                {ticket.priority}
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                {new Date(ticket.lastUpdate).toLocaleDateString()}
-                              </span>
-                            </div>
                           </motion.div>
                         ))
                       )}
@@ -670,19 +648,6 @@ export default function SupportPage() {
                       >
                         {categories.map((cat) => (
                           <option key={cat.value} value={cat.value}>{cat.label}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-                      <select
-                        value={newTicket.priority}
-                        onChange={(e) => setNewTicket({ ...newTicket, priority: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4A66FF]"
-                      >
-                        {priorities.map((priority) => (
-                          <option key={priority.value} value={priority.value}>{priority.label}</option>
                         ))}
                       </select>
                     </div>
