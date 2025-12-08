@@ -31,7 +31,7 @@ export function FinancialFeatureSection({
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 gap-8 items-center md:grid-cols-2 md:gap-12 lg:gap-16">
           {/* Left side - Image with badge */}
-          <div className="relative flex justify-center md:justify-start">
+          <div className="relative flex justify-center">
             <div className="relative w-full max-w-sm">
               <img
                 src={image || "/placeholder.svg"}

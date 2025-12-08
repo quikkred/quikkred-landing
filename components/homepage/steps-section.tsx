@@ -23,12 +23,12 @@ export default function StepsSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-8 sm:mb-10 md:mb-12 lg:mb-16"
         >
-          <span className="inline-block px-4 py-2 bg-[#14b8a642] text-teal-500 rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
+          <span className="inline-block px-4 py-2 bg-[#14b8a642] text-[#25B181] rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
             {t?.homepage?.sections?.howItWorks?.badge}
           </span>
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center text-slate-900 mb-3 px-2">
             {t?.homepage?.stepsSection?.heading}{" "}
-            <span className="text-teal-500">
+            <span className="text-[#25B181]">
               {t?.homepage?.stepsSection?.headingHighlight}
             </span>
           </h2>
@@ -52,15 +52,15 @@ export default function StepsSection() {
               >
                 {/* Number badge */}
                 <div className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4">
-                  <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-teal-500 text-white rounded-full font-bold text-base sm:text-lg shadow-lg">
+                  <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-[#25B181] text-white rounded-full font-bold text-base sm:text-lg shadow-lg">
                     {step?.number}
                   </div>
                 </div>
 
                 {/* Icon */}
                 <div className="mb-4 sm:mb-6">
-                  <div className="inline-flex p-2.5 sm:p-3 bg-teal-100 rounded-lg">
-                    <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-teal-500" />
+                  <div className="inline-flex p-2.5 sm:p-3 bg-[#D3F1EB] rounded-lg">
+                    <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-[#25B181]" />
                   </div>
                 </div>
 
