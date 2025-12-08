@@ -117,7 +117,7 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center group">
             <img
-              src="https://quikkred.in/logo.svg"
+              src="/logo.svg"
               alt={t.common.appName}
               className="h-10 lg:h-11 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
             />
