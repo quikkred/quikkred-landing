@@ -9,7 +9,7 @@ import {
   EyeOff, Download, Search,
   FileText, AlertCircle, Wallet,
   RefreshCw, BarChart3, X,
-  ChevronLeft, ChevronRight, Building, User
+  ChevronLeft, ChevronRight, Building, User, Receipt
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { loansService } from '@/lib/api/loans.service';
@@ -31,6 +31,20 @@ interface Loan {
   customerId?: string;
 }
 
+interface PaymentHistoryItem {
+  _id: string;
+  paymentNumber: string;
+  applicationId: string;
+  paymentDate: string;
+  amount: number;
+  paymentMode: string;
+  transactionId: string;
+  utrNumber: string;
+  receiptNumber: string;
+  status: string;
+  createdAt: string;
+}
+
 interface DetailedLoan {
   _id: string;
   loanNumber: string;
@@ -39,9 +53,14 @@ interface DetailedLoan {
     _id: string;
     email: string;
     fullName: string;
+    mobile?: string;
   };
+  productId?: string;
   productName: string;
   principalAmount: number;
+  processingFee?: number;
+  gstOnProcessingFee?: number;
+  totalInterest?: number;
   interestRate: number;
   tenure: number;
   tenureUnit: string;
@@ -54,13 +73,17 @@ interface DetailedLoan {
   disbursementDate: string;
   disbursementMode: string;
   disbursementTransactionId: string;
-  disbursementUTR: string;
+  disbursementUTR?: string;
   maturityDate: string;
+  lateChargesDate?: string;
   principalOutstanding: number;
   interestOutstanding: number;
+  lateChargesOutstanding: number;
+  lateChargesPerDay?: number;
   totalOutstanding: number;
   firstDueDate: string;
   nextDueDate: string | null;
+  overdueCount?: number;
   dpd: number;
   dpdBucket: string;
   status: string;
@@ -69,6 +92,8 @@ interface DetailedLoan {
     totalEMIsMissed: number;
     onTimePayments: number;
     latePayments: number;
+    averageDelayDays?: number;
+    lastPaymentDelay?: number;
     bounceCount: number;
     partialPaymentCount: number;
   };
@@ -80,24 +105,35 @@ interface DetailedLoan {
     interest: number;
     totalDue: number;
     paidAmount: number;
+    paidDate?: string | null;
     status: string;
     balance: number;
     lateCharges: number;
+    lateChargesPaid?: number;
+    paymentMode?: string | null;
+    transactionId?: string | null;
     _id: string;
   }>;
-  createdBy: {
+  paymentHistory?: PaymentHistoryItem[];
+  createdBy?: {
     _id: string;
     fullName: string;
     email: string;
     mobile: string;
   };
   branch: string;
+  branchId?: string | null;
+  isDeleted?: boolean;
+  isRestructured?: boolean;
+  isSettled?: boolean;
+  isWrittenOff?: boolean;
+  isUnderLegalAction?: boolean;
   ptpHistory: any[];
   restructuringHistory: any[];
   createdAt: string;
   updatedAt: string;
   lastPaymentDate?: string;
-  lateChargesOutstanding: number;
+  closureDate?: string;
 }
 
 interface LoanCalculation {
@@ -610,9 +646,9 @@ export default function MyLoansPage() {
             </div>
             <div className="space-y-1.5 sm:space-y-2">
               <div>
-                <p className="text-[10px] sm:text-xs text-gray-600 mb-0.5 sm:mb-1">Outstanding Amount</p>
+                <p className="text-[10px] sm:text-xs text-gray-600 mb-0.5 sm:mb-1">Outstanding principal Amount</p>
                 <p className="text-lg sm:text-2xl font-bold text-yellow-700">
-                  {showBalancePending ? formatCurrency(loanCalculation?.ACTIVE?.totalOutstanding || 0) : '••••••'}
+                  {showBalancePending ? formatCurrency(loanCalculation?.ACTIVE?.principalOutstanding || 0) : '••••••'}
                 </p>
               </div>
               <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-yellow-200">
@@ -1142,6 +1178,55 @@ export default function MyLoansPage() {
                                   </span>
                                 </td>
                                 <td className="px-3 py-2 text-right text-gray-900">{formatCurrency(installment.balance)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Payment History */}
+                  {detailedLoan.paymentHistory && detailedLoan.paymentHistory.length > 0 && (
+                    <div className="bg-gradient-to-br from-indigo-50 to-violet-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-indigo-200">
+                      <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                        <Receipt className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
+                        <h4 className="text-base sm:text-lg font-bold text-gray-800">Payment History</h4>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs sm:text-sm">
+                          <thead className="bg-indigo-100">
+                            <tr>
+                              <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Payment No.</th>
+                              <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Payment Date</th>
+                              <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Amount</th>
+                              <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Payment Mode</th>
+                              <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Transaction ID</th>
+                              <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">UTR Number</th>
+                              {/* <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Receipt No.</th> */}
+                              <th className="px-3 py-2 text-center text-xs font-semibold text-gray-700">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-indigo-100">
+                            {detailedLoan.paymentHistory.map((payment) => (
+                              <tr key={payment._id} className="hover:bg-indigo-50/50">
+                                <td className="px-3 py-2 font-medium text-gray-900">{payment.paymentNumber}</td>
+                                <td className="px-3 py-2 text-gray-900">{new Date(payment.paymentDate).toLocaleString()}</td>
+                                <td className="px-3 py-2 text-right font-semibold text-green-600">{formatCurrency(payment.amount)}</td>
+                                <td className="px-3 py-2 text-gray-900">{payment.paymentMode}</td>
+                                <td className="px-3 py-2 font-mono text-xs text-gray-700">{payment.transactionId || '-'}</td>
+                                <td className="px-3 py-2 font-mono text-xs text-gray-700">{payment.utrNumber || '-'}</td>
+                                {/* <td className="px-3 py-2 font-mono text-xs text-gray-700">{payment.receiptNumber || '-'}</td> */}
+                                <td className="px-3 py-2 text-center">
+                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    payment.status === 'SUCCESS' || payment.status === 'COMPLETED' ? 'text-green-600 bg-green-100' :
+                                    payment.status === 'PENDING' ? 'text-yellow-600 bg-yellow-100' :
+                                    payment.status === 'FAILED' ? 'text-red-600 bg-red-100' :
+                                    'text-gray-600 bg-gray-100'
+                                  }`}>
+                                    {payment.status}
+                                  </span>
+                                </td>
                               </tr>
                             ))}
                           </tbody>

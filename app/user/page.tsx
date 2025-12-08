@@ -19,6 +19,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/toast';
 
 interface LoanSummary {
+  productName: ReactI18NextChildren | Iterable<ReactI18NextChildren>;
   _id: string;
   loanNumber: string;
   principalAmount: number;
@@ -485,13 +486,49 @@ export default function UserDashboard() {
               <p className="text-[#737373] mt-1 text-sm sm:text-base">Complete your profile to apply for loans</p>
             </div>
 
-            <button
-              onClick={fetchUserData}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-[#E5E5E5] rounded-lg hover:shadow-md transition-all"
-            >
-              <RefreshCw className="w-4 h-4" />
-              <span className="text-sm">Refresh</span>
-            </button>
+            <div className="flex items-center gap-3">
+              {calculateCompletion() === 100 && (
+                <div className="relative w-12 h-12">
+                  <svg className="w-12 h-12 transform -rotate-90">
+                    <circle
+                      cx="24"
+                      cy="24"
+                      r="20"
+                      stroke="#E5E5E5"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <circle
+                      cx="24"
+                      cy="24"
+                      r="20"
+                      stroke="url(#greenGradient)"
+                      strokeWidth="4"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeDasharray={`${2 * Math.PI * 20}`}
+                      strokeDashoffset="0"
+                    />
+                    <defs>
+                      <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#22c55e" />
+                        <stop offset="100%" stopColor="#10b981" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-[10px] font-bold text-green-600">100%</span>
+                  </div>
+                </div>
+              )}
+              <button
+                onClick={fetchUserData}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-[#E5E5E5] rounded-lg hover:shadow-md transition-all"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span className="text-sm">Refresh</span>
+              </button>
+            </div>
           </div>
         </motion.div>
 
@@ -532,33 +569,35 @@ export default function UserDashboard() {
           </motion.div>
         )}
 
-        {/* Profile Completion Overview */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border-2 border-blue-200 mb-4 sm:mb-6"
-        >
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4">
-            <div className="flex-1">
-              <h2 className="text-lg sm:text-xl font-semibold text-blue-900 mb-1">Profile Completion</h2>
-              <p className="text-xs sm:text-sm text-blue-700">Complete all steps to apply for loans</p>
+        {/* Profile Completion Overview - Only show when not 100% complete */}
+        {calculateCompletion() < 100 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border-2 border-blue-200 mb-4 sm:mb-6"
+          >
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-4">
+              <div className="flex-1">
+                <h2 className="text-lg sm:text-xl font-semibold text-blue-900 mb-1">Profile Completion</h2>
+                <p className="text-xs sm:text-sm text-blue-700">Complete all steps to apply for loans</p>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl sm:text-4xl font-bold text-blue-900">{calculateCompletion()}%</div>
+                <p className="text-xs text-blue-700">Complete</p>
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl sm:text-4xl font-bold text-blue-900">{calculateCompletion()}%</div>
-              <p className="text-xs text-blue-700">Complete</p>
-            </div>
-          </div>
 
-          <div className="w-full bg-blue-200 rounded-full h-2 sm:h-3 mb-2">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${calculateCompletion()}%` }}
-              transition={{ duration: 1, delay: 0.3 }}
-              className="h-2 sm:h-3 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600"
-            />
-          </div>
-        </motion.div>
+            <div className="w-full bg-blue-200 rounded-full h-2 sm:h-3 mb-2">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${calculateCompletion()}%` }}
+                transition={{ duration: 1, delay: 0.3 }}
+                className="h-2 sm:h-3 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600"
+              />
+            </div>
+          </motion.div>
+        )}
 
             {/* Active Loan Section */}
         {data?.activeLoan && data?.loans?.length > 0 && (
@@ -585,7 +624,7 @@ export default function UserDashboard() {
                     >
                       {data.loans.map((loan) => (
                         <option key={loan._id} value={loan.loanNumber}>
-                          {loan.loanNumber} (₹{loan.principalAmount.toLocaleString()})
+                          {loan.productName}{" "}{loan.loanNumber} (₹{loan.principalAmount.toLocaleString()})
                         </option>
                       ))}
                     </select>
