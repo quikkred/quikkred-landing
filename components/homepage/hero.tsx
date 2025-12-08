@@ -411,16 +411,16 @@ export default function Hero() {
                     <div className={`flex items-center border-2 rounded-2xl mb-2 overflow-hidden transition-all ${
                       fieldError ? 'border-red-400' : 'border-slate-200 focus-within:ring-2 focus-within:ring-teal-500 focus-within:border-teal-500'
                     }`}>
-                      <span className="px-4 py-5 bg-slate-100 text-slate-700 text-xl sm:text-2xl font-semibold border-r border-slate-200">+91</span>
+                      <span className="px-3 sm:px-4 py-5 bg-slate-100 text-slate-700 text-lg sm:text-2xl font-semibold border-r border-slate-200">+91</span>
                       <input
                         type="tel"
                         name={currentStepData.field}
-                        placeholder={currentStepData.placeholder}
+                        placeholder="Mobile number"
                         value={formData[currentStepData.field as keyof typeof formData]}
                         onChange={handleChange}
                         onKeyDown={handleKeyDown}
                         maxLength={10}
-                        className="flex-1 px-4 py-5 text-xl sm:text-2xl font-medium bg-transparent outline-none placeholder-slate-400"
+                        className="flex-1 px-3 sm:px-4 py-5 text-lg sm:text-2xl font-medium bg-transparent outline-none placeholder-slate-400"
                         autoFocus
                       />
                     </div>
