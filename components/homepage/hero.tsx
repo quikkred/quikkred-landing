@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { useLanguage } from "@/lib/contexts/LanguageContext"
 import { Globe, ChevronDown, ArrowRight, Shield, Clock, CheckCircle2 } from "lucide-react"
 
@@ -20,6 +20,15 @@ export default function Hero() {
   const [fieldError, setFieldError] = useState("")
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false)
   const languageDropdownRef = useRef<HTMLDivElement>(null)
+  const heroRef = useRef<HTMLElement>(null)
+
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"]
+  })
+
+  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"])
+  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0.8])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -122,17 +131,57 @@ export default function Hero() {
     { icon: CheckCircle2, text: t?.hero?.benefits?.paperless || "Paperless Process" },
   ]
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      }
+    }
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut" as const }
+    }
+  }
+
+  const floatAnimation = {
+    y: [-5, 5, -5],
+    transition: {
+      duration: 4,
+      repeat: Infinity,
+      ease: "easeInOut" as const
+    }
+  }
+
   return (
-    <section className="relative bg-gradient-to-br from-slate-50 via-white to-teal-50/30 lg:min-h-[calc(100vh-90px)] md:min-h-[calc(100vh-120px)] flex flex-col overflow-hidden">
+    <section ref={heroRef} className="relative bg-gradient-to-br from-slate-50 via-white to-teal-50/30 lg:min-h-[calc(100vh-90px)] md:min-h-[calc(100vh-120px)] flex flex-col overflow-hidden">
       {/* Language Bar - Above Hero */}
-      <div className="w-full bg-gradient-to-r from-teal-50 via-white to-teal-50 border-b border-slate-200 py-2.5 px-4">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full bg-gradient-to-r from-teal-50 via-white to-teal-50 border-b border-slate-200 py-2.5 px-4"
+      >
         <div className="container mx-auto">
           <div className="flex items-center justify-center gap-2 flex-wrap">
             <Globe className="w-4 h-4 text-teal-600" />
             <span className="text-xs text-slate-500 mr-2">Available in:</span>
             {availableLanguages.slice(0, 8).map((lang, index) => (
-              <button
+              <motion.button
                 key={lang.code}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.05 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setLanguage(lang.code)}
                 className={`text-xs px-2.5 py-1 rounded-full transition-all ${
                   language === lang.code
@@ -141,7 +190,7 @@ export default function Hero() {
                 }`}
               >
                 {lang.nativeName}
-              </button>
+              </motion.button>
             ))}
             {availableLanguages.length > 8 && (
               <div className="relative" ref={languageDropdownRef}>
@@ -186,177 +235,272 @@ export default function Hero() {
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
 
+      {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-teal-100/40 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-100/30 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-teal-50/20 to-transparent rounded-full blur-3xl" />
+        <motion.div
+          style={{ y: backgroundY }}
+          className="absolute top-20 left-10 w-72 h-72 bg-teal-100/40 rounded-full blur-3xl"
+          animate={{
+            scale: [1, 1.1, 1],
+            opacity: [0.4, 0.6, 0.4],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div
+          style={{ y: backgroundY }}
+          className="absolute bottom-20 right-10 w-96 h-96 bg-blue-100/30 rounded-full blur-3xl"
+          animate={{
+            scale: [1, 1.15, 1],
+            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1
+          }}
+        />
+        <motion.div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-teal-50/20 to-transparent rounded-full blur-3xl"
+          animate={{
+            rotate: [0, 360],
+          }}
+          transition={{
+            duration: 60,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        />
+
+        {/* Floating particles */}
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-2 h-2 bg-teal-400/20 rounded-full"
+            style={{
+              left: `${15 + i * 15}%`,
+              top: `${20 + (i % 3) * 25}%`,
+            }}
+            animate={{
+              y: [-20, 20, -20],
+              x: [-10, 10, -10],
+              opacity: [0.2, 0.5, 0.2],
+            }}
+            transition={{
+              duration: 4 + i,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: i * 0.5,
+            }}
+          />
+        ))}
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-10 relative z-10 flex-1 flex items-start pt-4 sm:pt-6 md:pt-8">
-        <div className="max-w-4xl mx-auto text-center w-full">
-
-          {/* Main Heading */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-slate-900 leading-tight mb-4 sm:mb-6">
+      <motion.div
+        style={{ opacity }}
+        className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 md:py-16 relative z-10 flex-1 flex items-center"
+      >
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="max-w-4xl mx-auto text-center w-full"
+        >
+          {/* Main Heading with gradient animation */}
+          <motion.div variants={itemVariants}>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-slate-900 leading-tight mb-8 sm:mb-10">
               {t?.hero?.form?.heading || "Get"}{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-emerald-500">
+              <motion.span
+                className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 via-emerald-500 to-teal-500 bg-[length:200%_auto]"
+                animate={{
+                  backgroundPosition: ["0% center", "200% center"],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "linear"
+                }}
+              >
                 {t?.hero?.form?.headingHighlight || "Instant Cash"}
-              </span>
+              </motion.span>
               <br />
               {t?.hero?.form?.headingLine2 || "When You Need It"}
             </h1>
           </motion.div>
 
-          {/* Subtitle */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-base sm:text-lg text-slate-600 mb-10 max-w-2xl mx-auto"
-          >
-            {t?.hero?.description || "Quick loans up to ₹5 Lakhs with minimal documentation. Get approved in minutes, not days."}
-          </motion.p>
-
-          {/* Form Card - Centered */}
+          {/* Form Card - Centered with float animation */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="w-full max-w-xl mx-auto bg-white rounded-3xl shadow-2xl border border-slate-100 p-6 sm:p-8 mb-10"
+            variants={itemVariants}
+            animate={floatAnimation}
+            className="w-full max-w-xl mx-auto bg-white rounded-3xl shadow-2xl border border-slate-100 p-6 sm:p-8 mb-12 relative"
           >
-            {/* Progress Indicators with Step Number */}
-            <div className="flex items-center gap-3 mb-6">
+            {/* Decorative glow */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-teal-500/20 via-emerald-500/20 to-teal-500/20 rounded-3xl blur-xl opacity-50" />
+
+            <div className="relative">
+              {/* Progress Indicators with Step Number */}
+              <div className="flex items-center gap-3 mb-6">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentStep}
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    exit={{ scale: 0, rotate: 180 }}
+                    transition={{ duration: 0.4, type: "spring", stiffness: 200 }}
+                    className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg"
+                  >
+                    {currentStepData.number}
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Progress bars */}
+                <div className="flex gap-2 flex-1">
+                  {steps.map((_, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: 1 }}
+                      transition={{ delay: index * 0.1, duration: 0.4 }}
+                      className={`h-2 flex-1 rounded-full transition-all duration-500 ${
+                        currentStep >= index + 1 ? "bg-gradient-to-r from-teal-500 to-emerald-500" : "bg-slate-200"
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                {/* Step counter */}
+                <span className="text-sm text-slate-500 font-semibold flex-shrink-0">{currentStep}/4</span>
+              </div>
+
+              {/* Form Content with Animation */}
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentStep}
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  exit={{ scale: 0, rotate: 180 }}
-                  transition={{ duration: 0.3 }}
-                  className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg"
+                  initial={{ opacity: 0, x: 30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -30 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
                 >
-                  {currentStepData.number}
-                </motion.div>
-              </AnimatePresence>
-
-              {/* Progress bars */}
-              <div className="flex gap-2 flex-1">
-                {steps.map((_, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ scaleX: 0 }}
-                    animate={{ scaleX: 1 }}
-                    transition={{ delay: index * 0.1 }}
-                    className={`h-2 flex-1 rounded-full transition-all duration-300 ${
-                      currentStep >= index + 1 ? "bg-gradient-to-r from-teal-500 to-emerald-500" : "bg-slate-200"
-                    }`}
-                  />
-                ))}
-              </div>
-
-              {/* Step counter */}
-              <span className="text-sm text-slate-500 font-semibold flex-shrink-0">{currentStep}/4</span>
-            </div>
-
-            {/* Form Content with Animation */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentStep}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <label className="block text-slate-900 font-bold mb-4 text-lg sm:text-xl">
-                  {currentStepData.question}
-                </label>
-                {currentStepData.field === "mobile" ? (
-                  <div className={`flex items-center border-2 rounded-2xl mb-2 overflow-hidden transition-all ${
-                    fieldError ? 'border-red-400' : 'border-slate-200 focus-within:ring-2 focus-within:ring-teal-500 focus-within:border-teal-500'
-                  }`}>
-                    <span className="px-4 py-5 bg-slate-100 text-slate-700 text-xl sm:text-2xl font-semibold border-r border-slate-200">+91</span>
+                  <label className="block text-slate-900 font-bold mb-4 text-lg sm:text-xl">
+                    {currentStepData.question}
+                  </label>
+                  {currentStepData.field === "mobile" ? (
+                    <div className={`flex items-center border-2 rounded-2xl mb-2 overflow-hidden transition-all ${
+                      fieldError ? 'border-red-400' : 'border-slate-200 focus-within:ring-2 focus-within:ring-teal-500 focus-within:border-teal-500'
+                    }`}>
+                      <span className="px-4 py-5 bg-slate-100 text-slate-700 text-xl sm:text-2xl font-semibold border-r border-slate-200">+91</span>
+                      <input
+                        type="tel"
+                        name={currentStepData.field}
+                        placeholder={currentStepData.placeholder}
+                        value={formData[currentStepData.field as keyof typeof formData]}
+                        onChange={handleChange}
+                        onKeyDown={handleKeyDown}
+                        maxLength={10}
+                        className="flex-1 px-4 py-5 text-xl sm:text-2xl font-medium bg-transparent outline-none placeholder-slate-400"
+                        autoFocus
+                      />
+                    </div>
+                  ) : (
                     <input
-                      type="tel"
+                      type={currentStepData.field === "email" ? "email" : "text"}
                       name={currentStepData.field}
                       placeholder={currentStepData.placeholder}
                       value={formData[currentStepData.field as keyof typeof formData]}
                       onChange={handleChange}
                       onKeyDown={handleKeyDown}
-                      maxLength={10}
-                      className="flex-1 px-4 py-5 text-xl sm:text-2xl font-medium bg-transparent outline-none placeholder-slate-400"
+                      className={`w-full px-5 py-5 text-xl sm:text-2xl font-medium border-2 rounded-2xl mb-2 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 placeholder-slate-400 transition-all ${
+                        fieldError ? 'border-red-400' : 'border-slate-200'
+                      }`}
                       autoFocus
                     />
-                  </div>
-                ) : (
-                  <input
-                    type={currentStepData.field === "email" ? "email" : "text"}
-                    name={currentStepData.field}
-                    placeholder={currentStepData.placeholder}
-                    value={formData[currentStepData.field as keyof typeof formData]}
-                    onChange={handleChange}
-                    onKeyDown={handleKeyDown}
-                    className={`w-full px-5 py-5 text-xl sm:text-2xl font-medium border-2 rounded-2xl mb-2 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 placeholder-slate-400 transition-all ${
-                      fieldError ? 'border-red-400' : 'border-slate-200'
-                    }`}
-                    autoFocus
-                  />
-                )}
-                {fieldError && (
-                  <p className="text-red-500 text-sm mb-3">{fieldError}</p>
-                )}
-                {!fieldError && <div className="mb-5"></div>}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleNext}
-                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white py-4 sm:py-5 text-lg sm:text-xl font-bold rounded-2xl shadow-lg hover:shadow-xl transition-all"
-                >
-                  <span>{currentStep === 4 ? (t?.hero?.form?.cta || "Check Eligibility") : (t?.hero?.form?.next || "Next →")}</span>
-                  <ArrowRight className="w-5 h-5" />
-                </motion.button>
-              </motion.div>
-            </AnimatePresence>
+                  )}
+                  {fieldError && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-red-500 text-sm mb-3"
+                    >
+                      {fieldError}
+                    </motion.p>
+                  )}
+                  {!fieldError && <div className="mb-5"></div>}
+                  <motion.button
+                    whileHover={{ scale: 1.02, boxShadow: "0 20px 40px -15px rgba(20, 184, 166, 0.4)" }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleNext}
+                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white py-4 sm:py-5 text-lg sm:text-xl font-bold rounded-2xl shadow-lg transition-all"
+                  >
+                    <span>{currentStep === 4 ? (t?.hero?.form?.cta || "Check Eligibility") : "Next"}</span>
+                    <motion.div
+                      animate={{ x: [0, 5, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                      <ArrowRight className="w-5 h-5" />
+                    </motion.div>
+                  </motion.button>
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </motion.div>
 
-          {/* Benefits */}
+          {/* Benefits with stagger animation */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
+            variants={itemVariants}
             className="flex flex-wrap justify-center gap-4 sm:gap-8 mb-8"
           >
             {benefits.map((benefit, index) => (
-              <div key={index} className="flex items-center gap-2 text-slate-600">
-                <benefit.icon className="w-5 h-5 text-teal-500" />
+              <motion.div
+                key={index}
+                className="flex items-center gap-2 text-slate-600"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 + index * 0.1 }}
+                whileHover={{ scale: 1.05, color: "#0d9488" }}
+              >
+                <motion.div
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, delay: index * 0.3 }}
+                >
+                  <benefit.icon className="w-5 h-5 text-teal-500" />
+                </motion.div>
                 <span className="text-sm sm:text-base font-medium">{benefit.text}</span>
-              </div>
+              </motion.div>
             ))}
           </motion.div>
 
-          {/* Trust indicators */}
+          {/* Trust indicators with entrance animation */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
+            variants={itemVariants}
             className="flex flex-wrap justify-center items-center gap-4"
           >
-            <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <motion.div
+              className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full"
+              whileHover={{ scale: 1.05, backgroundColor: "#f0fdfa" }}
+            >
+              <motion.div
+                className="w-2 h-2 bg-green-500 rounded-full"
+                animate={{ scale: [1, 1.3, 1], opacity: [1, 0.7, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              />
               <span className="text-sm text-slate-600 font-semibold">{t?.hero?.rbiCompliant || "RBI Compliant NBFC Partnered"}</span>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
+            </motion.div>
+            <motion.div
+              className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full"
+              whileHover={{ scale: 1.05, backgroundColor: "#f0fdfa" }}
+            >
               <Shield className="w-4 h-4 text-teal-500" />
               <span className="text-sm text-slate-600 font-medium">{t?.hero?.dataProtected || "Data Protected"}</span>
-            </div>
+            </motion.div>
           </motion.div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </section>
   )
 }
