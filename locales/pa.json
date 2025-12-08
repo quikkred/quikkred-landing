@@ -73,12 +73,31 @@
       "rating": " ਰੇਟਿੰਗ",
       "branches": "+ ਪਾਰਟਨਰ ਸ਼ਾਖਾਵਾਂ"
     },
+    "benefits": {
+      "quick": "ਤੁਰੰਤ ਮਨਜ਼ੂਰੀ",
+      "secure": "100% ਸੁਰੱਖਿਅਤ",
+      "paperless": "ਕਾਗਜ਼ ਰਹਿਤ ਪ੍ਰਕਿਰਿਆ"
+    },
+    "dataProtected": "ਡਾਟਾ ਸੁਰੱਖਿਅਤ",
+    "rbiCompliant": "RBI ਅਨੁਪਾਲਿਤ NBFC",
+    "languageBar": {
+      "availableIn": "ਉਪਲਬਧ ਭਾਸ਼ਾਵਾਂ:",
+      "more": "ਹੋਰ"
+    },
     "form": {
       "heading": "ਪ੍ਰਾਪਤ ਕਰੋ",
-      "headingHighlight": "ਤੁਰੰਤ",
-      "headingLine2": "ਨਿੱਜੀ ਕਰਜ਼ਾ",
+      "headingHighlight": "ਤੁਰੰਤ ਨਕਦ",
+      "headingLine2": "ਜਦੋਂ ਤੁਹਾਨੂੰ ਲੋੜ ਹੋਵੇ",
       "getStarted": "ਸ਼ੁਰੂ ਕਰੋ",
       "getInstantLoan": "ਤੁਰੰਤ ਕਰਜ਼ਾ ਪ੍ਰਾਪਤ ਕਰੋ →",
+      "cta": "ਯੋਗਤਾ ਦੀ ਜਾਂਚ ਕਰੋ",
+      "errors": {
+        "numbersOnly": "ਮੋਬਾਈਲ ਨੰਬਰ ਵਿੱਚ ਸਿਰਫ਼ ਅੰਕ ਹੋ ਸਕਦੇ ਹਨ",
+        "tenDigits": "ਮੋਬਾਈਲ ਨੰਬਰ 10 ਅੰਕਾਂ ਦਾ ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ",
+        "validStart": "ਮੋਬਾਈਲ ਨੰਬਰ 6, 7, 8 ਜਾਂ 9 ਨਾਲ ਸ਼ੁਰੂ ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ",
+        "nameNoNumbers": "ਨਾਮ ਵਿੱਚ ਅੰਕ ਨਹੀਂ ਹੋ ਸਕਦੇ",
+        "nameRequired": "ਨਾਮ ਜ਼ਰੂਰੀ ਹੈ"
+      },
       "step1": {
         "question": "ਆਪਣਾ ਮੋਬਾਈਲ ਨੰਬਰ ਦਰਜ ਕਰੋ?",
         "placeholder": "ਆਪਣਾ ਮੋਬਾਈਲ ਨੰਬਰ ਦਰਜ ਕਰੋ"

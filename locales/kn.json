@@ -73,10 +73,29 @@
       "rating": " ರೇಟಿಂಗ್",
       "branches": "+ ಪಾಲುದಾರ ಶಾಖೆಗಳು"
     },
+    "benefits": {
+      "quick": "ಶೀಘ್ರ",
+      "secure": "ಸುರಕ್ಷಿತ",
+      "paperless": "ಕಾಗದರಹಿತ"
+    },
+    "dataProtected": "ನಿಮ್ಮ ಡೇಟಾ ಸುರಕ್ಷಿತವಾಗಿದೆ",
+    "rbiCompliant": "RBI ಅನುಸರಣೆ",
+    "languageBar": {
+      "availableIn": "ಇದರಲ್ಲಿ ಲಭ್ಯವಿದೆ:",
+      "more": "ಇನ್ನಷ್ಟು"
+    },
     "form": {
       "heading": "ಪಡೆಯಿರಿ",
       "headingHighlight": "ತಕ್ಷಣದ",
       "headingLine2": "ವೈಯಕ್ತಿಕ ಸಾಲ",
+      "cta": "ಈಗಲೇ ಅರ್ಜಿ ಸಲ್ಲಿಸಿ",
+      "errors": {
+        "numbersOnly": "ದಯವಿಟ್ಟು ಅಂಕಿಗಳನ್ನು ಮಾತ್ರ ನಮೂದಿಸಿ",
+        "tenDigits": "ದಯವಿಟ್ಟು 10 ಅಂಕಿಗಳನ್ನು ನಮೂದಿಸಿ",
+        "validStart": "ಸಂಖ್ಯೆ 6, 7, 8, ಅಥವಾ 9 ರಿಂದ ಪ್ರಾರಂಭವಾಗಬೇಕು",
+        "nameNoNumbers": "ಹೆಸರಿನಲ್ಲಿ ಅಂಕಿಗಳನ್ನು ಹೊಂದಿರಬಾರದು",
+        "nameRequired": "ಹೆಸರು ಅಗತ್ಯವಿದೆ"
+      },
       "getStarted": "ಪ್ರಾರಂಭಿಸಿ",
       "getInstantLoan": "ತಕ್ಷಣದ ಸಾಲ ಪಡೆಯಿರಿ →",
       "step1": {

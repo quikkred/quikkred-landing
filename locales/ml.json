@@ -73,10 +73,29 @@
       "rating": " റേറ്റിംഗ്",
       "branches": "+ പങ്കാളി ശാഖകൾ"
     },
+    "benefits": {
+      "quick": "വേഗത്തിൽ",
+      "secure": "സുരക്ഷിതം",
+      "paperless": "കടലാസ് രഹിതം"
+    },
+    "dataProtected": "നിങ്ങളുടെ ഡാറ്റ സുരക്ഷിതമാണ്",
+    "rbiCompliant": "RBI അനുസരണം",
+    "languageBar": {
+      "availableIn": "ഇതിൽ ലഭ്യമാണ്:",
+      "more": "കൂടുതൽ"
+    },
     "form": {
       "heading": "നേടൂ",
       "headingHighlight": "തൽക്ഷണ",
       "headingLine2": "വ്യക്തിഗത വായ്പ",
+      "cta": "ഇപ്പോൾ അപേക്ഷിക്കുക",
+      "errors": {
+        "numbersOnly": "ദയവായി അക്കങ്ങൾ മാത്രം നൽകുക",
+        "tenDigits": "ദയവായി 10 അക്കങ്ങൾ നൽകുക",
+        "validStart": "നമ്പർ 6, 7, 8, അല്ലെങ്കിൽ 9 ൽ ആരംഭിക്കണം",
+        "nameNoNumbers": "പേരിൽ അക്കങ്ങൾ ഉണ്ടാകരുത്",
+        "nameRequired": "പേര് ആവശ്യമാണ്"
+      },
       "getStarted": "തുടങ്ങുക",
       "getInstantLoan": "തൽക്ഷണ വായ്പ നേടൂ →",
       "step1": {

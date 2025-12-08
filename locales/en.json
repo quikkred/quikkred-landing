@@ -75,6 +75,10 @@
     "trustedBy": "Trusted by thousands of customers",
     "dataProtected": "Data Protected",
     "rbiCompliant": "RBI Compliant NBFC Partnered",
+    "languageBar": {
+      "availableIn": "Available in:",
+      "more": "more"
+    },
     "form": {
       "heading": "Get",
       "headingHighlight": "Instant Cash",
@@ -86,7 +90,9 @@
       "errors": {
         "numbersOnly": "Mobile number can only contain numbers",
         "tenDigits": "Mobile number must be exactly 10 digits",
-        "validStart": "Mobile number must start with 6, 7, 8, or 9"
+        "validStart": "Mobile number must start with 6, 7, 8, or 9",
+        "nameNoNumbers": "Name cannot contain numbers",
+        "nameRequired": "Name is required"
       },
       "step1": {
         "question": "Enter your Mobile number?",
@@ -251,6 +257,116 @@
   "products": {
     "title": "Our Loan Products",
     "subtitle": "Choose the perfect loan for your needs",
+    "hero": {
+      "title": "Find the Right",
+      "highlightWord": "Loan for You",
+      "subtitle": "Get instant loan approval with QuikKred. Fast, secure, and 100% digital process designed for modern India.",
+      "buttonPrimary": "Calculate EMI Now",
+      "buttonSecondary": "Apply for the loan"
+    },
+    "featured": {
+      "badge": "Most Popular",
+      "title": "Lightning Payday - Our Flagship Product",
+      "tagline": "\"Salary aa gaya? Abhi nahi? Le lo abhi!\" - Get instant cash before your payday arrives.",
+      "productTitle": "Lightning Payday",
+      "productDescription": "Quick payday loan before your salary arrives",
+      "features": [
+        "2-minute approval process",
+        "Same-day cash in your account",
+        "Zero paperwork required",
+        "No salary slip needed",
+        "Repay on your next payday"
+      ],
+      "applyButton": "Apply for Lightning Payday",
+      "quickStats": "Quick Stats",
+      "amountRange": "Amount Range",
+      "interestRate": "Interest Rate",
+      "tenure": "Tenure",
+      "processingFee": "Processing Fee",
+      "approvalTime": "Approval Time",
+      "approvalTimeValue": "2 minutes"
+    },
+    "allProducts": {
+      "title": "All Loan Products",
+      "subtitle": "Choose from our comprehensive range of loan offerings designed for every financial need",
+      "amount": "Amount",
+      "tenure": "Tenure",
+      "interestRate": "Interest Rate",
+      "processingFee": "Processing Fee",
+      "keyFeatures": "Key Features",
+      "learnMore": "Learn More",
+      "applyNow": "Apply Now",
+      "eligibilityCriteria": "Eligibility Criteria",
+      "popular": "POPULAR"
+    },
+    "loanProducts": {
+      "lightningPayday": {
+        "title": "Lightning Payday",
+        "tagline": "Salary aa gaya? Abhi nahi? Le lo abhi!",
+        "description": "Quick payday loan before your salary arrives",
+        "features": ["2-min approval", "Same-day cash", "Zero paper"],
+        "eligibility": ["Age: 21-58 years", "Salaried employee", "Basic KYC documents", "Bank account required"]
+      },
+      "instantCash": {
+        "title": "Instant Cash",
+        "tagline": "Paisa abhi, tension khatam!",
+        "description": "Instant money transfer directly to your bank",
+        "features": ["UPI direct in bank", "No salary slip needed"],
+        "eligibility": ["Age: 21-60 years", "Any income source", "Valid Aadhaar & PAN", "Active bank account"]
+      },
+      "weekendBooster": {
+        "title": "Weekend Booster",
+        "tagline": "Friday night? Party on us!",
+        "description": "Get cash on Friday, repay next salary",
+        "features": ["Friday 5 PM disbursal", "Repay next salary"],
+        "eligibility": ["Salaried professional", "Regular salary credit", "Basic KYC", "3 months employment"]
+      },
+      "emergency24x7": {
+        "title": "Emergency 24×7",
+        "tagline": "Hospital bill? Bike repair? We're open!",
+        "description": "Round the clock emergency funding",
+        "features": ["3 AM approval also", "Highest speed"],
+        "eligibility": ["Emergency situation", "Basic KYC documents", "Any income proof", "Active mobile number"]
+      },
+      "festivalFire": {
+        "title": "Festival Fire",
+        "tagline": "Diwali, Eid, Xmas – celebrate bindaas",
+        "description": "Special festival loans at lower rates",
+        "features": ["Special low rate", "Extra ₹5K bonus possible"],
+        "eligibility": ["Festival season only", "Regular income proof", "Valid ID documents", "6 months bank statement"]
+      },
+      "topupTurbo": {
+        "title": "Top-Up Turbo",
+        "tagline": "Already took loan? Take extra now!",
+        "description": "Extra cash for existing borrowers instantly",
+        "features": ["Instant repeat cash – no new documents"],
+        "eligibility": ["Existing Quikkred customer", "Good repayment history", "Running loan active", "No overdue payments"]
+      }
+    },
+    "whyChooseUs": {
+      "badge": "Why Choose Us",
+      "title": "Why Choose",
+      "titleHighlight": "Quikkred?",
+      "subtitle": "We're not just another lending platform. We're your financial partner committed to your prosperity.",
+      "items": {
+        "lightningFast": {
+          "title": "Lightning Fast",
+          "description": "30-second approval with AI-powered decisioning"
+        },
+        "secure": {
+          "title": "100% Secure",
+          "description": "Bank-grade encryption and data protection"
+        },
+        "trusted": {
+          "title": "Trusted by Many",
+          "description": "+ happy customers and counting"
+        },
+        "rbiLicensed": {
+          "title": "RBI Licensed",
+          "description": "Fully compliant and regulated NBFC"
+        }
+      }
+    },
     "types": {
       "personal": {
         "name": "Personal Loan",
@@ -1031,6 +1147,66 @@
       "required": "Email is required",
       "invalid": "Please enter a valid email",
       "failed": "Failed to subscribe. Please try again."
+    }
+  },
+  "about": {
+    "hero": {
+      "title": "About QuikKred",
+      "subtitle": "We are India's most trusted AI-powered NBFC, committed to making credit accessible, affordable, and transparent for every Indian. Our mission is to empower dreams and enable financial inclusion through technology and trust.",
+      "buttonPrimary": "Contact Us",
+      "buttonSecondary": "Call Us Now"
+    },
+    "story": {
+      "title": "Our Story",
+      "paragraph1": "QuikKred began in 2018 as a leading RBI-registered NBFC with a clear goal: to build a seamless lending experience for the underserved population of India. We recognized that millions of individuals and small businesses were excluded from traditional financial systems, facing complex processes and limited access to credit.",
+      "paragraph2": "We saw the challenges many faced with traditional financing and knew that by leveraging cutting-edge technology, we could offer accessible and fair loan products. Our digital-first approach removes barriers, simplifies the lending process, and empowers individuals to achieve their financial goals with dignity and ease.",
+      "paragraph3": "Today, we continue to innovate and expand, staying true to our mission of making financial services accessible to everyone who needs them."
+    },
+    "vision": {
+      "title": "Our Vision",
+      "paragraph1": "To be India's most trusted and preferred digital lending platform, empowering millions to achieve their financial aspirations.",
+      "paragraph2": "We see a future where everyone has the financial tools they need to build a secure and prosperous life."
+    },
+    "mission": {
+      "title": "Our Mission",
+      "description": "To make our vision a reality, we are on a mission to:",
+      "features": [
+        "Provide innovative, accessible, and responsible lending solutions.",
+        "Leverage technology for a seamless customer experience.",
+        "Foster financial inclusion across all of India."
+      ]
+    },
+    "values": {
+      "badge": "Our Core Values",
+      "title": "What We",
+      "titleHighlight": "Stand For",
+      "subtitle": "Our values guide every decision we make and every interaction we have",
+      "items": {
+        "customerFirst": {
+          "title": "Customer First",
+          "description": "We are committed to understanding and meeting our customers' needs with empathy and dedication."
+        },
+        "integrity": {
+          "title": "Integrity & Transparency",
+          "description": "We uphold the highest standards of honesty and clarity in all our dealings."
+        },
+        "responsibility": {
+          "title": "Responsibility",
+          "description": "We are dedicated to responsible lending practices that prioritize our customers' long-term financial well-being."
+        },
+        "innovation": {
+          "title": "Innovation",
+          "description": "We continuously innovate to simplify processes and deliver superior financial solutions."
+        },
+        "inclusivity": {
+          "title": "Inclusivity",
+          "description": "We strive to make credit accessible to all, promoting financial inclusion across communities."
+        },
+        "socialImpact": {
+          "title": "Social Impact",
+          "description": "We aim to create a positive social impact by empowering our communities and driving economic growth."
+        }
+      }
     }
   }
 }

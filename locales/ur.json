@@ -180,10 +180,29 @@
         }
       ]
     },
+    "benefits": {
+      "quick": "فوری",
+      "secure": "محفوظ",
+      "paperless": "کاغذ سے پاک"
+    },
+    "dataProtected": "آپ کا ڈیٹا محفوظ ہے",
+    "rbiCompliant": "RBI تعمیل",
+    "languageBar": {
+      "availableIn": "میں دستیاب:",
+      "more": "مزید"
+    },
     "form": {
       "heading": "حاصل کریں",
       "headingHighlight": "فوری",
       "headingLine2": "پرسنل لون",
+      "cta": "ابھی درخواست دیں",
+      "errors": {
+        "numbersOnly": "براہ کرم صرف نمبر درج کریں",
+        "tenDigits": "براہ کرم 10 ہندسے درج کریں",
+        "validStart": "نمبر 6، 7، 8، یا 9 سے شروع ہونا چاہیے",
+        "nameNoNumbers": "نام میں نمبر نہیں ہونے چاہیے",
+        "nameRequired": "نام ضروری ہے"
+      },
       "getStarted": "شروع کریں",
       "getInstantLoan": "فوری لون حاصل کریں →",
       "step1": {
