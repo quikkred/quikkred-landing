@@ -21,11 +21,11 @@ export default function FeaturesSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-8 sm:mb-10 md:mb-12"
         >
-          <span className="inline-block px-4 py-2 bg-[#14b8a642] text-teal-500 rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
+          <span className="inline-block px-4 py-2 bg-[#14b8a642] text-[#25B181] rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
             {t?.homepage?.featuresSection?.badge || "Why Choose Us"}
           </span>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-slate-900 mb-3 sm:mb-4 px-2">
-            {t?.homepage?.featuresSection?.heading} <span className="text-teal-500">{t?.homepage?.featuresSection?.headingHighlight}</span>
+            {t?.homepage?.featuresSection?.heading} <span className="text-[#25B181]">{t?.homepage?.featuresSection?.headingHighlight}</span>
           </h2>
           <p className="text-center text-slate-600 text-sm sm:text-base max-w-2xl mx-auto px-4">
             {t?.homepage?.featuresSection?.subtitle}
@@ -45,8 +45,8 @@ export default function FeaturesSection() {
                 whileHover={{ y: -8, scale: 1.05 }}
                 className="bg-white border border-slate-200 rounded-lg p-5 sm:p-6 shadow-sm hover:shadow-xl transition-all cursor-pointer"
               >
-                <div className="bg-teal-100 w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
-                  <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-teal-500" />
+                <div className="bg-[#D3F1EB] w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
+                  <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-[#25B181]" />
                 </div>
                 <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-2 text-left">{feature.title}</h3>
                 <p className="text-slate-600 text-xs sm:text-sm text-left leading-relaxed">{feature.description}</p>
