@@ -73,10 +73,29 @@
       "rating": " ରେଟିଂ",
       "branches": "+ ପାର୍ଟନର ଶାଖା"
     },
+    "benefits": {
+      "quick": "ଶୀଘ୍ର",
+      "secure": "ସୁରକ୍ଷିତ",
+      "paperless": "କାଗଜବିହୀନ"
+    },
+    "dataProtected": "ଆପଣଙ୍କ ଡାଟା ସୁରକ୍ଷିତ",
+    "rbiCompliant": "RBI ଅନୁସରଣ",
+    "languageBar": {
+      "availableIn": "ଏଥିରେ ଉପಲବ୍ଧ:",
+      "more": "ଆହୁରି"
+    },
     "form": {
       "heading": "ପାଆନ୍ତୁ",
       "headingHighlight": "ତୁରନ୍ତ",
       "headingLine2": "ବ୍ୟକ୍ତିଗତ ଋଣ",
+      "cta": "ଏବେ ଆବେଦନ କରନ୍ତୁ",
+      "errors": {
+        "numbersOnly": "ଦୟାକରି କେବଳ ସଂଖ୍ୟା ଦିଅନ୍ତୁ",
+        "tenDigits": "ଦୟାକରି 10ଟି ସଂଖ୍ୟା ଦିଅନ୍ତୁ",
+        "validStart": "ନମ୍ବର 6, 7, 8, କିମ୍ବା 9 ରୁ ଆରମ୍ଭ ହେବା ଉଚିତ",
+        "nameNoNumbers": "ନାମରେ ସଂଖ୍ୟା ରହିବା ଉଚିତ ନୁହେଁ",
+        "nameRequired": "ନାମ ଆବଶ୍ୟକ"
+      },
       "getStarted": "ଆରମ୍ଭ କରନ୍ତୁ",
       "getInstantLoan": "ତୁରନ୍ତ ଋଣ ପାଆନ୍ତୁ →",
       "step1": {

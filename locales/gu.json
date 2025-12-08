@@ -73,12 +73,31 @@
       "rating": " રેટિંગ",
       "branches": "+ ભાગીદાર શાખાઓ"
     },
+    "benefits": {
+      "quick": "ઝડપી મંજૂરી",
+      "secure": "100% સુરક્ષિત",
+      "paperless": "કાગળ રહિત પ્રક્રિયા"
+    },
+    "dataProtected": "ડેટા સુરક્ષિત",
+    "rbiCompliant": "RBI અનુપાલિત NBFC",
+    "languageBar": {
+      "availableIn": "ઉપલબ્ધ ભાષાઓ:",
+      "more": "વધુ"
+    },
     "form": {
       "heading": "મેળવો",
-      "headingHighlight": "તુરંત",
-      "headingLine2": "પર્સનલ લોન",
+      "headingHighlight": "તુરંત રોકડ",
+      "headingLine2": "જ્યારે તમને જરૂર હોય",
       "getStarted": "શરૂઆત કરો",
       "getInstantLoan": "તુરંત લોન મેળવો →",
+      "cta": "પાત્રતા તપાસો",
+      "errors": {
+        "numbersOnly": "મોબાઈલ નંબરમાં માત્ર અંકો હોઈ શકે",
+        "tenDigits": "મોબાઈલ નંબર 10 અંકનો હોવો જોઈએ",
+        "validStart": "મોબાઈલ નંબર 6, 7, 8 અથવા 9 થી શરૂ થવો જોઈએ",
+        "nameNoNumbers": "નામમાં અંકો ન હોઈ શકે",
+        "nameRequired": "નામ આવશ્યક છે"
+      },
       "step1": {
         "question": "તમારો મોબાઈલ નંબર દાખલ કરો?",
         "placeholder": "તમારો મોબાઈલ નંબર દાખલ કરો"

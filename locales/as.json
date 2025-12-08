@@ -181,10 +181,29 @@
         }
       ]
     },
+    "benefits": {
+      "quick": "দ্ৰুত",
+      "secure": "সুৰক্ষিত",
+      "paperless": "কাগজবিহীন"
+    },
+    "dataProtected": "আপোনাৰ ডাটা সুৰক্ষিত",
+    "rbiCompliant": "RBI অনুসৰণ",
+    "languageBar": {
+      "availableIn": "ইয়াত উপলব্ধ:",
+      "more": "অধিক"
+    },
     "form": {
       "heading": "পাওক",
       "headingHighlight": "তৎক্ষণাত",
       "headingLine2": "ব্যক্তিগত ঋণ",
+      "cta": "এতিয়াই আবেদন কৰক",
+      "errors": {
+        "numbersOnly": "অনুগ্ৰহ কৰি কেৱল সংখ্যা দিয়ক",
+        "tenDigits": "অনুগ্ৰহ কৰি 10টা সংখ্যা দিয়ক",
+        "validStart": "নম্বৰ 6, 7, 8, বা 9 ৰে আৰম্ভ হ'ব লাগিব",
+        "nameNoNumbers": "নামত সংখ্যা থাকিব নোৱাৰে",
+        "nameRequired": "নাম প্ৰয়োজন"
+      },
       "getStarted": "আৰম্ভ কৰক",
       "getInstantLoan": "তৎক্ষণাত ঋণ পাওক →",
       "step1": {
