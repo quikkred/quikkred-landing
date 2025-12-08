@@ -51,7 +51,7 @@ export function Footer() {
     try {
       console.log('Subscribing with email:', email);
 
-      const response = await fetch('/api/subscribe', {
+      const response = await fetch('https://api.bluechipfinmax.com/api/subscribe/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -81,43 +81,43 @@ export function Footer() {
   };
 
   const footerLinks = {
-    products: [
-      { name: t.footer.products.items.personal, href: "/products/personal-loan" },
-      { name: t.footer.products.items.salary, href: "/products/salary-advance" },
-      { name: t.footer.products.items.emergency, href: "/products/emergency" },
-      { name: t.footer.products.items.medical, href: "/products/medical" },
-      { name: t.footer.products.items.travel, href: "/products/travel-loan" },
-      { name: t.footer.products.items.festival, href: "/products/festival" },
-    ],
+    // products: [
+    //   { name: t.footer.products.items.personal, href: "/products/personal-loan" },
+    //   { name: t.footer.products.items.salary, href: "/products/salary-advance" },
+    //   { name: t.footer.products.items.emergency, href: "/products/emergency" },
+    //   { name: t.footer.products.items.medical, href: "/products/medical" },
+    //   { name: t.footer.products.items.travel, href: "/products/travel-loan" },
+    //   { name: t.footer.products.items.festival, href: "/products/festival" },
+    // ],
     company: [
       { name: t.footer.quickLinks.items.about, href: "/about" },
       { name: t.footer.quickLinks.items.ourStory, href: "/about#story" },
       { name: t.footer.quickLinks.items.leadershipTeam, href: "/about#leadership" },
       { name: t.footer.quickLinks.items.careers, href: "/careers" },
-      { name: t.footer.quickLinks.items.pressMedia, href: "/about/press" },
-      { name: t.footer.quickLinks.items.awardsRecognition, href: "/about/awards" },
-      { name: t.footer.quickLinks.items.csrInitiatives, href: "/about/csr" },
-      { name: t.footer.quickLinks.items.testimonials, href: "/testimonials" },
+      // { name: t.footer.quickLinks.items.pressMedia, href: "/about/press" },
+      // { name: t.footer.quickLinks.items.awardsRecognition, href: "/about/awards" },
+      // { name: t.footer.quickLinks.items.csrInitiatives, href: "/about/csr" },
+      // { name: t.footer.quickLinks.items.testimonials, href: "/testimonials" },
     ],
     resources: [
       { name: t.navigation.emiCalculator, href: "/resources/emi-calculator" },
       { name: t.footer.resources.items.eligibilityCheck, href: "/resources/eligibility-check" },
       { name: t.footer.resources.items.interestRates, href: "/resources/intrest-rate" },
       { name: t.footer.resources.items.documentChecklist, href: "/resources/documents" },
-      { name: t.footer.resources.items.howToApply, href: "/resources/how-to-apply" },
-      { name: t.navigation.faqs, href: "/resources/faqs" },
-      { name: t.navigation.blog, href: "/blog" },
-      { name: t.footer.resources.items.financialLiteracy, href: "/resources/financial-literacy" },
+      // { name: t.footer.resources.items.howToApply, href: "/resources/how-to-apply" },
+      // { name: t.navigation.faqs, href: "/resources/faqs" },
+      // { name: t.navigation.blog, href: "/blog" },
+      // { name: t.footer.resources.items.financialLiteracy, href: "/resources/financial-literacy" },
     ],
     support: [
       { name: t.footer.quickLinks.items.contact, href: "/contact" },
       { name: t.footer.support.items.customerSupport, href: "/support" },
-      { name: t.navigation.track, href: "/track-application" },
-      { name: t.footer.support.items.grievanceRedressal, href: "/grievance" },
+      // { name: t.navigation.track, href: "/track-application" },
+      // { name: t.footer.support.items.grievanceRedressal, href: "/grievance" },
       { name: t.footer.support.items.nodalOfficer, href: "/nodal-officer" },
       { name: t.footer.support.items.locateBranch, href: "/branches" },
-      { name: t.footer.support.items.downloadForms, href: "/downloads" },
-      { name: t.footer.support.items.reportFraud, href: "/report-fraud" },
+      // { name: t.footer.support.items.downloadForms, href: "/downloads" },
+      // { name: t.footer.support.items.reportFraud, href: "/report-fraud" },
     ],
     legal: [
       { name: t.footer.legal.items.terms, href: "/terms" },
@@ -219,17 +219,17 @@ export function Footer() {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-9 h-9 sm:w-10 sm:h-10 bg-slate-800 rounded-full flex items-center justify-center shadow-soft hover:shadow-glow hover:-translate-y-1 transition-all border border-slate-700"
+                  className="w-9 h-9 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center shadow-soft hover:shadow-glow hover:-translate-y-1 transition-all"
                   aria-label={social.label}
                 >
-                  <social.icon className="w-4 h-4 sm:w-5 sm:h-5 text-[#4A66FF]" />
+                  <social.icon className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
                 </a>
               ))}
             </div>
           </div>
 
           {/* Products */}
-          <div className="col-span-1 text-center sm:text-left">
+          {/* <div className="col-span-1 text-center sm:text-left">
             <h4 className="font-semibold text-slate-100 mb-3 sm:mb-4 flex items-center justify-center sm:justify-start gap-2 text-sm sm:text-base">
               <CreditCard className="w-4 h-4 text-[#25B181]" />
               {t.footer.products.title}
@@ -247,7 +247,7 @@ export function Footer() {
                 </li>
               ))}
             </ul>
-          </div>
+          </div> */}
 
           {/* Company */}
           <div className="col-span-1 text-center sm:text-left">

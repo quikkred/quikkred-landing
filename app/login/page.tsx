@@ -309,51 +309,52 @@ const verifyOtp = async () => {
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="space-y-8"
+              className="space-y-6"
             >
               <div>
                 <h1 className="text-4xl lg:text-5xl font-bold font-sora mb-4">
-                  <span className="bg-gradient-to-r from-[#0ea5e9] to-[#10b981] bg-clip-text text-transparent">Welcome Back</span>
+                  <span className="bg-gradient-to-r from-[#25B181] to-[#1F8F68] bg-clip-text text-transparent">Welcome Back</span>
                 </h1>
                 <p className="text-xl text-gray-700">
                   Access your Quikkred account and continue your financial journey
                 </p>
               </div>
 
-              {/* Security Features */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold mb-4 text-gray-900">Your Security is Our Priority</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {securityFeatures.map((feature, index) => (
-                    <motion.div
-                      key={feature.text}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1 * index }}
-                      className="flex items-center space-x-2 p-3 bg-white rounded-lg shadow-sm border border-gray-100"
-                    >
-                      <feature.icon className="w-5 h-5 text-[#34d399]" />
-                      <span className="text-sm font-medium">{feature.text}</span>
-                    </motion.div>
-                  ))}
+              {/* Feature Cards */}
+              <div className="grid grid-cols-1 gap-4">
+                <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center gap-4">
+                  <div className="bg-blue-100 w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Smartphone className="w-6 h-6 text-[#0ea5e9]" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-900">Mobile App</h3>
+                    <p className="text-xs text-gray-700">
+                      Download our mobile app for quick access to your account on the go.
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              {/* Trust Indicators */}
-              <div className="bg-gradient-to-r from-[#38bdf8] to-[#34d399] rounded-2xl p-6 text-white shadow-lg">
-                <h3 className="text-xl font-bold mb-4">Trusted by + Users</h3>
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div>
-                    <p className="text-2xl font-bold">%</p>
-                    <p className="text-sm opacity-90">Uptime</p>
+                <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center gap-4">
+                  <div className="bg-emerald-100 w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Shield className="w-6 h-6 text-[#34d399]" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold">30s</p>
-                    <p className="text-sm opacity-90">Avg Login</p>
+                    <h3 className="text-sm font-bold text-gray-900">Secure & Safe</h3>
+                    <p className="text-xs text-gray-700">
+                      Your data is protected with industry-leading security measures.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center gap-4">
+                  <div className="bg-amber-100 w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Award className="w-6 h-6 text-[#fbbf24]" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold"></p>
-                    <p className="text-sm opacity-90">Support</p>
+                    <h3 className="text-sm font-bold text-gray-900">RBI Regulated</h3>
+                    <p className="text-xs text-gray-700">
+                      All loans are provided by Satsai Finlease Private Limited, an RBI registered NBFC. Quikkred is the technology and servicing partner.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -366,30 +367,6 @@ const verifyOtp = async () => {
               transition={{ delay: 0.2 }}
               className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100"
             >
-              {/* Tab Switcher */}
-              {/* <div className="flex mb-8">
-                <button
-                  onClick={() => setActiveTab('login')}
-                  className={`flex-1 py-3 px-4 text-center font-semibold rounded-l-lg transition-colors ${
-                    activeTab === 'login'
-                      ? 'bg-[#0ea5e9] text-white'
-                      : 'bg-gray-100 text-gray-700'
-                  }`}
-                >
-                  Sign In
-                </button>
-                <button
-                  onClick={() => setActiveTab('register')}
-                  className={`flex-1 py-3 px-4 text-center font-semibold rounded-r-lg transition-colors ${
-                    activeTab === 'register'
-                      ? 'bg-[#0ea5e9] text-white'
-                      : 'bg-gray-100 text-gray-700'
-                  }`}
-                >
-                  Register
-                </button>
-              </div> */}
-
               {activeTab === 'login' ? (
                 <form onSubmit={handleSubmit} className="space-y-6">
 
@@ -720,44 +697,6 @@ const verifyOtp = async () => {
             </motion.div>
           </div>
         </div>
-
-        {/* Additional Features */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="mt-16 max-w-4xl mx-auto"
-        >
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-2xl p-6 shadow-sm text-center border border-gray-100 flex flex-col h-full">
-              <Smartphone className="w-12 h-12 text-[#0ea5e9] mx-auto mb-4" />
-              <h3 className="text-lg font-bold mb-2 text-gray-900">Mobile App</h3>
-              <p className="text-sm text-gray-700 flex-grow">
-                Download our mobile app for quick access to your account on the go.
-              </p>
-            </div>
-
-            <div className="bg-white rounded-2xl p-6 shadow-sm text-center border border-gray-100 flex flex-col h-full">
-              <Shield className="w-12 h-12 text-[#34d399] mx-auto mb-4" />
-              <h3 className="text-lg font-bold mb-2 text-gray-900">Secure & Safe</h3>
-              <p className="text-sm text-gray-700 flex-grow">
-                Your data is protected with industry-leading security measures.
-              </p>
-            </div>
-
-            <div className="bg-white rounded-2xl p-6 shadow-sm text-center border border-gray-100 flex flex-col h-full">
-              <Award className="w-12 h-12 text-[#fbbf24] mx-auto mb-4" />
-              <h3 className="text-lg font-bold mb-2 text-gray-900">RBI Regulated</h3>
-              <p className="text-sm text-gray-700 flex-grow">
-                All loans are provided by Satsai Finlease Private Limited, an RBI registered NBFC.
-              </p>
-              <br/>
-              <p className="text-sm text-gray-700 flex-grow"> 
-                Quikkred is the technology and servicing partner.
-              </p>
-            </div>
-          </div>
-        </motion.div>
       </div>
       <Toaster />
     </div>
