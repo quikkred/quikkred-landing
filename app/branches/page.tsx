@@ -68,23 +68,23 @@ export default function BranchesPage() {
     : branches.filter(b => b.city === selectedCity);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-[#006837] via-[#FFC107] to-[#006837] text-white py-12 sm:py-16 lg:py-20">
-        <div className="absolute inset-0 bg-black/10" />
+      <section className="relative bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white py-12 sm:py-16 lg:py-20">
+        <div className="absolute inset-0 bg-black/5" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
             {/* Breadcrumbs */}
-            <div className="flex items-center gap-2 text-white/90 mb-6">
+            <div className="flex items-center gap-2 text-white/80 mb-6">
               <Link href="/" className="hover:text-white transition-colors flex items-center gap-2">
                 <Home className="w-4 h-4" />
                 Home
               </Link>
               <ArrowRight className="w-3 h-3" />
-              <span>Branch Locator</span>
+              <span className="text-white">Branch Locator</span>
             </div>
 
             {/* Heading with Icon */}
@@ -97,21 +97,21 @@ export default function BranchesPage() {
               </h1>
             </div>
 
-            <p className="text-sm sm:text-base lg:text-xl mb-8 opacity-90 max-w-3xl">
+            <p className="text-sm sm:text-base lg:text-xl mb-8 text-white/90 max-w-3xl">
               Visit our branches across India for personalized assistance and expert financial guidance.
             </p>
 
             {/* Features */}
             <div className="flex flex-wrap gap-6">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-white">
                 <MapPin className="w-5 h-5" />
                 <span>15+ Cities</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-white">
                 <Clock className="w-5 h-5" />
                 <span>Extended Hours</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 text-white">
                 <Navigation className="w-5 h-5" />
                 <span>Easy Navigation</span>
               </div>
@@ -120,7 +120,7 @@ export default function BranchesPage() {
         </div>
       </section>
 
-      <section className="container mx-auto px-4 py-12 -mt-8">
+      <section className="container mx-auto px-4 py-12">
         {/* City Filter */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -128,7 +128,7 @@ export default function BranchesPage() {
           transition={{ delay: 0.2 }}
           className="max-w-6xl mx-auto mb-8"
         >
-          <div className="bg-white rounded-2xl p-6 shadow-lucky">
+          <div className="bg-white rounded-2xl p-6 shadow-xl border border-slate-100">
             <h2 className="text-xl font-bold mb-4">Filter by City</h2>
             <div className="flex flex-wrap gap-3">
               {cities.map((city) => (
@@ -137,8 +137,8 @@ export default function BranchesPage() {
                   onClick={() => setSelectedCity(city)}
                   className={`px-6 py-2 rounded-lg font-semibold transition-all ${
                     selectedCity === city
-                      ? "bg-gradient-to-r from-[#006837] to-[#006837] text-white shadow-lg"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200:bg-gray-600"
+                      ? "bg-gradient-to-r from-[#25B181] to-[#1F8F68] text-white shadow-lg"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
                   {city === "all" ? "All Branches" : city}
@@ -162,23 +162,23 @@ export default function BranchesPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 * index }}
-                className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all relative"
+                className="bg-white rounded-2xl p-6 shadow-md border border-slate-100 hover:shadow-lg transition-all relative"
               >
                 {branch.isHeadOffice && (
                   <div className="absolute top-6 right-6">
-                    <span className="px-3 py-1 bg-gradient-to-r from-[#006837] to-[#006837] text-white text-xs font-bold rounded-full">
+                    <span className="px-3 py-1 bg-gradient-to-r from-[#25B181] to-[#1F8F68] text-white text-xs font-bold rounded-full">
                       Head Office
                     </span>
                   </div>
                 )}
 
                 <div className="flex items-start gap-4 mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-[#006837] to-[#006837] rounded-lg flex items-center justify-center flex-shrink-0">
+                  <div className="w-12 h-12 bg-gradient-to-br from-[#25B181] to-[#1F8F68] rounded-lg flex items-center justify-center flex-shrink-0">
                     <MapPin className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex-1">
                     <h3 className="text-xl font-bold mb-1">{branch.name}</h3>
-                    <p className="text-sm text-[#006837] font-semibold">{branch.city}</p>
+                    <p className="text-sm text-[#25B181] font-semibold">{branch.city}</p>
                   </div>
                 </div>
 
@@ -190,14 +190,14 @@ export default function BranchesPage() {
 
                   <div className="flex items-center gap-3">
                     <Phone className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                    <a href={`tel:${branch.phone}`} className="text-sm text-[#006837] hover:underline">
+                    <a href={`tel:${branch.phone}`} className="text-sm text-[#25B181] hover:underline">
                       {branch.phone}
                     </a>
                   </div>
 
                   <div className="flex items-center gap-3">
                     <Mail className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                    <a href={`mailto:${branch.email}`} className="text-sm text-[#006837] hover:underline">
+                    <a href={`mailto:${branch.email}`} className="text-sm text-[#25B181] hover:underline">
                       {branch.email}
                     </a>
                   </div>
@@ -208,7 +208,7 @@ export default function BranchesPage() {
                   </div>
                 </div>
 
-                <button className="mt-4 w-full py-3 bg-gradient-to-r from-[#006837] to-[#006837] text-white font-semibold rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                <button className="mt-4 w-full py-3 bg-gradient-to-r from-[#25B181] to-[#1F8F68] text-white font-semibold rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2">
                   <Navigation className="w-4 h-4" />
                   Get Directions
                 </button>
@@ -224,13 +224,13 @@ export default function BranchesPage() {
           transition={{ delay: 0.5 }}
           className="max-w-4xl mx-auto mt-16"
         >
-          <div className="bg-gradient-to-r from-[#006837] to-[#FFC107] rounded-2xl p-8 text-white text-center">
+          <div className="bg-gradient-to-r from-[#25B181] to-[#1F8F68] rounded-2xl p-8 text-white text-center">
             <h2 className="text-2xl font-bold mb-4">Can't Find a Branch Near You?</h2>
             <p className="mb-6 opacity-90">
               Contact our customer support team, and we'll help you find the nearest service point or arrange a visit.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <a href="tel:+918888882222" className="px-8 py-3 bg-white text-[#006837] rounded-lg font-semibold hover:shadow-lg transition-all">
+              <a href="tel:+918888882222" className="px-8 py-3 bg-white text-[#25B181] rounded-lg font-semibold hover:shadow-lg transition-all">
                 Call Us
               </a>
               <Link href="/contact" className="px-8 py-3 bg-white/20 backdrop-blur-sm text-white rounded-lg font-semibold hover:bg-white/30 transition-all">

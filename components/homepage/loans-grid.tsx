@@ -1,36 +1,39 @@
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import {
+  Zap,
+  Banknote,
+  PartyPopper,
+  AlertCircle,
+  Heart,
+  TrendingUp,
+  LucideIcon,
+} from "lucide-react";
+
+const loanIcons: LucideIcon[] = [Zap, Banknote, PartyPopper, AlertCircle, Heart, TrendingUp];
 
 export default function LoansGrid() {
   const { t } = useLanguage();
   const router = useRouter();
 
-  // Map loan index to their product page URLs (order matches translations)
-  const loanRoutes = [
-    "/products/salary-advance", // 0: Salary Advance
-    "/products/personal-loan", // 1: Personal Loan
-    "/products/emergency", // 2: Emergency Fund
-    "/products/festival", // 3: Festival Advance
-    "/products/medical", // 4: Medical Loan
-    "/products/travel", // 5: Travel Now Pay Later
-  ];
+  const loansData = t?.homepage?.loansGrid?.loans as Array<{ title: string; amount: string; description: string }> | undefined;
 
-  const loans = t?.homepage?.loansGrid?.loans?.map(
-    (loan: any, idx: number) => ({
-      ...loan,
-      color:
-        idx % 3 === 0
-          ? "bg-teal-500"
-          : idx % 3 === 1
-          ? "bg-blue-600"
-          : "bg-teal-600",
-      route: loanRoutes[idx] || "/products",
-    })
-  );
+  const loans = loansData?.map((loan, idx) => ({
+    ...loan,
+    id: `loan-${idx}`,
+    icon: loanIcons[idx] || Zap,
+    route: "/products",
+    color:
+      idx % 3 === 0
+        ? "bg-[#25B181]"
+        : idx % 3 === 1
+        ? "bg-[#1F8F68]"
+        : "bg-[#25B181]",
+  })) || [];
 
   return (
-    <section className="min-h-[calc(100vh-80px)] flex items-center py-12 sm:py-16 md:py-24 px-4 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
+    <section className="min-h-[calc(100vh-80px)] flex items-center py-12 sm:py-16 md:py-24 px-4 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto w-full">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -40,22 +43,22 @@ export default function LoansGrid() {
           className="text-center mb-8 sm:mb-10 md:mb-12 lg:mb-16"
         >
           <span className="inline-block px-4 py-2 bg-[#D3F1EB] text-[#25B181] rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
-            {t?.homepage?.sections?.products?.badge}
+            {t?.homepage?.loansGrid?.badge}
           </span>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold font-sora mb-3 sm:mb-4 px-4">
-            {t?.homepage?.sections?.products?.title}{" "}
+            {t?.homepage?.loansGrid?.title}{" "}
             <span className="text-[#25B181]">
-              {t?.homepage?.sections?.products?.titleHighlight}
+              {t?.homepage?.loansGrid?.titleHighlight}
             </span>
           </h2>
           <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-600 max-w-2xl mx-auto px-4">
-            {t?.homepage?.sections?.products?.subtitle}
+            {t?.homepage?.loansGrid?.subtitle}
           </p>
         </motion.div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
           {loans?.map((loan, idx) => (
             <motion.div
-              key={idx}
+              key={loan.id}
               initial={{ opacity: 0, y: 50, rotate: -2 }}
               whileInView={{ opacity: 1, y: 0, rotate: 0 }}
               viewport={{ once: true }}
@@ -67,13 +70,7 @@ export default function LoansGrid() {
                 className={`${loan.color} p-4 sm:p-6 text-white flex flex-col items-start text-left`}
               >
                 <div className="bg-white/30 rounded-lg p-2 sm:p-3 mb-3 sm:mb-4">
-                  <svg
-                    className="w-6 h-6 sm:w-8 sm:h-8 text-white"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                  </svg>
+                  <loan.icon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                 </div>
                 <div>
                   <h3 className="text-lg sm:text-xl font-bold mb-1">
