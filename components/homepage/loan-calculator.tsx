@@ -49,7 +49,7 @@ export default function LoanCalculatorAll() {
                   onClick={() => setLoanPurpose(purpose)}
                   className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md text-xs font-medium transition-colors ${
                     loanPurpose === purpose
-                      ? "bg-teal-500 text-white"
+                      ? "bg-[#25B181] text-white"
                       : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                   }`}
                 >
@@ -71,7 +71,7 @@ export default function LoanCalculatorAll() {
               step="1000"
               value={loanAmount}
               onChange={(e) => setLoanAmount(Number(e.target.value))}
-              className="w-full h-1.5 bg-gradient-to-r from-teal-400 to-slate-300 rounded-lg appearance-none cursor-pointer accent-teal-500"
+              className="w-full h-1.5 bg-gradient-to-r from-[#51C9AF] to-slate-300 rounded-lg appearance-none cursor-pointer accent-[#25B181]"
             />
             <div className="flex justify-between text-[10px] text-slate-500 mt-0.5">
               <span>₹5k</span>
@@ -91,7 +91,7 @@ export default function LoanCalculatorAll() {
               step="1"
               value={tenureDays}
               onChange={(e) => setTenureDays(Number(e.target.value))}
-              className="w-full h-1.5 bg-gradient-to-r from-teal-400 via-teal-400 to-slate-300 rounded-lg appearance-none cursor-pointer accent-teal-500"
+              className="w-full h-1.5 bg-gradient-to-r from-[#51C9AF] via-[#51C9AF] to-slate-300 rounded-lg appearance-none cursor-pointer accent-[#25B181]"
             />
             <div className="flex justify-between text-[10px] text-slate-500 mt-0.5">
               <span>7 {t?.calculator?.tenureDays}</span>
@@ -111,7 +111,7 @@ export default function LoanCalculatorAll() {
               step="0.1"
               value={dailyInterestRate}
               onChange={(e) => setDailyInterestRate(Number(e.target.value))}
-              className="w-full h-1.5 bg-gradient-to-r from-teal-400 to-slate-300 rounded-lg appearance-none cursor-pointer accent-teal-500"
+              className="w-full h-1.5 bg-gradient-to-r from-[#51C9AF] to-slate-300 rounded-lg appearance-none cursor-pointer accent-[#25B181]"
             />
             <div className="flex justify-between text-[10px] text-slate-500 mt-0.5">
               <span>0.5%</span>
@@ -131,7 +131,7 @@ export default function LoanCalculatorAll() {
               step="0.5"
               value={processingFeePercent}
               onChange={(e) => setProcessingFeePercent(Number(e.target.value))}
-              className="w-full h-1.5 bg-gradient-to-r from-teal-400 to-slate-300 rounded-lg appearance-none cursor-pointer accent-teal-500"
+              className="w-full h-1.5 bg-gradient-to-r from-[#51C9AF] to-slate-300 rounded-lg appearance-none cursor-pointer accent-[#25B181]"
             />
             <div className="flex justify-between text-[10px] text-slate-500 mt-0.5">
               <span>0%</span>
@@ -154,13 +154,13 @@ export default function LoanCalculatorAll() {
             </div>
             <div className="flex justify-between items-center pt-2 border-t border-slate-200">
               <span className="text-slate-900 font-bold text-sm sm:text-base">{t?.calculator?.totalRepayment}</span>
-              <span className="text-teal-500 font-bold text-lg sm:text-xl">₹{totalRepay}</span>
+              <span className="text-[#25B181] font-bold text-lg sm:text-xl">₹{totalRepay}</span>
             </div>
           </div>
 
           <Button
             onClick={() => router.push('/apply/quick')}
-            className="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 sm:py-2.5 rounded-md mb-2 transition-all duration-300 text-xs sm:text-sm"
+            className="w-full bg-[#25B181] hover:bg-[#1F8F68] text-white font-semibold py-2 sm:py-2.5 rounded-md mb-2 transition-all duration-300 text-xs sm:text-sm"
           >
             {t?.calculator?.applyButton}
           </Button>

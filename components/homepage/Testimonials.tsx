@@ -16,9 +16,9 @@ const testimonialStaticData = [
 // Default avatar component for fallback
 const DefaultAvatar = ({ name, isActive }: { name: string; isActive: boolean }) => (
   <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center ${
-    isActive ? "bg-white/20" : "bg-teal-100"
+    isActive ? "bg-white/20" : "bg-[#D3F1EB]"
   }`}>
-    <User className={`w-5 h-5 sm:w-6 sm:h-6 ${isActive ? "text-white" : "text-teal-600"}`} />
+    <User className={`w-5 h-5 sm:w-6 sm:h-6 ${isActive ? "text-white" : "text-[#25B181]"}`} />
   </div>
 );
 
@@ -83,7 +83,7 @@ const TestimonialCard = ({
 
       <Quote
         className={`w-7 h-7 sm:w-9 sm:h-9 mb-3 ${
-          isActive ? "text-white/80" : "text-teal-500"
+          isActive ? "text-white/80" : "text-[#25B181]"
         }`}
       />
 
@@ -100,7 +100,7 @@ const TestimonialCard = ({
           <DefaultAvatar name={item.name} isActive={isActive} />
         ) : (
           <div className={`rounded-full overflow-hidden ${
-            isActive ? "ring-2 ring-white/50" : "ring-2 ring-teal-100"
+            isActive ? "ring-2 ring-white/50" : "ring-2 ring-[#D3F1EB]"
           }`}>
             <Image
               src={item.image}
@@ -230,11 +230,11 @@ export default function Testimonials() {
           transition={{ duration: 0.6 }}
           className="mb-12 sm:mb-16"
         >
-          <span className="inline-block px-4 py-2 bg-[#14b8a642] text-teal-500 rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
+          <span className="inline-block px-4 py-2 bg-[#14b8a642] text-[#25B181] rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
             {t?.homepage?.sections?.testimonials?.badge || "Customer Stories"}
           </span>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 px-2">
-            {t?.homepage?.testimonials?.heading} <span className="text-teal-500">{t?.homepage?.testimonials?.headingHighlight}</span> {t?.homepage?.testimonials?.subheading}
+            {t?.homepage?.testimonials?.heading} <span className="text-[#25B181]">{t?.homepage?.testimonials?.headingHighlight}</span> {t?.homepage?.testimonials?.subheading}
           </h2>
           <p className="text-slate-700 text-sm sm:text-base md:text-lg mt-3 max-w-2xl mx-auto px-4">
             {t?.homepage?.sections?.testimonials?.subtitle || "Real stories from real customers who transformed their lives with Quikkred"}
@@ -252,7 +252,7 @@ export default function Testimonials() {
             className="absolute left-2 sm:left-8 top-1/2 -translate-y-1/2 z-30 p-2.5 sm:p-3 rounded-full bg-white shadow-lg hover:shadow-xl hover:scale-110 active:scale-95 transition-all duration-200 group"
             aria-label="Previous"
           >
-            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600 group-hover:text-teal-700" />
+            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-[#25B181] group-hover:text-[#1F8F68]" />
           </button>
 
           {/* Right Arrow */}
@@ -261,7 +261,7 @@ export default function Testimonials() {
             className="absolute right-2 sm:right-8 top-1/2 -translate-y-1/2 z-30 p-2.5 sm:p-3 rounded-full bg-white shadow-lg hover:shadow-xl hover:scale-110 active:scale-95 transition-all duration-200 group"
             aria-label="Next"
           >
-            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600 group-hover:text-teal-700" />
+            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-[#25B181] group-hover:text-[#1F8F68]" />
           </button>
 
           {/* Cards - Only 3 visible at a time */}
@@ -309,8 +309,8 @@ export default function Testimonials() {
               onClick={() => setActiveIndex(idx)}
               className={`h-2.5 rounded-full transition-all duration-400 ease-out ${
                 activeIndex === idx
-                  ? "bg-teal-500 w-8"
-                  : "bg-teal-200 hover:bg-teal-300 w-2.5"
+                  ? "bg-[#25B181] w-8"
+                  : "bg-[#A8E3D7] hover:bg-[#7CDAC3] w-2.5"
               }`}
               aria-label={`Go to testimonial ${idx + 1}`}
             />
@@ -325,7 +325,7 @@ export default function Testimonials() {
             animate={{ opacity: 1 }}
           >
             <motion.div
-              className="w-4 h-4 border-2 border-teal-400 border-t-transparent rounded-full"
+              className="w-4 h-4 border-2 border-[#51C9AF] border-t-transparent rounded-full"
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
             />

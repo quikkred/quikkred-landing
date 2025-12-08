@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { useLanguage } from "@/lib/contexts/LanguageContext"
+import { CheckCircle, X, AlertCircle } from "lucide-react"
 
 interface FinancialCTAProps {
   heading?: string
@@ -21,11 +22,53 @@ export function FinancialCTA({
 }: FinancialCTAProps) {
   const { t } = useLanguage()
   const [email, setEmail] = useState("")
+  const [isSubscribing, setIsSubscribing] = useState(false)
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false)
+  const [error, setError] = useState("")
 
-  const handleSubscribe = () => {
-    if (email && onSubscribe) {
-      onSubscribe(email)
-      setEmail("")
+  const handleSubscribe = async () => {
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!email.trim()) {
+      setError(t?.newsletter?.errors?.required || "Please enter your email address")
+      return
+    }
+    if (!emailRegex.test(email)) {
+      setError(t?.newsletter?.errors?.invalid || "Please enter a valid email address")
+      return
+    }
+
+    setIsSubscribing(true)
+    setError("")
+
+    try {
+      const response = await fetch('https://api.bluechipfinmax.com/api/subscribe/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: email.trim() })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setShowSuccessPopup(true)
+        setEmail("")
+        if (onSubscribe) {
+          onSubscribe(email)
+        }
+        setTimeout(() => {
+          setShowSuccessPopup(false)
+        }, 3000)
+      } else {
+        setError(data.message || t?.newsletter?.errors?.failed || 'Failed to subscribe. Please try again.')
+      }
+    } catch (err) {
+      console.error('Error subscribing:', err)
+      setError(t?.newsletter?.errors?.failed || 'Failed to subscribe. Please try again.')
+    } finally {
+      setIsSubscribing(false)
     }
   }
 
@@ -87,21 +130,72 @@ export function FinancialCTA({
             whileFocus={{ scale: 1.02 }}
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value)
+              setError("")
+            }}
             placeholder={inputPlaceholder || t?.homepage?.financialCta?.placeholder}
-            className="h-11 sm:h-12 px-4 sm:px-6 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/50 w-full text-sm sm:text-base font-sans border-0"
+            className={`h-11 sm:h-12 px-4 sm:px-6 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/50 w-full text-sm sm:text-base font-sans border-0 ${error ? 'ring-2 ring-red-400' : ''}`}
             onKeyPress={(e) => e.key === "Enter" && handleSubscribe()}
           />
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleSubscribe}
-            className="h-11 sm:h-12 bg-gray-900 hover:bg-gray-800 text-white px-6 sm:px-8 rounded-lg font-semibold transition-colors w-full sm:w-auto border-0 cursor-pointer text-sm sm:text-base whitespace-nowrap"
+            disabled={isSubscribing}
+            className="h-11 sm:h-12 bg-gray-900 hover:bg-gray-800 text-white px-6 sm:px-8 rounded-lg font-semibold transition-colors w-full sm:w-auto border-0 cursor-pointer text-sm sm:text-base whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {buttonText || t?.homepage?.financialCta?.buttonText}
+            {isSubscribing ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                {t?.newsletter?.subscribing || "Subscribing..."}
+              </>
+            ) : (
+              buttonText || t?.homepage?.financialCta?.buttonText
+            )}
           </motion.button>
         </motion.div>
+
+        {/* Error Message */}
+        {error && (
+          <motion.p
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-red-200 text-sm mt-3 flex items-center justify-center gap-1"
+          >
+            <AlertCircle className="w-4 h-4" />
+            {error}
+          </motion.p>
+        )}
       </motion.div>
+
+      {/* Success Popup */}
+      <AnimatePresence>
+        {showSuccessPopup && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-8 right-8 z-50 bg-white rounded-lg shadow-2xl p-6 max-w-sm"
+          >
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-6 h-6 text-green-600" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold text-gray-900 mb-1">{t?.newsletter?.successTitle || "Subscribed Successfully!"}</h4>
+                <p className="text-sm text-gray-600">{t?.newsletter?.successMessage || "Thank you for subscribing. You'll receive our latest updates."}</p>
+              </div>
+              <button
+                onClick={() => setShowSuccessPopup(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
