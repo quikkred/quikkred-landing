@@ -152,14 +152,7 @@ export default function Hero() {
     }
   }
 
-  const floatAnimation = {
-    y: [-5, 5, -5],
-    transition: {
-      duration: 4,
-      repeat: Infinity,
-      ease: "easeInOut" as const
-    }
-  }
+  // Removed floating animation for better mobile performance
 
   return (
     <section ref={heroRef} className="relative bg-gradient-to-br from-slate-50 via-white to-teal-50/30 lg:min-h-[calc(100vh-90px)] md:min-h-[calc(100vh-120px)] flex flex-col overflow-hidden">
@@ -255,8 +248,8 @@ export default function Hero() {
         </div>
       </motion.div>
 
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* Animated Background Elements - Hidden on mobile for performance */}
+      <div className="hidden md:block absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
           style={{ y: backgroundY }}
           className="absolute top-20 left-10 w-72 h-72 bg-teal-100/40 rounded-full blur-3xl"
@@ -335,28 +328,17 @@ export default function Hero() {
           <motion.div variants={itemVariants}>
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-slate-900 leading-tight mb-8 sm:mb-10">
               {t?.hero?.form?.heading || "Get"}{" "}
-              <motion.span
-                className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 via-emerald-500 to-teal-500 bg-[length:200%_auto]"
-                animate={{
-                  backgroundPosition: ["0% center", "200% center"],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "linear"
-                }}
-              >
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-emerald-500">
                 {t?.hero?.form?.headingHighlight || "Instant Cash"}
-              </motion.span>
+              </span>
               <br />
               {t?.hero?.form?.headingLine2 || "When You Need It"}
             </h1>
           </motion.div>
 
-          {/* Form Card - Centered with float animation */}
+          {/* Form Card - Centered */}
           <motion.div
             variants={itemVariants}
-            animate={floatAnimation}
             className="w-full max-w-xl mx-auto bg-white rounded-3xl shadow-2xl border border-slate-100 p-6 sm:p-8 mb-12 relative"
           >
             {/* Decorative glow */}
