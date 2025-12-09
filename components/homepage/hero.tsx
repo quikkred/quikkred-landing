@@ -166,7 +166,8 @@ export default function Hero() {
       {/* Language Bar - Above Hero */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
         transition={{ duration: 0.5 }}
         className="w-full bg-gradient-to-r from-teal-50 via-white to-teal-50 border-b border-slate-200 py-2.5 px-4"
       >
@@ -326,7 +327,8 @@ export default function Hero() {
         <motion.div
           variants={containerVariants}
           initial="hidden"
-          animate="visible"
+          whileInView="visible"
+          viewport={{ once: true }}
           className="max-w-4xl mx-auto text-center w-full"
         >
           {/* Main Heading with gradient animation */}
