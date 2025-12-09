@@ -19,7 +19,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/toast';
 
 interface LoanSummary {
-  productName: ReactI18NextChildren | Iterable<ReactI18NextChildren>;
+  productName: string;
   _id: string;
   loanNumber: string;
   principalAmount: number;
