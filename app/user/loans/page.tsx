@@ -1185,7 +1185,6 @@ export default function MyLoansPage() {
                       </div>
                     </div>
                   )}
-
                   {/* Payment History */}
                   {detailedLoan.paymentHistory && detailedLoan.paymentHistory.length > 0 && (
                     <div className="bg-gradient-to-br from-indigo-50 to-violet-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-indigo-200">
