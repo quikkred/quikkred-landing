@@ -544,7 +544,7 @@ export default function QuickLoanApplication() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
 
-    // Special handling for mobile - only allow numbers and validate 10 digits
+    // Special handling for mobile - only allow numbers
     if (name === 'mobile') {
       if (value && !/^\d*$/.test(value)) {
         setFieldErrors(prev => ({
@@ -552,25 +552,20 @@ export default function QuickLoanApplication() {
           mobile: "Mobile number can only contain numbers"
         }));
         return; // Don't update if non-numeric
-      } else if (value && value.length > 0 && value.length !== 10) {
-        // Show error if not exactly 10 digits (but allow typing)
-        setFieldErrors(prev => ({
-          ...prev,
-          mobile: "Mobile number must be exactly 10 digits"
-        }));
       } else if (value && value.length === 10 && !/^[6-9]\d{9}$/.test(value)) {
-        // Validate Indian mobile number format
+        // Validate Indian mobile number format when 10 digits entered
         setFieldErrors(prev => ({
           ...prev,
           mobile: "Mobile number must start with 6, 7, 8, or 9"
         }));
-      } else {
-        // Clear error when valid input
+      } else if (value && value.length === 10 && /^[6-9]\d{9}$/.test(value)) {
+        // Clear error when valid 10 digit number
         setFieldErrors(prev => ({
           ...prev,
           mobile: ""
         }));
       }
+      // Don't show "must be 10 digits" error while typing - that's handled on blur
     }
 
     // Special handling for accountNumber - only allow numbers
@@ -746,6 +741,32 @@ export default function QuickLoanApplication() {
     // Clear consent error when user checks consent checkboxes
     if ((name === 'creditBureauConsent' || name === 'termsConsent' || name === 'eSignConsent') && consentError) {
       setConsentError(false);
+    }
+  };
+
+  // Mobile number blur validation
+  const handleMobileBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (!value) {
+      setFieldErrors(prev => ({
+        ...prev,
+        mobile: "Mobile number is required"
+      }));
+    } else if (value.length !== 10) {
+      setFieldErrors(prev => ({
+        ...prev,
+        mobile: "Mobile number must be exactly 10 digits"
+      }));
+    } else if (!/^[6-9]\d{9}$/.test(value)) {
+      setFieldErrors(prev => ({
+        ...prev,
+        mobile: "Mobile number must start with 6, 7, 8, or 9"
+      }));
+    } else {
+      setFieldErrors(prev => ({
+        ...prev,
+        mobile: ""
+      }));
     }
   };
 
@@ -2088,7 +2109,7 @@ console.log('Sending OTP with payload:', payload);
           <div className="flex justify-between text-sm text-gray-600">
             <span className={currentStep === 1 ? 'text-[#25B181] font-semibold' : ''}>Basic Details</span>
             <span className={currentStep === 2 ? 'text-[#25B181] font-semibold' : ''}>Identity Verification</span>
-            <span className={currentStep === 3 ? 'text-[#25B181] font-semibold' : ''}>Bank & Loan</span>
+            <span className={currentStep === 3 ? 'text-[#25B181] font-semibold' : ''}>Disbursement Bank Ac</span>
           </div>
         </div>
 
@@ -2298,6 +2319,7 @@ console.log('Sending OTP with payload:', payload);
                           name="mobile"
                           value={formData.mobile}
                           onChange={handleChange}
+                          onBlur={handleMobileBlur}
                           disabled={formData.mobileVerified}
                           maxLength={10}
                           className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${
@@ -2394,32 +2416,8 @@ console.log('Sending OTP with payload:', payload);
                         <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
                       )}
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Mobile Number *
-                      </label>
-                      <input
-                        type="tel"
-                        name="mobile"
-                        value={formData.mobile}
-                        onChange={handleChange}
-                        disabled={formData.mobileVerified}
-                        maxLength={10}
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                          fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
-                        } ${formData.mobileVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                        placeholder="+91 98765 43210"
-                      />
-                      {fieldErrors.mobile ? (
-                        <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
-                      ) : (
-                        <p className="mt-1 text-xs text-gray-500">For SMS notifications</p>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    {verificationMethod === 'email' && (
+                    {/* Mobile + DOB side by side for logged-in user */}
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Mobile Number *
@@ -2429,70 +2427,147 @@ console.log('Sending OTP with payload:', payload);
                           name="mobile"
                           value={formData.mobile}
                           onChange={handleChange}
+                          onBlur={handleMobileBlur}
+                          disabled={formData.mobileVerified}
                           maxLength={10}
                           className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
                             fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
-                          }`}
-                          placeholder="+91 98765 43210"
+                          } ${formData.mobileVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                          placeholder="9876543210"
                         />
-                        {fieldErrors.mobile ? (
+                        {fieldErrors.mobile && (
                           <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
-                        ) : (
-                          <p className="mt-1 text-xs text-gray-500">For SMS notifications</p>
                         )}
                       </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Date of Birth *
+                        </label>
+                        <input
+                          type="date"
+                          name="dob"
+                          value={formData.dob}
+                          onChange={handleChange}
+                          max={(() => {
+                            const date = new Date();
+                            date.setFullYear(date.getFullYear() - 18);
+                            return date.toISOString().split('T')[0];
+                          })()}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                            fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                          required
+                        />
+                        {fieldErrors.dob && (
+                          <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {verificationMethod === 'email' && (
+                      <>
+                        {/* Mobile + DOB side by side for email verification */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Mobile Number *
+                            </label>
+                            <input
+                              type="tel"
+                              name="mobile"
+                              value={formData.mobile}
+                              onChange={handleChange}
+                              onBlur={handleMobileBlur}
+                              maxLength={10}
+                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                                fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
+                              }`}
+                              placeholder="9876543210"
+                            />
+                            {fieldErrors.mobile && (
+                              <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
+                            )}
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Date of Birth *
+                            </label>
+                            <input
+                              type="date"
+                              name="dob"
+                              value={formData.dob}
+                              onChange={handleChange}
+                              max={(() => {
+                                const date = new Date();
+                                date.setFullYear(date.getFullYear() - 18);
+                                return date.toISOString().split('T')[0];
+                              })()}
+                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                                fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
+                              }`}
+                              required
+                            />
+                            {fieldErrors.dob && (
+                              <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
+                            )}
+                          </div>
+                        </div>
+                      </>
                     )}
 
                     {verificationMethod === 'mobile' && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Email Address *
-                        </label>
-                        <input
-                          type="email"
-                          name="email"
-                          value={formData.email}
-                          onChange={handleChange}
-                          disabled={formData.emailVerified}
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                            fieldErrors.email ? 'border-red-500' : 'border-gray-300'
-                          } ${formData.emailVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                          placeholder="your@email.com"
-                        />
-                        {fieldErrors.email ? (
-                          <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
-                        ) : (
-                          <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
-                        )}
-                      </div>
+                      <>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Email Address *
+                          </label>
+                          <input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            disabled={formData.emailVerified}
+                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                              fieldErrors.email ? 'border-red-500' : 'border-gray-300'
+                            } ${formData.emailVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                            placeholder="your@email.com"
+                          />
+                          {fieldErrors.email ? (
+                            <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+                          ) : (
+                            <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
+                          )}
+                        </div>
+                        {/* DOB for mobile verification */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Date of Birth *
+                          </label>
+                          <input
+                            type="date"
+                            name="dob"
+                            value={formData.dob}
+                            onChange={handleChange}
+                            max={(() => {
+                              const date = new Date();
+                              date.setFullYear(date.getFullYear() - 18);
+                              return date.toISOString().split('T')[0];
+                            })()}
+                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                              fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
+                            }`}
+                            required
+                          />
+                          {fieldErrors.dob && (
+                            <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
+                          )}
+                        </div>
+                      </>
                     )}
                   </>
                 )}
-
-                {/* Date of Birth */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Date of Birth *
-                  </label>
-                  <input
-                    type="date"
-                    name="dob"
-                    value={formData.dob}
-                    onChange={handleChange}
-                    max={(() => {
-                      const date = new Date();
-                      date.setFullYear(date.getFullYear() - 18);
-                      return date.toISOString().split('T')[0];
-                    })()}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                      fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    required
-                  />
-                  {fieldErrors.dob && (
-                    <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
-                  )}
-                </div>
 
                 {/* Employment Details - Added to Step 1 */}
                 <div className="border-t border-gray-200 pt-6 mt-6">
