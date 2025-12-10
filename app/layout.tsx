@@ -95,14 +95,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-WGTGMGGM');`,
           }}
         />
-        {/* Google Analytics (gtag.js) */}
+        {/* Google Analytics & Google Ads (gtag.js) */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-JT6CHHWW78" />
         <script
           dangerouslySetInnerHTML={{
             __html: `window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-gtag('config', 'G-JT6CHHWW78');`,
+gtag('config', 'G-JT6CHHWW78');
+gtag('config', 'AW-17768258260');`,
           }}
         />
         {/* Language Detection Script */}
