@@ -1508,8 +1508,8 @@ console.log('Sending OTP with payload:', payload);
       if (!formData.companyName || formData.companyName.trim().length < 2) {
         toast({
           variant: "warning",
-          title: "Company Name Required",
-          description: "Please enter your company name.",
+          title: formData.employmentType === "SALARIED" ? "Company Name Required" : "Income Source Required",
+          description: formData.employmentType === "SALARIED" ? "Please enter your company name." : "Please enter your income source.",
         });
         return;
       }
@@ -2509,10 +2509,8 @@ console.log('Sending OTP with payload:', payload);
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
                       >
                         <option value="SALARIED">SALARIED</option>
-                        <option value="SELF-EMPLOYED">SELF-EMPLOYED</option>
-                        <option value="UNEMPLOYED">UNEMPLOYED</option>
                         <option value="STUDENT">STUDENT</option>
-                        <option value="RETIRED">RETIRED</option>
+                        <option value="OTHER">OTHER</option>
                       </select>
                     </div>
 
@@ -2549,7 +2547,7 @@ console.log('Sending OTP with payload:', payload);
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Company Name *
+                          {formData.employmentType === "SALARIED" ? "Company Name" : "Income Source"} *
                         </label>
                         <input
                           type="text"
@@ -2557,7 +2555,7 @@ console.log('Sending OTP with payload:', payload);
                           value={formData.companyName}
                           onChange={handleChange}
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                          placeholder="Your Company"
+                          placeholder={formData.employmentType === "SALARIED" ? "Your Company" : "Your Income Source"}
                         />
                       </div>
                     </div>
