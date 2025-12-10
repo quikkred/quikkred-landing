@@ -253,14 +253,16 @@ export default function QuickLoanApplication() {
                 console.log('✅ Aadhaar already verified');
               }
 
-              // Auto-jump to next incomplete step based on completion flags
+              // Auto-jump to next incomplete step based on completion flags (3-step form)
               let nextStep = 1; // Default to step 1
 
               // Check completion status and determine next step
-              if (profileData.isBasicDetailsFilled === true && profileData.isEmploymentDetailsFilled === true) {
-                nextStep = 3;
+              if (profileData.isBasicDetailsFilled === true && profileData.isIdentityVerified === true && profileData.isEmploymentDetailsFilled === true) {
+                nextStep = 3; // Go to final step
+              } else if (profileData.isBasicDetailsFilled === true && profileData.isIdentityVerified === true) {
+                nextStep = 3; // Go to employment & bank
               } else if (profileData.isBasicDetailsFilled === true) {
-                nextStep = 2;
+                nextStep = 2; // Go to identity verification
               } else {
                 console.log('ℹ️ No steps completed yet - starting from Step 1');
               }
@@ -1281,7 +1283,7 @@ console.log('Sending OTP with payload:', payload);
       };
 
       if (step === 1) {
-        // Step 1: Basic Details (with verified PAN & Aadhaar data)
+        // Step 1: Basic Details + Employment + Loan Amount
         const nameParts = formData.fullName.trim().split(/\s+/);
         const firstName = nameParts[0] || "";
         const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
@@ -1291,9 +1293,20 @@ console.log('Sending OTP with payload:', payload);
           lastName,
           mobile: formData.mobile,
           dateOfBirth: formData.dob,
+          employmentType: formData.employmentType,
+          monthlyIncome: parseFloat(formData.monthlyIncome),
+          companyName: formData.companyName,
+          loanAmount: parseFloat(formData.loanAmount),
+          isBasicDetailsFilled: true,
+          isEmploymentDetailsFilled: true,
+          isSubmit: false
+        };
+      } else if (step === 2) {
+        // Step 2: Aadhaar & PAN Verification
+        payload = {
           panCard: formData.pan,
           aadhaarNumber: formData.aadhaar,
-          isBasicDetailsFilled: true,
+          isIdentityVerified: true,
           isSubmit: false
         };
 
@@ -1305,20 +1318,11 @@ console.log('Sending OTP with payload:', payload);
             state: aadhaarAddress.state || '',
             pincode: aadhaarAddress.pincode || ''
           };
-          console.log('📍 Saving address from Aadhaar:', payload.currentAddress);
         }
-
-        // Add PAN verification data if available
-        if (panData?.data) {
-          console.log('🆔 Saving PAN verification data');
-        }
-      } else if (step === 2) {
-        // Step 2: Employment & Bank Details
+      } else if (step === 3) {
+        // Step 3: Bank & Loan Details
         payload = {
-          employmentType: formData.employmentType,
-          monthlyIncome: parseFloat(formData.monthlyIncome),
-          companyName: formData.companyName,
-          isEmploymentDetailsFilled: true,
+          isVerificationDetailsFilled: true,
           isSubmit: false
         };
 
@@ -1332,12 +1336,6 @@ console.log('Sending OTP with payload:', payload);
             accountHolderName: formData.fullName
           }];
         }
-      } else if (step === 3) {
-        // Step 3: Verification & Consent Details
-        payload = {
-          isVerificationDetailsFilled: true,
-          isSubmit: false
-        };
       }
 
       const response = await fetch(`https://api.bluechipfinmax.com/api/application/loan/create`, {
@@ -1471,31 +1469,6 @@ console.log('Sending OTP with payload:', payload);
         }
       }
 
-      // Aadhaar validation - only validate if not already verified
-      if (!formData.aadhaar) {
-        errors.aadhaar = "Aadhaar number is required";
-        hasError = true;
-      } else if (!aadhaarVerified) {
-        // Only check format and ask for verification if not already verified
-        const aadhaarRegex = /^\d{12}$/;
-        if (!aadhaarRegex.test(formData.aadhaar)) {
-          errors.aadhaar = "Enter a valid 12-digit Aadhaar number";
-          hasError = true;
-        } else {
-          errors.aadhaar = "Please verify your Aadhaar";
-          hasError = true;
-        }
-      }
-
-      // PAN validation - only validate if not already verified
-      if (!formData.pan) {
-        errors.pan = "PAN number is required";
-        hasError = true;
-      } else if (!panVerified) {
-        errors.pan = "Please verify your PAN";
-        hasError = true;
-      }
-
       // Update field errors
       setFieldErrors(errors);
 
@@ -1504,24 +1477,7 @@ console.log('Sending OTP with payload:', payload);
         return;
       }
 
-      // Save Step 1 data before proceeding
-      setLoading(true);
-      const saveSuccess = await saveCustomerData(1);
-      setLoading(false);
-
-      // If save failed, don't proceed to next step
-      if (!saveSuccess) {
-        toast({
-          variant: "error",
-          title: "Cannot Proceed",
-          description: "Please fix the errors before moving to the next step.",
-        });
-        return;
-      }
-    }
-
-    if (currentStep === 2) {
-      // Employment Type validation
+      // Employment validations for Step 1
       if (!formData.employmentType) {
         toast({
           variant: "warning",
@@ -1531,7 +1487,6 @@ console.log('Sending OTP with payload:', payload);
         return;
       }
 
-      // Monthly Income validation
       if (!formData.monthlyIncome || parseFloat(formData.monthlyIncome) <= 0) {
         toast({
           variant: "warning",
@@ -1550,7 +1505,6 @@ console.log('Sending OTP with payload:', payload);
         return;
       }
 
-      // Company Name validation
       if (!formData.companyName || formData.companyName.trim().length < 2) {
         toast({
           variant: "warning",
@@ -1559,6 +1513,104 @@ console.log('Sending OTP with payload:', payload);
         });
         return;
       }
+
+      // Loan Amount validation for Step 1
+      if (!formData.loanAmount || parseFloat(formData.loanAmount) <= 0) {
+        toast({
+          variant: "warning",
+          title: "Invalid Loan Amount",
+          description: "Please enter the approximate loan amount you need.",
+        });
+        return;
+      }
+
+      // Save Step 1 data (basic details + employment + loan amount)
+      setLoading(true);
+      const saveSuccess = await saveCustomerData(1);
+      setLoading(false);
+
+      // If save failed, don't proceed to next step
+      if (!saveSuccess) {
+        toast({
+          variant: "error",
+          title: "Cannot Proceed",
+          description: "Please fix the errors before moving to the next step.",
+        });
+        return;
+      }
+    }
+
+    if (currentStep === 2) {
+      // Step 2: Aadhaar & PAN Verification
+      // Aadhaar validation
+      if (!formData.aadhaar) {
+        setFieldErrors(prev => ({ ...prev, aadhaar: "Aadhaar number is required" }));
+        toast({
+          variant: "warning",
+          title: "Aadhaar Required",
+          description: "Please enter your Aadhaar number.",
+        });
+        return;
+      } else if (!aadhaarVerified) {
+        const aadhaarRegex = /^\d{12}$/;
+        if (!aadhaarRegex.test(formData.aadhaar)) {
+          setFieldErrors(prev => ({ ...prev, aadhaar: "Enter a valid 12-digit Aadhaar number" }));
+          return;
+        } else {
+          toast({
+            variant: "warning",
+            title: "Aadhaar Verification Required",
+            description: "Please verify your Aadhaar number to proceed.",
+          });
+          return;
+        }
+      }
+
+      // PAN validation
+      if (!formData.pan) {
+        setFieldErrors(prev => ({ ...prev, pan: "PAN number is required" }));
+        toast({
+          variant: "warning",
+          title: "PAN Required",
+          description: "Please enter your PAN number.",
+        });
+        return;
+      } else if (!panVerified) {
+        toast({
+          variant: "warning",
+          title: "PAN Verification Required",
+          description: "Please verify your PAN number to proceed.",
+        });
+        return;
+      }
+
+      // Selfie validation
+      if (!selfieCaptured) {
+        toast({
+          variant: "warning",
+          title: "Selfie Required",
+          description: "Please capture a selfie for identity verification.",
+        });
+        return;
+      }
+
+      // Save Step 2 data (Aadhaar & PAN)
+      setLoading(true);
+      const saveSuccess = await saveCustomerData(2);
+      setLoading(false);
+
+      if (!saveSuccess) {
+        toast({
+          variant: "error",
+          title: "Cannot Proceed",
+          description: "Please fix the errors before moving to the next step.",
+        });
+        return;
+      }
+    }
+
+    if (currentStep === 3) {
+      // Step 3: Bank Details & Consent Validation
 
       // Bank Name validation
       if (!formData.bankName) {
@@ -1594,201 +1646,14 @@ console.log('Sending OTP with payload:', payload);
         }
       }
 
-      // Save Step 2 data before proceeding
-      setLoading(true);
-      const saveSuccess = await saveCustomerData(2);
-      setLoading(false);
-
-      // If save failed, don't proceed to next step
-      if (!saveSuccess) {
-        toast({
-          variant: "error",
-          title: "Cannot Proceed",
-          description: "Please fix the errors before moving to the next step.",
-        });
-        return;
-      }
-    }
-
-    if (currentStep === 3) {
-      // Loan Product validation
-      if (!formData.productId) {
-        toast({
-          variant: "warning",
-          title: "Loan Product Required",
-          description: "Please select a loan product.",
-        });
-        return;
-      }
-
-      // Loan Amount validation
-      if (!formData.loanAmount || parseFloat(formData.loanAmount) <= 0) {
-        toast({
-          variant: "warning",
-          title: "Invalid Loan Amount",
-          description: "Please enter a valid loan amount.",
-        });
-        return;
-      }
-
-      const loanAmount = parseFloat(formData.loanAmount);
-
-      // Validate against product limits
-      if (selectedProduct) {
-        if (loanAmount < selectedProduct.minAmount) {
-          toast({
-            variant: "warning",
-            title: "Minimum Loan Amount",
-            description: `Minimum loan amount for ${selectedProduct.productName} is ₹${selectedProduct.minAmount.toLocaleString('en-IN')}.`,
-          });
-          return;
-        }
-
-        if (loanAmount > selectedProduct.maxAmount) {
-          toast({
-            variant: "warning",
-            title: "Maximum Loan Amount",
-            description: `Maximum loan amount for ${selectedProduct.productName} is ₹${selectedProduct.maxAmount.toLocaleString('en-IN')}.`,
-          });
-          return;
-        }
-      } else {
-        // Fallback validation if no product selected
-        if (loanAmount < 10000) {
-          toast({
-            variant: "warning",
-            title: "Minimum Loan Amount",
-            description: "Minimum loan amount is ₹10,000.",
-          });
-          return;
-        }
-
-        if (loanAmount > 10000000) {
-          toast({
-            variant: "warning",
-            title: "Maximum Loan Amount",
-            description: "Maximum loan amount is ₹1,00,00,000.",
-          });
-          return;
-        }
-      }
-
-      // Tenure validation against product limits
-      const tenureValue = parseInt(formData.tenure);
-      if (!formData.tenure || tenureValue <= 0) {
-        toast({
-          variant: "warning",
-          title: "Invalid Tenure",
-          description: "Please select or enter a valid tenure.",
-        });
-        return;
-      }
-
-      if (selectedProduct) {
-        // Check if tenure is within allowed range
-        if (tenureValue < selectedProduct.minTenure || tenureValue > selectedProduct.maxTenure) {
-          toast({
-            variant: "warning",
-            title: "Invalid Tenure",
-            description: `Tenure for ${selectedProduct.productName} must be between ${selectedProduct.minTenure} and ${selectedProduct.maxTenure} days.`,
-          });
-          return;
-        }
-
-        // If product has specific allowed tenures, validate against them
-        if (selectedProduct.allowedTenures && selectedProduct.allowedTenures.length > 0) {
-          if (!selectedProduct.allowedTenures.includes(tenureValue)) {
-            toast({
-              variant: "warning",
-              title: "Invalid Tenure",
-              description: `Please select a valid tenure from the available options: ${selectedProduct.allowedTenures.join(', ')} days.`,
-            });
-            return;
-          }
-        }
-      }
-
-      // Reference 1 validation
-      if (!formData.reference1Name || formData.reference1Name.trim().length < 3) {
-        toast({
-          variant: "warning",
-          title: "Reference 1 Name Required",
-          description: "Please enter reference 1 full name.",
-        });
-        return;
-      }
-
-      const ref1MobileRegex = /^[6-9]\d{9}$/;
-      if (!formData.reference1Mobile || !ref1MobileRegex.test(formData.reference1Mobile)) {
-        toast({
-          variant: "warning",
-          title: "Invalid Reference 1 Mobile",
-          description: "Please enter a valid 10-digit mobile number for reference 1.",
-        });
-        return;
-      }
-
-      if (!formData.reference1Relationship) {
-        toast({
-          variant: "warning",
-          title: "Reference 1 Relationship Required",
-          description: "Please select relationship with reference 1.",
-        });
-        return;
-      }
-
-      // Reference 2 validation
-      if (!formData.reference2Name || formData.reference2Name.trim().length < 3) {
-        toast({
-          variant: "warning",
-          title: "Reference 2 Name Required",
-          description: "Please enter reference 2 full name.",
-        });
-        return;
-      }
-
-      const ref2MobileRegex = /^[6-9]\d{9}$/;
-      if (!formData.reference2Mobile || !ref2MobileRegex.test(formData.reference2Mobile)) {
-        toast({
-          variant: "warning",
-          title: "Invalid Reference 2 Mobile",
-          description: "Please enter a valid 10-digit mobile number for reference 2.",
-        });
-        return;
-      }
-
-      if (!formData.reference2Relationship) {
-        toast({
-          variant: "warning",
-          title: "Reference 2 Relationship Required",
-          description: "Please select relationship with reference 2.",
-        });
-        return;
-      }
-
-      // Check if reference mobiles are different
-      if (formData.reference1Mobile === formData.reference2Mobile) {
-        toast({
-          variant: "warning",
-          title: "Duplicate Reference Mobile",
-          description: "Reference 1 and Reference 2 must have different mobile numbers.",
-        });
-        return;
-      }
-
-      // Selfie validation
-      if (!formData.selfie || !selfieCaptured) {
-        toast({
-          variant: "warning",
-          title: "Selfie Required",
-          description: "Please capture your selfie.",
-        });
-        return;
-      }
-
       // Consent validation
       if (!formData.creditBureauConsent || !formData.termsConsent) {
         setConsentError(true);
+        toast({
+          variant: "warning",
+          title: "Consent Required",
+          description: "Please accept the required consents to proceed.",
+        });
         return;
       }
 
@@ -1813,66 +1678,30 @@ console.log('Sending OTP with payload:', payload);
           return;
         }
 
-        // Use the correctly calculated EMI from emiCalculation
+        // Use the loan amount from Step 1
         const principal = parseFloat(formData.loanAmount);
-        const tenureValue = parseInt(formData.tenure);
-        const tenureUnit = formData.requestedTenureUnit;
-        const emi = emiCalculation?.emi || 0;
-
-        // Validate that EMI has been calculated
-        if (!emi || !emiCalculation) {
-          toast({
-            variant: "error",
-            title: "EMI Calculation Error",
-            description: "Please ensure loan amount and tenure are properly set.",
-          });
-          setLoading(false);
-          return;
-        }
 
         // Create FormData to include selfie file
         const formDataToSend = new FormData();
 
         // Add loan application data
         formDataToSend.append('loanAmount', principal.toString());
-        formDataToSend.append('requestedTenure', tenureValue.toString());
-        formDataToSend.append('requestedTenureUnit', tenureUnit);
-        formDataToSend.append('emiAmount', emi.toString());
-        formDataToSend.append('purpose', formData.purpose);
-        formDataToSend.append('productId', formData.productId);
 
-        // Add product details (interestRate, processingFee, gstOnProcessingFee)
-        if (selectedProduct) {
-          formDataToSend.append('interestRate', selectedProduct.dailyInterestRate.toString());
-          formDataToSend.append('processingFee', selectedProduct.processingFee.toString());
-          formDataToSend.append('gstOnProcessingFee', selectedProduct.gst.toString());
+        // Add bank details
+        if (formData.bankName) {
+          formDataToSend.append('bankName', formData.bankName);
+        }
+        if (formData.accountNumber) {
+          formDataToSend.append('accountNumber', formData.accountNumber);
+        }
+        if (formData.ifsc) {
+          formDataToSend.append('ifscCode', formData.ifsc);
         }
 
         formDataToSend.append('isVerificationDetailsFilled', 'true');
         formDataToSend.append('isSubmit', 'true');
 
-        // Add references as JSON string
-      const references = [
-  {
-    name: formData.reference1Name,
-    mobile: formData.reference1Mobile,
-    relationship: formData.reference1Relationship
-  },
-  {
-    name: formData.reference2Name,
-    mobile: formData.reference2Mobile,
-    relationship: formData.reference2Relationship
-  }
-];
-
-references.forEach((ref, index) => {
-  formDataToSend.append(`references[${index}][name]`, ref.name);
-  formDataToSend.append(`references[${index}][mobile]`, ref.mobile);
-  formDataToSend.append(`references[${index}][relationship]`, ref.relationship);
-});
-
-
-        // Add selfie photo file
+        // Add selfie photo file (already captured in Step 2)
         if (formData.selfie) {
           formDataToSend.append('photo', formData.selfie, formData.selfie.name);
           console.log('✅ Adding selfie photo to form data:', formData.selfie.name);
@@ -1908,9 +1737,9 @@ references.forEach((ref, index) => {
             apiResponse: result.data,
             approvedAmount: principal,
             interestRate: 12.5,
-            tenure: emiCalculation.tenureMonths,
-            tenureUnit: tenureUnit,
-            emi: emi,
+            tenure: 30,
+            tenureUnit: 'days',
+            emi: 0,
             processingFee: Math.round(principal * 0.02)
           });
         } else {
@@ -2247,7 +2076,7 @@ references.forEach((ref, index) => {
 
         {/* Progress Bar */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-2 gap-2">
             {[1, 2, 3].map((step) => (
               <div key={step} className="flex-1">
                 <div className={`h-2 rounded-full transition-all ${
@@ -2258,8 +2087,8 @@ references.forEach((ref, index) => {
           </div>
           <div className="flex justify-between text-sm text-gray-600">
             <span className={currentStep === 1 ? 'text-[#25B181] font-semibold' : ''}>Basic Details</span>
-            <span className={currentStep === 2 ? 'text-[#25B181] font-semibold' : ''}>Employment & Bank</span>
-            <span className={currentStep === 3 ? 'text-[#25B181] font-semibold' : ''}>Verification</span>
+            <span className={currentStep === 2 ? 'text-[#25B181] font-semibold' : ''}>Identity Verification</span>
+            <span className={currentStep === 3 ? 'text-[#25B181] font-semibold' : ''}>Bank & Loan</span>
           </div>
         </div>
 
@@ -2282,7 +2111,7 @@ references.forEach((ref, index) => {
                 transition={{ duration: 0.1 }}
                 className="space-y-6"
               >
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Basic Details (1 minute)</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Basic Details</h2>
 
                 {/* Logged in user notice - Show instead of verification */}
                 {user && userDataLoaded && (formData.emailVerified || formData.mobileVerified) ? (
@@ -2640,7 +2469,7 @@ references.forEach((ref, index) => {
                   </>
                 )}
 
-                {/* Date of Birth - ABOVE Aadhaar and PAN */}
+                {/* Date of Birth */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Date of Birth *
@@ -2665,13 +2494,129 @@ references.forEach((ref, index) => {
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Aadhaar Verification - FIRST */}
+                {/* Employment Details - Added to Step 1 */}
+                <div className="border-t border-gray-200 pt-6 mt-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Employment Details</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Employment Type *
+                      </label>
+                      <select
+                        name="employmentType"
+                        value={formData.employmentType}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                      >
+                        <option value="SALARIED">SALARIED</option>
+                        <option value="SELF-EMPLOYED">SELF-EMPLOYED</option>
+                        <option value="UNEMPLOYED">UNEMPLOYED</option>
+                        <option value="STUDENT">STUDENT</option>
+                        <option value="RETIRED">RETIRED</option>
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Monthly Income *
+                        </label>
+                        <input
+                          type="text"
+                          name="monthlyIncome"
+                          value={
+                            formData.monthlyIncome
+                              ? parseFloat(formData.monthlyIncome.replace(/,/g, '')).toLocaleString('en-IN')
+                              : ''
+                          }
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/,/g, '');
+                            if (/^\d*$/.test(value)) {
+                              handleChange({
+                                ...e,
+                                target: {
+                                  ...e.target,
+                                  name: 'monthlyIncome',
+                                  value: value
+                                }
+                              });
+                            }
+                          }}
+                          onWheel={(e) => e.currentTarget.blur()}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                          placeholder="₹ 50,000"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Company Name *
+                        </label>
+                        <input
+                          type="text"
+                          name="companyName"
+                          value={formData.companyName}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                          placeholder="Your Company"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Loan Amount */}
+                <div className="border-t border-gray-200 pt-6 mt-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Loan Requirement</h3>
                   <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      How much loan do you need? *
+                    </label>
+                    <input
+                      type="text"
+                      name="loanAmount"
+                      value={
+                        formData.loanAmount
+                          ? parseFloat(formData.loanAmount.replace(/,/g, "")).toLocaleString("en-IN")
+                          : ""
+                      }
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/,/g, "");
+                        if (!/^\d*$/.test(raw)) return;
+                        handleChange({
+                          ...e,
+                          target: {
+                            ...e.target,
+                            name: "loanAmount",
+                            value: raw,
+                          },
+                        } as any);
+                      }}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                      placeholder="₹ 50,000"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">Enter the approximate loan amount you require</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 2: Aadhaar & PAN Verification */}
+            {currentStep === 2 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="space-y-6"
+              >
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Identity Verification</h2>
+
+                <div className="grid grid-cols-1 gap-6">
+                  {/* Aadhaar Verification */}
+                  <div className="bg-gray-50 rounded-xl p-6">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Aadhaar Number *
                     </label>
-                    
+
                     <div className="flex gap-2">
                       <input
                         type="tel"
@@ -2691,9 +2636,9 @@ references.forEach((ref, index) => {
                             setAadhaarOtpSent(false);
                             setAadhaarOtp("");
                           }
-                          if (aadhaarError) setAadhaarError(""); // Clear error when typing
+                          if (aadhaarError) setAadhaarError("");
                         }}
-                        disabled={aadhaarVerified || aadhaarOtpSent || (!formData.mobileVerified && !formData.emailVerified)}
+                        disabled={aadhaarVerified || aadhaarOtpSent}
                         maxLength={14}
                         className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 disabled:cursor-not-allowed tracking-widest ${
                           fieldErrors.aadhaar || aadhaarError ? 'border-red-500' : 'border-gray-300'
@@ -2704,7 +2649,7 @@ references.forEach((ref, index) => {
                         <button
                           type="button"
                           onClick={sendAadhaarOTP}
-                          disabled={!formData.aadhaar || formData.aadhaar.length !== 12 || aadhaarVerifying || (!formData.mobileVerified && !formData.emailVerified) || (aadhaarOtpSent && aadhaarOtpTimer > 0)}
+                          disabled={!formData.aadhaar || formData.aadhaar.length !== 12 || aadhaarVerifying || (aadhaarOtpSent && aadhaarOtpTimer > 0)}
                           className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                         >
                           {aadhaarVerifying ? "Sending..." : aadhaarOtpSent ? (aadhaarOtpTimer > 0 ? `Resend (${aadhaarOtpTimer}s)` : "Resend OTP") : "Send OTP"}
@@ -2763,17 +2708,6 @@ references.forEach((ref, index) => {
                       </div>
                     )}
 
-                    {/* Show warning if mobile/email not verified */}
-                    {!formData.mobileVerified && !formData.emailVerified && (
-                      <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
-                        <p className="text-xs text-amber-700 flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3" />
-                          Please verify your {verificationMethod === 'email' ? 'email' : 'mobile'} first to enable Aadhaar verification
-                        </p>
-                        
-                      </div>
-                    )}
-
                     {/* Aadhaar Error Message */}
                     {(aadhaarError || fieldErrors.aadhaar) && (
                       <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -2785,8 +2719,8 @@ references.forEach((ref, index) => {
                     )}
                   </div>
 
-                  {/* PAN Verification - SECOND (After Aadhaar) */}
-                  <div>
+                  {/* PAN Verification */}
+                  <div className="bg-gray-50 rounded-xl p-6">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       PAN Number *
                     </label>
@@ -2796,7 +2730,11 @@ references.forEach((ref, index) => {
                         name="pan"
                         value={formData.pan}
                         onChange={(e) => {
-                          handleChange(e);
+                          const upperValue = e.target.value.toUpperCase();
+                          handleChange({
+                            ...e,
+                            target: { ...e.target, value: upperValue, name: 'pan' }
+                          } as any);
                           if (panVerified) setPanVerified(false);
                           if (panError) setPanError("");
                         }}
@@ -2852,536 +2790,8 @@ references.forEach((ref, index) => {
                     )}
                   </div>
                 </div>
-              </motion.div>
-            )}
 
-            {/* Step 2: Employment & Bank */}
-            {currentStep === 2 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="space-y-6"
-              >
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Employment & Bank (1 minute)</h2>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Employment Type *
-                  </label>
-                  <select
-                    name="employmentType"
-                    value={formData.employmentType}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                  >
-                    <option value="SALARIED">SALARIED</option>
-                    <option value="SELF-EMPLOYED">SELF-EMPLOYED</option>
-                     <option value="UNEMPLOYED">UNEMPLOYED</option>
-                    <option value="STUDENT">STUDENT</option>
-                    <option value= "RETIRED">RETIRED</option>
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-<div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Monthly Income *
-  </label>
-
-  <input
-    type="text"
-    name="monthlyIncome"
-    value={
-      formData.monthlyIncome
-        ? parseFloat(formData.monthlyIncome.replace(/,/g, '')).toLocaleString('en-IN')
-        : ''
-    }
-    onChange={(e) => {
-      const value = e.target.value.replace(/,/g, '');
-
-      // allow only digits
-      if (/^\d*$/.test(value)) {
-        handleChange({
-          ...e,
-          target: {
-            ...e.target,
-            name: 'monthlyIncome',
-            value: value
-          }
-        });
-      }
-    }}
-    onWheel={(e) => e.currentTarget.blur()} 
-    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-    placeholder="₹ 50,000"
-  />
-</div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Company Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="companyName"
-                      value={formData.companyName}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                      placeholder="Your Company"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Bank Name *
-                    </label>
-                    <select
-                      name="bankName"
-                      value={formData.bankName}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                    >
-                      <option value="">Select Bank</option>
-                      <option value="SBI">State Bank of India</option>
-                      <option value="HDFC">HDFC Bank</option>
-                      <option value="ICICI">ICICI Bank</option>
-                      <option value="AXIS">Axis Bank</option>
-                      <option value="PNB">Punjab National Bank</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Account Number
-                    </label>
-                    <input
-                      type="tel"
-                      name="accountNumber"
-                      value={formData.accountNumber}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '').slice(0, 18);
-                        const syntheticEvent = {
-                          target: {
-                            name: 'accountNumber',
-                            value: value
-                          }
-                        } as React.ChangeEvent<HTMLInputElement>;
-                        handleChange(syntheticEvent);
-                      }}
-                      maxLength={18}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                        fieldErrors.accountNumber ? 'border-red-500' : 'border-gray-300'
-                      }`}
-                      placeholder="9-18 digit account number"
-                    />
-                    {fieldErrors.accountNumber ? (
-                      <p className="mt-1 text-xs text-red-600">{fieldErrors.accountNumber}</p>
-                    ) : (
-                      <p className="mt-1 text-xs text-gray-500">Enter 9-18 digit bank account number</p>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    IFSC Code
-                  </label>
-                  <input
-                    type="text"
-                    name="ifsc"
-                    value={formData.ifsc}
-                    onChange={handleChange}
-                    pattern="[A-Z]{4}0[A-Z0-9]{6}"
-                    maxLength={11}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                      fieldErrors.ifsc ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="SBIN0001234"
-                    style={{ textTransform: 'uppercase' }}
-                  />
-                  {fieldErrors.ifsc ? (
-                    <p className="mt-1 text-xs text-red-600">{fieldErrors.ifsc}</p>
-                  ) : (
-                    <p className="mt-1 text-xs text-gray-500">11-character bank code (e.g., SBIN0001234)</p>
-                  )}
-                </div>
-              </motion.div>
-            )}
-
-            {/* Step 3: Verification & Consent */}
-            {currentStep === 3 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="space-y-6"
-              >
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Loan Details & References (1 minute)</h2>
-
-                {/* Loan Product Selection */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Select Loan Product *
-                  </label>
-                  <select
-                    name="productId"
-                    value={formData.productId}
-                    onChange={(e) => handleProductChange(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                    disabled={loadingProducts}
-                  >
-                    <option value="">
-                      {loadingProducts ? 'Loading products...' : 'Select a loan product'}
-                    </option>
-                    {loanProducts.map((product) => (
-                      <option key={product._id} value={product._id}>
-                        {product.productName} - {product.category} (Rate: {product.dailyInterestRate}% daily)
-                      </option>
-                    ))}
-                  </select>
-                  {selectedProduct && (
-                    <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <p className="text-sm text-blue-800">
-                        <span className="font-semibold">Daily Interest Rate:</span> {selectedProduct.dailyInterestRate}% |
-                        <span className="font-semibold ml-2">Processing Fee:</span> {selectedProduct.processingFee}% |
-                        <span className="font-semibold ml-2">GST:</span> {selectedProduct.gst}%
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-               <div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Loan Amount *
-  </label>
-
-  <input
-    type="text"
-    name="loanAmount"
-    value={
-      formData.loanAmount
-        ? parseFloat(formData.loanAmount.replace(/,/g, "")).toLocaleString("en-IN")
-        : ""
-    }
-    onChange={(e) => {
-      const raw = e.target.value.replace(/,/g, "");
-
-      // Allow only digits
-      if (!/^\d*$/.test(raw)) return;
-
-      const num = Number(raw);
-
-      // Update input normally (no blocking)
-      handleChange({
-        ...e,
-        target: {
-          ...e.target,
-          name: "loanAmount",
-          value: raw,
-        },
-      } as any);
-
-      // Validation check
-      if (selectedProduct) {
-        const min = selectedProduct.minAmount;
-        const max = selectedProduct.maxAmount;
-
-        if (num < min) {
-          setAmountError(
-            `Amount should be minimum ₹${min.toLocaleString("en-IN")}`
-          );
-        } else if (num > max) {
-          setAmountError(
-            `Amount cannot exceed ₹${max.toLocaleString("en-IN")}`
-          );
-        } else {
-          setAmountError("");
-        }
-      }
-    }}
-    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-      amountError ? "border-red-500" : "border-gray-300"
-    }`}
-    placeholder={
-      selectedProduct
-        ? `₹ ${selectedProduct.minAmount.toLocaleString("en-IN")} - ₹ ${selectedProduct.maxAmount.toLocaleString("en-IN")}`
-        : "₹ 50,000"
-    }
-  />
-
-  {/* Error message below input */}
-  {amountError && (
-    <p className="mt-1 text-xs text-red-500 font-medium">{amountError}</p>
-  )}
-
-  {/* Min–Max display */}
-  {selectedProduct && (
-    <p className="mt-1 text-xs text-gray-500">
-      Min: ₹{selectedProduct.minAmount.toLocaleString("en-IN")} | Max: ₹{selectedProduct.maxAmount.toLocaleString("en-IN")}
-    </p>
-  )}
-</div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Tenure (Days) *
-                    </label>
-                    {/* Show dropdown if product has allowedTenures, otherwise show input */}
-                    {selectedProduct && selectedProduct.allowedTenures && selectedProduct.allowedTenures.length > 0 ? (
-                      <select
-                        name="tenure"
-                        value={formData.tenure}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] bg-white"
-                      >
-                        <option value="">Select Tenure</option>
-                        {selectedProduct.allowedTenures.map((tenure: number) => (
-                          <option key={tenure} value={tenure}>
-                            {tenure} Days
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type="number"
-                        name="tenure"
-                        value={formData.tenure}
-                        onChange={handleChange}
-                        min={selectedProduct?.minTenure || 1}
-                        max={selectedProduct?.maxTenure || 365}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                        placeholder={selectedProduct ? `${selectedProduct.minTenure} - ${selectedProduct.maxTenure} days` : 'Enter days'}
-                        disabled={!selectedProduct}
-                      />
-                    )}
-                    {selectedProduct && (!selectedProduct.allowedTenures || selectedProduct.allowedTenures.length === 0) && (
-                      <p className="mt-1 text-xs text-gray-500">
-                        Min: {selectedProduct.minTenure} days | Max: {selectedProduct.maxTenure} days
-                      </p>
-                    )}
-                    {parseInt(formData.tenure) <= 45 && parseInt(formData.tenure) > 0 && (
-                      <p className="mt-2 text-xs text-amber-600 flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" />
-                        Loans with tenure ≤ 45 days require lump sum payment (no EMI)
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* EMI Calculation Display */}
-                {emiCalculation && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-6 shadow-lg"
-                  >
-                    <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                      <Sparkles className="w-5 h-5 text-green-600 mr-2" />
-                      {emiCalculation.isLumpSum ? 'Repayment Calculation' : 'EMI Calculation Details'}
-                    </h3>
-
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="bg-white rounded-lg p-4 shadow-sm">
-                        <p className="text-xs text-gray-600 mb-1">Principal Amount</p>
-                        <p className="text-2xl font-bold text-gray-900">
-                          ₹{emiCalculation.principal.toLocaleString('en-IN')}
-                        </p>
-                      </div>
-                      <div className="bg-white rounded-lg p-4 shadow-sm">
-                        <p className="text-xs text-gray-600 mb-1">
-                          {emiCalculation.isLumpSum ? 'Lump Sum Payment' : 'Monthly EMI'}
-                        </p>
-                        <p className="text-2xl font-bold text-green-600">
-                          ₹{emiCalculation.emi.toLocaleString('en-IN')}
-                        </p>
-                      </div>
-                    </div>
-
-                    {emiCalculation.isLumpSum && (
-                      <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                        <p className="text-sm text-amber-800 flex items-center gap-2">
-                          <AlertCircle className="w-4 h-4" />
-                          <span>This loan requires <strong>full payment at once</strong> (tenure ≤ 45 days)</span>
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-3 gap-3 mb-4">
-                      <div className="bg-white rounded-lg p-3 shadow-sm">
-                        <p className="text-xs text-gray-600 mb-1">Total Interest</p>
-                        <p className="text-lg font-semibold text-gray-900">
-                          ₹{emiCalculation.totalInterest.toLocaleString('en-IN')}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          @ {emiCalculation.dailyInterestRate}% daily
-                        </p>
-                      </div>
-                      <div className="bg-white rounded-lg p-3 shadow-sm">
-                        <p className="text-xs text-gray-600 mb-1">Processing Fee</p>
-                        <p className="text-lg font-semibold text-gray-900">
-                          ₹{emiCalculation.processingFee.toLocaleString('en-IN')}
-                        </p>
-                      </div>
-                      <div className="bg-white rounded-lg p-3 shadow-sm">
-                        <p className="text-xs text-gray-600 mb-1">GST</p>
-                        <p className="text-lg font-semibold text-gray-900">
-                          ₹{emiCalculation.gst.toLocaleString('en-IN')}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg p-4 text-white">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="text-sm opacity-90 mb-1">Total Amount Payable</p>
-                          <p className="text-3xl font-bold">
-                            ₹{emiCalculation.totalAmount.toLocaleString('en-IN')}
-                          </p>
-                          <p className="text-xs opacity-80 mt-1">
-                            Over {emiCalculation.totalDays} days {emiCalculation.totalDays > 45 ? `(~${emiCalculation.tenureMonths} month${emiCalculation.tenureMonths > 1 ? 's' : ''})` : ''}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm opacity-90 mb-1">Processing Fee (incl. GST)</p>
-                          <p className="text-xl font-bold">
-                            ₹{emiCalculation.totalProcessingFee.toLocaleString('en-IN')}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                      <p className="text-xs text-yellow-800">
-                        <span className="font-semibold">Note:</span> This is an indicative calculation. Final EMI may vary based on approval terms and conditions.
-                      </p>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Reference 1 */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-gray-900 mb-4">Reference 1 *</h3>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Name
-                      </label>
-                      <input
-                        type="text"
-                        name="reference1Name"
-                        value={formData.reference1Name}
-                        onChange={handleChange}
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                          fieldErrors.reference1Name ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="Full Name"
-                      />
-                      {fieldErrors.reference1Name && (
-                        <p className="mt-1 text-xs text-red-600">{fieldErrors.reference1Name}</p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Mobile
-                      </label>
-                      <input
-                        type="text"
-                        name="reference1Mobile"
-                        value={formData.reference1Mobile}
-                        onChange={handleChange}
-                        maxLength={10}
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                          fieldErrors.reference1Mobile ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="10-digit mobile number"
-                      />
-                      {fieldErrors.reference1Mobile && (
-                        <p className="mt-1 text-xs text-red-600">{fieldErrors.reference1Mobile}</p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Relationship
-                      </label>
-                      <select
-                        name="reference1Relationship"
-                        value={formData.reference1Relationship}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                      >
-                        <option value="">Select</option>
-                        <option value="Friend">Friend</option>
-                        <option value="Colleague">Colleague</option>
-                        <option value="Family">Family</option>
-                        <option value="Neighbor">Neighbor</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Reference 2 */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-gray-900 mb-4">Reference 2 *</h3>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Name
-                      </label>
-                      <input
-                        type="text"
-                        name="reference2Name"
-                        value={formData.reference2Name}
-                        onChange={handleChange}
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                          fieldErrors.reference2Name ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="Full Name"
-                      />
-                      {fieldErrors.reference2Name && (
-                        <p className="mt-1 text-xs text-red-600">{fieldErrors.reference2Name}</p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Mobile
-                      </label>
-                      <input
-                        type="text"
-                        name="reference2Mobile"
-                        value={formData.reference2Mobile}
-                        onChange={handleChange}
-                        maxLength={10}
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                          fieldErrors.reference2Mobile ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="10-digit mobile number"
-                      />
-                      {fieldErrors.reference2Mobile && (
-                        <p className="mt-1 text-xs text-red-600">{fieldErrors.reference2Mobile}</p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Relationship
-                      </label>
-                      <select
-                        name="reference2Relationship"
-                        value={formData.reference2Relationship}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                      >
-                        <option value="">Select</option>
-                        <option value="Friend">Friend</option>
-                        <option value="Colleague">Colleague</option>
-                        <option value="Family">Family</option>
-                        <option value="Neighbor">Neighbor</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
+                {/* Selfie Capture - Moved to Step 2 */}
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
                   <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <Camera className="w-5 h-5" />
@@ -3429,6 +2839,99 @@ references.forEach((ref, index) => {
                       </button>
                     </>
                   )}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 3: Bank Details & Consent */}
+            {currentStep === 3 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="space-y-6"
+              >
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Bank Details & Consent</h2>
+
+                {/* Bank Details Section */}
+                <div className="bg-gray-50 rounded-xl p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Bank Details</h3>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Bank Name *
+                        </label>
+                        <select
+                          name="bankName"
+                          value={formData.bankName}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                        >
+                          <option value="">Select Bank</option>
+                          <option value="SBI">State Bank of India</option>
+                          <option value="HDFC">HDFC Bank</option>
+                          <option value="ICICI">ICICI Bank</option>
+                          <option value="AXIS">Axis Bank</option>
+                          <option value="PNB">Punjab National Bank</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Account Number
+                        </label>
+                        <input
+                          type="tel"
+                          name="accountNumber"
+                          value={formData.accountNumber}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, '').slice(0, 18);
+                            const syntheticEvent = {
+                              target: {
+                                name: 'accountNumber',
+                                value: value
+                              }
+                            } as React.ChangeEvent<HTMLInputElement>;
+                            handleChange(syntheticEvent);
+                          }}
+                          maxLength={18}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                            fieldErrors.accountNumber ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                          placeholder="9-18 digit account number"
+                        />
+                        {fieldErrors.accountNumber ? (
+                          <p className="mt-1 text-xs text-red-600">{fieldErrors.accountNumber}</p>
+                        ) : (
+                          <p className="mt-1 text-xs text-gray-500">Enter 9-18 digit bank account number</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        IFSC Code
+                      </label>
+                      <input
+                        type="text"
+                        name="ifsc"
+                        value={formData.ifsc}
+                        onChange={handleChange}
+                        pattern="[A-Z]{4}0[A-Z0-9]{6}"
+                        maxLength={11}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                          fieldErrors.ifsc ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="SBIN0001234"
+                        style={{ textTransform: 'uppercase' }}
+                      />
+                      {fieldErrors.ifsc ? (
+                        <p className="mt-1 text-xs text-red-600">{fieldErrors.ifsc}</p>
+                      ) : (
+                        <p className="mt-1 text-xs text-gray-500">11-character bank code (e.g., SBIN0001234)</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-4">
