@@ -103,7 +103,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-JT6CHHWW78');
-gtag('config', 'AW-17768258260');`,
+gtag('config', 'AW-17796230994');`,
           }}
         />
         {/* Language Detection Script */}
