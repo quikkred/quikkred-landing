@@ -175,52 +175,11 @@ We saw the challenges many faced with traditional financing and knew that by lev
         ]}
       />
 
-      {/* Leadership Section */}
-      <section id="leadership" className="py-12 sm:py-16 lg:py-20 bg-[rgb(var(--bg-primary))]">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4 text-[rgb(var(--text-primary))]">Leadership Team</h2>
-            <p className="text-base sm:text-lg lg:text-xl text-[rgb(var(--text-secondary))]">
-              Experienced professionals driving our vision
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {leadership.map((leader, index) => (
-              <motion.div
-                key={leader.name}
-                initial={{ y: 20, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="text-center"
-              >
-                <div className="w-32 h-32 bg-gradient-to-br from-[#25B181] to-[#51C9AF] rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <Users className="w-16 h-16 text-white" />
-                </div>
-                <h3 className="text-xl font-bold mb-1 text-[rgb(var(--text-primary))]">{leader.name}</h3>
-                <p className="text-[#4A66FF] font-medium mb-3">{leader.role}</p>
-                <p className="text-sm text-[rgb(var(--text-tertiary))] mb-4">{leader.bio}</p>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {leader.expertise.map((skill: string) => (
-                    <span
-                      key={skill}
-                      className="px-3 py-1 bg-[rgb(var(--bg-secondary))] text-[rgb(var(--text-secondary))] rounded-full text-xs"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+{/* <CodeOfConduct/>
+<AmrutamLanding/> */}
+{/* <ConsultationUI/>
+<ForumConnections/>
+<ConnectSection/> */}
     </div>
   );
 }
