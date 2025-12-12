@@ -541,6 +541,50 @@ export default function QuickLoanApplication() {
     }));
   };
 
+  // Step 1 validation - all mandatory fields must be correctly filled
+  const isStep1Valid = () => {
+    // Check verification (logged-in users are auto-verified)
+    const isVerified = user ? true : (verificationMethod === 'email' ? formData.emailVerified : formData.mobileVerified);
+    if (!isVerified) return false;
+
+    // Full Name validation
+    if (!formData.fullName || formData.fullName.trim().length < 3) return false;
+    if (/\d/.test(formData.fullName)) return false;
+    if (!/^[a-zA-Z\s]+$/.test(formData.fullName)) return false;
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email || !emailRegex.test(formData.email)) return false;
+
+    // Mobile validation
+    if (!formData.mobile || formData.mobile.length !== 10) return false;
+    if (!/^[6-9]\d{9}$/.test(formData.mobile)) return false;
+
+    // DOB validation (must be 18+)
+    if (!formData.dob) return false;
+    const dob = new Date(formData.dob);
+    const today = new Date();
+    const age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    const dayDiff = today.getDate() - dob.getDate();
+    const actualAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
+    if (actualAge < 18) return false;
+
+    // Employment Type validation
+    if (!formData.employmentType) return false;
+
+    // Monthly Income validation (minimum ₹10,000)
+    if (!formData.monthlyIncome || parseFloat(formData.monthlyIncome) < 10000) return false;
+
+    // Company Name / Income Source validation
+    if (!formData.companyName || formData.companyName.trim().length < 2) return false;
+
+    // Loan Amount validation
+    if (!formData.loanAmount || parseFloat(formData.loanAmount) <= 0) return false;
+
+    return true;
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
 
@@ -1310,53 +1354,77 @@ console.log('Sending OTP with payload:', payload);
         const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
 
         payload = {
-          firstName,
-          lastName,
-          mobile: formData.mobile,
-          dateOfBirth: formData.dob,
-          employmentType: formData.employmentType,
-          monthlyIncome: parseFloat(formData.monthlyIncome),
-          companyName: formData.companyName,
-          loanAmount: parseFloat(formData.loanAmount),
-          isBasicDetailsFilled: true,
-          isEmploymentDetailsFilled: true,
-          isSubmit: false
+          basicDetails: {
+            firstName,
+            lastName,
+            mobile: formData.mobile,
+            dateOfBirth: formData.dob,
+            employmentType: formData.employmentType,
+            companyName: formData.companyName,
+            monthlyIncome: parseFloat(formData.monthlyIncome),
+            isBasicDetailsFilled: true
+          },
+          loanDetails: {
+            loanAmount: parseFloat(formData.loanAmount)
+          }
         };
       } else if (step === 2) {
-        // Step 2: Aadhaar & PAN Verification
-        payload = {
-          panCard: formData.pan,
-          aadhaarNumber: formData.aadhaar,
-          isIdentityVerified: true,
-          isSubmit: false
+        // Step 2: KYC Details with Photo - use FormData
+        const formDataToSend = new FormData();
+
+        const kycPayload = {
+          kycDetails: {
+            isKycDetailsFilled: true
+          }
         };
 
-        // Add address from Aadhaar if available
-        if (aadhaarAddress) {
-          payload.currentAddress = {
-            street: `${aadhaarAddress.house || ''} ${aadhaarAddress.street || ''}`.trim(),
-            city: aadhaarAddress.locality || aadhaarAddress.district || '',
-            state: aadhaarAddress.state || '',
-            pincode: aadhaarAddress.pincode || ''
-          };
+        formDataToSend.append('data', JSON.stringify(kycPayload));
+
+        // Add selfie photo file
+        if (formData.selfie) {
+          formDataToSend.append('photo', formData.selfie, formData.selfie.name);
+          console.log('✅ Adding selfie photo to Step 2:', formData.selfie.name);
+        }
+
+        const response = await fetch(`https://api.bluechipfinmax.com/api/application/loan/create`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formDataToSend
+        });
+
+        const result = await response.json();
+
+        if (result.data) {
+          if (result.data.customerId) localStorage.setItem('userId', result.data.customerId);
+          if (result.data.applicationNumber) localStorage.setItem('applicationId', result.data.applicationNumber);
+          if (result.data.loanNumber) localStorage.setItem('loanNumber', result.data.loanNumber);
+        }
+
+        if (response.ok && result.success) {
+          console.log(`✅ Step 2 data saved successfully`);
+          return true;
+        } else {
+          console.error(`❌ Failed to save step 2 data:`, result.message);
+          toast({
+            variant: "error",
+            title: "Data Save Failed",
+            description: result.message || `Failed to save step 2 data. Please check your information and try again.`,
+          });
+          return false;
         }
       } else if (step === 3) {
-        // Step 3: Bank & Loan Details
+        // Step 3: Bank Details
         payload = {
-          isVerificationDetailsFilled: true,
-          isSubmit: false
-        };
-
-        // Add bank details if provided
-        if (formData.bankName && formData.accountNumber && formData.ifsc) {
-          payload.banks = [{
+          bankDetails: {
             bankName: formData.bankName,
             accountNumber: formData.accountNumber,
             ifscCode: formData.ifsc,
-            accountType: 'Savings',
-            accountHolderName: formData.fullName
-          }];
-        }
+            accountHolderName: formData.fullName,
+            isBankDetailsFilled: true
+          }
+        };
       }
 
       const response = await fetch(`https://api.bluechipfinmax.com/api/application/loan/create`, {
@@ -1699,43 +1767,26 @@ console.log('Sending OTP with payload:', payload);
           return;
         }
 
-        // Use the loan amount from Step 1
+        // Step 3 Final Submit - only bank details
         const principal = parseFloat(formData.loanAmount);
-
-        // Create FormData to include selfie file
-        const formDataToSend = new FormData();
-
-        // Add loan application data
-        formDataToSend.append('loanAmount', principal.toString());
-
-        // Add bank details
-        if (formData.bankName) {
-          formDataToSend.append('bankName', formData.bankName);
-        }
-        if (formData.accountNumber) {
-          formDataToSend.append('accountNumber', formData.accountNumber);
-        }
-        if (formData.ifsc) {
-          formDataToSend.append('ifscCode', formData.ifsc);
-        }
-
-        formDataToSend.append('isVerificationDetailsFilled', 'true');
-        formDataToSend.append('isSubmit', 'true');
-
-        // Add selfie photo file (already captured in Step 2)
-        if (formData.selfie) {
-          formDataToSend.append('photo', formData.selfie, formData.selfie.name);
-          console.log('✅ Adding selfie photo to form data:', formData.selfie.name);
-        }
+        const payload = {
+          bankDetails: {
+            bankName: formData.bankName,
+            accountNumber: formData.accountNumber,
+            ifscCode: formData.ifsc,
+            accountHolderName: formData.fullName,
+            isBankDetailsFilled: true
+          },
+          isSubmit: true
+        };
 
         const response = await fetch(`https://api.bluechipfinmax.com/api/application/loan/create`, {
           method: 'POST',
           headers: {
+            'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
-            // Note: Do NOT set Content-Type header when sending FormData
-            // Browser will automatically set it with boundary
           },
-          body: formDataToSend
+          body: JSON.stringify(payload)
         });
 
         const result = await response.json();
@@ -3098,8 +3149,8 @@ console.log('Sending OTP with payload:', payload);
             )}
             <button
               onClick={handleNext}
-              disabled={loading}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white rounded-lg hover:shadow-lg font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              disabled={loading || (currentStep === 1 && !isStep1Valid())}
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white rounded-lg hover:shadow-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
