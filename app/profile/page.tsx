@@ -454,11 +454,8 @@ export default function ProfilePage() {
 
   const tabs = [
     { id: "personal", label: "Personal Info", icon: User },
-    { id: "address", label: "Address", icon: Home },
-    { id: "employment", label: "Employment", icon: Briefcase },
     { id: "kyc", label: "KYC & Verification", icon: Shield },
-    { id: "banking", label: "Banking", icon: CreditCard },
-    { id: "references", label: "References", icon: Users }
+    { id: "banking", label: "Banking & References", icon: CreditCard }
   ];
 
   if (isLoading) {
@@ -839,191 +836,204 @@ export default function ProfilePage() {
 
                 {/* Tab Content */}
                 <div className="p-3 sm:p-4 lg:p-6">
-                  {/* Personal Information Tab */}
+                  {/* Personal Information Tab (includes Address & Employment) */}
                   {activeTab === "personal" && (
-                    <div>
-                      <h3 className="text-base sm:text-lg font-semibold text-[#1F8F68] mb-4 sm:mb-6">Personal Information</h3>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
-                        <InfoField
-                          icon={<User className="w-5 h-5 text-[#4A66FF]" />}
-                          label="Full Name"
-                          value={profileData.fullName || `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim() || 'N/A'}
-                        />
-                        <InfoField
-                          icon={<Mail className="w-5 h-5 text-[#4A66FF]" />}
-                          label="Email"
-                          value={profileData.email || 'N/A'}
-                        />
-                        <InfoField
-                          icon={<Phone className="w-5 h-5 text-[#4A66FF]" />}
-                          label="Mobile"
-                          value={profileData.mobile || 'N/A'}
-                        />
-                        <InfoField
-                          icon={<Calendar className="w-5 h-5 text-[#4A66FF]" />}
-                          label="Date of Birth"
-                          value={profileData.dateOfBirth ? formatDate(profileData.dateOfBirth) : 'N/A'}
-                        />
-                        <InfoField
-                          icon={<User className="w-5 h-5 text-[#4A66FF]" />}
-                          label="Customer ID"
-                          value={profileData.customerUniqueId || 'N/A'}
-                        />
-                        <InfoField
-                          icon={<CheckCircle className="w-5 h-5 text-[#4A66FF]" />}
-                          label="Reward Points"
-                          value={profileData.points ? profileData.points.toLocaleString('en-IN') : '0'}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Address Tab */}
-                  {activeTab === "address" && (
-                    <div>
-                      <h3 className="text-base sm:text-lg font-semibold text-[#1F8F68] mb-4 sm:mb-6">Address Information</h3>
-
-                      {(profileData.currentAddress?.city || profileData.currentAddress?.state || profileData.currentAddress?.pincode) ? (
-                        <>
-                          {/* Current Address */}
-                          <div className="mb-6 sm:mb-8">
-                            <h4 className="text-sm sm:text-md font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
-                              <Home className="w-4 h-4 sm:w-5 sm:h-5 text-[#4A66FF]" />
-                              Current Address
-                            </h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
-                              {profileData.currentAddress?.street && (
-                                <InfoField
-                                  icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
-                                  label="Street"
-                                  value={profileData.currentAddress.street}
-                                />
-                              )}
-                              <InfoField
-                                icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
-                                label="City"
-                                value={profileData.currentAddress?.city || 'N/A'}
-                              />
-                              <InfoField
-                                icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
-                                label="State"
-                                value={profileData.currentAddress?.state || 'N/A'}
-                              />
-                              <InfoField
-                                icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
-                                label="Pincode"
-                                value={profileData.currentAddress?.pincode || 'N/A'}
-                              />
-                            </div>
-                          </div>
-
-                          {/* Permanent Address */}
-                          {(profileData.permanentAddress?.city || profileData.permanentAddress?.state || profileData.permanentAddress?.pincode) && (
-                            <div className="mb-6 sm:mb-8">
-                              <h4 className="text-sm sm:text-md font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
-                                <Home className="w-4 h-4 sm:w-5 sm:h-5 text-[#4A66FF]" />
-                                Permanent Address
-                              </h4>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
-                                {profileData.permanentAddress?.street && (
-                                  <InfoField
-                                    icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
-                                    label="Street"
-                                    value={profileData.permanentAddress.street}
-                                  />
-                                )}
-                                <InfoField
-                                  icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
-                                  label="City"
-                                  value={profileData.permanentAddress?.city || 'N/A'}
-                                />
-                                <InfoField
-                                  icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
-                                  label="State"
-                                  value={profileData.permanentAddress?.state || 'N/A'}
-                                />
-                                <InfoField
-                                  icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
-                                  label="Pincode"
-                                  value={profileData.permanentAddress?.pincode || 'N/A'}
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Office Address */}
-                          {(profileData.officeAddress?.city || profileData.officeAddress?.state || profileData.officeAddress?.pincode) && (
-                            <div>
-                              <h4 className="text-sm sm:text-md font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
-                                <Building className="w-4 h-4 sm:w-5 sm:h-5 text-[#4A66FF]" />
-                                Office Address
-                              </h4>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
-                                {profileData.officeAddress?.street && (
-                                  <InfoField
-                                    icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
-                                    label="Street"
-                                    value={profileData.officeAddress.street}
-                                  />
-                                )}
-                                <InfoField
-                                  icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
-                                  label="City"
-                                  value={profileData.officeAddress?.city || 'N/A'}
-                                />
-                                <InfoField
-                                  icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
-                                  label="State"
-                                  value={profileData.officeAddress?.state || 'N/A'}
-                                />
-                                <InfoField
-                                  icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
-                                  label="Pincode"
-                                  value={profileData.officeAddress?.pincode || 'N/A'}
-                                />
-                              </div>
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        <div className="text-center py-8 sm:py-12">
-                          <Home className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-3 sm:mb-4" />
-                          <p className="text-gray-500 text-sm sm:text-base">No address information added yet</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Employment Tab */}
-                  {activeTab === "employment" && (
-                    <div>
-                      <h3 className="text-base sm:text-lg font-semibold text-[#1F8F68] mb-4 sm:mb-6">Employment Information</h3>
-
-                      {profileData.isEmploymentDetailsFilled ? (
+                    <div className="space-y-6 sm:space-y-8">
+                      {/* Personal Details Section */}
+                      <div>
+                        <h3 className="text-base sm:text-lg font-semibold text-[#1F8F68] mb-4 sm:mb-6 flex items-center gap-2">
+                          <User className="w-4 h-4 sm:w-5 sm:h-5" />
+                          Personal Details
+                        </h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
                           <InfoField
-                            icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
-                            label="Company Name"
-                            value={profileData.companyName || 'N/A'}
+                            icon={<User className="w-5 h-5 text-[#4A66FF]" />}
+                            label="Full Name"
+                            value={profileData.fullName || `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim() || 'N/A'}
                           />
                           <InfoField
-                            icon={<FileText className="w-5 h-5 text-[#4A66FF]" />}
-                            label="Employment Type"
-                            value={profileData.employmentType || 'N/A'}
+                            icon={<Mail className="w-5 h-5 text-[#4A66FF]" />}
+                            label="Email"
+                            value={profileData.email || 'N/A'}
                           />
                           <InfoField
-                            icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
-                            label="Monthly Income"
-                            value={profileData.monthlyIncome ? `₹${profileData.monthlyIncome.toLocaleString('en-IN')}` : 'N/A'}
+                            icon={<Phone className="w-5 h-5 text-[#4A66FF]" />}
+                            label="Mobile"
+                            value={profileData.mobile || 'N/A'}
+                          />
+                          <InfoField
+                            icon={<Calendar className="w-5 h-5 text-[#4A66FF]" />}
+                            label="Date of Birth"
+                            value={profileData.dateOfBirth ? formatDate(profileData.dateOfBirth) : 'N/A'}
+                          />
+                          <InfoField
+                            icon={<User className="w-5 h-5 text-[#4A66FF]" />}
+                            label="Customer ID"
+                            value={profileData.customerUniqueId || 'N/A'}
+                          />
+                          <InfoField
+                            icon={<CheckCircle className="w-5 h-5 text-[#4A66FF]" />}
+                            label="Reward Points"
+                            value={profileData.points ? profileData.points.toLocaleString('en-IN') : '0'}
                           />
                         </div>
-                      ) : (
-                        <div className="text-center py-8 sm:py-12">
-                          <Briefcase className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-3 sm:mb-4" />
-                          <p className="text-gray-500 text-sm sm:text-base">No employment information added yet</p>
-                        </div>
-                      )}
+                      </div>
+
+                      {/* Divider */}
+                      <div className="border-t border-[#E0E0E0]"></div>
+
+                      {/* Address Section */}
+                      <div>
+                        <h3 className="text-base sm:text-lg font-semibold text-[#1F8F68] mb-4 sm:mb-6 flex items-center gap-2">
+                          <Home className="w-4 h-4 sm:w-5 sm:h-5" />
+                          Address Information
+                        </h3>
+
+                        {(profileData.currentAddress?.city || profileData.currentAddress?.state || profileData.currentAddress?.pincode) ? (
+                          <div className="space-y-6">
+                            {/* Current Address */}
+                            <div>
+                              <h4 className="text-sm sm:text-md font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
+                                <Home className="w-4 h-4 sm:w-5 sm:h-5 text-[#4A66FF]" />
+                                Current Address
+                              </h4>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
+                                {profileData.currentAddress?.street && (
+                                  <InfoField
+                                    icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                                    label="Street"
+                                    value={profileData.currentAddress.street}
+                                  />
+                                )}
+                                <InfoField
+                                  icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
+                                  label="City"
+                                  value={profileData.currentAddress?.city || 'N/A'}
+                                />
+                                <InfoField
+                                  icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                                  label="State"
+                                  value={profileData.currentAddress?.state || 'N/A'}
+                                />
+                                <InfoField
+                                  icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                                  label="Pincode"
+                                  value={profileData.currentAddress?.pincode || 'N/A'}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Permanent Address */}
+                            {(profileData.permanentAddress?.city || profileData.permanentAddress?.state || profileData.permanentAddress?.pincode) && (
+                              <div>
+                                <h4 className="text-sm sm:text-md font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
+                                  <Home className="w-4 h-4 sm:w-5 sm:h-5 text-[#4A66FF]" />
+                                  Permanent Address
+                                </h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
+                                  {profileData.permanentAddress?.street && (
+                                    <InfoField
+                                      icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                                      label="Street"
+                                      value={profileData.permanentAddress.street}
+                                    />
+                                  )}
+                                  <InfoField
+                                    icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
+                                    label="City"
+                                    value={profileData.permanentAddress?.city || 'N/A'}
+                                  />
+                                  <InfoField
+                                    icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                                    label="State"
+                                    value={profileData.permanentAddress?.state || 'N/A'}
+                                  />
+                                  <InfoField
+                                    icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                                    label="Pincode"
+                                    value={profileData.permanentAddress?.pincode || 'N/A'}
+                                  />
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Office Address */}
+                            {(profileData.officeAddress?.city || profileData.officeAddress?.state || profileData.officeAddress?.pincode) && (
+                              <div>
+                                <h4 className="text-sm sm:text-md font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
+                                  <Building className="w-4 h-4 sm:w-5 sm:h-5 text-[#4A66FF]" />
+                                  Office Address
+                                </h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
+                                  {profileData.officeAddress?.street && (
+                                    <InfoField
+                                      icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                                      label="Street"
+                                      value={profileData.officeAddress.street}
+                                    />
+                                  )}
+                                  <InfoField
+                                    icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
+                                    label="City"
+                                    value={profileData.officeAddress?.city || 'N/A'}
+                                  />
+                                  <InfoField
+                                    icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                                    label="State"
+                                    value={profileData.officeAddress?.state || 'N/A'}
+                                  />
+                                  <InfoField
+                                    icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                                    label="Pincode"
+                                    value={profileData.officeAddress?.pincode || 'N/A'}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-center py-6 sm:py-8 bg-[#FAFAFA] rounded-lg">
+                            <Home className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mx-auto mb-2 sm:mb-3" />
+                            <p className="text-gray-500 text-sm sm:text-base">No address information added yet</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Divider */}
+                      <div className="border-t border-[#E0E0E0]"></div>
+
+                      {/* Employment Section */}
+                      <div>
+                        <h3 className="text-base sm:text-lg font-semibold text-[#1F8F68] mb-4 sm:mb-6 flex items-center gap-2">
+                          <Briefcase className="w-4 h-4 sm:w-5 sm:h-5" />
+                          Employment Information
+                        </h3>
+
+                        {profileData.isEmploymentDetailsFilled ? (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
+                            <InfoField
+                              icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
+                              label="Company Name"
+                              value={profileData.companyName || 'N/A'}
+                            />
+                            <InfoField
+                              icon={<FileText className="w-5 h-5 text-[#4A66FF]" />}
+                              label="Employment Type"
+                              value={profileData.employmentType || 'N/A'}
+                            />
+                            <InfoField
+                              icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
+                              label="Monthly Income"
+                              value={profileData.monthlyIncome ? `₹${profileData.monthlyIncome.toLocaleString('en-IN')}` : 'N/A'}
+                            />
+                          </div>
+                        ) : (
+                          <div className="text-center py-6 sm:py-8 bg-[#FAFAFA] rounded-lg">
+                            <Briefcase className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mx-auto mb-2 sm:mb-3" />
+                            <p className="text-gray-500 text-sm sm:text-base">No employment information added yet</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
 
@@ -1086,97 +1096,107 @@ export default function ProfilePage() {
                     </div>
                   )}
 
-                  {/* Banking Tab */}
+                  {/* Banking & References Tab */}
                   {activeTab === "banking" && (
-                    <div>
-                      <h3 className="text-base sm:text-lg font-semibold text-[#1F8F68] mb-4 sm:mb-6">Banking Information</h3>
+                    <div className="space-y-6 sm:space-y-8">
+                      {/* Banking Section */}
+                      <div>
+                        <h3 className="text-base sm:text-lg font-semibold text-[#1F8F68] mb-4 sm:mb-6 flex items-center gap-2">
+                          <CreditCard className="w-4 h-4 sm:w-5 sm:h-5" />
+                          Banking Information
+                        </h3>
 
-                      {profileData.banks && profileData.banks.length > 0 ? (
-                        <div className="space-y-4 sm:space-y-6">
-                          {profileData.banks.map((bank, index) => (
-                            <div key={bank._id} className="p-4 sm:p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg sm:rounded-xl border-2 border-blue-200">
-                              <h4 className="text-sm sm:text-md font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
-                                <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-[#4A66FF]" />
-                                Bank Account {index + 1}
-                              </h4>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                                <InfoField
-                                  icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
-                                  label="Bank Name"
-                                  value={bank.bankName}
-                                />
-                                <InfoField
-                                  icon={<User className="w-5 h-5 text-[#4A66FF]" />}
-                                  label="Account Holder Name"
-                                  value={bank.accountHolderName}
-                                />
-                                <InfoField
-                                  icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
-                                  label="Account Number"
-                                  value={`XXXX${bank.accountNumber.slice(-4)}`}
-                                />
-                                <InfoField
-                                  icon={<FileText className="w-5 h-5 text-[#4A66FF]" />}
-                                  label="IFSC Code"
-                                  value={bank.ifscCode}
-                                />
-                                <InfoField
-                                  icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
-                                  label="Account Type"
-                                  value={bank.accountType}
-                                />
+                        {profileData.banks && profileData.banks.length > 0 ? (
+                          <div className="space-y-4 sm:space-y-6">
+                            {profileData.banks.map((bank, index) => (
+                              <div key={bank._id} className="p-4 sm:p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg sm:rounded-xl border-2 border-blue-200">
+                                <h4 className="text-sm sm:text-md font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
+                                  <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-[#4A66FF]" />
+                                  Bank Account {index + 1}
+                                </h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                                  <InfoField
+                                    icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
+                                    label="Bank Name"
+                                    value={bank.bankName}
+                                  />
+                                  <InfoField
+                                    icon={<User className="w-5 h-5 text-[#4A66FF]" />}
+                                    label="Account Holder Name"
+                                    value={bank.accountHolderName}
+                                  />
+                                  <InfoField
+                                    icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
+                                    label="Account Number"
+                                    value={`XXXX${bank.accountNumber.slice(-4)}`}
+                                  />
+                                  <InfoField
+                                    icon={<FileText className="w-5 h-5 text-[#4A66FF]" />}
+                                    label="IFSC Code"
+                                    value={bank.ifscCode}
+                                  />
+                                  <InfoField
+                                    icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
+                                    label="Account Type"
+                                    value={bank.accountType}
+                                  />
+                                </div>
                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-8 sm:py-12">
-                          <CreditCard className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-3 sm:mb-4" />
-                          <p className="text-gray-500 text-sm sm:text-base">No bank accounts added yet</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-6 sm:py-8 bg-[#FAFAFA] rounded-lg">
+                            <CreditCard className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mx-auto mb-2 sm:mb-3" />
+                            <p className="text-gray-500 text-sm sm:text-base">No bank accounts added yet</p>
+                          </div>
+                        )}
+                      </div>
 
-                  {/* References Tab */}
-                  {activeTab === "references" && (
-                    <div>
-                      <h3 className="text-base sm:text-lg font-semibold text-[#1F8F68] mb-4 sm:mb-6">References</h3>
+                      {/* Divider */}
+                      <div className="border-t border-[#E0E0E0]"></div>
 
-                      {profileData.references && profileData.references.length > 0 ? (
-                        <div className="space-y-4 sm:space-y-6">
-                          {profileData.references.map((reference, index) => (
-                            <div key={reference._id} className="p-4 sm:p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg sm:rounded-xl border-2 border-purple-200">
-                              <h4 className="text-sm sm:text-md font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
-                                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
-                                Reference {index + 1}
-                              </h4>
-                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                                <InfoField
-                                  icon={<User className="w-5 h-5 text-purple-600" />}
-                                  label="Name"
-                                  value={reference.name}
-                                />
-                                <InfoField
-                                  icon={<Phone className="w-5 h-5 text-purple-600" />}
-                                  label="Mobile"
-                                  value={reference.mobile}
-                                />
-                                <InfoField
-                                  icon={<Users className="w-5 h-5 text-purple-600" />}
-                                  label="Relationship"
-                                  value={reference.relationship}
-                                />
+                      {/* References Section */}
+                      <div>
+                        <h3 className="text-base sm:text-lg font-semibold text-[#1F8F68] mb-4 sm:mb-6 flex items-center gap-2">
+                          <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+                          References
+                        </h3>
+
+                        {profileData.references && profileData.references.length > 0 ? (
+                          <div className="space-y-4 sm:space-y-6">
+                            {profileData.references.map((reference, index) => (
+                              <div key={reference._id} className="p-4 sm:p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg sm:rounded-xl border-2 border-purple-200">
+                                <h4 className="text-sm sm:text-md font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
+                                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                                  Reference {index + 1}
+                                </h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                                  <InfoField
+                                    icon={<User className="w-5 h-5 text-purple-600" />}
+                                    label="Name"
+                                    value={reference.name}
+                                  />
+                                  <InfoField
+                                    icon={<Phone className="w-5 h-5 text-purple-600" />}
+                                    label="Mobile"
+                                    value={reference.mobile}
+                                  />
+                                  <InfoField
+                                    icon={<Users className="w-5 h-5 text-purple-600" />}
+                                    label="Relationship"
+                                    value={reference.relationship}
+                                  />
+                                </div>
                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-8 sm:py-12">
-                          <Users className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-3 sm:mb-4" />
-                          <p className="text-gray-500 text-sm sm:text-base">No references added yet</p>
-                        </div>
-                      )}
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-6 sm:py-8 bg-[#FAFAFA] rounded-lg">
+                            <Users className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mx-auto mb-2 sm:mb-3" />
+                            <p className="text-gray-500 text-sm sm:text-base">No references added yet</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
