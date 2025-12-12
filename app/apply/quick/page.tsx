@@ -543,6 +543,11 @@ export default function QuickLoanApplication() {
 
   // Step 1 validation - all mandatory fields must be correctly filled
   const isStep1Valid = () => {
+    // For logged-in users with API-determined step > 1, basic details are already filled
+    if (user && apiDeterminedStep && apiDeterminedStep > 1) {
+      return true;
+    }
+
     // Check verification (logged-in users are auto-verified)
     const isVerified = user ? true : (verificationMethod === 'email' ? formData.emailVerified : formData.mobileVerified);
     if (!isVerified) return false;
@@ -552,13 +557,15 @@ export default function QuickLoanApplication() {
     if (/\d/.test(formData.fullName)) return false;
     if (!/^[a-zA-Z\s]+$/.test(formData.fullName)) return false;
 
-    // Email validation
+    // Email validation - for logged-in users, use user.email as fallback
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.email || !emailRegex.test(formData.email)) return false;
+    const emailToCheck = formData.email || user?.email || '';
+    if (!emailToCheck || !emailRegex.test(emailToCheck)) return false;
 
-    // Mobile validation
-    if (!formData.mobile || formData.mobile.length !== 10) return false;
-    if (!/^[6-9]\d{9}$/.test(formData.mobile)) return false;
+    // Mobile validation - for logged-in users, use user.mobile as fallback
+    const mobileToCheck = formData.mobile || user?.mobile || '';
+    if (!mobileToCheck || mobileToCheck.length !== 10) return false;
+    if (!/^[6-9]\d{9}$/.test(mobileToCheck)) return false;
 
     // DOB validation (must be 18+)
     if (!formData.dob) return false;
@@ -1066,9 +1073,9 @@ console.log('Sending OTP with payload:', payload);
           'Authorization': token ? `Bearer ${token}` : '',
         },
         body: JSON.stringify({
-          pan_number: formData.pan,
-          name: formData.fullName,
-          dob: formatDOBForAPI(formData.dob)
+          panNumber: formData.pan,
+          // name: formData.fullName,
+          // dob: formatDOBForAPI(formData.dob)s
         }),
       });
 
@@ -1137,33 +1144,67 @@ console.log('Sending OTP with payload:', payload);
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      // Proceed with OTP send
-      const response = await fetch('https://api.bluechipfinmax.com/api/kyc/aadhaar/otp', {
+      // First call verification endpoint to check redirect
+      const verifyResponse = await fetch('https://api.bluechipfinmax.com/api/kyc/aadhaar/verification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': token ? `Bearer ${token}` : '',
         },
-        body: JSON.stringify({ aadhaar_number: formData.aadhaar }),
+        body: JSON.stringify({ aadhaarNumber: formData.aadhaar }),
       });
 
-      const result = await response.json();
+      const verifyResult = await verifyResponse.json();
 
-      if (response.ok && result.success) {
-        setAadhaarOtpSent(true);
-        setAadhaarOtpTimer(30); // Start 30 second countdown
-        setAadhaarError(""); // Clear any errors
-        toast({
-          variant: "success",
-          title: "OTP Sent Successfully!",
-          description: result.message || "OTP has been sent to your Aadhaar-linked mobile number. Please enter it below.",
-        });
+      if (verifyResult.success) {
+        // Check if redirect is required
+        if (verifyResult.data?.redirect && verifyResult.data?.url) {
+          // Redirect to DigiLocker URL
+          toast({
+            variant: "success",
+            title: "Redirecting to DigiLocker",
+            description: "Please complete the verification on DigiLocker.",
+          });
+          window.location.href = verifyResult.data.url;
+          return;
+        } else {
+          // No redirect, proceed with OTP flow
+          const response = await fetch('https://api.bluechipfinmax.com/api/kyc/aadhaar/otp', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': token ? `Bearer ${token}` : '',
+            },
+            body: JSON.stringify({ aadhaar_number: formData.aadhaar }),
+          });
+
+          const result = await response.json();
+
+          if (response.ok && result.success) {
+            setAadhaarOtpSent(true);
+            setAadhaarOtpTimer(30); // Start 30 second countdown
+            setAadhaarError(""); // Clear any errors
+            toast({
+              variant: "success",
+              title: "OTP Sent Successfully!",
+              description: result.message || "OTP has been sent to your Aadhaar-linked mobile number. Please enter it below.",
+            });
+          } else {
+            const errorMsg = result.message || result.error || 'Unable to send OTP. Please check the Aadhaar number and try again.';
+            setAadhaarError(errorMsg);
+            toast({
+              variant: "error",
+              title: "OTP Send Failed",
+              description: errorMsg,
+            });
+          }
+        }
       } else {
-        const errorMsg = result.message || result.error || 'Unable to send OTP. Please check the Aadhaar number and try again.';
+        const errorMsg = verifyResult.message || 'Aadhaar verification failed. Please check the number and try again.';
         setAadhaarError(errorMsg);
         toast({
           variant: "error",
-          title: "OTP Send Failed",
+          title: "Verification Failed",
           description: errorMsg,
         });
       }
@@ -1172,7 +1213,7 @@ console.log('Sending OTP with payload:', payload);
       setAadhaarError(errorMsg);
       toast({
         variant: "error",
-        title: "Error Sending OTP",
+        title: "Error",
         description: errorMsg,
       });
     } finally {
@@ -1353,11 +1394,16 @@ console.log('Sending OTP with payload:', payload);
         const firstName = nameParts[0] || "";
         const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
 
+        // Use fallback values from user object if form data is empty
+        const mobileToSave = formData.mobile || user?.mobile || '';
+        const emailToSave = formData.email || user?.email || '';
+
         payload = {
           basicDetails: {
             firstName,
             lastName,
-            mobile: formData.mobile,
+            mobile: mobileToSave,
+            email: emailToSave,
             dateOfBirth: formData.dob,
             employmentType: formData.employmentType,
             companyName: formData.companyName,
@@ -1471,6 +1517,12 @@ console.log('Sending OTP with payload:', payload);
   const handleNext = async () => {
     // Validate current step
     if (currentStep === 1) {
+      // For logged-in users with API-determined step > 1, skip step 1 validation (data already saved)
+      if (user && apiDeterminedStep && apiDeterminedStep > 1) {
+        setCurrentStep(2);
+        return;
+      }
+
       // Clear previous errors
       const errors = {
         email: "",
@@ -1516,29 +1568,31 @@ console.log('Sending OTP with payload:', payload);
         hasError = true;
       }
 
-      // Email validation
-      if (!formData.email) {
+      // Email validation - use user email as fallback for logged-in users
+      const emailToValidate = formData.email || user?.email || '';
+      if (!emailToValidate) {
         errors.email = "Email is required";
         hasError = true;
       } else {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(formData.email)) {
+        if (!emailRegex.test(emailToValidate)) {
           errors.email = "Please enter a valid email address";
           hasError = true;
         }
       }
 
-      // Mobile validation
-      if (!formData.mobile) {
+      // Mobile validation - use user mobile as fallback for logged-in users
+      const mobileToValidate = formData.mobile || user?.mobile || '';
+      if (!mobileToValidate) {
         errors.mobile = "Mobile number is required";
         hasError = true;
-      } else if (!/^\d+$/.test(formData.mobile)) {
+      } else if (!/^\d+$/.test(mobileToValidate)) {
         errors.mobile = "Mobile number can only contain numbers";
         hasError = true;
-      } else if (formData.mobile.length !== 10) {
+      } else if (mobileToValidate.length !== 10) {
         errors.mobile = "Mobile number must be exactly 10 digits";
         hasError = true;
-      } else if (!/^[6-9]\d{9}$/.test(formData.mobile)) {
+      } else if (!/^[6-9]\d{9}$/.test(mobileToValidate)) {
         errors.mobile = "Enter a valid mobile number starting with 6-9";
         hasError = true;
       }
@@ -2862,7 +2916,7 @@ console.log('Sending OTP with payload:', payload);
                           if (panVerified) setPanVerified(false);
                           if (panError) setPanError("");
                         }}
-                        disabled={!aadhaarVerified || panVerified}
+                        disabled={panVerified}
                         maxLength={10}
                         className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 uppercase ${
                           fieldErrors.pan || panError ? 'border-red-500' : 'border-gray-300'
@@ -2873,7 +2927,7 @@ console.log('Sending OTP with payload:', payload);
                         <button
                           type="button"
                           onClick={verifyPAN}
-                          disabled={!aadhaarVerified || !formData.pan || formData.pan.length !== 10 || panVerifying}
+                          disabled={!formData.pan || formData.pan.length !== 10 || panVerifying}
                           className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
                         >
                           {panVerifying ? "Verifying..." : "Verify"}
@@ -2894,11 +2948,6 @@ console.log('Sending OTP with payload:', payload);
                         </button>
                       )}
                     </div>
-                    {!aadhaarVerified && (
-                      <p className="mt-2 text-xs text-orange-600">
-                        ⚠ Please verify Aadhaar first before verifying PAN
-                      </p>
-                    )}
                     {panVerified && panData && (
                       <p className="mt-2 text-xs text-green-700">
                         ✓ Verified for {panData.data?.pan || 'PAN holder'}

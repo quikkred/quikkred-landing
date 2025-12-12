@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Camera, X, RotateCw, Check, AlertCircle } from "lucide-react";
+import { Camera, X, RotateCw, Check, AlertCircle, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface SelfieCaptureProps {
@@ -20,6 +20,9 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
   const [error, setError] = useState<string>("");
   const [faceDetected, setFaceDetected] = useState(false);
   const [detectionMessage, setDetectionMessage] = useState<string>("Position your face in the frame");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationStatus, setVerificationStatus] = useState<'idle' | 'success' | 'failed'>('idle');
+  const [capturedFile, setCapturedFile] = useState<File | null>(null);
 
   // Start camera when modal opens
   useEffect(() => {
@@ -131,11 +134,14 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
     // Draw the current video frame to canvas
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // Convert canvas to blob
+    // Convert canvas to blob and save as file
     canvas.toBlob((blob) => {
       if (blob) {
         const imageUrl = canvas.toDataURL('image/jpeg', 0.9);
         setCapturedImage(imageUrl);
+        // Save the file for later verification
+        const file = new File([blob], `selfie-${Date.now()}.jpg`, { type: 'image/jpeg' });
+        setCapturedFile(file);
         stopCamera();
       }
     }, 'image/jpeg', 0.9);
@@ -143,26 +149,76 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
 
   const retakePhoto = () => {
     setCapturedImage(null);
+    setCapturedFile(null);
+    setVerificationStatus('idle');
+    setError('');
     startCamera();
   };
 
-  const confirmCapture = () => {
-    if (!capturedImage || !canvasRef.current) return;
-
-    // Convert data URL to File
-    canvasRef.current.toBlob((blob) => {
-      if (blob) {
-        const file = new File([blob], `selfie-${Date.now()}.jpg`, { type: 'image/jpeg' });
-        onCapture(file);
-        handleClose();
+  const verifyFaceLiveness = async (file: File): Promise<boolean> => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('Authentication required. Please login again.');
+        return false;
       }
-    }, 'image/jpeg', 0.9);
+
+      const formData = new FormData();
+      formData.append('photo', file);
+
+      const response = await fetch('https://api.bluechipfinmax.com/api/kyc/face/verification', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.data?.livenessStatus) {
+        return true;
+      } else {
+        setError(data.message || 'Face liveness verification failed. Please try again with a clear photo.');
+        return false;
+      }
+    } catch (err) {
+      console.error('Face verification error:', err);
+      setError('Face verification failed. Please try again.');
+      return false;
+    }
+  };
+
+  const confirmCapture = async () => {
+    if (!capturedImage || !capturedFile) return;
+
+    setIsVerifying(true);
+    setError('');
+    setVerificationStatus('idle');
+
+    // Verify face liveness first
+    const isLive = await verifyFaceLiveness(capturedFile);
+
+    if (isLive) {
+      setVerificationStatus('success');
+      // Wait a moment to show success status
+      setTimeout(() => {
+        onCapture(capturedFile);
+        handleClose();
+      }, 1000);
+    } else {
+      setVerificationStatus('failed');
+      setIsVerifying(false);
+    }
   };
 
   const handleClose = () => {
     stopCamera();
     setCapturedImage(null);
+    setCapturedFile(null);
     setError("");
+    setIsVerifying(false);
+    setVerificationStatus('idle');
     onClose();
   };
 
@@ -232,11 +288,40 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
                   )}
                 </>
               ) : (
-                <img
-                  src={capturedImage}
-                  alt="Captured selfie"
-                  className="w-full h-full object-cover mirror"
-                />
+                <div className="relative w-full h-full">
+                  <img
+                    src={capturedImage}
+                    alt="Captured selfie"
+                    className="w-full h-full object-cover mirror"
+                  />
+                  {/* Verification overlay */}
+                  {isVerifying && (
+                    <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
+                      {verificationStatus === 'idle' && (
+                        <>
+                          <Loader2 className="w-12 h-12 text-white animate-spin mb-4" />
+                          <p className="text-white text-lg font-semibold">Verifying face liveness...</p>
+                          <p className="text-white/80 text-sm mt-2">Please wait</p>
+                        </>
+                      )}
+                      {verificationStatus === 'success' && (
+                        <>
+                          <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mb-4">
+                            <Check className="w-10 h-10 text-white" />
+                          </div>
+                          <p className="text-white text-lg font-semibold">Face Verified!</p>
+                          <p className="text-white/80 text-sm mt-2">Liveness check passed</p>
+                        </>
+                      )}
+                    </div>
+                  )}
+                  {/* Failed verification badge */}
+                  {verificationStatus === 'failed' && !isVerifying && (
+                    <div className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-red-500 text-white rounded-full text-sm font-medium">
+                      Verification Failed - Please Retake
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 
@@ -255,6 +340,29 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
                     <li>Remove glasses if possible</li>
                     <li>Keep a neutral expression</li>
                   </ul>
+                </div>
+              </div>
+            )}
+
+            {/* Verification Status Message */}
+            {capturedImage && !isVerifying && (
+              <div className={`mb-4 rounded-lg p-4 ${
+                verificationStatus === 'failed'
+                  ? 'bg-red-50 border border-red-200'
+                  : 'bg-green-50 border border-green-200'
+              }`}>
+                <div className={`text-sm ${verificationStatus === 'failed' ? 'text-red-800' : 'text-green-800'}`}>
+                  {verificationStatus === 'failed' ? (
+                    <>
+                      <p className="font-semibold mb-1">Face Liveness Check Failed</p>
+                      <p className="text-xs">{error || 'Please retake the photo with better lighting and ensure your face is clearly visible.'}</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-semibold mb-1">Ready for Verification</p>
+                      <p className="text-xs">Click "Verify & Use Photo" to verify your face and proceed.</p>
+                    </>
+                  )}
                 </div>
               </div>
             )}
@@ -286,17 +394,28 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
                 <>
                   <button
                     onClick={retakePhoto}
-                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-semibold transition-all flex items-center justify-center gap-2"
+                    disabled={isVerifying}
+                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <RotateCw className="w-5 h-5" />
                     Retake
                   </button>
                   <button
                     onClick={confirmCapture}
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl shadow-lg hover:shadow-xl font-semibold transition-all flex items-center justify-center gap-2"
+                    disabled={isVerifying || verificationStatus === 'failed'}
+                    className="flex-1 px-6 py-3 rounded-xl shadow-lg hover:shadow-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-green-500 to-green-600 text-white"
                   >
-                    <Check className="w-5 h-5" />
-                    Use This Photo
+                    {isVerifying ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Verifying...
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-5 h-5" />
+                        Verify & Use Photo
+                      </>
+                    )}
                   </button>
                 </>
               )}
