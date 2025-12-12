@@ -22,87 +22,114 @@ import {
   Zap,
   Building,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import Products from "@/components/Product/Products";
 
-const loanProductsConfig = [
-  {
-    id: "lightning-payday",
-    translationKey: "lightningPayday",
-    icon: Zap,
-    amount: "₹10,000 - ₹75,000",
-    tenure: "7 - 30 days",
-    rate: "1% per day",
-    processingFee: "10% + GST",
-    color: "from-[#25B181] to-[#1F8F68]",
-    popular: true,
-  },
-  {
-    id: "instant-cash",
-    translationKey: "instantCash",
-    icon: Banknote,
-    amount: "₹15,000 - ₹1,00,000",
-    tenure: "15 - 45 days",
-    rate: "0.99% per day",
-    processingFee: "9% + GST",
-    color: "from-[#25B181] to-[#1F8F68]",
-  },
-  {
-    id: "weekend-booster",
-    translationKey: "weekendBooster",
-    icon: PartyPopper,
-    amount: "₹20,000 - ₹1,00,000",
-    tenure: "10 - 25 days",
-    rate: "1.1% per day",
-    processingFee: "8% + GST",
-    color: "from-[#25B181] to-[#1F8F68]",
-  },
-  {
-    id: "emergency-24x7",
-    translationKey: "emergency24x7",
-    icon: AlertCircle,
-    amount: "₹10,000 - ₹50,000",
-    tenure: "7 - 15 days",
-    rate: "1.5% per day",
-    processingFee: "12% + GST",
-    color: "from-[#25B181] to-[#1F8F68]",
-  },
-  {
-    id: "festival-fire",
-    translationKey: "festivalFire",
-    icon: Heart,
-    amount: "₹25,000 - ₹1,00,000",
-    tenure: "30 - 62 days",
-    rate: "0.95% per day",
-    processingFee: "8% + GST",
-    color: "from-[#25B181] to-[#1F8F68]",
-  },
-  {
-    id: "topup-turbo",
-    translationKey: "topupTurbo",
-    icon: TrendingUp,
-    amount: "+30-70% of current loan",
-    tenure: "Same as running",
-    rate: "Same rate",
-    processingFee: "+2% extra PF",
-    color: "from-[#25B181] to-[#1F8F68]",
-  },
-];
+// Icon mapping based on product name
+const getProductIcon = (productName: string) => {
+  const name = productName.toLowerCase();
+  if (name.includes("lightning")) return Zap;
+  if (name.includes("instant")) return Banknote;
+  if (name.includes("weekend")) return PartyPopper;
+  if (name.includes("emergency")) return AlertCircle;
+  if (name.includes("festival")) return Heart;
+  if (name.includes("top-up") || name.includes("turbo")) return TrendingUp;
+  if (name.includes("home")) return Building;
+  return CreditCard;
+};
+
+// Translation key mapping based on product name
+const getTranslationKey = (productName: string) => {
+  const name = productName.toLowerCase();
+  if (name.includes("lightning")) return "lightningPayday";
+  if (name.includes("instant")) return "instantCash";
+  if (name.includes("weekend")) return "weekendBooster";
+  if (name.includes("emergency")) return "emergency24x7";
+  if (name.includes("festival")) return "festivalFire";
+  if (name.includes("top-up") || name.includes("turbo")) return "topupTurbo";
+  return "default";
+};
+
+// Format amount to Indian currency format
+const formatAmount = (amount: number) => {
+  return new Intl.NumberFormat('en-IN').format(amount);
+};
+
+interface LoanProduct {
+  _id: string;
+  productName: string;
+  productCode: string;
+  description: string;
+  category: string;
+  status: string;
+  dailyInterestRate: number;
+  processingFee: number;
+  gst: number;
+  minAmount: number;
+  maxAmount: number;
+  minTenure: number;
+  maxTenure: number;
+  isActive: boolean;
+}
 
 export default function ProductsPage() {
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+  const [apiProducts, setApiProducts] = useState<LoanProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation();
 
-  const loanProducts = loanProductsConfig.map((product) => ({
-    ...product,
-    title: t(`products.loanProducts.${product.translationKey}.title`),
-    tagline: t(`products.loanProducts.${product.translationKey}.tagline`),
-    description: t(`products.loanProducts.${product.translationKey}.description`),
-    features: t(`products.loanProducts.${product.translationKey}.features`, { returnObjects: true }) as string[],
-    eligibility: t(`products.loanProducts.${product.translationKey}.eligibility`, { returnObjects: true }) as string[],
-  }));
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch("https://api.bluechipfinmax.com/api/loanProduct/getAll");
+        const data = await response.json();
+        if (data.success) {
+          // Filter only active products
+          const activeProducts = data.data.filter(
+            (product: LoanProduct) => product.isActive && product.status === "ACTIVE"
+          );
+          setApiProducts(activeProducts);
+        } else {
+          setError("Failed to fetch products");
+        }
+      } catch (err) {
+        setError("Failed to fetch products");
+        console.error("Error fetching products:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  const loanProducts = apiProducts.map((product) => {
+    const translationKey = getTranslationKey(product.productName);
+    const Icon = getProductIcon(product.productName);
+
+    return {
+      id: product._id,
+      translationKey,
+      icon: Icon,
+      amount: `₹${formatAmount(product.minAmount)} - ₹${formatAmount(product.maxAmount)}`,
+      tenure: `${product.minTenure} - ${product.maxTenure} days`,
+      rate: `${product.dailyInterestRate}% per day`,
+      processingFee: `${product.processingFee}% + GST`,
+      color: "from-[#25B181] to-[#1F8F68]",
+      popular: product.productName.toLowerCase().includes("lightning"),
+      title: t(`products.loanProducts.${translationKey}.title`, { defaultValue: product.productName }),
+      tagline: t(`products.loanProducts.${translationKey}.tagline`, { defaultValue: product.description }),
+      description: t(`products.loanProducts.${translationKey}.description`, { defaultValue: product.description }),
+      features: t(`products.loanProducts.${translationKey}.features`, { returnObjects: true, defaultValue: [] }) as string[],
+      eligibility: t(`products.loanProducts.${translationKey}.eligibility`, { returnObjects: true, defaultValue: [] }) as string[],
+      // Store raw API data for featured section
+      rawData: product,
+    };
+  });
 
   return (
     <div className="min-h-screen">
@@ -152,76 +179,97 @@ export default function ProductsPage() {
             </p>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="bg-white rounded-2xl sm:rounded-3xl shadow-lg p-6 sm:p-8 lg:p-12 max-w-5xl mx-auto border border-gray-100"
-          >
-            <div className="grid md:grid-cols-2 gap-6 sm:gap-8 items-center">
-              <div>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-14 h-14 bg-gradient-to-r from-[#25B181] to-[#1F8F68] rounded-xl flex items-center justify-center shadow-lg">
-                    <Zap className="w-7 h-7 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900">
-                      {t('products.featured.productTitle')}
-                    </h3>
-                    <p className="text-gray-700">
-                      {t('products.featured.productDescription')}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-4 mb-6">
-                  {(t('products.featured.features', { returnObjects: true }) as string[]).map((feature, index) => (
-                    <div key={index} className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-[#25B181] mt-0.5 flex-shrink-0" />
-                      <span>{feature}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <Link href="/apply/quick">
-                  <button className="px-8 py-3 bg-gradient-to-r from-[#25B181] to-[#1F8F68] text-white rounded-full font-semibold hover:shadow-lg transition-all flex items-center gap-2">
-                    {t('products.featured.applyButton')}
-                    <ArrowRight className="w-5 h-5" />
-                  </button>
-                </Link>
-              </div>
-
-              <div className="bg-gradient-to-br from-[#E6F7F2] to-[#D1F0E6] rounded-2xl p-6 border border-[#25B181]/20">
-                <h4 className="font-semibold mb-4 text-lg">{t('products.featured.quickStats')}</h4>
-                <div className="space-y-4">
-                  <div className="flex justify-between pb-3 border-b border-[#25B181]/20">
-                    <span className="text-gray-700">{t('products.featured.amountRange')}</span>
-                    <span className="font-semibold">₹10,000 - ₹75,000</span>
-                  </div>
-                  <div className="flex justify-between pb-3 border-b border-[#25B181]/20">
-                    <span className="text-gray-700">{t('products.featured.interestRate')}</span>
-                    <span className="font-semibold text-[#25B181]">
-                      1% per day
-                    </span>
-                  </div>
-                  <div className="flex justify-between pb-3 border-b border-[#25B181]/20">
-                    <span className="text-gray-700">{t('products.featured.tenure')}</span>
-                    <span className="font-semibold">7 - 30 days</span>
-                  </div>
-                  <div className="flex justify-between pb-3 border-b border-[#25B181]/20">
-                    <span className="text-gray-700">{t('products.featured.processingFee')}</span>
-                    <span className="font-semibold">10% + GST</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-700">{t('products.featured.approvalTime')}</span>
-                    <span className="font-semibold text-[#25B181]">
-                      {t('products.featured.approvalTimeValue')}
-                    </span>
-                  </div>
-                </div>
-              </div>
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-[#25B181]" />
             </div>
-          </motion.div>
+          ) : loanProducts.length > 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="bg-white rounded-2xl sm:rounded-3xl shadow-lg p-6 sm:p-8 lg:p-12 max-w-5xl mx-auto border border-gray-100"
+            >
+              {(() => {
+                const featuredProduct = loanProducts.find(p => p.popular) || loanProducts[0];
+                const FeaturedIcon = featuredProduct.icon;
+                return (
+                  <div className="grid md:grid-cols-2 gap-6 sm:gap-8 items-center">
+                    <div>
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="w-14 h-14 bg-gradient-to-r from-[#25B181] to-[#1F8F68] rounded-xl flex items-center justify-center shadow-lg">
+                          <FeaturedIcon className="w-7 h-7 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-2xl font-bold text-gray-900">
+                            {featuredProduct.title}
+                          </h3>
+                          <p className="text-gray-700">
+                            {featuredProduct.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4 mb-6">
+                        {Array.isArray(featuredProduct.features) && featuredProduct.features.length > 0 ? (
+                          featuredProduct.features.map((feature, index) => (
+                            <div key={index} className="flex items-start gap-3">
+                              <CheckCircle className="w-5 h-5 text-[#25B181] mt-0.5 flex-shrink-0" />
+                              <span>{feature}</span>
+                            </div>
+                          ))
+                        ) : (
+                          (t('products.featured.features', { returnObjects: true }) as string[]).map((feature, index) => (
+                            <div key={index} className="flex items-start gap-3">
+                              <CheckCircle className="w-5 h-5 text-[#25B181] mt-0.5 flex-shrink-0" />
+                              <span>{feature}</span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+
+                      <Link href="/apply/quick">
+                        <button className="px-8 py-3 bg-gradient-to-r from-[#25B181] to-[#1F8F68] text-white rounded-full font-semibold hover:shadow-lg transition-all flex items-center gap-2">
+                          {t('products.featured.applyButton')}
+                          <ArrowRight className="w-5 h-5" />
+                        </button>
+                      </Link>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-[#E6F7F2] to-[#D1F0E6] rounded-2xl p-6 border border-[#25B181]/20">
+                      <h4 className="font-semibold mb-4 text-lg">{t('products.featured.quickStats')}</h4>
+                      <div className="space-y-4">
+                        <div className="flex justify-between pb-3 border-b border-[#25B181]/20">
+                          <span className="text-gray-700">{t('products.featured.amountRange')}</span>
+                          <span className="font-semibold">{featuredProduct.amount}</span>
+                        </div>
+                        <div className="flex justify-between pb-3 border-b border-[#25B181]/20">
+                          <span className="text-gray-700">{t('products.featured.interestRate')}</span>
+                          <span className="font-semibold text-[#25B181]">
+                            {featuredProduct.rate}
+                          </span>
+                        </div>
+                        <div className="flex justify-between pb-3 border-b border-[#25B181]/20">
+                          <span className="text-gray-700">{t('products.featured.tenure')}</span>
+                          <span className="font-semibold">{featuredProduct.tenure}</span>
+                        </div>
+                        <div className="flex justify-between pb-3 border-b border-[#25B181]/20">
+                          <span className="text-gray-700">{t('products.featured.processingFee')}</span>
+                          <span className="font-semibold">{featuredProduct.processingFee}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-700">{t('products.featured.approvalTime')}</span>
+                          <span className="font-semibold text-[#25B181]">
+                            {t('products.featured.approvalTimeValue')}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </motion.div>
+          ) : null}
         </div>
       </section>
 
@@ -242,8 +290,19 @@ export default function ProductsPage() {
             </p>
           </motion.div>
 
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-[#25B181]" />
+            </div>
+          ) : error ? (
+            <div className="text-center py-12 text-red-500">
+              {error}
+            </div>
+          ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 max-w-7xl mx-auto">
-            {loanProducts.map((product, index) => (
+            {loanProducts.map((product, index) => {
+              const ProductIcon = product.icon;
+              return (
               <motion.div
                 key={product.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -261,7 +320,7 @@ export default function ProductsPage() {
                       🔥 {t('products.allProducts.popular')}
                     </div>
                   )}
-                  <product.icon className="w-12 h-12 mb-4" />
+                  <ProductIcon className="w-12 h-12 mb-4" />
                   <h3 className="text-2xl font-bold mb-1">{product.title}</h3>
                   <p className="text-sm opacity-80 italic mb-2">"{product.tagline}"</p>
                   <p className="opacity-90 text-sm">{product.description}</p>
@@ -296,15 +355,22 @@ export default function ProductsPage() {
                   <div className="mb-6 flex-1">
                     <h4 className="font-semibold mb-3">{t('products.allProducts.keyFeatures')}</h4>
                     <ul className="space-y-2">
-                      {product.features.map((feature, idx) => (
-                        <li
-                          key={idx}
-                          className="flex items-start gap-2 text-sm"
-                        >
+                      {Array.isArray(product.features) && product.features.length > 0 ? (
+                        product.features.map((feature, idx) => (
+                          <li
+                            key={idx}
+                            className="flex items-start gap-2 text-sm"
+                          >
+                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-gray-600">{feature}</span>
+                          </li>
+                        ))
+                      ) : (
+                        <li className="flex items-start gap-2 text-sm">
                           <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-gray-600">{feature}</span>
+                          <span className="text-gray-600">{product.description}</span>
                         </li>
-                      ))}
+                      )}
                     </ul>
                   </div>
 
@@ -350,22 +416,41 @@ export default function ProductsPage() {
                       className="px-6 pb-6"
                     >
                       <ul className="space-y-2">
-                        {product.eligibility.map((item, idx) => (
-                          <li
-                            key={idx}
-                            className="flex items-start gap-2 text-sm"
-                          >
-                            <CheckCircle className="w-4 h-4 text-[#25B181] mt-0.5 flex-shrink-0" />
-                            <span className="text-gray-600">{item}</span>
-                          </li>
-                        ))}
+                        {Array.isArray(product.eligibility) && product.eligibility.length > 0 ? (
+                          product.eligibility.map((item, idx) => (
+                            <li
+                              key={idx}
+                              className="flex items-start gap-2 text-sm"
+                            >
+                              <CheckCircle className="w-4 h-4 text-[#25B181] mt-0.5 flex-shrink-0" />
+                              <span className="text-gray-600">{item}</span>
+                            </li>
+                          ))
+                        ) : (
+                          <>
+                            <li className="flex items-start gap-2 text-sm">
+                              <CheckCircle className="w-4 h-4 text-[#25B181] mt-0.5 flex-shrink-0" />
+                              <span className="text-gray-600">Age: 21-60 years</span>
+                            </li>
+                            <li className="flex items-start gap-2 text-sm">
+                              <CheckCircle className="w-4 h-4 text-[#25B181] mt-0.5 flex-shrink-0" />
+                              <span className="text-gray-600">Min. monthly income: ₹15,000</span>
+                            </li>
+                            <li className="flex items-start gap-2 text-sm">
+                              <CheckCircle className="w-4 h-4 text-[#25B181] mt-0.5 flex-shrink-0" />
+                              <span className="text-gray-600">Valid ID & bank account</span>
+                            </li>
+                          </>
+                        )}
                       </ul>
                     </motion.div>
                   )}
                 </div>
               </motion.div>
-            ))}
+            );
+            })}
           </div>
+          )}
         </div>
       </section>
 
