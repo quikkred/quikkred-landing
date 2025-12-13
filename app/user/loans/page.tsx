@@ -223,6 +223,19 @@ export default function MyLoansPage() {
     limit: 10
   });
 
+  // New Loan Application Modal State
+  const [isNewLoanModalOpen, setIsNewLoanModalOpen] = useState(false);
+  const [newLoanLoading, setNewLoanLoading] = useState(false);
+  const [newLoanError, setNewLoanError] = useState<string | null>(null);
+  const [newLoanSuccess, setNewLoanSuccess] = useState<string | null>(null);
+  const [newLoanForm, setNewLoanForm] = useState({
+    loanAmount: '',
+    bankName: '',
+    accountNumber: '',
+    ifscCode: '',
+    accountHolderName: ''
+  });
+
   // Check authentication and authorization
   useEffect(() => {
     if (!isLoading) {
@@ -379,6 +392,84 @@ export default function MyLoansPage() {
     await fetchDetailedLoan(loan.loanNumber);
   };
 
+  // Handle new loan application submission
+  const handleNewLoanSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setNewLoanLoading(true);
+    setNewLoanError(null);
+    setNewLoanSuccess(null);
+
+    try {
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
+      const payload = {
+        loanAmount: Number(newLoanForm.loanAmount),
+        bankDetails: {
+          bankName: newLoanForm.bankName,
+          accountNumber: newLoanForm.accountNumber,
+          ifscCode: newLoanForm.ifscCode,
+          accountHolderName: newLoanForm.accountHolderName,
+          isBankDetailsFilled: true
+        }
+      };
+
+      const response = await fetch('https://api.bluechipfinmax.com/api/application/loan/new', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setNewLoanSuccess(`Application submitted successfully! Application Number: ${result.applicationNumber || 'N/A'}`);
+        // Reset form
+        setNewLoanForm({
+          loanAmount: '',
+          bankName: '',
+          accountNumber: '',
+          ifscCode: '',
+          accountHolderName: ''
+        });
+        // Refresh loans list after successful submission
+        setTimeout(() => {
+          fetchLoans();
+          setIsNewLoanModalOpen(false);
+          setNewLoanSuccess(null);
+        }, 2000);
+      } else {
+        setNewLoanError(result.message || 'Failed to submit application');
+      }
+    } catch (error) {
+      console.error('Error submitting loan application:', error);
+      setNewLoanError('An error occurred while submitting your application. Please try again.');
+    } finally {
+      setNewLoanLoading(false);
+    }
+  };
+
+  // Reset new loan modal
+  const resetNewLoanModal = () => {
+    setIsNewLoanModalOpen(false);
+    setNewLoanError(null);
+    setNewLoanSuccess(null);
+    setNewLoanForm({
+      loanAmount: '',
+      bankName: '',
+      accountNumber: '',
+      ifscCode: '',
+      accountHolderName: ''
+    });
+  };
+
   const formatCurrency = (amount: number | undefined | null) => {
     if (!amount && amount !== 0) {
       return '₹0';
@@ -483,7 +574,7 @@ export default function MyLoansPage() {
             </button>
             {/* Apply New button */}
             <button
-              onClick={() => router.push('/apply/quick')}
+              onClick={() => setIsNewLoanModalOpen(true)}
               className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
             >
               <Plus className="w-4 h-4" />
@@ -898,6 +989,181 @@ export default function MyLoansPage() {
                 <option value={50}>50</option>
               </select>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* New Loan Application Modal */}
+      {isNewLoanModalOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+            {/* Background overlay */}
+            <div
+              className="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity"
+              onClick={resetNewLoanModal}
+            />
+
+            {/* Modal panel */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative inline-block align-bottom bg-white rounded-xl sm:rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+            >
+              {/* Header */}
+              <div className="bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] px-4 sm:px-6 py-4 sm:py-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg sm:text-xl font-bold text-white">New Loan Application</h3>
+                    <p className="text-xs sm:text-sm text-white/80">Fill in the details to apply for a new loan</p>
+                  </div>
+                  <button
+                    onClick={resetNewLoanModal}
+                    className="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  >
+                    <X className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Form Content */}
+              <form onSubmit={handleNewLoanSubmit} className="px-4 sm:px-6 py-4 sm:py-6">
+                {/* Error Message */}
+                {newLoanError && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-red-700">{newLoanError}</p>
+                  </div>
+                )}
+
+                {/* Success Message */}
+                {newLoanSuccess && (
+                  <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-green-700">{newLoanSuccess}</p>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  {/* Loan Amount */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Loan Amount (₹) <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="number"
+                        required
+                        min="1000"
+                        max="500000"
+                        value={newLoanForm.loanAmount}
+                        onChange={(e) => setNewLoanForm({ ...newLoanForm, loanAmount: e.target.value })}
+                        className="w-full pl-10 pr-4 py-2.5 bg-[#FAFAFA] border border-[#E0E0E0] rounded-lg focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-sm"
+                        placeholder="Enter loan amount"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Bank Details Section */}
+                  <div className="border-t border-gray-200 pt-4">
+                    <h4 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                      <Building className="w-4 h-4 text-[#4A66FF]" />
+                      Bank Details
+                    </h4>
+
+                    {/* Account Holder Name */}
+                    <div className="mb-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Account Holder Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={newLoanForm.accountHolderName}
+                        onChange={(e) => setNewLoanForm({ ...newLoanForm, accountHolderName: e.target.value })}
+                        className="w-full px-4 py-2.5 bg-[#FAFAFA] border border-[#E0E0E0] rounded-lg focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-sm"
+                        placeholder="Enter account holder name"
+                      />
+                    </div>
+
+                    {/* Bank Name */}
+                    <div className="mb-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Bank Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={newLoanForm.bankName}
+                        onChange={(e) => setNewLoanForm({ ...newLoanForm, bankName: e.target.value })}
+                        className="w-full px-4 py-2.5 bg-[#FAFAFA] border border-[#E0E0E0] rounded-lg focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-sm"
+                        placeholder="Enter bank name (e.g., HDFC Bank)"
+                      />
+                    </div>
+
+                    {/* Account Number */}
+                    <div className="mb-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Account Number <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={newLoanForm.accountNumber}
+                        onChange={(e) => setNewLoanForm({ ...newLoanForm, accountNumber: e.target.value })}
+                        className="w-full px-4 py-2.5 bg-[#FAFAFA] border border-[#E0E0E0] rounded-lg focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-sm"
+                        placeholder="Enter account number"
+                      />
+                    </div>
+
+                    {/* IFSC Code */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        IFSC Code <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={newLoanForm.ifscCode}
+                        onChange={(e) => setNewLoanForm({ ...newLoanForm, ifscCode: e.target.value.toUpperCase() })}
+                        className="w-full px-4 py-2.5 bg-[#FAFAFA] border border-[#E0E0E0] rounded-lg focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-sm uppercase"
+                        placeholder="Enter IFSC code (e.g., HDFC0001234)"
+                        maxLength={11}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Actions */}
+                <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                  <button
+                    type="button"
+                    onClick={resetNewLoanModal}
+                    className="flex-1 px-4 py-2.5 bg-white border border-[#E0E0E0] text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={newLoanLoading}
+                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg hover:shadow-lg transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {newLoanLoading ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="w-4 h-4" />
+                        Submit Application
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
           </div>
         </div>
       )}
