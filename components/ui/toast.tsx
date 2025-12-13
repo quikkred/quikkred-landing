@@ -13,7 +13,7 @@ const ToastViewport = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Viewport
     ref={ref}
-    className={`fixed top-4 right-4 z-[9999] flex max-h-screen w-full max-w-sm flex-col gap-2 ${className || ""}`}
+    className={`fixed top-4 right-4 z-[9999] flex max-h-screen w-full max-w-sm flex-col gap-2 bg-white ${className || ""}`}
     {...props}
   />
 ));
@@ -341,7 +341,7 @@ export function Toaster() {
   };
 
   const toasterContent = (
-    <ToastProvider swipeDirection="right">
+    <ToastProvider swipeDirection="right" >
       {toasts.map(({ id, title, description, action, variant, open, onOpenChange, ...props }) => (
         <Toast
           key={id}
@@ -349,8 +349,9 @@ export function Toaster() {
           open={open}
           onOpenChange={onOpenChange}
           {...props}
+          className="bg-white"
         >
-          <div className="flex gap-3 items-start">
+          <div className="flex gap-3 items-start bg-white">
             {getIcon(variant)}
             <div className="grid gap-1 flex-1">
               {title && (
