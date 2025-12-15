@@ -679,18 +679,18 @@ export default function UserDashboard() {
               </div>
 
               {/* Payment Stats Grid */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className="text-center p-3 bg-white/50 rounded-lg">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+                <div className="text-center p-2 sm:p-3 bg-white/50 rounded-lg">
                   <p className="text-xs text-purple-700 mb-1">Total Loan</p>
-                  <p className="text-lg font-bold text-purple-900">₹{getTotalLoanAmount().toLocaleString()}</p>
+                  <p className="text-base sm:text-lg font-bold text-purple-900">₹{getTotalLoanAmount().toLocaleString()}</p>
                 </div>
-                <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
+                <div className="text-center p-2 sm:p-3 bg-green-50 rounded-lg border border-green-200">
                   <p className="text-xs text-green-700 mb-1">Amount Paid</p>
-                  <p className="text-lg font-bold text-green-900">₹{getPaidAmount().toLocaleString()}</p>
+                  <p className="text-base sm:text-lg font-bold text-green-900">₹{getPaidAmount().toLocaleString()}</p>
                 </div>
-                <div className="text-center p-3 bg-orange-50 rounded-lg border border-orange-200">
+                <div className="text-center p-2 sm:p-3 bg-orange-50 rounded-lg border border-orange-200">
                   <p className="text-xs text-orange-700 mb-1">Remaining</p>
-                  <p className="text-lg font-bold text-orange-900">₹{getRemainingAmount().toLocaleString()}</p>
+                  <p className="text-base sm:text-lg font-bold text-orange-900">₹{getRemainingAmount().toLocaleString()}</p>
                 </div>
               </div>
             </div>

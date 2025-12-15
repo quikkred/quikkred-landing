@@ -493,14 +493,23 @@ const UserLayout = ({ children }: UserLayoutProps) => {
 
                 <AnimatePresence>
                   {notificationDropdownOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="absolute right-0 top-full mt-2 w-[calc(100vw-24px)] sm:w-96 max-w-[384px] bg-white rounded-xl shadow-xl border border-[#E0E0E0] z-50 max-h-[70vh] sm:max-h-[500px] overflow-hidden flex flex-col"
-                    >
-                      {/* Notification Header */}
-                      <div className="p-4 border-b border-[#E0E0E0]">
+                    <>
+                      {/* Mobile backdrop */}
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setNotificationDropdownOpen(false)}
+                        className="fixed inset-0 bg-black/20 z-40 sm:hidden"
+                      />
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="fixed sm:absolute left-3 right-3 sm:left-auto sm:right-0 top-16 sm:top-full sm:mt-2 sm:w-96 bg-white rounded-xl shadow-xl border border-[#E0E0E0] z-50 max-h-[70vh] sm:max-h-[500px] overflow-hidden flex flex-col"
+                      >
+                        {/* Notification Header */}
+                        <div className="p-3 sm:p-4 border-b border-[#E0E0E0]">
                         <div className="flex items-center justify-between">
                           <h3 className="font-semibold text-gray-800">Recent Notifications</h3>
                           {notifications.length > 0 && (
@@ -514,8 +523,8 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                       {/* Notifications List */}
                       <div className="flex-1 overflow-y-auto">
                         {notifications.length === 0 ? (
-                          <div className="p-8 text-center">
-                            <Bell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                          <div className="p-6 sm:p-8 text-center">
+                            <Bell className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mx-auto mb-3" />
                             <p className="text-sm text-gray-600">No notifications</p>
                             <p className="text-xs text-gray-500 mt-1">You're all caught up!</p>
                           </div>
@@ -526,10 +535,10 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                                 key={notification._id}
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="p-4 hover:bg-[#FAFAFA] transition-colors cursor-pointer"
+                                className="p-3 sm:p-4 hover:bg-[#FAFAFA] transition-colors cursor-pointer"
                                 onClick={() => setNotificationDropdownOpen(false)}
                               >
-                                <div className="flex items-start gap-3">
+                                <div className="flex items-start gap-2 sm:gap-3">
                                   {/* Icon based on type */}
                                   <div className={`p-2 rounded-lg ${
                                     notification.type === 'INFO' ? 'bg-blue-500/10' :
@@ -600,7 +609,8 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                           </button>
                         </div>
                       )}
-                    </motion.div>
+                      </motion.div>
+                    </>
                   )}
                 </AnimatePresence>
               </div>

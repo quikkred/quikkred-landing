@@ -120,7 +120,7 @@ export function NotificationCenter({ className = '' }: NotificationCenterProps) 
               initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              className="absolute right-0 top-full mt-2 w-96 bg-slate-800 rounded-xl shadow-xl border border-slate-700 z-50 max-h-[80vh] flex flex-col"
+              className="fixed sm:absolute inset-x-2 sm:inset-x-auto sm:right-0 top-16 sm:top-full sm:mt-2 w-auto sm:w-96 bg-slate-800 rounded-xl shadow-xl border border-slate-700 z-50 max-h-[80vh] flex flex-col"
             >
               {/* Header */}
               <div className="p-4 border-b border-slate-700">

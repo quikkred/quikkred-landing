@@ -605,7 +605,7 @@ export default function MyApplicationsPage() {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="relative inline-block align-bottom bg-white rounded-xl sm:rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl sm:w-full max-h-[90vh] overflow-y-auto"
+              className="relative inline-block align-bottom bg-white rounded-xl sm:rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-full max-w-[calc(100vw-2rem)] sm:max-w-6xl max-h-[90vh] overflow-y-auto"
             >
               {/* Modal Header */}
               <div className="sticky top-0 z-10 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] px-4 sm:px-6 py-3 sm:py-4">
@@ -676,7 +676,7 @@ export default function MyApplicationsPage() {
                       <IndianRupee className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                       <h4 className="text-base sm:text-lg font-bold text-gray-800">Loan Details</h4>
                     </div>
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                       <div>
                         <p className="text-sm text-gray-600">Loan Amount</p>
                         <p className="text-lg font-bold text-green-700">₹{detailedApplication.loanAmount.toLocaleString()}</p>
@@ -705,10 +705,17 @@ export default function MyApplicationsPage() {
                         <p className="text-sm text-gray-600">GST on Fee({detailedApplication.productId?.gst}%)</p>
                         <p className="font-semibold text-gray-900">₹{detailedApplication.gstOnProcessingFee.toLocaleString()}</p>
                       </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Total Interest({detailedApplication.interestRate*detailedApplication.requestedTenure}%)</p>
-                        <p className="font-semibold text-gray-900">₹{detailedApplication.totalInterest.toLocaleString()}</p>
-                      </div>
+<div>
+  <p className="text-sm text-gray-600">
+    Total Interest Rate for {detailedApplication.requestedTenure} days (
+    {(detailedApplication.interestRate * detailedApplication.requestedTenure).toFixed(2)}%
+    )
+  </p>
+  <p className="font-semibold text-gray-900">
+    ₹{Number(detailedApplication.totalInterest).toLocaleString()}
+  </p>
+</div>
+
                       <div>
                         <p className="text-sm text-gray-600">Total Repayment</p>
                         <p className="font-semibold text-gray-900">₹{detailedApplication.totalRepayment.toLocaleString()}</p>
