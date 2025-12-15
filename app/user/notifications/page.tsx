@@ -131,27 +131,27 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] py-8">
-      <div className="container mx-auto px-4 max-w-4xl">
+    <div className="min-h-screen bg-[#FAFAFA] py-4 sm:py-8">
+      <div className="container mx-auto px-3 sm:px-4 max-w-4xl">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-6 sm:mb-8"
         >
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-[#1976D2] hover:text-[#1565C0] mb-4 transition-colors cursor-pointer"
+            className="flex items-center gap-2 text-[#1976D2] hover:text-[#1565C0] mb-3 sm:mb-4 transition-colors cursor-pointer"
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="font-medium">Back</span>
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="font-medium text-sm sm:text-base">Back</span>
           </button>
 
-          <div className="flex items-center gap-3">
-            <Bell className="w-8 h-8 text-[#25B181]" />
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Bell className="w-6 h-6 sm:w-8 sm:h-8 text-[#25B181]" />
             <div>
-              <h1 className="text-3xl font-bold text-[#1F8F68]">Notifications</h1>
-              <p className="text-gray-600 mt-1">Stay updated with your latest notifications</p>
+              <h1 className="text-xl sm:text-3xl font-bold text-[#1F8F68]">Notifications</h1>
+              <p className="text-gray-600 mt-0.5 sm:mt-1 text-sm sm:text-base">Stay updated with your latest notifications</p>
             </div>
           </div>
         </motion.div>
@@ -169,16 +169,16 @@ export default function NotificationsPage() {
         )}
 
         {/* Notifications List */}
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {notifications.length === 0 ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-white rounded-2xl shadow-sm border border-[#E0E0E0] p-12 text-center"
+              className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-[#E0E0E0] p-6 sm:p-12 text-center"
             >
-              <BellOff className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">No notifications</h3>
-              <p className="text-gray-600">You don't have any notifications yet.</p>
+              <BellOff className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-3 sm:mb-4" />
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">No notifications</h3>
+              <p className="text-gray-600 text-sm sm:text-base">You don't have any notifications yet.</p>
             </motion.div>
           ) : (
             notifications.map((notification, index) => (
@@ -187,37 +187,39 @@ export default function NotificationsPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className={`bg-white rounded-xl shadow-sm border-2 ${
+                className={`bg-white rounded-lg sm:rounded-xl shadow-sm border-2 ${
                   notification.isRead ? 'border-[#E0E0E0]' : 'border-[#2E7D32]'
                 } overflow-hidden hover:shadow-md transition-all`}
               >
-                <div className="flex items-start gap-4 p-5">
+                <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-5">
                   {/* Icon */}
-                  <div className={`p-3 rounded-lg ${getNotificationColor(notification.type)}`}>
-                    {getNotificationIcon(notification.type)}
+                  <div className={`p-2 sm:p-3 rounded-lg flex-shrink-0 ${getNotificationColor(notification.type)}`}>
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 [&>svg]:w-full [&>svg]:h-full">
+                      {getNotificationIcon(notification.type)}
+                    </div>
                   </div>
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-3 mb-2">
-                      <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-3 mb-1 sm:mb-2">
+                      <h3 className="font-semibold text-gray-900 text-sm sm:text-base flex items-center gap-2">
                         {notification.title}
                         {!notification.isRead && (
-                          <span className="w-2 h-2 bg-[#2E7D32] rounded-full" />
+                          <span className="w-2 h-2 bg-[#2E7D32] rounded-full flex-shrink-0" />
                         )}
                       </h3>
-                      <div className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
+                      <div className="flex items-center gap-1 text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">
                         <Clock className="w-3 h-3" />
                         {formatDate(notification.createdAt)}
                       </div>
                     </div>
 
-                    <p className="text-gray-700 text-sm">{notification.message}</p>
+                    <p className="text-gray-700 text-xs sm:text-sm">{notification.message}</p>
 
                     {notification.link && (
                       <a
                         href={notification.link}
-                        className="inline-block mt-3 text-sm text-[#1976D2] hover:text-[#1565C0] font-medium"
+                        className="inline-block mt-2 sm:mt-3 text-xs sm:text-sm text-[#1976D2] hover:text-[#1565C0] font-medium"
                       >
                         View details →
                       </a>

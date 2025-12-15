@@ -657,7 +657,7 @@ switch (category) {
       {/* Ticket Detail Modal */}
       {isDetailModalOpen && selectedTicket && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+          <div className="flex items-center justify-center min-h-screen px-2 sm:px-4 pt-4 pb-20 text-center sm:p-0">
             {/* Background overlay */}
             <div
               className="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity"
@@ -669,70 +669,70 @@ switch (category) {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full"
+              className="relative inline-block align-bottom bg-white rounded-xl sm:rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-full max-w-[calc(100vw-1rem)] sm:max-w-3xl"
             >
               {/* Header */}
-              <div className="bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] px-6 py-4">
+              <div className="bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] px-4 sm:px-6 py-3 sm:py-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-xl font-bold text-white">Ticket Details</h3>
-                    <p className="text-sm text-white/80">
+                    <h3 className="text-base sm:text-xl font-bold text-white">Ticket Details</h3>
+                    <p className="text-xs sm:text-sm text-white/80">
                       ID: {selectedTicket.ticketNumber || selectedTicket._id.slice(-8).toUpperCase()}
                     </p>
                   </div>
                   <button
                     onClick={() => setIsDetailModalOpen(false)}
-                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                    className="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg transition-colors"
                   >
-                    <X className="w-5 h-5 text-white" />
+                    <X className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </button>
                 </div>
               </div>
 
               {/* Content */}
-              <div className="px-6 py-4 max-h-[70vh] overflow-y-auto">
+              <div className="px-3 sm:px-6 py-3 sm:py-4 max-h-[70vh] overflow-y-auto">
                 {/* Status Badges */}
-                <div className="flex flex-wrap gap-2 mb-6">
-                  <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${getStatusColor(selectedTicket.status)}`}>
+                <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-4 sm:mb-6">
+                  <span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium ${getStatusColor(selectedTicket.status)}`}>
                     {selectedTicket.status || 'OPEN'}
                   </span>
-                  <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${getCategoryColor(selectedTicket.category)}`}>
+                  <span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium ${getCategoryColor(selectedTicket.category)}`}>
                     {selectedTicket.category.replace(/_/g, ' ')}
                   </span>
-                  <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${getPriorityColor(selectedTicket.priority)}`}>
-                    {selectedTicket.priority} Priority
+                  <span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium ${getPriorityColor(selectedTicket.priority)}`}>
+                    {selectedTicket.priority}
                   </span>
                 </div>
 
                 {/* Subject */}
-                <div className="mb-6">
-                  <h4 className="text-sm font-medium text-gray-600 mb-2">Subject</h4>
-                  <p className="text-lg font-semibold text-[#1F8F68]">{selectedTicket.subject}</p>
+                <div className="mb-4 sm:mb-6">
+                  <h4 className="text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">Subject</h4>
+                  <p className="text-base sm:text-lg font-semibold text-[#1F8F68]">{selectedTicket.subject}</p>
                 </div>
 
                 {/* Conversation History */}
-                <div className="mb-6">
-                  <h4 className="text-sm font-medium text-gray-600 mb-3 flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4 text-[#4A66FF]" />
+                <div className="mb-4 sm:mb-6">
+                  <h4 className="text-xs sm:text-sm font-medium text-gray-600 mb-2 sm:mb-3 flex items-center gap-2">
+                    <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#4A66FF]" />
                     Support Conversation
                     {Array.isArray(selectedTicket.chatDetails) && (
-                      <span className="ml-auto text-xs text-gray-500">
+                      <span className="ml-auto text-[10px] sm:text-xs text-gray-500">
                         {selectedTicket.chatDetails.length} messages
                       </span>
                     )}
                   </h4>
-                  <div className="space-y-4 max-h-[400px] overflow-y-auto bg-gradient-to-b from-gray-50 to-white rounded-lg p-4 border border-gray-200">
+                  <div className="space-y-3 sm:space-y-4 max-h-[300px] sm:max-h-[400px] overflow-y-auto bg-gradient-to-b from-gray-50 to-white rounded-lg p-2 sm:p-4 border border-gray-200">
                     {Array.isArray(selectedTicket.chatDetails) ? (
                       selectedTicket.chatDetails?.map((chat, index) => {
                         const isCustomer = chat.addedByModel === 'Customer';
 
                         return (
-                          <div key={chat._id} className="space-y-3">
+                          <div key={chat._id} className="space-y-2 sm:space-y-3">
                             {/* Customer/User Message */}
                             <div className={`flex ${isCustomer ? 'justify-start' : 'justify-end'}`}>
-                              <div className={`flex ${isCustomer ? 'flex-row' : 'flex-row-reverse'} items-end gap-2 max-w-[80%]`}>
+                              <div className={`flex ${isCustomer ? 'flex-row' : 'flex-row-reverse'} items-end gap-1.5 sm:gap-2 max-w-[90%] sm:max-w-[80%]`}>
                                 {/* Avatar */}
-                                <div className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-md ${
+                                <div className={`flex-shrink-0 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-bold shadow-md ${
                                   isCustomer
                                     ? 'bg-gradient-to-br from-blue-500 to-blue-600'
                                     : 'bg-gradient-to-br from-[#25B181] to-[#1F8F68]'
@@ -743,30 +743,29 @@ switch (category) {
                                 {/* Message Bubble */}
                                 <div className={`flex flex-col ${isCustomer ? 'items-start' : 'items-end'}`}>
                                   {/* Sender Label */}
-                                  <div className={`flex items-center gap-2 mb-1 px-2 text-xs font-semibold ${
+                                  <div className={`flex items-center gap-1 sm:gap-2 mb-0.5 sm:mb-1 px-1 sm:px-2 text-[10px] sm:text-xs font-semibold ${
                                     isCustomer ? 'text-blue-600' : 'text-[#25B181]'
                                   }`}>
-                                    <span>
-                                      {isCustomer ? 'Your Query' : `${chat.addedBy?.fullName || chat.assignedTo?.fullName || 'Support'} (Support)`}
+                                    <span className="truncate max-w-[150px] sm:max-w-none">
+                                      {isCustomer ? 'Your Query' : `${chat.addedBy?.fullName || chat.assignedTo?.fullName || 'Support'}`}
                                     </span>
                                   </div>
 
-                                  <div className={`rounded-2xl px-4 py-3 shadow-md ${
+                                  <div className={`rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 shadow-md ${
                                     isCustomer
                                       ? 'bg-white border-2 border-blue-200 rounded-bl-none'
                                       : 'bg-gradient-to-br from-[#25B181] to-[#1F8F68] text-white rounded-br-none'
                                   }`}>
-                                    <p className={`text-sm leading-relaxed ${isCustomer ? 'text-gray-800' : 'text-white'}`}>
+                                    <p className={`text-xs sm:text-sm leading-relaxed ${isCustomer ? 'text-gray-800' : 'text-white'}`}>
                                       {chat.message}
                                     </p>
                                   </div>
 
                                   {/* Timestamp */}
-                                  <div className="mt-1 px-2 text-xs text-gray-500">
+                                  <div className="mt-0.5 sm:mt-1 px-1 sm:px-2 text-[10px] sm:text-xs text-gray-500">
                                     {new Date(chat.addedAt).toLocaleString('en-IN', {
                                       month: 'short',
                                       day: 'numeric',
-                                      year: 'numeric',
                                       hour: '2-digit',
                                       minute: '2-digit'
                                     })}
@@ -778,39 +777,38 @@ switch (category) {
                             {/* Support Agent Response (if remarks exist) */}
                             {chat.remarks && (
                               <div className="flex justify-end">
-                                <div className="flex flex-row-reverse items-end gap-2 max-w-[80%]">
+                                <div className="flex flex-row-reverse items-end gap-1.5 sm:gap-2 max-w-[90%] sm:max-w-[80%]">
                                   {/* Avatar */}
-                                  <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-md bg-gradient-to-br from-[#25B181] to-[#1F8F68]">
+                                  <div className="flex-shrink-0 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-bold shadow-md bg-gradient-to-br from-[#25B181] to-[#1F8F68]">
                                     {chat.assignedTo?.fullName?.charAt(0).toUpperCase() || 'S'}
                                   </div>
 
                                   {/* Message Bubble */}
                                   <div className="flex flex-col items-end">
                                     {/* Sender Label */}
-                                    <div className="flex items-center gap-2 mb-1 px-2 text-xs font-semibold text-[#25B181]">
-                                      <span>{chat.assignedTo?.fullName || 'Support'} (Support)</span>
+                                    <div className="flex items-center gap-1 sm:gap-2 mb-0.5 sm:mb-1 px-1 sm:px-2 text-[10px] sm:text-xs font-semibold text-[#25B181]">
+                                      <span className="truncate max-w-[150px] sm:max-w-none">{chat.assignedTo?.fullName || 'Support'}</span>
                                     </div>
 
-                                    <div className="rounded-2xl px-4 py-3 shadow-md bg-gradient-to-br from-[#25B181] to-[#1F8F68] text-white rounded-br-none">
-                                      <p className="text-sm leading-relaxed text-white">
+                                    <div className="rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 shadow-md bg-gradient-to-br from-[#25B181] to-[#1F8F68] text-white rounded-br-none">
+                                      <p className="text-xs sm:text-sm leading-relaxed text-white">
                                         {chat.remarks}
                                       </p>
                                     </div>
 
                                     {/* Timestamp and Agent Info */}
-                                    <div className="mt-1 px-2 text-xs text-gray-500">
+                                    <div className="mt-0.5 sm:mt-1 px-1 sm:px-2 text-[10px] sm:text-xs text-gray-500">
                                       {chat.remarkedAt && new Date(chat.remarkedAt).toLocaleString('en-IN', {
                                         month: 'short',
                                         day: 'numeric',
-                                        year: 'numeric',
                                         hour: '2-digit',
                                         minute: '2-digit'
                                       })}
                                     </div>
 
-                                    {/* Agent Contact Info */}
+                                    {/* Agent Contact Info - Hidden on mobile */}
                                     {chat.assignedTo && (
-                                      <div className="flex flex-wrap items-center gap-2 mt-2 px-2 text-xs text-gray-600">
+                                      <div className="hidden sm:flex flex-wrap items-center gap-2 mt-2 px-2 text-xs text-gray-600">
                                         <div className="flex items-center gap-1">
                                           <Mail className="w-3 h-3" />
                                           <span>{chat.assignedTo.email}</span>
