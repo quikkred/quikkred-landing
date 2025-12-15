@@ -206,10 +206,10 @@ export default function MyApplicationsPage() {
         // Update pagination info
         if (result.pagination) {
           setPagination({
-            totalRecords: result.pagination.totalRecords,
-            totalPages: result.pagination.totalPages,
-            currentPage: result.pagination.currentPage,
-            limit: result.pagination.limit
+            totalRecords: result.pagination.totalRecords || 0,
+            totalPages: result.pagination.totalPages || 1,
+            currentPage: result.pagination.currentPage || 1,
+            limit: result.pagination.limit || 10
           });
         }
       }
@@ -512,11 +512,11 @@ export default function MyApplicationsPage() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             {/* Page Info */}
             <div className="text-sm text-gray-600">
-              Showing <span className="font-semibold text-[#1F8F68]">{(pagination.currentPage - 1) * pagination.limit + 1}</span> to{' '}
+              Showing <span className="font-semibold text-[#1F8F68]">{pagination.totalRecords > 0 ? (pagination.currentPage - 1) * pagination.limit + 1 : 0}</span> to{' '}
               <span className="font-semibold text-[#1F8F68]">
-                {Math.min(pagination.currentPage * pagination.limit, pagination.totalRecords)}
+                {Math.min(pagination.currentPage * pagination.limit, pagination.totalRecords) || 0}
               </span>{' '}
-              of <span className="font-semibold text-[#1F8F68]">{pagination.totalRecords}</span> applications
+              of <span className="font-semibold text-[#1F8F68]">{pagination.totalRecords || 0}</span> applications
             </div>
 
             {/* Pagination Controls */}

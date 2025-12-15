@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { loansService } from '@/lib/api/loans.service';
+import { usersService } from '@/lib/api/users.service';
 
 interface Loan {
   id: string;
@@ -236,6 +237,26 @@ export default function MyLoansPage() {
     accountHolderName: ''
   });
 
+  // New Loan Application - Enhanced Flow State
+  const [newLoanStep, setNewLoanStep] = useState<'amount' | 'bank' | 'success'>('amount');
+  const [bankSelectionMode, setBankSelectionMode] = useState<'existing' | 'new' | null>(null);
+  const [savedBanks, setSavedBanks] = useState<Array<{
+    id: string;
+    accountNumber: string;
+    ifscCode: string;
+    bankName: string;
+    accountHolderName?: string;
+    isPrimary: boolean;
+  }>>([]);
+  const [selectedBankId, setSelectedBankId] = useState<string | null>(null);
+  const [loadingSavedBanks, setLoadingSavedBanks] = useState(false);
+  const [newLoanResult, setNewLoanResult] = useState<{
+    applicationId: string;
+    applicationNumber: string;
+    loanAmount: number;
+    priority: string;
+  } | null>(null);
+
   // Check authentication and authorization
   useEffect(() => {
     if (!isLoading) {
@@ -392,12 +413,102 @@ export default function MyLoansPage() {
     await fetchDetailedLoan(loan.loanNumber);
   };
 
+  // Fetch saved bank accounts
+  const fetchSavedBanks = async () => {
+    setLoadingSavedBanks(true);
+    try {
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch('https://api.bluechipfinmax.com/api/customer/get', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const result = await response.json();
+      if (result.success && result.data && result.data.banks) {
+        setSavedBanks(result.data.banks.map((bank: any, index: number) => ({
+          id: bank._id || `bank-${index}`,
+          accountNumber: bank.accountNumber,
+          ifscCode: bank.ifscCode,
+          bankName: bank.bankName,
+          accountHolderName: bank.accountHolderName,
+          isPrimary: index === 0
+        })));
+      }
+    } catch (error) {
+      console.error('Error fetching saved banks:', error);
+    } finally {
+      setLoadingSavedBanks(false);
+    }
+  };
+
+  // Handle bank selection from existing banks
+  const handleSelectExistingBank = (bankId: string) => {
+    setSelectedBankId(bankId);
+    const selectedBank = savedBanks.find(bank => bank.id === bankId);
+    if (selectedBank) {
+      setNewLoanForm(prev => ({
+        ...prev,
+        bankName: selectedBank.bankName,
+        accountNumber: selectedBank.accountNumber,
+        ifscCode: selectedBank.ifscCode,
+        accountHolderName: selectedBank.accountHolderName || ''
+      }));
+    }
+  };
+
+  // Validate loan amount and proceed to bank step
+  const handleProceedToBank = () => {
+    setNewLoanError(null);
+    const amount = Number(newLoanForm.loanAmount);
+    if (!amount || amount < 1000) {
+      setNewLoanError('Please enter a valid loan amount (minimum ₹1,000)');
+      return;
+    }
+    if (amount > 500000) {
+      setNewLoanError('Maximum loan amount is ₹5,00,000');
+      return;
+    }
+    setNewLoanStep('bank');
+    fetchSavedBanks();
+  };
+
+  // Validate bank details
+  const validateBankDetails = (): boolean => {
+    if (!newLoanForm.accountHolderName.trim()) {
+      setNewLoanError('Please enter account holder name');
+      return false;
+    }
+    if (!newLoanForm.bankName.trim()) {
+      setNewLoanError('Please enter bank name');
+      return false;
+    }
+    if (!newLoanForm.accountNumber.trim() || newLoanForm.accountNumber.length < 9) {
+      setNewLoanError('Please enter a valid account number (minimum 9 digits)');
+      return false;
+    }
+    if (!newLoanForm.ifscCode.trim() || newLoanForm.ifscCode.length !== 11) {
+      setNewLoanError('Please enter a valid IFSC code (11 characters)');
+      return false;
+    }
+    return true;
+  };
+
   // Handle new loan application submission
   const handleNewLoanSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setNewLoanLoading(true);
     setNewLoanError(null);
-    setNewLoanSuccess(null);
+
+    // Validate bank details
+    if (!validateBankDetails()) {
+      return;
+    }
+
+    setNewLoanLoading(true);
 
     try {
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
@@ -430,21 +541,14 @@ export default function MyLoansPage() {
       const result = await response.json();
 
       if (result.success) {
-        setNewLoanSuccess(`Application submitted successfully! Application Number: ${result.applicationNumber || 'N/A'}`);
-        // Reset form
-        setNewLoanForm({
-          loanAmount: '',
-          bankName: '',
-          accountNumber: '',
-          ifscCode: '',
-          accountHolderName: ''
+        // Store success data and show confirmation screen
+        setNewLoanResult({
+          applicationId: result.data?.applicationId || result.applicationId || '',
+          applicationNumber: result.data?.applicationNumber || result.applicationNumber || '',
+          loanAmount: result.data?.loanAmount || Number(newLoanForm.loanAmount),
+          priority: result.data?.priority || 'Medium'
         });
-        // Refresh loans list after successful submission
-        setTimeout(() => {
-          fetchLoans();
-          setIsNewLoanModalOpen(false);
-          setNewLoanSuccess(null);
-        }, 2000);
+        setNewLoanStep('success');
       } else {
         setNewLoanError(result.message || 'Failed to submit application');
       }
@@ -461,6 +565,10 @@ export default function MyLoansPage() {
     setIsNewLoanModalOpen(false);
     setNewLoanError(null);
     setNewLoanSuccess(null);
+    setNewLoanStep('amount');
+    setBankSelectionMode(null);
+    setSelectedBankId(null);
+    setNewLoanResult(null);
     setNewLoanForm({
       loanAmount: '',
       bankName: '',
@@ -993,7 +1101,7 @@ export default function MyLoansPage() {
         </div>
       )}
 
-      {/* New Loan Application Modal */}
+      {/* New Loan Application Modal - Multi-Step Flow */}
       {isNewLoanModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
@@ -1014,8 +1122,14 @@ export default function MyLoansPage() {
               <div className="bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] px-4 sm:px-6 py-4 sm:py-5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-lg sm:text-xl font-bold text-white">New Loan Application</h3>
-                    <p className="text-xs sm:text-sm text-white/80">Fill in the details to apply for a new loan</p>
+                    <h3 className="text-lg sm:text-xl font-bold text-white">
+                      {newLoanStep === 'success' ? 'Application Submitted!' : 'New Loan Application'}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-white/80">
+                      {newLoanStep === 'amount' && 'Step 1: Enter loan amount'}
+                      {newLoanStep === 'bank' && 'Step 2: Select bank account'}
+                      {newLoanStep === 'success' && 'Your application is being processed'}
+                    </p>
                   </div>
                   <button
                     onClick={resetNewLoanModal}
@@ -1024,10 +1138,18 @@ export default function MyLoansPage() {
                     <X className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </button>
                 </div>
+
+                {/* Progress indicator */}
+                {newLoanStep !== 'success' && (
+                  <div className="flex gap-2 mt-3">
+                    <div className={`flex-1 h-1.5 rounded-full ${newLoanStep === 'amount' || newLoanStep === 'bank' ? 'bg-white' : 'bg-white/30'}`} />
+                    <div className={`flex-1 h-1.5 rounded-full ${newLoanStep === 'bank' ? 'bg-white' : 'bg-white/30'}`} />
+                  </div>
+                )}
               </div>
 
-              {/* Form Content */}
-              <form onSubmit={handleNewLoanSubmit} className="px-4 sm:px-6 py-4 sm:py-6">
+              {/* Content */}
+              <div className="px-4 sm:px-6 py-4 sm:py-6">
                 {/* Error Message */}
                 {newLoanError && (
                   <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
@@ -1036,133 +1158,376 @@ export default function MyLoansPage() {
                   </div>
                 )}
 
-                {/* Success Message */}
-                {newLoanSuccess && (
-                  <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-start gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-green-700">{newLoanSuccess}</p>
+                {/* Step 1: Loan Amount */}
+                {newLoanStep === 'amount' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        How much do you need? <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type="number"
+                          min="1000"
+                          max="500000"
+                          value={newLoanForm.loanAmount}
+                          onChange={(e) => setNewLoanForm({ ...newLoanForm, loanAmount: e.target.value })}
+                          className="w-full pl-12 pr-4 py-4 bg-[#FAFAFA] border-2 border-[#E0E0E0] rounded-xl focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-lg font-semibold"
+                          placeholder="Enter loan amount"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2">Min: ₹1,000 | Max: ₹5,00,000</p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                      <button
+                        type="button"
+                        onClick={resetNewLoanModal}
+                        className="flex-1 px-4 py-2.5 bg-white border border-[#E0E0E0] text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleProceedToBank}
+                        className="flex-1 px-4 py-2.5 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg hover:shadow-lg transition-all text-sm font-medium flex items-center justify-center gap-2"
+                      >
+                        Continue
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 )}
 
-                <div className="space-y-4">
-                  {/* Loan Amount */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Loan Amount (₹) <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <input
-                        type="number"
-                        required
-                        min="1000"
-                        max="500000"
-                        value={newLoanForm.loanAmount}
-                        onChange={(e) => setNewLoanForm({ ...newLoanForm, loanAmount: e.target.value })}
-                        className="w-full pl-10 pr-4 py-2.5 bg-[#FAFAFA] border border-[#E0E0E0] rounded-lg focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-sm"
-                        placeholder="Enter loan amount"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Bank Details Section */}
-                  <div className="border-t border-gray-200 pt-4">
-                    <h4 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                      <Building className="w-4 h-4 text-[#4A66FF]" />
-                      Bank Details
-                    </h4>
-
-                    {/* Account Holder Name */}
-                    <div className="mb-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Account Holder Name <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={newLoanForm.accountHolderName}
-                        onChange={(e) => setNewLoanForm({ ...newLoanForm, accountHolderName: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-[#FAFAFA] border border-[#E0E0E0] rounded-lg focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-sm"
-                        placeholder="Enter account holder name"
-                      />
+                {/* Step 2: Bank Selection */}
+                {newLoanStep === 'bank' && (
+                  <div className="space-y-4">
+                    {/* Loan Amount Summary */}
+                    <div className="bg-gradient-to-r from-[#25B181]/10 to-[#51C9AF]/10 rounded-lg p-3 border border-[#25B181]/20">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Loan Amount</span>
+                        <span className="text-lg font-bold text-[#1F8F68]">₹{Number(newLoanForm.loanAmount).toLocaleString()}</span>
+                      </div>
                     </div>
 
-                    {/* Bank Name */}
-                    <div className="mb-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Bank Name <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={newLoanForm.bankName}
-                        onChange={(e) => setNewLoanForm({ ...newLoanForm, bankName: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-[#FAFAFA] border border-[#E0E0E0] rounded-lg focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-sm"
-                        placeholder="Enter bank name (e.g., HDFC Bank)"
-                      />
-                    </div>
+                    {/* Bank Selection Mode */}
+                    {!bankSelectionMode && (
+                      <div className="space-y-3">
+                        <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                          <Building className="w-4 h-4 text-[#4A66FF]" />
+                          Select Bank Account
+                        </h4>
 
-                    {/* Account Number */}
-                    <div className="mb-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Account Number <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={newLoanForm.accountNumber}
-                        onChange={(e) => setNewLoanForm({ ...newLoanForm, accountNumber: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-[#FAFAFA] border border-[#E0E0E0] rounded-lg focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-sm"
-                        placeholder="Enter account number"
-                      />
-                    </div>
+                        {/* Use Existing Bank Option */}
+                        <button
+                          type="button"
+                          onClick={() => setBankSelectionMode('existing')}
+                          disabled={loadingSavedBanks}
+                          className="w-full p-4 bg-white border-2 border-[#E0E0E0] rounded-xl hover:border-[#25B181] hover:bg-[#FAFAFA] transition-all text-left flex items-center gap-4"
+                        >
+                          <div className="w-12 h-12 bg-[#4A66FF]/10 rounded-xl flex items-center justify-center">
+                            <Wallet className="w-6 h-6 text-[#4A66FF]" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold text-gray-800">Use Existing Bank</p>
+                            <p className="text-xs text-gray-500">Select from your saved bank accounts</p>
+                          </div>
+                          <ChevronRight className="w-5 h-5 text-gray-400" />
+                        </button>
 
-                    {/* IFSC Code */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        IFSC Code <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={newLoanForm.ifscCode}
-                        onChange={(e) => setNewLoanForm({ ...newLoanForm, ifscCode: e.target.value.toUpperCase() })}
-                        className="w-full px-4 py-2.5 bg-[#FAFAFA] border border-[#E0E0E0] rounded-lg focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-sm uppercase"
-                        placeholder="Enter IFSC code (e.g., HDFC0001234)"
-                        maxLength={11}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Footer Actions */}
-                <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                  <button
-                    type="button"
-                    onClick={resetNewLoanModal}
-                    className="flex-1 px-4 py-2.5 bg-white border border-[#E0E0E0] text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={newLoanLoading}
-                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg hover:shadow-lg transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {newLoanLoading ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                        Submitting...
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="w-4 h-4" />
-                        Submit Application
-                      </>
+                        {/* Add New Bank Option */}
+                        <button
+                          type="button"
+                          onClick={() => setBankSelectionMode('new')}
+                          className="w-full p-4 bg-white border-2 border-[#E0E0E0] rounded-xl hover:border-[#25B181] hover:bg-[#FAFAFA] transition-all text-left flex items-center gap-4"
+                        >
+                          <div className="w-12 h-12 bg-[#25B181]/10 rounded-xl flex items-center justify-center">
+                            <Plus className="w-6 h-6 text-[#25B181]" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-semibold text-gray-800">Add New Bank</p>
+                            <p className="text-xs text-gray-500">Enter new bank account details</p>
+                          </div>
+                          <ChevronRight className="w-5 h-5 text-gray-400" />
+                        </button>
+                      </div>
                     )}
-                  </button>
-                </div>
-              </form>
+
+                    {/* Existing Banks List */}
+                    {bankSelectionMode === 'existing' && (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-semibold text-gray-800">Select Bank Account</h4>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setBankSelectionMode(null);
+                              setSelectedBankId(null);
+                            }}
+                            className="text-xs text-[#4A66FF] hover:underline"
+                          >
+                            ← Back
+                          </button>
+                        </div>
+
+                        {loadingSavedBanks ? (
+                          <div className="flex items-center justify-center py-8">
+                            <RefreshCw className="w-6 h-6 text-[#25B181] animate-spin" />
+                          </div>
+                        ) : savedBanks.length === 0 ? (
+                          <div className="text-center py-6">
+                            <Building className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                            <p className="text-gray-600 text-sm">No saved bank accounts</p>
+                            <button
+                              type="button"
+                              onClick={() => setBankSelectionMode('new')}
+                              className="mt-3 text-sm text-[#25B181] font-medium hover:underline"
+                            >
+                              + Add New Bank Account
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="space-y-2 max-h-[250px] overflow-y-auto">
+                            {savedBanks.map((bank) => (
+                              <button
+                                key={bank.id}
+                                type="button"
+                                onClick={() => handleSelectExistingBank(bank.id)}
+                                className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
+                                  selectedBankId === bank.id
+                                    ? 'border-[#25B181] bg-[#25B181]/5'
+                                    : 'border-[#E0E0E0] hover:border-[#25B181]/50'
+                                }`}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                                    selectedBankId === bank.id ? 'bg-[#25B181]' : 'bg-gray-100'
+                                  }`}>
+                                    <Building className={`w-5 h-5 ${selectedBankId === bank.id ? 'text-white' : 'text-gray-500'}`} />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-gray-800 text-sm truncate">{bank.bankName}</p>
+                                    <p className="text-xs text-gray-500">
+                                      ****{bank.accountNumber.slice(-4)} • {bank.ifscCode}
+                                    </p>
+                                  </div>
+                                  {bank.isPrimary && (
+                                    <span className="px-2 py-0.5 bg-[#4A66FF]/10 text-[#4A66FF] text-[10px] font-semibold rounded-full">
+                                      PRIMARY
+                                    </span>
+                                  )}
+                                  {selectedBankId === bank.id && (
+                                    <CheckCircle className="w-5 h-5 text-[#25B181]" />
+                                  )}
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Submit with Selected Bank */}
+                        {selectedBankId && (
+                          <form onSubmit={handleNewLoanSubmit}>
+                            <button
+                              type="submit"
+                              disabled={newLoanLoading}
+                              className="w-full mt-4 px-4 py-3 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg hover:shadow-lg transition-all text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                              {newLoanLoading ? (
+                                <>
+                                  <RefreshCw className="w-4 h-4 animate-spin" />
+                                  Submitting...
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle className="w-4 h-4" />
+                                  Submit Application
+                                </>
+                              )}
+                            </button>
+                          </form>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Add New Bank Form */}
+                    {bankSelectionMode === 'new' && (
+                      <form onSubmit={handleNewLoanSubmit} className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-semibold text-gray-800">Enter Bank Details</h4>
+                          <button
+                            type="button"
+                            onClick={() => setBankSelectionMode(null)}
+                            className="text-xs text-[#4A66FF] hover:underline"
+                          >
+                            ← Back
+                          </button>
+                        </div>
+
+                        {/* Account Holder Name */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Account Holder Name <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={newLoanForm.accountHolderName}
+                            onChange={(e) => setNewLoanForm({ ...newLoanForm, accountHolderName: e.target.value })}
+                            className="w-full px-4 py-2.5 bg-[#FAFAFA] border border-[#E0E0E0] rounded-lg focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-sm"
+                            placeholder="Enter account holder name"
+                          />
+                        </div>
+
+                        {/* Bank Name */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Bank Name <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={newLoanForm.bankName}
+                            onChange={(e) => setNewLoanForm({ ...newLoanForm, bankName: e.target.value })}
+                            className="w-full px-4 py-2.5 bg-[#FAFAFA] border border-[#E0E0E0] rounded-lg focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-sm"
+                            placeholder="e.g., HDFC Bank, SBI, ICICI Bank"
+                          />
+                        </div>
+
+                        {/* Account Number */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Account Number <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={newLoanForm.accountNumber}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, '');
+                              setNewLoanForm({ ...newLoanForm, accountNumber: value });
+                            }}
+                            maxLength={18}
+                            className="w-full px-4 py-2.5 bg-[#FAFAFA] border border-[#E0E0E0] rounded-lg focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-sm"
+                            placeholder="Enter 9-18 digit account number"
+                          />
+                        </div>
+
+                        {/* IFSC Code */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            IFSC Code <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={newLoanForm.ifscCode}
+                            onChange={(e) => setNewLoanForm({ ...newLoanForm, ifscCode: e.target.value.toUpperCase() })}
+                            maxLength={11}
+                            className="w-full px-4 py-2.5 bg-[#FAFAFA] border border-[#E0E0E0] rounded-lg focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-sm uppercase"
+                            placeholder="e.g., HDFC0001234"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">11 character bank branch code</p>
+                        </div>
+
+                        {/* Submit Button */}
+                        <button
+                          type="submit"
+                          disabled={newLoanLoading}
+                          className="w-full mt-4 px-4 py-3 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg hover:shadow-lg transition-all text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+                        >
+                          {newLoanLoading ? (
+                            <>
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                              Submitting...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-4 h-4" />
+                              Submit Application
+                            </>
+                          )}
+                        </button>
+                      </form>
+                    )}
+
+                    {/* Back Button (when no mode selected) */}
+                    {!bankSelectionMode && (
+                      <button
+                        type="button"
+                        onClick={() => setNewLoanStep('amount')}
+                        className="w-full mt-2 px-4 py-2.5 bg-white border border-[#E0E0E0] text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        Back to Amount
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Step 3: Success Screen */}
+                {newLoanStep === 'success' && newLoanResult && (
+                  <div className="text-center py-4">
+                    {/* Success Icon */}
+                    <div className="w-20 h-20 bg-gradient-to-br from-[#25B181] to-[#1F8F68] rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CheckCircle className="w-10 h-10 text-white" />
+                    </div>
+
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">Application Submitted!</h3>
+                    <p className="text-sm text-gray-600 mb-6">Your loan application has been successfully submitted.</p>
+
+                    {/* Application Details */}
+                    <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 p-4 space-y-3 text-left">
+                      <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                        <span className="text-sm text-gray-600 flex items-center gap-2">
+                          <Receipt className="w-4 h-4 text-[#4A66FF]" />
+                          Application No.
+                        </span>
+                        <span className="font-bold text-[#1F8F68]">{newLoanResult.applicationNumber}</span>
+                      </div>
+                      <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                        <span className="text-sm text-gray-600 flex items-center gap-2">
+                          <IndianRupee className="w-4 h-4 text-[#4A66FF]" />
+                          Loan Amount
+                        </span>
+                        <span className="font-bold text-gray-800">₹{newLoanResult.loanAmount.toLocaleString()}</span>
+                      </div>
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-sm text-gray-600 flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4 text-[#4A66FF]" />
+                          Priority
+                        </span>
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          newLoanResult.priority === 'High' ? 'bg-red-100 text-red-700' :
+                          newLoanResult.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-green-100 text-green-700'
+                        }`}>
+                          {newLoanResult.priority}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="mt-6 space-y-3">
+                      <button
+                        onClick={() => {
+                          resetNewLoanModal();
+                          fetchLoans();
+                        }}
+                        className="w-full px-4 py-3 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg hover:shadow-lg transition-all font-medium"
+                      >
+                        Done
+                      </button>
+                      <button
+                        onClick={() => {
+                          resetNewLoanModal();
+                          router.push('/user/applications');
+                        }}
+                        className="w-full px-4 py-2.5 bg-white border border-[#E0E0E0] text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                      >
+                        View All Applications
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </motion.div>
           </div>
         </div>
