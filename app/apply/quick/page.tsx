@@ -96,6 +96,9 @@ export default function QuickLoanApplication() {
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [amountError, setAmountError] = useState("")
 
+  // User location state
+  const [userLocation, setUserLocation] = useState<{latitude: number; longitude: number} | null>(null);
+
   // Field validation errors for Step 1 and Step 3
   const [fieldErrors, setFieldErrors] = useState({
     email: "",
@@ -313,6 +316,15 @@ export default function QuickLoanApplication() {
       console.log('🗑️ Clearing hero form data from localStorage');
       localStorage.removeItem('heroFormData');
     }
+  }, []);
+
+  // Get user location when they land on the apply page (after clicking "Apply Now")
+  useEffect(() => {
+    const requestLocation = async () => {
+      console.log('📍 Requesting user location on page load...');
+      await getLocation();
+    };
+    requestLocation();
   }, []);
 
   // Apply API-determined step after data is loaded
@@ -1372,6 +1384,49 @@ console.log('Sending OTP with payload:', payload);
     setSelfieCapture(false);
   };
 
+  // Get user's location and save to localStorage
+  const getLocation = (): Promise<{latitude: number; longitude: number} | null> => {
+    return new Promise((resolve) => {
+      // Check if location is already in localStorage
+      const storedLocation = localStorage.getItem('userLocation');
+      if (storedLocation) {
+        const parsedLocation = JSON.parse(storedLocation);
+        setUserLocation(parsedLocation);
+        resolve(parsedLocation);
+        return;
+      }
+
+      if (!navigator.geolocation) {
+        console.warn('Geolocation is not supported by this browser');
+        resolve(null);
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const location = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          };
+          // Save to localStorage
+          localStorage.setItem('userLocation', JSON.stringify(location));
+          setUserLocation(location);
+          console.log('✅ User location captured:', location);
+          resolve(location);
+        },
+        (error) => {
+          console.warn('Error getting location:', error.message);
+          resolve(null);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000 // 5 minutes cache
+        }
+      );
+    });
+  };
+
   // Save customer data to backend via loan application API
   const saveCustomerData = async (step: number) => {
     try {
@@ -1398,6 +1453,10 @@ console.log('Sending OTP with payload:', payload);
         const mobileToSave = formData.mobile || user?.mobile || '';
         const emailToSave = formData.email || user?.email || '';
 
+        // Get location from localStorage
+        const storedLocation = localStorage.getItem('userLocation');
+        const locationData = storedLocation ? JSON.parse(storedLocation) : null;
+
         payload = {
           basicDetails: {
             firstName,
@@ -1412,7 +1471,13 @@ console.log('Sending OTP with payload:', payload);
           },
           loanDetails: {
             loanAmount: parseFloat(formData.loanAmount)
-          }
+          },
+          ...(locationData && {
+            location: {
+              latitude: locationData.latitude,
+              longitude: locationData.longitude
+            }
+          })
         };
       } else if (step === 2) {
         // Step 2: KYC Details with Photo - use FormData
@@ -2195,8 +2260,8 @@ console.log('Sending OTP with payload:', payload);
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Quick Loan Application</h1>
-            <p className="text-gray-600">Get instant approval in just 3 minutes</p>
+            <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2">Quick Loan Application</h1>
+            <p className="text-sm sm:text-base text-gray-600">Get instant approval in just 3 minutes</p>
           </motion.div>
         </div>
 
@@ -2211,10 +2276,10 @@ console.log('Sending OTP with payload:', payload);
               </div>
             ))}
           </div>
-          <div className="flex justify-between text-sm text-gray-600">
-            <span className={currentStep === 1 ? 'text-[#25B181] font-semibold' : ''}>Basic Details</span>
-            <span className={currentStep === 2 ? 'text-[#25B181] font-semibold' : ''}>Identity Verification</span>
-            <span className={currentStep === 3 ? 'text-[#25B181] font-semibold' : ''}>Disbursement Bank Ac</span>
+          <div className="flex justify-between text-xs sm:text-sm text-gray-600">
+            <span className={`text-center ${currentStep === 1 ? 'text-[#25B181] font-semibold' : ''}`}>Basic Details</span>
+            <span className={`text-center ${currentStep === 2 ? 'text-[#25B181] font-semibold' : ''}`}>Identity</span>
+            <span className={`text-center ${currentStep === 3 ? 'text-[#25B181] font-semibold' : ''}`}>Bank Details</span>
           </div>
         </div>
 
@@ -2225,7 +2290,7 @@ console.log('Sending OTP with payload:', payload);
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0.9, x: -5 }}
           transition={{ duration: 0.15 }}
-          className="bg-white rounded-2xl shadow-xl p-8"
+          className="bg-white rounded-2xl shadow-xl p-4 sm:p-8"
         >
           <AnimatePresence mode="wait">
             {/* Step 1: Basic Details */}
@@ -2259,7 +2324,7 @@ console.log('Sending OTP with payload:', payload);
                       <label className="block text-sm font-medium text-gray-700 mb-3">
                         Choose Verification Method *
                       </label>
-                      <div className="flex gap-3">
+                      <div className="flex flex-col sm:flex-row gap-3">
                         <button
                           type="button"
                           onClick={() => {
@@ -2267,7 +2332,7 @@ console.log('Sending OTP with payload:', payload);
                             setOtpSent(false);
                             setFormData(prev => ({ ...prev, otp: '' })); // Clear OTP field
                           }}
-                          className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
+                          className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all text-sm sm:text-base ${
                             verificationMethod === 'email'
                               ? 'bg-[#25B181] text-white shadow-md'
                               : 'bg-white text-gray-700 border border-gray-300 hover:border-[#25B181]'
@@ -2283,7 +2348,7 @@ console.log('Sending OTP with payload:', payload);
                             setOtpSent(false);
                             setFormData(prev => ({ ...prev, otp: '' })); // Clear OTP field
                           }}
-                          className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
+                          className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all text-sm sm:text-base ${
                             verificationMethod === 'mobile'
                               ? 'bg-[#25B181] text-white shadow-md'
                               : 'bg-white text-gray-700 border border-gray-300 hover:border-[#25B181]'
@@ -2305,7 +2370,7 @@ console.log('Sending OTP with payload:', payload);
     Email Address *
   </label>
 
-  <div className="flex gap-2">
+  <div className="flex flex-col sm:flex-row gap-2">
     <input
       type="email"
       name="email"
@@ -2360,7 +2425,7 @@ console.log('Sending OTP with payload:', payload);
           }
         }}
         disabled={!formData.email || !!fieldErrors.email || loading || (otpSent && emailOtpTimer > 0)}
-        className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50"
+        className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
       >
         {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Send OTP"}
       </button>
@@ -2388,7 +2453,7 @@ console.log('Sending OTP with payload:', payload);
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Enter OTP *
                         </label>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <input
                             type="text"
                             name="otp"
@@ -2418,7 +2483,7 @@ console.log('Sending OTP with payload:', payload);
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Mobile Number *
                       </label>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <input
                           type="tel"
                           name="mobile"
@@ -2436,7 +2501,7 @@ console.log('Sending OTP with payload:', payload);
                           <button
                             onClick={sendOTP}
                             disabled={!formData.mobile || loading || (otpSent && emailOtpTimer > 0)}
-                            className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50"
+                            className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
                           >
                             {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Send OTP"}
                           </button>
@@ -2455,7 +2520,7 @@ console.log('Sending OTP with payload:', payload);
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Enter OTP *
                         </label>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <input
                             type="text"
                             name="otp"
@@ -2522,7 +2587,7 @@ console.log('Sending OTP with payload:', payload);
                       )}
                     </div>
                     {/* Mobile + DOB side by side for logged-in user */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Mobile Number *
@@ -2574,7 +2639,7 @@ console.log('Sending OTP with payload:', payload);
                     {verificationMethod === 'email' && (
                       <>
                         {/* Mobile + DOB side by side for email verification */}
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                               Mobile Number *
@@ -2694,7 +2759,7 @@ console.log('Sending OTP with payload:', payload);
                       </select>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Monthly Income *
@@ -2795,7 +2860,7 @@ console.log('Sending OTP with payload:', payload);
                       Aadhaar Number *
                     </label>
 
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <input
                         type="tel"
                         name="aadhaar"
@@ -2862,7 +2927,7 @@ console.log('Sending OTP with payload:', payload);
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Enter Aadhaar OTP *
                         </label>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <input
                             type="text"
                             value={aadhaarOtp}
@@ -2902,7 +2967,7 @@ console.log('Sending OTP with payload:', payload);
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       PAN Number *
                     </label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <input
                         type="text"
                         name="pan"
@@ -3030,7 +3095,7 @@ console.log('Sending OTP with payload:', payload);
                 <div className="bg-gray-50 rounded-xl p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Bank Details</h3>
                   <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Bank Name *
