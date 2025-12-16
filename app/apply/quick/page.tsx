@@ -2754,8 +2754,13 @@ console.log('Sending OTP with payload:', payload);
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
                       >
                         <option value="SALARIED">SALARIED</option>
+                         <option value="SELF-EMPLOYED">SELF-EMPLOYED</option>
+                          <option value="UNEMPLOYED">UNEMPLOYED</option>
                         <option value="STUDENT">STUDENT</option>
+                         <option value="RETIRED">RETIRED</option>
                         <option value="OTHER">OTHER</option>
+
+                        {/* "SALARIED", "SELF-EMPLOYED", "UNEMPLOYED", "STUDENT", "RETIRED" */}
                       </select>
                     </div>
 
