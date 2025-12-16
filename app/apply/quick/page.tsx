@@ -118,6 +118,9 @@ export default function QuickLoanApplication() {
   // Consent validation error
   const [consentError, setConsentError] = useState(false);
 
+  // Data agreement checkbox for Step 2
+  const [dataAgreementChecked, setDataAgreementChecked] = useState(false);
+
   // Load hero form data FIRST (before useState)
   const getInitialFormData = () => {
     const initialData = {
@@ -380,6 +383,25 @@ export default function QuickLoanApplication() {
     }
   }, [aadhaarOtpTimer]);
 
+  // Check for data agreement approval when window gets focus (user returns from agreement page)
+  useEffect(() => {
+    const handleFocus = () => {
+      const approved = localStorage.getItem('dataAgreementApproved');
+      if (approved === 'true') {
+        setDataAgreementChecked(true);
+        localStorage.removeItem('dataAgreementApproved');
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    // Also check on mount in case tab was already focused
+    handleFocus();
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
+
   // Save form data to localStorage on change (excluding sensitive fields)
   useEffect(() => {
     const dataToSave = {
@@ -474,6 +496,346 @@ export default function QuickLoanApplication() {
       calculateEMI();
     }
   }, [formData.loanAmount, formData.tenure, formData.requestedTenureUnit, selectedProduct]);
+
+  // Generate Agreement HTML with customer data
+  const generateAgreementHTML = (data: any) => {
+    const getValue = (value: any) => {
+      if (value === null || value === undefined || value === '' || value === 'undefined' || value === 'null') {
+        return 'N/A';
+      }
+      return value;
+    };
+
+    const formatDate = (dateStr: string) => {
+      if (!dateStr || dateStr === 'N/A') return 'N/A';
+      try {
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return 'N/A';
+        return date.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      } catch (e) {
+        return 'N/A';
+      }
+    };
+
+    const formatCurrency = (value: any) => {
+      if (!value || value === 'N/A' || isNaN(value)) return 'N/A';
+      return Number(value).toLocaleString('en-IN');
+    };
+
+    const maskAadhaar = (aadhaar: string) => {
+      if (!aadhaar || aadhaar.length < 4) return 'N/A';
+      return aadhaar.slice(-4);
+    };
+
+    const today = new Date();
+    const currentDate = today.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const currentTime = today.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    // Generate repayment schedule
+    const generateRepaymentSchedule = () => {
+      const loanAmount = parseFloat(data.loanAmount) || 0;
+      const tenure = parseInt(data.tenure) || 30;
+      const interestRate = parseFloat(data.interestRate) || 1;
+      const totalAmount = parseFloat(data.totalAmount) || loanAmount;
+
+      if (!loanAmount) {
+        return '<tr><td colspan="6" style="text-align: center;">N/A</td></tr>';
+      }
+
+      if (tenure <= 45) {
+        const dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + tenure);
+        const interest = loanAmount * (interestRate / 100) * tenure;
+
+        return `
+          <tr>
+            <td>1</td>
+            <td>${dueDate.toLocaleDateString('en-IN')}</td>
+            <td>₹${formatCurrency(loanAmount)}</td>
+            <td>₹${formatCurrency(Math.round(interest))}</td>
+            <td>₹${formatCurrency(Math.round(totalAmount))}</td>
+            <td>eNACH Auto-Debit</td>
+          </tr>
+        `;
+      }
+
+      const months = Math.ceil(tenure / 30);
+      const emi = Math.round(totalAmount / months);
+      let rows = '';
+
+      for (let i = 1; i <= months; i++) {
+        const dueDate = new Date();
+        dueDate.setMonth(dueDate.getMonth() + i);
+        const principal = Math.round(loanAmount / months);
+        const interest = Math.round((totalAmount - loanAmount) / months);
+
+        rows += `
+          <tr>
+            <td>${i}</td>
+            <td>${dueDate.toLocaleDateString('en-IN')}</td>
+            <td>₹${formatCurrency(principal)}</td>
+            <td>₹${formatCurrency(interest)}</td>
+            <td>₹${formatCurrency(emi)}</td>
+            <td>eNACH Auto-Debit</td>
+          </tr>
+        `;
+      }
+      return rows;
+    };
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Agreement - Quikkred</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; font-size: 11pt; line-height: 1.6; color: #333; background: #fff; padding: 40px; }
+        .page { max-width: 800px; margin: 0 auto; background: #fff; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #25B181; padding-bottom: 20px; margin-bottom: 30px; }
+        .logo-section { display: flex; align-items: center; gap: 15px; }
+        .logo-section img { height: 50px; width: auto; }
+        .company-info h1 { color: #25B181; font-size: 24px; font-weight: bold; margin-bottom: 2px; }
+        .company-info .tagline { color: #666; font-size: 10px; font-style: italic; }
+        .company-info .reg-info { color: #888; font-size: 8px; margin-top: 5px; }
+        .doc-info { text-align: right; font-size: 10px; }
+        .doc-info .loan-ref { font-size: 14px; font-weight: bold; color: #25B181; background: #f0fdf4; padding: 5px 12px; border-radius: 4px; display: inline-block; margin-bottom: 5px; }
+        .title { text-align: center; margin-bottom: 30px; }
+        .title h2 { font-size: 18px; color: #1a1a1a; text-transform: uppercase; letter-spacing: 1px; border: 2px solid #25B181; display: inline-block; padding: 10px 40px; background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%); }
+        .title .subtitle { font-size: 10px; color: #666; margin-top: 8px; }
+        .section { margin-bottom: 25px; }
+        .section-title { font-size: 12px; font-weight: bold; color: #fff; background: #25B181; text-transform: uppercase; padding: 8px 15px; margin-bottom: 15px; border-radius: 4px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 30px; }
+        .info-row { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #eee; background: #fafafa; }
+        .info-row:hover { background: #f0fdf4; }
+        .info-label { color: #666; font-size: 10px; text-transform: uppercase; }
+        .info-value { font-weight: bold; font-size: 11px; color: #333; }
+        .loan-box { background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 2px solid #25B181; border-radius: 12px; padding: 25px; margin: 20px 0; box-shadow: 0 4px 6px rgba(37, 177, 129, 0.1); }
+        .loan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; text-align: center; }
+        .loan-item { padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .loan-item .amount { font-size: 22px; font-weight: bold; color: #25B181; }
+        .loan-item .label { font-size: 9px; color: #666; text-transform: uppercase; margin-top: 5px; }
+        .loan-item.highlight { background: #25B181; }
+        .loan-item.highlight .amount { color: white; }
+        .loan-item.highlight .label { color: rgba(255,255,255,0.9); }
+        .schedule-table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 10px; border-radius: 8px; overflow: hidden; }
+        .schedule-table th { background: #25B181; color: white; padding: 12px 8px; text-align: left; font-weight: 600; }
+        .schedule-table td { padding: 10px 8px; border-bottom: 1px solid #eee; }
+        .schedule-table tr:nth-child(even) { background: #f9f9f9; }
+        .terms { font-size: 9px; color: #555; background: #fafafa; padding: 15px; border-radius: 8px; }
+        .terms ol { padding-left: 20px; }
+        .terms li { margin-bottom: 10px; line-height: 1.5; }
+        .terms li strong { color: #333; }
+        .notice { background: linear-gradient(135deg, #fff3cd 0%, #fef3c7 100%); border: 1px solid #f59e0b; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 15px 20px; margin: 20px 0; font-size: 10px; }
+        .notice-title { font-weight: bold; color: #92400e; margin-bottom: 8px; font-size: 11px; }
+        .notice ul { margin: 0; padding-left: 18px; color: #78350f; }
+        .notice li { margin: 5px 0; }
+        .signature-section { margin-top: 40px; padding-top: 20px; border-top: 2px solid #333; }
+        .signature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 20px; }
+        .signature-box { text-align: center; }
+        .esign-box { border: 2px dashed #25B181; padding: 25px 20px; text-align: center; background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%); border-radius: 12px; min-height: 180px; }
+        .esign-box .icon { font-size: 36px; margin-bottom: 10px; }
+        .esign-box .text { font-size: 12px; color: #25B181; font-weight: bold; text-transform: uppercase; }
+        .esign-box .subtext { font-size: 9px; color: #666; margin-top: 3px; }
+        .esign-box .details { margin-top: 15px; font-size: 9px; color: #666; line-height: 1.6; }
+        .esign-box .stamp { margin-top: 12px; padding: 10px; border: 1px dashed #ccc; font-size: 8px; color: #999; background: white; border-radius: 4px; }
+        .lender-box { border-color: #333; background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%); }
+        .lender-box .text { color: #333; }
+        .declaration { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; font-size: 10px; margin: 20px 0; }
+        .declaration-title { font-weight: bold; margin-bottom: 12px; color: #1e293b; font-size: 11px; }
+        .checkbox-item { display: flex; align-items: flex-start; gap: 10px; margin: 10px 0; padding: 8px; background: white; border-radius: 4px; }
+        .checkbox { width: 16px; height: 16px; border: 2px solid #25B181; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; background: #25B181; }
+        .checkbox::after { content: "✓"; color: white; font-size: 10px; font-weight: bold; }
+        .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 8px; color: #666; text-align: center; }
+        .footer-logo { margin-bottom: 10px; }
+        .footer-logo img { height: 30px; opacity: 0.7; }
+        .footer p { margin: 3px 0; }
+        .footer .legal { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ddd; font-size: 7px; color: #999; }
+        .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 100px; color: rgba(37, 177, 129, 0.03); font-weight: bold; pointer-events: none; z-index: -1; }
+        .approve-section { text-align: center; margin-top: 40px; padding: 30px; background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border-radius: 12px; border: 2px solid #25B181; }
+        .approve-btn { background: #25B181; color: white; border: none; padding: 15px 50px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(37, 177, 129, 0.3); transition: all 0.3s ease; }
+        .approve-btn:hover { background: #1d9469; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(37, 177, 129, 0.4); }
+        @media print { body { padding: 20px; } .page { max-width: 100%; } .watermark, .approve-section { display: none; } }
+    </style>
+</head>
+<body>
+    <div class="watermark">QUIKKRED</div>
+    <div class="page">
+        <div class="header">
+            <div class="logo-section">
+                <img src="/logo.png" alt="Quikkred Logo" onerror="this.style.display='none'">
+                <div class="company-info">
+                    <h1>QUIKKRED</h1>
+                    <div class="tagline">Quick Credit, Trusted Partner</div>
+                    <div class="reg-info">Satsai Finlease Private Limited | RBI Registered NBFC<br>CIN: U65100MH2024PTC123456 | CoR: N-05.02345</div>
+                </div>
+            </div>
+            <div class="doc-info">
+                <div class="loan-ref">QK${getValue(data.applicationNumber) !== 'N/A' ? data.applicationNumber : Math.random().toString(36).substr(2, 9).toUpperCase()}</div>
+                <p><strong>Date:</strong> ${currentDate}</p>
+                <p><strong>Place:</strong> ${getValue(data.city)}, ${getValue(data.state)}</p>
+                <p><strong>Product:</strong> ${getValue(data.productName) !== 'N/A' ? data.productName : 'Personal Loan'}</p>
+            </div>
+        </div>
+
+        <div class="title">
+            <h2>Loan Agreement</h2>
+            <div class="subtitle">This agreement is executed between the Borrower and Lender on ${currentDate}</div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Borrower Details</div>
+            <div class="info-grid">
+                <div class="info-row"><span class="info-label">Full Name</span><span class="info-value">${getValue(data.fullName)}</span></div>
+                <div class="info-row"><span class="info-label">Date of Birth</span><span class="info-value">${formatDate(data.dob)}</span></div>
+                <div class="info-row"><span class="info-label">PAN Number</span><span class="info-value">${getValue(data.pan)}</span></div>
+                <div class="info-row"><span class="info-label">Aadhaar Number</span><span class="info-value">XXXX-XXXX-${maskAadhaar(data.aadhaar)}</span></div>
+                <div class="info-row"><span class="info-label">Mobile Number</span><span class="info-value">+91 ${getValue(data.mobile)}</span></div>
+                <div class="info-row"><span class="info-label">Email Address</span><span class="info-value">${getValue(data.email)}</span></div>
+                <div class="info-row" style="grid-column: span 2;"><span class="info-label">Residential Address</span><span class="info-value">${getValue(data.address)}, ${getValue(data.city)}, ${getValue(data.state)} - ${getValue(data.pincode)}</span></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Employment Details</div>
+            <div class="info-grid">
+                <div class="info-row"><span class="info-label">Employment Type</span><span class="info-value">${getValue(data.employmentType)}</span></div>
+                <div class="info-row"><span class="info-label">Company / Business Name</span><span class="info-value">${getValue(data.companyName)}</span></div>
+                <div class="info-row"><span class="info-label">Designation</span><span class="info-value">${getValue(data.designation)}</span></div>
+                <div class="info-row"><span class="info-label">Monthly Income</span><span class="info-value">₹${formatCurrency(data.monthlyIncome)}</span></div>
+                <div class="info-row"><span class="info-label">Salary Credit Date</span><span class="info-value">${getValue(data.salaryDate) !== 'N/A' ? data.salaryDate : '1st'} of every month</span></div>
+                <div class="info-row"><span class="info-label">Work Experience</span><span class="info-value">${getValue(data.workExperience)} years</span></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Loan Details</div>
+            <div class="loan-box">
+                <div class="loan-grid">
+                    <div class="loan-item"><div class="amount">₹${formatCurrency(data.loanAmount)}</div><div class="label">Principal Amount</div></div>
+                    <div class="loan-item"><div class="amount">${getValue(data.interestRate) !== 'N/A' ? data.interestRate : '1.0'}%</div><div class="label">Interest Rate (Daily)</div></div>
+                    <div class="loan-item"><div class="amount">${getValue(data.tenure)} ${getValue(data.tenureUnit) !== 'N/A' ? data.tenureUnit : 'days'}</div><div class="label">Loan Tenure</div></div>
+                    <div class="loan-item"><div class="amount">₹${formatCurrency(data.processingFee ? (parseFloat(data.loanAmount || 0) * parseFloat(data.processingFee) / 100) : 0)}</div><div class="label">Processing Fee (${getValue(data.processingFee) !== 'N/A' ? data.processingFee : '2'}%)</div></div>
+                    <div class="loan-item highlight"><div class="amount">₹${formatCurrency(data.disbursementAmount)}</div><div class="label">Disbursement Amount</div></div>
+                    <div class="loan-item highlight"><div class="amount">₹${formatCurrency(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Disbursement Bank Account</div>
+            <div class="info-grid">
+                <div class="info-row"><span class="info-label">Account Holder Name</span><span class="info-value">${getValue(data.accountHolderName)}</span></div>
+                <div class="info-row"><span class="info-label">Account Number</span><span class="info-value">${getValue(data.accountNumber)}</span></div>
+                <div class="info-row"><span class="info-label">Bank Name</span><span class="info-value">${getValue(data.bankName)}</span></div>
+                <div class="info-row"><span class="info-label">IFSC Code</span><span class="info-value">${getValue(data.ifscCode)}</span></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Repayment Schedule</div>
+            <table class="schedule-table">
+                <thead>
+                    <tr><th>Instalment</th><th>Due Date</th><th>Principal</th><th>Interest</th><th>Total EMI</th><th>Payment Mode</th></tr>
+                </thead>
+                <tbody>${generateRepaymentSchedule()}</tbody>
+            </table>
+            <p style="font-size: 9px; color: #666; margin-top: 10px;">* All amounts are in Indian Rupees (INR). EMI will be auto-debited via eNACH/eMandate on the due date.</p>
+        </div>
+
+        <div class="notice">
+            <div class="notice-title">⚠️ IMPORTANT NOTICE - PLEASE READ CAREFULLY</div>
+            <ul>
+                <li><strong>Late Payment Charges:</strong> ₹500 + 2% per day on overdue amount.</li>
+                <li><strong>Credit Reporting:</strong> Non-payment will be reported to CIBIL, Experian, Equifax & CRIF High Mark.</li>
+                <li><strong>Legal Action:</strong> Default may result in legal proceedings under applicable laws.</li>
+                <li><strong>Collection:</strong> Recovery agents may contact you for overdue payments as per RBI guidelines.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Terms & Conditions</div>
+            <div class="terms">
+                <ol>
+                    <li><strong>Loan Purpose:</strong> This loan is granted for personal/business use as declared by the Borrower.</li>
+                    <li><strong>Disbursement:</strong> Upon successful verification, the loan amount will be disbursed within 24-48 hours.</li>
+                    <li><strong>Repayment:</strong> The Borrower agrees to repay the loan as per the repayment schedule via eNACH/eMandate.</li>
+                    <li><strong>Interest & Charges:</strong> The applicable interest rate is ${getValue(data.interestRate) !== 'N/A' ? data.interestRate : '1.0'}% Daily (36.5% APR). Processing fee of ${getValue(data.processingFee) !== 'N/A' ? data.processingFee : '2'}% + 18% GST.</li>
+                    <li><strong>Late Payment:</strong> Late fee of ₹500 and penal interest of 2% per day will apply on overdue amounts.</li>
+                    <li><strong>Default & Recovery:</strong> Default may result in credit bureau reporting and legal action.</li>
+                    <li><strong>Governing Law:</strong> This agreement is governed by Indian laws with jurisdiction in ${getValue(data.city) !== 'N/A' ? data.city : 'Mumbai'}.</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="declaration">
+            <div class="declaration-title">BORROWER'S DECLARATION & CONSENT</div>
+            <p style="margin-bottom: 15px;">I, <strong>${getValue(data.fullName)}</strong>, hereby declare that:</p>
+            <div class="checkbox-item"><span class="checkbox"></span><span>All information provided is true and accurate.</span></div>
+            <div class="checkbox-item"><span class="checkbox"></span><span>I agree to all terms and conditions mentioned in this agreement.</span></div>
+            <div class="checkbox-item"><span class="checkbox"></span><span>I authorize Quikkred to verify my information and auto-debit EMI amounts.</span></div>
+            <div class="checkbox-item"><span class="checkbox"></span><span>I understand non-payment will affect my credit score.</span></div>
+        </div>
+
+        <div class="signature-section">
+            <div class="section-title">Digital Signature (Aadhaar eSign)</div>
+            <div class="signature-grid">
+                <div class="signature-box">
+                    <div class="esign-box">
+                        <div class="icon">✍️</div>
+                        <div class="text">Borrower's eSign</div>
+                        <div class="subtext">Aadhaar-based Digital Signature</div>
+                        <div class="details">
+                            <div><strong>Name:</strong> ${getValue(data.fullName)}</div>
+                            <div><strong>Aadhaar:</strong> XXXX-XXXX-${maskAadhaar(data.aadhaar)}</div>
+                            <div><strong>Date:</strong> ${currentDate}</div>
+                            <div><strong>Time:</strong> ${currentTime}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="signature-box">
+                    <div class="esign-box lender-box">
+                        <div class="icon">🏢</div>
+                        <div class="text">Lender's Authorization</div>
+                        <div class="subtext">For Satsai Finlease Private Limited</div>
+                        <div class="details">
+                            <div><strong>Authorized Signatory</strong></div>
+                            <div>Quikkred Digital Lending Platform</div>
+                            <div><strong>Date:</strong> ${currentDate}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>Satsai Finlease Private Limited</strong> (trading as Quikkred)</p>
+            <p>Email: support@quikkred.in | Website: www.quikkred.in</p>
+            <div class="legal">
+                <p>This is a computer-generated document valid without physical signature.</p>
+                <p><strong>Generated:</strong> ${currentDate} ${currentTime}</p>
+            </div>
+        </div>
+
+        <div class="approve-section">
+            <p style="font-size: 14px; color: #333; margin-bottom: 20px;">By clicking "I Agree & Approve", you confirm that you have read and understood all terms and conditions.</p>
+            <button class="approve-btn" onclick="approveAgreement()">I Agree & Approve</button>
+            <p style="font-size: 11px; color: #666; margin-top: 15px;">This will approve your data and redirect you back to the application form.</p>
+        </div>
+    </div>
+
+    <script>
+        function approveAgreement() {
+            localStorage.setItem('dataAgreementApproved', 'true');
+            alert('Agreement approved successfully!');
+            window.close();
+            setTimeout(function() { window.location.href = '/apply/quick'; }, 100);
+        }
+    </script>
+</body>
+</html>`;
+  };
 
   const calculateEMI = () => {
     if (!selectedProduct || !formData.loanAmount || !formData.tenure) {
@@ -1802,6 +2164,16 @@ console.log('Sending OTP with payload:', payload);
         return;
       }
 
+      // Data agreement checkbox validation
+      if (!dataAgreementChecked) {
+        toast({
+          variant: "warning",
+          title: "Data Review Required",
+          description: "Please review and verify your application data before proceeding.",
+        });
+        return;
+      }
+
       // Save Step 2 data (Aadhaar & PAN)
       setLoading(true);
       const saveSuccess = await saveCustomerData(2);
@@ -3082,6 +3454,178 @@ console.log('Sending OTP with payload:', payload);
                       </button>
                     </>
                   )}
+                </div>
+
+                {/* Data Agreement Checkbox */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      id="dataAgreement"
+                      checked={dataAgreementChecked}
+                      readOnly
+                      onClick={async () => {
+                        if (!dataAgreementChecked) {
+                          // Fetch customer data from API
+                          const token = localStorage.getItem('accessToken') ||
+                                        localStorage.getItem('token') ||
+                                        localStorage.getItem('authToken');
+
+                          let customerData: any = {};
+
+                          if (token) {
+                            try {
+                              const response = await fetch('https://api.bluechipfinmax.com/api/customer/get', {
+                                method: 'GET',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'Authorization': `Bearer ${token}`
+                                }
+                              });
+
+                              const result = await response.json();
+
+                              if (response.ok && result.success && result.data) {
+                                customerData = result.data;
+                              }
+                            } catch (error) {
+                              console.error('Error fetching customer data:', error);
+                            }
+                          }
+
+                          // Combine API data with form data
+                          const agreementData = {
+                            fullName: formData.fullName || customerData.fullName || '',
+                            email: formData.email || customerData.email || '',
+                            mobile: formData.mobile || customerData.mobile || '',
+                            dob: formData.dob || customerData.dateOfBirth || '',
+                            pan: formData.pan || customerData.panCard || '',
+                            aadhaar: formData.aadhaar || customerData.aadhaarNumber || '',
+                            address: customerData.address?.fullAddress || aadhaarAddress?.fullAddress || '',
+                            city: customerData.address?.city || aadhaarAddress?.city || '',
+                            state: customerData.address?.state || aadhaarAddress?.state || '',
+                            pincode: customerData.address?.pincode || aadhaarAddress?.pincode || '',
+                            employmentType: formData.employmentType || customerData.employmentType || '',
+                            monthlyIncome: formData.monthlyIncome || customerData.monthlyIncome || '',
+                            companyName: formData.companyName || customerData.companyName || '',
+                            designation: customerData.designation || '',
+                            workExperience: customerData.workExperience || '',
+                            salaryDate: customerData.salaryDate || '',
+                            bankName: formData.bankName || customerData.banks?.[0]?.bankName || '',
+                            accountNumber: formData.accountNumber || customerData.banks?.[0]?.accountNumber || '',
+                            ifscCode: formData.ifsc || customerData.banks?.[0]?.ifscCode || '',
+                            accountHolderName: customerData.banks?.[0]?.accountHolderName || formData.fullName || customerData.fullName || '',
+                            loanAmount: formData.loanAmount || '',
+                            tenure: formData.tenure || '',
+                            tenureUnit: formData.requestedTenureUnit || 'days',
+                            productName: selectedProduct?.productName || '',
+                            interestRate: selectedProduct?.dailyInterestRate || '',
+                            processingFee: selectedProduct?.processingFee || '',
+                            totalAmount: emiCalculation?.totalAmount || '',
+                            disbursementAmount: emiCalculation ? (emiCalculation.principal - emiCalculation.totalProcessingFee) : '',
+                            applicationNumber: customerData.applicationNumber || '',
+                          };
+
+                          // Generate HTML and open in new tab
+                          const htmlContent = generateAgreementHTML(agreementData);
+                          const blob = new Blob([htmlContent], { type: 'text/html' });
+                          const url = URL.createObjectURL(blob);
+                          window.open(url, '_blank');
+                          localStorage.removeItem('dataAgreementApproved');
+                        }
+                      }}
+                      className="mt-1 w-5 h-5 text-[#25B181] border-gray-300 rounded focus:ring-[#25B181] cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <label
+                        htmlFor="dataAgreement"
+                        className="block font-medium text-gray-900 cursor-pointer"
+                        onClick={async () => {
+                          if (!dataAgreementChecked) {
+                            // Fetch customer data from API
+                            const token = localStorage.getItem('accessToken') ||
+                                          localStorage.getItem('token') ||
+                                          localStorage.getItem('authToken');
+
+                            let customerData: any = {};
+
+                            if (token) {
+                              try {
+                                const response = await fetch('https://api.bluechipfinmax.com/api/customer/get', {
+                                  method: 'GET',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`
+                                  }
+                                });
+
+                                const result = await response.json();
+
+                                if (response.ok && result.success && result.data) {
+                                  customerData = result.data;
+                                }
+                              } catch (error) {
+                                console.error('Error fetching customer data:', error);
+                              }
+                            }
+
+                            // Combine API data with form data
+                            const agreementData = {
+                              fullName: formData.fullName || customerData.fullName || '',
+                              email: formData.email || customerData.email || '',
+                              mobile: formData.mobile || customerData.mobile || '',
+                              dob: formData.dob || customerData.dateOfBirth || '',
+                              pan: formData.pan || customerData.panCard || '',
+                              aadhaar: formData.aadhaar || customerData.aadhaarNumber || '',
+                              address: customerData.address?.fullAddress || aadhaarAddress?.fullAddress || '',
+                              city: customerData.address?.city || aadhaarAddress?.city || '',
+                              state: customerData.address?.state || aadhaarAddress?.state || '',
+                              pincode: customerData.address?.pincode || aadhaarAddress?.pincode || '',
+                              employmentType: formData.employmentType || customerData.employmentType || '',
+                              monthlyIncome: formData.monthlyIncome || customerData.monthlyIncome || '',
+                              companyName: formData.companyName || customerData.companyName || '',
+                              designation: customerData.designation || '',
+                              workExperience: customerData.workExperience || '',
+                              salaryDate: customerData.salaryDate || '',
+                              bankName: formData.bankName || customerData.banks?.[0]?.bankName || '',
+                              accountNumber: formData.accountNumber || customerData.banks?.[0]?.accountNumber || '',
+                              ifscCode: formData.ifsc || customerData.banks?.[0]?.ifscCode || '',
+                              accountHolderName: customerData.banks?.[0]?.accountHolderName || formData.fullName || customerData.fullName || '',
+                              loanAmount: formData.loanAmount || '',
+                              tenure: formData.tenure || '',
+                              tenureUnit: formData.requestedTenureUnit || 'days',
+                              productName: selectedProduct?.productName || '',
+                              interestRate: selectedProduct?.dailyInterestRate || '',
+                              processingFee: selectedProduct?.processingFee || '',
+                              totalAmount: emiCalculation?.totalAmount || '',
+                              disbursementAmount: emiCalculation ? (emiCalculation.principal - emiCalculation.totalProcessingFee) : '',
+                              applicationNumber: customerData.applicationNumber || '',
+                            };
+
+                            // Generate HTML and open in new tab
+                            const htmlContent = generateAgreementHTML(agreementData);
+                            const blob = new Blob([htmlContent], { type: 'text/html' });
+                            const url = URL.createObjectURL(blob);
+                            window.open(url, '_blank');
+                            localStorage.removeItem('dataAgreementApproved');
+                          }
+                        }}
+                      >
+                        I have reviewed and verified my application data *
+                      </label>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {dataAgreementChecked
+                          ? "You have approved your application data."
+                          : "Click to review and approve your application data."}
+                      </p>
+                      {dataAgreementChecked && (
+                        <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
+                          <CheckCircle className="w-4 h-4" />
+                          Data approved
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             )}
