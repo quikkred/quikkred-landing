@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Loan Agreement - Quikkred</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -24,6 +26,8 @@
             max-width: 800px;
             margin: 0 auto;
             background: #fff;
+            position: relative; /* Required for watermark positioning */
+            overflow: visible; /* Prevent content clipping */
         }
 
         /* Header */
@@ -431,9 +435,9 @@
             color: #999;
         }
 
-        /* Watermark */
+        /* Watermark - Use absolute positioning for PDF compatibility */
         .watermark {
-            position: fixed;
+            position: absolute;  /* Changed from fixed - critical for PDF */
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) rotate(-45deg);
@@ -444,15 +448,60 @@
             z-index: -1;
         }
 
+        /* PDF generation styles */
+        .pdf-mode .watermark {
+            display: none !important;
+        }
+
+        .pdf-mode body {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .pdf-mode .page {
+            padding: 20px 30px !important;
+            margin: 0 !important;
+            max-width: none !important;
+            width: 100% !important;
+        }
+
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+
         @media print {
-            body {
-                padding: 20px;
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+                width: 100% !important;
+                height: auto !important;
             }
             .page {
-                max-width: 100%;
+                max-width: 100% !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 15mm !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                background: white !important;
             }
-            .watermark {
-                display: none;
+            .watermark, .approve-section {
+                display: none !important;
+            }
+            .section-title {
+                background: #25B181 !important;
+                -webkit-print-color-adjust: exact !important;
+            }
+            .loan-item.highlight {
+                background: #25B181 !important;
+                -webkit-print-color-adjust: exact !important;
+            }
+            .schedule-table th {
+                background: #25B181 !important;
+                -webkit-print-color-adjust: exact !important;
             }
         }
     </style>
@@ -998,26 +1047,286 @@
             </div>
         </div>
 
-        <!-- Approve Button -->
-        <div style="text-align: center; margin-top: 40px; padding: 30px; background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border-radius: 12px; border: 2px solid #25B181;" class="approve-section">
+        <!-- Approve Section -->
+        <div style="text-align: center; margin-top: 40px; padding: 30px; background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border-radius: 12px; border: 2px solid #25B181;" class="approve-section" id="approve-section">
             <p style="font-size: 14px; color: #333; margin-bottom: 20px;">
                 By clicking "I Agree & Approve", you confirm that you have read and understood all the terms and conditions mentioned above.
             </p>
-            <button
-                onclick="approveAgreement()"
-                style="background: #25B181; color: white; border: none; padding: 15px 50px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(37, 177, 129, 0.3); transition: all 0.3s ease;"
-                onmouseover="this.style.background='#1d9469'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(37, 177, 129, 0.4)';"
-                onmouseout="this.style.background='#25B181'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(37, 177, 129, 0.3)';"
-            >
-                I Agree & Approve
-            </button>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <button
+                    id="test-btn"
+                    onclick="testDownloadPDF()"
+                    style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; border: none; padding: 15px 35px; font-size: 14px; font-weight: bold; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3); transition: all 0.3s ease;"
+                >
+                    Test PDF
+                </button>
+                <button
+                    onclick="window.print()"
+                    style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; border: none; padding: 15px 35px; font-size: 14px; font-weight: bold; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(139, 92, 246, 0.3); transition: all 0.3s ease;"
+                >
+                    Print/Save PDF
+                </button>
+                <button
+                    id="approve-btn"
+                    onclick="approveAgreement()"
+                    style="background: linear-gradient(135deg, #25B181 0%, #1d9469 100%); color: white; border: none; padding: 15px 50px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(37, 177, 129, 0.3); transition: all 0.3s ease;"
+                >
+                    I Agree & Approve
+                </button>
+            </div>
             <p style="font-size: 11px; color: #666; margin-top: 15px;">
-                This will approve your application data and redirect you back to the application form.
+                Use "Print/Save PDF" to save via browser print dialog, or "Test PDF" for direct download.
             </p>
+            <!-- Loading Indicator -->
+            <div id="loading-indicator" style="display: none; margin-top: 20px;">
+                <div style="display: inline-block; width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid #25B181; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                <p style="margin-top: 10px; color: #25B181; font-weight: bold;">Processing...</p>
+            </div>
+            <style>
+                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            </style>
         </div>
     </div>
 
     <script>
+        // ========== TEST DOWNLOAD PDF FUNCTION ==========
+        async function testDownloadPDF() {
+            const btn = document.getElementById('test-btn');
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+            btn.style.opacity = '0.6';
+
+            try {
+                const pdfBlob = await generatePDF();
+
+                // Download the PDF for testing
+                const url = URL.createObjectURL(pdfBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'loan-agreement.pdf';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                console.log('PDF downloaded successfully!');
+
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('Error generating PDF: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Test PDF';
+                btn.style.opacity = '1';
+            }
+        }
+
+        // ========== GENERATE PDF FUNCTION ==========
+        // ROOT CAUSE OF BLANK PAGES:
+        // 1. Watermark is OUTSIDE .page div with position:absolute
+        // 2. Body has 40px padding pushing content down
+        // 3. html2canvas captures from element's position in document flow
+        // SOLUTION: Clone content into isolated container at position 0,0
+
+        async function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const page = document.querySelector('.page');
+            const approveSection = document.getElementById('approve-section');
+
+            console.log('=== PDF Generation Started ===');
+
+            // Create an isolated container for clean capture
+            const container = document.createElement('div');
+            container.id = 'pdf-capture-container';
+            container.style.cssText = `
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 800px !important;
+                background: white !important;
+                z-index: -9999 !important;
+                visibility: hidden !important;
+                overflow: visible !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            `;
+
+            // Clone the page content (NOT the watermark)
+            const clonedPage = page.cloneNode(true);
+
+            // Remove approve section from clone
+            const clonedApprove = clonedPage.querySelector('.approve-section');
+            if (clonedApprove) clonedApprove.remove();
+
+            // Style the cloned page
+            clonedPage.style.cssText = `
+                width: 800px !important;
+                max-width: 800px !important;
+                margin: 0 !important;
+                padding: 30px 40px !important;
+                background: white !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                position: relative !important;
+            `;
+
+            // Fix header in clone
+            const clonedHeader = clonedPage.querySelector('.header');
+            if (clonedHeader) {
+                clonedHeader.style.cssText = `
+                    display: flex !important;
+                    flex-direction: row !important;
+                    justify-content: space-between !important;
+                    align-items: flex-start !important;
+                    flex-wrap: nowrap !important;
+                    border-bottom: 3px solid #25B181 !important;
+                    padding-bottom: 20px !important;
+                    margin-bottom: 30px !important;
+                `;
+            }
+
+            // Fix grid layouts in clone
+            clonedPage.querySelectorAll('.info-grid, .loan-grid, .signature-grid').forEach(grid => {
+                grid.style.display = 'grid';
+            });
+
+            // Force backgrounds on colored elements
+            clonedPage.querySelectorAll('.section-title').forEach(el => {
+                el.style.cssText += 'background: #25B181 !important; color: white !important;';
+            });
+            clonedPage.querySelectorAll('.loan-item.highlight').forEach(el => {
+                el.style.cssText += 'background: #25B181 !important;';
+            });
+            clonedPage.querySelectorAll('.schedule-table th').forEach(el => {
+                el.style.cssText += 'background: #25B181 !important; color: white !important;';
+            });
+
+            // Add clone to container, container to body
+            container.appendChild(clonedPage);
+            document.body.appendChild(container);
+
+            // Make visible for capture but off-screen
+            container.style.visibility = 'visible';
+
+            // Wait for DOM to settle
+            await new Promise(resolve => setTimeout(resolve, 200));
+
+            // Get actual dimensions
+            const contentHeight = clonedPage.scrollHeight;
+            const contentWidth = clonedPage.scrollWidth;
+            console.log('Content dimensions:', contentWidth, 'x', contentHeight);
+
+            try {
+                // Capture the isolated container
+                const canvas = await html2canvas(clonedPage, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: true,
+                    backgroundColor: '#ffffff',
+                    width: 800,
+                    height: contentHeight,
+                    windowWidth: 800,
+                    windowHeight: contentHeight,
+                    scrollX: 0,
+                    scrollY: 0,
+                    x: 0,
+                    y: 0,
+                    foreignObjectRendering: false,
+                    ignoreElements: (element) => {
+                        // Ignore any fixed/absolute positioned elements
+                        const style = window.getComputedStyle(element);
+                        return style.position === 'fixed' || element.classList.contains('watermark');
+                    }
+                });
+
+                console.log('Canvas captured:', canvas.width, 'x', canvas.height);
+
+                // Cleanup
+                document.body.removeChild(container);
+
+                // Verify canvas is not blank
+                const ctx = canvas.getContext('2d');
+                const imageData = ctx.getImageData(0, 0, 100, 100);
+                const hasContent = imageData.data.some((pixel, i) => i % 4 !== 3 && pixel !== 255);
+                console.log('Canvas has content:', hasContent);
+
+                // A4 dimensions
+                const pdfWidth = 210;
+                const pdfHeight = 297;
+                const margin = 10;
+                const printableWidth = pdfWidth - (margin * 2);
+                const printableHeight = pdfHeight - (margin * 2);
+
+                // Create PDF
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4',
+                    compress: true
+                });
+
+                // Scale factor to fit width
+                const scaleFactor = printableWidth / canvas.width;
+                const scaledHeight = canvas.height * scaleFactor;
+
+                // Calculate pages needed
+                const totalPages = Math.ceil(scaledHeight / printableHeight);
+                console.log('Total pages:', totalPages, 'Scaled height (mm):', scaledHeight);
+
+                // Pixels per page (in canvas coordinates)
+                const pixelsPerPage = printableHeight / scaleFactor;
+
+                for (let pageNum = 0; pageNum < totalPages; pageNum++) {
+                    if (pageNum > 0) pdf.addPage();
+
+                    // Calculate slice boundaries
+                    const sliceY = pageNum * pixelsPerPage;
+                    const sliceH = Math.min(pixelsPerPage, canvas.height - sliceY);
+
+                    if (sliceH <= 0) continue;
+
+                    // Create page canvas
+                    const pageCanvas = document.createElement('canvas');
+                    pageCanvas.width = canvas.width;
+                    pageCanvas.height = Math.ceil(sliceH);
+
+                    const pageCtx = pageCanvas.getContext('2d');
+                    pageCtx.fillStyle = '#ffffff';
+                    pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+
+                    // Copy slice from main canvas
+                    pageCtx.drawImage(
+                        canvas,
+                        0, sliceY,              // Source position
+                        canvas.width, sliceH,   // Source dimensions
+                        0, 0,                   // Destination position
+                        canvas.width, sliceH    // Destination dimensions
+                    );
+
+                    // Convert to image and add to PDF
+                    const imgData = pageCanvas.toDataURL('image/jpeg', 0.92);
+                    const imgHeight = sliceH * scaleFactor;
+
+                    pdf.addImage(imgData, 'JPEG', margin, margin, printableWidth, imgHeight);
+
+                    console.log(`Page ${pageNum + 1}: sliceY=${sliceY}, sliceH=${sliceH}, imgHeight=${imgHeight}mm`);
+                }
+
+                console.log('=== PDF Generation Complete ===');
+                return pdf.output('blob');
+
+            } catch (error) {
+                // Cleanup on error
+                if (document.body.contains(container)) {
+                    document.body.removeChild(container);
+                }
+                console.error('PDF generation error:', error);
+                throw error;
+            }
+        }
+
+        // ========== APPROVE AGREEMENT FUNCTION ==========
         function approveAgreement() {
             // Set approval flag in localStorage
             localStorage.setItem('dataAgreementApproved', 'true');
@@ -1034,13 +1343,5 @@
             }, 100);
         }
     </script>
-
-    <style>
-        @media print {
-            .approve-section {
-                display: none !important;
-            }
-        }
-    </style>
 </body>
 </html>
