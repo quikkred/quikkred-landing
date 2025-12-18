@@ -1390,11 +1390,14 @@ export default function QuickLoanApplication() {
                 // Get the page content
                 const pageContent = document.querySelector('.page').cloneNode(true);
 
-                // Remove approve section from clone
+                // Remove approve section and page-break divs from clone
                 const approveSection = pageContent.querySelector('.approve-section');
                 if (approveSection) approveSection.remove();
 
-                // Create print-friendly HTML
+                // Remove empty page-break divs
+                pageContent.querySelectorAll('.page-break').forEach(el => el.remove());
+
+                // Create print-friendly HTML with fixed CSS
                 const printHTML = \`
 <!DOCTYPE html>
 <html>
@@ -1402,368 +1405,517 @@ export default function QuickLoanApplication() {
     <meta charset="UTF-8">
     <title>Loan Agreement - Quikkred</title>
     <style>
+        /* ===== PAGE SETUP ===== */
         @page {
-            size: A4;
-            margin: 15mm 20mm;
+            size: A4 portrait;
+            margin: 12mm 15mm 15mm 15mm;
         }
+
+        /* ===== RESET & BASE ===== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+            color-adjust: exact !important;
         }
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            font-size: 10pt;
-            line-height: 1.5;
-            color: #2d3748;
+
+        html, body {
+            width: 100%;
+            height: auto;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 9pt;
+            line-height: 1.4;
+            color: #333;
             background: white;
         }
+
         .page {
             width: 100%;
             max-width: 100%;
             padding: 0;
             margin: 0;
             background: white;
+            box-shadow: none;
+            border-radius: 0;
         }
+
+        /* ===== HEADER - TABLE LAYOUT ===== */
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            border-bottom: 3px solid #25B181;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
+            display: table;
+            width: 100%;
+            border-bottom: 2px solid #25B181;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
         }
+
         .logo-section {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            display: table-cell;
+            vertical-align: top;
+            width: 65%;
         }
+
         .logo-section img {
-            height: 45px;
+            height: 40px;
             width: auto;
+            vertical-align: middle;
+            margin-right: 10px;
         }
+
+        .company-info {
+            display: inline-block;
+            vertical-align: middle;
+        }
+
         .company-info h1 {
             color: #25B181;
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 2px;
+            font-size: 20pt;
+            font-weight: bold;
+            margin: 0;
+            line-height: 1.2;
         }
+
         .company-info .tagline {
-            color: #718096;
-            font-size: 10px;
+            color: #666;
+            font-size: 8pt;
             font-style: italic;
+            margin: 2px 0;
         }
+
         .company-info .reg-info {
-            color: #a0aec0;
-            font-size: 8px;
-            margin-top: 4px;
-            line-height: 1.4;
+            color: #999;
+            font-size: 7pt;
+            line-height: 1.3;
         }
+
         .doc-info {
+            display: table-cell;
+            vertical-align: top;
+            width: 35%;
             text-align: right;
-            font-size: 10px;
-            color: #4a5568;
+            font-size: 8pt;
+            color: #555;
         }
+
         .doc-info .loan-ref {
-            font-size: 14px;
-            font-weight: 700;
+            font-size: 11pt;
+            font-weight: bold;
             color: #25B181;
-            background: #e6f7f0;
-            padding: 6px 12px;
-            border-radius: 6px;
+            background: #e8f5e9;
+            padding: 5px 10px;
+            border-radius: 4px;
             display: inline-block;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
         }
+
+        .doc-info p {
+            margin: 2px 0;
+        }
+
+        /* ===== TITLE ===== */
         .title {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 15px;
+            page-break-after: avoid;
         }
+
         .title h2 {
-            font-size: 18px;
-            color: #1a202c;
+            font-size: 14pt;
+            color: #222;
             text-transform: uppercase;
-            letter-spacing: 2px;
-            border: 2px solid #25B181;
+            letter-spacing: 1px;
+            border: 1px solid #25B181;
             display: inline-block;
-            padding: 10px 40px;
-            background: #f0fdf4;
-            border-radius: 6px;
+            padding: 8px 30px;
+            background: #f0fff4;
+            border-radius: 4px;
+            margin: 0;
         }
+
         .title .subtitle {
-            font-size: 10px;
-            color: #718096;
-            margin-top: 10px;
+            font-size: 8pt;
+            color: #666;
+            margin-top: 8px;
         }
+
+        /* ===== SECTIONS ===== */
         .section {
-            margin-bottom: 18px;
+            margin-bottom: 12px;
             page-break-inside: avoid;
+            break-inside: avoid;
         }
+
         .section-title {
-            font-size: 11px;
-            font-weight: 600;
+            font-size: 9pt;
+            font-weight: bold;
             color: white;
             background: #25B181;
             text-transform: uppercase;
-            padding: 8px 14px;
-            margin-bottom: 10px;
-            border-radius: 4px;
+            padding: 6px 12px;
+            margin-bottom: 8px;
+            border-radius: 3px;
             letter-spacing: 0.5px;
+            page-break-after: avoid;
         }
+
+        /* ===== INFO GRID - TABLE LAYOUT ===== */
         .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px 20px;
+            display: table;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 4px;
         }
+
         .info-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 10px;
-            background: #f8fafc;
-            border-radius: 4px;
-            border-bottom: 1px solid #e2e8f0;
+            display: table-row;
         }
+
+        .info-row > * {
+            display: table-cell;
+            padding: 5px 8px;
+            background: #f5f5f5;
+            vertical-align: middle;
+        }
+
         .info-label {
-            color: #718096;
-            font-size: 9px;
+            width: 35%;
+            color: #666;
+            font-size: 7pt;
             text-transform: uppercase;
             font-weight: 500;
+            border-radius: 3px 0 0 3px;
         }
+
         .info-value {
+            width: 65%;
             font-weight: 600;
-            font-size: 10px;
-            color: #2d3748;
+            font-size: 8pt;
+            color: #333;
             text-align: right;
+            border-radius: 0 3px 3px 0;
         }
+
+        /* Full width row */
+        .info-row[style*="grid-column: span 2"] .info-label,
+        .info-row[style*="grid-column: span 2"] .info-value {
+            width: auto;
+        }
+
+        /* ===== LOAN BOX ===== */
         .loan-box {
-            background: #f0fdf4;
-            border: 2px solid #25B181;
-            border-radius: 10px;
-            padding: 15px;
-            margin: 15px 0;
+            background: #f0fff4;
+            border: 1px solid #25B181;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 10px 0;
             page-break-inside: avoid;
+            break-inside: avoid;
         }
+
         .loan-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            text-align: center;
+            display: table;
+            width: 100%;
+            table-layout: fixed;
         }
+
         .loan-item {
-            padding: 12px 8px;
+            display: table-cell;
+            width: 16.66%;
+            padding: 8px 5px;
+            text-align: center;
+            vertical-align: top;
             background: white;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #e0e0e0;
         }
+
         .loan-item .amount {
-            font-size: 16px;
-            font-weight: 700;
+            font-size: 12pt;
+            font-weight: bold;
             color: #25B181;
+            margin-bottom: 3px;
         }
+
         .loan-item .label {
-            font-size: 8px;
-            color: #718096;
+            font-size: 6pt;
+            color: #666;
             text-transform: uppercase;
-            margin-top: 4px;
+            line-height: 1.2;
         }
+
         .loan-item.highlight {
             background: #25B181;
         }
+
         .loan-item.highlight .amount {
             color: white;
         }
+
         .loan-item.highlight .label {
             color: rgba(255,255,255,0.9);
         }
+
+        /* ===== SCHEDULE TABLE ===== */
         .schedule-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 10px 0;
-            font-size: 9px;
+            margin: 8px 0;
+            font-size: 7pt;
         }
+
         .schedule-table th {
             background: #25B181;
             color: white;
-            padding: 8px 6px;
+            padding: 6px 4px;
             text-align: left;
             font-weight: 600;
+            font-size: 7pt;
         }
+
         .schedule-table td {
-            padding: 6px;
-            border-bottom: 1px solid #e2e8f0;
+            padding: 4px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 7pt;
         }
+
         .schedule-table tr:nth-child(even) {
-            background: #f8fafc;
+            background: #f9f9f9;
         }
+
         .schedule-table thead {
             display: table-header-group;
         }
+
         .schedule-table tr {
             page-break-inside: avoid;
         }
+
+        /* ===== TERMS ===== */
         .terms {
-            font-size: 9px;
-            color: #4a5568;
-            background: #f8fafc;
-            padding: 12px;
-            border-radius: 6px;
-        }
-        .terms ol {
-            padding-left: 18px;
-        }
-        .terms li {
-            margin-bottom: 6px;
-            line-height: 1.5;
-            page-break-inside: avoid;
-        }
-        .notice {
-            background: #fffbeb;
-            border: 1px solid #fbbf24;
-            border-left: 4px solid #f59e0b;
-            border-radius: 8px;
-            padding: 12px 15px;
-            margin: 15px 0;
-            font-size: 9px;
-            page-break-inside: avoid;
-        }
-        .notice-title {
-            font-weight: 700;
-            color: #92400e;
-            margin-bottom: 8px;
-            font-size: 10px;
-        }
-        .notice ul {
-            margin: 0;
-            padding-left: 16px;
-            color: #78350f;
-        }
-        .declaration {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 9px;
-            margin: 15px 0;
-            page-break-inside: avoid;
-        }
-        .declaration-title {
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: #1e293b;
-            font-size: 11px;
-        }
-        .checkbox-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            margin: 6px 0;
-            padding: 6px 10px;
-            background: white;
+            font-size: 7pt;
+            color: #444;
+            background: #f9f9f9;
+            padding: 10px;
             border-radius: 4px;
         }
+
+        .terms ol {
+            padding-left: 15px;
+            margin: 0;
+        }
+
+        .terms li {
+            margin-bottom: 5px;
+            line-height: 1.4;
+            page-break-inside: avoid;
+        }
+
+        .terms li strong {
+            color: #333;
+        }
+
+        /* ===== NOTICE ===== */
+        .notice {
+            background: #fff8e1;
+            border: 1px solid #ffb300;
+            border-left: 3px solid #ff8f00;
+            border-radius: 4px;
+            padding: 10px 12px;
+            margin: 12px 0;
+            font-size: 7pt;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .notice-title {
+            font-weight: bold;
+            color: #e65100;
+            margin-bottom: 6px;
+            font-size: 8pt;
+        }
+
+        .notice ul {
+            margin: 0;
+            padding-left: 15px;
+            color: #5d4037;
+        }
+
+        .notice li {
+            margin: 3px 0;
+        }
+
+        /* ===== DECLARATION ===== */
+        .declaration {
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 7pt;
+            margin: 12px 0;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .declaration-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #222;
+            font-size: 9pt;
+        }
+
+        .checkbox-item {
+            display: table;
+            width: 100%;
+            margin: 5px 0;
+            padding: 4px 8px;
+            background: white;
+            border-radius: 3px;
+        }
+
         .checkbox {
+            display: table-cell;
             width: 14px;
             height: 14px;
+            min-width: 14px;
             background: #25B181;
-            border-radius: 3px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            margin-top: 1px;
+            border-radius: 2px;
+            text-align: center;
+            vertical-align: top;
+            padding-top: 1px;
         }
+
         .checkbox::after {
             content: "✓";
             color: white;
-            font-size: 10px;
+            font-size: 9px;
             font-weight: bold;
         }
+
+        .checkbox-item > span:last-child {
+            display: table-cell;
+            padding-left: 8px;
+            vertical-align: top;
+            line-height: 1.4;
+        }
+
+        /* ===== SIGNATURE SECTION ===== */
         .signature-section {
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 2px solid #2d3748;
-            page-break-inside: avoid;
-        }
-        .signature-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-top: 15px;
-        }
-        .signature-box {
-            text-align: center;
-        }
-        .esign-box {
-            border: 2px dashed #25B181;
-            padding: 15px;
-            text-align: center;
-            background: #f0fdf4;
-            border-radius: 10px;
-            min-height: 120px;
-        }
-        .esign-box .icon {
-            font-size: 28px;
-            margin-bottom: 8px;
-        }
-        .esign-box .text {
-            font-size: 10px;
-            color: #25B181;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-        .esign-box .subtext {
-            font-size: 9px;
-            color: #718096;
-            margin-top: 3px;
-        }
-        .esign-box .details {
-            margin-top: 10px;
-            font-size: 9px;
-            color: #4a5568;
-            line-height: 1.5;
-        }
-        .lender-box {
-            border-color: #2d3748;
-            background: #f7fafc;
-        }
-        .lender-box .text {
-            color: #2d3748;
-        }
-        .footer {
-            margin-top: 25px;
+            margin-top: 20px;
             padding-top: 15px;
-            border-top: 1px solid #e2e8f0;
-            font-size: 8px;
-            color: #718096;
-            text-align: center;
-            page-break-inside: avoid;
-        }
-        .footer p {
-            margin: 3px 0;
-        }
-        .footer .legal {
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px dashed #e2e8f0;
-            font-size: 7px;
-            color: #a0aec0;
-        }
-        .watermark, .approve-section {
-            display: none !important;
-        }
-        /* Page breaks */
-        .page-break {
-            page-break-after: always;
-            break-after: page;
-            height: 0;
-            margin: 0;
-            padding: 0;
-        }
-        .avoid-break {
+            border-top: 2px solid #333;
             page-break-inside: avoid;
             break-inside: avoid;
+        }
+
+        .signature-grid {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            margin-top: 12px;
+        }
+
+        .signature-box {
+            display: table-cell;
+            width: 50%;
+            padding: 0 8px;
+            vertical-align: top;
+        }
+
+        .esign-box {
+            border: 1px dashed #25B181;
+            padding: 12px;
+            text-align: center;
+            background: #f0fff4;
+            border-radius: 6px;
+            min-height: 100px;
+        }
+
+        .esign-box .icon {
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        .esign-box .text {
+            font-size: 9pt;
+            color: #25B181;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .esign-box .subtext {
+            font-size: 7pt;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .esign-box .details {
+            margin-top: 8px;
+            font-size: 7pt;
+            color: #555;
+            line-height: 1.4;
+        }
+
+        .lender-box {
+            border-color: #333;
+            background: #fafafa;
+        }
+
+        .lender-box .text {
+            color: #333;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            margin-top: 20px;
+            padding-top: 12px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 7pt;
+            color: #666;
+            text-align: center;
+            page-break-inside: avoid;
+        }
+
+        .footer p {
+            margin: 2px 0;
+        }
+
+        .footer .legal {
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px dashed #e0e0e0;
+            font-size: 6pt;
+            color: #999;
+        }
+
+        /* ===== HIDE ELEMENTS ===== */
+        .watermark,
+        .approve-section,
+        .page-break {
+            display: none !important;
+        }
+
+        /* ===== PAGE BREAK CONTROLS ===== */
+        .avoid-break,
+        .no-break {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        /* Force sections to stay together */
+        .section,
+        .loan-box,
+        .notice,
+        .declaration,
+        .signature-section,
+        .footer {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        /* Keep section title with content */
+        .section-title {
+            page-break-after: avoid;
+            break-after: avoid;
         }
     </style>
 </head>
