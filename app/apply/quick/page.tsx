@@ -100,10 +100,14 @@ export default function QuickLoanApplication() {
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [amountError, setAmountError] = useState("")
 
+  // Approval Data (Step 3)
+  const [approvalData, setApprovalData] = useState<any>(null);
+  const [approvalLoading, setApprovalLoading] = useState(false);
+
   // User location state
   const [userLocation, setUserLocation] = useState<{latitude: number; longitude: number} | null>(null);
 
-  // Field validation errors for Step 1 and Step 3
+  // Field validation errors for Step 1 and Step 4
   const [fieldErrors, setFieldErrors] = useState({
     email: "",
     mobile: "",
@@ -270,14 +274,14 @@ export default function QuickLoanApplication() {
                 console.log('✅ Selfie loaded from profile:', profileData.profile.s3URL);
               }
 
-              // Auto-jump to next incomplete step based on completion flags (3-step form)
+              // Auto-jump to next incomplete step based on completion flags (4-step form)
               let nextStep = 1; // Default to step 1
 
               // Check completion status and determine next step
               if (profileData.isBasicDetailsFilled === true && profileData.isIdentityVerified === true && profileData.isEmploymentDetailsFilled === true) {
-                nextStep = 3; // Go to final step
+                nextStep = 4; // Go to final step (Bank Details)
               } else if (profileData.isBasicDetailsFilled === true && profileData.isIdentityVerified === true) {
-                nextStep = 3; // Go to employment & bank
+                nextStep = 3; // Go to Approval step
               } else if (profileData.isBasicDetailsFilled === true) {
                 nextStep = 2; // Go to identity verification
               } else {
@@ -555,8 +559,8 @@ export default function QuickLoanApplication() {
     };
 
     const today = new Date();
-    const currentDate = today.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    const currentTime = today.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const currentDate = today.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+    const currentTime = today.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
 
     // Generate repayment schedule
     const generateRepaymentSchedule = () => {
@@ -618,72 +622,266 @@ export default function QuickLoanApplication() {
     <title>Loan Agreement - Quikkred</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Arial', sans-serif; font-size: 11pt; line-height: 1.6; color: #333; background: #fff; padding: 40px; }
-        .page { max-width: 800px; margin: 0 auto; background: #fff; }
-        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #25B181; padding-bottom: 20px; margin-bottom: 30px; }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.7;
+            color: #2d3748;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            padding: 20px;
+        }
+        .page {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            padding: 35px 40px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 3px solid #25B181;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
         .logo-section { display: flex; align-items: center; gap: 15px; }
-        .logo-section img { height: 50px; width: auto; }
-        .company-info h1 { color: #25B181; font-size: 24px; font-weight: bold; margin-bottom: 2px; }
-        .company-info .tagline { color: #666; font-size: 10px; font-style: italic; }
-        .company-info .reg-info { color: #888; font-size: 8px; margin-top: 5px; }
-        .doc-info { text-align: right; font-size: 10px; }
-        .doc-info .loan-ref { font-size: 14px; font-weight: bold; color: #25B181; background: #f0fdf4; padding: 5px 12px; border-radius: 4px; display: inline-block; margin-bottom: 5px; }
-        .title { text-align: center; margin-bottom: 30px; }
-        .title h2 { font-size: 18px; color: #1a1a1a; text-transform: uppercase; letter-spacing: 1px; border: 2px solid #25B181; display: inline-block; padding: 10px 40px; background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%); }
-        .title .subtitle { font-size: 10px; color: #666; margin-top: 8px; }
+        .logo-section img { height: 55px; width: auto; }
+        .company-info h1 { color: #25B181; font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+        .company-info .tagline { color: #718096; font-size: 11px; font-style: italic; }
+        .company-info .reg-info { color: #a0aec0; font-size: 9px; margin-top: 6px; line-height: 1.5; }
+        .doc-info { text-align: right; font-size: 11px; color: #4a5568; }
+        .doc-info .loan-ref {
+            font-size: 15px;
+            font-weight: 700;
+            color: #25B181;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            padding: 8px 16px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 8px rgba(37, 177, 129, 0.15);
+        }
+        .title { text-align: center; margin-bottom: 35px; }
+        .title h2 {
+            font-size: 20px;
+            color: #1a202c;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border: 2px solid #25B181;
+            display: inline-block;
+            padding: 14px 50px;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(37, 177, 129, 0.08);
+        }
+        .title .subtitle { font-size: 11px; color: #718096; margin-top: 12px; }
         .section { margin-bottom: 25px; }
-        .section-title { font-size: 12px; font-weight: bold; color: #fff; background: #25B181; text-transform: uppercase; padding: 8px 15px; margin-bottom: 15px; border-radius: 4px; }
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 30px; }
-        .info-row { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #eee; background: #fafafa; }
-        .info-row:hover { background: #f0fdf4; }
-        .info-label { color: #666; font-size: 10px; text-transform: uppercase; }
-        .info-value { font-weight: bold; font-size: 11px; color: #333; }
-        .loan-box { background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 2px solid #25B181; border-radius: 12px; padding: 25px; margin: 20px 0; box-shadow: 0 4px 6px rgba(37, 177, 129, 0.1); }
-        .loan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; text-align: center; }
-        .loan-item { padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .loan-item .amount { font-size: 22px; font-weight: bold; color: #25B181; }
-        .loan-item .label { font-size: 9px; color: #666; text-transform: uppercase; margin-top: 5px; }
-        .loan-item.highlight { background: #25B181; }
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            background: linear-gradient(135deg, #25B181 0%, #1d9469 100%);
+            text-transform: uppercase;
+            padding: 10px 18px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            letter-spacing: 0.8px;
+            box-shadow: 0 2px 8px rgba(37, 177, 129, 0.25);
+        }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 25px; }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        .info-row:hover { background: #f0fdf4; transform: translateX(3px); }
+        .info-label { color: #718096; font-size: 10px; text-transform: uppercase; font-weight: 500; letter-spacing: 0.5px; }
+        .info-value { font-weight: 600; font-size: 11px; color: #2d3748; text-align: right; }
+        .loan-box {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+            border: 2px solid #25B181;
+            border-radius: 16px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 4px 12px rgba(37, 177, 129, 0.12);
+        }
+        .loan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; text-align: center; }
+        .loan-item {
+            padding: 18px 12px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: all 0.3s ease;
+        }
+        .loan-item:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
+        .loan-item .amount { font-size: 20px; font-weight: 700; color: #25B181; }
+        .loan-item .label { font-size: 9px; color: #718096; text-transform: uppercase; margin-top: 6px; letter-spacing: 0.3px; }
+        .loan-item.highlight { background: linear-gradient(135deg, #25B181 0%, #1d9469 100%); }
         .loan-item.highlight .amount { color: white; }
         .loan-item.highlight .label { color: rgba(255,255,255,0.9); }
-        .schedule-table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 10px; border-radius: 8px; overflow: hidden; }
-        .schedule-table th { background: #25B181; color: white; padding: 12px 8px; text-align: left; font-weight: 600; }
-        .schedule-table td { padding: 10px 8px; border-bottom: 1px solid #eee; }
-        .schedule-table tr:nth-child(even) { background: #f9f9f9; }
-        .terms { font-size: 9px; color: #555; background: #fafafa; padding: 15px; border-radius: 8px; }
+        .schedule-table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 10px; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .schedule-table th { background: linear-gradient(135deg, #25B181 0%, #1d9469 100%); color: white; padding: 12px 10px; text-align: left; font-weight: 600; }
+        .schedule-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
+        .schedule-table tr:nth-child(even) { background: #f8fafc; }
+        .schedule-table tr:hover td { background: #f0fdf4; }
+        .terms { font-size: 10px; color: #4a5568; background: #f8fafc; padding: 18px; border-radius: 10px; }
         .terms ol { padding-left: 20px; }
-        .terms li { margin-bottom: 10px; line-height: 1.5; }
-        .terms li strong { color: #333; }
-        .notice { background: linear-gradient(135deg, #fff3cd 0%, #fef3c7 100%); border: 1px solid #f59e0b; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 15px 20px; margin: 20px 0; font-size: 10px; }
-        .notice-title { font-weight: bold; color: #92400e; margin-bottom: 8px; font-size: 11px; }
+        .terms li { margin-bottom: 8px; line-height: 1.6; }
+        .terms li strong { color: #2d3748; }
+        .notice {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border: 1px solid #fbbf24;
+            border-left: 5px solid #f59e0b;
+            border-radius: 12px;
+            padding: 18px 22px;
+            margin: 20px 0;
+            font-size: 10px;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);
+        }
+        .notice-title { font-weight: 700; color: #92400e; margin-bottom: 10px; font-size: 11px; }
         .notice ul { margin: 0; padding-left: 18px; color: #78350f; }
-        .notice li { margin: 5px 0; }
-        .signature-section { margin-top: 40px; padding-top: 20px; border-top: 2px solid #333; }
+        .notice li { margin: 6px 0; line-height: 1.5; }
+        .signature-section { margin-top: 35px; padding-top: 25px; border-top: 2px solid #2d3748; }
         .signature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 20px; }
         .signature-box { text-align: center; }
-        .esign-box { border: 2px dashed #25B181; padding: 25px 20px; text-align: center; background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%); border-radius: 12px; min-height: 180px; }
+        .esign-box {
+            border: 2px dashed #25B181;
+            padding: 25px 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+            border-radius: 16px;
+            min-height: 180px;
+            transition: all 0.3s ease;
+        }
+        .esign-box:hover { border-style: solid; box-shadow: 0 8px 24px rgba(37, 177, 129, 0.15); }
         .esign-box .icon { font-size: 36px; margin-bottom: 10px; }
-        .esign-box .text { font-size: 12px; color: #25B181; font-weight: bold; text-transform: uppercase; }
-        .esign-box .subtext { font-size: 9px; color: #666; margin-top: 3px; }
-        .esign-box .details { margin-top: 15px; font-size: 9px; color: #666; line-height: 1.6; }
-        .esign-box .stamp { margin-top: 12px; padding: 10px; border: 1px dashed #ccc; font-size: 8px; color: #999; background: white; border-radius: 4px; }
-        .lender-box { border-color: #333; background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%); }
-        .lender-box .text { color: #333; }
-        .declaration { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; font-size: 10px; margin: 20px 0; }
-        .declaration-title { font-weight: bold; margin-bottom: 12px; color: #1e293b; font-size: 11px; }
-        .checkbox-item { display: flex; align-items: flex-start; gap: 10px; margin: 10px 0; padding: 8px; background: white; border-radius: 4px; }
-        .checkbox { width: 16px; height: 16px; border: 2px solid #25B181; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; background: #25B181; }
-        .checkbox::after { content: "✓"; color: white; font-size: 10px; font-weight: bold; }
-        .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 8px; color: #666; text-align: center; }
-        .footer-logo { margin-bottom: 10px; }
-        .footer-logo img { height: 30px; opacity: 0.7; }
-        .footer p { margin: 3px 0; }
-        .footer .legal { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ddd; font-size: 7px; color: #999; }
-        .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 100px; color: rgba(37, 177, 129, 0.03); font-weight: bold; pointer-events: none; z-index: -1; }
-        .approve-section { text-align: center; margin-top: 40px; padding: 30px; background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border-radius: 12px; border: 2px solid #25B181; }
-        .approve-btn { background: #25B181; color: white; border: none; padding: 15px 50px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(37, 177, 129, 0.3); transition: all 0.3s ease; }
-        .approve-btn:hover { background: #1d9469; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(37, 177, 129, 0.4); }
-        @media print { body { padding: 20px; } .page { max-width: 100%; } .watermark, .approve-section { display: none; } }
+        .esign-box .text { font-size: 12px; color: #25B181; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .esign-box .subtext { font-size: 10px; color: #718096; margin-top: 4px; }
+        .esign-box .details { margin-top: 15px; font-size: 10px; color: #4a5568; line-height: 1.7; }
+        .lender-box { border-color: #2d3748; background: linear-gradient(135deg, #f7fafc 0%, #ffffff 100%); }
+        .lender-box .text { color: #2d3748; }
+        .declaration {
+            background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 10px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .declaration-title { font-weight: 700; margin-bottom: 15px; color: #1e293b; font-size: 12px; }
+        .checkbox-item { display: flex; align-items: flex-start; gap: 10px; margin: 8px 0; padding: 8px 12px; background: white; border-radius: 6px; }
+        .checkbox {
+            width: 18px; height: 18px;
+            border: 2px solid #25B181;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+            background: #25B181;
+        }
+        .checkbox::after { content: "✓"; color: white; font-size: 11px; font-weight: bold; }
+        .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 9px; color: #718096; text-align: center; }
+        .footer p { margin: 4px 0; }
+        .footer .legal { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0; font-size: 8px; color: #a0aec0; }
+        .approve-section {
+            text-align: center;
+            margin-top: 35px;
+            padding: 30px;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+            border-radius: 16px;
+            border: 2px solid #25B181;
+            box-shadow: 0 8px 24px rgba(37, 177, 129, 0.12);
+        }
+        .approve-btn {
+            background: linear-gradient(135deg, #25B181 0%, #1d9469 100%);
+            color: white;
+            border: none;
+            padding: 16px 55px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(37, 177, 129, 0.35);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .approve-btn:hover {
+            background: linear-gradient(135deg, #1d9469 0%, #177a56 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(37, 177, 129, 0.45);
+        }
+        .approve-btn:active { transform: translateY(-1px); }
+        @media (max-width: 768px) {
+            body { padding: 15px; }
+            .page { padding: 25px 20px; border-radius: 12px; }
+            .header { flex-direction: column; gap: 20px; }
+            .doc-info { text-align: left; }
+            .info-grid { grid-template-columns: 1fr; }
+            .loan-grid { grid-template-columns: 1fr 1fr; }
+            .signature-grid { grid-template-columns: 1fr; gap: 25px; }
+            .title h2 { padding: 12px 25px; font-size: 16px; }
+        }
+        @media print {
+            body { padding: 0 !important; margin: 0 !important; background: white !important; }
+            .page { max-width: 100%; box-shadow: none; border-radius: 0; padding: 10px; margin: 0; }
+            .approve-section { display: none; }
+            .info-row:hover, .loan-item:hover, .schedule-table tr:hover td { background: inherit; transform: none; }
+        }
+        /* PDF Generation Mode - Compact Styles */
+        body.pdf-mode {
+            padding: 0 !important;
+            margin: 0 !important;
+            background: white !important;
+        }
+        body.pdf-mode .page {
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 15px !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+        }
+        body.pdf-mode .header { padding-bottom: 10px; margin-bottom: 15px; }
+        body.pdf-mode .title { margin-bottom: 15px; }
+        body.pdf-mode .title h2 { padding: 8px 20px; font-size: 16px; }
+        body.pdf-mode .section { margin-bottom: 12px; }
+        body.pdf-mode .section-title { padding: 6px 12px; margin-bottom: 8px; font-size: 11px; }
+        body.pdf-mode .info-grid { gap: 6px 15px; }
+        body.pdf-mode .info-row { padding: 6px 8px; }
+        body.pdf-mode .info-label { font-size: 9px; }
+        body.pdf-mode .info-value { font-size: 10px; }
+        body.pdf-mode .loan-box { padding: 12px; margin: 10px 0; }
+        body.pdf-mode .loan-grid { gap: 8px; }
+        body.pdf-mode .loan-item { padding: 10px 8px; }
+        body.pdf-mode .loan-item .amount { font-size: 16px; }
+        body.pdf-mode .loan-item .label { font-size: 8px; }
+        body.pdf-mode .schedule-table { font-size: 9px; }
+        body.pdf-mode .schedule-table th { padding: 8px 6px; }
+        body.pdf-mode .schedule-table td { padding: 6px; }
+        body.pdf-mode .terms { padding: 12px; font-size: 9px; }
+        body.pdf-mode .terms li { margin-bottom: 4px; }
+        body.pdf-mode .notice { padding: 12px 15px; margin: 12px 0; font-size: 9px; }
+        body.pdf-mode .declaration { padding: 12px; margin: 12px 0; font-size: 9px; }
+        body.pdf-mode .checkbox-item { padding: 4px 8px; margin: 4px 0; }
+        body.pdf-mode .checkbox { width: 14px; height: 14px; }
+        body.pdf-mode .signature-section { margin-top: 20px; padding-top: 15px; }
+        body.pdf-mode .signature-grid { gap: 20px; margin-top: 10px; }
+        body.pdf-mode .esign-box { padding: 15px 12px; min-height: 130px; }
+        body.pdf-mode .esign-box .icon { font-size: 28px; }
+        body.pdf-mode .esign-box .text { font-size: 10px; }
+        body.pdf-mode .esign-box .details { font-size: 9px; margin-top: 10px; }
+        body.pdf-mode .footer { margin-top: 15px; padding-top: 10px; }
+        body.pdf-mode .approve-section { display: none !important; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
@@ -848,19 +1046,84 @@ export default function QuickLoanApplication() {
 
         <div class="approve-section" id="approve-section">
             <p style="font-size: 14px; color: #333; margin-bottom: 20px;">By clicking "I Agree & Approve", you confirm that you have read and understood all terms and conditions.</p>
-            <button class="approve-btn" id="approve-btn" onclick="approveAgreement()">I Agree & Approve</button>
-            <p style="font-size: 11px; color: #666; margin-top: 15px;">This will approve your data and redirect you back to the application form.</p>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <button class="test-btn" id="test-btn" onclick="testGeneratePDF()" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; border: none; padding: 14px 35px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); transition: all 0.3s ease;">Test Download PDF</button>
+                <button class="approve-btn" id="approve-btn" onclick="approveAgreement()">I Agree & Approve</button>
+            </div>
+            <p style="font-size: 11px; color: #666; margin-top: 15px;">Test button downloads PDF locally. Approve button submits and redirects.</p>
             <div id="loading-indicator" style="display: none; margin-top: 20px;">
                 <div style="display: inline-block; width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid #25B181; border-radius: 50%; animation: spin 1s linear infinite;"></div>
                 <p style="margin-top: 10px; color: #25B181; font-weight: bold;">Processing your agreement...</p>
             </div>
             <style>
                 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                .test-btn:hover { background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4); }
             </style>
         </div>
     </div>
 
     <script>
+        async function testGeneratePDF() {
+            const btn = document.getElementById('test-btn');
+            const approveSection = document.getElementById('approve-section');
+
+            // Show loading state
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+
+            try {
+                // Add PDF mode class for compact styling
+                document.body.classList.add('pdf-mode');
+
+                // Hide approve section for PDF generation
+                approveSection.style.display = 'none';
+
+                // Wait for styles to apply
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                // Convert HTML to PDF
+                const element = document.querySelector('.page');
+                const opt = {
+                    margin: [10, 10, 10, 10],
+                    filename: 'loan-agreement-test.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false,
+                        backgroundColor: '#ffffff'
+                    },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak: { mode: 'css', before: '.page-break-before', after: '.page-break-after', avoid: '.no-break' }
+                };
+
+                // Generate and download PDF
+                await html2pdf().set(opt).from(element).save();
+
+                // Remove PDF mode class and show approve section again
+                document.body.classList.remove('pdf-mode');
+                approveSection.style.display = 'block';
+
+                // Reset button state
+                btn.disabled = false;
+                btn.textContent = 'Test Download PDF';
+
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('Error: ' + (error.message || 'Failed to generate PDF. Please try again.'));
+
+                // Remove PDF mode class
+                document.body.classList.remove('pdf-mode');
+
+                // Reset button state
+                btn.disabled = false;
+                btn.textContent = 'Test Download PDF';
+
+                // Show approve section if hidden
+                approveSection.style.display = 'block';
+            }
+        }
+
         async function approveAgreement() {
             const btn = document.getElementById('approve-btn');
             const loadingIndicator = document.getElementById('loading-indicator');
@@ -884,22 +1147,35 @@ export default function QuickLoanApplication() {
                     return;
                 }
 
+                // Add PDF mode class for compact styling
+                document.body.classList.add('pdf-mode');
+
                 // Hide approve section for PDF generation
                 approveSection.style.display = 'none';
+
+                // Wait for styles to apply
+                await new Promise(resolve => setTimeout(resolve, 100));
 
                 // Convert HTML to PDF
                 const element = document.querySelector('.page');
                 const opt = {
-                    margin: 10,
+                    margin: [10, 10, 10, 10],
                     filename: 'loan-agreement.pdf',
                     image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2, useCORS: true },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                    html2canvas: {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false,
+                        backgroundColor: '#ffffff'
+                    },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak: { mode: 'css', before: '.page-break-before', after: '.page-break-after', avoid: '.no-break' }
                 };
 
                 const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
 
-                // Show approve section again
+                // Remove PDF mode class and show approve section again
+                document.body.classList.remove('pdf-mode');
                 approveSection.style.display = 'block';
 
                 // Create FormData and append PDF
@@ -930,6 +1206,9 @@ export default function QuickLoanApplication() {
             } catch (error) {
                 console.error('Error processing agreement:', error);
                 alert('Error: ' + (error.message || 'Failed to process agreement. Please try again.'));
+
+                // Remove PDF mode class
+                document.body.classList.remove('pdf-mode');
 
                 // Reset button state
                 btn.disabled = false;
@@ -2001,8 +2280,8 @@ console.log('Sending OTP with payload:', payload);
           });
           return false;
         }
-      } else if (step === 3) {
-        // Step 3: Bank Details
+      } else if (step === 4) {
+        // Step 4: Bank Details
         payload = {
           bankDetails: {
             bankName: formData.bankName,
@@ -2278,33 +2557,90 @@ console.log('Sending OTP with payload:', payload);
         return;
       }
 
-      // Data agreement checkbox validation
-      if (!dataAgreementChecked) {
-        toast({
-          variant: "warning",
-          title: "Data Review Required",
-          description: "Please review and verify your application data before proceeding.",
-        });
-        return;
-      }
-
       // Save Step 2 data (Aadhaar & PAN)
       setLoading(true);
-      const saveSuccess = await saveCustomerData(2);
-      setLoading(false);
+      setApprovalLoading(true);
 
-      if (!saveSuccess) {
+      try {
+        const token = localStorage.getItem('accessToken') ||
+                      localStorage.getItem('token') ||
+                      localStorage.getItem('authToken');
+
+        // Call both APIs in parallel - save customer data and get BRE data
+        const [saveSuccess, breResponse] = await Promise.all([
+          saveCustomerData(2),
+          fetch('https://api.bluechipfinmax.com/api/kyc/bre/initialize', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          }).then(res => res.json()).catch(err => {
+            console.error('BRE API error:', err);
+            return null;
+          })
+        ]);
+
+        setLoading(false);
+        setApprovalLoading(false);
+
+        if (!saveSuccess) {
+          toast({
+            variant: "error",
+            title: "Cannot Proceed",
+            description: "Please fix the errors before moving to the next step.",
+          });
+          return;
+        }
+
+        // Store BRE data for Step 3
+        if (breResponse && breResponse.success && breResponse.data) {
+          setApprovalData({
+            ...breResponse.data,
+            // Add user details for display
+            fullName: formData.fullName,
+            mobile: formData.mobile,
+            email: formData.email,
+            pan: formData.pan,
+            aadhaar: formData.aadhaar ? `XXXX-XXXX-${formData.aadhaar.slice(-4)}` : '',
+            monthlyIncome: formData.monthlyIncome,
+            employmentType: formData.employmentType
+          });
+        } else {
+          // If BRE API fails, show error
+          toast({
+            variant: "error",
+            title: "BRE Check Failed",
+            description: breResponse?.message || "Unable to check eligibility. Please try again.",
+          });
+          return;
+        }
+      } catch (error) {
+        setLoading(false);
+        setApprovalLoading(false);
         toast({
           variant: "error",
-          title: "Cannot Proceed",
-          description: "Please fix the errors before moving to the next step.",
+          title: "Error",
+          description: "Something went wrong. Please try again.",
         });
         return;
       }
     }
 
     if (currentStep === 3) {
-      // Step 3: Bank Details & Consent Validation
+      // Step 3: Approval - Require confirmation before proceeding
+      if (!dataAgreementChecked) {
+        toast({
+          variant: "warning",
+          title: "Confirmation Required",
+          description: "Please click 'Confirm Details' button to review and confirm your application data.",
+        });
+        return;
+      }
+    }
+
+    if (currentStep === 4) {
+      // Step 4: Bank Details & Consent Validation
 
       // Bank Name validation
       if (!formData.bankName) {
@@ -2354,7 +2690,7 @@ console.log('Sending OTP with payload:', payload);
       // Clear consent error if validation passes
       setConsentError(false);
 
-      // Final step - submit only Step 3 data (Step 1 & 2 already saved)
+      // Final step - submit only Step 4 data (Step 1, 2 & 3 already saved)
       setLoading(true);
 
       try {
@@ -2372,7 +2708,7 @@ console.log('Sending OTP with payload:', payload);
           return;
         }
 
-        // Step 3 Final Submit - only bank details
+        // Step 4 Final Submit - only bank details
         const principal = parseFloat(formData.loanAmount);
         const payload = {
           bankDetails: {
@@ -2420,7 +2756,7 @@ console.log('Sending OTP with payload:', payload);
             processingFee: Math.round(principal * 0.02)
           });
         } else {
-          // API returned error - show error and stay on step 3
+          // API returned error - show error and stay on step 4
           console.error('❌ Loan application failed:', result.message);
           toast({
             variant: "error",
@@ -2428,18 +2764,18 @@ console.log('Sending OTP with payload:', payload);
             description: result.message || "Failed to submit loan application. Please try again.",
           });
           setLoading(false);
-          return; // Don't proceed, stay on step 3
+          return; // Don't proceed, stay on step 4
         }
       } catch (error: any) {
         console.error('Error submitting loan application:', error);
-        // Show error toast and stay on step 3
+        // Show error toast and stay on step 4
         toast({
           variant: "error",
           title: "Submission Error",
           description: error.message || "Network error occurred. Please check your connection and try again.",
         });
         setLoading(false);
-        return; // Don't proceed, stay on step 3
+        return; // Don't proceed, stay on step 4
       }
 
       setLoading(false);
@@ -2472,7 +2808,7 @@ console.log('Sending OTP with payload:', payload);
   };
 
   // Show loading screen during verification
-  if (loading && currentStep === 3 && !decision) {
+  if (loading && currentStep === 4 && !decision) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5] flex items-center justify-center">
         <motion.div
@@ -2754,7 +3090,7 @@ console.log('Sending OTP with payload:', payload);
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2 gap-2">
-            {[1, 2, 3].map((step) => (
+            {[1, 2, 3, 4].map((step) => (
               <div key={step} className="flex-1">
                 <div className={`h-2 rounded-full transition-all ${
                   step <= currentStep ? 'bg-[#25B181]' : 'bg-gray-200'
@@ -2765,7 +3101,8 @@ console.log('Sending OTP with payload:', payload);
           <div className="flex justify-between text-xs sm:text-sm text-gray-600">
             <span className={`text-center ${currentStep === 1 ? 'text-[#25B181] font-semibold' : ''}`}>Basic Details</span>
             <span className={`text-center ${currentStep === 2 ? 'text-[#25B181] font-semibold' : ''}`}>Identity</span>
-            <span className={`text-center ${currentStep === 3 ? 'text-[#25B181] font-semibold' : ''}`}>Bank Details</span>
+            <span className={`text-center ${currentStep === 3 ? 'text-[#25B181] font-semibold' : ''}`}>Approval</span>
+            <span className={`text-center ${currentStep === 4 ? 'text-[#25B181] font-semibold' : ''}`}>Bank Details</span>
           </div>
         </div>
 
@@ -3553,258 +3890,307 @@ console.log('Sending OTP with payload:', payload);
                   )}
                 </div>
 
-                {/* Data Agreement Checkbox */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                  <div className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      id="dataAgreement"
-                      checked={dataAgreementChecked}
-                      readOnly
-                      onClick={async () => {
-                        if (!dataAgreementChecked) {
-                          // Get auth token
-                          const token = localStorage.getItem('accessToken') ||
-                                        localStorage.getItem('token') ||
-                                        localStorage.getItem('authToken');
+              </motion.div>
+            )}
 
-                          if (!token) {
-                            toast({
-                              title: "Authentication Error",
-                              description: "Please login to continue",
-                              variant: "error"
-                            });
-                            return;
-                          }
+            {/* Step 3: Approval */}
+            {currentStep === 3 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="space-y-6"
+              >
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Loan Approval</h2>
 
-                          // Initialize e-Sign verification
-                          try {
-                            const eSignResponse = await fetch('https://api.bluechipfinmax.com/api/kyc/eSign/initialize', {
-                              method: 'GET',
-                              headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}`
-                              }
-                            });
+                {approvalLoading ? (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <Loader2 className="w-12 h-12 animate-spin text-[#25B181] mb-4" />
+                    <p className="text-gray-600">Checking your eligibility...</p>
+                  </div>
+                ) : approvalData ? (
+                  <>
+                    {/* Approval Status Banner */}
+                    <div className={`rounded-xl p-6 text-white ${
+                      approvalData.status === 'APPROVED'
+                        ? 'bg-gradient-to-r from-[#25B181] to-[#51C9AF]'
+                        : 'bg-gradient-to-r from-yellow-500 to-orange-500'
+                    }`}>
+                      <div className="flex items-center gap-4">
+                        <div className="bg-white/20 rounded-full p-3">
+                          <CheckCircle className="w-8 h-8" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold">
+                            {approvalData.status === 'APPROVED' ? 'Congratulations!' : 'Application Status'}
+                          </h3>
+                          <p className="text-white/90">
+                            {approvalData.status === 'APPROVED'
+                              ? 'Your loan has been approved!'
+                              : `Status: ${approvalData.status}`}
+                          </p>
+                          {approvalData.applicationNumber && (
+                            <p className="text-sm text-white/80 mt-1">
+                              Application No: {approvalData.applicationNumber}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
 
-                            const eSignResult = await eSignResponse.json();
+                    {/* Loan Details */}
+                    <div className="bg-gray-50 rounded-xl p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <IndianRupee className="w-5 h-5 text-[#25B181]" />
+                        Loan Details
+                      </h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-white rounded-lg p-4 border border-[#25B181] border-2">
+                          <p className="text-sm text-[#25B181] mb-1">Loan Amount</p>
+                          <p className="text-xl font-bold text-[#25B181]">
+                            ₹{(approvalData.loanAmount || 0).toLocaleString('en-IN')}
+                          </p>
+                        </div>
+                        <div className="bg-white rounded-lg p-4 border border-gray-200">
+                          <p className="text-sm text-gray-500 mb-1">Tenure</p>
+                          <p className="text-xl font-bold text-gray-900">
+                            {approvalData.tenure || 0} {approvalData.tenureUnit === 'DAYS' ? 'Days' : 'Months'}
+                          </p>
+                        </div>
+                        <div className="bg-white rounded-lg p-4 border border-gray-200">
+                          <p className="text-sm text-gray-500 mb-1">Interest Rate</p>
+                          <p className="text-xl font-bold text-gray-900">{approvalData.interestRate || 0}%</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-4 border border-gray-200">
+                          <p className="text-sm text-gray-500 mb-1">Interest Amount</p>
+                          <p className="text-xl font-bold text-gray-900">₹{(approvalData.interestAmount || 0).toLocaleString('en-IN')}</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-4 border border-gray-200">
+                          <p className="text-sm text-gray-500 mb-1">Processing Fee</p>
+                          <p className="text-xl font-bold text-gray-900">₹{(approvalData.processingFee || 0).toLocaleString('en-IN')}</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-4 border border-gray-200">
+                          <p className="text-sm text-gray-500 mb-1">GST on Processing Fee</p>
+                          <p className="text-xl font-bold text-gray-900">₹{(approvalData.gstOnProcessingFee || 0).toLocaleString('en-IN')}</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-4 border border-gray-200">
+                          <p className="text-sm text-gray-500 mb-1">Total Repayment</p>
+                          <p className="text-xl font-bold text-gray-900">₹{(approvalData.totalRepaymentAmount || 0).toLocaleString('en-IN')}</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-4 border border-green-500 border-2">
+                          <p className="text-sm text-green-600 mb-1">Net Disbursal Amount</p>
+                          <p className="text-xl font-bold text-green-600">₹{(approvalData.netDisbursalAmount || 0).toLocaleString('en-IN')}</p>
+                        </div>
+                      </div>
+                    </div>
 
-                            if (!eSignResponse.ok || !eSignResult.success) {
-                              toast({
-                                title: "e-Sign Initialization Failed",
-                                description: eSignResult.message || "Failed to initialize e-sign verification",
-                                variant: "error"
-                              });
-                              return;
-                            }
-                          } catch (error) {
-                            console.error('Error initializing e-sign:', error);
-                            toast({
-                              title: "e-Sign Error",
-                              description: "Failed to initialize e-sign verification. Please try again.",
-                              variant: "error"
-                            });
-                            return;
-                          }
+                    {/* User Details Summary */}
+                    <div className="bg-gray-50 rounded-xl p-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                        <User className="w-5 h-5 text-[#25B181]" />
+                        Your Details
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-200">
+                          <User className="w-5 h-5 text-gray-400" />
+                          <div>
+                            <p className="text-xs text-gray-500">Full Name</p>
+                            <p className="font-medium text-gray-900">{approvalData.fullName || formData.fullName}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-200">
+                          <Phone className="w-5 h-5 text-gray-400" />
+                          <div>
+                            <p className="text-xs text-gray-500">Mobile</p>
+                            <p className="font-medium text-gray-900">{approvalData.mobile || formData.mobile}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-200">
+                          <Mail className="w-5 h-5 text-gray-400" />
+                          <div>
+                            <p className="text-xs text-gray-500">Email</p>
+                            <p className="font-medium text-gray-900">{approvalData.email || formData.email}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-200">
+                          <CreditCard className="w-5 h-5 text-gray-400" />
+                          <div>
+                            <p className="text-xs text-gray-500">PAN</p>
+                            <p className="font-medium text-gray-900">{approvalData.pan || formData.pan}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-200">
+                          <FileText className="w-5 h-5 text-gray-400" />
+                          <div>
+                            <p className="text-xs text-gray-500">Aadhaar</p>
+                            <p className="font-medium text-gray-900">
+                              {approvalData.aadhaar || (formData.aadhaar ? `XXXX-XXXX-${formData.aadhaar.slice(-4)}` : '-')}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-200">
+                          <IndianRupee className="w-5 h-5 text-gray-400" />
+                          <div>
+                            <p className="text-xs text-gray-500">Monthly Income</p>
+                            <p className="font-medium text-gray-900">
+                              ₹{(approvalData.monthlyIncome || parseFloat(formData.monthlyIncome) || 0).toLocaleString('en-IN')}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
-                          // Fetch customer data from API
-                          let customerData: any = {};
+                    {/* Confirm Button */}
+                    <div className="bg-gray-50 rounded-xl p-6">
+                      {dataAgreementChecked ? (
+                        <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-lg p-4">
+                          <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
+                          <div>
+                            <h4 className="font-semibold text-green-800">Application Data Confirmed</h4>
+                            <p className="text-sm text-green-700 mt-1">
+                              You have reviewed and confirmed your application data. Click &quot;Next&quot; to proceed to bank details.
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <h4 className="font-semibold text-blue-800">Review Required</h4>
+                              <p className="text-sm text-blue-700 mt-1">
+                                Please review your details above and click the &quot;Confirm Details&quot; button to proceed.
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              // Get auth token
+                              const token = localStorage.getItem('accessToken') ||
+                                            localStorage.getItem('token') ||
+                                            localStorage.getItem('authToken');
 
-                          try {
-                            const response = await fetch('https://api.bluechipfinmax.com/api/customer/get', {
-                                method: 'GET',
-                                headers: {
-                                  'Content-Type': 'application/json',
-                                  'Authorization': `Bearer ${token}`
-                                }
-                              });
-
-                              const result = await response.json();
-
-                              if (response.ok && result.success && result.data) {
-                                customerData = result.data;
-                              }
-                          } catch (error) {
-                            console.error('Error fetching customer data:', error);
-                          }
-
-                          // Combine API data with form data
-                          const agreementData = {
-                            fullName: formData.fullName || customerData.fullName || '',
-                            email: formData.email || customerData.email || '',
-                            mobile: formData.mobile || customerData.mobile || '',
-                            dob: formData.dob || customerData.dateOfBirth || '',
-                            pan: formData.pan || customerData.panCard || '',
-                            aadhaar: formData.aadhaar || customerData.aadhaarNumber || '',
-                            address: customerData.address?.fullAddress || aadhaarAddress?.fullAddress || '',
-                            city: customerData.address?.city || aadhaarAddress?.city || '',
-                            state: customerData.address?.state || aadhaarAddress?.state || '',
-                            pincode: customerData.address?.pincode || aadhaarAddress?.pincode || '',
-                            employmentType: formData.employmentType || customerData.employmentType || '',
-                            monthlyIncome: formData.monthlyIncome || customerData.monthlyIncome || '',
-                            companyName: formData.companyName || customerData.companyName || '',
-                            designation: customerData.designation || '',
-                            workExperience: customerData.workExperience || '',
-                            salaryDate: customerData.salaryDate || '',
-                            bankName: formData.bankName || customerData.banks?.[0]?.bankName || '',
-                            accountNumber: formData.accountNumber || customerData.banks?.[0]?.accountNumber || '',
-                            ifscCode: formData.ifsc || customerData.banks?.[0]?.ifscCode || '',
-                            accountHolderName: customerData.banks?.[0]?.accountHolderName || formData.fullName || customerData.fullName || '',
-                            loanAmount: formData.loanAmount || '',
-                            tenure: formData.tenure || '',
-                            tenureUnit: formData.requestedTenureUnit || 'days',
-                            productName: selectedProduct?.productName || '',
-                            interestRate: selectedProduct?.dailyInterestRate || '',
-                            processingFee: selectedProduct?.processingFee || '',
-                            totalAmount: emiCalculation?.totalAmount || '',
-                            disbursementAmount: emiCalculation ? (emiCalculation.principal - emiCalculation.totalProcessingFee) : '',
-                            applicationNumber: customerData.applicationNumber || '',
-                          };
-
-                          // Generate HTML and open in new tab
-                          const htmlContent = generateAgreementHTML(agreementData);
-                          const blob = new Blob([htmlContent], { type: 'text/html' });
-                          const url = URL.createObjectURL(blob);
-                          window.open(url, '_blank');
-                          localStorage.removeItem('dataAgreementApproved');
-                        }
-                      }}
-                      className="mt-1 w-5 h-5 text-[#25B181] border-gray-300 rounded focus:ring-[#25B181] cursor-pointer"
-                    />
-                    <div className="flex-1">
-                      <label
-                        htmlFor="dataAgreement"
-                        className="block font-medium text-gray-900 cursor-pointer"
-                        onClick={async () => {
-                          if (!dataAgreementChecked) {
-                            // Get auth token
-                            const token = localStorage.getItem('accessToken') ||
-                                          localStorage.getItem('token') ||
-                                          localStorage.getItem('authToken');
-
-                            if (!token) {
-                              toast({
-                                title: "Authentication Error",
-                                description: "Please login to continue",
-                                variant: "error"
-                              });
-                              return;
-                            }
-
-                            // Initialize e-Sign verification
-                            try {
-                              const eSignResponse = await fetch('https://api.bluechipfinmax.com/api/kyc/eSign/initialize', {
-                                method: 'GET',
-                                headers: {
-                                  'Content-Type': 'application/json',
-                                  'Authorization': `Bearer ${token}`
-                                }
-                              });
-
-                              const eSignResult = await eSignResponse.json();
-
-                              if (!eSignResponse.ok || !eSignResult.success) {
+                              if (!token) {
                                 toast({
-                                  title: "e-Sign Initialization Failed",
-                                  description: eSignResult.message || "Failed to initialize e-sign verification",
+                                  title: "Authentication Error",
+                                  description: "Please login to continue",
                                   variant: "error"
                                 });
                                 return;
                               }
-                            } catch (error) {
-                              console.error('Error initializing e-sign:', error);
-                              toast({
-                                title: "e-Sign Error",
-                                description: "Failed to initialize e-sign verification. Please try again.",
-                                variant: "error"
-                              });
-                              return;
-                            }
 
-                            // Fetch customer data from API
-                            let customerData: any = {};
+                              // Initialize e-Sign verification
+                              try {
+                                const eSignResponse = await fetch('https://api.bluechipfinmax.com/api/kyc/eSign/initialize', {
+                                  method: 'GET',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`
+                                  }
+                                });
 
-                            try {
-                              const response = await fetch('https://api.bluechipfinmax.com/api/customer/get', {
-                                method: 'GET',
-                                headers: {
-                                  'Content-Type': 'application/json',
-                                  'Authorization': `Bearer ${token}`
+                                const eSignResult = await eSignResponse.json();
+
+                                if (!eSignResponse.ok || !eSignResult.success) {
+                                  toast({
+                                    title: "e-Sign Initialization Failed",
+                                    description: eSignResult.message || "Failed to initialize e-sign verification",
+                                    variant: "error"
+                                  });
+                                  return;
                                 }
-                              });
-
-                              const result = await response.json();
-
-                              if (response.ok && result.success && result.data) {
-                                customerData = result.data;
+                              } catch (error) {
+                                console.error('Error initializing e-sign:', error);
+                                toast({
+                                  title: "e-Sign Error",
+                                  description: "Failed to initialize e-sign verification. Please try again.",
+                                  variant: "error"
+                                });
+                                return;
                               }
-                            } catch (error) {
-                              console.error('Error fetching customer data:', error);
-                            }
 
-                            // Combine API data with form data
-                            const agreementData = {
-                              fullName: formData.fullName || customerData.fullName || '',
-                              email: formData.email || customerData.email || '',
-                              mobile: formData.mobile || customerData.mobile || '',
-                              dob: formData.dob || customerData.dateOfBirth || '',
-                              pan: formData.pan || customerData.panCard || '',
-                              aadhaar: formData.aadhaar || customerData.aadhaarNumber || '',
-                              address: customerData.address?.fullAddress || aadhaarAddress?.fullAddress || '',
-                              city: customerData.address?.city || aadhaarAddress?.city || '',
-                              state: customerData.address?.state || aadhaarAddress?.state || '',
-                              pincode: customerData.address?.pincode || aadhaarAddress?.pincode || '',
-                              employmentType: formData.employmentType || customerData.employmentType || '',
-                              monthlyIncome: formData.monthlyIncome || customerData.monthlyIncome || '',
-                              companyName: formData.companyName || customerData.companyName || '',
-                              designation: customerData.designation || '',
-                              workExperience: customerData.workExperience || '',
-                              salaryDate: customerData.salaryDate || '',
-                              bankName: formData.bankName || customerData.banks?.[0]?.bankName || '',
-                              accountNumber: formData.accountNumber || customerData.banks?.[0]?.accountNumber || '',
-                              ifscCode: formData.ifsc || customerData.banks?.[0]?.ifscCode || '',
-                              accountHolderName: customerData.banks?.[0]?.accountHolderName || formData.fullName || customerData.fullName || '',
-                              loanAmount: formData.loanAmount || '',
-                              tenure: formData.tenure || '',
-                              tenureUnit: formData.requestedTenureUnit || 'days',
-                              productName: selectedProduct?.productName || '',
-                              interestRate: selectedProduct?.dailyInterestRate || '',
-                              processingFee: selectedProduct?.processingFee || '',
-                              totalAmount: emiCalculation?.totalAmount || '',
-                              disbursementAmount: emiCalculation ? (emiCalculation.principal - emiCalculation.totalProcessingFee) : '',
-                              applicationNumber: customerData.applicationNumber || '',
-                            };
+                              // Fetch customer data from API
+                              let customerData: any = {};
 
-                            // Generate HTML and open in new tab
-                            const htmlContent = generateAgreementHTML(agreementData);
-                            const blob = new Blob([htmlContent], { type: 'text/html' });
-                            const url = URL.createObjectURL(blob);
-                            window.open(url, '_blank');
-                            localStorage.removeItem('dataAgreementApproved');
-                          }
-                        }}
-                      >
-                        I have reviewed and verified my application data *
-                      </label>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {dataAgreementChecked
-                          ? "You have approved your application data."
-                          : "Click to review and approve your application data."}
-                      </p>
-                      {dataAgreementChecked && (
-                        <p className="text-sm text-green-600 mt-1 flex items-center gap-1">
-                          <CheckCircle className="w-4 h-4" />
-                          Data approved
-                        </p>
+                              try {
+                                const response = await fetch('https://api.bluechipfinmax.com/api/customer/get', {
+                                  method: 'GET',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`
+                                  }
+                                });
+
+                                const result = await response.json();
+
+                                if (response.ok && result.success && result.data) {
+                                  customerData = result.data;
+                                }
+                              } catch (error) {
+                                console.error('Error fetching customer data:', error);
+                              }
+
+                              // Combine API data with form data
+                              const agreementData = {
+                                fullName: formData.fullName || customerData.fullName || '',
+                                email: formData.email || customerData.email || '',
+                                mobile: formData.mobile || customerData.mobile || '',
+                                dob: formData.dob || customerData.dateOfBirth || '',
+                                pan: formData.pan || customerData.panCard || '',
+                                aadhaar: formData.aadhaar || customerData.aadhaarNumber || '',
+                                address: customerData.address?.fullAddress || aadhaarAddress?.fullAddress || '',
+                                city: customerData.address?.city || aadhaarAddress?.city || '',
+                                state: customerData.address?.state || aadhaarAddress?.state || '',
+                                pincode: customerData.address?.pincode || aadhaarAddress?.pincode || '',
+                                employmentType: formData.employmentType || customerData.employmentType || '',
+                                monthlyIncome: formData.monthlyIncome || customerData.monthlyIncome || '',
+                                companyName: formData.companyName || customerData.companyName || '',
+                                designation: customerData.designation || '',
+                                workExperience: customerData.workExperience || '',
+                                salaryDate: customerData.salaryDate || '',
+                                bankName: formData.bankName || customerData.banks?.[0]?.bankName || '',
+                                accountNumber: formData.accountNumber || customerData.banks?.[0]?.accountNumber || '',
+                                ifscCode: formData.ifsc || customerData.banks?.[0]?.ifscCode || '',
+                                accountHolderName: customerData.banks?.[0]?.accountHolderName || formData.fullName || customerData.fullName || '',
+                                loanAmount: formData.loanAmount || '',
+                                tenure: formData.tenure || '',
+                                tenureUnit: formData.requestedTenureUnit || 'days',
+                                productName: selectedProduct?.productName || '',
+                                interestRate: selectedProduct?.dailyInterestRate || '',
+                                processingFee: selectedProduct?.processingFee || '',
+                                totalAmount: emiCalculation?.totalAmount || '',
+                                disbursementAmount: emiCalculation ? (emiCalculation.principal - emiCalculation.totalProcessingFee) : '',
+                                applicationNumber: customerData.applicationNumber || '',
+                              };
+
+                              // Generate HTML and open in new tab
+                              const htmlContent = generateAgreementHTML(agreementData);
+                              const blob = new Blob([htmlContent], { type: 'text/html' });
+                              const url = URL.createObjectURL(blob);
+                              window.open(url, '_blank');
+                              localStorage.removeItem('dataAgreementApproved');
+                            }}
+                            className="w-full px-6 py-4 bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white rounded-lg hover:shadow-lg font-semibold transition-all flex items-center justify-center gap-2"
+                          >
+                            <FileText className="w-5 h-5" />
+                            Confirm Details
+                          </button>
+                        </div>
                       )}
                     </div>
+                  </>
+                ) : (
+                  <div className="text-center py-12">
+                    <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+                    <p className="text-gray-600">Unable to fetch approval data. Please try again.</p>
                   </div>
-                </div>
+                )}
               </motion.div>
             )}
 
-            {/* Step 3: Bank Details & Consent */}
-            {currentStep === 3 && (
+            {/* Step 4: Bank Details & Consent */}
+            {currentStep === 4 && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -3995,8 +4381,8 @@ console.log('Sending OTP with payload:', payload);
                 </>
               ) : (
                 <>
-                  {currentStep === 3 ? "Submit Application" : "Next"}
-                  {currentStep < 3 && <ArrowRight className="w-5 h-5" />}
+                  {currentStep === 4 ? "Submit Application" : "Next"}
+                  {currentStep < 4 && <ArrowRight className="w-5 h-5" />}
                 </>
               )}
             </button>
