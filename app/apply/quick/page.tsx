@@ -793,6 +793,54 @@ export default function QuickLoanApplication() {
         .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 9px; color: #718096; text-align: center; }
         .footer p { margin: 4px 0; }
         .footer .legal { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0; font-size: 8px; color: #a0aec0; }
+
+        /* ========== PAGE BREAK CLASSES FOR PDF ========== */
+        .page-break {
+            page-break-after: always;
+            break-after: page;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .page-break-before {
+            page-break-before: always;
+            break-before: page;
+        }
+        .page-break-after {
+            page-break-after: always;
+            break-after: page;
+        }
+        .avoid-break, .no-break {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        /* Keep section titles with their content */
+        .section-title {
+            page-break-after: avoid;
+            break-after: avoid;
+        }
+        /* Prevent orphan rows in tables */
+        .schedule-table tr {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        .schedule-table thead {
+            display: table-header-group;
+        }
+        .schedule-table tbody tr {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        /* Keep declaration items together */
+        .checkbox-item {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        /* Signature boxes should not break */
+        .esign-box {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
         .approve-section {
             text-align: center;
             margin-top: 35px;
@@ -832,58 +880,318 @@ export default function QuickLoanApplication() {
             .signature-grid { grid-template-columns: 1fr; gap: 25px; }
             .title h2 { padding: 12px 25px; font-size: 16px; }
         }
-        @media print {
-            body { padding: 0 !important; margin: 0 !important; background: white !important; }
-            .page { max-width: 100%; box-shadow: none; border-radius: 0; padding: 10px; margin: 0; }
-            .approve-section { display: none; }
-            .info-row:hover, .loan-item:hover, .schedule-table tr:hover td { background: inherit; transform: none; }
+        @page {
+            size: A4;
+            margin: 10mm 15mm;
         }
-        /* PDF Generation Mode - Compact Styles */
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+            html, body {
+                width: 210mm;
+                height: 297mm;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+            }
+            .page {
+                max-width: 100%;
+                width: 100%;
+                box-shadow: none;
+                border-radius: 0;
+                padding: 15mm;
+                margin: 0;
+                background: white !important;
+            }
+            .approve-section, .watermark { display: none !important; }
+            .info-row:hover, .loan-item:hover, .schedule-table tr:hover td { background: inherit; transform: none; }
+            /* Force page breaks */
+            .page-break { page-break-after: always !important; break-after: page !important; }
+            .page-break-before { page-break-before: always !important; break-before: page !important; }
+            .avoid-break, .no-break { page-break-inside: avoid !important; break-inside: avoid !important; }
+            /* Section handling */
+            .section { page-break-inside: avoid; break-inside: avoid; }
+            .section-title { page-break-after: avoid !important; break-after: avoid !important; }
+            /* Table handling */
+            .schedule-table { page-break-inside: auto; }
+            .schedule-table thead { display: table-header-group; }
+            .schedule-table tbody tr { page-break-inside: avoid; break-inside: avoid; }
+            /* Keep related elements together */
+            .declaration { page-break-inside: avoid; break-inside: avoid; }
+            .signature-section { page-break-inside: avoid; break-inside: avoid; }
+            .notice { page-break-inside: avoid; break-inside: avoid; }
+            .loan-box { page-break-inside: avoid; break-inside: avoid; }
+            /* Terms can break but not individual items */
+            .terms li { page-break-inside: avoid; break-inside: avoid; }
+            .checkbox-item { page-break-inside: avoid; break-inside: avoid; }
+        }
+        /* ========== PDF GENERATION MODE - FIXED FOR PROPER RENDERING ========== */
         body.pdf-mode {
             padding: 0 !important;
             margin: 0 !important;
-            background: white !important;
+            background: #ffffff !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        body.pdf-mode * {
+            transition: none !important;
+            animation: none !important;
+            transform: none !important;
         }
         body.pdf-mode .page {
             max-width: 100% !important;
+            width: 100% !important;
             margin: 0 !important;
-            padding: 15px !important;
+            padding: 20px 25px !important;
             box-shadow: none !important;
             border-radius: 0 !important;
+            background: #ffffff !important;
         }
-        body.pdf-mode .header { padding-bottom: 10px; margin-bottom: 15px; }
-        body.pdf-mode .title { margin-bottom: 15px; }
-        body.pdf-mode .title h2 { padding: 8px 20px; font-size: 16px; }
-        body.pdf-mode .section { margin-bottom: 12px; }
-        body.pdf-mode .section-title { padding: 6px 12px; margin-bottom: 8px; font-size: 11px; }
-        body.pdf-mode .info-grid { gap: 6px 15px; }
-        body.pdf-mode .info-row { padding: 6px 8px; }
-        body.pdf-mode .info-label { font-size: 9px; }
-        body.pdf-mode .info-value { font-size: 10px; }
-        body.pdf-mode .loan-box { padding: 12px; margin: 10px 0; }
-        body.pdf-mode .loan-grid { gap: 8px; }
-        body.pdf-mode .loan-item { padding: 10px 8px; }
-        body.pdf-mode .loan-item .amount { font-size: 16px; }
-        body.pdf-mode .loan-item .label { font-size: 8px; }
-        body.pdf-mode .schedule-table { font-size: 9px; }
-        body.pdf-mode .schedule-table th { padding: 8px 6px; }
+        /* Header - Use table layout for better PDF rendering */
+        body.pdf-mode .header {
+            display: table !important;
+            width: 100% !important;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #25B181;
+        }
+        body.pdf-mode .logo-section {
+            display: table-cell !important;
+            vertical-align: top !important;
+            width: 60% !important;
+        }
+        body.pdf-mode .logo-section img {
+            display: inline-block;
+            vertical-align: middle;
+            height: 45px;
+            margin-right: 10px;
+        }
+        body.pdf-mode .company-info {
+            display: inline-block;
+            vertical-align: middle;
+        }
+        body.pdf-mode .company-info h1 { font-size: 22px; color: #25B181; }
+        body.pdf-mode .doc-info {
+            display: table-cell !important;
+            vertical-align: top !important;
+            text-align: right !important;
+            width: 40% !important;
+        }
+        body.pdf-mode .doc-info .loan-ref {
+            background: #e6f7f0 !important;
+            box-shadow: none !important;
+        }
+        /* Title */
+        body.pdf-mode .title { margin-bottom: 20px; }
+        body.pdf-mode .title h2 {
+            padding: 10px 30px;
+            font-size: 16px;
+            background: #f0fdf4 !important;
+            box-shadow: none !important;
+        }
+        /* Sections */
+        body.pdf-mode .section { margin-bottom: 15px; }
+        body.pdf-mode .section-title {
+            padding: 8px 15px;
+            margin-bottom: 10px;
+            font-size: 11px;
+            background: #25B181 !important;
+            color: #ffffff !important;
+            box-shadow: none !important;
+            border-radius: 4px;
+        }
+        /* Info Grid - Use table layout */
+        body.pdf-mode .info-grid {
+            display: table !important;
+            width: 100% !important;
+            border-collapse: separate;
+            border-spacing: 5px;
+        }
+        body.pdf-mode .info-row {
+            display: table-row !important;
+            background: #f8fafc !important;
+        }
+        body.pdf-mode .info-row:hover {
+            background: #f8fafc !important;
+            transform: none !important;
+        }
+        body.pdf-mode .info-label {
+            display: table-cell !important;
+            width: 40% !important;
+            padding: 6px 10px !important;
+            font-size: 9px;
+            vertical-align: middle;
+            background: #f8fafc;
+            border-radius: 4px 0 0 4px;
+        }
+        body.pdf-mode .info-value {
+            display: table-cell !important;
+            width: 60% !important;
+            padding: 6px 10px !important;
+            font-size: 10px;
+            text-align: right !important;
+            vertical-align: middle;
+            background: #f8fafc;
+            border-radius: 0 4px 4px 0;
+        }
+        /* Loan Box */
+        body.pdf-mode .loan-box {
+            padding: 15px;
+            margin: 15px 0;
+            background: #f0fdf4 !important;
+            box-shadow: none !important;
+            border-radius: 8px;
+        }
+        /* Loan Grid - Use table layout */
+        body.pdf-mode .loan-grid {
+            display: table !important;
+            width: 100% !important;
+            table-layout: fixed;
+        }
+        body.pdf-mode .loan-item {
+            display: table-cell !important;
+            width: 16.66% !important;
+            padding: 12px 8px !important;
+            text-align: center !important;
+            vertical-align: top !important;
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0;
+            box-shadow: none !important;
+        }
+        body.pdf-mode .loan-item:hover {
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        body.pdf-mode .loan-item .amount { font-size: 14px; color: #25B181; }
+        body.pdf-mode .loan-item .label { font-size: 8px; margin-top: 4px; }
+        body.pdf-mode .loan-item.highlight {
+            background: #25B181 !important;
+        }
+        body.pdf-mode .loan-item.highlight .amount { color: #ffffff !important; }
+        body.pdf-mode .loan-item.highlight .label { color: #ffffff !important; }
+        /* Schedule Table */
+        body.pdf-mode .schedule-table {
+            font-size: 9px;
+            box-shadow: none !important;
+            border: 1px solid #e2e8f0;
+        }
+        body.pdf-mode .schedule-table th {
+            padding: 8px 6px;
+            background: #25B181 !important;
+            color: #ffffff !important;
+        }
         body.pdf-mode .schedule-table td { padding: 6px; }
-        body.pdf-mode .terms { padding: 12px; font-size: 9px; }
-        body.pdf-mode .terms li { margin-bottom: 4px; }
-        body.pdf-mode .notice { padding: 12px 15px; margin: 12px 0; font-size: 9px; }
-        body.pdf-mode .declaration { padding: 12px; margin: 12px 0; font-size: 9px; }
-        body.pdf-mode .checkbox-item { padding: 4px 8px; margin: 4px 0; }
-        body.pdf-mode .checkbox { width: 14px; height: 14px; }
-        body.pdf-mode .signature-section { margin-top: 20px; padding-top: 15px; }
-        body.pdf-mode .signature-grid { gap: 20px; margin-top: 10px; }
-        body.pdf-mode .esign-box { padding: 15px 12px; min-height: 130px; }
-        body.pdf-mode .esign-box .icon { font-size: 28px; }
+        body.pdf-mode .schedule-table tr:hover td {
+            background: inherit !important;
+        }
+        /* Terms */
+        body.pdf-mode .terms {
+            padding: 12px;
+            font-size: 9px;
+            background: #f8fafc !important;
+        }
+        body.pdf-mode .terms li { margin-bottom: 5px; }
+        /* Notice */
+        body.pdf-mode .notice {
+            padding: 12px 15px;
+            margin: 15px 0;
+            font-size: 9px;
+            background: #fffbeb !important;
+            box-shadow: none !important;
+        }
+        /* Declaration */
+        body.pdf-mode .declaration {
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 9px;
+            background: #f8fafc !important;
+            box-shadow: none !important;
+        }
+        body.pdf-mode .checkbox-item {
+            padding: 5px 10px;
+            margin: 5px 0;
+            background: #ffffff !important;
+        }
+        body.pdf-mode .checkbox {
+            width: 14px;
+            height: 14px;
+            background: #25B181 !important;
+            display: inline-block;
+            text-align: center;
+            line-height: 14px;
+        }
+        /* Signature Section */
+        body.pdf-mode .signature-section {
+            margin-top: 20px;
+            padding-top: 15px;
+        }
+        /* Signature Grid - Use table layout */
+        body.pdf-mode .signature-grid {
+            display: table !important;
+            width: 100% !important;
+            table-layout: fixed;
+            margin-top: 15px;
+        }
+        body.pdf-mode .signature-box {
+            display: table-cell !important;
+            width: 50% !important;
+            padding: 0 10px !important;
+            vertical-align: top !important;
+        }
+        body.pdf-mode .esign-box {
+            padding: 15px;
+            min-height: 140px;
+            background: #f0fdf4 !important;
+            box-shadow: none !important;
+            border-radius: 8px;
+        }
+        body.pdf-mode .esign-box:hover {
+            border-style: dashed !important;
+            box-shadow: none !important;
+        }
+        body.pdf-mode .esign-box .icon { font-size: 24px; }
         body.pdf-mode .esign-box .text { font-size: 10px; }
         body.pdf-mode .esign-box .details { font-size: 9px; margin-top: 10px; }
-        body.pdf-mode .footer { margin-top: 15px; padding-top: 10px; }
+        body.pdf-mode .lender-box {
+            background: #f7fafc !important;
+        }
+        /* Footer */
+        body.pdf-mode .footer {
+            margin-top: 20px;
+            padding-top: 15px;
+        }
         body.pdf-mode .approve-section { display: none !important; }
+        body.pdf-mode .watermark { display: none !important; }
+        /* PDF Mode - Page Break Controls */
+        body.pdf-mode .page-break {
+            display: block;
+            height: 0;
+            page-break-after: always;
+            break-after: page;
+            margin: 0;
+            padding: 0;
+        }
+        body.pdf-mode .avoid-break,
+        body.pdf-mode .no-break {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+        body.pdf-mode .section { page-break-inside: avoid; break-inside: avoid; }
+        body.pdf-mode .section-title { page-break-after: avoid; break-after: avoid; }
+        body.pdf-mode .loan-box { page-break-inside: avoid; break-inside: avoid; }
+        body.pdf-mode .notice { page-break-inside: avoid; break-inside: avoid; }
+        body.pdf-mode .declaration { page-break-inside: avoid; break-inside: avoid; }
+        body.pdf-mode .signature-section { page-break-inside: avoid; break-inside: avoid; }
+        body.pdf-mode .signature-grid { page-break-inside: avoid; break-inside: avoid; }
+        body.pdf-mode .schedule-table thead { display: table-header-group; }
+        body.pdf-mode .schedule-table tbody tr { page-break-inside: avoid; break-inside: avoid; }
+        body.pdf-mode .terms li { page-break-inside: avoid; break-inside: avoid; }
+        body.pdf-mode .checkbox-item { page-break-inside: avoid; break-inside: avoid; }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
     <div class="watermark">QUIKKRED</div>
@@ -910,7 +1218,7 @@ export default function QuickLoanApplication() {
             <div class="subtitle">This agreement is executed between the Borrower and Lender on ${currentDate}</div>
         </div>
 
-        <div class="section">
+        <div class="section avoid-break">
             <div class="section-title">Borrower Details</div>
             <div class="info-grid">
                 <div class="info-row"><span class="info-label">Full Name</span><span class="info-value">${getValue(data.fullName)}</span></div>
@@ -923,7 +1231,7 @@ export default function QuickLoanApplication() {
             </div>
         </div>
 
-        <div class="section">
+        <div class="section avoid-break">
             <div class="section-title">Employment Details</div>
             <div class="info-grid">
                 <div class="info-row"><span class="info-label">Employment Type</span><span class="info-value">${getValue(data.employmentType)}</span></div>
@@ -935,7 +1243,10 @@ export default function QuickLoanApplication() {
             </div>
         </div>
 
-        <div class="section">
+        <!-- Page Break before Loan Details -->
+        <div class="page-break"></div>
+
+        <div class="section avoid-break">
             <div class="section-title">Loan Details</div>
             <div class="loan-box">
                 <div class="loan-grid">
@@ -949,7 +1260,7 @@ export default function QuickLoanApplication() {
             </div>
         </div>
 
-        <div class="section">
+        <div class="section avoid-break">
             <div class="section-title">Disbursement Bank Account</div>
             <div class="info-grid">
                 <div class="info-row"><span class="info-label">Account Holder Name</span><span class="info-value">${getValue(data.accountHolderName)}</span></div>
@@ -959,7 +1270,7 @@ export default function QuickLoanApplication() {
             </div>
         </div>
 
-        <div class="section">
+        <div class="section avoid-break">
             <div class="section-title">Repayment Schedule</div>
             <table class="schedule-table">
                 <thead>
@@ -970,7 +1281,10 @@ export default function QuickLoanApplication() {
             <p style="font-size: 9px; color: #666; margin-top: 10px;">* All amounts are in Indian Rupees (INR). EMI will be auto-debited via eNACH/eMandate on the due date.</p>
         </div>
 
-        <div class="notice">
+        <!-- Page Break before Important Notice & Terms -->
+        <div class="page-break"></div>
+
+        <div class="notice avoid-break">
             <div class="notice-title">⚠️ IMPORTANT NOTICE - PLEASE READ CAREFULLY</div>
             <ul>
                 <li><strong>Late Payment Charges:</strong> ₹500 + 2% per day on overdue amount.</li>
@@ -995,7 +1309,10 @@ export default function QuickLoanApplication() {
             </div>
         </div>
 
-        <div class="declaration">
+        <!-- Page Break before Declaration & Signatures -->
+        <div class="page-break"></div>
+
+        <div class="declaration avoid-break">
             <div class="declaration-title">BORROWER'S DECLARATION & CONSENT</div>
             <p style="margin-bottom: 15px;">I, <strong>${getValue(data.fullName)}</strong>, hereby declare that:</p>
             <div class="checkbox-item"><span class="checkbox"></span><span>All information provided is true and accurate.</span></div>
@@ -1004,7 +1321,7 @@ export default function QuickLoanApplication() {
             <div class="checkbox-item"><span class="checkbox"></span><span>I understand non-payment will affect my credit score.</span></div>
         </div>
 
-        <div class="signature-section">
+        <div class="signature-section avoid-break">
             <div class="section-title">Digital Signature (Aadhaar eSign)</div>
             <div class="signature-grid">
                 <div class="signature-box">
@@ -1035,7 +1352,7 @@ export default function QuickLoanApplication() {
             </div>
         </div>
 
-        <div class="footer">
+        <div class="footer avoid-break">
             <p><strong>Satsai Finlease Private Limited</strong> (trading as Quikkred)</p>
             <p>Email: support@quikkred.in | Website: www.quikkred.in</p>
             <div class="legal">
@@ -1047,7 +1364,7 @@ export default function QuickLoanApplication() {
         <div class="approve-section" id="approve-section">
             <p style="font-size: 14px; color: #333; margin-bottom: 20px;">By clicking "I Agree & Approve", you confirm that you have read and understood all terms and conditions.</p>
             <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                <button class="test-btn" id="test-btn" onclick="testGeneratePDF()" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; border: none; padding: 14px 35px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); transition: all 0.3s ease;">Test Download PDF</button>
+                <button class="test-btn" id="test-btn" onclick="testGeneratePDF()" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; border: none; padding: 14px 35px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); transition: all 0.3s ease;">Download PDF</button>
                 <button class="approve-btn" id="approve-btn" onclick="approveAgreement()">I Agree & Approve</button>
             </div>
             <p style="font-size: 11px; color: #666; margin-top: 15px;">Test button downloads PDF locally. Approve button submits and redirects.</p>
@@ -1063,65 +1380,879 @@ export default function QuickLoanApplication() {
     </div>
 
     <script>
-        async function testGeneratePDF() {
+        // ========== PRINT-BASED PDF DOWNLOAD ==========
+        function testGeneratePDF() {
             const btn = document.getElementById('test-btn');
-            const approveSection = document.getElementById('approve-section');
-
-            // Show loading state
             btn.disabled = true;
-            btn.textContent = 'Generating...';
+            btn.textContent = 'Preparing...';
 
             try {
-                // Add PDF mode class for compact styling
-                document.body.classList.add('pdf-mode');
+                // Get the page content
+                const pageContent = document.querySelector('.page').cloneNode(true);
 
-                // Hide approve section for PDF generation
-                approveSection.style.display = 'none';
+                // Remove approve section from clone
+                const approveSection = pageContent.querySelector('.approve-section');
+                if (approveSection) approveSection.remove();
 
-                // Wait for styles to apply
-                await new Promise(resolve => setTimeout(resolve, 100));
+                // Create print-friendly HTML
+                const printHTML = \`
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Loan Agreement - Quikkred</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 15mm 20mm;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 10pt;
+            line-height: 1.5;
+            color: #2d3748;
+            background: white;
+        }
+        .page {
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
+            margin: 0;
+            background: white;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 3px solid #25B181;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-section img {
+            height: 45px;
+            width: auto;
+        }
+        .company-info h1 {
+            color: #25B181;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .company-info .tagline {
+            color: #718096;
+            font-size: 10px;
+            font-style: italic;
+        }
+        .company-info .reg-info {
+            color: #a0aec0;
+            font-size: 8px;
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+        .doc-info {
+            text-align: right;
+            font-size: 10px;
+            color: #4a5568;
+        }
+        .doc-info .loan-ref {
+            font-size: 14px;
+            font-weight: 700;
+            color: #25B181;
+            background: #e6f7f0;
+            padding: 6px 12px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-bottom: 6px;
+        }
+        .title {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .title h2 {
+            font-size: 18px;
+            color: #1a202c;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border: 2px solid #25B181;
+            display: inline-block;
+            padding: 10px 40px;
+            background: #f0fdf4;
+            border-radius: 6px;
+        }
+        .title .subtitle {
+            font-size: 10px;
+            color: #718096;
+            margin-top: 10px;
+        }
+        .section {
+            margin-bottom: 18px;
+            page-break-inside: avoid;
+        }
+        .section-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            background: #25B181;
+            text-transform: uppercase;
+            padding: 8px 14px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px 20px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 10px;
+            background: #f8fafc;
+            border-radius: 4px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .info-label {
+            color: #718096;
+            font-size: 9px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+        .info-value {
+            font-weight: 600;
+            font-size: 10px;
+            color: #2d3748;
+            text-align: right;
+        }
+        .loan-box {
+            background: #f0fdf4;
+            border: 2px solid #25B181;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            page-break-inside: avoid;
+        }
+        .loan-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            text-align: center;
+        }
+        .loan-item {
+            padding: 12px 8px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .loan-item .amount {
+            font-size: 16px;
+            font-weight: 700;
+            color: #25B181;
+        }
+        .loan-item .label {
+            font-size: 8px;
+            color: #718096;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+        .loan-item.highlight {
+            background: #25B181;
+        }
+        .loan-item.highlight .amount {
+            color: white;
+        }
+        .loan-item.highlight .label {
+            color: rgba(255,255,255,0.9);
+        }
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 9px;
+        }
+        .schedule-table th {
+            background: #25B181;
+            color: white;
+            padding: 8px 6px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .schedule-table td {
+            padding: 6px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .schedule-table tr:nth-child(even) {
+            background: #f8fafc;
+        }
+        .schedule-table thead {
+            display: table-header-group;
+        }
+        .schedule-table tr {
+            page-break-inside: avoid;
+        }
+        .terms {
+            font-size: 9px;
+            color: #4a5568;
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 6px;
+        }
+        .terms ol {
+            padding-left: 18px;
+        }
+        .terms li {
+            margin-bottom: 6px;
+            line-height: 1.5;
+            page-break-inside: avoid;
+        }
+        .notice {
+            background: #fffbeb;
+            border: 1px solid #fbbf24;
+            border-left: 4px solid #f59e0b;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin: 15px 0;
+            font-size: 9px;
+            page-break-inside: avoid;
+        }
+        .notice-title {
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 8px;
+            font-size: 10px;
+        }
+        .notice ul {
+            margin: 0;
+            padding-left: 16px;
+            color: #78350f;
+        }
+        .declaration {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 9px;
+            margin: 15px 0;
+            page-break-inside: avoid;
+        }
+        .declaration-title {
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #1e293b;
+            font-size: 11px;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin: 6px 0;
+            padding: 6px 10px;
+            background: white;
+            border-radius: 4px;
+        }
+        .checkbox {
+            width: 14px;
+            height: 14px;
+            background: #25B181;
+            border-radius: 3px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .checkbox::after {
+            content: "✓";
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        .signature-section {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid #2d3748;
+            page-break-inside: avoid;
+        }
+        .signature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 15px;
+        }
+        .signature-box {
+            text-align: center;
+        }
+        .esign-box {
+            border: 2px dashed #25B181;
+            padding: 15px;
+            text-align: center;
+            background: #f0fdf4;
+            border-radius: 10px;
+            min-height: 120px;
+        }
+        .esign-box .icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        .esign-box .text {
+            font-size: 10px;
+            color: #25B181;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .esign-box .subtext {
+            font-size: 9px;
+            color: #718096;
+            margin-top: 3px;
+        }
+        .esign-box .details {
+            margin-top: 10px;
+            font-size: 9px;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+        .lender-box {
+            border-color: #2d3748;
+            background: #f7fafc;
+        }
+        .lender-box .text {
+            color: #2d3748;
+        }
+        .footer {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 8px;
+            color: #718096;
+            text-align: center;
+            page-break-inside: avoid;
+        }
+        .footer p {
+            margin: 3px 0;
+        }
+        .footer .legal {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #e2e8f0;
+            font-size: 7px;
+            color: #a0aec0;
+        }
+        .watermark, .approve-section {
+            display: none !important;
+        }
+        /* Page breaks */
+        .page-break {
+            page-break-after: always;
+            break-after: page;
+            height: 0;
+            margin: 0;
+            padding: 0;
+        }
+        .avoid-break {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+    </style>
+</head>
+<body>
+    \${pageContent.outerHTML}
+</body>
+</html>\`;
 
-                // Convert HTML to PDF
-                const element = document.querySelector('.page');
-                const opt = {
-                    margin: [10, 10, 10, 10],
-                    filename: 'loan-agreement-test.pdf',
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: {
-                        scale: 2,
-                        useCORS: true,
-                        logging: false,
-                        backgroundColor: '#ffffff'
-                    },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                    pagebreak: { mode: 'css', before: '.page-break-before', after: '.page-break-after', avoid: '.no-break' }
+                // Create iframe for printing
+                const iframe = document.createElement('iframe');
+                iframe.style.cssText = 'position: fixed; top: -10000px; left: -10000px; width: 210mm; height: 297mm;';
+                document.body.appendChild(iframe);
+
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                iframeDoc.open();
+                iframeDoc.write(printHTML);
+                iframeDoc.close();
+
+                // Wait for content to load
+                iframe.onload = function() {
+                    setTimeout(() => {
+                        try {
+                            iframe.contentWindow.focus();
+                            iframe.contentWindow.print();
+                        } catch (e) {
+                            console.error('Print error:', e);
+                        }
+
+                        // Cleanup after print dialog closes
+                        setTimeout(() => {
+                            document.body.removeChild(iframe);
+                            btn.disabled = false;
+                            btn.textContent = 'Download PDF';
+                        }, 1000);
+                    }, 500);
                 };
-
-                // Generate and download PDF
-                await html2pdf().set(opt).from(element).save();
-
-                // Remove PDF mode class and show approve section again
-                document.body.classList.remove('pdf-mode');
-                approveSection.style.display = 'block';
-
-                // Reset button state
-                btn.disabled = false;
-                btn.textContent = 'Test Download PDF';
 
             } catch (error) {
                 console.error('Error generating PDF:', error);
                 alert('Error: ' + (error.message || 'Failed to generate PDF. Please try again.'));
-
-                // Remove PDF mode class
-                document.body.classList.remove('pdf-mode');
-
-                // Reset button state
                 btn.disabled = false;
-                btn.textContent = 'Test Download PDF';
-
-                // Show approve section if hidden
-                approveSection.style.display = 'block';
+                btn.textContent = 'Download PDF';
             }
+        }
+
+        // ========== GENERATE PDF BLOB USING jsPDF ==========
+        async function generatePDFBlob() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            const margin = 15;
+            const contentWidth = pageWidth - (margin * 2);
+            let y = margin;
+
+            // Helper functions
+            const addText = (text, x, size, style = 'normal', color = [45, 55, 72]) => {
+                pdf.setFontSize(size);
+                pdf.setFont('helvetica', style);
+                pdf.setTextColor(...color);
+                const lines = pdf.splitTextToSize(text, contentWidth - x + margin);
+                pdf.text(lines, x, y);
+                return lines.length * (size * 0.4);
+            };
+
+            const addLine = (x1, y1, x2, y2, color = [37, 177, 129]) => {
+                pdf.setDrawColor(...color);
+                pdf.setLineWidth(0.5);
+                pdf.line(x1, y1, x2, y2);
+            };
+
+            const addRect = (x, y, w, h, fillColor) => {
+                pdf.setFillColor(...fillColor);
+                pdf.rect(x, y, w, h, 'F');
+            };
+
+            const checkNewPage = (requiredSpace) => {
+                if (y + requiredSpace > pageHeight - margin) {
+                    pdf.addPage();
+                    y = margin;
+                    return true;
+                }
+                return false;
+            };
+
+            // Get data from page
+            const getData = (selector) => {
+                const el = document.querySelector(selector);
+                return el ? el.textContent.trim() : '';
+            };
+
+            // ===== HEADER =====
+            pdf.setFillColor(37, 177, 129);
+            pdf.rect(margin, y, contentWidth, 1, 'F');
+            y += 5;
+
+            pdf.setFontSize(22);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(37, 177, 129);
+            pdf.text('QUIKKRED', margin, y);
+            y += 5;
+
+            pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'italic');
+            pdf.setTextColor(113, 128, 150);
+            pdf.text('Quick Credit, Trusted Partner', margin, y);
+            y += 4;
+
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(160, 174, 192);
+            pdf.text('Satsai Finlease Private Limited | RBI Registered NBFC', margin, y);
+            y += 8;
+
+            // Loan Ref on right
+            const loanRef = getData('.loan-ref') || 'QK-' + Date.now();
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(37, 177, 129);
+            pdf.text(loanRef, pageWidth - margin - pdf.getTextWidth(loanRef), y - 15);
+
+            addLine(margin, y, pageWidth - margin, y);
+            y += 10;
+
+            // ===== TITLE =====
+            pdf.setFontSize(16);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(26, 32, 44);
+            const title = 'LOAN AGREEMENT';
+            pdf.text(title, pageWidth / 2, y, { align: 'center' });
+            y += 10;
+
+            pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(113, 128, 150);
+            const date = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
+            pdf.text('This agreement is executed between the Borrower and Lender on ' + date, pageWidth / 2, y, { align: 'center' });
+            y += 12;
+
+            // ===== BORROWER DETAILS =====
+            addRect(margin, y, contentWidth, 7, [37, 177, 129]);
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(255, 255, 255);
+            pdf.text('BORROWER DETAILS', margin + 3, y + 5);
+            y += 12;
+
+            // Get borrower info
+            const borrowerInfo = [];
+            document.querySelectorAll('.section').forEach(section => {
+                const title = section.querySelector('.section-title');
+                if (title && title.textContent.includes('Borrower')) {
+                    section.querySelectorAll('.info-row').forEach(row => {
+                        const label = row.querySelector('.info-label')?.textContent || '';
+                        const value = row.querySelector('.info-value')?.textContent || '';
+                        if (label && value) borrowerInfo.push({ label, value });
+                    });
+                }
+            });
+
+            pdf.setFontSize(8);
+            borrowerInfo.forEach((item, i) => {
+                if (i % 2 === 0) checkNewPage(6);
+                const col = i % 2 === 0 ? margin : pageWidth / 2;
+                pdf.setFont('helvetica', 'normal');
+                pdf.setTextColor(113, 128, 150);
+                pdf.text(item.label + ':', col, y);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setTextColor(45, 55, 72);
+                const valueX = col + 35;
+                pdf.text(item.value.substring(0, 30), valueX, y);
+                if (i % 2 === 1) y += 6;
+            });
+            if (borrowerInfo.length % 2 === 1) y += 6;
+            y += 5;
+
+            // ===== EMPLOYMENT DETAILS =====
+            checkNewPage(40);
+            addRect(margin, y, contentWidth, 7, [37, 177, 129]);
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(255, 255, 255);
+            pdf.text('EMPLOYMENT DETAILS', margin + 3, y + 5);
+            y += 12;
+
+            const employmentInfo = [];
+            document.querySelectorAll('.section').forEach(section => {
+                const title = section.querySelector('.section-title');
+                if (title && title.textContent.includes('Employment')) {
+                    section.querySelectorAll('.info-row').forEach(row => {
+                        const label = row.querySelector('.info-label')?.textContent || '';
+                        const value = row.querySelector('.info-value')?.textContent || '';
+                        if (label && value) employmentInfo.push({ label, value });
+                    });
+                }
+            });
+
+            pdf.setFontSize(8);
+            employmentInfo.forEach((item, i) => {
+                if (i % 2 === 0) checkNewPage(6);
+                const col = i % 2 === 0 ? margin : pageWidth / 2;
+                pdf.setFont('helvetica', 'normal');
+                pdf.setTextColor(113, 128, 150);
+                pdf.text(item.label + ':', col, y);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setTextColor(45, 55, 72);
+                pdf.text(item.value.substring(0, 30), col + 35, y);
+                if (i % 2 === 1) y += 6;
+            });
+            if (employmentInfo.length % 2 === 1) y += 6;
+            y += 8;
+
+            // ===== LOAN DETAILS =====
+            checkNewPage(50);
+            addRect(margin, y, contentWidth, 7, [37, 177, 129]);
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(255, 255, 255);
+            pdf.text('LOAN DETAILS', margin + 3, y + 5);
+            y += 12;
+
+            // Draw loan box
+            pdf.setDrawColor(37, 177, 129);
+            pdf.setLineWidth(0.5);
+            pdf.setFillColor(240, 253, 244);
+            pdf.roundedRect(margin, y, contentWidth, 35, 3, 3, 'FD');
+            y += 5;
+
+            const loanItems = [];
+            document.querySelectorAll('.loan-item').forEach(item => {
+                const amount = item.querySelector('.amount')?.textContent || '';
+                const label = item.querySelector('.label')?.textContent || '';
+                if (amount && label) loanItems.push({ amount, label, highlight: item.classList.contains('highlight') });
+            });
+
+            const colWidth = contentWidth / 3;
+            loanItems.forEach((item, i) => {
+                const col = margin + (i % 3) * colWidth + colWidth / 2;
+                const row = Math.floor(i / 3) * 15;
+
+                pdf.setFontSize(12);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setTextColor(item.highlight ? 37 : 37, item.highlight ? 177 : 177, item.highlight ? 129 : 129);
+                pdf.text(item.amount, col, y + row, { align: 'center' });
+
+                pdf.setFontSize(7);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setTextColor(113, 128, 150);
+                pdf.text(item.label, col, y + row + 5, { align: 'center' });
+            });
+            y += 40;
+
+            // ===== BANK DETAILS =====
+            checkNewPage(40);
+            addRect(margin, y, contentWidth, 7, [37, 177, 129]);
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(255, 255, 255);
+            pdf.text('DISBURSEMENT BANK ACCOUNT', margin + 3, y + 5);
+            y += 12;
+
+            const bankInfo = [];
+            document.querySelectorAll('.section').forEach(section => {
+                const title = section.querySelector('.section-title');
+                if (title && title.textContent.includes('Bank')) {
+                    section.querySelectorAll('.info-row').forEach(row => {
+                        const label = row.querySelector('.info-label')?.textContent || '';
+                        const value = row.querySelector('.info-value')?.textContent || '';
+                        if (label && value) bankInfo.push({ label, value });
+                    });
+                }
+            });
+
+            pdf.setFontSize(8);
+            bankInfo.forEach((item, i) => {
+                if (i % 2 === 0) checkNewPage(6);
+                const col = i % 2 === 0 ? margin : pageWidth / 2;
+                pdf.setFont('helvetica', 'normal');
+                pdf.setTextColor(113, 128, 150);
+                pdf.text(item.label + ':', col, y);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setTextColor(45, 55, 72);
+                pdf.text(item.value.substring(0, 30), col + 35, y);
+                if (i % 2 === 1) y += 6;
+            });
+            if (bankInfo.length % 2 === 1) y += 6;
+            y += 8;
+
+            // ===== REPAYMENT SCHEDULE =====
+            pdf.addPage();
+            y = margin;
+
+            addRect(margin, y, contentWidth, 7, [37, 177, 129]);
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(255, 255, 255);
+            pdf.text('REPAYMENT SCHEDULE', margin + 3, y + 5);
+            y += 12;
+
+            // Table headers
+            const tableHeaders = ['#', 'Due Date', 'Principal', 'Interest', 'Total EMI', 'Mode'];
+            const colWidths = [10, 35, 30, 30, 30, 35];
+            let x = margin;
+
+            pdf.setFillColor(37, 177, 129);
+            pdf.rect(margin, y, contentWidth, 7, 'F');
+            pdf.setFontSize(8);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(255, 255, 255);
+            tableHeaders.forEach((header, i) => {
+                pdf.text(header, x + 2, y + 5);
+                x += colWidths[i];
+            });
+            y += 9;
+
+            // Table rows
+            const scheduleRows = document.querySelectorAll('.schedule-table tbody tr');
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'normal');
+            scheduleRows.forEach((row, rowIndex) => {
+                if (checkNewPage(7)) {
+                    // Repeat header on new page
+                    pdf.setFillColor(37, 177, 129);
+                    pdf.rect(margin, y, contentWidth, 7, 'F');
+                    pdf.setFontSize(8);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setTextColor(255, 255, 255);
+                    x = margin;
+                    tableHeaders.forEach((header, i) => {
+                        pdf.text(header, x + 2, y + 5);
+                        x += colWidths[i];
+                    });
+                    y += 9;
+                    pdf.setFontSize(7);
+                    pdf.setFont('helvetica', 'normal');
+                }
+
+                if (rowIndex % 2 === 0) {
+                    pdf.setFillColor(248, 250, 252);
+                    pdf.rect(margin, y - 1, contentWidth, 6, 'F');
+                }
+
+                pdf.setTextColor(45, 55, 72);
+                x = margin;
+                row.querySelectorAll('td').forEach((cell, i) => {
+                    pdf.text(cell.textContent.substring(0, 15), x + 2, y + 3);
+                    x += colWidths[i];
+                });
+                y += 6;
+            });
+            y += 8;
+
+            // ===== TERMS & CONDITIONS =====
+            pdf.addPage();
+            y = margin;
+
+            addRect(margin, y, contentWidth, 7, [37, 177, 129]);
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(255, 255, 255);
+            pdf.text('TERMS & CONDITIONS', margin + 3, y + 5);
+            y += 12;
+
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(74, 85, 104);
+
+            const terms = document.querySelectorAll('.terms li');
+            terms.forEach((term, i) => {
+                checkNewPage(15);
+                const text = (i + 1) + '. ' + term.textContent.trim();
+                const lines = pdf.splitTextToSize(text, contentWidth - 5);
+                lines.forEach(line => {
+                    if (checkNewPage(5)) {}
+                    pdf.text(line, margin, y);
+                    y += 4;
+                });
+                y += 2;
+            });
+
+            // ===== DECLARATION =====
+            pdf.addPage();
+            y = margin;
+
+            addRect(margin, y, contentWidth, 7, [37, 177, 129]);
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(255, 255, 255);
+            pdf.text('BORROWER DECLARATION & CONSENT', margin + 3, y + 5);
+            y += 15;
+
+            pdf.setFontSize(8);
+            pdf.setTextColor(45, 55, 72);
+            const borrowerName = document.querySelector('.info-value')?.textContent || 'Borrower';
+            pdf.text('I, ' + borrowerName + ', hereby declare that:', margin, y);
+            y += 8;
+
+            const checkboxItems = document.querySelectorAll('.checkbox-item');
+            pdf.setFontSize(7);
+            checkboxItems.forEach(item => {
+                checkNewPage(8);
+                // Draw checkbox
+                pdf.setFillColor(37, 177, 129);
+                pdf.rect(margin, y - 3, 4, 4, 'F');
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFontSize(6);
+                pdf.text('✓', margin + 1, y);
+
+                pdf.setFontSize(7);
+                pdf.setTextColor(45, 55, 72);
+                const text = item.textContent.replace('✓', '').trim();
+                const lines = pdf.splitTextToSize(text, contentWidth - 10);
+                pdf.text(lines, margin + 7, y);
+                y += lines.length * 4 + 3;
+            });
+
+            y += 10;
+
+            // ===== SIGNATURE SECTION =====
+            checkNewPage(50);
+            addLine(margin, y, pageWidth - margin, y, [45, 55, 72]);
+            y += 10;
+
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(45, 55, 72);
+            pdf.text('DIGITAL SIGNATURE (Aadhaar eSign)', margin, y);
+            y += 10;
+
+            // Signature boxes
+            const boxWidth = (contentWidth - 10) / 2;
+            const boxHeight = 35;
+
+            // Borrower signature box
+            pdf.setDrawColor(37, 177, 129);
+            pdf.setLineWidth(0.3);
+            pdf.setFillColor(240, 253, 244);
+            pdf.roundedRect(margin, y, boxWidth, boxHeight, 2, 2, 'FD');
+            pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(37, 177, 129);
+            pdf.text("Borrower's eSign", margin + boxWidth / 2, y + 12, { align: 'center' });
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(113, 128, 150);
+            pdf.text('Signed via Aadhaar eSign', margin + boxWidth / 2, y + 18, { align: 'center' });
+            pdf.text('Date: ' + date, margin + boxWidth / 2, y + 24, { align: 'center' });
+
+            // Lender signature box
+            const lenderX = margin + boxWidth + 10;
+            pdf.setDrawColor(45, 55, 72);
+            pdf.setFillColor(247, 250, 252);
+            pdf.roundedRect(lenderX, y, boxWidth, boxHeight, 2, 2, 'FD');
+            pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(45, 55, 72);
+            pdf.text("Lender's Authorization", lenderX + boxWidth / 2, y + 12, { align: 'center' });
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(113, 128, 150);
+            pdf.text('Satsai Finlease Pvt Ltd', lenderX + boxWidth / 2, y + 18, { align: 'center' });
+            pdf.text('(Authorized Signatory)', lenderX + boxWidth / 2, y + 24, { align: 'center' });
+
+            y += boxHeight + 15;
+
+            // ===== FOOTER =====
+            checkNewPage(25);
+            addLine(margin, y, pageWidth - margin, y, [226, 232, 240]);
+            y += 8;
+
+            pdf.setFontSize(8);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(113, 128, 150);
+            pdf.text('Satsai Finlease Private Limited (trading as Quikkred)', pageWidth / 2, y, { align: 'center' });
+            y += 5;
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text('Email: support@quikkred.in | Website: www.quikkred.in', pageWidth / 2, y, { align: 'center' });
+            y += 8;
+            pdf.setFontSize(6);
+            pdf.setTextColor(160, 174, 192);
+            pdf.text('This is a computer-generated document. Generated: ' + date, pageWidth / 2, y, { align: 'center' });
+
+            return pdf.output('blob');
         }
 
         async function approveAgreement() {
@@ -1147,36 +2278,8 @@ export default function QuickLoanApplication() {
                     return;
                 }
 
-                // Add PDF mode class for compact styling
-                document.body.classList.add('pdf-mode');
-
-                // Hide approve section for PDF generation
-                approveSection.style.display = 'none';
-
-                // Wait for styles to apply
-                await new Promise(resolve => setTimeout(resolve, 100));
-
-                // Convert HTML to PDF
-                const element = document.querySelector('.page');
-                const opt = {
-                    margin: [10, 10, 10, 10],
-                    filename: 'loan-agreement.pdf',
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: {
-                        scale: 2,
-                        useCORS: true,
-                        logging: false,
-                        backgroundColor: '#ffffff'
-                    },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                    pagebreak: { mode: 'css', before: '.page-break-before', after: '.page-break-after', avoid: '.no-break' }
-                };
-
-                const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
-
-                // Remove PDF mode class and show approve section again
-                document.body.classList.remove('pdf-mode');
-                approveSection.style.display = 'block';
+                // Generate PDF blob using jsPDF
+                const pdfBlob = await generatePDFBlob();
 
                 // Create FormData and append PDF
                 const formData = new FormData();
@@ -1207,17 +2310,11 @@ export default function QuickLoanApplication() {
                 console.error('Error processing agreement:', error);
                 alert('Error: ' + (error.message || 'Failed to process agreement. Please try again.'));
 
-                // Remove PDF mode class
-                document.body.classList.remove('pdf-mode');
-
                 // Reset button state
                 btn.disabled = false;
                 btn.style.opacity = '1';
                 btn.textContent = 'I Agree & Approve';
                 loadingIndicator.style.display = 'none';
-
-                // Show approve section if hidden
-                approveSection.style.display = 'block';
             }
         }
     </script>

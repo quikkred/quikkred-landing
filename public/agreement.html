@@ -435,6 +435,50 @@
             color: #999;
         }
 
+        /* ========== PAGE BREAK CLASSES FOR PDF ========== */
+        .page-break {
+            page-break-after: always;
+            break-after: page;
+            height: 0;
+            margin: 0;
+            padding: 0;
+        }
+        .page-break-before {
+            page-break-before: always;
+            break-before: page;
+        }
+        .page-break-after {
+            page-break-after: always;
+            break-after: page;
+        }
+        .avoid-break, .no-break {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        /* Keep section titles with their content */
+        .section-title {
+            page-break-after: avoid;
+            break-after: avoid;
+        }
+        /* Prevent orphan rows in tables */
+        .schedule-table tr {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        .schedule-table thead {
+            display: table-header-group;
+        }
+        /* Keep declaration items together */
+        .checkbox-item {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        /* Signature boxes should not break */
+        .esign-box {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
         /* Watermark - Use absolute positioning for PDF compatibility */
         .watermark {
             position: absolute;  /* Changed from fixed - critical for PDF */
@@ -448,36 +492,178 @@
             z-index: -1;
         }
 
-        /* PDF generation styles */
+        /* ========== PDF GENERATION MODE - FIXED FOR PROPER RENDERING ========== */
         .pdf-mode .watermark {
             display: none !important;
         }
-
         .pdf-mode body {
             padding: 0 !important;
             margin: 0 !important;
+            background: #ffffff !important;
         }
-
+        .pdf-mode * {
+            transition: none !important;
+            animation: none !important;
+            transform: none !important;
+        }
         .pdf-mode .page {
-            padding: 20px 30px !important;
+            padding: 20px 25px !important;
             margin: 0 !important;
             max-width: none !important;
             width: 100% !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+        }
+        /* Header - Use table layout for PDF */
+        .pdf-mode .header {
+            display: table !important;
+            width: 100% !important;
+        }
+        .pdf-mode .logo-section {
+            display: table-cell !important;
+            vertical-align: top !important;
+            width: 60% !important;
+        }
+        .pdf-mode .doc-info {
+            display: table-cell !important;
+            vertical-align: top !important;
+            text-align: right !important;
+            width: 40% !important;
+        }
+        .pdf-mode .doc-info .loan-ref {
+            background: #e6f7f0 !important;
+            box-shadow: none !important;
+        }
+        /* Section titles */
+        .pdf-mode .section-title {
+            background: #25B181 !important;
+            color: #ffffff !important;
+            box-shadow: none !important;
+        }
+        /* Info Grid - Use table layout */
+        .pdf-mode .info-grid {
+            display: table !important;
+            width: 100% !important;
+            border-collapse: separate;
+            border-spacing: 5px;
+        }
+        .pdf-mode .info-row {
+            display: table-row !important;
+            background: #f8fafc !important;
+        }
+        .pdf-mode .info-row:hover {
+            background: #f8fafc !important;
+            transform: none !important;
+        }
+        .pdf-mode .info-label {
+            display: table-cell !important;
+            width: 40% !important;
+            padding: 6px 10px !important;
+            vertical-align: middle;
+        }
+        .pdf-mode .info-value {
+            display: table-cell !important;
+            width: 60% !important;
+            padding: 6px 10px !important;
+            text-align: right !important;
+            vertical-align: middle;
+        }
+        /* Loan Box */
+        .pdf-mode .loan-box {
+            background: #f0fdf4 !important;
+            box-shadow: none !important;
+        }
+        /* Loan Grid - Use table layout */
+        .pdf-mode .loan-grid {
+            display: table !important;
+            width: 100% !important;
+            table-layout: fixed;
+        }
+        .pdf-mode .loan-item {
+            display: table-cell !important;
+            width: 16.66% !important;
+            padding: 12px 8px !important;
+            text-align: center !important;
+            vertical-align: top !important;
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0;
+            box-shadow: none !important;
+        }
+        .pdf-mode .loan-item.highlight {
+            background: #25B181 !important;
+        }
+        .pdf-mode .loan-item.highlight .amount { color: #ffffff !important; }
+        .pdf-mode .loan-item.highlight .label { color: #ffffff !important; }
+        /* Schedule Table */
+        .pdf-mode .schedule-table {
+            box-shadow: none !important;
+        }
+        .pdf-mode .schedule-table th {
+            background: #25B181 !important;
+            color: #ffffff !important;
+        }
+        .pdf-mode .schedule-table tr:hover td {
+            background: inherit !important;
+        }
+        /* Terms & Notice */
+        .pdf-mode .terms {
+            background: #f8fafc !important;
+        }
+        .pdf-mode .notice {
+            background: #fffbeb !important;
+            box-shadow: none !important;
+        }
+        /* Declaration */
+        .pdf-mode .declaration {
+            background: #f8fafc !important;
+            box-shadow: none !important;
+        }
+        .pdf-mode .checkbox {
+            background: #25B181 !important;
+        }
+        /* Signature Grid - Use table layout */
+        .pdf-mode .signature-grid {
+            display: table !important;
+            width: 100% !important;
+            table-layout: fixed;
+        }
+        .pdf-mode .signature-box {
+            display: table-cell !important;
+            width: 50% !important;
+            padding: 0 10px !important;
+            vertical-align: top !important;
+        }
+        .pdf-mode .esign-box {
+            background: #f0fdf4 !important;
+            box-shadow: none !important;
+        }
+        .pdf-mode .esign-box:hover {
+            box-shadow: none !important;
+        }
+        .pdf-mode .lender-box {
+            background: #f7fafc !important;
+        }
+        .pdf-mode .approve-section {
+            display: none !important;
         }
 
         @page {
             size: A4;
-            margin: 10mm;
+            margin: 10mm 15mm;
         }
 
         @media print {
-            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
             html, body {
+                width: 210mm;
+                height: 297mm;
                 margin: 0 !important;
                 padding: 0 !important;
                 background: white !important;
-                width: 100% !important;
-                height: auto !important;
             }
             .page {
                 max-width: 100% !important;
@@ -503,6 +689,25 @@
                 background: #25B181 !important;
                 -webkit-print-color-adjust: exact !important;
             }
+            /* Force page breaks */
+            .page-break { page-break-after: always !important; break-after: page !important; }
+            .page-break-before { page-break-before: always !important; break-before: page !important; }
+            .avoid-break, .no-break { page-break-inside: avoid !important; break-inside: avoid !important; }
+            /* Section handling */
+            .section { page-break-inside: avoid; break-inside: avoid; }
+            .section-title { page-break-after: avoid !important; break-after: avoid !important; }
+            /* Table handling */
+            .schedule-table { page-break-inside: auto; }
+            .schedule-table thead { display: table-header-group; }
+            .schedule-table tbody tr { page-break-inside: avoid; break-inside: avoid; }
+            /* Keep related elements together */
+            .declaration { page-break-inside: avoid; break-inside: avoid; }
+            .signature-section { page-break-inside: avoid; break-inside: avoid; }
+            .notice { page-break-inside: avoid; break-inside: avoid; }
+            .loan-box { page-break-inside: avoid; break-inside: avoid; }
+            /* Terms can break but not individual items */
+            .terms li { page-break-inside: avoid; break-inside: avoid; }
+            .checkbox-item { page-break-inside: avoid; break-inside: avoid; }
         }
     </style>
 </head>
@@ -741,7 +946,7 @@
         </div>
 
         <!-- Borrower Details -->
-        <div class="section">
+        <div class="section avoid-break">
             <div class="section-title">Borrower Details</div>
             <div class="info-grid">
                 <div class="info-row">
@@ -776,7 +981,7 @@
         </div>
 
         <!-- Employment Details -->
-        <div class="section">
+        <div class="section avoid-break">
             <div class="section-title">Employment Details</div>
             <div class="info-grid">
                 <div class="info-row">
@@ -806,8 +1011,11 @@
             </div>
         </div>
 
+        <!-- Page Break before Loan Details -->
+        <div class="page-break"></div>
+
         <!-- Loan Details Box -->
-        <div class="section">
+        <div class="section avoid-break">
             <div class="section-title">Loan Details</div>
             <div class="loan-box">
                 <div class="loan-grid">
@@ -840,7 +1048,7 @@
         </div>
 
         <!-- Bank Details -->
-        <div class="section">
+        <div class="section avoid-break">
             <div class="section-title">Disbursement Bank Account</div>
             <div class="info-grid">
                 <div class="info-row">
@@ -863,7 +1071,7 @@
         </div>
 
         <!-- Repayment Schedule -->
-        <div class="section">
+        <div class="section avoid-break">
             <div class="section-title">Repayment Schedule</div>
             <table class="schedule-table">
                 <thead>
@@ -885,8 +1093,11 @@
             </p>
         </div>
 
+        <!-- Page Break before Important Notice & Terms -->
+        <div class="page-break"></div>
+
         <!-- Important Notice -->
-        <div class="notice">
+        <div class="notice avoid-break">
             <div class="notice-title">⚠️ IMPORTANT NOTICE - PLEASE READ CAREFULLY</div>
             <ul>
                 <li><strong>Late Payment Charges:</strong> ₹{{LATE_FEE}} + {{PENAL_INTEREST}}% per day on overdue amount.</li>
@@ -945,8 +1156,11 @@
             </div>
         </div>
 
+        <!-- Page Break before Declaration & Signatures -->
+        <div class="page-break"></div>
+
         <!-- Declaration -->
-        <div class="declaration">
+        <div class="declaration avoid-break">
             <div class="declaration-title">BORROWER'S DECLARATION & CONSENT</div>
             <p style="margin-bottom: 15px;">I, <strong>{{BORROWER_NAME}}</strong>, hereby solemnly declare and affirm that:</p>
 
@@ -987,7 +1201,7 @@
         </div>
 
         <!-- Signature Section -->
-        <div class="signature-section">
+        <div class="signature-section avoid-break">
             <div class="section-title">Digital Signature (Aadhaar eSign - NSDL)</div>
 
             <div class="signature-grid">
@@ -1031,7 +1245,7 @@
         </div>
 
         <!-- Footer -->
-        <div class="footer">
+        <div class="footer avoid-break">
             <div class="footer-logo">
                 <img src="{{LOGO_URL}}" alt="Quikkred" onerror="this.style.display='none'">
             </div>
@@ -1122,11 +1336,8 @@
         }
 
         // ========== GENERATE PDF FUNCTION ==========
-        // ROOT CAUSE OF BLANK PAGES:
-        // 1. Watermark is OUTSIDE .page div with position:absolute
-        // 2. Body has 40px padding pushing content down
-        // 3. html2canvas captures from element's position in document flow
-        // SOLUTION: Clone content into isolated container at position 0,0
+        // IMPROVED: Uses page-break elements to determine slice boundaries
+        // This prevents content from being cut in the middle
 
         async function generatePDF() {
             const { jsPDF } = window.jspdf;
@@ -1135,9 +1346,19 @@
 
             console.log('=== PDF Generation Started ===');
 
+            // Add PDF mode class for proper styling
+            document.body.classList.add('pdf-mode');
+
+            // Hide approve section
+            if (approveSection) approveSection.style.display = 'none';
+
+            // Wait for styles to apply
+            await new Promise(resolve => setTimeout(resolve, 100));
+
             // Create an isolated container for clean capture
             const container = document.createElement('div');
             container.id = 'pdf-capture-container';
+            container.classList.add('pdf-mode');
             container.style.cssText = `
                 position: fixed !important;
                 top: 0 !important;
@@ -1163,42 +1384,96 @@
                 width: 800px !important;
                 max-width: 800px !important;
                 margin: 0 !important;
-                padding: 30px 40px !important;
+                padding: 25px 30px !important;
                 background: white !important;
                 box-shadow: none !important;
                 border-radius: 0 !important;
                 position: relative !important;
             `;
 
-            // Fix header in clone
+            // Fix header in clone - use table layout for PDF
             const clonedHeader = clonedPage.querySelector('.header');
             if (clonedHeader) {
                 clonedHeader.style.cssText = `
-                    display: flex !important;
-                    flex-direction: row !important;
-                    justify-content: space-between !important;
-                    align-items: flex-start !important;
-                    flex-wrap: nowrap !important;
+                    display: table !important;
+                    width: 100% !important;
                     border-bottom: 3px solid #25B181 !important;
-                    padding-bottom: 20px !important;
-                    margin-bottom: 30px !important;
+                    padding-bottom: 15px !important;
+                    margin-bottom: 20px !important;
                 `;
+                const logoSection = clonedHeader.querySelector('.logo-section');
+                if (logoSection) {
+                    logoSection.style.cssText = `
+                        display: table-cell !important;
+                        vertical-align: top !important;
+                        width: 60% !important;
+                    `;
+                }
+                const docInfo = clonedHeader.querySelector('.doc-info');
+                if (docInfo) {
+                    docInfo.style.cssText = `
+                        display: table-cell !important;
+                        vertical-align: top !important;
+                        text-align: right !important;
+                        width: 40% !important;
+                    `;
+                }
             }
 
-            // Fix grid layouts in clone
-            clonedPage.querySelectorAll('.info-grid, .loan-grid, .signature-grid').forEach(grid => {
-                grid.style.display = 'grid';
+            // Fix info grids - use table layout for PDF
+            clonedPage.querySelectorAll('.info-grid').forEach(grid => {
+                grid.style.cssText = `
+                    display: table !important;
+                    width: 100% !important;
+                    border-collapse: separate;
+                    border-spacing: 5px;
+                `;
+                grid.querySelectorAll('.info-row').forEach(row => {
+                    row.style.display = 'table-row';
+                    row.style.background = '#f8fafc';
+                });
+                grid.querySelectorAll('.info-label').forEach(label => {
+                    label.style.cssText = 'display: table-cell !important; width: 40% !important; padding: 6px 10px !important; vertical-align: middle;';
+                });
+                grid.querySelectorAll('.info-value').forEach(value => {
+                    value.style.cssText = 'display: table-cell !important; width: 60% !important; padding: 6px 10px !important; text-align: right !important; vertical-align: middle;';
+                });
+            });
+
+            // Fix loan grid - use table layout for PDF
+            clonedPage.querySelectorAll('.loan-grid').forEach(grid => {
+                grid.style.cssText = 'display: table !important; width: 100% !important; table-layout: fixed;';
+                grid.querySelectorAll('.loan-item').forEach(item => {
+                    item.style.cssText = 'display: table-cell !important; width: 16.66% !important; padding: 12px 8px !important; text-align: center !important; vertical-align: top !important; background: #ffffff !important; border: 1px solid #e2e8f0; box-shadow: none !important;';
+                });
+            });
+
+            // Fix signature grid - use table layout for PDF
+            clonedPage.querySelectorAll('.signature-grid').forEach(grid => {
+                grid.style.cssText = 'display: table !important; width: 100% !important; table-layout: fixed;';
+                grid.querySelectorAll('.signature-box').forEach(box => {
+                    box.style.cssText = 'display: table-cell !important; width: 50% !important; padding: 0 10px !important; vertical-align: top !important;';
+                });
             });
 
             // Force backgrounds on colored elements
             clonedPage.querySelectorAll('.section-title').forEach(el => {
-                el.style.cssText += 'background: #25B181 !important; color: white !important;';
+                el.style.cssText += 'background: #25B181 !important; color: white !important; box-shadow: none !important;';
             });
             clonedPage.querySelectorAll('.loan-item.highlight').forEach(el => {
                 el.style.cssText += 'background: #25B181 !important;';
+                el.querySelector('.amount').style.color = '#ffffff';
+                el.querySelector('.label').style.color = '#ffffff';
             });
             clonedPage.querySelectorAll('.schedule-table th').forEach(el => {
                 el.style.cssText += 'background: #25B181 !important; color: white !important;';
+            });
+
+            // Remove shadows and transitions
+            clonedPage.querySelectorAll('*').forEach(el => {
+                el.style.transition = 'none';
+                el.style.animation = 'none';
+                el.style.transform = 'none';
             });
 
             // Add clone to container, container to body
@@ -1211,18 +1486,33 @@
             // Wait for DOM to settle
             await new Promise(resolve => setTimeout(resolve, 200));
 
-            // Get actual dimensions
+            // Get page break positions from the cloned element
+            const pageBreaks = clonedPage.querySelectorAll('.page-break');
+            const breakPositions = [0]; // Start from top
+
+            pageBreaks.forEach(pb => {
+                const rect = pb.getBoundingClientRect();
+                const containerRect = clonedPage.getBoundingClientRect();
+                breakPositions.push(rect.top - containerRect.top);
+            });
+
+            // Add the end position
             const contentHeight = clonedPage.scrollHeight;
+            breakPositions.push(contentHeight);
+
+            console.log('Page break positions:', breakPositions);
+
+            // Get actual dimensions
             const contentWidth = clonedPage.scrollWidth;
             console.log('Content dimensions:', contentWidth, 'x', contentHeight);
 
             try {
                 // Capture the isolated container
                 const canvas = await html2canvas(clonedPage, {
-                    scale: 2,
+                    scale: 1.5,
                     useCORS: true,
                     allowTaint: true,
-                    logging: true,
+                    logging: false,
                     backgroundColor: '#ffffff',
                     width: 800,
                     height: contentHeight,
@@ -1234,9 +1524,8 @@
                     y: 0,
                     foreignObjectRendering: false,
                     ignoreElements: (element) => {
-                        // Ignore any fixed/absolute positioned elements
                         const style = window.getComputedStyle(element);
-                        return style.position === 'fixed' || element.classList.contains('watermark');
+                        return style.position === 'fixed' || element.classList.contains('watermark') || element.classList.contains('page-break');
                     }
                 });
 
@@ -1245,16 +1534,10 @@
                 // Cleanup
                 document.body.removeChild(container);
 
-                // Verify canvas is not blank
-                const ctx = canvas.getContext('2d');
-                const imageData = ctx.getImageData(0, 0, 100, 100);
-                const hasContent = imageData.data.some((pixel, i) => i % 4 !== 3 && pixel !== 255);
-                console.log('Canvas has content:', hasContent);
-
                 // A4 dimensions
                 const pdfWidth = 210;
                 const pdfHeight = 297;
-                const margin = 10;
+                const margin = 15;
                 const printableWidth = pdfWidth - (margin * 2);
                 const printableHeight = pdfHeight - (margin * 2);
 
@@ -1266,54 +1549,68 @@
                     compress: true
                 });
 
-                // Scale factor to fit width
+                // Scale factor (canvas to PDF)
+                const canvasScale = 1.5; // matches html2canvas scale
                 const scaleFactor = printableWidth / canvas.width;
-                const scaledHeight = canvas.height * scaleFactor;
+                const maxSliceHeight = printableHeight / scaleFactor;
 
-                // Calculate pages needed
-                const totalPages = Math.ceil(scaledHeight / printableHeight);
-                console.log('Total pages:', totalPages, 'Scaled height (mm):', scaledHeight);
+                console.log('Scale factor:', scaleFactor, 'Max slice height:', maxSliceHeight);
 
-                // Pixels per page (in canvas coordinates)
-                const pixelsPerPage = printableHeight / scaleFactor;
+                // Generate pages based on break positions
+                let currentY = 0;
+                let pageNum = 0;
 
-                for (let pageNum = 0; pageNum < totalPages; pageNum++) {
-                    if (pageNum > 0) pdf.addPage();
+                for (let i = 1; i < breakPositions.length; i++) {
+                    const sectionStart = breakPositions[i - 1] * canvasScale;
+                    const sectionEnd = breakPositions[i] * canvasScale;
+                    let sectionY = sectionStart;
 
-                    // Calculate slice boundaries
-                    const sliceY = pageNum * pixelsPerPage;
-                    const sliceH = Math.min(pixelsPerPage, canvas.height - sliceY);
+                    // Handle sections that might be taller than a page
+                    while (sectionY < sectionEnd) {
+                        if (pageNum > 0) pdf.addPage();
 
-                    if (sliceH <= 0) continue;
+                        const remainingSection = sectionEnd - sectionY;
+                        const sliceHeight = Math.min(maxSliceHeight, remainingSection);
 
-                    // Create page canvas
-                    const pageCanvas = document.createElement('canvas');
-                    pageCanvas.width = canvas.width;
-                    pageCanvas.height = Math.ceil(sliceH);
+                        if (sliceHeight <= 0) break;
 
-                    const pageCtx = pageCanvas.getContext('2d');
-                    pageCtx.fillStyle = '#ffffff';
-                    pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+                        // Create page canvas
+                        const pageCanvas = document.createElement('canvas');
+                        pageCanvas.width = canvas.width;
+                        pageCanvas.height = Math.ceil(sliceHeight);
 
-                    // Copy slice from main canvas
-                    pageCtx.drawImage(
-                        canvas,
-                        0, sliceY,              // Source position
-                        canvas.width, sliceH,   // Source dimensions
-                        0, 0,                   // Destination position
-                        canvas.width, sliceH    // Destination dimensions
-                    );
+                        const pageCtx = pageCanvas.getContext('2d');
+                        pageCtx.fillStyle = '#ffffff';
+                        pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
 
-                    // Convert to image and add to PDF
-                    const imgData = pageCanvas.toDataURL('image/jpeg', 0.92);
-                    const imgHeight = sliceH * scaleFactor;
+                        // Copy slice from main canvas
+                        pageCtx.drawImage(
+                            canvas,
+                            0, sectionY,
+                            canvas.width, sliceHeight,
+                            0, 0,
+                            canvas.width, sliceHeight
+                        );
 
-                    pdf.addImage(imgData, 'JPEG', margin, margin, printableWidth, imgHeight);
+                        // Convert to image and add to PDF
+                        const imgData = pageCanvas.toDataURL('image/jpeg', 0.92);
+                        const imgHeight = sliceHeight * scaleFactor;
 
-                    console.log(`Page ${pageNum + 1}: sliceY=${sliceY}, sliceH=${sliceH}, imgHeight=${imgHeight}mm`);
+                        pdf.addImage(imgData, 'JPEG', margin, margin, printableWidth, imgHeight);
+
+                        console.log(`Page ${pageNum + 1}: sectionY=${sectionY.toFixed(0)}, sliceHeight=${sliceHeight.toFixed(0)}, imgHeight=${imgHeight.toFixed(1)}mm`);
+
+                        sectionY += sliceHeight;
+                        pageNum++;
+                    }
                 }
 
                 console.log('=== PDF Generation Complete ===');
+
+                // Cleanup - remove PDF mode class
+                document.body.classList.remove('pdf-mode');
+                if (approveSection) approveSection.style.display = 'block';
+
                 return pdf.output('blob');
 
             } catch (error) {
@@ -1321,6 +1618,10 @@
                 if (document.body.contains(container)) {
                     document.body.removeChild(container);
                 }
+                // Remove PDF mode class
+                document.body.classList.remove('pdf-mode');
+                if (approveSection) approveSection.style.display = 'block';
+
                 console.error('PDF generation error:', error);
                 throw error;
             }
