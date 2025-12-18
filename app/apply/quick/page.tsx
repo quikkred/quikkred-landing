@@ -89,6 +89,10 @@ export default function QuickLoanApplication() {
   const [emailOtpTimer, setEmailOtpTimer] = useState(0);
   const [aadhaarOtpTimer, setAadhaarOtpTimer] = useState(0);
 
+  // Reverify timers (30 seconds cooldown)
+  const [panReverifyTimer, setPanReverifyTimer] = useState(0);
+  const [aadhaarReverifyTimer, setAadhaarReverifyTimer] = useState(0);
+
   // Loan Products
   const [loanProducts, setLoanProducts] = useState<any[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
@@ -259,6 +263,13 @@ export default function QuickLoanApplication() {
                 console.log('✅ Aadhaar already verified');
               }
 
+              // Load selfie preview from profile if available
+              if (profileData.profile?.s3URL) {
+                setSelfiePreview(profileData.profile.s3URL);
+                setSelfieCaptured(true);
+                console.log('✅ Selfie loaded from profile:', profileData.profile.s3URL);
+              }
+
               // Auto-jump to next incomplete step based on completion flags (3-step form)
               let nextStep = 1; // Default to step 1
 
@@ -382,6 +393,22 @@ export default function QuickLoanApplication() {
       return () => clearTimeout(timer);
     }
   }, [aadhaarOtpTimer]);
+
+  // Reverify timer countdown for PAN (30 seconds cooldown)
+  useEffect(() => {
+    if (panReverifyTimer > 0) {
+      const timer = setTimeout(() => setPanReverifyTimer(panReverifyTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [panReverifyTimer]);
+
+  // Reverify timer countdown for Aadhaar (30 seconds cooldown)
+  useEffect(() => {
+    if (aadhaarReverifyTimer > 0) {
+      const timer = setTimeout(() => setAadhaarReverifyTimer(aadhaarReverifyTimer - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [aadhaarReverifyTimer]);
 
   // Check for data agreement approval when window gets focus (user returns from agreement page)
   useEffect(() => {
@@ -658,6 +685,7 @@ export default function QuickLoanApplication() {
         .approve-btn:hover { background: #1d9469; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(37, 177, 129, 0.4); }
         @media print { body { padding: 20px; } .page { max-width: 100%; } .watermark, .approve-section { display: none; } }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <div class="watermark">QUIKKRED</div>
@@ -818,19 +846,100 @@ export default function QuickLoanApplication() {
             </div>
         </div>
 
-        <div class="approve-section">
+        <div class="approve-section" id="approve-section">
             <p style="font-size: 14px; color: #333; margin-bottom: 20px;">By clicking "I Agree & Approve", you confirm that you have read and understood all terms and conditions.</p>
-            <button class="approve-btn" onclick="approveAgreement()">I Agree & Approve</button>
+            <button class="approve-btn" id="approve-btn" onclick="approveAgreement()">I Agree & Approve</button>
             <p style="font-size: 11px; color: #666; margin-top: 15px;">This will approve your data and redirect you back to the application form.</p>
+            <div id="loading-indicator" style="display: none; margin-top: 20px;">
+                <div style="display: inline-block; width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid #25B181; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                <p style="margin-top: 10px; color: #25B181; font-weight: bold;">Processing your agreement...</p>
+            </div>
+            <style>
+                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            </style>
         </div>
     </div>
 
     <script>
-        function approveAgreement() {
-            localStorage.setItem('dataAgreementApproved', 'true');
-            alert('Agreement approved successfully!');
-            window.close();
-            setTimeout(function() { window.location.href = '/apply/quick'; }, 100);
+        async function approveAgreement() {
+            const btn = document.getElementById('approve-btn');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const approveSection = document.getElementById('approve-section');
+
+            // Show loading state
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
+            btn.textContent = 'Processing...';
+            loadingIndicator.style.display = 'block';
+
+            try {
+                // Get auth token
+                const token = localStorage.getItem('accessToken') ||
+                              localStorage.getItem('token') ||
+                              localStorage.getItem('authToken');
+
+                if (!token) {
+                    alert('Authentication error. Please login again.');
+                    window.location.href = '/login';
+                    return;
+                }
+
+                // Hide approve section for PDF generation
+                approveSection.style.display = 'none';
+
+                // Convert HTML to PDF
+                const element = document.querySelector('.page');
+                const opt = {
+                    margin: 10,
+                    filename: 'loan-agreement.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
+
+                const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
+
+                // Show approve section again
+                approveSection.style.display = 'block';
+
+                // Create FormData and append PDF
+                const formData = new FormData();
+                formData.append('eSignDoc', pdfBlob, 'loan-agreement.pdf');
+
+                // Upload PDF to API
+                const response = await fetch('https://api.bluechipfinmax.com/api/kyc/eSign/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success && result.data && result.data.url) {
+                    // Set approval flag
+                    localStorage.setItem('dataAgreementApproved', 'true');
+
+                    // Open the URL from response for next process
+                    window.location.href = result.data.url;
+                } else {
+                    throw new Error(result.message || 'Failed to upload agreement');
+                }
+
+            } catch (error) {
+                console.error('Error processing agreement:', error);
+                alert('Error: ' + (error.message || 'Failed to process agreement. Please try again.'));
+
+                // Reset button state
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.textContent = 'I Agree & Approve';
+                loadingIndicator.style.display = 'none';
+
+                // Show approve section if hidden
+                approveSection.style.display = 'block';
+            }
         }
     </script>
 </body>
@@ -1352,6 +1461,13 @@ console.log('Sending OTP with payload:', payload);
                 console.log('✅ Aadhaar already verified');
               }
 
+              // Load selfie preview from profile if available
+              if (profileData.profile?.s3URL) {
+                setSelfiePreview(profileData.profile.s3URL);
+                setSelfieCaptured(true);
+                console.log('✅ Selfie loaded from profile:', profileData.profile.s3URL);
+              }
+
               // Auto-fill references if available
               if (profileData.references && profileData.references.length > 0) {
                 const ref1 = profileData.references[0];
@@ -1456,28 +1572,22 @@ console.log('Sending OTP with payload:', payload);
       const result = await response.json();
 
       // Check if API returned success
-      if (result.success && result.data) {
+      if (result.success) {
         setPanVerified(true);
-        setPanData(result.data);
+        setPanData(result.data || null);
         setPanError(""); // Clear any errors
-
-        // Check verification status
-        const panStatus = result.data.data?.status;
-        const nameMatch = result.data.data?.name_as_per_pan_match;
-        const dobMatch = result.data.data?.date_of_birth_match;
-
-        let description = 'PAN verification successful!';
-        let warningMsg = '';
+        setPanReverifyTimer(30); // Start 30 second cooldown for reverify
 
         toast({
-          variant: nameMatch && dobMatch ? "success" : "warning",
+          variant: "success",
           title: "PAN Verified!",
-          description: warningMsg ? `${description} ${warningMsg}` : description,
+          description: result.message || "PAN verification successful!",
         });
       } else {
         // API returned error
         const errorMsg = result.message || 'Failed to verify PAN. Please check the PAN number and try again.';
         setPanError(errorMsg);
+        setPanReverifyTimer(30); // Start 30 second cooldown before retry
         toast({
           variant: "error",
           title: "Verification Failed",
@@ -1487,6 +1597,7 @@ console.log('Sending OTP with payload:', payload);
     } catch (error: any) {
       const errorMsg = error.message || 'Failed to verify PAN. Please try again.';
       setPanError(errorMsg);
+      setPanReverifyTimer(30); // Start 30 second cooldown before retry
       toast({
         variant: "error",
         title: "Verification Error",
@@ -1630,6 +1741,7 @@ console.log('Sending OTP with payload:', payload);
         setAadhaarData(result.data);
         setAadhaarError(""); // Clear any errors
         setAadhaarOtp(""); // Clear OTP field
+        setAadhaarReverifyTimer(30); // Start 30 second cooldown for reverify
 
         // Parse date format from DD-MM-YYYY to YYYY-MM-DD
         const formatDOB = (dateStr: string) => {
@@ -1663,6 +1775,7 @@ console.log('Sending OTP with payload:', payload);
       } else {
         const errorMsg = result.message || result.error || 'Invalid OTP. Please check and try again.';
         setAadhaarError(errorMsg);
+        setAadhaarReverifyTimer(30); // Start 30 second cooldown before retry
         toast({
           variant: "error",
           title: "Verification Failed",
@@ -1672,6 +1785,7 @@ console.log('Sending OTP with payload:', payload);
     } catch (error: any) {
       const errorMsg = error.message || 'Network error. Please check your connection and try again.';
       setAadhaarError(errorMsg);
+      setAadhaarReverifyTimer(30); // Start 30 second cooldown before retry
       toast({
         variant: "error",
         title: "Verification Error",
@@ -1832,7 +1946,7 @@ console.log('Sending OTP with payload:', payload);
             isBasicDetailsFilled: true
           },
           loanDetails: {
-            loanAmount: parseFloat(formData.loanAmount)
+            requestedLoanAmount: parseFloat(formData.loanAmount)
           },
           ...(locationData && {
             location: {
@@ -3231,6 +3345,64 @@ console.log('Sending OTP with payload:', payload);
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Identity Verification</h2>
 
                 <div className="grid grid-cols-1 gap-6">
+
+{/* PAN Verification */}
+                  <div className="bg-gray-50 rounded-xl p-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      PAN Number *
+                    </label>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input
+                        type="text"
+                        name="pan"
+                        value={formData.pan}
+                        onChange={(e) => {
+                          const upperValue = e.target.value.toUpperCase();
+                          handleChange({
+                            ...e,
+                            target: { ...e.target, value: upperValue, name: 'pan' }
+                          } as any);
+                          if (panVerified) setPanVerified(false);
+                          if (panError) setPanError("");
+                        }}
+                        disabled={panVerified}
+                        maxLength={10}
+                        className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 uppercase ${
+                          fieldErrors.pan || panError ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="ABCDE1234F"
+                      />
+                      {!panVerified && (
+                        <button
+                          type="button"
+                          onClick={verifyPAN}
+                          disabled={!formData.pan || formData.pan.length !== 10 || panVerifying || panReverifyTimer > 0}
+                          className={`px-6 py-3 text-white rounded-lg whitespace-nowrap ${
+                            panReverifyTimer > 0
+                              ? 'bg-gray-400 cursor-not-allowed'
+                              : 'bg-[#25B181] hover:bg-[#1d8f6a] disabled:opacity-50'
+                          }`}
+                        >
+                          {panVerifying ? "Verifying..." : panReverifyTimer > 0 ? `Verify (${panReverifyTimer}s)` : "Verify"}
+                        </button>
+                      )}
+                      {panVerified && (
+                        <div className="px-6 py-3 bg-green-100 border border-green-300 rounded-lg flex items-center gap-2 whitespace-nowrap">
+                          <CheckCircle className="w-5 h-5 text-green-600" />
+                          <span className="text-sm font-medium text-green-700">Verified</span>
+                        </div>
+                      )}
+                    </div>
+                    {(panError || fieldErrors.pan) && (
+                      <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="text-sm text-red-700 flex items-start gap-2">
+                          <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                          <span>{panError || fieldErrors.pan}</span>
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Aadhaar Verification */}
                   <div className="bg-gray-50 rounded-xl p-6">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -3276,27 +3448,12 @@ console.log('Sending OTP with payload:', payload);
                         </button>
                       )}
                       {aadhaarVerified && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setAadhaarVerified(false);
-                            setAadhaarOtpSent(false);
-                            setAadhaarOtp("");
-                            setAadhaarData(null);
-                            setAadhaarAddress(null);
-                          }}
-                          className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap flex items-center gap-2"
-                        >
-                          <CheckCircle className="w-5 h-5" />
-                          Reverify
-                        </button>
+                        <div className="px-6 py-3 bg-green-100 border border-green-300 rounded-lg flex items-center gap-2 whitespace-nowrap">
+                          <CheckCircle className="w-5 h-5 text-green-600" />
+                          <span className="text-sm font-medium text-green-700">Verified</span>
+                        </div>
                       )}
                     </div>
-                    {aadhaarVerified && aadhaarData && (
-                      <p className="mt-2 text-xs text-green-700">
-                        ✓ Verified for {aadhaarData.name}
-                      </p>
-                    )}
 
                     {/* Aadhaar OTP Input */}
                     {aadhaarOtpSent && !aadhaarVerified && (
@@ -3316,10 +3473,14 @@ console.log('Sending OTP with payload:', payload);
                           <button
                             type="button"
                             onClick={verifyAadhaarOTP}
-                            disabled={aadhaarOtp.length !== 6 || aadhaarVerifying}
-                            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
+                            disabled={aadhaarOtp.length !== 6 || aadhaarVerifying || aadhaarReverifyTimer > 0}
+                            className={`px-6 py-3 text-white rounded-lg whitespace-nowrap ${
+                              aadhaarReverifyTimer > 0
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-green-600 hover:bg-green-700 disabled:opacity-50'
+                            }`}
                           >
-                            {aadhaarVerifying ? "Verifying..." : "Verify OTP"}
+                            {aadhaarVerifying ? "Verifying..." : aadhaarReverifyTimer > 0 ? `Verify (${aadhaarReverifyTimer}s)` : "Verify OTP"}
                           </button>
                         </div>
                         <p className="mt-2 text-xs text-gray-500">
@@ -3339,71 +3500,7 @@ console.log('Sending OTP with payload:', payload);
                     )}
                   </div>
 
-                  {/* PAN Verification */}
-                  <div className="bg-gray-50 rounded-xl p-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      PAN Number *
-                    </label>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <input
-                        type="text"
-                        name="pan"
-                        value={formData.pan}
-                        onChange={(e) => {
-                          const upperValue = e.target.value.toUpperCase();
-                          handleChange({
-                            ...e,
-                            target: { ...e.target, value: upperValue, name: 'pan' }
-                          } as any);
-                          if (panVerified) setPanVerified(false);
-                          if (panError) setPanError("");
-                        }}
-                        disabled={panVerified}
-                        maxLength={10}
-                        className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 uppercase ${
-                          fieldErrors.pan || panError ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="ABCDE1234F"
-                      />
-                      {!panVerified && (
-                        <button
-                          type="button"
-                          onClick={verifyPAN}
-                          disabled={!formData.pan || formData.pan.length !== 10 || panVerifying}
-                          className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
-                        >
-                          {panVerifying ? "Verifying..." : "Verify"}
-                        </button>
-                      )}
-                      {panVerified && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setPanVerified(false);
-                            setPanData(null);
-                            setPanError("");
-                          }}
-                          className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap flex items-center gap-2"
-                        >
-                          <CheckCircle className="w-5 h-5" />
-                          Reverify
-                        </button>
-                      )}
-                    </div>
-                    {panVerified && panData && (
-                      <p className="mt-2 text-xs text-green-700">
-                        ✓ Verified for {panData.data?.pan || 'PAN holder'}
-                      </p>
-                    )}
-                    {(panError || fieldErrors.pan) && (
-                      <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                        <p className="text-sm text-red-700 flex items-start gap-2">
-                          <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                          <span>{panError || fieldErrors.pan}</span>
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                  
                 </div>
 
                 {/* Selfie Capture - Moved to Step 2 */}
@@ -3466,16 +3563,55 @@ console.log('Sending OTP with payload:', payload);
                       readOnly
                       onClick={async () => {
                         if (!dataAgreementChecked) {
-                          // Fetch customer data from API
+                          // Get auth token
                           const token = localStorage.getItem('accessToken') ||
                                         localStorage.getItem('token') ||
                                         localStorage.getItem('authToken');
 
+                          if (!token) {
+                            toast({
+                              title: "Authentication Error",
+                              description: "Please login to continue",
+                              variant: "error"
+                            });
+                            return;
+                          }
+
+                          // Initialize e-Sign verification
+                          try {
+                            const eSignResponse = await fetch('https://api.bluechipfinmax.com/api/kyc/eSign/initialize', {
+                              method: 'GET',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                              }
+                            });
+
+                            const eSignResult = await eSignResponse.json();
+
+                            if (!eSignResponse.ok || !eSignResult.success) {
+                              toast({
+                                title: "e-Sign Initialization Failed",
+                                description: eSignResult.message || "Failed to initialize e-sign verification",
+                                variant: "error"
+                              });
+                              return;
+                            }
+                          } catch (error) {
+                            console.error('Error initializing e-sign:', error);
+                            toast({
+                              title: "e-Sign Error",
+                              description: "Failed to initialize e-sign verification. Please try again.",
+                              variant: "error"
+                            });
+                            return;
+                          }
+
+                          // Fetch customer data from API
                           let customerData: any = {};
 
-                          if (token) {
-                            try {
-                              const response = await fetch('https://api.bluechipfinmax.com/api/customer/get', {
+                          try {
+                            const response = await fetch('https://api.bluechipfinmax.com/api/customer/get', {
                                 method: 'GET',
                                 headers: {
                                   'Content-Type': 'application/json',
@@ -3488,9 +3624,8 @@ console.log('Sending OTP with payload:', payload);
                               if (response.ok && result.success && result.data) {
                                 customerData = result.data;
                               }
-                            } catch (error) {
-                              console.error('Error fetching customer data:', error);
-                            }
+                          } catch (error) {
+                            console.error('Error fetching customer data:', error);
                           }
 
                           // Combine API data with form data
@@ -3542,31 +3677,69 @@ console.log('Sending OTP with payload:', payload);
                         className="block font-medium text-gray-900 cursor-pointer"
                         onClick={async () => {
                           if (!dataAgreementChecked) {
-                            // Fetch customer data from API
+                            // Get auth token
                             const token = localStorage.getItem('accessToken') ||
                                           localStorage.getItem('token') ||
                                           localStorage.getItem('authToken');
 
+                            if (!token) {
+                              toast({
+                                title: "Authentication Error",
+                                description: "Please login to continue",
+                                variant: "error"
+                              });
+                              return;
+                            }
+
+                            // Initialize e-Sign verification
+                            try {
+                              const eSignResponse = await fetch('https://api.bluechipfinmax.com/api/kyc/eSign/initialize', {
+                                method: 'GET',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'Authorization': `Bearer ${token}`
+                                }
+                              });
+
+                              const eSignResult = await eSignResponse.json();
+
+                              if (!eSignResponse.ok || !eSignResult.success) {
+                                toast({
+                                  title: "e-Sign Initialization Failed",
+                                  description: eSignResult.message || "Failed to initialize e-sign verification",
+                                  variant: "error"
+                                });
+                                return;
+                              }
+                            } catch (error) {
+                              console.error('Error initializing e-sign:', error);
+                              toast({
+                                title: "e-Sign Error",
+                                description: "Failed to initialize e-sign verification. Please try again.",
+                                variant: "error"
+                              });
+                              return;
+                            }
+
+                            // Fetch customer data from API
                             let customerData: any = {};
 
-                            if (token) {
-                              try {
-                                const response = await fetch('https://api.bluechipfinmax.com/api/customer/get', {
-                                  method: 'GET',
-                                  headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${token}`
-                                  }
-                                });
-
-                                const result = await response.json();
-
-                                if (response.ok && result.success && result.data) {
-                                  customerData = result.data;
+                            try {
+                              const response = await fetch('https://api.bluechipfinmax.com/api/customer/get', {
+                                method: 'GET',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'Authorization': `Bearer ${token}`
                                 }
-                              } catch (error) {
-                                console.error('Error fetching customer data:', error);
+                              });
+
+                              const result = await response.json();
+
+                              if (response.ok && result.success && result.data) {
+                                customerData = result.data;
                               }
+                            } catch (error) {
+                              console.error('Error fetching customer data:', error);
                             }
 
                             // Combine API data with form data
