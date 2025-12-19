@@ -1304,7 +1304,7 @@ export default function QuickLoanApplication() {
                     <li><strong>Disbursement:</strong> Upon successful verification, the loan amount will be disbursed within 24-48 hours.</li>
                     <li><strong>Repayment:</strong> The Borrower agrees to repay the loan as per the repayment schedule via eNACH/eMandate.</li>
                     <li><strong>Interest & Charges:</strong> The applicable interest rate is ${getValue(data.interestRate) !== 'N/A' ? data.interestRate : '1.0'}% Daily (36.5% APR). Processing fee of ${getValue(data.processingFee) !== 'N/A' ? data.processingFee : '2'}% + 18% GST.</li>
-                    <li><strong>Late Payment:</strong> Late fee of ₹500 and penal interest of 2% per day will apply on overdue amounts.</li>
+                    <li><strong>Late Payment:</strong> Late fee of Rs 500 and penal interest of 2% per day will apply on overdue amounts.</li>
                     <li><strong>Default & Recovery:</strong> Default may result in credit bureau reporting and legal action.</li>
                     <li><strong>Governing Law:</strong> This agreement is governed by Indian laws with jurisdiction in ${getValue(data.city) !== 'N/A' ? data.city : 'Mumbai'}.</li>
                 </ol>
@@ -2296,38 +2296,46 @@ export default function QuickLoanApplication() {
             y = ty + 3;
 
             // ===== DECLARATION =====
-            checkPage(30);
-            drawSection("Borrower's Declaration & Consent");
+ checkPage(30);
+drawSection("Borrower's Declaration & Consent");
+y += 4;
 
-            // Get borrower name from first info-value in borrower section
-            const firstInfoValue = borrowerSection ? borrowerSection.querySelector('.info-value') : null;
-            const borrowerName = getElText(firstInfoValue) || 'Borrower';
+const firstInfoValue = borrowerSection?.querySelector('.info-value');
+const borrowerName = getElText(firstInfoValue) || 'Borrower';
+
             pdf.setFontSize(8);
             pdf.setTextColor(...darkGray);
             pdf.text('I, ' + borrowerName + ', hereby declare that:', margin, y + 3);
-            y += 7;
+            y += 6;
 
-            pdf.setFillColor(245, 245, 245);
-            pdf.roundedRect(margin, y, contentWidth, 22, 2, 2, 'F');
+const boxHeight = 24;
+pdf.setFillColor(245, 245, 245);
+pdf.roundedRect(margin, y, contentWidth, boxHeight, 2, 2, 'F');
 
-            const declarations = [
-                'All information provided is true and accurate.',
-                'I agree to all terms and conditions mentioned in this agreement.',
-                'I authorize Quikkred to verify my information and auto-debit EMI amounts.',
-                'I understand non-payment will affect my credit score.'
-            ];
+const declarations = [
+  'All information provided is true and accurate.',
+  'I agree to all terms and conditions mentioned in this agreement.',
+  'I authorize Quikkred to verify my information and auto-debit EMI amounts.',
+  'I understand non-payment will affect my credit score.'
+];
 
-            pdf.setFontSize(6);
-            declarations.forEach((d, i) => {
-                const dy = y + 4 + (i * 5);
-                pdf.setFillColor(...green);
-                pdf.rect(margin + 3, dy - 2, 3, 3, 'F');
-                pdf.setTextColor(255, 255, 255);
-                pdf.text('✓', margin + 3.7, dy + 0.3);
-                pdf.setTextColor(...darkGray);
-                pdf.text(d, margin + 9, dy);
-            });
-            y += 26;
+pdf.setFontSize(7);
+
+declarations.forEach((d, i) => {
+  const rowY = y + 6 + (i * 5);
+
+  pdf.setFillColor(...green);
+  pdf.rect(margin + 4, rowY - 3, 3.5, 3.5, 'F');
+
+  pdf.setTextColor(255, 255, 255);
+  pdf.text('✓', margin + 4.9, rowY - 0.2);
+
+  pdf.setTextColor(...darkGray);
+  pdf.text(d, margin + 11, rowY);
+});
+
+y += boxHeight + 4;
+
 
             // ===== SIGNATURE SECTION =====
             checkPage(35);
@@ -3743,14 +3751,14 @@ console.log('Sending OTP with payload:', payload);
       setLoading(false);
 
       // If save failed, don't proceed to next step
-      if (!saveSuccess) {
-        toast({
-          variant: "error",
-          title: "Cannot Proceed",
-          description: "Please fix the errors before moving to the next step.",
-        });
-        return;
-      }
+      // if (!saveSuccess) {
+      //   toast({
+      //     variant: "error",
+      //     title: "Cannot Proceed",
+      //     description: "Please fix the errors before moving to the next step.",
+      //   });
+      //   return;
+      // }
     }
 
     if (currentStep === 2) {
@@ -3834,14 +3842,14 @@ console.log('Sending OTP with payload:', payload);
         setLoading(false);
         setApprovalLoading(false);
 
-        if (!saveSuccess) {
-          toast({
-            variant: "error",
-            title: "Cannot Proceed",
-            description: "Please fix the errors before moving to the next step.",
-          });
-          return;
-        }
+        // if (!saveSuccess) {
+        //   toast({
+        //     variant: "error",
+        //     title: "Cannot Proceed",
+        //     description: "Please fix the errors before moving to the next step.",
+        //   });
+        //   return;
+        // }
 
         // Store BRE data for Step 3
         if (breResponse && breResponse.success && breResponse.data) {
