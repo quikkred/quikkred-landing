@@ -518,18 +518,18 @@ export default function QuickLoanApplication() {
         // STEP 8: Handle errors (timeout, network, etc.)
         if (error.name === 'AbortError') {
           console.error('⏱️ Aadhaar status API timeout after 15 seconds');
-          toast({
-            variant: "destructive",
-            title: "Request Timeout",
-            description: "Aadhaar status check timed out. Please refresh the page to try again.",
-          });
+          // toast({
+          //   variant: "destructive",
+          //   title: "Request Timeout",
+          //   description: "Aadhaar status check timed out. Please refresh the page to try again.",
+          // });
         } else {
           console.error('❌ Error checking Aadhaar status:', error);
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to check Aadhaar status. Please try again later.",
-          });
+          // toast({
+          //   variant: "destructive",
+          //   title: "Error",
+          //   description: "Failed to check Aadhaar status. Please try again later.",
+          // });
         }
         // Keep aadhaarVerified as false on error
         setAadhaarVerified(false);
