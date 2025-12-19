@@ -613,7 +613,7 @@
         "cookiePolicy": "Cookie Policy",
         "fairPracticeCode": "Fair Practice Code",
         "interestRatePolicy": "Interest Rate Policy",
-        "kycPolicy": "KYC Policy",
+        "kycPolicy": "KYC/AML Policy",
         "rbiGuidelines": "RBI Guidelines"
       }
     },
