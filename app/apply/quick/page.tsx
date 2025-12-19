@@ -2438,14 +2438,25 @@ pdf.setFontSize(7);
 
 declarations.forEach((d, i) => {
   const rowY = y + 6 + (i * 5);
+  const cbX = margin + 4;
+  const cbY = rowY - 3;
+  const cbSize = 3.5;
 
+  // Draw green checkbox background
   pdf.setFillColor(...green);
-  pdf.rect(margin + 4, rowY - 3, 3.5, 3.5, 'F');
+  pdf.rect(cbX, cbY, cbSize, cbSize, 'F');
 
-  pdf.setTextColor(255, 255, 255);
-  pdf.text('✓', margin + 4.9, rowY - 0.2);
+  // Draw white checkmark using lines (V shape)
+  pdf.setDrawColor(255, 255, 255);
+  pdf.setLineWidth(0.5);
+  // Left part of checkmark (going down)
+  pdf.line(cbX + 0.7, cbY + 1.6, cbX + 1.4, cbY + 2.5);
+  // Right part of checkmark (going up)
+  pdf.line(cbX + 1.4, cbY + 2.5, cbX + 2.8, cbY + 0.8);
 
+  // Draw declaration text
   pdf.setTextColor(...darkGray);
+  pdf.setFont('helvetica', 'normal');
   pdf.text(d, margin + 11, rowY);
 });
 
