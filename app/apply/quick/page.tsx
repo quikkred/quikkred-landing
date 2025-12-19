@@ -582,9 +582,9 @@ export default function QuickLoanApplication() {
           <tr>
             <td>1</td>
             <td>${dueDate.toLocaleDateString('en-IN')}</td>
-            <td>₹${formatCurrency(loanAmount)}</td>
-            <td>₹${formatCurrency(Math.round(interest))}</td>
-            <td>₹${formatCurrency(Math.round(totalAmount))}</td>
+            <td>Rs${(loanAmount)}</td>
+            <td>Rs${(Math.round(interest))}</td>
+            <td>Rs${(Math.round(totalAmount))}</td>
             <td>eNACH Auto-Debit</td>
           </tr>
         `;
@@ -604,9 +604,9 @@ export default function QuickLoanApplication() {
           <tr>
             <td>${i}</td>
             <td>${dueDate.toLocaleDateString('en-IN')}</td>
-            <td>₹${formatCurrency(principal)}</td>
-            <td>₹${formatCurrency(interest)}</td>
-            <td>₹${formatCurrency(emi)}</td>
+            <td>Rs${(principal)}</td>
+            <td>Rs${(interest)}</td>
+            <td>Rs${(emi)}</td>
             <td>eNACH Auto-Debit</td>
           </tr>
         `;
@@ -1200,7 +1200,7 @@ export default function QuickLoanApplication() {
     <div class="page">
         <div class="header">
             <div class="logo-section">
-                <img src="/logo.png" alt="Quikkred Logo" onerror="this.style.display='none'">
+                
                 <div class="company-info">
                     <h1>QUIKKRED</h1>
                     <div class="tagline">Quick Credit, Trusted Partner</div>
@@ -1239,7 +1239,7 @@ export default function QuickLoanApplication() {
                 <div class="info-row"><span class="info-label">Employment Type</span><span class="info-value">${getValue(data.employmentType)}</span></div>
                 <div class="info-row"><span class="info-label">Company / Business Name</span><span class="info-value">${getValue(data.companyName)}</span></div>
                 <div class="info-row"><span class="info-label">Designation</span><span class="info-value">${getValue(data.designation)}</span></div>
-                <div class="info-row"><span class="info-label">Monthly Income</span><span class="info-value">₹${formatCurrency(data.monthlyIncome)}</span></div>
+                <div class="info-row"><span class="info-label">Monthly Income</span><span class="info-value">Rs${(data.monthlyIncome)}</span></div>
                 <div class="info-row"><span class="info-label">Salary Credit Date</span><span class="info-value">${getValue(data.salaryDate) !== 'N/A' ? data.salaryDate : '1st'} of every month</span></div>
                 <div class="info-row"><span class="info-label">Work Experience</span><span class="info-value">${getValue(data.workExperience)} years</span></div>
             </div>
@@ -1252,12 +1252,12 @@ export default function QuickLoanApplication() {
             <div class="section-title">Loan Details</div>
             <div class="loan-box">
                 <div class="loan-grid">
-                    <div class="loan-item"><div class="amount">₹${formatCurrency(data.loanAmount)}</div><div class="label">Principal Amount</div></div>
+                    <div class="loan-item"><div class="amount">Rs${(data.loanAmount)}</div><div class="label">Principal Amount</div></div>
                     <div class="loan-item"><div class="amount">${getValue(data.interestRate) !== 'N/A' ? data.interestRate : '1.0'}%</div><div class="label">Interest Rate (Daily)</div></div>
                     <div class="loan-item"><div class="amount">${getValue(data.tenure)} ${getValue(data.tenureUnit) !== 'N/A' ? data.tenureUnit : 'days'}</div><div class="label">Loan Tenure</div></div>
-                    <div class="loan-item"><div class="amount">₹${formatCurrency(data.processingFee ? (parseFloat(data.loanAmount || 0) * parseFloat(data.processingFee) / 100) : 0)}</div><div class="label">Processing Fee (${getValue(data.processingFee) !== 'N/A' ? data.processingFee : '2'}%)</div></div>
-                    <div class="loan-item highlight"><div class="amount">₹${formatCurrency(data.disbursementAmount)}</div><div class="label">Disbursement Amount</div></div>
-                    <div class="loan-item highlight"><div class="amount">₹${formatCurrency(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
+                    <div class="loan-item"><div class="amount">Rs${(data.processingFee ? (parseFloat(data.loanAmount || 0) * parseFloat(data.processingFee) / 100) : 0)}</div><div class="label">Processing Fee (${getValue(data.processingFee) !== 'N/A' ? data.processingFee : '2'}%)</div></div>
+                    <div class="loan-item highlight"><div class="amount">Rs${(data.disbursementAmount)}</div><div class="label">Disbursement Amount</div></div>
+                    <div class="loan-item highlight"><div class="amount">Rs${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
                 </div>
             </div>
         </div>
@@ -1990,10 +1990,20 @@ export default function QuickLoanApplication() {
                 return false;
             };
 
-            // Get text from DOM
-            const getText = (selector, parent = document) => {
-                const el = parent.querySelector(selector);
-                return el ? el.textContent.trim() : '';
+            // Get text from DOM - use innerText for proper rendering
+            const pageEl = document.querySelector('.page');
+            const getText = (selector, parent = null) => {
+                const container = parent || pageEl;
+                const el = container.querySelector(selector);
+                if (!el) return '';
+                // Use innerText to get rendered text, fallback to textContent
+                return (el.innerText || el.textContent || '').trim();
+            };
+
+            // Get all text from an element
+            const getElText = (el) => {
+                if (!el) return '';
+                return (el.innerText || el.textContent || '').trim();
             };
 
             // Draw table row (label | value)
@@ -2028,52 +2038,47 @@ export default function QuickLoanApplication() {
             };
 
             // ===== HEADER =====
-            pdf.setFillColor(...green);
-            pdf.rect(margin, y, contentWidth, 1.5, 'F');
-            y += 5;
-
-            // Logo and doc info side by side
-            pdf.setFontSize(20);
+            // Left side: Logo and company info
+            pdf.setFontSize(22);
             pdf.setFont('helvetica', 'bold');
             pdf.setTextColor(...green);
-            pdf.text('QUIKKRED', margin, y);
+            pdf.text('QUIKKRED', margin, y + 5);
 
+            // Right side: Loan ref and doc info
             const loanRef = getText('.loan-ref');
-            pdf.setFontSize(10);
-            pdf.text(loanRef, pageWidth - margin, y, { align: 'right' });
-            y += 5;
+            pdf.setFontSize(11);
+            pdf.text(loanRef, pageWidth - margin, y + 2, { align: 'right' });
 
-            pdf.setFontSize(8);
-            pdf.setFont('helvetica', 'italic');
-            pdf.setTextColor(...gray);
-            pdf.text('Quick Credit, Trusted Partner', margin, y);
-
-            // Doc info on right
             const docDate = getText('.doc-info p:nth-child(2)');
             const docPlace = getText('.doc-info p:nth-child(3)');
             const docProduct = getText('.doc-info p:nth-child(4)');
-            pdf.setFont('helvetica', 'normal');
+
             pdf.setFontSize(7);
-            pdf.text(docDate, pageWidth - margin, y, { align: 'right' });
-            y += 3.5;
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(...gray);
+            pdf.text(docDate, pageWidth - margin, y + 6, { align: 'right' });
+            pdf.text(docPlace, pageWidth - margin, y + 9.5, { align: 'right' });
+            pdf.text(docProduct, pageWidth - margin, y + 13, { align: 'right' });
+
+            // Left side: Tagline and company info below logo
+            pdf.setFontSize(8);
+            pdf.setFont('helvetica', 'italic');
+            pdf.setTextColor(...gray);
+            pdf.text('Quick Credit, Trusted Partner', margin, y + 10);
 
             pdf.setFontSize(6);
             pdf.setTextColor(...lightGray);
-            pdf.text('Satsai Finlease Private Limited | RBI Registered NBFC', margin, y);
-            pdf.setTextColor(...gray);
-            pdf.setFontSize(7);
-            pdf.text(docPlace, pageWidth - margin, y, { align: 'right' });
-            y += 3.5;
-            pdf.text(docProduct, pageWidth - margin, y, { align: 'right' });
-            y += 2;
+            pdf.text('Satsai Finlease Private Limited | RBI Registered NBFC', margin, y + 14);
 
-            // Line
+            y += 17;
+
+            // Single border line
             pdf.setDrawColor(...green);
-            pdf.setLineWidth(0.5);
+            pdf.setLineWidth(0.8);
             pdf.line(margin, y, pageWidth - margin, y);
-            y += 5;
+            y += 6;
 
-            // Title
+            // Title box
             pdf.setFillColor(...green);
             pdf.roundedRect(margin, y, contentWidth, 10, 2, 2, 'F');
             pdf.setFontSize(12);
@@ -2088,24 +2093,33 @@ export default function QuickLoanApplication() {
 
             // ===== BORROWER DETAILS =====
             drawSection('Borrower Details');
-            const borrowerSection = document.querySelectorAll('.section')[0];
-            const borrowerRows = borrowerSection?.querySelectorAll('.info-row') || [];
-            borrowerRows.forEach((row, i) => {
-                const label = getText('.info-label', row);
-                const value = getText('.info-value', row);
-                drawRow(label, value, i % 2 === 1);
-            });
+            const allSections = pageEl.querySelectorAll('.section');
+            const borrowerSection = allSections[0];
+            if (borrowerSection) {
+                const borrowerRows = borrowerSection.querySelectorAll('.info-row');
+                borrowerRows.forEach((row, i) => {
+                    const labelEl = row.querySelector('.info-label');
+                    const valueEl = row.querySelector('.info-value');
+                    const label = getElText(labelEl);
+                    const value = getElText(valueEl);
+                    if (label) drawRow(label, value, i % 2 === 1);
+                });
+            }
             y += 2;
 
             // ===== EMPLOYMENT DETAILS =====
             drawSection('Employment Details');
-            const empSection = document.querySelectorAll('.section')[1];
-            const empRows = empSection?.querySelectorAll('.info-row') || [];
-            empRows.forEach((row, i) => {
-                const label = getText('.info-label', row);
-                const value = getText('.info-value', row);
-                drawRow(label, value, i % 2 === 1);
-            });
+            const empSection = allSections[1];
+            if (empSection) {
+                const empRows = empSection.querySelectorAll('.info-row');
+                empRows.forEach((row, i) => {
+                    const labelEl = row.querySelector('.info-label');
+                    const valueEl = row.querySelector('.info-value');
+                    const label = getElText(labelEl);
+                    const value = getElText(valueEl);
+                    if (label) drawRow(label, value, i % 2 === 1);
+                });
+            }
             y += 2;
 
             // ===== LOAN DETAILS =====
@@ -2117,11 +2131,15 @@ export default function QuickLoanApplication() {
             pdf.setDrawColor(...green);
             pdf.roundedRect(margin, y, contentWidth, 20, 2, 2, 'FD');
 
-            const loanItems = document.querySelectorAll('.loan-item');
+            const loanBox = pageEl.querySelector('.loan-box');
+            const loanItems = loanBox ? loanBox.querySelectorAll('.loan-item') : [];
             const itemWidth = contentWidth / 6;
+
             loanItems.forEach((item, i) => {
-                const amount = getText('.amount', item);
-                const label = getText('.label', item);
+                const amountEl = item.querySelector('.amount');
+                const labelEl = item.querySelector('.label');
+                const amount = getElText(amountEl);
+                const label = getElText(labelEl);
                 const isHighlight = item.classList.contains('highlight');
                 const cx = margin + (i * itemWidth) + (itemWidth / 2);
 
@@ -2135,7 +2153,7 @@ export default function QuickLoanApplication() {
 
                 pdf.setFontSize(9);
                 pdf.setFont('helvetica', 'bold');
-                pdf.text(amount, cx, y + 8, { align: 'center' });
+                pdf.text(amount || '-', cx, y + 8, { align: 'center' });
 
                 pdf.setFontSize(5);
                 pdf.setFont('helvetica', 'normal');
@@ -2144,23 +2162,27 @@ export default function QuickLoanApplication() {
                 } else {
                     pdf.setTextColor(...gray);
                 }
-                // Split long labels
-                const lines = pdf.splitTextToSize(label, itemWidth - 2);
+                const lines = pdf.splitTextToSize(label || '', itemWidth - 2);
                 pdf.text(lines, cx, y + 12, { align: 'center' });
             });
             y += 23;
 
             // ===== BANK DETAILS =====
             drawSection('Disbursement Bank Account');
-            const bankSection = Array.from(document.querySelectorAll('.section')).find(s =>
-                getText('.section-title', s).includes('Bank')
-            );
-            const bankRows = bankSection?.querySelectorAll('.info-row') || [];
-            bankRows.forEach((row, i) => {
-                const label = getText('.info-label', row);
-                const value = getText('.info-value', row);
-                drawRow(label, value, i % 2 === 1);
+            const bankSection = Array.from(allSections).find(s => {
+                const title = s.querySelector('.section-title');
+                return title && getElText(title).includes('Bank');
             });
+            if (bankSection) {
+                const bankRows = bankSection.querySelectorAll('.info-row');
+                bankRows.forEach((row, i) => {
+                    const labelEl = row.querySelector('.info-label');
+                    const valueEl = row.querySelector('.info-value');
+                    const label = getElText(labelEl);
+                    const value = getElText(valueEl);
+                    if (label) drawRow(label, value, i % 2 === 1);
+                });
+            }
             y += 2;
 
             // ===== REPAYMENT SCHEDULE =====
@@ -2187,7 +2209,8 @@ export default function QuickLoanApplication() {
 
             drawTableHeader();
 
-            const scheduleRows = document.querySelectorAll('.schedule-table tbody tr');
+            const scheduleTable = pageEl.querySelector('.schedule-table tbody');
+            const scheduleRows = scheduleTable ? scheduleTable.querySelectorAll('tr') : [];
             pdf.setFontSize(6);
             pdf.setFont('helvetica', 'normal');
 
@@ -2205,9 +2228,10 @@ export default function QuickLoanApplication() {
 
                 pdf.setTextColor(...darkGray);
                 let x = margin;
-                row.querySelectorAll('td').forEach((td, i) => {
-                    const text = td.textContent.trim().substring(0, 20);
-                    pdf.text(text, x + 2, y + 3);
+                const cells = row.querySelectorAll('td');
+                cells.forEach((td, i) => {
+                    const text = getElText(td).substring(0, 20);
+                    pdf.text(text || '', x + 2, y + 3);
                     x += colWidths[i];
                 });
                 y += 4.5;
@@ -2253,14 +2277,15 @@ export default function QuickLoanApplication() {
             pdf.setFont('helvetica', 'normal');
             pdf.setTextColor(68, 68, 68);
 
-            const termsLi = document.querySelectorAll('.terms li');
+            const termsSection = pageEl.querySelector('.terms');
+            const termsLi = termsSection ? termsSection.querySelectorAll('li') : [];
             let ty = y + 4;
             termsLi.forEach((li, i) => {
                 if (ty > maxY - 5) {
                     pdf.addPage();
                     ty = margin;
                 }
-                const text = (i + 1) + '. ' + li.textContent.trim();
+                const text = (i + 1) + '. ' + getElText(li);
                 const lines = pdf.splitTextToSize(text, contentWidth - 8);
                 lines.forEach(line => {
                     pdf.text(line, margin + 4, ty);
@@ -2274,7 +2299,9 @@ export default function QuickLoanApplication() {
             checkPage(30);
             drawSection("Borrower's Declaration & Consent");
 
-            const borrowerName = getText('.info-value');
+            // Get borrower name from first info-value in borrower section
+            const firstInfoValue = borrowerSection ? borrowerSection.querySelector('.info-value') : null;
+            const borrowerName = getElText(firstInfoValue) || 'Borrower';
             pdf.setFontSize(8);
             pdf.setTextColor(...darkGray);
             pdf.text('I, ' + borrowerName + ', hereby declare that:', margin, y + 3);
