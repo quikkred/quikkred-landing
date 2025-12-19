@@ -1191,7 +1191,9 @@ export default function QuickLoanApplication() {
         body.pdf-mode .terms li { page-break-inside: avoid; break-inside: avoid; }
         body.pdf-mode .checkbox-item { page-break-inside: avoid; break-inside: avoid; }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <div class="watermark">QUIKKRED</div>
@@ -1961,44 +1963,26 @@ export default function QuickLoanApplication() {
             }
         }
 
-        // ========== GENERATE PDF BLOB USING jsPDF ==========
+        // ========== GENERATE PDF BLOB - Pure jsPDF with proper alignment ==========
         async function generatePDFBlob() {
             const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF({
-                orientation: 'portrait',
-                unit: 'mm',
-                format: 'a4'
-            });
+            const pdf = new jsPDF('portrait', 'mm', 'a4');
 
-            const pageWidth = pdf.internal.pageSize.getWidth();
-            const pageHeight = pdf.internal.pageSize.getHeight();
-            const margin = 15;
+            const pageWidth = 210;
+            const pageHeight = 297;
+            const margin = 12;
             const contentWidth = pageWidth - (margin * 2);
+            const maxY = pageHeight - 12;
             let y = margin;
 
-            // Helper functions
-            const addText = (text, x, size, style = 'normal', color = [45, 55, 72]) => {
-                pdf.setFontSize(size);
-                pdf.setFont('helvetica', style);
-                pdf.setTextColor(...color);
-                const lines = pdf.splitTextToSize(text, contentWidth - x + margin);
-                pdf.text(lines, x, y);
-                return lines.length * (size * 0.4);
-            };
+            const green = [37, 177, 129];
+            const darkGray = [51, 51, 51];
+            const gray = [102, 102, 102];
+            const lightGray = [150, 150, 150];
 
-            const addLine = (x1, y1, x2, y2, color = [37, 177, 129]) => {
-                pdf.setDrawColor(...color);
-                pdf.setLineWidth(0.5);
-                pdf.line(x1, y1, x2, y2);
-            };
-
-            const addRect = (x, y, w, h, fillColor) => {
-                pdf.setFillColor(...fillColor);
-                pdf.rect(x, y, w, h, 'F');
-            };
-
-            const checkNewPage = (requiredSpace) => {
-                if (y + requiredSpace > pageHeight - margin) {
+            // Page break helper
+            const checkPage = (needed) => {
+                if (y + needed > maxY) {
                     pdf.addPage();
                     y = margin;
                     return true;
@@ -2006,403 +1990,393 @@ export default function QuickLoanApplication() {
                 return false;
             };
 
-            // Get data from page
-            const getData = (selector) => {
-                const el = document.querySelector(selector);
+            // Get text from DOM
+            const getText = (selector, parent = document) => {
+                const el = parent.querySelector(selector);
                 return el ? el.textContent.trim() : '';
             };
 
-            // ===== HEADER =====
-            pdf.setFillColor(37, 177, 129);
-            pdf.rect(margin, y, contentWidth, 1, 'F');
-            y += 5;
-
-            pdf.setFontSize(22);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(37, 177, 129);
-            pdf.text('QUIKKRED', margin, y);
-            y += 5;
-
-            pdf.setFontSize(9);
-            pdf.setFont('helvetica', 'italic');
-            pdf.setTextColor(113, 128, 150);
-            pdf.text('Quick Credit, Trusted Partner', margin, y);
-            y += 4;
-
-            pdf.setFontSize(7);
-            pdf.setFont('helvetica', 'normal');
-            pdf.setTextColor(160, 174, 192);
-            pdf.text('Satsai Finlease Private Limited | RBI Registered NBFC', margin, y);
-            y += 8;
-
-            // Loan Ref on right
-            const loanRef = getData('.loan-ref') || 'QK-' + Date.now();
-            pdf.setFontSize(10);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(37, 177, 129);
-            pdf.text(loanRef, pageWidth - margin - pdf.getTextWidth(loanRef), y - 15);
-
-            addLine(margin, y, pageWidth - margin, y);
-            y += 10;
-
-            // ===== TITLE =====
-            pdf.setFontSize(16);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(26, 32, 44);
-            const title = 'LOAN AGREEMENT';
-            pdf.text(title, pageWidth / 2, y, { align: 'center' });
-            y += 10;
-
-            pdf.setFontSize(9);
-            pdf.setFont('helvetica', 'normal');
-            pdf.setTextColor(113, 128, 150);
-            const date = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
-            pdf.text('This agreement is executed between the Borrower and Lender on ' + date, pageWidth / 2, y, { align: 'center' });
-            y += 12;
-
-            // ===== BORROWER DETAILS =====
-            addRect(margin, y, contentWidth, 7, [37, 177, 129]);
-            pdf.setFontSize(10);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(255, 255, 255);
-            pdf.text('BORROWER DETAILS', margin + 3, y + 5);
-            y += 12;
-
-            // Get borrower info
-            const borrowerInfo = [];
-            document.querySelectorAll('.section').forEach(section => {
-                const title = section.querySelector('.section-title');
-                if (title && title.textContent.includes('Borrower')) {
-                    section.querySelectorAll('.info-row').forEach(row => {
-                        const label = row.querySelector('.info-label')?.textContent || '';
-                        const value = row.querySelector('.info-value')?.textContent || '';
-                        if (label && value) borrowerInfo.push({ label, value });
-                    });
+            // Draw table row (label | value)
+            const drawRow = (label, value, isAlt = false) => {
+                checkPage(5);
+                if (isAlt) {
+                    pdf.setFillColor(245, 245, 245);
+                    pdf.rect(margin, y - 0.5, contentWidth, 5, 'F');
                 }
-            });
-
-            pdf.setFontSize(8);
-            borrowerInfo.forEach((item, i) => {
-                if (i % 2 === 0) checkNewPage(6);
-                const col = i % 2 === 0 ? margin : pageWidth / 2;
-                pdf.setFont('helvetica', 'normal');
-                pdf.setTextColor(113, 128, 150);
-                pdf.text(item.label + ':', col, y);
-                pdf.setFont('helvetica', 'bold');
-                pdf.setTextColor(45, 55, 72);
-                const valueX = col + 35;
-                pdf.text(item.value.substring(0, 30), valueX, y);
-                if (i % 2 === 1) y += 6;
-            });
-            if (borrowerInfo.length % 2 === 1) y += 6;
-            y += 5;
-
-            // ===== EMPLOYMENT DETAILS =====
-            checkNewPage(40);
-            addRect(margin, y, contentWidth, 7, [37, 177, 129]);
-            pdf.setFontSize(10);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(255, 255, 255);
-            pdf.text('EMPLOYMENT DETAILS', margin + 3, y + 5);
-            y += 12;
-
-            const employmentInfo = [];
-            document.querySelectorAll('.section').forEach(section => {
-                const title = section.querySelector('.section-title');
-                if (title && title.textContent.includes('Employment')) {
-                    section.querySelectorAll('.info-row').forEach(row => {
-                        const label = row.querySelector('.info-label')?.textContent || '';
-                        const value = row.querySelector('.info-value')?.textContent || '';
-                        if (label && value) employmentInfo.push({ label, value });
-                    });
-                }
-            });
-
-            pdf.setFontSize(8);
-            employmentInfo.forEach((item, i) => {
-                if (i % 2 === 0) checkNewPage(6);
-                const col = i % 2 === 0 ? margin : pageWidth / 2;
-                pdf.setFont('helvetica', 'normal');
-                pdf.setTextColor(113, 128, 150);
-                pdf.text(item.label + ':', col, y);
-                pdf.setFont('helvetica', 'bold');
-                pdf.setTextColor(45, 55, 72);
-                pdf.text(item.value.substring(0, 30), col + 35, y);
-                if (i % 2 === 1) y += 6;
-            });
-            if (employmentInfo.length % 2 === 1) y += 6;
-            y += 8;
-
-            // ===== LOAN DETAILS =====
-            checkNewPage(50);
-            addRect(margin, y, contentWidth, 7, [37, 177, 129]);
-            pdf.setFontSize(10);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(255, 255, 255);
-            pdf.text('LOAN DETAILS', margin + 3, y + 5);
-            y += 12;
-
-            // Draw loan box
-            pdf.setDrawColor(37, 177, 129);
-            pdf.setLineWidth(0.5);
-            pdf.setFillColor(240, 253, 244);
-            pdf.roundedRect(margin, y, contentWidth, 35, 3, 3, 'FD');
-            y += 5;
-
-            const loanItems = [];
-            document.querySelectorAll('.loan-item').forEach(item => {
-                const amount = item.querySelector('.amount')?.textContent || '';
-                const label = item.querySelector('.label')?.textContent || '';
-                if (amount && label) loanItems.push({ amount, label, highlight: item.classList.contains('highlight') });
-            });
-
-            const colWidth = contentWidth / 3;
-            loanItems.forEach((item, i) => {
-                const col = margin + (i % 3) * colWidth + colWidth / 2;
-                const row = Math.floor(i / 3) * 15;
-
-                pdf.setFontSize(12);
-                pdf.setFont('helvetica', 'bold');
-                pdf.setTextColor(item.highlight ? 37 : 37, item.highlight ? 177 : 177, item.highlight ? 129 : 129);
-                pdf.text(item.amount, col, y + row, { align: 'center' });
-
                 pdf.setFontSize(7);
                 pdf.setFont('helvetica', 'normal');
-                pdf.setTextColor(113, 128, 150);
-                pdf.text(item.label, col, y + row + 5, { align: 'center' });
-            });
-            y += 40;
-
-            // ===== BANK DETAILS =====
-            checkNewPage(40);
-            addRect(margin, y, contentWidth, 7, [37, 177, 129]);
-            pdf.setFontSize(10);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(255, 255, 255);
-            pdf.text('DISBURSEMENT BANK ACCOUNT', margin + 3, y + 5);
-            y += 12;
-
-            const bankInfo = [];
-            document.querySelectorAll('.section').forEach(section => {
-                const title = section.querySelector('.section-title');
-                if (title && title.textContent.includes('Bank')) {
-                    section.querySelectorAll('.info-row').forEach(row => {
-                        const label = row.querySelector('.info-label')?.textContent || '';
-                        const value = row.querySelector('.info-value')?.textContent || '';
-                        if (label && value) bankInfo.push({ label, value });
-                    });
-                }
-            });
-
-            pdf.setFontSize(8);
-            bankInfo.forEach((item, i) => {
-                if (i % 2 === 0) checkNewPage(6);
-                const col = i % 2 === 0 ? margin : pageWidth / 2;
-                pdf.setFont('helvetica', 'normal');
-                pdf.setTextColor(113, 128, 150);
-                pdf.text(item.label + ':', col, y);
+                pdf.setTextColor(...gray);
+                pdf.text(label.toUpperCase(), margin + 2, y + 3);
                 pdf.setFont('helvetica', 'bold');
-                pdf.setTextColor(45, 55, 72);
-                pdf.text(item.value.substring(0, 30), col + 35, y);
-                if (i % 2 === 1) y += 6;
-            });
-            if (bankInfo.length % 2 === 1) y += 6;
-            y += 8;
+                pdf.setTextColor(...darkGray);
+                const maxValWidth = contentWidth - 70;
+                const truncVal = value.length > 50 ? value.substring(0, 50) + '...' : value;
+                pdf.text(truncVal, pageWidth - margin - 2, y + 3, { align: 'right' });
+                y += 5;
+            };
 
-            // ===== REPAYMENT SCHEDULE =====
-            pdf.addPage();
-            y = margin;
+            // Section header
+            const drawSection = (title) => {
+                checkPage(8);
+                pdf.setFillColor(...green);
+                pdf.rect(margin, y, contentWidth, 6, 'F');
+                pdf.setFontSize(8);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setTextColor(255, 255, 255);
+                pdf.text(title.toUpperCase(), margin + 3, y + 4.2);
+                y += 7;
+            };
 
-            addRect(margin, y, contentWidth, 7, [37, 177, 129]);
+            // ===== HEADER =====
+            pdf.setFillColor(...green);
+            pdf.rect(margin, y, contentWidth, 1.5, 'F');
+            y += 5;
+
+            // Logo and doc info side by side
+            pdf.setFontSize(20);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(...green);
+            pdf.text('QUIKKRED', margin, y);
+
+            const loanRef = getText('.loan-ref');
             pdf.setFontSize(10);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(255, 255, 255);
-            pdf.text('REPAYMENT SCHEDULE', margin + 3, y + 5);
-            y += 12;
+            pdf.text(loanRef, pageWidth - margin, y, { align: 'right' });
+            y += 5;
 
-            // Table headers
-            const tableHeaders = ['#', 'Due Date', 'Principal', 'Interest', 'Total EMI', 'Mode'];
-            const colWidths = [10, 35, 30, 30, 30, 35];
-            let x = margin;
-
-            pdf.setFillColor(37, 177, 129);
-            pdf.rect(margin, y, contentWidth, 7, 'F');
             pdf.setFontSize(8);
+            pdf.setFont('helvetica', 'italic');
+            pdf.setTextColor(...gray);
+            pdf.text('Quick Credit, Trusted Partner', margin, y);
+
+            // Doc info on right
+            const docDate = getText('.doc-info p:nth-child(2)');
+            const docPlace = getText('.doc-info p:nth-child(3)');
+            const docProduct = getText('.doc-info p:nth-child(4)');
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(7);
+            pdf.text(docDate, pageWidth - margin, y, { align: 'right' });
+            y += 3.5;
+
+            pdf.setFontSize(6);
+            pdf.setTextColor(...lightGray);
+            pdf.text('Satsai Finlease Private Limited | RBI Registered NBFC', margin, y);
+            pdf.setTextColor(...gray);
+            pdf.setFontSize(7);
+            pdf.text(docPlace, pageWidth - margin, y, { align: 'right' });
+            y += 3.5;
+            pdf.text(docProduct, pageWidth - margin, y, { align: 'right' });
+            y += 2;
+
+            // Line
+            pdf.setDrawColor(...green);
+            pdf.setLineWidth(0.5);
+            pdf.line(margin, y, pageWidth - margin, y);
+            y += 5;
+
+            // Title
+            pdf.setFillColor(...green);
+            pdf.roundedRect(margin, y, contentWidth, 10, 2, 2, 'F');
+            pdf.setFontSize(12);
             pdf.setFont('helvetica', 'bold');
             pdf.setTextColor(255, 255, 255);
-            tableHeaders.forEach((header, i) => {
-                pdf.text(header, x + 2, y + 5);
-                x += colWidths[i];
-            });
-            y += 9;
-
-            // Table rows
-            const scheduleRows = document.querySelectorAll('.schedule-table tbody tr');
+            pdf.text('LOAN AGREEMENT', pageWidth / 2, y + 5, { align: 'center' });
             pdf.setFontSize(7);
             pdf.setFont('helvetica', 'normal');
-            scheduleRows.forEach((row, rowIndex) => {
-                if (checkNewPage(7)) {
-                    // Repeat header on new page
-                    pdf.setFillColor(37, 177, 129);
-                    pdf.rect(margin, y, contentWidth, 7, 'F');
-                    pdf.setFontSize(8);
-                    pdf.setFont('helvetica', 'bold');
+            const subtitle = getText('.title .subtitle');
+            pdf.text(subtitle, pageWidth / 2, y + 8.5, { align: 'center' });
+            y += 13;
+
+            // ===== BORROWER DETAILS =====
+            drawSection('Borrower Details');
+            const borrowerSection = document.querySelectorAll('.section')[0];
+            const borrowerRows = borrowerSection?.querySelectorAll('.info-row') || [];
+            borrowerRows.forEach((row, i) => {
+                const label = getText('.info-label', row);
+                const value = getText('.info-value', row);
+                drawRow(label, value, i % 2 === 1);
+            });
+            y += 2;
+
+            // ===== EMPLOYMENT DETAILS =====
+            drawSection('Employment Details');
+            const empSection = document.querySelectorAll('.section')[1];
+            const empRows = empSection?.querySelectorAll('.info-row') || [];
+            empRows.forEach((row, i) => {
+                const label = getText('.info-label', row);
+                const value = getText('.info-value', row);
+                drawRow(label, value, i % 2 === 1);
+            });
+            y += 2;
+
+            // ===== LOAN DETAILS =====
+            checkPage(30);
+            drawSection('Loan Details');
+
+            // Loan box background
+            pdf.setFillColor(240, 255, 244);
+            pdf.setDrawColor(...green);
+            pdf.roundedRect(margin, y, contentWidth, 20, 2, 2, 'FD');
+
+            const loanItems = document.querySelectorAll('.loan-item');
+            const itemWidth = contentWidth / 6;
+            loanItems.forEach((item, i) => {
+                const amount = getText('.amount', item);
+                const label = getText('.label', item);
+                const isHighlight = item.classList.contains('highlight');
+                const cx = margin + (i * itemWidth) + (itemWidth / 2);
+
+                if (isHighlight) {
+                    pdf.setFillColor(...green);
+                    pdf.rect(margin + (i * itemWidth), y, itemWidth, 20, 'F');
                     pdf.setTextColor(255, 255, 255);
-                    x = margin;
-                    tableHeaders.forEach((header, i) => {
-                        pdf.text(header, x + 2, y + 5);
-                        x += colWidths[i];
-                    });
-                    y += 9;
-                    pdf.setFontSize(7);
-                    pdf.setFont('helvetica', 'normal');
+                } else {
+                    pdf.setTextColor(...green);
                 }
 
-                if (rowIndex % 2 === 0) {
-                    pdf.setFillColor(248, 250, 252);
-                    pdf.rect(margin, y - 1, contentWidth, 6, 'F');
-                }
+                pdf.setFontSize(9);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text(amount, cx, y + 8, { align: 'center' });
 
-                pdf.setTextColor(45, 55, 72);
-                x = margin;
-                row.querySelectorAll('td').forEach((cell, i) => {
-                    pdf.text(cell.textContent.substring(0, 15), x + 2, y + 3);
+                pdf.setFontSize(5);
+                pdf.setFont('helvetica', 'normal');
+                if (isHighlight) {
+                    pdf.setTextColor(230, 255, 240);
+                } else {
+                    pdf.setTextColor(...gray);
+                }
+                // Split long labels
+                const lines = pdf.splitTextToSize(label, itemWidth - 2);
+                pdf.text(lines, cx, y + 12, { align: 'center' });
+            });
+            y += 23;
+
+            // ===== BANK DETAILS =====
+            drawSection('Disbursement Bank Account');
+            const bankSection = Array.from(document.querySelectorAll('.section')).find(s =>
+                getText('.section-title', s).includes('Bank')
+            );
+            const bankRows = bankSection?.querySelectorAll('.info-row') || [];
+            bankRows.forEach((row, i) => {
+                const label = getText('.info-label', row);
+                const value = getText('.info-value', row);
+                drawRow(label, value, i % 2 === 1);
+            });
+            y += 2;
+
+            // ===== REPAYMENT SCHEDULE =====
+            checkPage(15);
+            drawSection('Repayment Schedule');
+
+            // Table header
+            const headers = ['#', 'Due Date', 'Principal', 'Interest', 'Total EMI', 'Payment Mode'];
+            const colWidths = [10, 28, 28, 28, 30, contentWidth - 124];
+
+            const drawTableHeader = () => {
+                pdf.setFillColor(...green);
+                pdf.rect(margin, y, contentWidth, 5, 'F');
+                pdf.setFontSize(6);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setTextColor(255, 255, 255);
+                let x = margin;
+                headers.forEach((h, i) => {
+                    pdf.text(h, x + 2, y + 3.5);
                     x += colWidths[i];
                 });
                 y += 6;
+            };
+
+            drawTableHeader();
+
+            const scheduleRows = document.querySelectorAll('.schedule-table tbody tr');
+            pdf.setFontSize(6);
+            pdf.setFont('helvetica', 'normal');
+
+            scheduleRows.forEach((row, idx) => {
+                if (y > maxY - 6) {
+                    pdf.addPage();
+                    y = margin;
+                    drawTableHeader();
+                }
+
+                if (idx % 2 === 1) {
+                    pdf.setFillColor(249, 249, 249);
+                    pdf.rect(margin, y - 0.5, contentWidth, 4.5, 'F');
+                }
+
+                pdf.setTextColor(...darkGray);
+                let x = margin;
+                row.querySelectorAll('td').forEach((td, i) => {
+                    const text = td.textContent.trim().substring(0, 20);
+                    pdf.text(text, x + 2, y + 3);
+                    x += colWidths[i];
+                });
+                y += 4.5;
             });
-            y += 8;
+            y += 3;
+
+            // ===== IMPORTANT NOTICE =====
+            checkPage(20);
+            pdf.setFillColor(255, 248, 225);
+            pdf.setDrawColor(255, 179, 0);
+            pdf.roundedRect(margin, y, contentWidth, 18, 2, 2, 'FD');
+            pdf.setDrawColor(255, 143, 0);
+            pdf.setLineWidth(1);
+            pdf.line(margin, y, margin, y + 18);
+
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(230, 81, 0);
+            pdf.text('IMPORTANT NOTICE - PLEASE READ CAREFULLY', margin + 4, y + 4);
+
+            pdf.setFontSize(6);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(100, 80, 50);
+            const notices = [
+                'Late Payment Charges: Rs.500 + 2% per day on overdue amount.',
+                'Credit Reporting: Non-payment will be reported to CIBIL, Experian, Equifax & CRIF.',
+                'Legal Action: Default may result in legal proceedings under applicable laws.',
+                'Collection: Recovery agents may contact you for overdue payments per RBI guidelines.'
+            ];
+            notices.forEach((n, i) => {
+                pdf.text('• ' + n, margin + 4, y + 8 + (i * 3));
+            });
+            y += 21;
 
             // ===== TERMS & CONDITIONS =====
-            pdf.addPage();
-            y = margin;
+            checkPage(15);
+            drawSection('Terms & Conditions');
 
-            addRect(margin, y, contentWidth, 7, [37, 177, 129]);
-            pdf.setFontSize(10);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(255, 255, 255);
-            pdf.text('TERMS & CONDITIONS', margin + 3, y + 5);
-            y += 12;
+            pdf.setFillColor(249, 249, 249);
+            pdf.roundedRect(margin, y, contentWidth, 35, 2, 2, 'F');
 
-            pdf.setFontSize(7);
+            pdf.setFontSize(6);
             pdf.setFont('helvetica', 'normal');
-            pdf.setTextColor(74, 85, 104);
+            pdf.setTextColor(68, 68, 68);
 
-            const terms = document.querySelectorAll('.terms li');
-            terms.forEach((term, i) => {
-                checkNewPage(15);
-                const text = (i + 1) + '. ' + term.textContent.trim();
-                const lines = pdf.splitTextToSize(text, contentWidth - 5);
+            const termsLi = document.querySelectorAll('.terms li');
+            let ty = y + 4;
+            termsLi.forEach((li, i) => {
+                if (ty > maxY - 5) {
+                    pdf.addPage();
+                    ty = margin;
+                }
+                const text = (i + 1) + '. ' + li.textContent.trim();
+                const lines = pdf.splitTextToSize(text, contentWidth - 8);
                 lines.forEach(line => {
-                    if (checkNewPage(5)) {}
-                    pdf.text(line, margin, y);
-                    y += 4;
+                    pdf.text(line, margin + 4, ty);
+                    ty += 3;
                 });
-                y += 2;
+                ty += 1;
             });
+            y = ty + 3;
 
             // ===== DECLARATION =====
-            pdf.addPage();
-            y = margin;
+            checkPage(30);
+            drawSection("Borrower's Declaration & Consent");
 
-            addRect(margin, y, contentWidth, 7, [37, 177, 129]);
-            pdf.setFontSize(10);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(255, 255, 255);
-            pdf.text('BORROWER DECLARATION & CONSENT', margin + 3, y + 5);
-            y += 15;
-
+            const borrowerName = getText('.info-value');
             pdf.setFontSize(8);
-            pdf.setTextColor(45, 55, 72);
-            const borrowerName = document.querySelector('.info-value')?.textContent || 'Borrower';
-            pdf.text('I, ' + borrowerName + ', hereby declare that:', margin, y);
-            y += 8;
+            pdf.setTextColor(...darkGray);
+            pdf.text('I, ' + borrowerName + ', hereby declare that:', margin, y + 3);
+            y += 7;
 
-            const checkboxItems = document.querySelectorAll('.checkbox-item');
-            pdf.setFontSize(7);
-            checkboxItems.forEach(item => {
-                checkNewPage(8);
-                // Draw checkbox
-                pdf.setFillColor(37, 177, 129);
-                pdf.rect(margin, y - 3, 4, 4, 'F');
+            pdf.setFillColor(245, 245, 245);
+            pdf.roundedRect(margin, y, contentWidth, 22, 2, 2, 'F');
+
+            const declarations = [
+                'All information provided is true and accurate.',
+                'I agree to all terms and conditions mentioned in this agreement.',
+                'I authorize Quikkred to verify my information and auto-debit EMI amounts.',
+                'I understand non-payment will affect my credit score.'
+            ];
+
+            pdf.setFontSize(6);
+            declarations.forEach((d, i) => {
+                const dy = y + 4 + (i * 5);
+                pdf.setFillColor(...green);
+                pdf.rect(margin + 3, dy - 2, 3, 3, 'F');
                 pdf.setTextColor(255, 255, 255);
-                pdf.setFontSize(6);
-                pdf.text('✓', margin + 1, y);
-
-                pdf.setFontSize(7);
-                pdf.setTextColor(45, 55, 72);
-                const text = item.textContent.replace('✓', '').trim();
-                const lines = pdf.splitTextToSize(text, contentWidth - 10);
-                pdf.text(lines, margin + 7, y);
-                y += lines.length * 4 + 3;
+                pdf.text('✓', margin + 3.7, dy + 0.3);
+                pdf.setTextColor(...darkGray);
+                pdf.text(d, margin + 9, dy);
             });
-
-            y += 10;
+            y += 26;
 
             // ===== SIGNATURE SECTION =====
-            checkNewPage(50);
-            addLine(margin, y, pageWidth - margin, y, [45, 55, 72]);
-            y += 10;
+            checkPage(35);
+            pdf.setDrawColor(...lightGray);
+            pdf.line(margin, y, pageWidth - margin, y);
+            y += 4;
 
-            pdf.setFontSize(10);
+            pdf.setFontSize(9);
             pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(45, 55, 72);
+            pdf.setTextColor(...darkGray);
             pdf.text('DIGITAL SIGNATURE (Aadhaar eSign)', margin, y);
-            y += 10;
+            y += 6;
 
-            // Signature boxes
-            const boxWidth = (contentWidth - 10) / 2;
-            const boxHeight = 35;
+            const boxW = (contentWidth - 6) / 2;
+            const boxH = 28;
 
-            // Borrower signature box
-            pdf.setDrawColor(37, 177, 129);
-            pdf.setLineWidth(0.3);
-            pdf.setFillColor(240, 253, 244);
-            pdf.roundedRect(margin, y, boxWidth, boxHeight, 2, 2, 'FD');
-            pdf.setFontSize(9);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(37, 177, 129);
-            pdf.text("Borrower's eSign", margin + boxWidth / 2, y + 12, { align: 'center' });
-            pdf.setFontSize(7);
-            pdf.setFont('helvetica', 'normal');
-            pdf.setTextColor(113, 128, 150);
-            pdf.text('Signed via Aadhaar eSign', margin + boxWidth / 2, y + 18, { align: 'center' });
-            pdf.text('Date: ' + date, margin + boxWidth / 2, y + 24, { align: 'center' });
-
-            // Lender signature box
-            const lenderX = margin + boxWidth + 10;
-            pdf.setDrawColor(45, 55, 72);
-            pdf.setFillColor(247, 250, 252);
-            pdf.roundedRect(lenderX, y, boxWidth, boxHeight, 2, 2, 'FD');
-            pdf.setFontSize(9);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(45, 55, 72);
-            pdf.text("Lender's Authorization", lenderX + boxWidth / 2, y + 12, { align: 'center' });
-            pdf.setFontSize(7);
-            pdf.setFont('helvetica', 'normal');
-            pdf.setTextColor(113, 128, 150);
-            pdf.text('Satsai Finlease Pvt Ltd', lenderX + boxWidth / 2, y + 18, { align: 'center' });
-            pdf.text('(Authorized Signatory)', lenderX + boxWidth / 2, y + 24, { align: 'center' });
-
-            y += boxHeight + 15;
-
-            // ===== FOOTER =====
-            checkNewPage(25);
-            addLine(margin, y, pageWidth - margin, y, [226, 232, 240]);
-            y += 8;
+            // Borrower box
+            pdf.setFillColor(240, 255, 244);
+            pdf.setDrawColor(...green);
+            pdf.roundedRect(margin, y, boxW, boxH, 2, 2, 'FD');
 
             pdf.setFontSize(8);
             pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(113, 128, 150);
-            pdf.text('Satsai Finlease Private Limited (trading as Quikkred)', pageWidth / 2, y, { align: 'center' });
-            y += 5;
-            pdf.setFontSize(7);
-            pdf.setFont('helvetica', 'normal');
-            pdf.text('Email: support@quikkred.in | Website: www.quikkred.in', pageWidth / 2, y, { align: 'center' });
-            y += 8;
+            pdf.setTextColor(...green);
+            pdf.text("Borrower's eSign", margin + boxW/2, y + 6, { align: 'center' });
+
             pdf.setFontSize(6);
-            pdf.setTextColor(160, 174, 192);
-            pdf.text('This is a computer-generated document. Generated: ' + date, pageWidth / 2, y, { align: 'center' });
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(...gray);
+            pdf.text('Aadhaar-based Digital Signature', margin + boxW/2, y + 10, { align: 'center' });
+            pdf.text('Name: ' + borrowerName, margin + boxW/2, y + 16, { align: 'center' });
+            const currentDate = new Date().toLocaleDateString('en-IN');
+            const currentTime = new Date().toLocaleTimeString('en-IN');
+            pdf.text('Date: ' + currentDate, margin + boxW/2, y + 20, { align: 'center' });
+            pdf.text('Time: ' + currentTime, margin + boxW/2, y + 24, { align: 'center' });
+
+            // Lender box
+            const lx = margin + boxW + 6;
+            pdf.setFillColor(245, 245, 245);
+            pdf.setDrawColor(...lightGray);
+            pdf.roundedRect(lx, y, boxW, boxH, 2, 2, 'FD');
+
+            pdf.setFontSize(8);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(...gray);
+            pdf.text("Lender's Authorization", lx + boxW/2, y + 6, { align: 'center' });
+
+            pdf.setFontSize(6);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text('For Satsai Finlease Private Limited', lx + boxW/2, y + 10, { align: 'center' });
+            pdf.text('Authorized Signatory', lx + boxW/2, y + 16, { align: 'center' });
+            pdf.text('Quikkred Digital Lending Platform', lx + boxW/2, y + 20, { align: 'center' });
+            pdf.text('Date: ' + currentDate, lx + boxW/2, y + 24, { align: 'center' });
+
+            y += boxH + 6;
+
+            // ===== FOOTER =====
+            checkPage(15);
+            pdf.setDrawColor(220, 220, 220);
+            pdf.line(margin, y, pageWidth - margin, y);
+            y += 4;
+
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(...gray);
+            pdf.text('Satsai Finlease Private Limited (trading as Quikkred)', pageWidth/2, y, { align: 'center' });
+            y += 3;
+            pdf.setFontSize(6);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text('Email: support@quikkred.in | Website: www.quikkred.in', pageWidth/2, y, { align: 'center' });
+            y += 4;
+            pdf.setFontSize(5);
+            pdf.setTextColor(...lightGray);
+            pdf.text('This is a computer-generated document valid without physical signature.', pageWidth/2, y, { align: 'center' });
+            y += 2.5;
+            pdf.text('Generated: ' + currentDate + ' ' + currentTime, pageWidth/2, y, { align: 'center' });
 
             return pdf.output('blob');
         }
