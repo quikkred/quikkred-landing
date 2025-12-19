@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   CheckCircle, X, Loader2, FileText, IndianRupee,
   Calendar, User, Phone, Mail, CreditCard, Camera,
@@ -60,6 +60,7 @@ const autoDecisionEngine = (data: any) => {
 
 export default function QuickLoanApplication() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login, user, isLoading } = useAuth();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
@@ -82,6 +83,8 @@ export default function QuickLoanApplication() {
   const [otpSent, setOtpSent] = useState(false);
   const [panError, setPanError] = useState<string>("");
   const [aadhaarError, setAadhaarError] = useState<string>("");
+  const [aadhaarStatusChecked, setAadhaarStatusChecked] = useState(false);
+  const [aadhaarStatusLoading, setAadhaarStatusLoading] = useState(false);
   const [apiDeterminedStep, setApiDeterminedStep] = useState<number | null>(null);
   const [redirectCountdown, setRedirectCountdown] = useState<number>(5);
 
@@ -154,7 +157,7 @@ export default function QuickLoanApplication() {
       // Step 3: Loan & Consent
       loanAmount: "",
       tenure: "",
-      requestedTenureUnit: "",
+      tenureUnit: "",
       productId: "",
       purpose: "",
       reference1Name: "",
@@ -414,6 +417,118 @@ export default function QuickLoanApplication() {
     }
   }, [aadhaarReverifyTimer]);
 
+  // Check Aadhaar verification status when verified=true query param is present
+  // Only calls API after user profile data is loaded AND if isAadhaarVerify !== true
+  useEffect(() => {
+    const checkAadhaarStatus = async () => {
+      // Get the verified query parameter
+      const verifiedParam = searchParams.get('verified');
+
+      // STEP 1: Check if verified param is 'true'
+      if (verifiedParam !== 'true') {
+        console.log('ℹ️ No verified=true query param, skipping Aadhaar status check');
+        return;
+      }
+
+      // STEP 2: Wait for user profile data to be loaded first
+      // This ensures we have the isAadhaarVerify value from GET user/details API
+      if (!userDataLoaded) {
+        console.log('⏳ Waiting for user profile data to load before checking Aadhaar status...');
+        return;
+      }
+
+      // STEP 3: Prevent duplicate API calls on page refresh
+      if (aadhaarStatusChecked || aadhaarStatusLoading) {
+        console.log('🔄 Aadhaar status already checked or loading, skipping duplicate call');
+        return;
+      }
+
+      // STEP 4: Check if already verified from user profile data (isAadhaarVerify === true)
+      // If profile data shows isAadhaarVerify = true, don't call the API
+      if (aadhaarVerified) {
+        console.log('✅ Aadhaar already verified from profile (isAadhaarVerify = true), skipping API call');
+        setAadhaarStatusChecked(true);
+
+        return;
+      }
+
+      // STEP 5: Get auth token
+      const token = localStorage.getItem('accessToken') ||
+                    localStorage.getItem('token') ||
+                    localStorage.getItem('authToken');
+
+      if (!token) {
+        console.log('⚠️ No auth token found, cannot check Aadhaar status');
+        setAadhaarStatusChecked(true);
+        return;
+      }
+
+      // STEP 6: Call Aadhaar status API (isAadhaarVerify was false/not set)
+      console.log('🔍 Calling Aadhaar verification status API (isAadhaarVerify was not true)...');
+      setAadhaarStatusLoading(true);
+
+      try {
+        // Create AbortController for timeout handling (15 seconds)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+        const response = await fetch('https://api.bluechipfinmax.com/api/kyc/aadhaar/status', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        const result = await response.json();
+
+        // STEP 7: Handle API response
+        if (response.ok && result.success && result.data?.isAadhaarVerify === true) {
+          console.log('✅ Aadhaar verified successfully from status API');
+          console.log('📝 Backend has updated isAadhaarVerify = true in database');
+          setAadhaarVerified(true);
+          toast({
+            variant: "success",
+            title: "Aadhaar Verified",
+            description: result.message || "Your Aadhaar has been verified successfully.",
+          });
+        } else {
+          console.log('ℹ️ Aadhaar not verified:', result.message || 'Verification pending or failed');
+          setAadhaarVerified(false);
+          // Show info toast if verification failed/pending
+        
+        }
+      } catch (error: any) {
+        // STEP 8: Handle errors (timeout, network, etc.)
+        if (error.name === 'AbortError') {
+          console.error('⏱️ Aadhaar status API timeout after 15 seconds');
+          toast({
+            variant: "destructive",
+            title: "Request Timeout",
+            description: "Aadhaar status check timed out. Please refresh the page to try again.",
+          });
+        } else {
+          console.error('❌ Error checking Aadhaar status:', error);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to check Aadhaar status. Please try again later.",
+          });
+        }
+        // Keep aadhaarVerified as false on error
+        setAadhaarVerified(false);
+      } finally {
+        setAadhaarStatusLoading(false);
+        setAadhaarStatusChecked(true);
+      }
+    };
+
+    checkAadhaarStatus();
+  }, [searchParams, userDataLoaded, aadhaarStatusChecked, aadhaarStatusLoading, aadhaarVerified, toast]);
+
   // Check for data agreement approval when window gets focus (user returns from agreement page)
   useEffect(() => {
     const handleFocus = () => {
@@ -526,7 +641,7 @@ export default function QuickLoanApplication() {
     if (formData.loanAmount && formData.tenure && selectedProduct) {
       calculateEMI();
     }
-  }, [formData.loanAmount, formData.tenure, formData.requestedTenureUnit, selectedProduct]);
+  }, [formData.loanAmount, formData.tenure, formData.tenureUnit, selectedProduct]);
 
   // Generate Agreement HTML with customer data
   const generateAgreementHTML = (data: any) => {
@@ -2557,7 +2672,7 @@ y += boxHeight + 4;
       productId: productId,
       purpose: purpose,
       tenure: defaultTenure,
-      requestedTenureUnit: 'days' // Products use days for tenure
+      tenureUnit: 'days' // Products use days for tenure
     }));
   };
 
@@ -4272,7 +4387,7 @@ console.log('Sending OTP with payload:', payload);
                     ifsc: "",
                     loanAmount: "",
                     tenure: "12",
-                    requestedTenureUnit: "months",
+                    tenureUnit: "",
                     productId: "",
                     purpose: "",
                     reference1Name: "",
@@ -5413,7 +5528,7 @@ console.log('Sending OTP with payload:', payload);
                                 accountHolderName: customerData.banks?.[0]?.accountHolderName || formData.fullName || customerData.fullName || '',
                                 loanAmount: formData.loanAmount || '',
                                 tenure: formData.tenure || '',
-                                tenureUnit: formData.requestedTenureUnit || 'days',
+                                tenureUnit: formData.tenureUnit || 'Days',
                                 productName: selectedProduct?.productName || '',
                                 interestRate: selectedProduct?.dailyInterestRate || '',
                                 processingFee: selectedProduct?.processingFee || '',
