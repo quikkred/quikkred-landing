@@ -126,6 +126,7 @@ export function Footer() {
       { name: t.footer.legal.items.fairPracticeCode, href: "/fair-practice" },
       { name: t.footer.legal.items.interestRatePolicy, href: "/interest-policy" },
       { name: t.footer.legal.items.kycPolicy, href: "/kyc-policy" },
+      { name: t.footer.legal.items.grievance, href: "/grievance-redressal-policy" },
       { name: t.footer.legal.items.rbiGuidelines, href: "/rbi-guidelines" },
       { name: t.footer.legal.items.disclaimer, href: "/disclaimer" },
     ],

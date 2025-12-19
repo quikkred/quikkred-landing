@@ -115,6 +115,7 @@ export default function QuickLoanApplication() {
     dob: "",
     aadhaar: "",
     pan: "",
+    accountHolderName: "",
     accountNumber: "",
     ifsc: "",
     reference1Name: "",
@@ -122,6 +123,11 @@ export default function QuickLoanApplication() {
     reference2Name: "",
     reference2Mobile: ""
   });
+
+  // Bank verification state
+  const [bankVerifying, setBankVerifying] = useState(false);
+  const [bankVerified, setBankVerified] = useState(false);
+  const [bankVerifyError, setBankVerifyError] = useState("");
 
   // Consent validation error
   const [consentError, setConsentError] = useState(false);
@@ -148,6 +154,7 @@ export default function QuickLoanApplication() {
       monthlyIncome: "",
       companyName: "",
       bankName: "",
+      accountHolderName: "",
       accountNumber: "",
       ifsc: "",
 
@@ -251,6 +258,7 @@ export default function QuickLoanApplication() {
                 monthlyIncome: profileData.monthlyIncome?.toString() || prev.monthlyIncome,
                 companyName: profileData.companyName || prev.companyName,
                 bankName: profileData.banks?.[0]?.bankName || prev.bankName,
+                accountHolderName: profileData.banks?.[0]?.accountHolderName || prev.accountHolderName,
                 accountNumber: profileData.banks?.[0]?.accountNumber || prev.accountNumber,
                 ifsc: profileData.banks?.[0]?.ifscCode || prev.ifsc,
                 mobileVerified: profileData.isMobileVerified || true, // True if logged in with mobile
@@ -265,6 +273,11 @@ export default function QuickLoanApplication() {
               if (profileData.isAadhaarVerify) {
                 setAadhaarVerified(true);
                 console.log('✅ Aadhaar already verified');
+              }
+              // Check bank verification via penny drop status
+              if (profileData.banks?.[0]?.pennyDropStatus === 'VERIFIED') {
+                setBankVerified(true);
+                console.log('✅ Bank already verified (penny drop)');
               }
 
               // Load selfie preview from profile if available
@@ -2975,9 +2988,16 @@ console.log('Sending OTP with payload:', payload);
                 monthlyIncome: profileData.monthlyIncome?.toString() || prev.monthlyIncome,
                 companyName: profileData.companyName || prev.companyName,
                 bankName: profileData.banks?.[0]?.bankName || prev.bankName,
+                accountHolderName: profileData.banks?.[0]?.accountHolderName || prev.accountHolderName,
                 accountNumber: profileData.banks?.[0]?.accountNumber || prev.accountNumber,
                 ifsc: profileData.banks?.[0]?.ifscCode || prev.ifsc,
               }));
+
+              // Set bank verified flag if bank has been verified via penny drop
+              if (profileData.banks?.[0]?.pennyDropStatus === 'VERIFIED') {
+                setBankVerified(true);
+                console.log('✅ Bank already verified (penny drop)');
+              }
 
               // Set verification flags from API if available
               if (profileData.isPanVerify) {
@@ -3324,6 +3344,106 @@ console.log('Sending OTP with payload:', payload);
     }
   };
 
+  // Verify Bank Account
+  const verifyBankAccount = async () => {
+    // Validate required fields
+    if (!formData.accountNumber || formData.accountNumber.length < 9) {
+      setBankVerifyError("Please enter a valid account number (minimum 9 digits)");
+      toast({
+        variant: "warning",
+        title: "Invalid Account Number",
+        description: "Please enter a valid account number (minimum 9 digits)",
+      });
+      return;
+    }
+
+    if (!formData.ifsc || formData.ifsc.length !== 11) {
+      setBankVerifyError("Please enter a valid 11-character IFSC code");
+      toast({
+        variant: "warning",
+        title: "Invalid IFSC Code",
+        description: "Please enter a valid 11-character IFSC code",
+      });
+      return;
+    }
+
+    if (!formData.accountHolderName || formData.accountHolderName.trim().length < 3) {
+      setBankVerifyError("Please enter the account holder name");
+      toast({
+        variant: "warning",
+        title: "Account Holder Name Required",
+        description: "Please enter the account holder name",
+      });
+      return;
+    }
+
+    setBankVerifying(true);
+    setBankVerifyError("");
+
+    try {
+      const token = localStorage.getItem('accessToken') ||
+                    localStorage.getItem('token') ||
+                    localStorage.getItem('authToken');
+
+      const response = await fetch('https://api.bluechipfinmax.com/api/kyc/bank/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+        body: JSON.stringify({
+          accountNumber: formData.accountNumber,
+          ifsc: formData.ifsc,
+          accountHolderName: formData.accountHolderName,
+          bankName: formData.bankName
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setBankVerified(true);
+        setBankVerifyError("");
+
+        // Update account holder name if returned from API
+        if (result.data?.accountHolderName) {
+          setFormData(prev => ({
+            ...prev,
+            accountHolderName: result.data.accountHolderName
+          }));
+        }
+
+        toast({
+          variant: "success",
+          title: "Bank Account Verified! ✓",
+          description: result.data?.accountHolderName
+            ? `Account verified for ${result.data.accountHolderName}`
+            : "Your bank account has been verified successfully.",
+        });
+      } else {
+        const errorMsg = result.message || result.error || 'Bank verification failed. Please check your details.';
+        setBankVerifyError(errorMsg);
+        setBankVerified(false);
+        toast({
+          variant: "error",
+          title: "Verification Failed",
+          description: errorMsg,
+        });
+      }
+    } catch (error: any) {
+      const errorMsg = error.message || 'Network error. Please check your connection and try again.';
+      setBankVerifyError(errorMsg);
+      setBankVerified(false);
+      toast({
+        variant: "error",
+        title: "Verification Error",
+        description: errorMsg,
+      });
+    } finally {
+      setBankVerifying(false);
+    }
+  };
+
   const captureSelfi = () => {
     setSelfieCapture(true);
   };
@@ -3536,7 +3656,7 @@ console.log('Sending OTP with payload:', payload);
             bankName: formData.bankName,
             accountNumber: formData.accountNumber,
             ifscCode: formData.ifsc,
-            accountHolderName: formData.fullName,
+            accountHolderName: formData.accountHolderName || formData.fullName,
             isBankDetailsFilled: true
           }
         };
@@ -3600,6 +3720,7 @@ console.log('Sending OTP with payload:', payload);
         dob: "",
         aadhaar: "",
         pan: "",
+        accountHolderName: "",
         accountNumber: "",
         ifsc: "",
         reference1Name: "",
@@ -3964,7 +4085,7 @@ console.log('Sending OTP with payload:', payload);
             bankName: formData.bankName,
             accountNumber: formData.accountNumber,
             ifscCode: formData.ifsc,
-            accountHolderName: formData.fullName,
+            accountHolderName: formData.accountHolderName || formData.fullName,
             isBankDetailsFilled: true
           },
           isSubmit: true
@@ -4259,6 +4380,7 @@ console.log('Sending OTP with payload:', payload);
                     monthlyIncome: "",
                     companyName: "",
                     bankName: "",
+                    accountHolderName: "",
                     accountNumber: "",
                     ifsc: "",
                     loanAmount: "",
@@ -4277,6 +4399,8 @@ console.log('Sending OTP with payload:', payload);
                     termsConsent: false,
                     eSignConsent: false
                   });
+                  setBankVerified(false);
+                  setBankVerifyError("");
                 }}
                 className="w-full bg-[#25B181] text-white py-3 rounded-xl font-semibold hover:bg-[#1d8f6a] transition-all"
               >
@@ -5401,7 +5525,7 @@ console.log('Sending OTP with payload:', payload);
                                 bankName: formData.bankName || customerData.banks?.[0]?.bankName || '',
                                 accountNumber: formData.accountNumber || customerData.banks?.[0]?.accountNumber || '',
                                 ifscCode: formData.ifsc || customerData.banks?.[0]?.ifscCode || '',
-                                accountHolderName: customerData.banks?.[0]?.accountHolderName || formData.fullName || customerData.fullName || '',
+                                accountHolderName: formData.accountHolderName || customerData.banks?.[0]?.accountHolderName || formData.fullName || customerData.fullName || '',
                                 loanAmount: formData.loanAmount || '',
                                 tenure: formData.tenure || '',
                                 tenureUnit: formData.requestedTenureUnit || 'days',
@@ -5450,7 +5574,17 @@ console.log('Sending OTP with payload:', payload);
 
                 {/* Bank Details Section */}
                 <div className="bg-gray-50 rounded-xl p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Bank Details</h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Bank Details</h3>
+                    {bankVerified && (
+                      <span className="flex items-center gap-1 text-green-600 text-sm font-medium">
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        Verified
+                      </span>
+                    )}
+                  </div>
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
@@ -5460,8 +5594,12 @@ console.log('Sending OTP with payload:', payload);
                         <select
                           name="bankName"
                           value={formData.bankName}
-                          onChange={handleChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                          onChange={(e) => {
+                            handleChange(e);
+                            setBankVerified(false); // Reset verification on change
+                          }}
+                          disabled={bankVerified}
+                          className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] ${bankVerified ? 'bg-green-50 border-green-300' : ''}`}
                         >
                           <option value="">Select Bank</option>
                           <option value="SBI">State Bank of India</option>
@@ -5469,11 +5607,45 @@ console.log('Sending OTP with payload:', payload);
                           <option value="ICICI">ICICI Bank</option>
                           <option value="AXIS">Axis Bank</option>
                           <option value="PNB">Punjab National Bank</option>
+                          <option value="BOB">Bank of Baroda</option>
+                          <option value="KOTAK">Kotak Mahindra Bank</option>
+                          <option value="IDBI">IDBI Bank</option>
+                          <option value="YES">Yes Bank</option>
+                          <option value="INDUSIND">IndusInd Bank</option>
+                          <option value="BOI">Bank of India</option>
+                          <option value="CANARA">Canara Bank</option>
+                          <option value="UNION">Union Bank of India</option>
+                          <option value="OTHER">Other</option>
                         </select>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Account Number
+                          Account Holder Name *
+                        </label>
+                        <input
+                          type="text"
+                          name="accountHolderName"
+                          value={formData.accountHolderName}
+                          onChange={(e) => {
+                            handleChange(e);
+                            setBankVerified(false); // Reset verification on change
+                          }}
+                          disabled={bankVerified}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                            fieldErrors.accountHolderName ? 'border-red-500' : bankVerified ? 'bg-green-50 border-green-300' : 'border-gray-300'
+                          }`}
+                          placeholder="Enter account holder name"
+                        />
+                        {fieldErrors.accountHolderName && (
+                          <p className="mt-1 text-xs text-red-600">{fieldErrors.accountHolderName}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Account Number *
                         </label>
                         <input
                           type="tel"
@@ -5488,10 +5660,12 @@ console.log('Sending OTP with payload:', payload);
                               }
                             } as React.ChangeEvent<HTMLInputElement>;
                             handleChange(syntheticEvent);
+                            setBankVerified(false); // Reset verification on change
                           }}
+                          disabled={bankVerified}
                           maxLength={18}
                           className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                            fieldErrors.accountNumber ? 'border-red-500' : 'border-gray-300'
+                            fieldErrors.accountNumber ? 'border-red-500' : bankVerified ? 'bg-green-50 border-green-300' : 'border-gray-300'
                           }`}
                           placeholder="9-18 digit account number"
                         />
@@ -5501,98 +5675,86 @@ console.log('Sending OTP with payload:', payload);
                           <p className="mt-1 text-xs text-gray-500">Enter 9-18 digit bank account number</p>
                         )}
                       </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          IFSC Code *
+                        </label>
+                        <input
+                          type="text"
+                          name="ifsc"
+                          value={formData.ifsc}
+                          onChange={(e) => {
+                            const value = e.target.value.toUpperCase().slice(0, 11);
+                            const syntheticEvent = {
+                              target: {
+                                name: 'ifsc',
+                                value: value
+                              }
+                            } as React.ChangeEvent<HTMLInputElement>;
+                            handleChange(syntheticEvent);
+                            setBankVerified(false); // Reset verification on change
+                          }}
+                          disabled={bankVerified}
+                          pattern="[A-Z]{4}0[A-Z0-9]{6}"
+                          maxLength={11}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                            fieldErrors.ifsc ? 'border-red-500' : bankVerified ? 'bg-green-50 border-green-300' : 'border-gray-300'
+                          }`}
+                          placeholder="SBIN0001234"
+                          style={{ textTransform: 'uppercase' }}
+                        />
+                        {fieldErrors.ifsc ? (
+                          <p className="mt-1 text-xs text-red-600">{fieldErrors.ifsc}</p>
+                        ) : (
+                          <p className="mt-1 text-xs text-gray-500">11-character bank code (e.g., SBIN0001234)</p>
+                        )}
+                      </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        IFSC Code
-                      </label>
-                      <input
-                        type="text"
-                        name="ifsc"
-                        value={formData.ifsc}
-                        onChange={handleChange}
-                        pattern="[A-Z]{4}0[A-Z0-9]{6}"
-                        maxLength={11}
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                          fieldErrors.ifsc ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="SBIN0001234"
-                        style={{ textTransform: 'uppercase' }}
-                      />
-                      {fieldErrors.ifsc ? (
-                        <p className="mt-1 text-xs text-red-600">{fieldErrors.ifsc}</p>
-                      ) : (
-                        <p className="mt-1 text-xs text-gray-500">11-character bank code (e.g., SBIN0001234)</p>
+                    {/* Verify Bank Button */}
+                    <div className="pt-2">
+                      {bankVerifyError && (
+                        <p className="text-sm text-red-600 mb-2">{bankVerifyError}</p>
                       )}
+                      <button
+                        type="button"
+                        onClick={verifyBankAccount}
+                        disabled={bankVerifying || bankVerified || !formData.bankName || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc}
+                        className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all ${
+                          bankVerified
+                            ? 'bg-green-100 text-green-700 border border-green-300 cursor-not-allowed'
+                            : bankVerifying
+                            ? 'bg-gray-300 text-gray-600 cursor-wait'
+                            : !formData.bankName || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc
+                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                            : 'bg-[#25B181] text-white hover:bg-[#1d9469]'
+                        }`}
+                      >
+                        {bankVerifying ? (
+                          <span className="flex items-center gap-2">
+                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                            Verifying...
+                          </span>
+                        ) : bankVerified ? (
+                          <span className="flex items-center gap-2">
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            Bank Verified
+                          </span>
+                        ) : (
+                          'Verify Bank Account'
+                        )}
+                      </button>
+                      <p className="mt-2 text-xs text-gray-500">
+                        Click to verify your bank account details. This helps ensure smooth loan disbursement.
+                      </p>
                     </div>
                   </div>
-                </div>
-
-                <div className="space-y-4">
-                  <label className={`flex items-start gap-3 cursor-pointer p-3 rounded-lg border ${
-                    consentError && !formData.creditBureauConsent
-                      ? 'border-red-300 bg-red-50'
-                      : 'border-transparent'
-                  }`}>
-                    <input
-                      type="checkbox"
-                      name="creditBureauConsent"
-                      checked={formData.creditBureauConsent}
-                      onChange={handleChange}
-                      className={`mt-1 ${consentError && !formData.creditBureauConsent ? 'accent-red-500' : ''}`}
-                    />
-                    <span className={`text-sm ${
-                      consentError && !formData.creditBureauConsent
-                        ? 'text-red-700 font-medium'
-                        : 'text-gray-700'
-                    }`}>
-                      I authorize Quikkred to pull my credit bureau report *
-                    </span>
-                  </label>
-                  <label className={`flex items-start gap-3 cursor-pointer p-3 rounded-lg border ${
-                    consentError && !formData.termsConsent
-                      ? 'border-red-300 bg-red-50'
-                      : 'border-transparent'
-                  }`}>
-                    <input
-                      type="checkbox"
-                      name="termsConsent"
-                      checked={formData.termsConsent}
-                      onChange={handleChange}
-                      className={`mt-1 ${consentError && !formData.termsConsent ? 'accent-red-500' : ''}`}
-                    />
-                    <span className={`text-sm ${
-                      consentError && !formData.termsConsent
-                        ? 'text-red-700 font-medium'
-                        : 'text-gray-700'
-                    }`}>
-                      I agree to the Terms & Conditions and Privacy Policy *
-                    </span>
-                  </label>
-                  <label className={`flex items-start gap-3 cursor-pointer p-3 rounded-lg border ${
-                    consentError && !formData.eSignConsent
-                      ? 'border-red-300 bg-red-50'
-                      : 'border-transparent'
-                  }`}>
-                    <input
-                      type="checkbox"
-                      name="eSignConsent"
-                      checked={formData.eSignConsent}
-                      onChange={handleChange}
-                      className="mt-1"
-                    />
-                    <span className="text-sm text-gray-700">
-                      I consent to digitally sign the loan agreement
-                    </span>
-                  </label>
-
-                  {consentError && (!formData.creditBureauConsent || !formData.termsConsent) && (
-                    <div className="flex items-center gap-2 text-red-600 text-sm mt-2">
-                      <AlertCircle className="w-4 h-4" />
-                      <span>Please accept all required consents marked with * to proceed</span>
-                    </div>
-                  )}
                 </div>
 
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
