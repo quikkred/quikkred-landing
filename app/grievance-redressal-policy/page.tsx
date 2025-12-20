@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { Footer } from "@/components/footer";
 
 export default function GrievanceRedressalPolicyPage() {
   return (
@@ -190,7 +189,6 @@ export default function GrievanceRedressalPolicyPage() {
         </div>
       </main>
 
-      <Footer />
     </div>
   );
 }

@@ -215,7 +215,7 @@ export function Footer() {
                   className="w-9 h-9 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center shadow-soft hover:shadow-glow hover:-translate-y-1 transition-all"
                   aria-label={social.label}
                 >
-                  <social.icon className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
+                  <social.icon className="w-4 h-4 sm:w-5 sm:h-5 text-[#25B181]" />
                 </a>
               ))}
             </div>
