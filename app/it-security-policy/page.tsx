@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { Footer } from "@/components/footer";
 
 export default function ITSecurityPolicyPage() {
   return (
@@ -431,7 +430,6 @@ export default function ITSecurityPolicyPage() {
         </div>
       </main>
 
-      <Footer />
     </div>
   );
 }

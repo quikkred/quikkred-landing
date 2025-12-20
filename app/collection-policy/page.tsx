@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { Footer } from "@/components/footer";
 
 export default function CollectionPolicyPage() {
   return (
@@ -184,7 +183,6 @@ export default function CollectionPolicyPage() {
         </div>
       </section>
 
-      <Footer />
     </main>
   );
 }

@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import { Lock, Shield, Eye, Database, UserCheck, Bell, Globe, Mail } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
-import { Footer } from "@/components/footer";
 
 export default function PrivacyPage() {
   const { t } = useLanguage();
@@ -298,8 +297,6 @@ export default function PrivacyPage() {
           </motion.div>
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 }
