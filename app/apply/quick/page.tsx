@@ -291,13 +291,14 @@ export default function QuickLoanApplication() {
               }
 
               // Auto-jump to next incomplete step based on completion flags (4-step form)
+              // Step order: 1-Basic Details, 2-Identity, 3-Bank Details, 4-Approval
               let nextStep = 1; // Default to step 1
 
               // Check completion status and determine next step
-              if (profileData.isBasicDetailsFilled === true && profileData.isIdentityVerified === true && profileData.isEmploymentDetailsFilled === true) {
-                nextStep = 4; // Go to final step (Bank Details)
+              if (profileData.isBasicDetailsFilled === true && profileData.isIdentityVerified === true && profileData.isBankDetailsFilled === true) {
+                nextStep = 4; // Go to Approval step (final)
               } else if (profileData.isBasicDetailsFilled === true && profileData.isIdentityVerified === true) {
-                nextStep = 3; // Go to Approval step
+                nextStep = 3; // Go to Bank Details step
               } else if (profileData.isBasicDetailsFilled === true) {
                 nextStep = 2; // Go to identity verification
               } else {
@@ -3520,7 +3521,7 @@ console.log('Sending OTP with payload:', payload);
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      const response = await fetch('https://api.bluechipfinmax.com/api/kyc/bank/verify', {
+      const response = await fetch('https://api.bluechipfinmax.com/api/kyc/bank/verification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3528,7 +3529,7 @@ console.log('Sending OTP with payload:', payload);
         },
         body: JSON.stringify({
           accountNumber: formData.accountNumber,
-          ifsc: formData.ifsc,
+          ifscCode: formData.ifsc,
           accountHolderName: formData.accountHolderName,
           bankName: formData.bankName
         }),
@@ -3742,26 +3743,28 @@ console.log('Sending OTP with payload:', payload);
         // Step 2: KYC Details with Photo - use FormData
         const formDataToSend = new FormData();
 
-        const kycPayload = {
-          kycDetails: {
-            isKycDetailsFilled: true
-          }
-        };
+ const payload = {
+  kycDetails: {
+    isKycDetailsFilled: true
+  }
+};
 
-        formDataToSend.append('data', JSON.stringify(kycPayload));
+        
+        // formDataToSend.append('data', JSON.stringify(kycPayload));
 
         // Add selfie photo file
-        if (formData.selfie) {
-          formDataToSend.append('photo', formData.selfie, formData.selfie.name);
-          console.log('✅ Adding selfie photo to Step 2:', formData.selfie.name);
-        }
+        // if (formData.selfie) {
+        //   formDataToSend.append('photo', formData.selfie, formData.selfie.name);
+        //   console.log('✅ Adding selfie photo to Step 2:', formData.selfie.name);
+        // }
 
         const response = await fetch(`https://api.bluechipfinmax.com/api/application/loan/create`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
           },
-          body: formDataToSend
+          body: JSON.stringify(payload)
         });
 
         const result = await response.json();
@@ -3784,14 +3787,10 @@ console.log('Sending OTP with payload:', payload);
           });
           return false;
         }
-      } else if (step === 4) {
-        // Step 4: Bank Details
+      } else if (step === 3) {
+        // Step 3: Bank Details
         payload = {
           bankDetails: {
-            bankName: formData.bankName,
-            accountNumber: formData.accountNumber,
-            ifscCode: formData.ifsc,
-            accountHolderName: formData.accountHolderName || formData.fullName,
             isBankDetailsFilled: true
           }
         };
@@ -4064,6 +4063,69 @@ console.log('Sending OTP with payload:', payload);
 
       // Save Step 2 data (Aadhaar & PAN)
       setLoading(true);
+
+      try {
+        const saveSuccess = await saveCustomerData(2);
+        setLoading(false);
+
+        // Proceed to next step (Bank Details)
+      } catch (error) {
+        setLoading(false);
+        toast({
+          variant: "error",
+          title: "Error",
+          description: "Something went wrong. Please try again.",
+        });
+        return;
+      }
+    }
+
+    if (currentStep === 3) {
+      // Step 3: Bank Details Validation & BRE API Call
+
+      // Bank Name validation
+      if (!formData.bankName) {
+        toast({
+          variant: "warning",
+          title: "Bank Name Required",
+          description: "Please select your bank name.",
+        });
+        return;
+      }
+
+      // Account Number validation
+      if (!formData.accountNumber || formData.accountNumber.length < 9 || formData.accountNumber.length > 18) {
+        toast({
+          variant: "warning",
+          title: "Invalid Account Number",
+          description: "Please enter a valid bank account number (9-18 digits).",
+        });
+        return;
+      }
+
+      // IFSC validation
+      const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+      if (!formData.ifsc || !ifscRegex.test(formData.ifsc.toUpperCase())) {
+        toast({
+          variant: "warning",
+          title: "Invalid IFSC Code",
+          description: "Please enter a valid IFSC code (e.g., SBIN0001234).",
+        });
+        return;
+      }
+
+      // Account Holder Name validation
+      if (!formData.accountHolderName || formData.accountHolderName.trim().length < 3) {
+        toast({
+          variant: "warning",
+          title: "Account Holder Name Required",
+          description: "Please enter the account holder name as per bank records.",
+        });
+        return;
+      }
+
+      // Save Bank Details and call BRE API
+      setLoading(true);
       setApprovalLoading(true);
 
       try {
@@ -4071,9 +4133,9 @@ console.log('Sending OTP with payload:', payload);
                       localStorage.getItem('token') ||
                       localStorage.getItem('authToken');
 
-        // Call both APIs in parallel - save customer data and get BRE data
+        // Call both APIs in parallel - save bank details and get BRE data
         const [saveSuccess, breResponse] = await Promise.all([
-          saveCustomerData(2),
+          saveCustomerData(3), // Save bank details
           fetch('https://api.bluechipfinmax.com/api/kyc/bre/initialize', {
             method: 'GET',
             headers: {
@@ -4089,16 +4151,7 @@ console.log('Sending OTP with payload:', payload);
         setLoading(false);
         setApprovalLoading(false);
 
-        // if (!saveSuccess) {
-        //   toast({
-        //     variant: "error",
-        //     title: "Cannot Proceed",
-        //     description: "Please fix the errors before moving to the next step.",
-        //   });
-        //   return;
-        // }
-
-        // Store BRE data for Step 3
+        // Store BRE data for Step 4 (Approval)
         if (breResponse && breResponse.success && breResponse.data) {
           setApprovalData({
             ...breResponse.data,
@@ -4132,8 +4185,8 @@ console.log('Sending OTP with payload:', payload);
       }
     }
 
-    if (currentStep === 3) {
-      // Step 3: Approval - Require confirmation before proceeding
+    if (currentStep === 4) {
+      // Step 4: Approval - Final submission
       if (!dataAgreementChecked) {
         toast({
           variant: "warning",
@@ -4141,44 +4194,6 @@ console.log('Sending OTP with payload:', payload);
           description: "Please click 'Confirm Details' button to review and confirm your application data.",
         });
         return;
-      }
-    }
-
-    if (currentStep === 4) {
-      // Step 4: Bank Details & Consent Validation
-
-      // Bank Name validation
-      if (!formData.bankName) {
-        toast({
-          variant: "warning",
-          title: "Bank Name Required",
-          description: "Please select your bank name.",
-        });
-        return;
-      }
-
-      // Account Number validation (if provided)
-      if (formData.accountNumber) {
-        const accountRegex = /^[0-9]{9,18}$/;
-        if (!accountRegex.test(formData.accountNumber)) {
-          setFieldErrors(prev => ({
-            ...prev,
-            accountNumber: "Account number must be 9-18 digits"
-          }));
-          return;
-        }
-      }
-
-      // IFSC Code validation (if provided)
-      if (formData.ifsc) {
-        const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
-        if (!ifscRegex.test(formData.ifsc.toUpperCase())) {
-          setFieldErrors(prev => ({
-            ...prev,
-            ifsc: "Invalid IFSC code format (e.g., SBIN0001234)"
-          }));
-          return;
-        }
       }
 
       // Consent validation
@@ -4195,7 +4210,7 @@ console.log('Sending OTP with payload:', payload);
       // Clear consent error if validation passes
       setConsentError(false);
 
-      // Final step - submit only Step 4 data (Step 1, 2 & 3 already saved)
+      // Final step - submit application (bank details already saved in step 3)
       setLoading(true);
 
       try {
@@ -4213,16 +4228,9 @@ console.log('Sending OTP with payload:', payload);
           return;
         }
 
-        // Step 4 Final Submit - only bank details
+        // Step 4 Final Submit - just submit the application
         const principal = parseFloat(formData.loanAmount);
         const payload = {
-          bankDetails: {
-            bankName: formData.bankName,
-            accountNumber: formData.accountNumber,
-            ifscCode: formData.ifsc,
-            accountHolderName: formData.accountHolderName || formData.fullName,
-            isBankDetailsFilled: true
-          },
           isSubmit: true
         };
 
@@ -4609,8 +4617,8 @@ console.log('Sending OTP with payload:', payload);
           <div className="flex justify-between text-xs sm:text-sm text-gray-600">
             <span className={`text-center ${currentStep === 1 ? 'text-[#25B181] font-semibold' : ''}`}>Basic Details</span>
             <span className={`text-center ${currentStep === 2 ? 'text-[#25B181] font-semibold' : ''}`}>Identity</span>
-            <span className={`text-center ${currentStep === 3 ? 'text-[#25B181] font-semibold' : ''}`}>Approval</span>
-            <span className={`text-center ${currentStep === 4 ? 'text-[#25B181] font-semibold' : ''}`}>Bank Details</span>
+            <span className={`text-center ${currentStep === 3 ? 'text-[#25B181] font-semibold' : ''}`}>Bank Details</span>
+            <span className={`text-center ${currentStep === 4 ? 'text-[#25B181] font-semibold' : ''}`}>Approval</span>
           </div>
         </div>
 
@@ -5401,8 +5409,8 @@ console.log('Sending OTP with payload:', payload);
               </motion.div>
             )}
 
-            {/* Step 3: Approval */}
-            {currentStep === 3 && (
+            {/* Step 4: Approval */}
+            {currentStep === 4 && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -5697,8 +5705,8 @@ console.log('Sending OTP with payload:', payload);
               </motion.div>
             )}
 
-            {/* Step 4: Bank Details & Consent */}
-            {currentStep === 4 && (
+            {/* Step 3: Bank Details & Consent */}
+            {currentStep === 3 && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
