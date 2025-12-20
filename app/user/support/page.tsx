@@ -112,6 +112,26 @@ export default function SupportPage() {
         }
       });
 
+      // Check if token expired (401 Unauthorized) - Full logout and redirect
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('role');
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('email');
+        localStorage.removeItem('userName');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userMobile');
+        localStorage.removeItem('customerUniqueId');
+        document.cookie = 'auth-token=; path=/; max-age=0';
+        document.cookie = 'user-role=; path=/; max-age=0';
+        router.push('/login');
+        return;
+      }
+
       const result = await response.json();
 
       if (response.ok && result.success && result.data) {

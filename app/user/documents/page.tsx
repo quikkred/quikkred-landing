@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Upload, FileText, Download, Share2, Trash2, CheckCircle,
@@ -18,6 +19,7 @@ interface Document {
 }
 
 export default function DocumentsPage() {
+  const router = useRouter();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +48,26 @@ export default function DocumentsPage() {
           'Content-Type': 'application/json'
         }
       });
+
+      // Check if token expired (401 Unauthorized) - Full logout and redirect
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('role');
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('email');
+        localStorage.removeItem('userName');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userMobile');
+        localStorage.removeItem('customerUniqueId');
+        document.cookie = 'auth-token=; path=/; max-age=0';
+        document.cookie = 'user-role=; path=/; max-age=0';
+        router.push('/login');
+        return;
+      }
 
       const data = await response.json();
 

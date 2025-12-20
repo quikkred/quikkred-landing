@@ -124,6 +124,33 @@ export default function UserDashboard() {
         }
       });
 
+      // Check if token expired (401 Unauthorized) - Full logout and redirect
+      if (response.status === 401) {
+        // Clear all authentication tokens
+        localStorage.removeItem('token');
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+
+        // Clear user data
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('role');
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('email');
+        localStorage.removeItem('userName');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userMobile');
+        localStorage.removeItem('customerUniqueId');
+
+        // Clear cookies
+        document.cookie = 'auth-token=; path=/; max-age=0';
+        document.cookie = 'user-role=; path=/; max-age=0';
+
+        // Redirect to login
+        router.push('/login');
+        return;
+      }
+
       const result = await response.json();
 
       if (response.ok && result.success && result.data) {
@@ -204,6 +231,33 @@ export default function UserDashboard() {
           'Authorization': `Bearer ${token}`
         }
       });
+
+      // Check if token expired (401 Unauthorized) - Full logout and redirect
+      if (response.status === 401) {
+        // Clear all authentication tokens
+        localStorage.removeItem('token');
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+
+        // Clear user data
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('role');
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('email');
+        localStorage.removeItem('userName');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userMobile');
+        localStorage.removeItem('customerUniqueId');
+
+        // Clear cookies
+        document.cookie = 'auth-token=; path=/; max-age=0';
+        document.cookie = 'user-role=; path=/; max-age=0';
+
+        // Redirect to login
+        router.push('/login');
+        return;
+      }
 
       const result = await response.json();
 
