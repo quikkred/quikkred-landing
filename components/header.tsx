@@ -26,6 +26,7 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [mobileSubmenuOpen, setMobileSubmenuOpen] = useState<string | null>(null);
 
   const navigation = [
     {
@@ -282,31 +283,58 @@ export function Header() {
 
               {navigation.map((item) => (
                 <div key={item.name} className="mt-1">
-                  <Link
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
-                      pathname.startsWith(item.href)
-                        ? 'text-teal-600 bg-teal-50 font-semibold'
-                        : 'text-slate-700 hover:bg-slate-50'
-                    }`}
-                  >
-                    <item.icon className="w-5 h-5" />
-                    {item.name}
-                  </Link>
-                  {item.submenu && (
-                    <div className="ml-8 mt-1 space-y-1 border-l-2 border-slate-100 pl-4">
-                      {item.submenu.map((subitem) => (
-                        <Link
-                          key={subitem.name}
-                          href={subitem.href}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className="block px-3 py-2 text-sm text-slate-600 hover:text-teal-600 transition-colors"
-                        >
-                          {subitem.name}
-                        </Link>
-                      ))}
-                    </div>
+                  {item.submenu ? (
+                    <>
+                      <button
+                        onClick={() => setMobileSubmenuOpen(mobileSubmenuOpen === item.name ? null : item.name)}
+                        className={`flex items-center justify-between w-full px-4 py-3 rounded-xl transition-colors ${
+                          pathname.startsWith(item.href)
+                            ? 'text-teal-600 bg-teal-50 font-semibold'
+                            : 'text-slate-700 hover:bg-slate-50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <item.icon className="w-5 h-5" />
+                          {item.name}
+                        </div>
+                        <ChevronDown className={`w-4 h-4 transition-transform ${mobileSubmenuOpen === item.name ? 'rotate-180' : ''}`} />
+                      </button>
+                      <AnimatePresence>
+                        {mobileSubmenuOpen === item.name && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="ml-8 mt-1 space-y-1 border-l-2 border-slate-100 pl-4 overflow-hidden"
+                          >
+                            {item.submenu.map((subitem) => (
+                              <Link
+                                key={subitem.name}
+                                href={subitem.href}
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="block px-3 py-2 text-sm text-slate-600 hover:text-teal-600 transition-colors"
+                              >
+                                {subitem.name}
+                              </Link>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
+                        pathname.startsWith(item.href)
+                          ? 'text-teal-600 bg-teal-50 font-semibold'
+                          : 'text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      <item.icon className="w-5 h-5" />
+                      {item.name}
+                    </Link>
                   )}
                 </div>
               ))}
