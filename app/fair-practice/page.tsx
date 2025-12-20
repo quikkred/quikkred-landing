@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Scale, FileCheck, Shield, Users, Headphones, BookOpen } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { Footer } from "@/components/footer";
 
 export default function FairPracticeCodePage() {
   const { t } = useLanguage();
@@ -224,6 +225,8 @@ export default function FairPracticeCodePage() {
           </motion.div>
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 }

@@ -81,14 +81,7 @@ export function Footer() {
   };
 
   const footerLinks = {
-    // products: [
-    //   { name: t.footer.products.items.personal, href: "/products/personal-loan" },
-    //   { name: t.footer.products.items.salary, href: "/products/salary-advance" },
-    //   { name: t.footer.products.items.emergency, href: "/products/emergency" },
-    //   { name: t.footer.products.items.medical, href: "/products/medical" },
-    //   { name: t.footer.products.items.travel, href: "/products/travel-loan" },
-    //   { name: t.footer.products.items.festival, href: "/products/festival" },
-    // ],
+
     company: [
       { name: t.footer.quickLinks.items.about, href: "/about" },
       { name: t.footer.quickLinks.items.ourStory, href: "/about#story" },
@@ -109,27 +102,25 @@ export function Footer() {
       // { name: t.navigation.blog, href: "/blog" },
       // { name: t.footer.resources.items.financialLiteracy, href: "/resources/financial-literacy" },
     ],
-    support: [
-      { name: t.footer.quickLinks.items.contact, href: "/contact" },
-      { name: t.footer.support.items.customerSupport, href: "/support" },
-      // { name: t.navigation.track, href: "/track-application" },
-      // { name: t.footer.support.items.grievanceRedressal, href: "/grievance" },
-      { name: t.footer.support.items.nodalOfficer, href: "/nodal-officer" },
-      { name: t.footer.support.items.locateBranch, href: "/branches" },
-      // { name: t.footer.support.items.downloadForms, href: "/downloads" },
-      // { name: t.footer.support.items.reportFraud, href: "/report-fraud" },
-    ],
+    // support: [
+    //   { name: t.footer.quickLinks.items.contact, href: "/contact" },
+    //   { name: t.footer.support.items.customerSupport, href: "/support" },
+    //   { name: t.footer.support.items.nodalOfficer, href: "/nodal-officer" },
+    //   { name: t.footer.support.items.locateBranch, href: "/branches" },
+    // ],
     legal: [
       { name: t.footer.legal.items.terms, href: "/terms" },
-      { name: t.footer.legal.items.privacy, href: "/privacy" },
       { name: t.footer.legal.items.cookiePolicy, href: "/cookies" },
-      { name: t.footer.legal.items.fairPracticeCode, href: "/fair-practice" },
-      { name: t.footer.legal.items.interestRatePolicy, href: "/interest-policy" },
-      { name: t.footer.legal.items.kycPolicy, href: "/kyc-policy" },
-      { name: t.footer.legal.items.grievance, href: "/grievance-redressal-policy" },
-      { name: t.footer.legal.items.itSecurityPolicy, href: "/it-security-policy" },
       { name: t.footer.legal.items.rbiGuidelines, href: "/rbi-guidelines" },
-      { name: t.footer.legal.items.disclaimer, href: "/disclaimer" },
+    ],
+    policyLinks: [
+      { name: t.footer.policyLinks.items.fairPracticeCode, href: "/fair-practice" },
+      { name: t.footer.policyLinks.items.interestRatePolicy, href: "/interest-policy" },
+      { name: t.footer.policyLinks.items.kycPolicy, href: "/kyc-policy" },
+      { name: t.footer.policyLinks.items.grievanceRedressal, href: "/grievance-redressal-policy" },
+      { name: t.footer.policyLinks.items.collectionPolicy, href: "/collection-policy" },
+      { name: t.footer.policyLinks.items.privacyPolicy, href: "/privacy" },
+      { name: t.footer.policyLinks.items.itPolicy, href: "/it-security-policy" },
     ],
   };
 
@@ -185,7 +176,7 @@ export function Footer() {
 
       {/* Main Footer Content */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 mt-12 sm:mt-16 lg:mt-20">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-6 sm:gap-8 lg:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 sm:gap-8 lg:gap-8">
           {/* Company Info */}
           <div className="col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-2 text-center sm:text-left">
 <Link
@@ -287,11 +278,11 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Support */}
+          {/* Policy Links */}
           <div className="col-span-1 text-center sm:text-left">
-            <h4 className="font-semibold text-slate-100 mb-3 sm:mb-4 text-sm sm:text-base">{t.footer.support.title}</h4>
+            <h4 className="font-semibold text-slate-100 mb-3 sm:mb-4 text-sm sm:text-base">{t.footer.policyLinks.title}</h4>
             <ul className="space-y-2 sm:space-y-3 flex flex-col items-center sm:items-start">
-              {footerLinks.support.slice(0, 6).map((link) => (
+              {footerLinks.policyLinks.map((link) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}
