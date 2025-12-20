@@ -52,7 +52,8 @@ const PUBLIC_ROUTES = [
   '/interest-policy',
   '/kyc-policy',
   '/grievance-redressal-policy',
-  '/cookies'
+  '/cookies',
+  '/it-security-policy'
 ];
 
 // Routes that should NOT show header/footer (full-page experiences for all users)
