@@ -465,10 +465,10 @@ export default function MyApplicationsPage() {
                       <div className="text-sm font-medium text-gray-900">{app.purpose}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm font-semibold text-[#1F8F68]">₹{app.loanAmount.toLocaleString()}</div>
+                      <div className="text-sm font-semibold text-[#1F8F68]">₹{(app.loanAmount || 0).toLocaleString()}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{app.requestedTenure}-{app.requestedTenureUnit}</div>
+                      <div className="text-sm text-gray-900">{app.requestedTenure || '-'}-{app.requestedTenureUnit || ''}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       {app.priority && (
@@ -679,50 +679,50 @@ export default function MyApplicationsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                       <div>
                         <p className="text-sm text-gray-600">Loan Amount</p>
-                        <p className="text-lg font-bold text-green-700">₹{detailedApplication.loanAmount.toLocaleString()}</p>
+                        <p className="text-lg font-bold text-green-700">₹{(detailedApplication.loanAmount || 0).toLocaleString()}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Tenure</p>
-                        <p className="font-semibold text-gray-900">{detailedApplication.requestedTenure}{" "}{detailedApplication.requestedTenureUnit}</p>
+                        <p className="font-semibold text-gray-900">{detailedApplication.requestedTenure || '-'}{" "}{detailedApplication.requestedTenureUnit || ''}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">EMI Amount</p>
-                        <p className="text-lg font-bold text-blue-700">₹{detailedApplication.emiAmount?.toLocaleString() || 'N/A'}</p>
+                        <p className="text-lg font-bold text-blue-700">₹{(detailedApplication.emiAmount || 0).toLocaleString()}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Purpose</p>
-                        <p className="font-semibold text-gray-900">{detailedApplication.purpose}</p>
+                        <p className="font-semibold text-gray-900">{detailedApplication.purpose || '-'}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Interest Rate (p.d%)</p>
-                        <p className="font-semibold text-gray-900">{detailedApplication.interestRate}%</p>
+                        <p className="font-semibold text-gray-900">{detailedApplication.interestRate || 0}%</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">Processing Fee({detailedApplication.productId?.processingFee}%)</p>
-                        <p className="font-semibold text-gray-900">₹{detailedApplication.processingFee.toLocaleString()}</p>
+                        <p className="text-sm text-gray-600">Processing Fee({detailedApplication.productId?.processingFee || 0}%)</p>
+                        <p className="font-semibold text-gray-900">₹{(detailedApplication.processingFee || 0).toLocaleString()}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">GST on Fee({detailedApplication.productId?.gst}%)</p>
-                        <p className="font-semibold text-gray-900">₹{detailedApplication.gstOnProcessingFee.toLocaleString()}</p>
+                        <p className="text-sm text-gray-600">GST on Fee({detailedApplication.productId?.gst || 0}%)</p>
+                        <p className="font-semibold text-gray-900">₹{(detailedApplication.gstOnProcessingFee || 0).toLocaleString()}</p>
                       </div>
 <div>
   <p className="text-sm text-gray-600">
-    Total Interest Rate for {detailedApplication.requestedTenure} days (
-    {(detailedApplication.interestRate * detailedApplication.requestedTenure).toFixed(2)}%
+    Total Interest Rate for {detailedApplication.requestedTenure || 0} days (
+    {((detailedApplication.interestRate || 0) * (detailedApplication.requestedTenure || 0)).toFixed(2)}%
     )
   </p>
   <p className="font-semibold text-gray-900">
-    ₹{Number(detailedApplication.totalInterest).toLocaleString()}
+    ₹{Number(detailedApplication.totalInterest || 0).toLocaleString()}
   </p>
 </div>
 
                       <div>
                         <p className="text-sm text-gray-600">Total Repayment</p>
-                        <p className="font-semibold text-gray-900">₹{detailedApplication.totalRepayment.toLocaleString()}</p>
+                        <p className="font-semibold text-gray-900">₹{(detailedApplication.totalRepayment || 0).toLocaleString()}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Net Disbursal</p>
-                        <p className="text-lg font-bold text-green-700">₹{detailedApplication.netDisbursalAmount.toLocaleString()}</p>
+                        <p className="text-lg font-bold text-green-700">₹{(detailedApplication.netDisbursalAmount || 0).toLocaleString()}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Priority</p>
@@ -815,11 +815,11 @@ export default function MyApplicationsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
                       <div>
                         <p className="text-gray-600">Created At</p>
-                        <p className="font-semibold text-gray-900">{new Date(detailedApplication.createdAt).toLocaleString()}</p>
+                        <p className="font-semibold text-gray-900">{detailedApplication.createdAt ? new Date(detailedApplication.createdAt).toLocaleString() : '-'}</p>
                       </div>
                       <div>
                         <p className="text-gray-600">Last Updated</p>
-                        <p className="font-semibold text-gray-900">{new Date(detailedApplication.updatedAt).toLocaleString()}</p>
+                        <p className="font-semibold text-gray-900">{detailedApplication.updatedAt ? new Date(detailedApplication.updatedAt).toLocaleString() : '-'}</p>
                       </div>
                     </div>
                   </div>
