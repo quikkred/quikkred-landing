@@ -104,6 +104,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<string>('en');
   const [t, setT] = useState<TranslationData>(enData);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Track mount state to prevent hydration mismatch
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Initialize language on client side only (after hydration)
   useEffect(() => {
@@ -182,10 +188,10 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Show loader only if not initialized AND not on language selector page AND has language cookie
-  if (!isInitialized && pathname !== '/select-language') {
-    const hasLanguageSelected = typeof window !== 'undefined' &&
-      document.cookie.includes('languageSelected=true');
+  // Show loader only if mounted, not initialized, not on language selector page, and has language cookie
+  // We check isMounted first to prevent hydration mismatch (server always renders children)
+  if (isMounted && !isInitialized && pathname !== '/select-language') {
+    const hasLanguageSelected = document.cookie.includes('languageSelected=true');
 
     // Only show loader if user has previously selected a language
     if (hasLanguageSelected) {
