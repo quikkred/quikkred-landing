@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Footer } from "@/components/footer";
 
 export default function GrievanceRedressalPolicyPage() {
   return (
@@ -189,20 +190,7 @@ export default function GrievanceRedressalPolicyPage() {
         </div>
       </main>
 
-      {/* Footer Section */}
-      <footer className="w-full bg-gray-200 py-6">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-gray-600">
-            &copy; 2025 QuikkRed |{' '}
-            <Link
-              href="/fair-practice"
-              className="text-[#2BB89A] hover:text-[#239b82] font-medium transition-colors"
-            >
-              Back to Policies
-            </Link>
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

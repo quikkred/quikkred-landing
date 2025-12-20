@@ -615,7 +615,20 @@
         "interestRatePolicy": "Interest Rate Policy",
         "kycPolicy": "KYC/AML Policy",
         "rbiGuidelines": "RBI Guidelines",
-        "itSecurityPolicy": "IT Security Policy"
+        "itSecurityPolicy": "IT Security Policy",
+        "collectionPolicy": "Collection Policy"
+      }
+    },
+    "policyLinks": {
+      "title": "Policy Links",
+      "items": {
+        "fairPracticeCode": "Fair Practices Code",
+        "interestRatePolicy": "Interest Rate Policy",
+        "kycPolicy": "KYC / AML Policy",
+        "grievanceRedressal": "Grievance Redressal Policy",
+        "collectionPolicy": "Collection Policy",
+        "privacyPolicy": "Privacy Policy",
+        "itPolicy": "IT Policy"
       }
     },
     "contact": {

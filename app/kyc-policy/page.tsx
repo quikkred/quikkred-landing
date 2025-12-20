@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import styles from './page.module.css';
+import { Footer } from "@/components/footer";
 
 export default function KYCPolicyPage() {
   return (
@@ -343,12 +344,7 @@ export default function KYCPolicyPage() {
         </div>
       </section>
 
-      {/* Footer Section */}
-      <footer className={styles.footer}>
-        <p className={styles.footerText}>
-          &copy; 2025 QuikkRed | <Link href="/fair-practice" className={styles.footerLink}>View Fair Practices Code</Link>
-        </p>
-      </footer>
+      <Footer />
     </div>
   );
 }

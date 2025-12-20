@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Footer } from "@/components/footer";
 
 export default function ITSecurityPolicyPage() {
   return (
@@ -430,20 +431,7 @@ export default function ITSecurityPolicyPage() {
         </div>
       </main>
 
-      {/* Footer Section */}
-      <footer className="w-full bg-gray-200 py-6">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-gray-600">
-            &copy; 2026 QuikkRed. All Rights Reserved |{' '}
-            <Link
-              href="/privacy"
-              className="text-[#2bb99f] hover:text-[#239b82] font-medium transition-colors"
-            >
-              Privacy Policy
-            </Link>
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
