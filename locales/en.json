@@ -614,7 +614,8 @@
         "fairPracticeCode": "Fair Practice Code",
         "interestRatePolicy": "Interest Rate Policy",
         "kycPolicy": "KYC/AML Policy",
-        "rbiGuidelines": "RBI Guidelines"
+        "rbiGuidelines": "RBI Guidelines",
+        "itSecurityPolicy": "IT Security Policy"
       }
     },
     "contact": {
