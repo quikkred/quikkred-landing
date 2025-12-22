@@ -85,6 +85,9 @@ export default function QuickLoanApplication() {
   const [aadhaarError, setAadhaarError] = useState<string>("");
   const [aadhaarStatusChecked, setAadhaarStatusChecked] = useState(false);
   const [aadhaarStatusLoading, setAadhaarStatusLoading] = useState(false);
+  const [eSignStatusChecked, setESignStatusChecked] = useState(false);
+  const [eSignStatusLoading, setESignStatusLoading] = useState(false);
+  const [eSignVerified, setESignVerified] = useState(false);
   const [apiDeterminedStep, setApiDeterminedStep] = useState<number | null>(null);
   const [redirectCountdown, setRedirectCountdown] = useState<number>(5);
 
@@ -269,11 +272,21 @@ export default function QuickLoanApplication() {
               }));
 
               // Set verification flags from API
-              if (profileData.isPanVerify) {
+              // Helper function to safely convert any value to boolean
+              // Handles: true, "true", "TRUE", 1, "1", false, "false", undefined, null
+              const toBoolean = (value: unknown): boolean => {
+                if (typeof value === 'boolean') return value;
+                if (typeof value === 'string') return value.toLowerCase() === 'true';
+                if (typeof value === 'number') return value === 1;
+                return false;
+              };
+
+              // Check verification statuses (using toBoolean for string safety)
+              if (toBoolean(profileData.isPanVerify)) {
                 setPanVerified(true);
                 console.log('✅ PAN already verified');
               }
-              if (profileData.isAadhaarVerify) {
+              if (toBoolean(profileData.isAadhaarVerify)) {
                 setAadhaarVerified(true);
                 console.log('✅ Aadhaar already verified');
               }
@@ -283,6 +296,46 @@ export default function QuickLoanApplication() {
                 console.log('✅ Bank already verified (penny drop)');
               }
 
+              // Check eSign status from profile
+              if (profileData.eSign?.status) {
+                setUserESignStatus(profileData.eSign.status);
+                console.log('📝 eSign status from profile:', profileData.eSign.status);
+                if (profileData.eSign.status === 'SUCCESS') {
+                  setESignVerified(true);
+                  console.log('✅ eSign already completed');
+                }
+              }
+
+              // ============================================
+              // CHECKLIST-BASED NAVIGATION LOGIC
+              // Flow: Email Verified → Check Checklist → Dashboard or First Pending Step
+              // ============================================
+
+              // Extract and normalize all checklist flags
+              const isEmailVerified = toBoolean(profileData.isEmailVerified);
+              const isBasicDetailsFilled = toBoolean(profileData.isBasicDetailsFilled);
+              const isKycDetailsFilled = toBoolean(profileData.isKycDetailsFilled);
+              const isBankDetailsFilled = toBoolean(profileData.isBankDetailsFilled);
+              const isSubmit = toBoolean(profileData.isSubmit);
+
+              // Debug logging for checklist
+              console.log('📋 CHECKLIST API Response:', {
+                raw: {
+                  isEmailVerified: profileData.isEmailVerified,
+                  isBasicDetailsFilled: profileData.isBasicDetailsFilled,
+                  isKycDetailsFilled: profileData.isKycDetailsFilled,
+                  isBankDetailsFilled: profileData.isBankDetailsFilled,
+                  isSubmit: profileData.isSubmit,
+                },
+                normalized: {
+                  isEmailVerified,
+                  isBasicDetailsFilled,
+                  isKycDetailsFilled,
+                  isBankDetailsFilled,
+                  isSubmit,
+                }
+              });
+
               // Load selfie preview from profile if available
               if (profileData.profile?.s3URL) {
                 setSelfiePreview(profileData.profile.s3URL);
@@ -290,27 +343,46 @@ export default function QuickLoanApplication() {
                 console.log('✅ Selfie loaded from profile:', profileData.profile.s3URL);
               }
 
-              // Auto-jump to next incomplete step based on completion flags (4-step form)
-              // Step order: 1-Basic Details, 2-Identity, 3-Bank Details, 4-Approval
-              let nextStep = 1; // Default to step 1
-
-              // Check completion status and determine next step
-              if (profileData.isBasicDetailsFilled === true && profileData.isKycDetailsFilled === true && profileData.isBankDetailsFilled === true) {
-                nextStep = 4; // Go to Approval step (final)
-              } else if (profileData.isBasicDetailsFilled === true && profileData.isKycDetailsFilled === true) {
-                nextStep = 3; // Go to Bank Details step
-              } else if (profileData.isBasicDetailsFilled === true) {
-                nextStep = 2; // Go to identity verification
-              } else {
-                console.log('ℹ️ No steps completed yet - starting from Step 1');
+              // STEP 1: Check if email is verified (prerequisite for checklist navigation)
+              if (!isEmailVerified) {
+                console.log('⚠️ Email not verified - staying on Step 1');
+                setApiDeterminedStep(1);
+                setUserDataLoaded(true);
+                return;
               }
 
-              // Set the API determined step if it's different from default
-              if (nextStep > 1) {
-                setApiDeterminedStep(nextStep);
-              } else {
-                console.log('📍 Staying at Step 1 (default)');
+              console.log('✅ Email verified - checking checklist...');
+
+              // STEP 2: Check if ALL checklist values are true → Dashboard
+              const allChecklistComplete = isBasicDetailsFilled && isKycDetailsFilled && isBankDetailsFilled && isSubmit;
+
+              if (allChecklistComplete) {
+                console.log('✅ All checklist items complete - redirecting to Dashboard');
+                router.push('/user');
+                return;
               }
+
+              // STEP 3: Find first pending step (first false value in order)
+              let firstPendingStep = 1;
+
+              if (!isBasicDetailsFilled) {
+                firstPendingStep = 1;
+                console.log('📍 First pending: Step 1 (Basic Details)');
+              } else if (!isKycDetailsFilled) {
+                firstPendingStep = 2;
+                console.log('📍 First pending: Step 2 (KYC/Identity)');
+              } else if (!isBankDetailsFilled) {
+                firstPendingStep = 3;
+                console.log('📍 First pending: Step 3 (Bank Details)');
+              } else if (!isSubmit) {
+                firstPendingStep = 4;
+                console.log('📍 First pending: Step 4 (Approval/Submit)');
+              }
+
+              console.log('🎯 Redirecting to first pending step:', firstPendingStep);
+
+              // Set the determined step
+              setApiDeterminedStep(firstPendingStep);
 
               setUserDataLoaded(true);
             } else {
@@ -342,7 +414,7 @@ export default function QuickLoanApplication() {
     if (!isLoading) {
       loadUserData();
     }
-  }, [user, isLoading, userDataLoaded]);
+  }, [user, isLoading, userDataLoaded, router]);
 
   // Clean up hero form data from localStorage after component mounts
   useEffect(() => {
@@ -543,6 +615,118 @@ export default function QuickLoanApplication() {
     checkAadhaarStatus();
   }, [searchParams, userDataLoaded, aadhaarStatusChecked, aadhaarStatusLoading, aadhaarVerified, toast]);
 
+  // Check e-Sign document status when isSigned=true query param is present
+  // This is a separate and independent KYC step
+  // Only calls API if: isSigned === "true" AND eSign.status !== "SUCCESS"
+  const [userESignStatus, setUserESignStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    const checkESignStatus = async () => {
+      // Get the query parameter
+      const isSignedParam = searchParams.get('isSigned');
+
+      // Condition 1: Only trigger if isSigned === "true"
+      if (isSignedParam !== 'true') {
+        console.log('[eSign] No isSigned=true query param, skipping e-Sign status check');
+        return;
+      }
+
+      // Wait for user data to be loaded first
+      if (!userDataLoaded) {
+        console.log('[eSign] Waiting for user profile data to load...');
+        return;
+      }
+
+      // Prevent duplicate API calls
+      if (eSignStatusChecked || eSignStatusLoading) {
+        console.log('[eSign] e-Sign status already checked or loading, skipping duplicate call');
+        return;
+      }
+
+      // Skip if already verified from state
+      if (eSignVerified) {
+        console.log('[eSign] e-Sign already verified, skipping API call');
+        setESignStatusChecked(true);
+        return;
+      }
+
+      // Condition 2: Check if eSign.status !== "SUCCESS" from user profile
+      // If status is already SUCCESS, skip API call
+      if (userESignStatus === 'SUCCESS') {
+        console.log('[eSign] eSign.status is already SUCCESS, skipping API call');
+        setESignVerified(true);
+        setESignStatusChecked(true);
+        return;
+      }
+
+      // Get auth token
+      const token = localStorage.getItem('accessToken') ||
+                    localStorage.getItem('token') ||
+                    localStorage.getItem('authToken');
+
+      if (!token) {
+        console.log('[eSign] No auth token found, cannot check e-Sign status');
+        setESignStatusChecked(true);
+        return;
+      }
+
+      // Call API only if isSigned=true AND eSign.status !== SUCCESS
+      console.log('[eSign] Calling e-Sign document status API (conditions met: isSigned=true, eSign.status !== SUCCESS)...');
+      setESignStatusLoading(true);
+
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+        const response = await fetch('https://api.bluechipfinmax.com/api/kyc/eSign/document', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        const result = await response.json();
+
+        // Check if e-Sign document is already signed
+        if (response.ok && result.success && result.message === "E-sign document is already signed and saved") {
+          console.log('[eSign] e-Sign document verified successfully (status = SUCCESS)');
+          setESignVerified(true);
+          setUserESignStatus('SUCCESS');
+          toast({
+            variant: "success",
+            title: "e-Sign Completed",
+            description: "Your document has been signed successfully.",
+          });
+        } else {
+          console.log('[eSign] e-Sign not completed:', result.message || 'Document not signed');
+          setESignVerified(false);
+          // Show info message if e-Sign is pending
+          toast({
+            variant: "warning",
+            title: "e-Sign Pending",
+            description: "Please complete e-Sign verification.",
+          });
+        }
+      } catch (error: any) {
+        if (error.name === 'AbortError') {
+          console.error('[eSign] e-Sign document API timeout after 15 seconds');
+        } else {
+          console.error('[eSign] Error checking e-Sign status:', error);
+        }
+        setESignVerified(false);
+      } finally {
+        setESignStatusLoading(false);
+        setESignStatusChecked(true);
+      }
+    };
+
+    checkESignStatus();
+  }, [searchParams, userDataLoaded, userESignStatus, eSignStatusChecked, eSignStatusLoading, eSignVerified, toast]);
+
   // Check for data agreement approval when window gets focus (user returns from agreement page)
   useEffect(() => {
     const handleFocus = () => {
@@ -586,6 +770,78 @@ export default function QuickLoanApplication() {
     };
     localStorage.setItem('quickLoanFormData', JSON.stringify(dataToSave));
   }, [formData, currentStep]);
+
+  // Auto-call BRE API when Step 4 is reached (including on hard refresh)
+  useEffect(() => {
+    const fetchBREData = async () => {
+      // Only run on Step 4
+      if (currentStep !== 4) {
+        return;
+      }
+
+      // Skip if already loaded or loading
+      if (approvalData || approvalLoading) {
+        console.log('[Step 4] BRE data already loaded or loading, skipping API call');
+        return;
+      }
+
+      const token = localStorage.getItem('accessToken') ||
+                    localStorage.getItem('token') ||
+                    localStorage.getItem('authToken');
+
+      if (!token) {
+        console.log('[Step 4] No auth token found, cannot fetch BRE data');
+        return;
+      }
+
+      console.log('[Step 4] Calling BRE API (bre/initialize)...');
+      setApprovalLoading(true);
+
+      try {
+        const response = await fetch('https://api.bluechipfinmax.com/api/kyc/bre/initialize', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success && result.data) {
+          console.log('[Step 4] BRE data fetched successfully');
+          setApprovalData({
+            ...result.data,
+            fullName: formData.fullName,
+            mobile: formData.mobile,
+            email: formData.email,
+            pan: formData.pan,
+            aadhaar: formData.aadhaar ? `XXXX-XXXX-${formData.aadhaar.slice(-4)}` : '',
+            monthlyIncome: formData.monthlyIncome,
+            employmentType: formData.employmentType
+          });
+        } else {
+          console.error('[Step 4] BRE API failed:', result.message);
+          toast({
+            variant: "error",
+            title: "Failed to Load Approval Data",
+            description: result.message || "Unable to fetch approval details. Please try again.",
+          });
+        }
+      } catch (error: any) {
+        console.error('[Step 4] BRE API error:', error);
+        toast({
+          variant: "error",
+          title: "Network Error",
+          description: "Unable to connect to server. Please check your connection.",
+        });
+      } finally {
+        setApprovalLoading(false);
+      }
+    };
+
+    fetchBREData();
+  }, [currentStep, approvalData, approvalLoading, formData, toast]);
 
   // Load form data from localStorage on mount
   useEffect(() => {
@@ -710,11 +966,11 @@ export default function QuickLoanApplication() {
         return `
           <tr>
             <td>1</td>
-            <td>${dueDate.toLocaleDateString('en-IN')}</td>
+            <td>N/A</td>
             <td>Rs${(loanAmount)}</td>
             <td>Rs${(Math.round(interest))}</td>
             <td>Rs${(Math.round(totalAmount))}</td>
-            <td>eNACH Auto-Debit</td>
+            <td>N/A</td>
           </tr>
         `;
       }
@@ -1339,7 +1595,7 @@ export default function QuickLoanApplication() {
             <div class="doc-info">
                 <div class="loan-ref">QK${getValue(data.applicationNumber) !== 'N/A' ? data.applicationNumber : Math.random().toString(36).substr(2, 9).toUpperCase()}</div>
                 <p><strong>Date:</strong> ${currentDate}</p>
-                <p><strong>Place:</strong> ${getValue(data.city)}, ${getValue(data.state)}</p>
+                <p><strong>Place:</strong> Rajendra Place</p>
                 <p><strong>Product:</strong> ${getValue(data.productName) !== 'N/A' ? data.productName : 'Personal Loan'}</p>
             </div>
         </div>
@@ -1358,7 +1614,7 @@ export default function QuickLoanApplication() {
                 <div class="info-row"><span class="info-label">Aadhaar Number</span><span class="info-value">XXXX-XXXX-${maskAadhaar(data.aadhaar)}</span></div>
                 <div class="info-row"><span class="info-label">Mobile Number</span><span class="info-value">+91 ${getValue(data.mobile)}</span></div>
                 <div class="info-row"><span class="info-label">Email Address</span><span class="info-value">${getValue(data.email)}</span></div>
-                <div class="info-row" style="grid-column: span 2;"><span class="info-label">Residential Address</span><span class="info-value">${getValue(data.address)}, ${getValue(data.city)}, ${getValue(data.state)} - ${getValue(data.pincode)}</span></div>
+                <div class="info-row" style="grid-column: span 2;"><span class="info-label">Residential Address</span><span class="info-value">${getValue(data.address)}${data.city ? ', ' + data.city : ''}${data.state ? ', ' + data.state : ''}${data.pincode ? ' - ' + data.pincode : ''}</span></div>
             </div>
         </div>
 
@@ -1384,7 +1640,7 @@ export default function QuickLoanApplication() {
                     <div class="loan-item"><div class="amount">Rs${(data.loanAmount)}</div><div class="label">Principal Amount</div></div>
                     <div class="loan-item"><div class="amount">${getValue(data.interestRate) !== 'N/A' ? data.interestRate : '1.0'}%</div><div class="label">Interest Rate (Daily)</div></div>
                     <div class="loan-item"><div class="amount">${getValue(data.tenure)} ${getValue(data.tenureUnit) !== 'N/A' ? data.tenureUnit : 'days'}</div><div class="label">Loan Tenure</div></div>
-                    <div class="loan-item"><div class="amount">Rs${(data.processingFee ? (parseFloat(data.loanAmount || 0) * parseFloat(data.processingFee) / 100) : 0)}</div><div class="label">Processing Fee (${getValue(data.processingFee) !== 'N/A' ? data.processingFee : '2'}%)</div></div>
+                    <div class="loan-item"><div class="amount">Rs${(data.processingFee)}</div><div class="label">Processing Fee</div></div>
                     <div class="loan-item highlight"><div class="amount">Rs${(data.disbursementAmount)}</div><div class="label">Disbursement Amount</div></div>
                     <div class="loan-item highlight"><div class="amount">Rs${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
                 </div>
@@ -3840,12 +4096,7 @@ console.log('Sending OTP with payload:', payload);
   const handleNext = async () => {
     // Validate current step
     if (currentStep === 1) {
-      // For logged-in users with API-determined step > 1, skip step 1 validation (data already saved)
-      if (user && apiDeterminedStep && apiDeterminedStep > 1) {
-        setCurrentStep(2);
-        return;
-      }
-
+      // Always validate and save Step 1 data (even if user navigated back to edit)
       // Clear previous errors
       const errors = {
         email: "",
@@ -4132,6 +4383,16 @@ console.log('Sending OTP with payload:', payload);
         return;
       }
 
+      // Bank Verification check - mandatory before proceeding
+      if (!bankVerified) {
+        toast({
+          variant: "warning",
+          title: "Bank Verification Required",
+          description: "Please verify your bank account before proceeding.",
+        });
+        return;
+      }
+
       // Save Bank Details and call BRE API
       setLoading(true);
       setApprovalLoading(true);
@@ -4158,6 +4419,16 @@ console.log('Sending OTP with payload:', payload);
 
         setLoading(false);
         setApprovalLoading(false);
+
+        // Check if bank details save failed
+        if (!saveSuccess) {
+          toast({
+            variant: "error",
+            title: "Cannot Proceed",
+            description: "Failed to save bank details. Please try again.",
+          });
+          return;
+        }
 
         // Store BRE data for Step 4 (Approval)
         if (breResponse && breResponse.success && breResponse.data) {
@@ -4195,28 +4466,32 @@ console.log('Sending OTP with payload:', payload);
 
     if (currentStep === 4) {
       // Step 4: Approval - Final submission
-      if (!dataAgreementChecked) {
-        toast({
-          variant: "warning",
-          title: "Confirmation Required",
-          description: "Please click 'Confirm Details' button to review and confirm your application data.",
-        });
-        return;
-      }
+      // If eSign is already verified (SUCCESS), skip all validations and submit directly
+      if (!eSignVerified) {
+        // Only validate if eSign is NOT verified
+        if (!dataAgreementChecked) {
+          toast({
+            variant: "warning",
+            title: "Confirmation Required",
+            description: "Please click 'Confirm Details' button to review and confirm your application data.",
+          });
+          return;
+        }
 
-      // Consent validation
-      if (!formData.creditBureauConsent || !formData.termsConsent) {
-        setConsentError(true);
-        toast({
-          variant: "warning",
-          title: "Consent Required",
-          description: "Please accept the required consents to proceed.",
-        });
-        return;
-      }
+        // Consent validation
+        if (!formData.creditBureauConsent || !formData.termsConsent) {
+          setConsentError(true);
+          toast({
+            variant: "warning",
+            title: "Consent Required",
+            description: "Please accept the required consents to proceed.",
+          });
+          return;
+        }
 
-      // Clear consent error if validation passes
-      setConsentError(false);
+        // Clear consent error if validation passes
+        setConsentError(false);
+      }
 
       // Final step - submit application (bank details already saved in step 3)
       setLoading(true);
@@ -4265,17 +4540,17 @@ console.log('Sending OTP with payload:', payload);
             if (result.data.loanNumber) localStorage.setItem('loanNumber', result.data.loanNumber);
           }
 
-          // Use API response for decision - only on success
-          setDecision({
-            approved: true,
-            apiResponse: result.data,
-            approvedAmount: principal,
-            interestRate: 12.5,
-            tenure: 30,
-            tenureUnit: 'days',
-            emi: 0,
-            processingFee: Math.round(principal * 0.02)
+          // Show success toast
+          toast({
+            variant: "success",
+            title: "Application Submitted",
+            description: "Your loan application has been submitted successfully.",
           });
+
+          // Redirect to dashboard
+          setLoading(false);
+          router.push('/user');
+          return;
         } else {
           // API returned error - show error and stay on step 4
           console.error('❌ Loan application failed:', result.message);
@@ -5487,7 +5762,7 @@ console.log('Sending OTP with payload:', payload);
                         </div>
                         <div className="bg-white rounded-lg p-4 border border-gray-200">
                           <p className="text-sm text-gray-500 mb-1">Interest Amount</p>
-                          <p className="text-xl font-bold text-gray-900">₹{(approvalData.interestAmount || 0).toLocaleString('en-IN')}</p>
+                          <p className="text-xl font-bold text-gray-900">₹{(approvalData.totalInterest || 0).toLocaleString('en-IN')}</p>
                         </div>
                         <div className="bg-white rounded-lg p-4 border border-gray-200">
                           <p className="text-sm text-gray-500 mb-1">Processing Fee</p>
@@ -5499,7 +5774,7 @@ console.log('Sending OTP with payload:', payload);
                         </div>
                         <div className="bg-white rounded-lg p-4 border border-gray-200">
                           <p className="text-sm text-gray-500 mb-1">Total Repayment</p>
-                          <p className="text-xl font-bold text-gray-900">₹{(approvalData.totalRepaymentAmount || 0).toLocaleString('en-IN')}</p>
+                          <p className="text-xl font-bold text-gray-900">₹{(approvalData.totalRepayment || 0).toLocaleString('en-IN')}</p>
                         </div>
                         <div className="bg-white rounded-lg p-4 border border-green-500 border-2">
                           <p className="text-sm text-green-600 mb-1">Net Disbursal Amount</p>
@@ -5573,6 +5848,16 @@ console.log('Sending OTP with payload:', payload);
                             <h4 className="font-semibold text-green-800">Application Data Confirmed</h4>
                             <p className="text-sm text-green-700 mt-1">
                               You have reviewed and confirmed your application data. Click &quot;Next&quot; to proceed to bank details.
+                            </p>
+                          </div>
+                        </div>
+                      ) : eSignVerified ? (
+                        <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-lg p-4">
+                          <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <h4 className="font-semibold text-green-800">e-Sign Completed</h4>
+                            <p className="text-sm text-green-700 mt-1">
+                              Your document has been signed successfully. You can proceed with the application.
                             </p>
                           </div>
                         </div>
@@ -5663,10 +5948,11 @@ console.log('Sending OTP with payload:', payload);
                                 dob: formData.dob || customerData.dateOfBirth || '',
                                 pan: formData.pan || customerData.panCard || '',
                                 aadhaar: formData.aadhaar || customerData.aadhaarNumber || '',
-                                address: customerData.address?.fullAddress || aadhaarAddress?.fullAddress || '',
-                                city: customerData.address?.city || aadhaarAddress?.city || '',
-                                state: customerData.address?.state || aadhaarAddress?.state || '',
-                                pincode: customerData.address?.pincode || aadhaarAddress?.pincode || '',
+                                address: customerData.currentAddress?.fullAddress || aadhaarAddress?.fullAddress || '',
+                                landmark: customerData.currentAddress?.landmark || '',
+                                city: customerData.currentAddress?.city || aadhaarAddress?.city || '',
+                                state: customerData.currentAddress?.state || aadhaarAddress?.state || '',
+                                pincode: customerData.currentAddress?.pincode || aadhaarAddress?.pincode || '',
                                 employmentType: formData.employmentType || customerData.employmentType || '',
                                 monthlyIncome: formData.monthlyIncome || customerData.monthlyIncome || '',
                                 companyName: formData.companyName || customerData.companyName || '',
@@ -5677,15 +5963,18 @@ console.log('Sending OTP with payload:', payload);
                                 accountNumber: formData.accountNumber || customerData.banks?.[0]?.accountNumber || '',
                                 ifscCode: formData.ifsc || customerData.banks?.[0]?.ifscCode || '',
                                 accountHolderName: formData.accountHolderName || customerData.banks?.[0]?.accountHolderName || formData.fullName || customerData.fullName || '',
-                                loanAmount: formData.loanAmount || '',
-                                tenure: formData.tenure || '',
-                                tenureUnit: formData.tenureUnit || 'Days',
+                                // Loan Details - use BRE API response (approvalData) first
+                                loanAmount: approvalData?.loanAmount || formData.loanAmount || '',
+                                tenure: approvalData?.tenure || formData.tenure || '',
+                                tenureUnit: approvalData?.tenureUnit || formData.tenureUnit || 'Days',
                                 productName: selectedProduct?.productName || '',
-                                interestRate: selectedProduct?.dailyInterestRate || '',
-                                processingFee: selectedProduct?.processingFee || '',
-                                totalAmount: emiCalculation?.totalAmount || '',
-                                disbursementAmount: emiCalculation ? (emiCalculation.principal - emiCalculation.totalProcessingFee) : '',
-                                applicationNumber: customerData.applicationNumber || '',
+                                interestRate: approvalData?.interestRate || selectedProduct?.dailyInterestRate || '',
+                                processingFee: approvalData?.processingFee || selectedProduct?.processingFee || '',
+                                totalInterest: approvalData?.totalInterest || '',
+                                gstOnProcessingFee: approvalData?.gstOnProcessingFee || '',
+                                totalAmount: approvalData?.totalRepayment || emiCalculation?.totalAmount || '',
+                                disbursementAmount: approvalData?.netDisbursalAmount || (emiCalculation ? (emiCalculation.principal - emiCalculation.totalProcessingFee) : ''),
+                                applicationNumber: approvalData?.applicationNumber || customerData.applicationNumber || '',
                               };
 
                               // Generate HTML and open in new tab
