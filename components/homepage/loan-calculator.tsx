@@ -160,7 +160,7 @@ export default function LoanCalculatorAll() {
 
           <Button
             onClick={() => router.push('/apply/quick')}
-            className="w-full bg-[#25B181] hover:bg-[#1F8F68] text-white font-semibold py-2 sm:py-2.5 rounded-md mb-2 transition-all duration-300 text-xs sm:text-sm"
+            className="w-full bg-[#25B181] hover:bg-[#1F8F68] text-white font-bold py-3 sm:py-4 rounded-xl sm:rounded-2xl mb-2 transition-all duration-300 text-sm sm:text-base shadow-lg hover:shadow-xl"
           >
             {t?.calculator?.applyButton}
           </Button>

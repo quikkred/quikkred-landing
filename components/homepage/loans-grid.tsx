@@ -85,10 +85,10 @@ export default function LoansGrid() {
                   {loan.description}
                 </p>
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => router.push(loan.route)}
-                  className="w-full py-2 sm:py-2.5 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors text-xs sm:text-sm font-medium cursor-pointer"
+                  className="w-full py-3 sm:py-3.5 border-2 border-slate-300 rounded-xl sm:rounded-2xl text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition-all text-sm sm:text-base font-semibold cursor-pointer"
                 >
                   {t?.homepage?.loansGrid?.button}
                 </motion.button>

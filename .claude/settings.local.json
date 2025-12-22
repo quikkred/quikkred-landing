@@ -38,7 +38,8 @@
       "Bash(npm install)",
       "WebFetch(domain:app.surepass.app)",
       "WebFetch(domain:surepass.io)",
-      "WebFetch(domain:www.credeau.com)"
+      "WebFetch(domain:www.credeau.com)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []

@@ -135,15 +135,15 @@ export function FinancialCTA({
               setError("")
             }}
             placeholder={inputPlaceholder || t?.homepage?.financialCta?.placeholder}
-            className={`h-11 sm:h-12 px-4 sm:px-6 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/50 w-full text-sm sm:text-base font-sans border-0 ${error ? 'ring-2 ring-red-400' : ''}`}
+            className={`py-4 sm:py-4 px-4 sm:px-6 rounded-xl sm:rounded-2xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/50 w-full text-base sm:text-lg font-sans border-0 ${error ? 'ring-2 ring-red-400' : ''}`}
             onKeyPress={(e) => e.key === "Enter" && handleSubscribe()}
           />
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.02, boxShadow: "0 20px 40px -15px rgba(0, 0, 0, 0.3)" }}
+            whileTap={{ scale: 0.98 }}
             onClick={handleSubscribe}
             disabled={isSubscribing}
-            className="h-11 sm:h-12 bg-gray-900 hover:bg-gray-800 text-white px-6 sm:px-8 rounded-lg font-semibold transition-colors w-full sm:w-auto border-0 cursor-pointer text-sm sm:text-base whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="py-4 sm:py-4 bg-gray-900 hover:bg-gray-800 text-white px-6 sm:px-8 rounded-xl sm:rounded-2xl font-bold transition-all w-full sm:w-auto border-0 cursor-pointer text-base sm:text-lg whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg"
           >
             {isSubscribing ? (
               <>

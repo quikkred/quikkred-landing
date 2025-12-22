@@ -11,6 +11,7 @@ import SalaryAdvance from "@/components/SalaryAdvance";
 import { useTranslation } from "react-i18next";
 import { DocumentIcon } from "@/components/feature-icon";
 import { FinancialFeatureSection } from "@/components/financial-feature-section";
+import ContactForm from "@/components/Contact-form";
 
 const stats = [
   { label: "Years of Excellence", value: "Since ", icon: Clock },
@@ -98,7 +99,7 @@ export default function AboutPage() {
           // {t('products.pages.personalLoan.hero.buttonPrimary')}
           buttonSecondaryText="Call Us Now"
           // {t('products.pages.personalLoan.hero.buttonSecondary')}
-          imageSrc="/Peronalloan_hero_image.jpg"
+          imageSrc="/Aboutus_hero_image.jpg"
           // features={[
           //   t('products.pages.personalLoan.hero.features.loansUpTo'),
           //   t('products.pages.personalLoan.hero.features.instant'),
@@ -108,52 +109,72 @@ export default function AboutPage() {
         />
       </section>
       <section className="py-12 sm:py-16 lg:py-20">
-        <SalaryAdvance
-          title="Our Story"
-          // {t('products.pages.personalLoan.hero.title')}
-          // highlightWord="Kred"
-          // {t('products.pages.personalLoan.hero.highlightWord')}
-          // title1={t('products.pages.personalLoan.hero.title1')}
-          subtitle="QuikKred began in 2018 as a leading RBI-registered NBFC with a clear goal: to build a seamless lending experience for the underserved population of India. We recognized that millions of individuals and small businesses were excluded from traditional financial systems, facing complex processes and limited access to credit.
 
-We saw the challenges many faced with traditional financing and knew that by leveraging cutting-edge technology, we could offer accessible and fair loan products. Our digital-first approach removes barriers, simplifies the lending process, and empowers individuals to achieve their financial goals with dignity and ease."
-          imageSrc="/Peronalloan_hero_image.jpg"
-          // features={[
-          //   t('products.pages.personalLoan.hero.features.loansUpTo'),
-          //   t('products.pages.personalLoan.hero.features.instant'),
-          //   t('products.pages.personalLoan.hero.features.disbursal'),
-          // ]}
-          primaryColor="emerald"
-          reverse
-        />
+         <div
+          className={`w-full bg-white py-12 px-6 md:px-16 flex flex-col items-center justify-between gap-10 md:flex-row-reverse`}
+        >
+              {/* Left Section */}
+              <div className="md:w-1/2 space-y-6">
+                {/* Title */}
+                <h1 className="text-4xl md:text-5xl font-bold leading-snug">
+                  Our Story{" "}
+                </h1>
+        
+                {/* Subtitle (optional) */}
+               <p className="text-gray-600 text-lg">QuikKred began in 2018 as a leading RBI-registered NBFC with a clear goal: to build a seamless lending experience for the underserved population of India. We recognized that millions of individuals and small businesses were excluded from traditional financial systems, facing complex processes and limited access to credit.</p>
+               <p className="text-gray-600 text-lg">We saw the challenges many faced with traditional financing and knew that by leveraging cutting-edge technology, we could offer accessible and fair loan products. Our digital-first approach removes barriers, simplifies the lending process, and empowers individuals to achieve their financial goals with dignity and ease.</p>
+               <p className="text-[#2b2b2b] text-lg font-bold">We saw the challenges many faced with traditional financing and knew that by leveraging cutting-edge technology, we could offer accessible and fair loan products. Our digital-first approach removes barriers, simplifies the lending process, and empowers individuals to achieve their financial goals with dignity and ease.</p>
+              </div>
+        
+              {/* Right Section */}
+              <div className="md:w-1/2 flex justify-center">
+                <div className="relative rounded-2xl overflow-hidden shadow-md w-full max-w-[420px] md:max-w-[460px]">
+                  <Image
+                    src="/about_story_img.jpg"
+                    alt="Our Story"
+                    width={460}
+                    height={320}
+                    className="object-cover w-full h-auto"
+                  />
+                </div>
+              </div>
+            </div>
       </section>
 
       <section className="py-12 sm:py-16 lg:py-20">
-        <SalaryAdvance
-          title="Our Vision"
-          // {t('products.pages.personalLoan.hero.title')}
-          // highlightWord="Kred"
-          // {t('products.pages.personalLoan.hero.highlightWord')}
-          // title1={t('products.pages.personalLoan.hero.title1')}
-          subtitle="We are India's most trusted AI-powered NBFC, committed to making credit accessible, affordable, and transparent for every Indian. Our mission is to empower dreams and enable financial inclusion through technology and trust."
-          // {t('products.pages.personalLoan.hero.subtitle')}
-          buttonPrimaryText="Contact Us"
-          // {t('products.pages.personalLoan.hero.buttonPrimary')}
-          buttonSecondaryText="Call Us Now"
-          // {t('products.pages.personalLoan.hero.buttonSecondary')}
-          imageSrc="/Peronalloan_hero_image.jpg"
-          // features={[
-          //   t('products.pages.personalLoan.hero.features.loansUpTo'),
-          //   t('products.pages.personalLoan.hero.features.instant'),
-          //   t('products.pages.personalLoan.hero.features.disbursal'),
-          // ]}
-          primaryColor="emerald"
-        />
+           <div
+          className={`w-full bg-white py-12 px-6 md:px-16 flex flex-col items-center justify-between gap-10 md:flex-row`}
+        >
+              {/* Left Section */}
+              <div className="md:w-1/2 space-y-6">
+                {/* Title */}
+                <h1 className="text-4xl md:text-5xl font-bold leading-snug">
+                  Our Vision{" "}
+                </h1>
+
+                {/* Subtitle (optional) */}
+               <p className="text-gray-600 text-lg">We see a future where everyone has the financial tools they need to build a secure and prosperous life.</p>
+               <p className="text-gray-600 text-lg">To be India's most trusted and preferred digital lending platform, empowering millions to achieve their financial aspirations.</p>
+              </div>
+
+              {/* Right Section */}
+              <div className="md:w-1/2 flex justify-center">
+                <div className="relative rounded-2xl overflow-hidden shadow-md w-full max-w-[420px] md:max-w-[460px]">
+                  <Image
+                    src="/about_vision_img.jpg"
+                    alt="Our Vision"
+                    width={460}
+                    height={320}
+                    className="object-cover w-full h-auto"
+                  />
+                </div>
+              </div>
+            </div>
       </section>
 
          <FinancialFeatureSection
-        image="/Salaryadvance_sub_image.jpg"
-        imageAlt="Man in green sweater looking at phone"
+        image="/Aboutus_mission_image.jpg"
+        imageAlt="Our Mission"
       heading="Our Mission"
         description="To make our vision a reality, we are on a mission to:"
         features={[
@@ -175,11 +196,78 @@ We saw the challenges many faced with traditional financing and knew that by lev
         ]}
       />
 
-{/* <CodeOfConduct/>
-<AmrutamLanding/> */}
-{/* <ConsultationUI/>
-<ForumConnections/>
-<ConnectSection/> */}
+      {/* Core Values Section */}
+      <section className="bg-gray-50 py-16 sm:py-20 lg:py-24">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="max-w-6xl mx-auto"
+          >
+            {/* Section Header */}
+            <div className="text-center mb-12 sm:mb-16">
+              <span className="inline-block px-4 py-2 bg-[#D3F1EB] text-[#25B181] rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
+                What We Stand For
+              </span>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 mb-4">
+                Our Core <span className="text-[#25B181]">Values</span>
+              </h2>
+              <p className="text-gray-600 text-base sm:text-lg max-w-2xl mx-auto">
+                These principles guide everything we do and define who we are as a company.
+              </p>
+            </div>
+
+            {/* Values Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              {values.map((value, index) => {
+                const IconComponent = value.icon;
+                return (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                    className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-xl transition-all group"
+                  >
+                    <div className="w-14 h-14 bg-[#D3F1EB] rounded-xl flex items-center justify-center mb-5 group-hover:bg-[#25B181] transition-colors">
+                      <IconComponent className="w-7 h-7 text-[#25B181] group-hover:text-white transition-colors" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">{value.title}</h3>
+                    <p className="text-gray-600 leading-relaxed">{value.description}</p>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+{/* Contact Section */}
+      {/* <section className="bg-gray-50"> */}
+        <div className="mx-auto w-full">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center my-10 sm:my-12"
+          >
+            <span className="inline-block px-4 py-2 bg-[#D3F1EB] text-[#25B181] rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
+              Get In Touch
+            </span>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold font-sora mb-3 sm:mb-4">
+              Contact <span className="text-[#25B181]">Us</span>
+            </h2>
+            <p className="text-sm sm:text-base lg:text-lg text-gray-600 max-w-2xl mx-auto">
+              Have questions? We're here to help. Reach out to us and our team will get back to you shortly.
+            </p>
+          </motion.div>
+          <ContactForm />
+        </div>
+        {/* <ContactForm /> */}
+      {/* </section> */}
     </div>
   );
 }

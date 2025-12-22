@@ -46,26 +46,14 @@ export default function PartnersPage() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="relative"
             >
-              <div className="relative w-full h-[400px] sm:h-[450px] lg:h-[500px] rounded-2xl overflow-hidden bg-gradient-to-br from-[#25B181]/10 to-[#25B181]/5">
+              <div className="relative w-full h-[400px] sm:h-[450px] lg:h-[500px] rounded-2xl overflow-hidden shadow-xl">
                 <Image
-                  src="/partner-hero.png"
+                  src="/Partners_our_image.jpg"
                   alt="Partner with QuikkRed"
                   fill
                   className="object-cover object-center"
                   priority
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
                 />
-                {/* Fallback gradient with icon */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="w-32 h-32 bg-[#25B181]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Handshake className="w-16 h-16 text-[#25B181]" />
-                    </div>
-                    <p className="text-[#25B181] font-medium">Growing Together</p>
-                  </div>
-                </div>
               </div>
               {/* Decorative elements */}
               <div className="absolute -top-4 -right-4 w-24 h-24 bg-[#25B181]/10 rounded-full blur-2xl"></div>
