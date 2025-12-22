@@ -5753,7 +5753,7 @@ console.log('Sending OTP with payload:', payload);
                         <div className="bg-white rounded-lg p-4 border border-gray-200">
                           <p className="text-sm text-gray-500 mb-1">Tenure</p>
                           <p className="text-xl font-bold text-gray-900">
-                            {approvalData.tenure || 0} {approvalData.tenureUnit === 'DAYS' ? 'Days' : 'Months'}
+                            {approvalData.tenure || 0} {approvalData.tenureUnit === 'Days' ? 'Days' : 'Months'}
                           </p>
                         </div>
                         <div className="bg-white rounded-lg p-4 border border-gray-200">
