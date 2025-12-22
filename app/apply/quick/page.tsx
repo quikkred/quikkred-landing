@@ -295,9 +295,9 @@ export default function QuickLoanApplication() {
               let nextStep = 1; // Default to step 1
 
               // Check completion status and determine next step
-              if (profileData.isBasicDetailsFilled === true && profileData.isIdentityVerified === true && profileData.isBankDetailsFilled === true) {
+              if (profileData.isBasicDetailsFilled === true && profileData.isKycDetailsFilled === true && profileData.isBankDetailsFilled === true) {
                 nextStep = 4; // Go to Approval step (final)
-              } else if (profileData.isBasicDetailsFilled === true && profileData.isIdentityVerified === true) {
+              } else if (profileData.isBasicDetailsFilled === true && profileData.isKycDetailsFilled === true) {
                 nextStep = 3; // Go to Bank Details step
               } else if (profileData.isBasicDetailsFilled === true) {
                 nextStep = 2; // Go to identity verification
@@ -3997,14 +3997,14 @@ console.log('Sending OTP with payload:', payload);
       setLoading(false);
 
       // If save failed, don't proceed to next step
-      // if (!saveSuccess) {
-      //   toast({
-      //     variant: "error",
-      //     title: "Cannot Proceed",
-      //     description: "Please fix the errors before moving to the next step.",
-      //   });
-      //   return;
-      // }
+      if (!saveSuccess) {
+        toast({
+          variant: "error",
+          title: "Cannot Proceed",
+         
+        });
+        return;
+      }
     }
 
     if (currentStep === 2) {
@@ -4068,7 +4068,15 @@ console.log('Sending OTP with payload:', payload);
         const saveSuccess = await saveCustomerData(2);
         setLoading(false);
 
-        // Proceed to next step (Bank Details)
+        // If save failed, don't proceed to next step
+        if (!saveSuccess) {
+          toast({
+            variant: "error",
+            title: "Cannot Proceed",
+           
+          });
+          return;
+        }
       } catch (error) {
         setLoading(false);
         toast({
