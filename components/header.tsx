@@ -39,33 +39,33 @@ export function Header() {
       href: "/about",
       icon: Info,
     },
-    {
-      name: t.navigation.resources,
-      href: "/resources",
-      icon: FileText,
-      submenu: [
-        {
-          name: t.navigation.emiCalculator,
-          href: "/resources/emi-calculator",
-          description: t.navigation.emiCalculatorDesc,
-        },
-        {
-          name: t.eligibility.check,
-          href: "/resources/eligibility-check",
-          description: t.eligibility.checkDesc,
-        },
-        {
-          name: t.eligibility.documentGuide,
-          href: "/resources/documents",
-          description: t.eligibility.documentGuideDesc,
-        },
-        {
-          name: t.eligibility.interestRates,
-          href: "/resources/intrest-rate",
-          description: t.eligibility.interestRatesDesc,
-        },
-      ],
-    },
+    // {
+    //   name: t.navigation.resources,
+    //   href: "/resources",
+    //   icon: FileText,
+    //   submenu: [
+    //     {
+    //       name: t.navigation.emiCalculator,
+    //       href: "/resources/emi-calculator",
+    //       description: t.navigation.emiCalculatorDesc,
+    //     },
+    //     {
+    //       name: t.eligibility.check,
+    //       href: "/resources/eligibility-check",
+    //       description: t.eligibility.checkDesc,
+    //     },
+    //     {
+    //       name: t.eligibility.documentGuide,
+    //       href: "/resources/documents",
+    //       description: t.eligibility.documentGuideDesc,
+    //     },
+    //     {
+    //       name: t.eligibility.interestRates,
+    //       href: "/resources/intrest-rate",
+    //       description: t.eligibility.interestRatesDesc,
+    //     },
+    //   ],
+    // },
     {
       name: t.navigation.partners,
       href: "/partners",
@@ -355,7 +355,7 @@ export function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="block mt-2"
                   >
-                    <button className="w-full py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-semibold rounded-xl">
+                    <button className="w-full py-4 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-bold rounded-2xl text-base shadow-lg">
                       Dashboard
                     </button>
                   </Link>
@@ -365,7 +365,7 @@ export function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="block mt-2"
                   >
-                    <button className="w-full py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-semibold rounded-xl">
+                    <button className="w-full py-4 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-bold rounded-2xl text-base shadow-lg">
                       {t.navigation.login}
                     </button>
                   </Link>
@@ -375,7 +375,7 @@ export function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="block mt-2"
                   >
-                    <button className="w-full py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-semibold rounded-xl">
+                    <button className="w-full py-4 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-bold rounded-2xl text-base shadow-lg">
                       {t.common.apply}
                     </button>
                   </Link>

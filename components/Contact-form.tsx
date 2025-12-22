@@ -171,11 +171,11 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
   }
 
   return (
-    <div className="bg-gray-50">
+    <div >
       {/* Form Section */}
-      <div className="container mx-auto px-4 py-12 lg:py-16">
+      <div className="w-full md:container md:mx-auto px-0 md:px-4 pb-12 lg:pb-16">
         <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-0 rounded-3xl overflow-hidden shadow-2xl bg-white">
+          <div className="grid lg:grid-cols-2 gap-0 rounded-none md:rounded-3xl overflow-hidden shadow-none md:shadow-2xl bg-white">
             {/* Left Side - Image */}
             <div className="relative hidden lg:block min-h-[600px]">
               <Image
@@ -211,17 +211,7 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
             </div>
 
             {/* Right Side - Form */}
-            <div className="bg-white p-8 md:p-10 lg:p-12">
-              <div className="mb-8">
-                <span className="inline-block px-3 py-1 bg-[#25B181]/10 text-[#25B181] rounded-full text-sm font-medium mb-3">
-                  Contact Us
-                </span>
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
-                  Get In Touch
-                </h2>
-                <p className="text-gray-500">We'd love to hear from you. Send us a message!</p>
-              </div>
-
+            <div className="bg-white p-4 sm:p-6 md:p-10 lg:p-12">
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -382,7 +372,7 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
       </div>
 
       {/* Map Section - Full Width */}
-      <div className="w-full min-h-[30vh] h-[400px]">
+      <div className="w-full h-[350px] sm:h-[400px] md:h-[450px]">
         <iframe
           src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3501.4097591754347!2d77.1807!3d28.6419!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d029e2b6b2f6f%3A0x5c4a5f8a3a2b1c0d!2sVikrant%20Tower%2C%20Rajendra%20Place%2C%20New%20Delhi%2C%20Delhi%20110005!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
           width="100%"
@@ -392,6 +382,7 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
           title="Quikkred Head Office Location"
+          className="w-full h-full"
         />
       </div>
     </div>
