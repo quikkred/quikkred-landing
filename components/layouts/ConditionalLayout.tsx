@@ -54,7 +54,8 @@ const PUBLIC_ROUTES = [
   '/grievance-redressal-policy',
   '/cookies',
   '/it-security-policy',
-  '/collection-policy'
+  '/collection-policy',
+  '/rbi-guidelines'
 ];
 
 // Routes that should NOT show header/footer (full-page experiences for all users)
