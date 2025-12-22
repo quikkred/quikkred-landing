@@ -176,7 +176,7 @@ gtag('config', 'AW-17796230994');`,
         />
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased" suppressHydrationWarning={true}>
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe
