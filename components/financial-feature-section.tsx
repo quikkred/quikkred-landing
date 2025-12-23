@@ -27,7 +27,7 @@ export function FinancialFeatureSection({
   features,
 }: FinancialFeatureSectionProps) {
   return (
-    <section className="bg-gray-100 py-12 md:py-16 lg:py-20">
+    <section className="bg-[#F6F6F6] py-12 md:py-16 lg:py-20">
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 gap-8 items-center md:grid-cols-2 md:gap-12 lg:gap-16">
           {/* Left side - Image with badge */}

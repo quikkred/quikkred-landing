@@ -484,7 +484,27 @@
         "fairPracticeCode": "ন্যায্য অনুশীলন কোড",
         "interestRatePolicy": "সুদের হার নীতি",
         "kycPolicy": "KYC নীতি",
-        "rbiGuidelines": "RBI নির্দেশিকা"
+        "rbiGuidelines": "RBI নির্দেশিকা",
+        "refundCancellation": "রিফান্ড এবং বাতিল",
+        "disclaimerDisclosure": "দাবিত্যাগ এবং প্রকাশ"
+      }
+    },
+    "policyLinks": {
+      "title": "নীতি লিংক",
+      "items": {
+        "fairPracticeCode": "ন্যায্য অনুশীলন কোড",
+        "interestRatePolicy": "সুদের হার নীতি",
+        "kycPolicy": "KYC / AML নীতি",
+        "grievanceRedressal": "অভিযোগ নিষ্পত্তি নীতি",
+        "collectionPolicy": "সংগ্রহ নীতি",
+        "privacyPolicy": "গোপনীয়তা নীতি",
+        "itPolicy": "আইটি নীতি",
+        "creditPolicy": "ক্রেডিট নীতি",
+        "lendingPolicy": "ঋণ নীতি",
+        "refundCancellation": "রিফান্ড এবং বাতিল",
+        "disclaimerDisclosure": "দাবিত্যাগ এবং প্রকাশ",
+        "settlementWriteoffPolicy": "নিষ্পত্তি এবং রাইট-অফ নীতি",
+        "investmentPolicy": "বিনিয়োগ নীতি"
       }
     },
     "contact": {

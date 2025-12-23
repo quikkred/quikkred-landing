@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from "framer-motion";
-import { Lock, Shield, Eye, Database, UserCheck, Bell, Globe, Mail } from "lucide-react";
+import { Lock, Shield, Eye, Database, UserCheck, Bell, Globe, Mail, FileText, AlertCircle, RefreshCw, Scale } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 
 export default function PrivacyPage() {
@@ -21,6 +21,7 @@ export default function PrivacyPage() {
               Privacy Policy
             </h1>
             <p className="text-xl">Your privacy is our priority</p>
+            <p className="text-sm mt-2 opacity-90">Effective Date: 18-02-2025</p>
           </motion.div>
         </div>
       </section>
@@ -34,265 +35,251 @@ export default function PrivacyPage() {
             viewport={{ once: true }}
             className="prose prose-lg max-w-none"
           >
-            {/* Introduction */}
+            {/* 1. Introduction */}
             <div className="mb-8">
               <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
                 <Shield className="w-6 h-6 text-[#25B181]" />
-                Introduction
+                1. Introduction
               </h2>
               <p className="text-gray-600 mb-4">
-                Quikkred Financial Services Private Limited ("we", "our", or "us") is committed
-                to protecting your privacy and ensuring the security of your personal information.
-                This Privacy Policy explains how we collect, use, disclose, and safeguard your
-                information when you use our services.
-              </p>
-              <p className="text-gray-600">
-                We comply with all applicable data protection laws, including the Information
-                Technology Act, 2000, and guidelines issued by the Reserve Bank of India.
+                Quikkred, a brand of Fluxusforge OPC Private Limited, operates as a Lending Service Provider (LSP), in partnership with Satsai Finance Private Limited (an RBI-registered NBFC) for loan disbursement. This Privacy Policy governs all users of Quikkred&apos;s all digital platforms, ensuring compliance with RBI Digital Lending Directions 2025 and the Digital Personal Data Protection Act 2023 (DPDPA).
               </p>
             </div>
 
-            {/* Information We Collect */}
+            {/* 2. Data We Collect */}
             <div className="mb-8">
               <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
                 <Database className="w-6 h-6 text-[#4A66FF]" />
-                Information We Collect
+                2. Data We Collect
               </h2>
+              <p className="text-gray-600 mb-4">
+                We collect only the minimum necessary data to provide lending services and comply with regulatory mandates:
+              </p>
 
               <div className="space-y-4 text-gray-600">
-                <div>
-                  <h3 className="font-semibold mb-2">Personal Information</h3>
-                  <ul className="space-y-1">
-                    <li>• Full name, date of birth, gender</li>
-                    <li>• PAN card, Aadhaar card, and other KYC documents</li>
-                    <li>• Contact details (phone, email, address)</li>
-                    <li>• Employment and income information</li>
-                    <li>• Bank account details</li>
-                  </ul>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="font-semibold mb-2">Identification Data</h3>
+                  <p>Full name, address, contact details, email, date of birth, Aadhaar, PAN.</p>
                 </div>
 
-                <div>
-                  <h3 className="font-semibold mb-2">Financial Information</h3>
-                  <ul className="space-y-1">
-                    <li>• Credit history and credit score</li>
-                    <li>• Loan application details</li>
-                    <li>• Transaction history</li>
-                    <li>• Financial statements and documents</li>
-                  </ul>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="font-semibold mb-2">Financial Data</h3>
+                  <p>Bank account details, transactional history, income information strictly required for eligibility and processing.</p>
                 </div>
 
-                <div>
-                  <h3 className="font-semibold mb-2">Technical Information</h3>
-                  <ul className="space-y-1">
-                    <li>• IP address and device information</li>
-                    <li>• Browser type and version</li>
-                    <li>• Location data (with your permission)</li>
-                    <li>• Usage patterns and preferences</li>
-                  </ul>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="font-semibold mb-2">Device &amp; Usage Data</h3>
+                  <p>Device model, OS version, device identifiers (advertising ID, IP address), app crash logs, anonymized usage statistics.</p>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="font-semibold mb-2">Loan Application Data</h3>
+                  <p>Application status, KYC progress, correspondence, documented digital consents.</p>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="font-semibold mb-2">Third-Party Data</h3>
+                  <p>Collected only from authorized service providers <a href="https://www.quikkred.in/partner" className="text-[#25B181] hover:underline">https://www.quikkred.in/partner</a>.</p>
                 </div>
               </div>
+
+              <div className="bg-amber-50 border-l-4 border-amber-400 p-4 mt-4">
+                <p className="text-gray-700">
+                  <strong>Note:</strong> We do not collect or store biometric data (fingerprints, facial recognition) in any form on any necessary retention.
+                </p>
+              </div>
+
+              <p className="text-gray-600 mt-4">
+                Unless expressly opted out by you, we may use channels such as email, SMS, RCS, Whatsapp, instant messaging apps and call to disseminate promotional or service-related communications. You retain the right to unsubscribe from such communications through provided mechanisms.
+              </p>
             </div>
 
-            {/* How We Use Information */}
+            {/* 3. Purpose of Use */}
             <div className="mb-8">
               <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
                 <Eye className="w-6 h-6 text-[#25B181]" />
-                How We Use Your Information
+                3. Purpose of Use
               </h2>
               <p className="text-gray-600 mb-4">
-                We use your information for the following purposes:
+                We use your information only to:
               </p>
               <ul className="space-y-2 text-gray-600">
                 <li className="flex items-start gap-2">
-                  <span className="text-[#25B181]">✓</span>
-                  <span>Processing loan applications and disbursements</span>
+                  <span className="text-[#25B181]">&#10003;</span>
+                  <span>Complete KYC, assess loan eligibility, approval and disbursal via our NBFC partner.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-[#25B181]">✓</span>
-                  <span>Verifying identity and creditworthiness</span>
+                  <span className="text-[#25B181]">&#10003;</span>
+                  <span>Meet regulatory and RBI digital lending requirements.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-[#25B181]">✓</span>
-                  <span>Preventing fraud and money laundering</span>
+                  <span className="text-[#25B181]">&#10003;</span>
+                  <span>Prevent fraud and protect the app&apos;s security.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-[#25B181]">✓</span>
-                  <span>Complying with legal and regulatory requirements</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-[#25B181]">✓</span>
-                  <span>Improving our services and customer experience</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-[#25B181]">✓</span>
-                  <span>Sending service-related communications</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-[#25B181]">✓</span>
-                  <span>Marketing (with your consent)</span>
+                  <span className="text-[#25B181]">&#10003;</span>
+                  <span>Provide customer support and improve services through anonymized analytics.</span>
                 </li>
               </ul>
             </div>
 
-            {/* Data Sharing */}
+            {/* 4. Data Sharing & Third Parties */}
             <div className="mb-8">
               <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
                 <UserCheck className="w-6 h-6 text-[#4A66FF]" />
-                Information Sharing
+                4. Data Sharing &amp; Third Parties
               </h2>
               <p className="text-gray-600 mb-4">
-                We may share your information with:
+                We share data only with:
               </p>
               <div className="space-y-3 text-gray-600">
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold mb-1">Credit Bureaus</h3>
-                  <p className="text-sm">CIBIL, Experian, CRIF, Equifax for credit assessment</p>
+                  <h3 className="font-semibold mb-1">NBFC Lending Partner(s)</h3>
+                  <p className="text-sm">For loan processing and disbursement.</p>
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4">
                   <h3 className="font-semibold mb-1">Regulatory Authorities</h3>
-                  <p className="text-sm">RBI, Income Tax Department, and other government agencies as required by law</p>
+                  <p className="text-sm">Where required by law.</p>
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold mb-1">Service Providers</h3>
-                  <p className="text-sm">Payment processors, KYC verification services, cloud storage providers</p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold mb-1">Banking Partners</h3>
-                  <p className="text-sm">For loan disbursement and collection purposes</p>
+                  <h3 className="font-semibold mb-1">Verified Technical Service Providers</h3>
+                  <p className="text-sm">Under contractual data protection obligations.</p>
                 </div>
               </div>
-              <p className="text-gray-600 mt-4">
-                We do not sell, rent, or trade your personal information to third parties for
-                marketing purposes.
-              </p>
             </div>
 
-            {/* Data Security */}
+            {/* 5. Consent, Control & Withdrawal */}
             <div className="mb-8">
               <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <Lock className="w-6 h-6 text-[#FF9C70]" />
-                Data Security
+                <Bell className="w-6 h-6 text-[#FF9C70]" />
+                5. Consent, Control &amp; Withdrawal
               </h2>
-              <p className="text-gray-600 mb-4">
-                We implement industry-standard security measures:
-              </p>
-              <ul className="space-y-2 text-gray-600">
-                <li>• 256-bit SSL encryption for data transmission</li>
-                <li>• Secure servers with firewall protection</li>
-                <li>• Regular security audits and penetration testing</li>
-                <li>• Access controls and authentication mechanisms</li>
-                <li>• Data encryption at rest and in transit</li>
-                <li>• PCI-DSS compliance for payment data</li>
-                <li>• ISO 27001 certified information security management</li>
+              <ul className="space-y-3 text-gray-600">
+                <li className="flex items-start gap-2">
+                  <span className="text-[#25B181] mt-1">&#8226;</span>
+                  <span>We obtain explicit consent prior to processing personal data.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-[#25B181] mt-1">&#8226;</span>
+                  <span>You may withdraw consent at any time via the app settings or by contacting support. Withdrawal may affect your ability to access lending services but will not invalidate prior processing done lawfully.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-[#25B181] mt-1">&#8226;</span>
+                  <span>Upon withdrawal, data deletion or restriction requests will be processed in compliance with RBI and legal requirements.</span>
+                </li>
               </ul>
             </div>
 
-            {/* Your Rights */}
+            {/* 6. Data Security & Retention */}
             <div className="mb-8">
               <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <Globe className="w-6 h-6 text-[#25B181]" />
-                Your Rights
+                <Lock className="w-6 h-6 text-[#25B181]" />
+                6. Data Security &amp; Retention
+              </h2>
+              <ul className="space-y-3 text-gray-600">
+                <li className="flex items-start gap-2">
+                  <span className="text-[#25B181] mt-1">&#8226;</span>
+                  <span>Your data is stored securely in India using AES-256 encryption and industry-standard access controls.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-[#25B181] mt-1">&#8226;</span>
+                  <span>We retain personal data only as long as your account is active or as legally required (including post-loan closure for auditing and regulatory defense).</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-[#25B181] mt-1">&#8226;</span>
+                  <span>Once retention periods expire, we securely delete or anonymize data.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-[#25B181] mt-1">&#8226;</span>
+                  <span>We do not transfer or store data outside India. Any incidental foreign processing is deleted within 24 hours per RBI rules.</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* 7. Your Rights */}
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                <Globe className="w-6 h-6 text-[#4A66FF]" />
+                7. Your Rights
               </h2>
               <p className="text-gray-600 mb-4">
-                You have the following rights regarding your personal information:
+                Under applicable laws, you have rights to:
               </p>
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid md:grid-cols-2 gap-4 mb-4">
                 <div className="bg-gray-50 rounded-lg p-4">
                   <h3 className="font-semibold mb-1">Access</h3>
-                  <p className="text-sm">Request a copy of your personal data</p>
+                  <p className="text-sm">Access your personal data</p>
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold mb-1">Correction</h3>
-                  <p className="text-sm">Update or correct inaccurate information</p>
+                  <h3 className="font-semibold mb-1">Rectify</h3>
+                  <p className="text-sm">Correct inaccurate information</p>
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold mb-1">Deletion</h3>
-                  <p className="text-sm">Request deletion (subject to legal requirements)</p>
+                  <h3 className="font-semibold mb-1">Erase</h3>
+                  <p className="text-sm">Request deletion of your data</p>
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold mb-1">Portability</h3>
-                  <p className="text-sm">Receive your data in a structured format</p>
+                  <h3 className="font-semibold mb-1">Port</h3>
+                  <p className="text-sm">Receive your data in portable format</p>
                 </div>
               </div>
-            </div>
-
-            {/* Cookies */}
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <Bell className="w-6 h-6 text-[#4A66FF]" />
-                Cookies and Tracking
-              </h2>
               <p className="text-gray-600 mb-4">
-                We use cookies and similar technologies to:
+                Withdraw consent or restrict processing. Lodge complaints with Quikkred&apos;s Data Protection Officer:
               </p>
-              <ul className="space-y-1 text-gray-600">
-                <li>• Remember your preferences and settings</li>
-                <li>• Analyze website traffic and usage patterns</li>
-                <li>• Personalize your experience</li>
-                <li>• Detect and prevent fraud</li>
-                <li>• Improve our services</li>
-              </ul>
-              <p className="text-gray-600 mt-4">
-                You can control cookies through your browser settings. However, disabling cookies
-                may affect the functionality of our services.
-              </p>
-            </div>
-
-            {/* Data Retention */}
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">Data Retention</h2>
-              <p className="text-gray-600">
-                We retain your personal information for as long as necessary to fulfill the
-                purposes outlined in this policy, comply with legal obligations, resolve disputes,
-                and enforce our agreements. Typically:
-              </p>
-              <ul className="space-y-1 text-gray-600 mt-4">
-                <li>• Active loan data: Duration of loan + 7 years</li>
-                <li>• Application data: 3 years from rejection/withdrawal</li>
-                <li>• Transaction records: 10 years as per regulatory requirements</li>
-                <li>• Marketing data: Until you opt-out</li>
-              </ul>
-            </div>
-
-            {/* Children's Privacy */}
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">Children's Privacy</h2>
-              <p className="text-gray-600">
-                Our services are not directed to individuals under 18 years of age. We do not
-                knowingly collect personal information from children. If you become aware that
-                a child has provided us with personal information, please contact us immediately.
-              </p>
-            </div>
-
-            {/* Updates */}
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">Policy Updates</h2>
-              <p className="text-gray-600">
-                We may update this Privacy Policy from time to time. We will notify you of any
-                material changes by posting the new policy on our website and updating the
-                "Last Updated" date. Your continued use of our services after such modifications
-                constitutes your acceptance of the updated policy.
-              </p>
-            </div>
-
-            {/* Contact */}
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <Mail className="w-6 h-6 text-[#25B181]" />
-                Contact Us
-              </h2>
-              <div className="bg-gradient-to-br from-[var(--emerald-green)]/10 to-[var(--royal-blue)]/10 rounded-lg p-6">
+              <div className="bg-gradient-to-br from-[#25B181]/10 to-[#4A66FF]/10 rounded-lg p-6">
                 <p className="font-semibold mb-2">Data Protection Officer</p>
                 <p className="text-gray-600">
-                  Quikkred Financial Services Pvt. Ltd.<br />
-                  Email: privacy@Quikkred.com<br />
-                  Phone: 1800-123-5555<br />
-                  Address: Mumbai, Maharashtra 400001
-                </p>
-                <p className="text-sm text-gray-500 mt-4">
-                  Last Updated: January 1, 2024
+                  Miss Priya<br />
+                  Email: info@quikkred.in<br />
+                  Contact: 9599238889
                 </p>
               </div>
+              <p className="text-gray-600 mt-4">
+                We commit to addressing grievances within 30 days.
+              </p>
+            </div>
+
+            {/* 8. Children's Privacy */}
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                <AlertCircle className="w-6 h-6 text-[#FF9C70]" />
+                8. Children&apos;s Privacy
+              </h2>
+              <p className="text-gray-600">
+                Our services are not intended for users under 18. We do not deliberately collect data from minors. If accidental minor data is identified, we will seek parental consent or delete the data as required.
+              </p>
+            </div>
+
+            {/* 9. Policy Updates */}
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                <RefreshCw className="w-6 h-6 text-[#25B181]" />
+                9. Policy Updates
+              </h2>
+              <p className="text-gray-600">
+                We will notify users of changes via the app and support page. Continued usage implies acceptance. The last updated date will be displayed.
+              </p>
+            </div>
+
+            {/* 10. Regulatory Compliance */}
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                <Scale className="w-6 h-6 text-[#4A66FF]" />
+                10. Regulatory Compliance
+              </h2>
+              <p className="text-gray-600 mb-4">
+                Quikkred acts only as LSP, with loans issued by RBI-regulated Satsai Finance Private Limited (NBFC). Digital copies of RBI and NBFC registrations and policies are available on our support site.
+              </p>
+              <div className="bg-green-50 border-l-4 border-green-400 p-4">
+                <p className="text-gray-700">
+                  Our policies ensure full compliance with <strong>RBI Digital Lending Directions 2025</strong> and the <strong>DPDP Act 2023</strong>.
+                </p>
+              </div>
+            </div>
+
+            {/* Last Updated */}
+            <div className="text-center text-gray-500 text-sm mt-8 pt-8 border-t">
+              <p>Last Updated: 18th February 2025</p>
             </div>
           </motion.div>
         </div>

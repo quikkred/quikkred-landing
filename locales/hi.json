@@ -784,7 +784,27 @@
         "fairPracticeCode": "निष्पक्ष व्यवहार संहिता",
         "interestRatePolicy": "ब्याज दर नीति",
         "kycPolicy": "केवाईसी नीति",
-        "rbiGuidelines": "आरबीआई दिशानिर्देश"
+        "rbiGuidelines": "आरबीआई दिशानिर्देश",
+        "refundCancellation": "रिफंड और रद्दीकरण",
+        "disclaimerDisclosure": "अस्वीकरण और प्रकटीकरण"
+      }
+    },
+    "policyLinks": {
+      "title": "नीति लिंक",
+      "items": {
+        "fairPracticeCode": "निष्पक्ष व्यवहार संहिता",
+        "interestRatePolicy": "ब्याज दर नीति",
+        "kycPolicy": "केवाईसी / एएमएल नीति",
+        "grievanceRedressal": "शिकायत निवारण नीति",
+        "collectionPolicy": "संग्रह नीति",
+        "privacyPolicy": "गोपनीयता नीति",
+        "itPolicy": "आईटी नीति",
+        "creditPolicy": "क्रेडिट नीति",
+        "lendingPolicy": "ऋण नीति",
+        "refundCancellation": "रिफंड और रद्दीकरण",
+        "disclaimerDisclosure": "अस्वीकरण और प्रकटीकरण",
+        "settlementWriteoffPolicy": "निपटान और राइट-ऑफ नीति",
+        "investmentPolicy": "निवेश नीति"
       }
     },
     "contact": {
