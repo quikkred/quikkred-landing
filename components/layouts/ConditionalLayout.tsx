@@ -55,7 +55,13 @@ const PUBLIC_ROUTES = [
   '/cookies',
   '/it-security-policy',
   '/collection-policy',
-  '/rbi-guidelines'
+  '/rbi-guidelines',
+  '/credit-policy',
+  '/lending-policy',
+  '/rac',
+  '/disclaimer-and-disclosure',
+  '/settlement-and-writeoff-policy',
+  '/investment-policy'
 ];
 
 // Routes that should NOT show header/footer (full-page experiences for all users)

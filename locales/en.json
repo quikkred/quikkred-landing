@@ -616,7 +616,9 @@
         "kycPolicy": "KYC/AML Policy",
         "rbiGuidelines": "RBI Guidelines",
         "itSecurityPolicy": "IT Security Policy",
-        "collectionPolicy": "Collection Policy"
+        "collectionPolicy": "Collection Policy",
+        "refundCancellation": "Refund & Cancellation",
+        "disclaimerDisclosure": "Disclaimer & Disclosure"
       }
     },
     "policyLinks": {
@@ -628,7 +630,13 @@
         "grievanceRedressal": "Grievance Redressal Policy",
         "collectionPolicy": "Collection Policy",
         "privacyPolicy": "Privacy Policy",
-        "itPolicy": "IT Policy"
+        "itPolicy": "IT Policy",
+        "creditPolicy": "Credit Policy",
+        "lendingPolicy": "Lending Policy",
+        "refundCancellation": "Refund & Cancellation",
+        "disclaimerDisclosure": "Disclaimer & Disclosure",
+        "settlementWriteoffPolicy": "Settlement & Write-off Policy",
+        "investmentPolicy": "Investment Policy"
       }
     },
     "contact": {

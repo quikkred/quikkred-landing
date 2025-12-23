@@ -112,15 +112,21 @@ export function Footer() {
       { name: t.footer.legal.items.terms, href: "/terms" },
       { name: t.footer.legal.items.cookiePolicy, href: "/cookies" },
       { name: t.footer.legal.items.rbiGuidelines, href: "/rbi-guidelines" },
+      { name: t.footer.legal.items.refundCancellation, href: "/rac" },
+      { name: t.footer.legal.items.disclaimerDisclosure, href: "/disclaimer-and-disclosure" },
+      { name: t.footer.legal.items.fairPracticeCode, href: "/fair-practice" },
+      { name: t.footer.legal.items.itSecurityPolicy, href: "/it-security-policy" },
     ],
     policyLinks: [
-      { name: t.footer.policyLinks.items.fairPracticeCode, href: "/fair-practice" },
       { name: t.footer.policyLinks.items.interestRatePolicy, href: "/interest-policy" },
       { name: t.footer.policyLinks.items.kycPolicy, href: "/kyc-policy" },
       { name: t.footer.policyLinks.items.grievanceRedressal, href: "/grievance-redressal-policy" },
       { name: t.footer.policyLinks.items.collectionPolicy, href: "/collection-policy" },
       { name: t.footer.policyLinks.items.privacyPolicy, href: "/privacy" },
-      { name: t.footer.policyLinks.items.itPolicy, href: "/it-security-policy" },
+      { name: t.footer.policyLinks.items.creditPolicy, href: "/credit-policy" },
+      { name: t.footer.policyLinks.items.lendingPolicy, href: "/lending-policy" },
+      { name: t.footer.policyLinks.items.settlementWriteoffPolicy, href: "/settlement-and-writeoff-policy" },
+      { name: t.footer.policyLinks.items.investmentPolicy, href: "/investment-policy" },
     ],
   };
 

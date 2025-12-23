@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import styles from './page.module.css';
 
 export default function InterestRatePolicyPage() {
@@ -30,11 +29,11 @@ export default function InterestRatePolicyPage() {
             </div>
             <div className={styles.detailsRow}>
               <div className={styles.detailsLabel}>Approved Date</div>
-              <div className={styles.detailsValue}>30th Dec 2025</div>
+              <div className={styles.detailsValue}>30th June 2023</div>
             </div>
             <div className={styles.detailsRow}>
               <div className={styles.detailsLabel}>Last Review Date</div>
-              <div className={styles.detailsValue}>21st Dec 2025</div>
+              <div className={styles.detailsValue}>21st April 2025</div>
             </div>
             <div className={styles.detailsRow}>
               <div className={styles.detailsLabel}>Approved By</div>
@@ -56,10 +55,13 @@ export default function InterestRatePolicyPage() {
           <div className={styles.contentSection}>
             <h3 className={styles.contentHeading}>1. Introduction</h3>
             <p className={styles.paragraph}>
-              QuikkRed Financial Services Private Limited (&quot;QuikkRed&quot; or &quot;the Company&quot;) is a Non-Banking Financial Company (NBFC) registered with the Reserve Bank of India (RBI). The Company is engaged in the business of providing personal loans and other credit facilities to eligible customers.
+              The Reserve Bank of India (&quot;RBI&quot;) vide its Master Direction – Reserve Bank of India (Non-Banking Financial Company – Scale Based Regulation) Directions, 2023 advised all Non-Systemically Important Non-Deposit taking NBFCs to lay out appropriate internal principles and procedures in determining interest rates, processing fee and other charges. RBI also directed to make the policy available on the website of the NBFC, and update whenever there is a change.
             </p>
             <p className={styles.paragraph}>
-              This Interest Rate and Penal Charges Policy (&quot;Policy&quot;) has been formulated in accordance with the guidelines issued by the RBI, including the Master Direction – Reserve Bank of India (Non-Banking Financial Company – Scale Based Regulation) Directions, 2023, and subsequent circulars/guidelines issued from time to time.
+              The Board of Directors of Satsai Finance Private Limited (&quot;Company&quot;) in their meeting held on June 30, 2023, had adopted the Interest Rate Policy (&quot;the Policy&quot;) in accordance with the RBI Directions earlier applicable on the Company. The same has now been revised to reflect the changes in internal policies etc.
+            </p>
+            <p className={styles.paragraph}>
+              This Policy should always be read in conjunction with extant RBI guidelines, directives, circulars and instructions.
             </p>
           </div>
 
@@ -67,20 +69,26 @@ export default function InterestRatePolicyPage() {
           <div className={styles.contentSection}>
             <h3 className={styles.contentHeading}>2. Objective</h3>
             <p className={styles.paragraph}>
-              The objective of this Policy is to:
+              The main objectives of this Policy are to:
             </p>
             <ul className={styles.list}>
               <li className={styles.listItem}>
-                Establish a transparent and fair framework for determining interest rates on loans and credit facilities offered by the Company.
+                Ensure that interest rates are determined in a manner as to ensure long term sustainability of business by taking into account the interests of all stakeholders.
               </li>
               <li className={styles.listItem}>
-                Define the processing fees, penal charges, and other charges applicable to various loan products.
+                Develop and adopt a suitable model for calculation of an interest rate.
               </li>
               <li className={styles.listItem}>
-                Ensure compliance with regulatory requirements and guidelines issued by the RBI.
+                Enable fixation of interest rates which are reasonable: both actual and perceived.
               </li>
               <li className={styles.listItem}>
-                Provide clear communication to customers regarding applicable interest rates and charges.
+                Ensure that computation of interest is accurate, fair and transparent in line with regulatory guidelines and market practices.
+              </li>
+              <li className={styles.listItem}>
+                Charge differential rates of interest linked to the risk factors as applicable.
+              </li>
+              <li className={styles.listItem}>
+                Decide on the principles, methodology and approach of charging spreads to arrive at final rates charged from customers.
               </li>
             </ul>
           </div>
@@ -89,183 +97,107 @@ export default function InterestRatePolicyPage() {
           <div className={styles.contentSection}>
             <h3 className={styles.contentHeading}>3. Role of Board of Directors</h3>
             <p className={styles.paragraph}>
-              The Board of Directors of QuikkRed is responsible for:
+              The Board of Directors shall have oversight for the interest rate Policy of the Company. To ensure effective implementation of the Interest Rate Policy.
             </p>
-            <ul className={styles.list}>
-              <li className={styles.listItem}>
-                Approving the Interest Rate and Penal Charges Policy.
-              </li>
-              <li className={styles.listItem}>
-                Reviewing and updating the Policy periodically to ensure alignment with regulatory requirements and market conditions.
-              </li>
-              <li className={styles.listItem}>
-                Ensuring that the interest rates and charges are determined in a fair, transparent, and non-discriminatory manner.
-              </li>
-              <li className={styles.listItem}>
-                Overseeing the implementation of the Policy across all lending operations.
-              </li>
-            </ul>
           </div>
 
           {/* 4. Determination of Interest Rates */}
           <div className={styles.contentSection}>
             <h3 className={styles.contentHeading}>4. Determination of Interest Rates on Loans and Credit Facility</h3>
             <p className={styles.paragraph}>
-              The interest rates on loans and credit facilities offered by QuikkRed are determined based on the following factors:
+              The Company lends money to its customers mainly through digital platforms and has various products to cater to the needs of different categories of customers.
+            </p>
+            <p className={styles.paragraph}>
+              The interest rate of each product is decided from time to time, giving due consideration to the following factors:
             </p>
 
-            <h4 className={styles.contentSubheading}>4.1 Cost of Funds</h4>
+            <h4 className={styles.contentSubheading}>Cost of Capital</h4>
             <p className={styles.paragraph}>
-              The cost of borrowing funds from various sources including banks, financial institutions, and other lenders.
+              To run the business, the Company has been infused with equity share capital in huge proportions, and accordingly the cost of such equity share capital being infused shall be taken into consideration.
             </p>
 
-            <h4 className={styles.contentSubheading}>4.2 Operating Costs</h4>
+            <h4 className={styles.contentSubheading}>Weighted Average Cost of Borrowing</h4>
             <p className={styles.paragraph}>
-              Administrative and operational expenses incurred in processing and servicing loans.
+              Since the Company borrows funds from various banks, financial institutions and other external lender(s), the weighted average borrowing cost, as well as costs incidental to those borrowings like brokerage, consultancy fees, processing fees shall be taken into consideration. The cost of borrowings varies according to market conditions thus pricing of interest rates shall be consequently impacted and decided accordingly.
             </p>
 
-            <h4 className={styles.contentSubheading}>4.3 Risk Premium</h4>
+            <h4 className={styles.contentSubheading}>Risk</h4>
             <p className={styles.paragraph}>
-              Assessment of credit risk based on the borrower&apos;s credit profile, repayment capacity, employment stability, and other relevant factors.
+              Risk related to loss of credit due to short tenure of loan, nature of facility, ticket size of loan, geographical condition, customer segment, sourcing channels, stability in earnings and employment, financial position, past repayment track record with us or other lenders, external ratings of customers, credit reports, customer relationship, other existing indebtedness, results from digital verifications etc. Therefore, risk of recovery of loan shall be taken into consideration and accordingly the risk premium would be reckoned.
             </p>
 
-            <h4 className={styles.contentSubheading}>4.4 Tenure of Loan</h4>
+            <h4 className={styles.contentSubheading}>Opex Cost</h4>
             <p className={styles.paragraph}>
-              The duration for which the loan is sanctioned may influence the applicable interest rate.
+              It includes employee expenses, office and infrastructure related fixed and variable costs, operations costs, sales and marketing expenses, etc.
             </p>
 
-            <h4 className={styles.contentSubheading}>4.5 Market Conditions</h4>
+            <h4 className={styles.contentSubheading}>Profit Margin</h4>
             <p className={styles.paragraph}>
-              Prevailing market interest rates and competitive landscape in the lending industry.
-            </p>
-
-            <h4 className={styles.contentSubheading}>4.6 Regulatory Guidelines</h4>
-            <p className={styles.paragraph}>
-              Compliance with interest rate caps and guidelines prescribed by the RBI.
+              Fair profit margin is added to arrive at the lending rate. The company may at its discretion fix different margins for different customers, considering the risk of default. All customers will however be notified of the interest payable for the loan to be availed from the company.
             </p>
 
             <p className={styles.paragraph}>
-              <strong>Interest Rate Range:</strong> The annualized interest rate on personal loans offered by QuikkRed ranges from 14% to 36% per annum, calculated on a reducing balance basis. The exact rate applicable to a borrower will depend on the individual risk assessment and loan parameters.
+              The Board of Directors, in its meeting held on April 21, 2025, reviewed and approved the revised Interest Rate and Penal Charges Policy. The Board further resolved to update the interest rate structure, which shall now be applicable as follows:
             </p>
+
+            <ul className={styles.list}>
+              <li className={styles.listItem}>
+                <strong>Pay Day Loan:</strong> 0.10% to 1.00% per day
+              </li>
+              <li className={styles.listItem}>
+                <strong>Business Loan:</strong> 8% to 25% per annum
+              </li>
+              <li className={styles.listItem}>
+                <strong>Loan Against Property (LAP):</strong> 12% to 15% per annum
+              </li>
+              <li className={styles.listItem}>
+                <strong>EMI Loan:</strong> 24% to 365% per annum, with a maximum tenure of up to 6 months
+              </li>
+            </ul>
           </div>
 
           {/* 5. Processing Fees / Penal Charges / Other Charges */}
           <div className={styles.contentSection}>
             <h3 className={styles.contentHeading}>5. Processing Fees / Penal Charges / Other Charges</h3>
-
-            <h4 className={styles.contentSubheading}>5.1 Processing Fees</h4>
-            <p className={styles.paragraph}>
-              A processing fee of up to 5% of the loan amount (plus applicable GST) may be charged at the time of loan disbursement. The exact fee will be communicated to the borrower before loan sanction.
-            </p>
-
-            <h4 className={styles.contentSubheading}>5.2 Penal Charges</h4>
-            <p className={styles.paragraph}>
-              In accordance with RBI guidelines on penal charges dated August 18, 2023:
-            </p>
             <ul className={styles.list}>
               <li className={styles.listItem}>
-                Penal charges shall be levied in the form of &quot;penal charges&quot; and not as &quot;penal interest&quot; added to the rate of interest.
+                Besides interest, other financial charges like processing fees, Equated Monthly Installment (EMI) bouncing charges, penal charges on late repayment of a loan or EMI, rescheduling charges, prepayment / foreclosure charges, part disbursement charges, charges for issue of statement accounts etc., would be levied by the company wherever considered necessary. Besides these charges, stamp duty, service tax / GST and other cess would be collected at applicable rates from time to time. Any revision in these charges would be implemented on a prospective basis with due communication to customers.
               </li>
               <li className={styles.listItem}>
-                Penal charges will not be capitalized i.e., no further interest will be computed on such charges.
+                The board decided that the company will levied a EMI Bouncing charges of Rs. 580/-.
               </li>
               <li className={styles.listItem}>
-                The quantum of penal charges shall be reasonable and commensurate with the non-compliance of the borrower.
+                The Company shall ensure that no capitalisation of penal charges i.e., no further interest computed on such charges. The Company shall also not introduce any additional component to the rate of interest and ensure its strict compliance.
               </li>
               <li className={styles.listItem}>
-                There shall be no discrimination in penal charges between loans of the same category.
+                The Penal Charges will be levied at the rate of 0.1% per day of outstanding principal loan amount.
+              </li>
+              <li className={styles.listItem}>
+                The Company shall ensure that the quantum of penal charges is reasonable and commensurate with the non-compliance of material terms and conditions of loan contract without being discriminatory within a particular loan / product category.
+              </li>
+              <li className={styles.listItem}>
+                The Company shall display the quantum and reason for penal charges to the customers in the loan agreement and / Key Fact Statement (KFS) as applicable.
+              </li>
+              <li className={styles.listItem}>
+                The applicable penal charges, as updated from time to time, shall be displayed on the Company&apos;s website.
+              </li>
+              <li className={styles.listItem}>
+                The Company shall ensure that the applicable penal charges are clearly communicated to the borrowers, whenever reminders for non-compliance of loan terms are sent to borrowers.
+              </li>
+              <li className={styles.listItem}>
+                Any instance of levy of penal charges and the reason therefore shall also be appropriately communicated to the borrowers.
               </li>
             </ul>
-
-            <p className={styles.paragraph}>
-              <strong>Applicable Penal Charges:</strong>
-            </p>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Type of Default</th>
-                  <th>Penal Charges</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Delay in EMI payment (per instance)</td>
-                  <td>Up to Rs. 500 + applicable GST</td>
-                </tr>
-                <tr>
-                  <td>Cheque/ECS/NACH bounce</td>
-                  <td>Up to Rs. 500 + applicable GST per instance</td>
-                </tr>
-                <tr>
-                  <td>Non-submission of documents</td>
-                  <td>Up to Rs. 500 + applicable GST</td>
-                </tr>
-              </tbody>
-            </table>
-
-            <h4 className={styles.contentSubheading}>5.3 Prepayment/Foreclosure Charges</h4>
-            <p className={styles.paragraph}>
-              For individual borrowers, no prepayment/foreclosure charges shall be levied on floating rate loans. For fixed rate loans, foreclosure charges of up to 4% of the outstanding principal may be applicable, as permitted under regulatory guidelines.
-            </p>
-
-            <h4 className={styles.contentSubheading}>5.4 Other Charges</h4>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Charge Type</th>
-                  <th>Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Stamp Duty</td>
-                  <td>As per applicable State laws</td>
-                </tr>
-                <tr>
-                  <td>Documentation Charges</td>
-                  <td>Up to Rs. 500 + applicable GST</td>
-                </tr>
-                <tr>
-                  <td>Duplicate Statement/NOC</td>
-                  <td>Up to Rs. 200 + applicable GST per request</td>
-                </tr>
-                <tr>
-                  <td>CIBIL/Credit Report Charges</td>
-                  <td>At actuals</td>
-                </tr>
-                <tr>
-                  <td>Legal/Incidental Charges</td>
-                  <td>At actuals (if applicable)</td>
-                </tr>
-              </tbody>
-            </table>
           </div>
 
           {/* 6. Communication to Customer */}
           <div className={styles.contentSection}>
             <h3 className={styles.contentHeading}>6. Communication to Customer</h3>
             <p className={styles.paragraph}>
-              QuikkRed ensures transparent communication of all applicable interest rates and charges to customers through:
+              The Company shall communicate the effective rate of interest to customers at the time of sanction / availing of the loan through the acceptable mode of communication. Interest Rate Policy would be uploaded on the website of the company and any change therein would be uploaded on the website of the Company.
             </p>
-            <ul className={styles.list}>
-              <li className={styles.listItem}>
-                Clear disclosure in the loan application form and sanction letter.
-              </li>
-              <li className={styles.listItem}>
-                Key Fact Statement (KFS) provided to borrowers before loan execution.
-              </li>
-              <li className={styles.listItem}>
-                Display of interest rates and charges on the Company&apos;s website.
-              </li>
-              <li className={styles.listItem}>
-                SMS/Email notifications for any changes in applicable rates or charges.
-              </li>
-              <li className={styles.listItem}>
-                Annualized Percentage Rate (APR) disclosure to help borrowers understand the total cost of borrowing.
-              </li>
-            </ul>
             <p className={styles.paragraph}>
-              The reasons for levy of penal charges shall be clearly communicated to the borrower at the time of levy.
+              Changes in the rates and charges for existing customers, if any, would be communicated to them through various modes of communication such as on the website, digital platform and/or via email, letters, SMS, etc. However, the company would ensure that there is no change during the tenure of the loan for such loans which had already been contracted with customers.
             </p>
           </div>
 
@@ -273,21 +205,7 @@ export default function InterestRatePolicyPage() {
           <div className={styles.contentSection}>
             <h3 className={styles.contentHeading}>7. Waiver / Reduction of Charges</h3>
             <p className={styles.paragraph}>
-              QuikkRed may consider waiver or reduction of penal charges and other fees on a case-by-case basis, taking into account:
-            </p>
-            <ul className={styles.list}>
-              <li className={styles.listItem}>
-                The borrower&apos;s overall repayment track record.
-              </li>
-              <li className={styles.listItem}>
-                Genuine hardship faced by the borrower due to unforeseen circumstances.
-              </li>
-              <li className={styles.listItem}>
-                First-time default or technical issues beyond the borrower&apos;s control.
-              </li>
-            </ul>
-            <p className={styles.paragraph}>
-              Any such waiver shall be approved by authorized personnel as per the Company&apos;s internal delegation of authority.
+              Managing Director or Business Head Loan of the Company be authorized to waive-off / reduce any amount including Principal amount / Interest Rates, Processing and Other Charges, at their own discretion, as may deem fit. Further, aforesaid officials may delegate this authority in favor of any other person.
             </p>
           </div>
 
@@ -295,10 +213,7 @@ export default function InterestRatePolicyPage() {
           <div className={styles.contentSection}>
             <h3 className={styles.contentHeading}>8. Amendments to this Policy</h3>
             <p className={styles.paragraph}>
-              This Policy shall be reviewed periodically and may be amended from time to time to ensure compliance with regulatory requirements and to reflect changes in business practices. Any amendments shall be approved by the Board of Directors and communicated through appropriate channels.
-            </p>
-            <p className={styles.paragraph}>
-              The updated Policy shall be made available on the Company&apos;s website. In case of any conflict between this Policy and regulatory guidelines, the regulatory guidelines shall prevail.
+              The Board of directors is authorized to make appropriate changes to this Policy taking into account changes in the money market scenario in the Country which includes the upward / downward revision in interest rates applicable to various loan products and the relevant charges applicable for such loan products.
             </p>
           </div>
 
