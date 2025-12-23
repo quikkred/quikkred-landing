@@ -4,7 +4,8 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import {
   Award, Target, Users, TrendingUp, Shield, Heart,
-  CheckCircle, Globe, Briefcase, Clock, Star, Building
+  CheckCircle, Globe, Briefcase, Clock, Star, Building,
+  Phone, Mail, MapPin
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import SalaryAdvance from "@/components/SalaryAdvance";
@@ -53,6 +54,30 @@ const values = [
   }
 ];
 
+const contactCards = [
+  {
+    icon: Phone,
+    title: "Call Us",
+    description: "Speak directly with our support team",
+    contact: "+91 9599238889",
+    link: "tel:+919599238889"
+  },
+  {
+    icon: Mail,
+    title: "Email Us",
+    description: "Send us your queries anytime",
+    contact: "info@quikkred.in",
+    link: "mailto:info@quikkred.in"
+  },
+  {
+    icon: MapPin,
+    title: "Visit Us",
+    description: "Our head office location",
+    contact: "1008, 10th floor, Vikrant Tower, Rajendra Place, New Delhi - 110005",
+    link: "https://maps.google.com/?q=Vikrant+Tower+Rajendra+Place+New+Delhi"
+  }
+];
+
 const leadership: any[] = [
   // {
   //   name: "Rajesh Kumar",
@@ -86,7 +111,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen">
 
-      <section className="py-12 sm:py-16 lg:py-20">
+      <section className="py-12 sm:py-16 lg:py-20 bg-white">
         <SalaryAdvance
           title="About QuikKred"
           // {t('products.pages.personalLoan.hero.title')}
@@ -108,10 +133,10 @@ export default function AboutPage() {
           primaryColor="emerald"
         />
       </section>
-      <section className="py-12 sm:py-16 lg:py-20">
+      <section className="py-12 sm:py-16 lg:py-20 bg-[#F6F6F6]">
 
          <div
-          className={`w-full bg-white py-12 px-6 md:px-16 flex flex-col items-center justify-between gap-10 md:flex-row-reverse`}
+          className={`w-full py-12 px-6 md:px-16 flex flex-col items-center justify-between gap-10 md:flex-row-reverse`}
         >
               {/* Left Section */}
               <div className="md:w-1/2 space-y-6">
@@ -141,9 +166,9 @@ export default function AboutPage() {
             </div>
       </section>
 
-      <section className="py-12 sm:py-16 lg:py-20">
+      <section className="py-12 sm:py-16 lg:py-20 bg-white">
            <div
-          className={`w-full bg-white py-12 px-6 md:px-16 flex flex-col items-center justify-between gap-10 md:flex-row`}
+          className={`w-full py-12 px-6 md:px-16 flex flex-col items-center justify-between gap-10 md:flex-row`}
         >
               {/* Left Section */}
               <div className="md:w-1/2 space-y-6">
@@ -197,7 +222,7 @@ export default function AboutPage() {
       />
 
       {/* Core Values Section */}
-      <section className="bg-gray-50 py-16 sm:py-20 lg:py-24">
+      <section className="bg-white py-16 sm:py-20 lg:py-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -245,8 +270,61 @@ export default function AboutPage() {
         </div>
       </section>
 
-{/* Contact Section */}
-      {/* <section className="bg-gray-50"> */}
+      {/* Get In Touch Cards Section */}
+      <section className="bg-[#F6F6F6] py-16 sm:py-20 lg:py-24">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="max-w-6xl mx-auto"
+          >
+            {/* Section Header */}
+            <div className="text-center mb-12 sm:mb-16">
+              <span className="inline-block px-4 py-2 bg-[#D3F1EB] text-[#25B181] rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
+                Reach Out To Us
+              </span>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 mb-4">
+                Let&apos;s <span className="text-[#25B181]">Connect</span>
+              </h2>
+              <p className="text-gray-600 text-base sm:text-lg max-w-2xl mx-auto">
+                Have questions? We&apos;re here to help. Reach out to us through any of these channels.
+              </p>
+            </div>
+
+            {/* Contact Cards Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              {contactCards.map((card, index) => {
+                const IconComponent = card.icon;
+                return (
+                  <motion.a
+                    key={index}
+                    href={card.link}
+                    target={card.icon === MapPin ? "_blank" : undefined}
+                    rel={card.icon === MapPin ? "noopener noreferrer" : undefined}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                    className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm hover:shadow-xl transition-all group cursor-pointer"
+                  >
+                    <div className="w-14 h-14 bg-[#D3F1EB] rounded-xl flex items-center justify-center mb-5 group-hover:bg-[#25B181] transition-colors">
+                      <IconComponent className="w-7 h-7 text-[#25B181] group-hover:text-white transition-colors" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">{card.title}</h3>
+                    <p className="text-gray-500 text-sm mb-3">{card.description}</p>
+                    <p className="text-[#25B181] font-semibold leading-relaxed">{card.contact}</p>
+                  </motion.a>
+                );
+              })}
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+{/* Contact Form Section */}
+      <section className="bg-white py-12 sm:py-16 lg:py-20">
         <div className="mx-auto w-full">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -255,19 +333,33 @@ export default function AboutPage() {
             className="text-center my-10 sm:my-12"
           >
             <span className="inline-block px-4 py-2 bg-[#D3F1EB] text-[#25B181] rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
-              Get In Touch
+              Send A Message
             </span>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold font-sora mb-3 sm:mb-4">
-              Contact <span className="text-[#25B181]">Us</span>
+              Write To <span className="text-[#25B181]">Us</span>
             </h2>
             <p className="text-sm sm:text-base lg:text-lg text-gray-600 max-w-2xl mx-auto">
-              Have questions? We're here to help. Reach out to us and our team will get back to you shortly.
+              Have questions? We&apos;re here to help. Reach out to us and our team will get back to you shortly.
             </p>
           </motion.div>
           <ContactForm />
         </div>
-        {/* <ContactForm /> */}
-      {/* </section> */}
+      </section>
+
+            {/* Map Section - Full Width */}
+      <div className="w-full h-[250px] sm:h-[300px] md:h-[350px]">
+        <iframe
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3501.4097591754347!2d77.1807!3d28.6419!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d029e2b6b2f6f%3A0x5c4a5f8a3a2b1c0d!2sVikrant%20Tower%2C%20Rajendra%20Place%2C%20New%20Delhi%2C%20Delhi%20110005!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
+          width="100%"
+          height="100%"
+          style={{ border: 0 }}
+          allowFullScreen
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          title="Quikkred Head Office Location"
+          className="w-full h-full"
+        />
+      </div>
     </div>
   );
 }

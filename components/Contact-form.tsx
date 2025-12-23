@@ -175,17 +175,17 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
       {/* Form Section */}
       <div className="w-full md:container md:mx-auto px-0 md:px-4 pb-12 lg:pb-16">
         <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-0 rounded-none md:rounded-3xl overflow-hidden shadow-none md:shadow-2xl bg-white">
+          <div className="grid lg:grid-cols-2 gap-0 overflow-hidden">
             {/* Left Side - Image */}
-            <div className="relative hidden lg:block min-h-[600px]">
+            <div className="relative hidden lg:block min-h-[500px]">
               <Image
-                src="/Aboutus_mission_image.jpg"
+                src="/contact_hero_image.jpg"
                 alt="Contact Us"
                 fill
-                className="object-cover"
+                className="object-co"
               />
-              <div className="absolute inset-0 bg-gradient-to-br from-[#25B181]/80 to-[#1a8a5f]/90" />
-              <div className="absolute inset-0 flex flex-col justify-center items-center text-center p-10">
+              {/* <div className="absolute inset-0 bg-gradient-to-br from-[#25B181]/80 to-[#1a8a5f]/90" /> */}
+              {/* <div className="absolute inset-0 flex flex-col justify-center items-center text-center p-10">
                 <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6">
                   <MessageSquare className="w-8 h-8 text-white" />
                 </div>
@@ -207,11 +207,11 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
                     <span>support@quikkred.com</span>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             {/* Right Side - Form */}
-            <div className="bg-white p-4 sm:p-6 md:p-10 lg:p-12">
+            <div className="p-4 sm:p-6 md:p-10 lg:p-12">
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -369,21 +369,6 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Map Section - Full Width */}
-      <div className="w-full h-[350px] sm:h-[400px] md:h-[450px]">
-        <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3501.4097591754347!2d77.1807!3d28.6419!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d029e2b6b2f6f%3A0x5c4a5f8a3a2b1c0d!2sVikrant%20Tower%2C%20Rajendra%20Place%2C%20New%20Delhi%2C%20Delhi%20110005!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
-          width="100%"
-          height="100%"
-          style={{ border: 0 }}
-          allowFullScreen
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          title="Quikkred Head Office Location"
-          className="w-full h-full"
-        />
       </div>
     </div>
   )
