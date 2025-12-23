@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -267,9 +267,15 @@ export default function QuickLoanApplication() {
                 accountHolderName: profileData.banks?.[0]?.accountHolderName || prev.accountHolderName,
                 accountNumber: profileData.banks?.[0]?.accountNumber || prev.accountNumber,
                 ifsc: profileData.banks?.[0]?.ifscCode || prev.ifsc,
+                loanAmount: profileData.requestedLoanAmount?.toString() || prev.loanAmount, // Loan amount from API
                 mobileVerified: profileData.isMobileVerified || true, // True if logged in with mobile
                 emailVerified: profileData.isEmailVerified || false // Only true if email is actually verified
               }));
+
+              // Log loan amount for debugging
+              if (profileData.requestedLoanAmount) {
+                console.log('✅ Loan amount loaded from API:', profileData.requestedLoanAmount);
+              }
 
               // Set verification flags from API
               // Helper function to safely convert any value to boolean
@@ -343,17 +349,7 @@ export default function QuickLoanApplication() {
                 console.log('✅ Selfie loaded from profile:', profileData.profile.s3URL);
               }
 
-              // STEP 1: Check if email is verified (prerequisite for checklist navigation)
-              if (!isEmailVerified) {
-                console.log('⚠️ Email not verified - staying on Step 1');
-                setApiDeterminedStep(1);
-                setUserDataLoaded(true);
-                return;
-              }
-
-              console.log('✅ Email verified - checking checklist...');
-
-              // STEP 2: Check if ALL checklist values are true → Dashboard
+              // STEP 1: Check if ALL checklist values are true → Dashboard
               const allChecklistComplete = isBasicDetailsFilled && isKycDetailsFilled && isBankDetailsFilled && isSubmit;
 
               if (allChecklistComplete) {
@@ -362,24 +358,33 @@ export default function QuickLoanApplication() {
                 return;
               }
 
-              // STEP 3: Find first pending step (first false value in order)
+              // STEP 2: Find first pending step based on completion flags
+              // Priority: Respect completed steps, go to first incomplete step
               let firstPendingStep = 1;
 
               if (!isBasicDetailsFilled) {
+                // Step 1 not complete - check email verification requirement
+                if (!isEmailVerified) {
+                  console.log('📍 Step 1: Basic Details not filled, email not verified');
+                } else {
+                  console.log('📍 Step 1: Basic Details not filled (email verified)');
+                }
                 firstPendingStep = 1;
-                console.log('📍 First pending: Step 1 (Basic Details)');
               } else if (!isKycDetailsFilled) {
+                // Step 1 COMPLETE - go to Step 2 (don't force back to Step 1)
                 firstPendingStep = 2;
-                console.log('📍 First pending: Step 2 (KYC/Identity)');
+                console.log('📍 First pending: Step 2 (KYC/Identity) - Step 1 already complete');
               } else if (!isBankDetailsFilled) {
+                // Step 1 & 2 COMPLETE - go to Step 3
                 firstPendingStep = 3;
-                console.log('📍 First pending: Step 3 (Bank Details)');
+                console.log('📍 First pending: Step 3 (Bank Details) - Steps 1-2 already complete');
               } else if (!isSubmit) {
+                // Step 1, 2 & 3 COMPLETE - go to Step 4
                 firstPendingStep = 4;
-                console.log('📍 First pending: Step 4 (Approval/Submit)');
+                console.log('📍 First pending: Step 4 (Approval/Submit) - Steps 1-3 already complete');
               }
 
-              console.log('🎯 Redirecting to first pending step:', firstPendingStep);
+              console.log('🎯 Navigating to step:', firstPendingStep);
 
               // Set the determined step
               setApiDeterminedStep(firstPendingStep);
@@ -771,17 +776,27 @@ export default function QuickLoanApplication() {
     localStorage.setItem('quickLoanFormData', JSON.stringify(dataToSave));
   }, [formData, currentStep]);
 
+  // Track if BRE API has been called to prevent infinite loops
+  const breApiCalledRef = useRef(false);
+
   // Auto-call BRE API when Step 4 is reached (including on hard refresh)
   useEffect(() => {
     const fetchBREData = async () => {
       // Only run on Step 4
       if (currentStep !== 4) {
+        breApiCalledRef.current = false; // Reset when leaving Step 4
         return;
       }
 
-      // Skip if already loaded or loading
-      if (approvalData || approvalLoading) {
-        console.log('[Step 4] BRE data already loaded or loading, skipping API call');
+      // Skip if already called in this session
+      if (breApiCalledRef.current) {
+        console.log('[Step 4] BRE API already called, skipping');
+        return;
+      }
+
+      // Skip if data already exists
+      if (approvalData) {
+        console.log('[Step 4] BRE data already loaded, skipping API call');
         return;
       }
 
@@ -794,6 +809,8 @@ export default function QuickLoanApplication() {
         return;
       }
 
+      // Mark as called BEFORE the API call to prevent race conditions
+      breApiCalledRef.current = true;
       console.log('[Step 4] Calling BRE API (bre/initialize)...');
       setApprovalLoading(true);
 
@@ -810,18 +827,11 @@ export default function QuickLoanApplication() {
 
         if (response.ok && result.success && result.data) {
           console.log('[Step 4] BRE data fetched successfully');
-          setApprovalData({
-            ...result.data,
-            fullName: formData.fullName,
-            mobile: formData.mobile,
-            email: formData.email,
-            pan: formData.pan,
-            aadhaar: formData.aadhaar ? `XXXX-XXXX-${formData.aadhaar.slice(-4)}` : '',
-            monthlyIncome: formData.monthlyIncome,
-            employmentType: formData.employmentType
-          });
+          // Store BRE response data only (don't include formData to avoid dependency)
+          setApprovalData(result.data);
         } else {
           console.error('[Step 4] BRE API failed:', result.message);
+          breApiCalledRef.current = false; // Allow retry on failure
           toast({
             variant: "error",
             title: "Failed to Load Approval Data",
@@ -830,6 +840,7 @@ export default function QuickLoanApplication() {
         }
       } catch (error: any) {
         console.error('[Step 4] BRE API error:', error);
+        breApiCalledRef.current = false; // Allow retry on error
         toast({
           variant: "error",
           title: "Network Error",
@@ -841,7 +852,7 @@ export default function QuickLoanApplication() {
     };
 
     fetchBREData();
-  }, [currentStep, approvalData, approvalLoading, formData, toast]);
+  }, [currentStep, approvalData, toast]);
 
   // Load form data from localStorage on mount
   useEffect(() => {
