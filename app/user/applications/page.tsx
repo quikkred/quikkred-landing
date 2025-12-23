@@ -18,15 +18,34 @@ interface Application {
   applicationNumber: string;
   customerId: {
     _id: string;
+    mobile?: string;
     email: string;
     fullName: string;
   };
-  loanAmount: number;
-  requestedTenure: number;
-  requestedTenureUnit: number;
-  purpose: string;
+  requestedLoanAmount?: number;
+  tenure: number;
+  tenureUnit: string;
+  purpose?: string;
   priority?: string;
+  emiAmount?: number;
   status: string;
+  cibilScore?: number;
+  riskScore?: number;
+  fraudScore?: number;
+  incomeScore?: number;
+  verificationChecklist?: {
+    identityVerification: {
+      panVerified: boolean;
+      aadhaarVerified: boolean;
+      bankStatementVerified: boolean;
+      bankAccountVerified: boolean;
+      agreementSigned: boolean;
+      pdcChequesCollected: boolean;
+      insuranceOpted: boolean;
+      nachMandateRegistered: boolean;
+      faceMatchDone: boolean;
+    };
+  };
   createdAt: string;
   assignedTo?: {
     _id: string;
@@ -57,9 +76,9 @@ interface DetailedApplication {
     };
   
   isSubmit: boolean;
-  loanAmount: number;
-  requestedTenure: number;
-  requestedTenureUnit: number;
+  requestedLoanAmount: number;
+  tenure: number;
+  tenureUnit: number;
   interestRate: number;
   processingFee: number;
   gstOnProcessingFee: number;
@@ -251,11 +270,11 @@ export default function MyApplicationsPage() {
       if (response.success && response.data) {
         // Calculate EMI if not provided by API
         const applicationData = response.data;
-        if (!applicationData.emiAmount && applicationData.loanAmount && applicationData.interestRate && applicationData.requestedTenure) {
+        if (!applicationData.emiAmount && applicationData.requestedLoanAmount && applicationData.interestRate && applicationData.tenure) {
           applicationData.emiAmount = calculateEMI(
-            applicationData.loanAmount,
+            applicationData.requestedLoanAmount,
             applicationData.interestRate,
-            applicationData.requestedTenure
+            applicationData.tenure
           );
         }
         setDetailedApplication(applicationData);
@@ -301,7 +320,8 @@ export default function MyApplicationsPage() {
       (filterStatus === 'rejected' && (statusUpper === 'REJECTED' || statusUpper === 'CANCELLED'));
 
     const matchesSearch = app.applicationNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.purpose.toLowerCase().includes(searchTerm.toLowerCase());
+      (app.purpose?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (app.customerId?.fullName?.toLowerCase() || '').includes(searchTerm.toLowerCase());
 
     return matchesStatus && matchesSearch;
   });
@@ -438,8 +458,8 @@ export default function MyApplicationsPage() {
               <thead className="bg-[#FAFAFA] border-b border-[#E0E0E0]">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Application No.</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Purpose</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Amount</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Customer</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">EMI Amount</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Tenure</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Priority</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Status</th>
@@ -462,13 +482,14 @@ export default function MyApplicationsPage() {
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <div className="text-sm font-medium text-gray-900">{app.purpose}</div>
+                      <div className="text-sm font-medium text-gray-900">{app.customerId?.fullName || '-'}</div>
+                      <div className="text-xs text-gray-500">{app.customerId?.mobile || app.customerId?.email || ''}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm font-semibold text-[#1F8F68]">₹{(app.loanAmount || 0).toLocaleString()}</div>
+                      <div className="text-sm font-semibold text-[#1F8F68]">₹{(app.emiAmount || 0).toLocaleString()}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{app.requestedTenure || '-'}-{app.requestedTenureUnit || ''}</div>
+                      <div className="text-sm text-gray-900">{app.tenure || '-'} {app.tenureUnit || ''}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       {app.priority && (
@@ -679,11 +700,11 @@ export default function MyApplicationsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                       <div>
                         <p className="text-sm text-gray-600">Loan Amount</p>
-                        <p className="text-lg font-bold text-green-700">₹{(detailedApplication.loanAmount || 0).toLocaleString()}</p>
+                        <p className="text-lg font-bold text-green-700">₹{(detailedApplication.requestedLoanAmount || 0).toLocaleString()}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Tenure</p>
-                        <p className="font-semibold text-gray-900">{detailedApplication.requestedTenure || '-'}{" "}{detailedApplication.requestedTenureUnit || ''}</p>
+                        <p className="font-semibold text-gray-900">{detailedApplication.tenure || '-'}{" "}{detailedApplication.tenureUnit || ''}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">EMI Amount</p>
@@ -707,8 +728,8 @@ export default function MyApplicationsPage() {
                       </div>
 <div>
   <p className="text-sm text-gray-600">
-    Total Interest Rate for {detailedApplication.requestedTenure || 0} days (
-    {((detailedApplication.interestRate || 0) * (detailedApplication.requestedTenure || 0)).toFixed(2)}%
+    Total Interest Rate for {detailedApplication.tenure || 0} days (
+    {((detailedApplication.interestRate || 0) * (detailedApplication.tenure || 0)).toFixed(2)}%
     )
   </p>
   <p className="font-semibold text-gray-900">
