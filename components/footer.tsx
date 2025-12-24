@@ -51,7 +51,7 @@ export function Footer() {
     try {
       console.log('Subscribing with email:', email);
 
-      const response = await fetch('https://api.bluechipfinmax.com/api/subscribe/create', {
+      const response = await fetch('https://alpha.quikkred.in/api/subscribe/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
