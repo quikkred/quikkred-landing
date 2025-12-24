@@ -874,48 +874,51 @@ export default function QuickLoanApplication() {
   }, [user]);
 
   // Fetch loan products
-  useEffect(() => {
-    const fetchLoanProducts = async () => {
-      const token =   localStorage.getItem('accessToken') ||
-                      localStorage.getItem('token') ||
-                      localStorage.getItem('authToken');
-      setLoadingProducts(true);
-      try {
-        const response = await fetch('https://alpha.quikkred.in/api/loanProduct/allLoanProductsNameOnly', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-        });
 
-        const result = await response.json();
 
-        if (response.ok && result.success && result.data) {
-          setLoanProducts(result.data);
-          console.log('✅ Loan products loaded:', result.data);
-        } else {
-          console.error('Failed to fetch loan products:', result.message);
-          toast({
-            title: "Error",
-            description: "Failed to load loan products. Please refresh the page.",
-            variant: "error"
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching loan products:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load loan products. Please refresh the page.",
-          variant: "error"
-        });
-      } finally {
-        setLoadingProducts(false);
-      }
-    };
 
-    fetchLoanProducts();
-  }, []);
+  // useEffect(() => {
+  //   const fetchLoanProducts = async () => {
+  //     const token =   localStorage.getItem('accessToken') ||
+  //                     localStorage.getItem('token') ||
+  //                     localStorage.getItem('authToken');
+  //     setLoadingProducts(true);
+  //     try {
+  //       const response = await fetch('https://alpha.quikkred.in/api/loanProduct/allLoanProductsNameOnly', {
+  //         method: 'GET',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //           'Authorization': `Bearer ${token}`
+  //         },
+  //       });
+
+  //       const result = await response.json();
+
+  //       if (response.ok && result.success && result.data) {
+  //         setLoanProducts(result.data);
+  //         console.log('✅ Loan products loaded:', result.data);
+  //       } else {
+  //         console.error('Failed to fetch loan products:', result.message);
+  //         toast({
+  //           title: "Error",
+  //           description: "Failed to load loan products. Please refresh the page.",
+  //           variant: "error"
+  //         });
+  //       }
+  //     } catch (error) {
+  //       console.error('Error fetching loan products:', error);
+  //       toast({
+  //         title: "Error",
+  //         description: "Failed to load loan products. Please refresh the page.",
+  //         variant: "error"
+  //       });
+  //     } finally {
+  //       setLoadingProducts(false);
+  //     }
+  //   };
+
+  //   fetchLoanProducts();
+  // }, []);
 
   // Calculate EMI when loan amount, tenure, tenure unit, or product changes
   useEffect(() => {
@@ -1592,13 +1595,11 @@ export default function QuickLoanApplication() {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
-    <div class="watermark">QUIKKRED</div>
     <div class="page">
         <div class="header">
             <div class="logo-section">
-                
                 <div class="company-info">
-                    <h1>QUIKKRED</h1>
+                    <img src="https://quikkred.in/logo.svg" alt="Quikkred" class="company-logo"/>
                     <div class="tagline">Quick Credit, Trusted Partner</div>
                     <div class="reg-info">Satsai Finlease Private Limited | RBI Registered NBFC<br>CIN: U65100MH2024PTC123456 | CoR: N-05.02345</div>
                 </div>
