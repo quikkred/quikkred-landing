@@ -304,7 +304,7 @@ export default function MyLoansPage() {
       const currentLimit = limit || pagination.limit;
 
       const response = await fetch(
-        `https://api.bluechipfinmax.com/api/loans/get?page=${currentPage}&limit=${currentLimit}`,
+        `https://alpha.quikkred.in/api/loans/get?page=${currentPage}&limit=${currentLimit}`,
         {
           method: 'GET',
           headers: {
@@ -420,7 +420,7 @@ export default function MyLoansPage() {
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch('https://api.bluechipfinmax.com/api/customer/get', {
+      const response = await fetch('https://alpha.quikkred.in/api/customer/get', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -529,7 +529,7 @@ export default function MyLoansPage() {
         }
       };
 
-      const response = await fetch('https://api.bluechipfinmax.com/api/application/loan/new', {
+      const response = await fetch('https://alpha.quikkred.in/api/application/loan/new', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
