@@ -458,7 +458,7 @@ export default function MyApplicationsPage() {
               <thead className="bg-[#FAFAFA] border-b border-[#E0E0E0]">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Application No.</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Customer</th>
+                  {/* <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Customer</th> */}
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">EMI Amount</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Tenure</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Priority</th>
@@ -481,10 +481,10 @@ export default function MyApplicationsPage() {
                         {new Date(app.createdAt).toLocaleDateString()}
                       </div>
                     </td>
-                    <td className="px-4 py-4">
+                    {/* <td className="px-4 py-4">
                       <div className="text-sm font-medium text-gray-900">{app.customerId?.fullName || '-'}</div>
                       <div className="text-xs text-gray-500">{app.customerId?.mobile || app.customerId?.email || ''}</div>
-                    </td>
+                    </td> */}
                     <td className="px-4 py-4 whitespace-nowrap">
                       <div className="text-sm font-semibold text-[#1F8F68]">₹{(app.emiAmount || 0).toLocaleString()}</div>
                     </td>
