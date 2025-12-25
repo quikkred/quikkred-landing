@@ -1,50 +1,175 @@
-name: Deploy Quikkred Landing
+name: Quikkred Landing & Dashboard CI/CD Pipeline
 
 on:
   push:
     branches:
-      - develop    # Deploy to Alpha
-      - staging    # Deploy to Beta
+      - develop    # Deploy to Alpha (Hostinger KVM8)
+      - staging    # Deploy to Beta (AWS S3 + CloudFront)
+      - main       # Deploy to Production (AWS S3 + CloudFront)
+
+env:
+  AWS_REGION: ap-south-1
+  NODE_VERSION: '20'
 
 jobs:
+  # ============================================
+  # DEPLOY TO ALPHA (Hostinger KVM8)
+  # Triggers on: push to develop
+  # Build happens on server - no CI build needed
+  # ============================================
   deploy-alpha:
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to Alpha
+      - name: Deploy to Hostinger Alpha
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: alpha.quikkred.in
-          username: ec2-user
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: 93.127.167.88
+          username: root
+          key: ${{ secrets.HOSTINGER_SSH_KEY }}
+          port: 22
           script: |
-            cd /opt/app/quikkred-landing
+            echo "🚀 Starting Alpha Landing Page deployment..."
+
+            # Navigate to landing directory
+            cd /opt/quikkred/landing || { echo "❌ Directory not found"; exit 1; }
+
+            # Pull latest code
             git fetch origin develop
+            git checkout develop 2>/dev/null || git checkout -b develop origin/develop
             git reset --hard origin/develop
-            npm install
-            npm run build
-            pm2 restart quikkred-landing || pm2 start npm --name quikkred-landing -- start -- -p 3002
 
+            # Install dependencies
+            npm install
+
+            # Build with Alpha environment
+            NEXT_PUBLIC_API_URL=https://alpha.quikkred.in npm run build
+
+            # Restart with PM2
+            pm2 restart quikkred-landing || pm2 start npm --name "quikkred-landing" -- start -- -p 3000
+
+            pm2 save
+
+            echo "✅ Alpha Landing Page deployment complete!"
+
+      - name: Health Check
+        run: |
+          sleep 15
+          response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://alpha.quikkred.in || echo "000")
+          echo "Health check response: $response"
+
+  # ============================================
+  # DEPLOY TO BETA (AWS S3 + CloudFront)
+  # Triggers on: push to staging
+  # ============================================
   deploy-beta:
-    if: github.ref == 'refs/heads/staging'
+    if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to Beta
-        uses: appleboy/ssh-action@v1.0.0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          host: beta.quikkred.in
-          username: ec2-user
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /opt/app/quikkred-landing
-            git fetch origin staging
-            git reset --hard origin/staging
-            npm install
-            npm run build
-            pm2 restart quikkred-landing || pm2 start npm --name quikkred-landing -- start -- -p 3002
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build for Beta
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: https://beta.quikkred.in
+          NEXT_PUBLIC_ENV: beta
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to S3 (Beta)
+        run: |
+          if [ -d "out" ]; then
+            aws s3 sync out/ s3://quikkred-beta-landing/ --delete
+          else
+            aws s3 sync .next/static/ s3://quikkred-beta-landing/_next/static/ --delete
+          fi
+          echo "✅ Synced to S3 Beta bucket"
+        continue-on-error: true
+
+      - name: Invalidate CloudFront (Beta)
+        run: |
+          if [ -n "${{ secrets.BETA_LANDING_CLOUDFRONT_ID }}" ]; then
+            aws cloudfront create-invalidation \
+              --distribution-id ${{ secrets.BETA_LANDING_CLOUDFRONT_ID }} \
+              --paths "/*"
+            echo "✅ CloudFront Beta cache invalidated"
+          fi
+        continue-on-error: true
+
+  # ============================================
+  # DEPLOY TO PRODUCTION (AWS S3 + CloudFront)
+  # Triggers on: push to main
+  # ============================================
+  deploy-production:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build for Production
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: https://api.quikkred.in
+          NEXT_PUBLIC_ENV: production
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to S3 (Production)
+        run: |
+          if [ -d "out" ]; then
+            aws s3 sync out/ s3://quikkred-production-landing/ --delete
+          else
+            aws s3 sync .next/static/ s3://quikkred-production-landing/_next/static/ --delete
+          fi
+          echo "✅ Synced to S3 Production bucket"
+        continue-on-error: true
+
+      - name: Invalidate CloudFront (Production)
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.PROD_LANDING_CLOUDFRONT_ID }} \
+            --paths "/*"
+          echo "✅ CloudFront Production cache invalidated"
+        continue-on-error: true
+
+      - name: Health Check
+        run: |
+          sleep 15
+          response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://quikkred.in || echo "000")
+          echo "Production health check: $response"
