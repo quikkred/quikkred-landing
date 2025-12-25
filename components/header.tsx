@@ -13,7 +13,6 @@ import {
   Info,
   FileText,
   Users,
-  Phone,
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -198,15 +197,6 @@ export function Header() {
 
           {/* Right Side - CTA Button */}
           <div className="flex items-center gap-3">
-            {/* Contact - Desktop Only */}
-            <a
-              href="tel:+919311964796"
-              className="hidden lg:flex items-center gap-2 text-sm text-slate-600 hover:text-teal-600 transition-colors"
-            >
-              <Phone className="w-4 h-4" />
-              <span className="font-medium">+91 9311964796</span>
-            </a>
-
             {/* CTA Button */}
             {user ? (
               <Link href="/user">
@@ -341,14 +331,6 @@ export function Header() {
 
               {/* Mobile CTA */}
               <div className="mt-4 pt-4 border-t border-slate-100">
-                <a
-                  href="tel:+919311964796"
-                  className="flex items-center gap-3 px-4 py-3 text-slate-600"
-                >
-                  <Phone className="w-5 h-5" />
-                  <span className="font-medium">+91 9311964796</span>
-                </a>
-
                 {user ? (
                   <Link
                     href="/user"
