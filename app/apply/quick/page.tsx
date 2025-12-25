@@ -4569,40 +4569,44 @@ console.log('Sending OTP with payload:', payload);
           return;
         }
 
-        // Step 4 Final Submit - just submit the application
-        const principal = parseFloat(formData.loanAmount);
-        const payload = {
-          isSubmit: true
-        };
+        // Step 4 Final Submit - Initiate disbursement
+        const applicationNumber = approvalData?.applicationNumber || localStorage.getItem('applicationId');
 
-        const response = await fetch(`https://alpha.quikkred.in/api/application/loan/create`, {
+        if (!applicationNumber) {
+          toast({
+            variant: "error",
+            title: "Application Error",
+            description: "Application number not found. Please try again.",
+          });
+          setLoading(false);
+          return;
+        }
+
+        console.log('💰 Initiating disbursement for:', applicationNumber);
+        const response = await fetch('https://alpha.quikkred.in/api/disbursement/initiate', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({ applicationNumber })
         });
 
         const result = await response.json();
 
-        // Check if API call was successful
         if (response.ok && result.success) {
-          console.log('✅ Loan application submitted successfully');
-          console.log('📊 Response:', result);
+          console.log('✅ Disbursement initiated successfully');
+          console.log('📊 Payout ID:', result.payoutId);
+          console.log('📊 Payout Status:', result.payoutStatus);
 
-          // Store IDs from response
-          if (result.data) {
-            if (result.data.customerId) localStorage.setItem('userId', result.data.customerId);
-            if (result.data.applicationNumber) localStorage.setItem('applicationId', result.data.applicationNumber);
-            if (result.data.loanNumber) localStorage.setItem('loanNumber', result.data.loanNumber);
-          }
+          // Store payout info
+          if (result.payoutId) localStorage.setItem('payoutId', result.payoutId);
 
           // Show success toast
           toast({
             variant: "success",
             title: "Application Submitted",
-            description: "Your loan application has been submitted successfully.",
+            description: result.message || "Disbursement initiated successfully.",
           });
 
           // Redirect to dashboard
@@ -4611,18 +4615,17 @@ console.log('Sending OTP with payload:', payload);
           return;
         } else {
           // API returned error - show error and stay on step 4
-          console.error('❌ Loan application failed:', result.message);
+          console.error('❌ Disbursement failed:', result.message);
           toast({
             variant: "error",
-            title: "Application Failed",
-            description: result.message || "Failed to submit loan application. Please try again.",
+            title: "Disbursement Failed",
+            description: result.message || "Failed to initiate disbursement. Please try again.",
           });
           setLoading(false);
-          return; // Don't proceed, stay on step 4
+          return;
         }
       } catch (error: any) {
-        console.error('Error submitting loan application:', error);
-        // Show error toast and stay on step 4
+        console.error('Error initiating disbursement:', error);
         toast({
           variant: "error",
           title: "Submission Error",
