@@ -236,9 +236,6 @@ export default function CookiePolicyPage() {
                   <strong className="text-gray-700">Email:</strong> privacy@quikkred.com
                 </li>
                 <li className="text-gray-600">
-                  <strong className="text-gray-700">Phone:</strong> +91-1800-123-4567
-                </li>
-                <li className="text-gray-600">
                   <strong className="text-gray-700">Address:</strong> QuikkRed, Head Office, Plot No. 420, Digital Lane, Sector-44, Gurugram – 122003
                 </li>
               </ul>

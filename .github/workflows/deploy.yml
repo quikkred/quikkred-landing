@@ -6,6 +6,11 @@ on:
       - develop    # Deploy to Alpha (Hostinger KVM8)
       - staging    # Deploy to Beta (AWS S3 + CloudFront)
       - main       # Deploy to Production (AWS S3 + CloudFront)
+  pull_request:
+    branches:
+      - develop
+      - staging
+      - main
 
 env:
   AWS_REGION: ap-south-1
@@ -13,13 +18,41 @@ env:
 
 jobs:
   # ============================================
+  # BUILD & TEST (All branches)
+  # ============================================
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ github.ref == 'refs/heads/main' && 'https://api.quikkred.in' || github.ref == 'refs/heads/staging' && 'https://beta.quikkred.in' || 'https://alpha.quikkred.in' }}
+
+  # ============================================
   # DEPLOY TO ALPHA (Hostinger KVM8)
   # Triggers on: push to develop
-  # Build happens on server - no CI build needed
   # ============================================
   deploy-alpha:
+    needs: build-and-test
     if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
     runs-on: ubuntu-latest
+    environment: alpha
 
     steps:
       - name: Checkout code
@@ -29,28 +62,31 @@ jobs:
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: 93.127.167.88
-          username: root
+          username: ${{ secrets.HOSTINGER_SSH_USER }}
           key: ${{ secrets.HOSTINGER_SSH_KEY }}
           port: 22
           script: |
             echo "🚀 Starting Alpha Landing Page deployment..."
 
             # Navigate to landing directory
-            cd /opt/quikkred/landing || { echo "❌ Directory not found"; exit 1; }
+            cd /opt/quikkred/landing || cd /home/quikkredLanding || { echo "Creating directory..."; mkdir -p /opt/quikkred/landing && cd /opt/quikkred/landing; }
 
-            # Pull latest code
-            git fetch origin develop
-            git checkout develop 2>/dev/null || git checkout -b develop origin/develop
-            git reset --hard origin/develop
+            # Clone if not exists, otherwise pull
+            if [ -d ".git" ]; then
+              git fetch origin develop
+              git reset --hard origin/develop
+            else
+              git clone -b develop https://github.com/Aknathpanchal/Quikkred-landing-user-dashboard-main.git .
+            fi
 
             # Install dependencies
-            npm install
+            npm ci
 
             # Build with Alpha environment
             NEXT_PUBLIC_API_URL=https://alpha.quikkred.in npm run build
 
             # Restart with PM2
-            pm2 restart quikkred-landing || pm2 start npm --name "quikkred-landing" -- start -- -p 3000
+            pm2 describe quikkred-landing > /dev/null 2>&1 && pm2 restart quikkred-landing || pm2 start npm --name "quikkred-landing" -- start -- -p 3000
 
             pm2 save
 
@@ -59,7 +95,7 @@ jobs:
       - name: Health Check
         run: |
           sleep 15
-          response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://alpha.quikkred.in || echo "000")
+          response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://app-alpha.quikkred.in || echo "000")
           echo "Health check response: $response"
 
   # ============================================
@@ -67,8 +103,10 @@ jobs:
   # Triggers on: push to staging
   # ============================================
   deploy-beta:
+    needs: build-and-test
     if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
     runs-on: ubuntu-latest
+    environment: beta
 
     steps:
       - name: Checkout code
@@ -98,6 +136,7 @@ jobs:
 
       - name: Deploy to S3 (Beta)
         run: |
+          # Check if static export is configured
           if [ -d "out" ]; then
             aws s3 sync out/ s3://quikkred-beta-landing/ --delete
           else
@@ -121,8 +160,10 @@ jobs:
   # Triggers on: push to main
   # ============================================
   deploy-production:
+    needs: build-and-test
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - name: Checkout code
@@ -173,3 +214,13 @@ jobs:
           sleep 15
           response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://quikkred.in || echo "000")
           echo "Production health check: $response"
+
+      - name: Notify Team
+        if: always()
+        continue-on-error: true
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: '🚀 PRODUCTION Landing Page Deployment: ${{ job.status }}'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -2,10 +2,10 @@ import { Phone, MapPin, Mail } from "lucide-react"
 
 const contactCards = [
   {
-    icon: Phone,
-    title: "Call Us",
-    description: "1800-123-4567",
-    subtext: "+1 (555) 000-0000",
+    icon: Mail,
+    title: "Email Us",
+    description: "support@quikkred.com",
+    subtext: "loans@quikkred.com",
   },
   {
     icon: MapPin,
@@ -14,10 +14,10 @@ const contactCards = [
     subtext: "Bangkok, Thailand",
   },
   {
-    icon: Mail,
-    title: "Email Us",
-    description: "contact@quickblend.com",
-    subtext: "",
+    icon: Phone,
+    title: "Call Us",
+    description: "Coming Soon",
+    subtext: "Phone support launching soon",
   },
 ]
 

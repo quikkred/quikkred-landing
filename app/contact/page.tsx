@@ -29,18 +29,10 @@ export default function ContactPage() {
 
   const contactInfo = [
     {
-      icon: Phone,
-      title: "Call Us",
-      primary: "1800-123-4567",
-      secondary: "+91-98765-43210",
-      description: "Speak to our loan experts",
-      available: "24/7 Support"
-    },
-    {
       icon: Mail,
       title: "Email Us",
       primary: "support@quikkred.com",
-      secondary: "loans@Quikkred.com",
+      secondary: "loans@quikkred.com",
       description: "Get email support",
       available: "Response within 2 hours"
     },
