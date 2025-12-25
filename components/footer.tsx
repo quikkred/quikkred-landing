@@ -308,15 +308,6 @@ export function Footer() {
             <ul className="space-y-2 sm:space-y-3 flex flex-col items-center sm:items-start">
               <li>
                 <a
-                  href={`tel:${t.footer.contact.phone}`}
-                  className="text-slate-400 hover:text-[#25B181] flex items-center gap-2 text-xs sm:text-sm"
-                >
-                  <Phone className="w-4 h-4 flex-shrink-0" />
-                  <span className="break-all">{t.footer.contact.phone}</span>
-                </a>
-              </li>
-              <li>
-                <a
                   href={`mailto:${t.footer.contact.email}`}
                   className="text-slate-400 hover:text-[#25B181] flex items-center gap-2 text-xs sm:text-sm"
                 >
