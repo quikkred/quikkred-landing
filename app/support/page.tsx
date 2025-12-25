@@ -319,18 +319,18 @@ export default function SupportPage() {
           {/* Quick Actions */}
           <div className="grid md:grid-cols-4 gap-4 mb-8">
             <button className="bg-white rounded-lg shadow p-4 flex items-center space-x-3 hover:shadow-md transition-shadow">
-              <Phone className="w-8 h-8 text-[#4A66FF]" />
+              <Mail className="w-8 h-8 text-[#4A66FF]" />
               <div className="text-left">
-                <p className="font-semibold text-gray-900">Call Us</p>
-                <p className="text-sm text-gray-600">1800-123-4567</p>
+                <p className="font-semibold text-gray-900">Email Us</p>
+                <p className="text-sm text-gray-600">support@quikkred.com</p>
               </div>
             </button>
 
             <button className="bg-white rounded-lg shadow p-4 flex items-center space-x-3 hover:shadow-md transition-shadow">
               <Mail className="w-8 h-8 text-[#25B181]" />
               <div className="text-left">
-                <p className="font-semibold text-gray-900">Email</p>
-                <p className="text-sm text-gray-600">support@quikkred.com</p>
+                <p className="font-semibold text-gray-900">Loans</p>
+                <p className="text-sm text-gray-600">loans@quikkred.com</p>
               </div>
             </button>
 

@@ -466,10 +466,10 @@ export default function CorporateTieupsPage() {
               Let's discuss how we can create a customized solution for your organization
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="tel:1800-123-4567">
+              <a href="mailto:partners@quikkred.com">
                 <button className="px-8 py-3 bg-white text-[#4A66FF] rounded-lg font-semibold hover:shadow-lg transition-all">
-                  <Phone className="w-5 h-5 inline mr-2" />
-                  Schedule Call
+                  <Mail className="w-5 h-5 inline mr-2" />
+                  Contact Us
                 </button>
               </a>
               <a href="mailto:corporate@Quikkred.com">

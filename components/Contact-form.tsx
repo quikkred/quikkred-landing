@@ -196,15 +196,15 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
                 <div className="mt-10 space-y-4 text-left">
                   <div className="flex items-center gap-3 text-white/90">
                     <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                      <Phone className="w-5 h-5 text-white" />
+                      <Mail className="w-5 h-5 text-white" />
                     </div>
-                    <span>1800-123-4567</span>
+                    <span>support@quikkred.com</span>
                   </div>
                   <div className="flex items-center gap-3 text-white/90">
                     <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
                       <Mail className="w-5 h-5 text-white" />
                     </div>
-                    <span>support@quikkred.com</span>
+                    <span>loans@quikkred.com</span>
                   </div>
                 </div>
               </div> */}

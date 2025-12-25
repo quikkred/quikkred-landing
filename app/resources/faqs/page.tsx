@@ -467,10 +467,10 @@ export default function FAQsPage() {
                   Contact Us
                 </button>
               </Link>
-              <a href="tel:1800-123-4567">
+              <a href="mailto:loans@quikkred.com">
                 <button className="w-full bg-transparent border-2 border-white  py-3 px-6 rounded-lg font-semibold hover:bg-white hover:text-[#4A66FF] transition-all">
-                  <Phone className="w-4 h-4 inline mr-2" />
-                  Call Support
+                  <Mail className="w-4 h-4 inline mr-2" />
+                  Loan Queries
                 </button>
               </a>
               <a href="mailto:support@quikkred.com">
