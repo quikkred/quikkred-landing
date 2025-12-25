@@ -1164,7 +1164,7 @@ export default function QuickLoanApplication() {
         .esign-box .text { font-size: 12px; color: #25B181; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         .esign-box .subtext { font-size: 10px; color: #718096; margin-top: 4px; }
         .esign-box .details { margin-top: 15px; font-size: 10px; color: #4a5568; line-height: 1.7; }
-        .lender-box { border-color: #2d3748; background: linear-gradient(135deg, #f7fafc 0%, #ffffff 100%); }
+        .lender-box { border-color: #2d3748; background: white; }
         .lender-box .text { color: #2d3748; }
         .declaration {
             background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
@@ -1736,18 +1736,28 @@ export default function QuickLoanApplication() {
                         </div>
                     </div>
                 </div>
-                <div class="signature-box">
-                    <div class="esign-box lender-box">
-                        <div class="icon">🏢</div>
-                        <div class="text">Lender's Authorization</div>
-                        <div class="subtext">For Satsai Finlease Private Limited</div>
-                        <div class="details">
-                            <div><strong>Authorized Signatory</strong></div>
-                            <div>Quikkred Digital Lending Platform</div>
-                            <div><strong>Date:</strong> ${currentDate}</div>
-                        </div>
-                    </div>
-                </div>
+              <div class="signature-box">
+    <div class="esign-box lender-box">
+        <div class="icon">
+            <img 
+                src="https://app-alpha.quikkred.in/Lender_sign.png" 
+                alt="Lender Icon"
+                class="lender-svg"
+                 width="220"
+            />
+        </div>
+
+        <div class="text">Lender's Authorization</div>
+        <div class="subtext">For Satsai Finlease Private Limited</div>
+
+        <div class="details">
+            <div><strong>Authorized Signatory</strong></div>
+            <div>Quikkred Digital Lending Platform</div>
+            <div><strong>Date:</strong> ${currentDate}</div>
+        </div>
+    </div>
+</div>
+
             </div>
         </div>
 
