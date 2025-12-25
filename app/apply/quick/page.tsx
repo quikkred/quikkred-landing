@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -57,8 +57,9 @@ const autoDecisionEngine = (data: any) => {
     processingFee: Math.round(loanAmount * 0.02)
   };
 };
-
 export default function QuickLoanApplication() {
+  // Generate unique document number for this session (stable across re-renders)
+  const documentNumber = useMemo(() => `DOC${new Date().getFullYear()}${Date.now()}`, []);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { login, user, isLoading } = useAuth();
@@ -69,6 +70,7 @@ export default function QuickLoanApplication() {
   const [selfieCapture, setSelfieCapture] = useState(false);
   const [selfieCaptured, setSelfieCaptured] = useState(false);
   const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
+  const [selfieVerified, setSelfieVerified] = useState(false); // Profile photo verification status
   const [verificationMethod, setVerificationMethod] = useState<'mobile' | 'email'>('email');
   const [userDataLoaded, setUserDataLoaded] = useState(false);
   const [panVerifying, setPanVerifying] = useState(false);
@@ -109,6 +111,9 @@ export default function QuickLoanApplication() {
   // Approval Data (Step 3)
   const [approvalData, setApprovalData] = useState<any>(null);
   const [approvalLoading, setApprovalLoading] = useState(false);
+
+  // BRE Status States
+  const [rejectionCountdown, setRejectionCountdown] = useState(10);
 
   // User location state
   const [userLocation, setUserLocation] = useState<{latitude: number; longitude: number} | null>(null);
@@ -347,6 +352,12 @@ export default function QuickLoanApplication() {
                 setSelfiePreview(profileData.profile.s3URL);
                 setSelfieCaptured(true);
                 console.log('✅ Selfie loaded from profile:', profileData.profile.s3URL);
+
+                // Check if selfie/profile is verified - disable retake if verified
+                if (profileData.profile?.status === 'VERIFIED') {
+                  setSelfieVerified(true);
+                  console.log('✅ Selfie already verified - retake disabled');
+                }
               }
 
               // STEP 1: Check if ALL checklist values are true → Dashboard
@@ -507,6 +518,18 @@ export default function QuickLoanApplication() {
       return () => clearTimeout(timer);
     }
   }, [aadhaarReverifyTimer]);
+
+  // Rejection countdown timer - auto redirect to home after 10 seconds
+  useEffect(() => {
+    if (currentStep === 4 && approvalData?.status === 'Reject' && rejectionCountdown > 0) {
+      const timer = setTimeout(() => {
+        setRejectionCountdown(prev => prev - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (currentStep === 4 && approvalData?.status === 'Reject' && rejectionCountdown === 0) {
+      router.push('/');
+    }
+  }, [currentStep, approvalData?.status, rejectionCountdown, router]);
 
   // Check Aadhaar verification status when verified=true query param is present
   // Only calls API after user profile data is loaded AND if isAadhaarVerify !== true
@@ -981,9 +1004,9 @@ export default function QuickLoanApplication() {
           <tr>
             <td>1</td>
             <td>N/A</td>
-            <td>Rs${(loanAmount)}</td>
-            <td>Rs${(Math.round(interest))}</td>
-            <td>Rs${(Math.round(totalAmount))}</td>
+            <td>&#8377;${(loanAmount)}</td>
+            <td>&#8377;${(Math.round(interest))}</td>
+            <td>&#8377;${(Math.round(totalAmount))}</td>
             <td>N/A</td>
           </tr>
         `;
@@ -1003,9 +1026,9 @@ export default function QuickLoanApplication() {
           <tr>
             <td>${i}</td>
             <td>${dueDate.toLocaleDateString('en-IN')}</td>
-            <td>Rs${(principal)}</td>
-            <td>Rs${(interest)}</td>
-            <td>Rs${(emi)}</td>
+            <td>&#8377;${(principal)}</td>
+            <td>&#8377;${(interest)}</td>
+            <td>&#8377;${(emi)}</td>
             <td>eNACH Auto-Debit</td>
           </tr>
         `;
@@ -1601,11 +1624,11 @@ export default function QuickLoanApplication() {
                 <div class="company-info">
                     <img src="https://quikkred.in/logo.svg" alt="Quikkred" class="company-logo"/>
                     <div class="tagline">Quick Credit, Trusted Partner</div>
-                    <div class="reg-info">Satsai Finlease Private Limited | RBI Registered NBFC<br>CIN: U65100MH2024PTC123456 | CoR: N-05.02345</div>
+                    <div class="reg-info">Satsai Finlease Private Limited | RBI Registered NBFC<br>CIN: U71290DL1996PTC081328 | CoR: B-14.01646</div>
                 </div>
             </div>
             <div class="doc-info">
-                <div class="loan-ref">QK${getValue(data.applicationNumber) !== 'N/A' ? data.applicationNumber : Math.random().toString(36).substr(2, 9).toUpperCase()}</div>
+                <div class="loan-ref">${`${documentNumber}`}</div>
                 <p><strong>Date:</strong> ${currentDate}</p>
                 <p><strong>Place:</strong> Rajendra Place</p>
                 <p><strong>Product:</strong> ${getValue(data.productName) !== 'N/A' ? data.productName : 'Personal Loan'}</p>
@@ -1636,7 +1659,7 @@ export default function QuickLoanApplication() {
                 <div class="info-row"><span class="info-label">Employment Type</span><span class="info-value">${getValue(data.employmentType)}</span></div>
                 <div class="info-row"><span class="info-label">Company / Business Name</span><span class="info-value">${getValue(data.companyName)}</span></div>
                 <div class="info-row"><span class="info-label">Designation</span><span class="info-value">${getValue(data.designation)}</span></div>
-                <div class="info-row"><span class="info-label">Monthly Income</span><span class="info-value">Rs${(data.monthlyIncome)}</span></div>
+                <div class="info-row"><span class="info-label">Monthly Income</span><span class="info-value">&#8377;${(data.monthlyIncome)}</span></div>
                 <div class="info-row"><span class="info-label">Salary Credit Date</span><span class="info-value">${getValue(data.salaryDate) !== 'N/A' ? data.salaryDate : '1st'} of every month</span></div>
                 <div class="info-row"><span class="info-label">Work Experience</span><span class="info-value">${getValue(data.workExperience)} years</span></div>
             </div>
@@ -1649,12 +1672,13 @@ export default function QuickLoanApplication() {
             <div class="section-title">Loan Details</div>
             <div class="loan-box">
                 <div class="loan-grid">
-                    <div class="loan-item"><div class="amount">Rs${(data.loanAmount)}</div><div class="label">Principal Amount</div></div>
+                    <div class="loan-item"><div class="amount">&#8377;${(data.loanAmount)}</div><div class="label">Principal Amount</div></div>
                     <div class="loan-item"><div class="amount">${getValue(data.interestRate) !== 'N/A' ? data.interestRate : '1.0'}%</div><div class="label">Interest Rate (Daily)</div></div>
                     <div class="loan-item"><div class="amount">${getValue(data.tenure)} ${getValue(data.tenureUnit) !== 'N/A' ? data.tenureUnit : 'days'}</div><div class="label">Loan Tenure</div></div>
-                    <div class="loan-item"><div class="amount">Rs${(data.processingFee)}</div><div class="label">Processing Fee</div></div>
-                    <div class="loan-item highlight"><div class="amount">Rs${(data.disbursementAmount)}</div><div class="label">Disbursement Amount</div></div>
-                    <div class="loan-item highlight"><div class="amount">Rs${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
+                    <div class="loan-item"><div class="amount">&#8377;${(data.processingFee)}</div><div class="label">Processing Fee</div></div>
+                    <div class="loan-item highlight"><div class="amount">&#8377;${(data.disbursementAmount)}</div><div class="label">Disbursement Amount</div></div>
+                    <div class="loan-item highlight"><div class="amount">&#8377;
+${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
                 </div>
             </div>
         </div>
@@ -1701,7 +1725,8 @@ export default function QuickLoanApplication() {
                     <li><strong>Disbursement:</strong> Upon successful verification, the loan amount will be disbursed within 24-48 hours.</li>
                     <li><strong>Repayment:</strong> The Borrower agrees to repay the loan as per the repayment schedule via eNACH/eMandate.</li>
                     <li><strong>Interest & Charges:</strong> The applicable interest rate is ${getValue(data.interestRate) !== 'N/A' ? data.interestRate : '1.0'}% Daily (36.5% APR). Processing fee of ${getValue(data.processingFee) !== 'N/A' ? data.processingFee : '2'}% + 18% GST.</li>
-                    <li><strong>Late Payment:</strong> Late fee of Rs 500 and penal interest of 2% per day will apply on overdue amounts.</li>
+                    <li><strong>Late Payment:</strong> Late fee of &#8377;
+ 500 and penal interest of 2% per day will apply on overdue amounts.</li>
                     <li><strong>Default & Recovery:</strong> Default may result in credit bureau reporting and legal action.</li>
                     <li><strong>Governing Law:</strong> This agreement is governed by Indian laws with jurisdiction in ${getValue(data.city) !== 'N/A' ? data.city : 'Mumbai'}.</li>
                 </ol>
@@ -2641,6 +2666,8 @@ export default function QuickLoanApplication() {
                     pdf.text(text || '', x + 2, y + 3);
                     x += colWidths[i];
                 });
+
+                
                 y += 4.5;
             });
             y += 3;
@@ -2663,7 +2690,7 @@ export default function QuickLoanApplication() {
             pdf.setFont('helvetica', 'normal');
             pdf.setTextColor(100, 80, 50);
             const notices = [
-                'Late Payment Charges: Rs.500 + 2% per day on overdue amount.',
+                'Late Payment Charges: &#8377; 500 + 2% per day on overdue amount.',
                 'Credit Reporting: Non-payment will be reported to CIBIL, Experian, Equifax & CRIF.',
                 'Legal Action: Default may result in legal proceedings under applicable laws.',
                 'Collection: Recovery agents may contact you for overdue payments per RBI guidelines.'
@@ -2834,38 +2861,38 @@ y += boxHeight + 4;
             return pdf.output('blob');
         }
 
-        async function approveAgreement() {
-            const btn = document.getElementById('approve-btn');
-            const loadingIndicator = document.getElementById('loading-indicator');
-            const approveSection = document.getElementById('approve-section');
+       async function approveAgreement() {
+    const btn = document.getElementById('approve-btn');
+    const loadingIndicator = document.getElementById('loading-indicator');
 
-            // Show loading state
-            btn.disabled = true;
-            btn.style.opacity = '0.6';
-            btn.textContent = 'Processing...';
-            loadingIndicator.style.display = 'block';
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
+    btn.textContent = 'Processing...';
+    loadingIndicator.style.display = 'block';
 
-            try {
-                // Get auth token
-                const token = localStorage.getItem('accessToken') ||
-                              localStorage.getItem('token') ||
-                              localStorage.getItem('authToken');
+    try {
+        const token = localStorage.getItem('accessToken') ||
+                      localStorage.getItem('token') ||
+                      localStorage.getItem('authToken');
 
-                if (!token) {
-                    alert('Authentication error. Please login again.');
-                    window.location.href = '/login';
-                    return;
-                }
+        if (!token) {
+            alert('Authentication error. Please login again.');
+            window.location.href = '/login';
+            return;
+        }
 
-                // Generate PDF blob using jsPDF
-                const pdfBlob = await generatePDFBlob();
+        // 🔹 Generate document number
+        const currentYear = new Date().getFullYear();
+        const documentNumber = 'DOC' + currentYear + Date.now();
+
+        // Generate PDF
+        const pdfBlob = await generatePDFBlob();
 
                 // Create FormData and append PDF
                 const formData = new FormData();
                 formData.append('eSignDoc', pdfBlob, 'loan-agreement.pdf');
-
                 // Upload PDF to API
-                const response = await fetch('https://alpha.quikkred.in/api/kyc/eSign/upload', {
+                const response = await fetch('https://alpha.quikkred.in/api/kyc/eSign/upload?documentNumber=${documentNumber}', {
                     method: 'POST',
                     headers: {
                         'Authorization': 'Bearer ' + token
@@ -2873,29 +2900,29 @@ y += boxHeight + 4;
                     body: formData
                 });
 
-                const result = await response.json();
+        const result = await response.json();
 
                 if (response.ok && result.success && result.data && result.data.url) {
                     // Set approval flag
-                    localStorage.setItem('dataAgreementApproved', 'true');
+            localStorage.setItem('dataAgreementApproved', 'true');
 
                     // Open the URL from response for next process
                     window.location.href = result.data.url;
-                } else {
-                    throw new Error(result.message || 'Failed to upload agreement');
-                }
+        } else {
+            throw new Error(result.message || 'Failed to upload agreement');
+        }
 
-            } catch (error) {
+    } catch (error) {
                 console.error('Error processing agreement:', error);
                 alert('Error: ' + (error.message || 'Failed to process agreement. Please try again.'));
 
                 // Reset button state
-                btn.disabled = false;
-                btn.style.opacity = '1';
-                btn.textContent = 'I Agree & Approve';
-                loadingIndicator.style.display = 'none';
-            }
-        }
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.textContent = 'I Agree & Approve';
+        loadingIndicator.style.display = 'none';
+    }
+}
     </script>
 </body>
 </html>`;
@@ -3428,6 +3455,12 @@ console.log('Sending OTP with payload:', payload);
                 setSelfiePreview(profileData.profile.s3URL);
                 setSelfieCaptured(true);
                 console.log('✅ Selfie loaded from profile:', profileData.profile.s3URL);
+
+                // Check if selfie/profile is verified - disable retake if verified
+                if (profileData.profile?.status === 'VERIFIED') {
+                  setSelfieVerified(true);
+                  console.log('✅ Selfie already verified - retake disabled');
+                }
               }
 
               // Auto-fill references if available
@@ -3910,6 +3943,9 @@ console.log('Sending OTP with payload:', payload);
     const previewUrl = URL.createObjectURL(imageFile);
     setSelfiePreview(previewUrl);
     setSelfieCaptured(true);
+
+    // Face verification (livenessStatus) succeeded - disable retake
+    setSelfieVerified(true);
 
     toast({
       variant: "success",
@@ -5693,20 +5729,28 @@ console.log('Sending OTP with payload:', payload);
                               className="w-full h-full object-cover"
                             />
                           )}
-                          <div className="absolute top-2 right-2 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
+                          <div className={`absolute top-2 right-2 ${selfieVerified ? 'bg-green-600' : 'bg-green-500'} text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1`}>
                             <CheckCircle className="w-4 h-4" />
-                            Captured
+                            {selfieVerified ? 'Verified' : 'Captured'}
                           </div>
                         </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={captureSelfi}
-                        className="w-full border-2 border-blue-500 text-blue-600 py-3 rounded-lg hover:bg-blue-50 transition-all font-semibold flex items-center justify-center gap-2"
-                      >
-                        <Camera className="w-5 h-5" />
-                        Retake Selfie
-                      </button>
+                      {/* Only show Retake button if selfie is NOT verified */}
+                      {!selfieVerified && (
+                        <button
+                          type="button"
+                          onClick={captureSelfi}
+                          className="w-full border-2 border-blue-500 text-blue-600 py-3 rounded-lg hover:bg-blue-50 transition-all font-semibold flex items-center justify-center gap-2"
+                        >
+                          <Camera className="w-5 h-5" />
+                          Retake Selfie
+                        </button>
+                      )}
+                      {selfieVerified && (
+                        <p className="text-center text-sm text-green-600 font-medium">
+                          Your photo has been verified successfully
+                        </p>
+                      )}
                     </>
                   )}
                 </div>
@@ -5722,56 +5766,94 @@ console.log('Sending OTP with payload:', payload);
                 exit={{ opacity: 0 }}
                 className="space-y-6"
               >
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Loan Approval</h2>
-
                 {approvalLoading ? (
                   <div className="flex flex-col items-center justify-center py-12">
                     <Loader2 className="w-12 h-12 animate-spin text-[#25B181] mb-4" />
                     <p className="text-gray-600">Checking your eligibility...</p>
                   </div>
-                ) : approvalData ? (
-                  <>
-                    {/* Approval Status Banner */}
-                    <div className={`rounded-xl p-6 text-white ${
-                      approvalData.status === 'APPROVED'
-                        ? 'bg-gradient-to-r from-[#25B181] to-[#51C9AF]'
-                        : 'bg-gradient-to-r from-yellow-500 to-orange-500'
-                    }`}>
-                      <div className="flex items-center gap-4">
-                        <div className="bg-white/20 rounded-full p-3">
-                          <CheckCircle className="w-8 h-8" />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-bold">
-                            {approvalData.status === 'APPROVED' ? 'Congratulations!' : 'Application Status'}
-                          </h3>
-                          <p className="text-white/90">
-                            {approvalData.status === 'APPROVED'
-                              ? 'Your loan has been approved!'
-                              : `Status: ${approvalData.status}`}
-                          </p>
-                          {approvalData.applicationNumber && (
-                            <p className="text-sm text-white/80 mt-1">
-                              Application No: {approvalData.applicationNumber}
-                            </p>
-                          )}
-                        </div>
+                ) : approvalData?.status === 'Reject' ? (
+                  /* ========== REJECTED STATUS - Minimal UI ========== */
+                  <div className="text-center py-8">
+                    {/* Rejection Icon */}
+                    <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <X className="w-12 h-12 text-red-500" />
+                    </div>
+
+                    {/* Title */}
+                    <h2 className="text-2xl font-bold text-gray-900 mb-3">Application Not Approved</h2>
+
+                    {/* Message */}
+                    <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                      We regret to inform you that your loan application could not be approved based on our eligibility criteria.
+                    </p>
+
+                    {/* Application Number */}
+                    <div className="bg-gray-50 rounded-lg p-4 mb-6 inline-block">
+                      <p className="text-sm text-gray-500">Application Number</p>
+                      <p className="font-semibold text-gray-800">{approvalData.applicationNumber || 'N/A'}</p>
+                    </div>
+
+                    {/* Countdown */}
+                    <div className="mb-6">
+                      <div className="inline-flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded-full">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span className="text-sm">
+                          Redirecting to home in <span className="font-bold">{rejectionCountdown}</span> seconds
+                        </span>
                       </div>
                     </div>
 
-                    {/* Loan Details */}
+                    {/* Home Button */}
+                    <button
+                      onClick={() => router.push('/')}
+                      className="bg-gray-800 text-white px-8 py-3 rounded-xl font-semibold hover:bg-gray-900 transition-all"
+                    >
+                      Go to Home
+                    </button>
+                  </div>
+                ) : approvalData ? (
+                  /* ========== APPROVED STATUS - Attractive UI ========== */
+                  <>
+                    {/* Congratulations Banner */}
+                    <div className="bg-gradient-to-r from-[#25B181] to-[#1d9e6f] rounded-2xl p-6 text-white text-center relative overflow-hidden">
+                      {/* Decorative elements */}
+                      <div className="absolute top-2 left-4">
+                        <Sparkles className="w-6 h-6 text-yellow-300 opacity-80" />
+                      </div>
+                      <div className="absolute top-4 right-6">
+                        <Sparkles className="w-4 h-4 text-yellow-200 opacity-60" />
+                      </div>
+                      <div className="absolute bottom-3 right-10">
+                        <Sparkles className="w-5 h-5 text-yellow-300 opacity-70" />
+                      </div>
+
+                      <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
+                        <CheckCircle className="w-10 h-10 text-[#25B181]" />
+                      </div>
+                      <h2 className="text-2xl font-bold mb-1">Congratulations!</h2>
+                      <p className="text-green-100">Your loan has been approved</p>
+                      {approvalData.applicationNumber && (
+                        <p className="text-sm text-white/80 mt-2">
+                          Application No: {approvalData.applicationNumber}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Loan Amount Highlight */}
+                    <div className="bg-gradient-to-r from-[#25B181]/10 to-emerald-50 border-2 border-[#25B181] rounded-2xl p-6 text-center">
+                      <p className="text-sm text-[#25B181] font-medium mb-1">Approved Loan Amount</p>
+                      <p className="text-4xl font-bold text-gray-900">
+                        ₹{(approvalData.loanAmount || 0).toLocaleString('en-IN')}
+                      </p>
+                    </div>
+
+                    {/* Loan Details Grid */}
                     <div className="bg-gray-50 rounded-xl p-6">
                       <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                         <IndianRupee className="w-5 h-5 text-[#25B181]" />
                         Loan Details
                       </h3>
                       <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-white rounded-lg p-4 border border-[#25B181] border-2">
-                          <p className="text-sm text-[#25B181] mb-1">Loan Amount</p>
-                          <p className="text-xl font-bold text-[#25B181]">
-                            ₹{(approvalData.loanAmount || 0).toLocaleString('en-IN')}
-                          </p>
-                        </div>
                         <div className="bg-white rounded-lg p-4 border border-gray-200">
                           <p className="text-sm text-gray-500 mb-1">Tenure</p>
                           <p className="text-xl font-bold text-gray-900">
@@ -5798,9 +5880,16 @@ console.log('Sending OTP with payload:', payload);
                           <p className="text-sm text-gray-500 mb-1">Total Repayment</p>
                           <p className="text-xl font-bold text-gray-900">₹{(approvalData.totalRepayment || 0).toLocaleString('en-IN')}</p>
                         </div>
-                        <div className="bg-white rounded-lg p-4 border border-green-500 border-2">
-                          <p className="text-sm text-green-600 mb-1">Net Disbursal Amount</p>
-                          <p className="text-xl font-bold text-green-600">₹{(approvalData.netDisbursalAmount || 0).toLocaleString('en-IN')}</p>
+                      </div>
+
+                      {/* Net Disbursal Highlight */}
+                      <div className="mt-4 bg-green-50 border-2 border-green-500 rounded-xl p-4">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="text-sm text-green-600 font-medium">You Will Receive</p>
+                            <p className="text-xs text-green-500">Net Disbursal Amount</p>
+                          </div>
+                          <p className="text-2xl font-bold text-green-600">₹{(approvalData.netDisbursalAmount || 0).toLocaleString('en-IN')}</p>
                         </div>
                       </div>
                     </div>
@@ -6232,34 +6321,36 @@ console.log('Sending OTP with payload:', payload);
             )}
           </AnimatePresence>
 
-          {/* Navigation Buttons */}
-          <div className="flex gap-4 mt-8">
-            {currentStep > 1 && (
-              <button
-                onClick={handlePrevious}
-                className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold"
-              >
-                Previous
-              </button>
-            )}
-            <button
-              onClick={handleNext}
-              disabled={loading || (currentStep === 1 && !isStep1Valid())}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white rounded-lg hover:shadow-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  {currentStep === 4 ? "Submit Application" : "Next"}
-                  {currentStep < 4 && <ArrowRight className="w-5 h-5" />}
-                </>
+          {/* Navigation Buttons - Hide when status is Reject */}
+          {!(currentStep === 4 && approvalData?.status === 'Reject') && (
+            <div className="flex gap-4 mt-8">
+              {currentStep > 1 && (
+                <button
+                  onClick={handlePrevious}
+                  className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold"
+                >
+                  Previous
+                </button>
               )}
-            </button>
-          </div>
+              <button
+                onClick={handleNext}
+                disabled={loading || (currentStep === 1 && !isStep1Valid())}
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white rounded-lg hover:shadow-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    {currentStep === 4 ? "Submit Application" : "Next"}
+                    {currentStep < 4 && <ArrowRight className="w-5 h-5" />}
+                  </>
+                )}
+              </button>
+            </div>
+          )}
         </motion.div>
 
         {/* Trust Indicators */}
