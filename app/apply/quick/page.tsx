@@ -1004,9 +1004,9 @@ export default function QuickLoanApplication() {
           <tr>
             <td>1</td>
             <td>N/A</td>
-            <td>Rs${(loanAmount)}</td>
-            <td>Rs${(Math.round(interest))}</td>
-            <td>Rs${(Math.round(totalAmount))}</td>
+            <td>&#8377;${(loanAmount)}</td>
+            <td>&#8377;${(Math.round(interest))}</td>
+            <td>&#8377;${(Math.round(totalAmount))}</td>
             <td>N/A</td>
           </tr>
         `;
@@ -1026,9 +1026,9 @@ export default function QuickLoanApplication() {
           <tr>
             <td>${i}</td>
             <td>${dueDate.toLocaleDateString('en-IN')}</td>
-            <td>Rs${(principal)}</td>
-            <td>Rs${(interest)}</td>
-            <td>Rs${(emi)}</td>
+            <td>&#8377;${(principal)}</td>
+            <td>&#8377;${(interest)}</td>
+            <td>&#8377;${(emi)}</td>
             <td>eNACH Auto-Debit</td>
           </tr>
         `;
@@ -1624,7 +1624,7 @@ export default function QuickLoanApplication() {
                 <div class="company-info">
                     <img src="https://quikkred.in/logo.svg" alt="Quikkred" class="company-logo"/>
                     <div class="tagline">Quick Credit, Trusted Partner</div>
-                    <div class="reg-info">Satsai Finlease Private Limited | RBI Registered NBFC<br>CIN: U65100MH2024PTC123456 | CoR: N-05.02345</div>
+                    <div class="reg-info">Satsai Finlease Private Limited | RBI Registered NBFC<br>CIN: U71290DL1996PTC081328 | CoR: B-14.01646</div>
                 </div>
             </div>
             <div class="doc-info">
@@ -1659,7 +1659,7 @@ export default function QuickLoanApplication() {
                 <div class="info-row"><span class="info-label">Employment Type</span><span class="info-value">${getValue(data.employmentType)}</span></div>
                 <div class="info-row"><span class="info-label">Company / Business Name</span><span class="info-value">${getValue(data.companyName)}</span></div>
                 <div class="info-row"><span class="info-label">Designation</span><span class="info-value">${getValue(data.designation)}</span></div>
-                <div class="info-row"><span class="info-label">Monthly Income</span><span class="info-value">Rs${(data.monthlyIncome)}</span></div>
+                <div class="info-row"><span class="info-label">Monthly Income</span><span class="info-value">&#8377;${(data.monthlyIncome)}</span></div>
                 <div class="info-row"><span class="info-label">Salary Credit Date</span><span class="info-value">${getValue(data.salaryDate) !== 'N/A' ? data.salaryDate : '1st'} of every month</span></div>
                 <div class="info-row"><span class="info-label">Work Experience</span><span class="info-value">${getValue(data.workExperience)} years</span></div>
             </div>
@@ -1672,12 +1672,13 @@ export default function QuickLoanApplication() {
             <div class="section-title">Loan Details</div>
             <div class="loan-box">
                 <div class="loan-grid">
-                    <div class="loan-item"><div class="amount">Rs${(data.loanAmount)}</div><div class="label">Principal Amount</div></div>
+                    <div class="loan-item"><div class="amount">&#8377;${(data.loanAmount)}</div><div class="label">Principal Amount</div></div>
                     <div class="loan-item"><div class="amount">${getValue(data.interestRate) !== 'N/A' ? data.interestRate : '1.0'}%</div><div class="label">Interest Rate (Daily)</div></div>
                     <div class="loan-item"><div class="amount">${getValue(data.tenure)} ${getValue(data.tenureUnit) !== 'N/A' ? data.tenureUnit : 'days'}</div><div class="label">Loan Tenure</div></div>
-                    <div class="loan-item"><div class="amount">Rs${(data.processingFee)}</div><div class="label">Processing Fee</div></div>
-                    <div class="loan-item highlight"><div class="amount">Rs${(data.disbursementAmount)}</div><div class="label">Disbursement Amount</div></div>
-                    <div class="loan-item highlight"><div class="amount">Rs${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
+                    <div class="loan-item"><div class="amount">&#8377;${(data.processingFee)}</div><div class="label">Processing Fee</div></div>
+                    <div class="loan-item highlight"><div class="amount">&#8377;${(data.disbursementAmount)}</div><div class="label">Disbursement Amount</div></div>
+                    <div class="loan-item highlight"><div class="amount">&#8377;
+${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
                 </div>
             </div>
         </div>
@@ -1724,7 +1725,8 @@ export default function QuickLoanApplication() {
                     <li><strong>Disbursement:</strong> Upon successful verification, the loan amount will be disbursed within 24-48 hours.</li>
                     <li><strong>Repayment:</strong> The Borrower agrees to repay the loan as per the repayment schedule via eNACH/eMandate.</li>
                     <li><strong>Interest & Charges:</strong> The applicable interest rate is ${getValue(data.interestRate) !== 'N/A' ? data.interestRate : '1.0'}% Daily (36.5% APR). Processing fee of ${getValue(data.processingFee) !== 'N/A' ? data.processingFee : '2'}% + 18% GST.</li>
-                    <li><strong>Late Payment:</strong> Late fee of Rs 500 and penal interest of 2% per day will apply on overdue amounts.</li>
+                    <li><strong>Late Payment:</strong> Late fee of &#8377;
+ 500 and penal interest of 2% per day will apply on overdue amounts.</li>
                     <li><strong>Default & Recovery:</strong> Default may result in credit bureau reporting and legal action.</li>
                     <li><strong>Governing Law:</strong> This agreement is governed by Indian laws with jurisdiction in ${getValue(data.city) !== 'N/A' ? data.city : 'Mumbai'}.</li>
                 </ol>
@@ -2664,6 +2666,8 @@ export default function QuickLoanApplication() {
                     pdf.text(text || '', x + 2, y + 3);
                     x += colWidths[i];
                 });
+
+                
                 y += 4.5;
             });
             y += 3;
@@ -2686,7 +2690,7 @@ export default function QuickLoanApplication() {
             pdf.setFont('helvetica', 'normal');
             pdf.setTextColor(100, 80, 50);
             const notices = [
-                'Late Payment Charges: Rs.500 + 2% per day on overdue amount.',
+                'Late Payment Charges: &#8377; 500 + 2% per day on overdue amount.',
                 'Credit Reporting: Non-payment will be reported to CIBIL, Experian, Equifax & CRIF.',
                 'Legal Action: Default may result in legal proceedings under applicable laws.',
                 'Collection: Recovery agents may contact you for overdue payments per RBI guidelines.'
@@ -2857,31 +2861,32 @@ y += boxHeight + 4;
             return pdf.output('blob');
         }
 
-        async function approveAgreement() {
-            const btn = document.getElementById('approve-btn');
-            const loadingIndicator = document.getElementById('loading-indicator');
-            const approveSection = document.getElementById('approve-section');
+       async function approveAgreement() {
+    const btn = document.getElementById('approve-btn');
+    const loadingIndicator = document.getElementById('loading-indicator');
 
-            // Show loading state
-            btn.disabled = true;
-            btn.style.opacity = '0.6';
-            btn.textContent = 'Processing...';
-            loadingIndicator.style.display = 'block';
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
+    btn.textContent = 'Processing...';
+    loadingIndicator.style.display = 'block';
 
-            try {
-                // Get auth token
-                const token = localStorage.getItem('accessToken') ||
-                              localStorage.getItem('token') ||
-                              localStorage.getItem('authToken');
+    try {
+        const token = localStorage.getItem('accessToken') ||
+                      localStorage.getItem('token') ||
+                      localStorage.getItem('authToken');
 
-                if (!token) {
-                    alert('Authentication error. Please login again.');
-                    window.location.href = '/login';
-                    return;
-                }
+        if (!token) {
+            alert('Authentication error. Please login again.');
+            window.location.href = '/login';
+            return;
+        }
 
-                // Generate PDF blob using jsPDF
-                const pdfBlob = await generatePDFBlob();
+        // 🔹 Generate document number
+        const currentYear = new Date().getFullYear();
+        const documentNumber = 'DOC' + currentYear + Date.now();
+
+        // Generate PDF
+        const pdfBlob = await generatePDFBlob();
 
                 // Create FormData and append PDF
                 const formData = new FormData();
@@ -2895,29 +2900,29 @@ y += boxHeight + 4;
                     body: formData
                 });
 
-                const result = await response.json();
+        const result = await response.json();
 
                 if (response.ok && result.success && result.data && result.data.url) {
                     // Set approval flag
-                    localStorage.setItem('dataAgreementApproved', 'true');
+            localStorage.setItem('dataAgreementApproved', 'true');
 
                     // Open the URL from response for next process
                     window.location.href = result.data.url;
-                } else {
-                    throw new Error(result.message || 'Failed to upload agreement');
-                }
+        } else {
+            throw new Error(result.message || 'Failed to upload agreement');
+        }
 
-            } catch (error) {
+    } catch (error) {
                 console.error('Error processing agreement:', error);
                 alert('Error: ' + (error.message || 'Failed to process agreement. Please try again.'));
 
                 // Reset button state
-                btn.disabled = false;
-                btn.style.opacity = '1';
-                btn.textContent = 'I Agree & Approve';
-                loadingIndicator.style.display = 'none';
-            }
-        }
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.textContent = 'I Agree & Approve';
+        loadingIndicator.style.display = 'none';
+    }
+}
     </script>
 </body>
 </html>`;
