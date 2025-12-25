@@ -437,15 +437,15 @@ export default function HowToApplyPage() {
 
             <div className="bg-white rounded-2xl p-6 shadow-sm text-center">
               <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Phone className="w-8 h-8 text-white" />
+                <Mail className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-lg font-bold mb-2">Phone Support</h3>
+              <h3 className="text-lg font-bold mb-2">Loan Queries</h3>
               <p className="text-sm text-gray-600 mb-4">
-                Call our support team for assisted application
+                Email our team for loan assistance
               </p>
-              <a href="tel:1800-123-4567">
+              <a href="mailto:loans@quikkred.com">
                 <button className="w-full px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors">
-                  Call Now
+                  Email Us
                 </button>
               </a>
             </div>
