@@ -3571,7 +3571,7 @@ console.log('Sending OTP with payload:', payload);
         setPanVerified(true);
         setPanData(result.data || null);
         setPanError(""); // Clear any errors
-        setPanReverifyTimer(30); // Start 30 second cooldown for reverify
+        setPanReverifyTimer(15); // Start 15 second cooldown for reverify
 
         toast({
           variant: "success",
@@ -3582,7 +3582,7 @@ console.log('Sending OTP with payload:', payload);
         // API returned error
         const errorMsg = result.message || 'Failed to verify PAN. Please check the PAN number and try again.';
         setPanError(errorMsg);
-        setPanReverifyTimer(30); // Start 30 second cooldown before retry
+        setPanReverifyTimer(15); // Start 15 second cooldown before retry
         toast({
           variant: "error",
           title: "Verification Failed",
@@ -4554,7 +4554,7 @@ console.log('Sending OTP with payload:', payload);
       // Final step - submit application (bank details already saved in step 3)
       setLoading(true);
 
-      try {
+           try {
         const token = localStorage.getItem('accessToken') ||
                       localStorage.getItem('token') ||
                       localStorage.getItem('authToken');
@@ -4569,44 +4569,40 @@ console.log('Sending OTP with payload:', payload);
           return;
         }
 
-        // Step 4 Final Submit - Initiate disbursement
-        const applicationNumber = approvalData?.applicationNumber || localStorage.getItem('applicationId');
+        // Step 4 Final Submit - just submit the application
+        const principal = parseFloat(formData.loanAmount);
+        const payload = {
+          isSubmit: true
+        };
 
-        if (!applicationNumber) {
-          toast({
-            variant: "error",
-            title: "Application Error",
-            description: "Application number not found. Please try again.",
-          });
-          setLoading(false);
-          return;
-        }
-
-        console.log('💰 Initiating disbursement for:', applicationNumber);
-        const response = await fetch('https://alpha.quikkred.in/api/disbursement/initiate', {
+        const response = await fetch(`https://alpha.quikkred.in/api/application/loan/create`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({ applicationNumber })
+          body: JSON.stringify(payload)
         });
 
         const result = await response.json();
 
+        // Check if API call was successful
         if (response.ok && result.success) {
-          console.log('✅ Disbursement initiated successfully');
-          console.log('📊 Payout ID:', result.payoutId);
-          console.log('📊 Payout Status:', result.payoutStatus);
+          console.log('✅ Loan application submitted successfully');
+          console.log('📊 Response:', result);
 
-          // Store payout info
-          if (result.payoutId) localStorage.setItem('payoutId', result.payoutId);
+          // Store IDs from response
+          if (result.data) {
+            if (result.data.customerId) localStorage.setItem('userId', result.data.customerId);
+            if (result.data.applicationNumber) localStorage.setItem('applicationId', result.data.applicationNumber);
+            if (result.data.loanNumber) localStorage.setItem('loanNumber', result.data.loanNumber);
+          }
 
           // Show success toast
           toast({
             variant: "success",
             title: "Application Submitted",
-            description: result.message || "Disbursement initiated successfully.",
+            description: "Your loan application has been submitted successfully.",
           });
 
           // Redirect to dashboard
@@ -4615,17 +4611,18 @@ console.log('Sending OTP with payload:', payload);
           return;
         } else {
           // API returned error - show error and stay on step 4
-          console.error('❌ Disbursement failed:', result.message);
+          console.error('❌ Loan application failed:', result.message);
           toast({
             variant: "error",
-            title: "Disbursement Failed",
-            description: result.message || "Failed to initiate disbursement. Please try again.",
+            title: "Application Failed",
+            description: result.message || "Failed to submit loan application. Please try again.",
           });
           setLoading(false);
-          return;
+          return; // Don't proceed, stay on step 4
         }
       } catch (error: any) {
-        console.error('Error initiating disbursement:', error);
+        console.error('Error submitting loan application:', error);
+        // Show error toast and stay on step 4
         toast({
           variant: "error",
           title: "Submission Error",
