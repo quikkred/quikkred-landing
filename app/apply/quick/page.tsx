@@ -2471,7 +2471,7 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
 
             // ===== HEADER =====
             // Left side: Logo and company info
-            pdf.setFontSize(22);
+         pdf.setFontSize(22);
             pdf.setFont('helvetica', 'bold');
             pdf.setTextColor(...green);
             pdf.text('QUIKKRED', margin, y + 5);
@@ -6178,7 +6178,15 @@ console.log('Sending OTP with payload:', payload);
                           name="accountHolderName"
                           value={formData.accountHolderName}
                           onChange={(e) => {
-                            handleChange(e);
+                            // Only allow alphabets and spaces
+                            const value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                            const syntheticEvent = {
+                              target: {
+                                name: 'accountHolderName',
+                                value: value
+                              }
+                            } as React.ChangeEvent<HTMLInputElement>;
+                            handleChange(syntheticEvent);
                             setBankVerified(false); // Reset verification on change
                           }}
                           disabled={bankVerified}
