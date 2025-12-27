@@ -113,7 +113,7 @@ export default function AboutPage() {
 
       <section className="py-12 sm:py-16 lg:py-20 bg-white">
         <SalaryAdvance
-          title="About QuikKred"
+          title="About Quikkred"
           // {t('products.pages.personalLoan.hero.title')}
           // highlightWord="Kred"
           // {t('products.pages.personalLoan.hero.highlightWord')}
@@ -121,8 +121,10 @@ export default function AboutPage() {
           subtitle="We are India's most trusted AI-powered NBFC, committed to making credit accessible, affordable, and transparent for every Indian. Our mission is to empower dreams and enable financial inclusion through technology and trust."
           // {t('products.pages.personalLoan.hero.subtitle')}
           buttonPrimaryText="Contact Us"
+          buttonPrimaryScrollTo="write-to-us"
           // {t('products.pages.personalLoan.hero.buttonPrimary')}
           buttonSecondaryText="Call Us Now"
+          buttonSecondaryScrollTo="lets-connect"
           // {t('products.pages.personalLoan.hero.buttonSecondary')}
           imageSrc="/Aboutus_hero_image.jpg"
           // features={[
@@ -271,7 +273,7 @@ export default function AboutPage() {
       </section>
 
       {/* Get In Touch Cards Section */}
-      <section className="bg-[#F6F6F6] py-16 sm:py-20 lg:py-24">
+      <section id="lets-connect" className="bg-[#F6F6F6] py-16 sm:py-20 lg:py-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -324,7 +326,7 @@ export default function AboutPage() {
       </section>
 
 {/* Contact Form Section */}
-      <section className="bg-white py-12 sm:py-16 lg:py-20">
+      <section id="write-to-us" className="bg-white py-12 sm:py-16 lg:py-20">
         <div className="mx-auto w-full">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
