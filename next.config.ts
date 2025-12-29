@@ -3,6 +3,37 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* Frontend-only configuration - API handled by external backend */
 
+  // SEO Redirects - Old URLs to New URLs (301 Permanent)
+  async redirects() {
+    return [
+      // About pages
+      { source: '/about', destination: '/about-us', permanent: true },
+      { source: '/about/:path*', destination: '/about-us/:path*', permanent: true },
+
+      // Partner pages
+      { source: '/partners/channel', destination: '/channel-partner', permanent: true },
+      { source: '/partners/investors', destination: '/partners/investor-relations', permanent: true },
+
+      // Resource pages
+      { source: '/resources/intrest-rate', destination: '/resources/interest-rates', permanent: true },
+      { source: '/resources/documents', destination: '/resources/document-checklist', permanent: true },
+
+      // Policy pages
+      { source: '/interest-policy', destination: '/interest-rate-policy', permanent: true },
+      { source: '/kyc-policy', destination: '/kyc-aml-policy', permanent: true },
+      { source: '/privacy', destination: '/privacy-policy', permanent: true },
+      { source: '/settlement-and-writeoff-policy', destination: '/settlement-writeoff-policy', permanent: true },
+      { source: '/terms', destination: '/terms-and-conditions', permanent: true },
+      { source: '/cookies', destination: '/cookie-policy', permanent: true },
+      { source: '/rac', destination: '/refund-cancellation', permanent: true },
+      { source: '/disclaimer-and-disclosure', destination: '/disclaimer-disclosure', permanent: true },
+      { source: '/fair-practice', destination: '/fair-practice-code', permanent: true },
+
+      // Hash URLs to proper pages
+      { source: '/about-us', has: [{ type: 'query', key: '', value: '' }], destination: '/about-us', permanent: false },
+    ];
+  },
+
   // Enable standalone output for Docker deployment
   output: 'standalone',
 

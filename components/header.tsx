@@ -35,7 +35,7 @@ export function Header() {
     },
     {
       name: t.navigation.about,
-      href: "/about",
+      href: "/about-us",
       icon: Info,
     },
     // {
@@ -72,12 +72,12 @@ export function Header() {
       submenu: [
         {
           name: t.navigation.channelPartners,
-          href: "/partners/channel",
+          href: "/channel-partner",
           description: t.navigation.channelPartnersDesc,
         },
         {
           name: t.navigation.investorRelations,
-          href: "/partners/investors",
+          href: "/partners/investor-relations",
           description: t.navigation.investorRelationsDesc,
         },
       ],
