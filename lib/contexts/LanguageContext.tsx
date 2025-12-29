@@ -18,10 +18,8 @@ interface LanguageContextType {
   }>;
 }
 
-// Cache for loaded translations - only English is pre-loaded
-const translationCache: Record<string, TranslationData> = {
-  en: enData,
-};
+// Cache for loaded translations - starts empty, will be populated with merged translations
+const translationCache: Record<string, TranslationData> = {};
 
 // Dynamic loaders for other languages - loaded only when needed
 const dynamicTranslations: Record<string, () => Promise<any>> = {
@@ -39,8 +37,26 @@ const dynamicTranslations: Record<string, () => Promise<any>> = {
   ur: () => import('@/locales/ur.json').then(m => m.default),
 };
 
-// Helper to get translation (loads dynamically if needed)
+// Deep merge function to combine translations with English fallback
+function deepMerge(target: any, source: any): any {
+  const result = { ...target };
+  for (const key in source) {
+    if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+      result[key] = deepMerge(target[key] || {}, source[key]);
+    } else if (source[key] !== undefined && source[key] !== null && source[key] !== '') {
+      result[key] = source[key];
+    }
+  }
+  return result;
+}
+
+// Helper to get translation (loads dynamically if needed) with English fallback
 async function getTranslation(langCode: string): Promise<TranslationData> {
+  // English doesn't need fallback
+  if (langCode === 'en') {
+    return enData;
+  }
+
   if (translationCache[langCode]) {
     return translationCache[langCode];
   }
@@ -48,8 +64,10 @@ async function getTranslation(langCode: string): Promise<TranslationData> {
   const loader = dynamicTranslations[langCode];
   if (loader) {
     const translation = await loader();
-    translationCache[langCode] = translation;
-    return translation;
+    // Merge with English as fallback - English first, then override with translation
+    const mergedTranslation = deepMerge(enData, translation);
+    translationCache[langCode] = mergedTranslation;
+    return mergedTranslation;
   }
 
   return enData;
