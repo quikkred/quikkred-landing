@@ -260,7 +260,7 @@
     "hero": {
       "title": "Find the Right",
       "highlightWord": "Loan for You",
-      "subtitle": "Get instant loan approval with QuikKred. Fast, secure, and 100% digital process designed for modern India.",
+      "subtitle": "Get instant loan approval with Quikkred. Fast, secure, and 100% digital process designed for modern India.",
       "buttonPrimary": "Calculate EMI Now",
       "buttonSecondary": "Apply for the loan"
     },
@@ -930,12 +930,12 @@
     },
     "faq": {
       "badge": "FAQs",
-      "heading": "Got Questions?",
+      "heading": "Any questions?",
       "headingHighlight": "We've Got Answers.",
       "subtitle": "Find answers to common questions about our loan products and process",
       "faqs": [
         {
-    "question": "What is an NBFC loan1",
+    "question": "What is an NBFC loan?",
     "answer":
       "An NBFC loan is a financial product offered by a Non-Banking Financial Company that provides credit for personal, business, or vehicle needs without requiring a traditional bank."
   },
@@ -1172,7 +1172,7 @@
   },
   "about": {
     "hero": {
-      "title": "About QuikKred",
+      "title": "About Quikkred",
       "subtitle": "We are India's most trusted AI-powered NBFC, committed to making credit accessible, affordable, and transparent for every Indian. Our mission is to empower dreams and enable financial inclusion through technology and trust.",
       "buttonPrimary": "Contact Us",
       "buttonSecondary": "Call Us Now"
