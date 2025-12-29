@@ -3519,6 +3519,21 @@ console.log('Sending OTP with payload:', payload);
                 }
               }
 
+              // Check eSign status from profile
+              // Handle both formats: eSign: true (boolean) or eSign: { status: 'SUCCESS' } (object)
+              if (profileData.eSign === true) {
+                setUserESignStatus('SUCCESS');
+                setESignVerified(true);
+                console.log('✅ eSign already completed (boolean: true)');
+              } else if (profileData.eSign?.status) {
+                setUserESignStatus(profileData.eSign.status);
+                console.log('📝 eSign status from profile:', profileData.eSign.status);
+                if (profileData.eSign.status === 'SUCCESS') {
+                  setESignVerified(true);
+                  console.log('✅ eSign already completed (status: SUCCESS)');
+                }
+              }
+
               // Auto-fill references if available
               if (profileData.references && profileData.references.length > 0) {
                 const ref1 = profileData.references[0];
@@ -6092,6 +6107,18 @@ console.log('Sending OTP with payload:', payload);
 
                                 if (response.ok && result.success && result.data) {
                                   customerData = result.data;
+
+                                  // Check eSign status and update state
+                                  if (customerData.eSign === true) {
+                                    setUserESignStatus('SUCCESS');
+                                    setESignVerified(true);
+                                    console.log('✅ eSign already completed (boolean: true)');
+                                  } else if (customerData.eSign?.status === 'SUCCESS') {
+                                    setUserESignStatus('SUCCESS');
+                                    setESignVerified(true);
+                                    console.log('✅ eSign already completed (status: SUCCESS)');
+                                  }
+
                                 }
                               } catch (error) {
                                 console.error('Error fetching customer data:', error);
