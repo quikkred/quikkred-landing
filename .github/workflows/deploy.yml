@@ -14,8 +14,8 @@ on:
   push:
     branches:
       - develop    # Deploy to Alpha (Hostinger KVM8)
-      - staging    # Deploy to Beta (AWS S3 + CloudFront)
-      - main       # Deploy to Production (AWS S3 + CloudFront)
+      - staging    # Deploy to Beta (AWS ECS)
+      - main       # Deploy to Production (AWS ECS)
   pull_request:
     branches:
       - develop
@@ -25,6 +25,7 @@ on:
 env:
   AWS_REGION: ap-south-1
   NODE_VERSION: '20'
+  ECR_REPOSITORY: quikkred-landing
 
 jobs:
   # ============================================
@@ -72,32 +73,23 @@ jobs:
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: 93.127.167.88
-          username: ${{ secrets.HOSTINGER_SSH_USER }}
+          username: root
           key: ${{ secrets.HOSTINGER_SSH_KEY }}
           port: 22
           script: |
             echo "🚀 Starting Alpha Landing Page deployment..."
 
-            # Navigate to landing directory
-            cd /opt/quikkred/landing || cd /home/quikkredLanding || { echo "Creating directory..."; mkdir -p /opt/quikkred/landing && cd /opt/quikkred/landing; }
+            cd /opt/quikkred/landing || { echo "❌ Directory not found"; exit 1; }
 
-            # Clone if not exists, otherwise pull
-            if [ -d ".git" ]; then
-              git fetch origin develop
-              git reset --hard origin/develop
-            else
-              git clone -b develop https://github.com/Aknathpanchal/Quikkred-landing-user-dashboard-main.git .
-            fi
+            git fetch origin develop
+            git reset --hard origin/develop
 
-            # Install dependencies
             npm ci
 
-            # Build with Alpha environment
             NEXT_PUBLIC_API_URL=https://alpha.quikkred.in npm run build
 
-            # Restart with PM2
-            pm2 describe quikkred-landing > /dev/null 2>&1 && pm2 restart quikkred-landing || pm2 start npm --name "quikkred-landing" -- start -- -p 3000
-
+            pm2 delete quikkred-landing 2>/dev/null || true
+            PORT=3002 pm2 start npm --name "quikkred-landing" -- start
             pm2 save
 
             echo "✅ Alpha Landing Page deployment complete!"
@@ -106,10 +98,10 @@ jobs:
         run: |
           sleep 15
           response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://app-alpha.quikkred.in || echo "000")
-          echo "Health check response: $response"
+          echo "Alpha health check: $response"
 
   # ============================================
-  # DEPLOY TO BETA (AWS S3 + CloudFront)
+  # DEPLOY TO BETA (AWS ECS)
   # Triggers on: push to staging
   # ============================================
   deploy-beta:
@@ -122,21 +114,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build for Beta
-        run: npm run build
-        env:
-          NEXT_PUBLIC_API_URL: https://beta.quikkred.in
-          NEXT_PUBLIC_ENV: beta
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -144,29 +121,50 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Deploy to S3 (Beta)
-        run: |
-          # Check if static export is configured
-          if [ -d "out" ]; then
-            aws s3 sync out/ s3://quikkred-beta-landing/ --delete
-          else
-            aws s3 sync .next/static/ s3://quikkred-beta-landing/_next/static/ --delete
-          fi
-          echo "✅ Synced to S3 Beta bucket"
-        continue-on-error: true
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Invalidate CloudFront (Beta)
+      - name: Build, tag, and push image to ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: beta-${{ github.sha }}
         run: |
-          if [ -n "${{ secrets.BETA_LANDING_CLOUDFRONT_ID }}" ]; then
-            aws cloudfront create-invalidation \
-              --distribution-id ${{ secrets.BETA_LANDING_CLOUDFRONT_ID }} \
-              --paths "/*"
-            echo "✅ CloudFront Beta cache invalidated"
-          fi
-        continue-on-error: true
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=https://beta.quikkred.in \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:beta-latest \
+            .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:beta-latest
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Update ECS service
+        run: |
+          aws ecs update-service \
+            --cluster quikkred-beta \
+            --service quikkred-landing-beta \
+            --force-new-deployment \
+            --region ${{ env.AWS_REGION }}
+          echo "✅ ECS Beta service updated"
+
+      - name: Wait for deployment
+        run: |
+          echo "Waiting for ECS deployment to stabilize..."
+          aws ecs wait services-stable \
+            --cluster quikkred-beta \
+            --services quikkred-landing-beta \
+            --region ${{ env.AWS_REGION }} || true
+
+      - name: Health Check
+        run: |
+          sleep 15
+          response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://app-beta.quikkred.in || echo "000")
+          echo "Beta health check: $response"
 
   # ============================================
-  # DEPLOY TO PRODUCTION (AWS S3 + CloudFront)
+  # DEPLOY TO PRODUCTION (AWS ECS)
   # Triggers on: push to main
   # ============================================
   deploy-production:
@@ -179,21 +177,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build for Production
-        run: npm run build
-        env:
-          NEXT_PUBLIC_API_URL: https://api.quikkred.in
-          NEXT_PUBLIC_ENV: production
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -201,23 +184,41 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Deploy to S3 (Production)
-        run: |
-          if [ -d "out" ]; then
-            aws s3 sync out/ s3://quikkred-production-landing/ --delete
-          else
-            aws s3 sync .next/static/ s3://quikkred-production-landing/_next/static/ --delete
-          fi
-          echo "✅ Synced to S3 Production bucket"
-        continue-on-error: true
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Invalidate CloudFront (Production)
+      - name: Build, tag, and push image to ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: prod-${{ github.sha }}
         run: |
-          aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.PROD_LANDING_CLOUDFRONT_ID }} \
-            --paths "/*"
-          echo "✅ CloudFront Production cache invalidated"
-        continue-on-error: true
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL=https://api.quikkred.in \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
+            .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Update ECS service
+        run: |
+          aws ecs update-service \
+            --cluster quikkred-production \
+            --service quikkred-landing-service \
+            --force-new-deployment \
+            --region ${{ env.AWS_REGION }}
+          echo "✅ ECS Production service updated"
+
+      - name: Wait for deployment
+        run: |
+          echo "Waiting for ECS deployment to stabilize..."
+          aws ecs wait services-stable \
+            --cluster quikkred-production \
+            --services quikkred-landing-service \
+            --region ${{ env.AWS_REGION }} || true
 
       - name: Health Check
         run: |
