@@ -61,7 +61,8 @@ const PUBLIC_ROUTES = [
   '/rac',
   '/disclaimer-and-disclosure',
   '/settlement-and-writeoff-policy',
-  '/investment-policy'
+  '/investment-policy',
+  '/emi-calculator'
 ];
 
 // Routes that should NOT show header/footer (full-page experiences for all users)
