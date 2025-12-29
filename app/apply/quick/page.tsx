@@ -3699,36 +3699,15 @@ console.log('Sending OTP with payload:', payload);
           window.location.href = verifyResult.data.url;
           return;
         } else {
-          // No redirect, proceed with OTP flow
-          const response = await fetch('https://alpha.quikkred.in/api/kyc/aadhaar/otp', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': token ? `Bearer ${token}` : '',
-            },
-            body: JSON.stringify({ aadhaar_number: formData.aadhaar }),
+          // No redirect means OTP has been sent by verification endpoint
+          setAadhaarOtpSent(true);
+          setAadhaarOtpTimer(30); // Start 30 second countdown
+          setAadhaarError(""); // Clear any errors
+          toast({
+            variant: "success",
+            title: "OTP Sent Successfully!",
+            description: verifyResult.message || "OTP has been sent to your Aadhaar-linked mobile number. Please enter it below.",
           });
-
-          const result = await response.json();
-
-          if (response.ok && result.success) {
-            setAadhaarOtpSent(true);
-            setAadhaarOtpTimer(30); // Start 30 second countdown
-            setAadhaarError(""); // Clear any errors
-            toast({
-              variant: "success",
-              title: "OTP Sent Successfully!",
-              description: result.message || "OTP has been sent to your Aadhaar-linked mobile number. Please enter it below.",
-            });
-          } else {
-            const errorMsg = result.message || result.error || 'Unable to send OTP. Please check the Aadhaar number and try again.';
-            setAadhaarError(errorMsg);
-            toast({
-              variant: "error",
-              title: "OTP Send Failed",
-              description: errorMsg,
-            });
-          }
         }
       } else {
         const errorMsg = verifyResult.message || 'Aadhaar verification failed. Please check the number and try again.';
@@ -3777,7 +3756,7 @@ console.log('Sending OTP with payload:', payload);
           'Content-Type': 'application/json',
           'Authorization': token ? `Bearer ${token}` : '',
         },
-        body: JSON.stringify({ otp: aadhaarOtp }),
+        body: JSON.stringify({ otp: aadhaarOtp, aadhaar_number: formData.aadhaar }),
       });
 
       const result = await response.json();
