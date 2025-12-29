@@ -235,11 +235,6 @@ export default function QuickLoanApplication() {
             if (response.ok && result.success && result.data) {
               const profileData = result.data;
               console.log('✅ User profile loaded successfully');
-              console.log('📊 Profile Data:', {
-                isBasicDetailsFilled: profileData.isBasicDetailsFilled,
-                isEmploymentDetailsFilled: profileData.isEmploymentDetailsFilled,
-                isVerificationDetailsFilled: profileData.isVerificationDetailsFilled
-              });
 
               // Convert ISO date to YYYY-MM-DD format for input field
               const formatDateForInput = (isoDate: string) => {
@@ -991,6 +986,15 @@ export default function QuickLoanApplication() {
       const interestRate = parseFloat(data.interestRate) || 1;
       const totalAmount = parseFloat(data.totalAmount) || loanAmount;
 
+      function formatDate(date: Date | string): string {
+  const d = new Date(date);
+  return d.toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+}
+
       if (!loanAmount) {
         return '<tr><td colspan="6" style="text-align: center;">N/A</td></tr>';
       }
@@ -1003,7 +1007,7 @@ export default function QuickLoanApplication() {
         return `
           <tr>
             <td>1</td>
-            <td>N/A</td>
+            <td>${formatDate(dueDate)}</td>
             <td>&#8377;${(loanAmount)}</td>
             <td>&#8377;${(Math.round(interest))}</td>
             <td>&#8377;${(Math.round(totalAmount))}</td>
@@ -5531,7 +5535,7 @@ console.log('Sending OTP with payload:', payload);
                     </label>
                     <input
                       type="text"
-                      name="loanAmount"
+                      name="requestedLoanAmount"
                       value={
                         formData.loanAmount
                           ? parseFloat(formData.loanAmount.replace(/,/g, "")).toLocaleString("en-IN")
