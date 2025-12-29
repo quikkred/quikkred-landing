@@ -643,7 +643,7 @@ export default function EligibilityCheckPage() {
                       Apply for Loan Now
                     </button>
                   </Link>
-                  <Link href="/resources/emi-calculator" className="flex-1">
+                  <Link href="/emi-calculator" className="flex-1">
                     <button className="w-full px-8 py-4 bg-[#25B181] text-white rounded-lg font-semibold hover:opacity-90 transition-opacity">
                       Calculate EMI
                     </button>
