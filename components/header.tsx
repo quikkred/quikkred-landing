@@ -45,7 +45,7 @@ export function Header() {
     //   submenu: [
     //     {
     //       name: t.navigation.emiCalculator,
-    //       href: "/resources/emi-calculator",
+    //       href: "/emi-calculator",
     //       description: t.navigation.emiCalculatorDesc,
     //     },
     //     {
