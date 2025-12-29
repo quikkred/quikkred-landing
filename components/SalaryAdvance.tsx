@@ -8,6 +8,8 @@ interface SalaryAdvanceProps {
   subtitle?: string;
   buttonPrimaryText?: string;
   buttonSecondaryText?: string;
+  buttonPrimaryScrollTo?: string;
+  buttonSecondaryScrollTo?: string;
   quickAccessAmount?: string;
   timeText?: string;
   imageSrc?: string;
@@ -23,6 +25,8 @@ export default function SalaryAdvance({
   subtitle,
   buttonPrimaryText,
   buttonSecondaryText,
+  buttonPrimaryScrollTo,
+  buttonSecondaryScrollTo,
   quickAccessAmount,
   timeText,
   imageSrc = "/salary-advance.jpg",
@@ -35,6 +39,13 @@ export default function SalaryAdvance({
   const primaryBgHover = `hover:bg-${primaryColor}-700`;
   const borderPrimary = `border-${primaryColor}-600`;
   const bgHover = `hover:bg-${primaryColor}-50`;
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   return (
     <div
@@ -58,6 +69,7 @@ export default function SalaryAdvance({
           <div className="flex flex-wrap gap-4 pt-2">
             {buttonPrimaryText && (
               <button
+                onClick={() => buttonPrimaryScrollTo && scrollToSection(buttonPrimaryScrollTo)}
                 className={`${primaryBg} ${primaryBgHover} text-white font-semibold px-6 py-3 rounded-md transition`}
               >
                 {buttonPrimaryText}
@@ -65,6 +77,7 @@ export default function SalaryAdvance({
             )}
             {buttonSecondaryText && (
               <button
+                onClick={() => buttonSecondaryScrollTo && scrollToSection(buttonSecondaryScrollTo)}
                 className={`${borderPrimary} ${primary} border font-semibold px-6 py-3 rounded-md ${bgHover} transition`}
               >
                 {buttonSecondaryText}
