@@ -63,7 +63,7 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: false, // Don't fallback to any language automatically
+    fallbackLng: 'en', // Fallback to English for missing translations
     debug: false,
     interpolation: {
       escapeValue: false
