@@ -8,7 +8,7 @@ export default function Story() {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
             <p className="text-gray-600 text-lg mb-6">
-              Founded in 2020, QuickKred emerged from a vision to revolutionize
+              Founded in 2020, Quickkred emerged from a vision to revolutionize
               the financial services industry. Our team of industry experts and
               tech pioneers came together to create a platform that combines
               innovation with trust.
