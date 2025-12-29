@@ -85,7 +85,7 @@ export default function ProductsPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch("https://api.bluechipfinmax.com/api/loanProduct/getAll");
+        const response = await fetch("https://alpha.quikkred.in/api/loanProduct/getAll");
         const data = await response.json();
         if (data.success) {
           // Filter only active products

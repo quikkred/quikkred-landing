@@ -113,7 +113,7 @@ export default function AboutPage() {
 
       <section className="py-12 sm:py-16 lg:py-20 bg-white">
         <SalaryAdvance
-          title="About Quikkred"
+          title="About QuikKred"
           // {t('products.pages.personalLoan.hero.title')}
           // highlightWord="Kred"
           // {t('products.pages.personalLoan.hero.highlightWord')}
@@ -121,10 +121,8 @@ export default function AboutPage() {
           subtitle="We are India's most trusted AI-powered NBFC, committed to making credit accessible, affordable, and transparent for every Indian. Our mission is to empower dreams and enable financial inclusion through technology and trust."
           // {t('products.pages.personalLoan.hero.subtitle')}
           buttonPrimaryText="Contact Us"
-          buttonPrimaryScrollTo="write-to-us"
           // {t('products.pages.personalLoan.hero.buttonPrimary')}
           buttonSecondaryText="Call Us Now"
-          buttonSecondaryScrollTo="lets-connect"
           // {t('products.pages.personalLoan.hero.buttonSecondary')}
           imageSrc="/Aboutus_hero_image.jpg"
           // features={[
@@ -150,7 +148,7 @@ export default function AboutPage() {
                 {/* Subtitle (optional) */}
                <p className="text-gray-600 text-lg">QuikKred began in 2018 as a leading RBI-registered NBFC with a clear goal: to build a seamless lending experience for the underserved population of India. We recognized that millions of individuals and small businesses were excluded from traditional financial systems, facing complex processes and limited access to credit.</p>
                <p className="text-gray-600 text-lg">We saw the challenges many faced with traditional financing and knew that by leveraging cutting-edge technology, we could offer accessible and fair loan products. Our digital-first approach removes barriers, simplifies the lending process, and empowers individuals to achieve their financial goals with dignity and ease.</p>
-               <p className="text-[#2b2b2b] text-lg font-bold">Today, we continue to innovate and expand, staying true to our mission of making financial services accessible to everyone who needs them.</p>
+               <p className="text-[#2b2b2b] text-lg font-bold">We saw the challenges many faced with traditional financing and knew that by leveraging cutting-edge technology, we could offer accessible and fair loan products. Our digital-first approach removes barriers, simplifies the lending process, and empowers individuals to achieve their financial goals with dignity and ease.</p>
               </div>
         
               {/* Right Section */}
@@ -273,7 +271,7 @@ export default function AboutPage() {
       </section>
 
       {/* Get In Touch Cards Section */}
-      <section id="lets-connect" className="bg-[#F6F6F6] py-16 sm:py-20 lg:py-24">
+      <section className="bg-[#F6F6F6] py-16 sm:py-20 lg:py-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -326,7 +324,7 @@ export default function AboutPage() {
       </section>
 
 {/* Contact Form Section */}
-      <section id="write-to-us" className="bg-white py-12 sm:py-16 lg:py-20">
+      <section className="bg-white py-12 sm:py-16 lg:py-20">
         <div className="mx-auto w-full">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
