@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     creator: "@quikkred",
   },
   verification: {
-    google: 'G-JT6CHHWW78',
+    google: 'rxE7gz_V_95e4yC26l0F5fS41P697rkQIZ9SQWaEDsQ',
   },
   alternates: {
     canonical: 'https://www.quikkred.in',
