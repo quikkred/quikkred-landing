@@ -1,59 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
-import { Linkedin, Twitter, Mail } from "lucide-react";
-
-const leaders = [
-  {
-    name: "Leadership Member",
-    role: "Chief Executive Officer",
-    image: "/team/ceo.jpg",
-    bio: "With over 20 years of experience in financial services, leading Quikkred's vision to democratize credit access across India.",
-    linkedin: "#",
-    twitter: "#",
-  },
-  {
-    name: "Leadership Member",
-    role: "Chief Financial Officer",
-    image: "/team/cfo.jpg",
-    bio: "A seasoned finance professional with expertise in scaling fintech operations and maintaining regulatory compliance.",
-    linkedin: "#",
-    twitter: "#",
-  },
-  {
-    name: "Leadership Member",
-    role: "Chief Technology Officer",
-    image: "/team/cto.jpg",
-    bio: "Technology veteran driving Quikkred's AI-powered lending platform and digital transformation initiatives.",
-    linkedin: "#",
-    twitter: "#",
-  },
-  {
-    name: "Leadership Member",
-    role: "Chief Risk Officer",
-    image: "/team/cro.jpg",
-    bio: "Expert in credit risk management with extensive experience in building robust underwriting frameworks.",
-    linkedin: "#",
-    twitter: "#",
-  },
-  {
-    name: "Leadership Member",
-    role: "Chief Operating Officer",
-    image: "/team/coo.jpg",
-    bio: "Operations specialist focused on delivering seamless customer experiences and operational excellence.",
-    linkedin: "#",
-    twitter: "#",
-  },
-  {
-    name: "Leadership Member",
-    role: "Chief Marketing Officer",
-    image: "/team/cmo.jpg",
-    bio: "Brand strategist with a passion for building customer-centric marketing initiatives.",
-    linkedin: "#",
-    twitter: "#",
-  },
-];
+import { Users, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export default function LeadershipTeamPage() {
   return (
@@ -77,56 +26,39 @@ export default function LeadershipTeamPage() {
         </div>
       </section>
 
-      {/* Leadership Grid */}
+      {/* Coming Soon Section */}
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {leaders.map((leader, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="max-w-2xl mx-auto text-center"
+          >
+            <div className="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-8">
+              <Users className="w-12 h-12 text-blue-600" />
+            </div>
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">Coming Soon</h2>
+            <p className="text-slate-600 mb-8">
+              We&apos;re preparing to introduce you to the talented individuals leading Quikkred&apos;s
+              mission to democratize credit access across India. Check back soon to meet our leadership team.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/about-us/our-story"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition-colors"
               >
-                <div className="relative h-64 bg-gradient-to-br from-blue-100 to-blue-50">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-32 h-32 rounded-full bg-blue-200 flex items-center justify-center">
-                      <span className="text-4xl font-bold text-blue-600">
-                        {leader.role.split(' ').map(w => w[0]).join('')}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-slate-900 mb-1">{leader.name}</h3>
-                  <p className="text-blue-600 font-medium mb-3">{leader.role}</p>
-                  <p className="text-slate-600 text-sm mb-4">{leader.bio}</p>
-                  <div className="flex gap-3">
-                    <a
-                      href={leader.linkedin}
-                      className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-blue-600 hover:text-white transition-colors"
-                    >
-                      <Linkedin className="w-4 h-4" />
-                    </a>
-                    <a
-                      href={leader.twitter}
-                      className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-blue-400 hover:text-white transition-colors"
-                    >
-                      <Twitter className="w-4 h-4" />
-                    </a>
-                    <a
-                      href={`mailto:${leader.role.toLowerCase().replace(/ /g, '.')}@quikkred.in`}
-                      className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-green-600 hover:text-white transition-colors"
-                    >
-                      <Mail className="w-4 h-4" />
-                    </a>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                Read Our Story
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/contact"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 border-2 border-blue-600 text-blue-600 rounded-full font-semibold hover:bg-blue-50 transition-colors"
+              >
+                Contact Us
+              </Link>
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -138,12 +70,12 @@ export default function LeadershipTeamPage() {
             We&apos;re always looking for talented individuals who share our passion for
             financial inclusion. Explore career opportunities at Quikkred.
           </p>
-          <a
+          <Link
             href="/careers"
             className="inline-flex items-center gap-2 px-8 py-3 bg-white text-blue-900 rounded-full font-semibold hover:bg-blue-50 transition-colors"
           >
             View Open Positions
-          </a>
+          </Link>
         </div>
       </section>
     </div>
