@@ -81,22 +81,22 @@ export default function InvestorRelationsPage() {
   const highlights = [
     {
       title: "Strong Growth Trajectory",
-      description: "Consistent year-over-year growth with healthy margins and expanding market presence.",
+      description: "Focused on sustainable growth with healthy margins and expanding market presence.",
       icon: TrendingUp
     },
     {
       title: "Technology-First Approach",
-      description: "Proprietary underwriting technology enabling 30-second loan approvals with superior risk assessment.",
+      description: "Proprietary underwriting technology enabling quick loan approvals with superior risk assessment.",
       icon: Target
     },
     {
       title: "Diversified Portfolio",
-      description: "Presence across 28 states with diverse product offerings minimizing concentration risk.",
+      description: "Pan-India presence with diverse product offerings minimizing concentration risk.",
       icon: Globe
     },
     {
       title: "Robust Risk Management",
-      description: "Best-in-class credit acquisition and collection systems ensuring portfolio quality.",
+      description: "Strong credit acquisition and collection systems ensuring portfolio quality.",
       icon: Shield
     }
   ];
