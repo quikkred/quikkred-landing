@@ -160,11 +160,6 @@ gtag('config', 'AW-17796230994');`,
                 'https://twitter.com/quikkred',
                 'https://www.linkedin.com/company/quikkred'
               ],
-              aggregateRating: {
-                '@type': 'AggregateRating',
-                ratingValue: '4.8',
-                reviewCount: '50000'
-              },
               offers: {
                 '@type': 'Offer',
                 name: 'Personal Loan',
