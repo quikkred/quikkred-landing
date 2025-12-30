@@ -1252,12 +1252,15 @@ export default function QuickLoanApplication() {
             min-height: 100px;
             height: 100%;
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         .esign-box:hover { border-style: solid; }
         .esign-box .icon { font-size: 20px; margin-bottom: 5px; }
         .esign-box .text { font-size: 9px; color: #25B181; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
         .esign-box .subtext { font-size: 7px; color: #718096; margin-top: 2px; }
-        .esign-box .details { margin-top: 8px; font-size: 7px; color: #4a5568; line-height: 1.4; }
+        .esign-box .details { margin-top: auto; font-size: 7px; color: #4a5568; line-height: 1.4; }
         .lender-box { border-color: #2d3748; background: white; }
         .lender-box .text { color: #2d3748; }
         .declaration {
@@ -1639,6 +1642,9 @@ export default function QuickLoanApplication() {
             background: #f0fdf4 !important;
             box-shadow: none !important;
             border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         body.pdf-mode .esign-box:hover {
             border-style: dashed !important;
@@ -1819,8 +1825,13 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
                 <div class="signature-box">
                     <div class="esign-box">
 
-                     // eSign Place holder
-
+                     
+<div class="details">
+                            <div><strong>Name:</strong> ${getValue(data.fullName)}</div>
+                            <div><strong>Aadhaar:</strong> XXXX-XXXX-${maskAadhaar(data.aadhaar)}</div>
+                            <div><strong>Date:</strong> ${currentDate}</div>
+                            <div><strong>Time:</strong> ${currentTime}</div>
+                        </div>
                     </div>
                 </div>
               <div class="signature-box">
@@ -2327,6 +2338,9 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
             background: #f0fff4;
             border-radius: 6px;
             min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .esign-box .icon {
@@ -3002,15 +3016,7 @@ y += boxHeight + 4;
         if (approveSection) approveSection.style.display = 'block';
 
         // 🔹 Download PDF locally for user's copy
-        const downloadUrl = URL.createObjectURL(pdfBlob);
-        const downloadLink = document.createElement('a');
-        downloadLink.href = downloadUrl;
-        downloadLink.download = 'Quikkred-Loan-Agreement-' + documentNumber + '.pdf';
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-        URL.revokeObjectURL(downloadUrl);
-
+     
         // 🔹 Upload PDF to API
         const formData = new FormData();
         formData.append('eSignDoc', pdfBlob, 'loan-agreement.pdf');
