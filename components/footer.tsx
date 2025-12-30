@@ -93,7 +93,7 @@ export function Footer() {
       // { name: t.footer.quickLinks.items.testimonials, href: "/testimonials" },
     ],
     resources: [
-      { name: t.navigation.emiCalculator, href: "/resources/emi-calculator" },
+      { name: t.navigation.emiCalculator, href: "/emi-calculator" },
       { name: t.footer.resources.items.eligibilityCheck, href: "/resources/eligibility-check" },
       { name: t.footer.resources.items.interestRates, href: "/resources/interest-rates" },
       { name: t.footer.resources.items.documentChecklist, href: "/resources/document-checklist" },

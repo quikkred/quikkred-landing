@@ -165,6 +165,7 @@ export default function QuickLoanApplication() {
       monthlyIncome: "",
       companyName: "",
       bankName: "",
+      customBankName: "",
       accountHolderName: "",
       accountNumber: "",
       ifsc: "",
@@ -3518,6 +3519,21 @@ console.log('Sending OTP with payload:', payload);
                 }
               }
 
+              // Check eSign status from profile
+              // Handle both formats: eSign: true (boolean) or eSign: { status: 'SUCCESS' } (object)
+              if (profileData.eSign === true) {
+                setUserESignStatus('SUCCESS');
+                setESignVerified(true);
+                console.log('✅ eSign already completed (boolean: true)');
+              } else if (profileData.eSign?.status) {
+                setUserESignStatus(profileData.eSign.status);
+                console.log('📝 eSign status from profile:', profileData.eSign.status);
+                if (profileData.eSign.status === 'SUCCESS') {
+                  setESignVerified(true);
+                  console.log('✅ eSign already completed (status: SUCCESS)');
+                }
+              }
+
               // Auto-fill references if available
               if (profileData.references && profileData.references.length > 0) {
                 const ref1 = profileData.references[0];
@@ -3876,7 +3892,7 @@ console.log('Sending OTP with payload:', payload);
           accountNumber: formData.accountNumber,
           ifscCode: formData.ifsc,
           accountHolderName: formData.accountHolderName,
-          bankName: formData.bankName
+          bankName: formData.bankName === 'OTHER' ? formData.customBankName : formData.bankName
         }),
       });
 
@@ -4444,6 +4460,16 @@ console.log('Sending OTP with payload:', payload);
         return;
       }
 
+      // Custom Bank Name validation when "Other" is selected
+      if (formData.bankName === 'OTHER' && !formData.customBankName?.trim()) {
+        toast({
+          variant: "warning",
+          title: "Bank Name Required",
+          description: "Please enter your bank name.",
+        });
+        return;
+      }
+
       // Account Number validation
       if (!formData.accountNumber || formData.accountNumber.length < 9 || formData.accountNumber.length > 18) {
         toast({
@@ -4898,6 +4924,7 @@ console.log('Sending OTP with payload:', payload);
                     monthlyIncome: "",
                     companyName: "",
                     bankName: "",
+                    customBankName: "",
                     accountHolderName: "",
                     accountNumber: "",
                     ifsc: "",
@@ -5548,7 +5575,7 @@ console.log('Sending OTP with payload:', payload);
                           ...e,
                           target: {
                             ...e.target,
-                            name: "loanAmount",
+                            name: "requestedLoanAmount",
                             value: raw,
                           },
                         } as any);
@@ -6080,6 +6107,18 @@ console.log('Sending OTP with payload:', payload);
 
                                 if (response.ok && result.success && result.data) {
                                   customerData = result.data;
+
+                                  // Check eSign status and update state
+                                  if (customerData.eSign === true) {
+                                    setUserESignStatus('SUCCESS');
+                                    setESignVerified(true);
+                                    console.log('✅ eSign already completed (boolean: true)');
+                                  } else if (customerData.eSign?.status === 'SUCCESS') {
+                                    setUserESignStatus('SUCCESS');
+                                    setESignVerified(true);
+                                    console.log('✅ eSign already completed (status: SUCCESS)');
+                                  }
+
                                 }
                               } catch (error) {
                                 console.error('Error fetching customer data:', error);
@@ -6104,7 +6143,7 @@ console.log('Sending OTP with payload:', payload);
                                 designation: customerData.designation || '',
                                 workExperience: customerData.workExperience || '',
                                 salaryDate: customerData.salaryDate || '',
-                                bankName: formData.bankName || customerData.banks?.[0]?.bankName || '',
+                                bankName: (formData.bankName === 'OTHER' ? formData.customBankName : formData.bankName) || customerData.banks?.[0]?.bankName || '',
                                 accountNumber: formData.accountNumber || customerData.banks?.[0]?.accountNumber || '',
                                 ifscCode: formData.ifsc || customerData.banks?.[0]?.ifscCode || '',
                                 accountHolderName: formData.accountHolderName || customerData.banks?.[0]?.accountHolderName || formData.fullName || customerData.fullName || '',
@@ -6181,6 +6220,10 @@ console.log('Sending OTP with payload:', payload);
                           value={formData.bankName}
                           onChange={(e) => {
                             handleChange(e);
+                            // Clear custom bank name if not selecting "OTHER"
+                            if (e.target.value !== 'OTHER') {
+                              setFormData(prev => ({ ...prev, customBankName: '' }));
+                            }
                             setBankVerified(false); // Reset verification on change
                           }}
                           disabled={bankVerified}
@@ -6202,6 +6245,22 @@ console.log('Sending OTP with payload:', payload);
                           <option value="UNION">Union Bank of India</option>
                           <option value="OTHER">Other</option>
                         </select>
+                        {/* Custom Bank Name Input - shown when "Other" is selected */}
+                        {formData.bankName === 'OTHER' && (
+                          <input
+                            type="text"
+                            name="customBankName"
+                            value={formData.customBankName}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                              setFormData(prev => ({ ...prev, customBankName: value }));
+                              setBankVerified(false);
+                            }}
+                            disabled={bankVerified}
+                            className={`w-full mt-2 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] ${bankVerified ? 'bg-green-50 border-green-300' : ''}`}
+                            placeholder="Enter your bank name"
+                          />
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -6313,13 +6372,13 @@ console.log('Sending OTP with payload:', payload);
                       <button
                         type="button"
                         onClick={verifyBankAccount}
-                        disabled={bankVerifying || bankVerified || !formData.bankName || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc}
+                        disabled={bankVerifying || bankVerified || !formData.bankName || (formData.bankName === 'OTHER' && !formData.customBankName?.trim()) || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc}
                         className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all ${
                           bankVerified
                             ? 'bg-green-100 text-green-700 border border-green-300 cursor-not-allowed'
                             : bankVerifying
                             ? 'bg-gray-300 text-gray-600 cursor-wait'
-                            : !formData.bankName || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc
+                            : !formData.bankName || (formData.bankName === 'OTHER' && !formData.customBankName?.trim()) || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc
                             ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                             : 'bg-[#25B181] text-white hover:bg-[#1d9469]'
                         }`}
