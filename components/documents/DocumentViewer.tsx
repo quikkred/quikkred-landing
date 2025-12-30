@@ -289,7 +289,7 @@ export function DocumentViewer({
                         <User className="w-4 h-4 text-slate-500 mt-0.5" />
                         <div>
                           <p className="text-xs text-slate-500">Uploaded by</p>
-                          <p className="text-sm text-white">John Doe</p>
+                          <p className="text-sm text-white">You</p>
                         </div>
                       </div>
                       <div className="flex items-start space-x-3">
