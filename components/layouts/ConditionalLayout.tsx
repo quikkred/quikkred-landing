@@ -62,7 +62,10 @@ const PUBLIC_ROUTES = [
   '/refund-cancellation',
   '/disclaimer-disclosure',
   '/settlement-writeoff-policy',
-  '/investment-policy'
+  '/investment-policy',
+  '/emi-calculator',
+  '/eligibility-check',
+  '/interest-rates'
 ];
 
 // Routes that should NOT show header/footer (full-page experiences for all users)

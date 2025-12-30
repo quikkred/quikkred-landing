@@ -85,7 +85,7 @@ export function Footer() {
     company: [
       { name: t.footer.quickLinks.items.about, href: "/about-us" },
       { name: t.footer.quickLinks.items.ourStory, href: "/about-us/our-story" },
-      { name: t.footer.quickLinks.items.leadershipTeam, href: "/about-us/leadership-team" },
+      // { name: t.footer.quickLinks.items.leadershipTeam, href: "/about-us/leadership-team" },
       { name: t.footer.quickLinks.items.careers, href: "/careers" },
       // { name: t.footer.quickLinks.items.pressMedia, href: "/about-us/press" },
       // { name: t.footer.quickLinks.items.awardsRecognition, href: "/about-us/awards" },
@@ -93,10 +93,10 @@ export function Footer() {
       // { name: t.footer.quickLinks.items.testimonials, href: "/testimonials" },
     ],
     resources: [
-      { name: t.navigation.emiCalculator, href: "/resources/emi-calculator" },
-      { name: t.footer.resources.items.eligibilityCheck, href: "/resources/eligibility-check" },
-      { name: t.footer.resources.items.interestRates, href: "/resources/interest-rates" },
-      { name: t.footer.resources.items.documentChecklist, href: "/resources/document-checklist" },
+      { name: t.navigation.emiCalculator, href: "/emi-calculator" },
+      { name: t.footer.resources.items.eligibilityCheck, href: "/eligibility-check" },
+      { name: t.footer.resources.items.interestRates, href: "/interest-rates" },
+      { name: t.footer.resources.items.documentChecklist, href: "/document-checklist" },
       // { name: t.footer.resources.items.howToApply, href: "/resources/how-to-apply" },
       // { name: t.navigation.faqs, href: "/resources/faqs" },
       // { name: t.navigation.blog, href: "/blog" },

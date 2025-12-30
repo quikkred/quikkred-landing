@@ -591,7 +591,7 @@ export default function InterestRatesPage() {
               Check your eligibility and discover your personalized interest rate
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/resources/eligibility-check">
+              <Link href="/eligibility-check">
                 <button className="px-8 py-3 bg-white text-[#4A66FF] rounded-lg font-semibold hover:shadow-lg transition-all">
                   Check Eligibility
                 </button>
