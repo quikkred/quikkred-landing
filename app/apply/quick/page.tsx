@@ -148,6 +148,7 @@ export default function QuickLoanApplication() {
   const [emiCalculation, setEmiCalculation] = useState<any>(null);
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [amountError, setAmountError] = useState("")
+  const [bankDropdownOpen, setBankDropdownOpen] = useState(false);
 
   // Approval Data (Step 3)
   const [approvalData, setApprovalData] = useState<any>(null);
@@ -251,6 +252,18 @@ export default function QuickLoanApplication() {
   };
 
   const [formData, setFormData] = useState(getInitialFormData());
+
+  // Close bank dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (bankDropdownOpen && !target.closest('.bank-dropdown-container')) {
+        setBankDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [bankDropdownOpen]);
 
   // Load user data if logged in
   useEffect(() => {
@@ -6270,33 +6283,69 @@ console.log('Sending OTP with payload:', payload);
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Bank Name *
                         </label>
-                        <select
-  name="bankName"
-  value={formData.bankName}
-  onChange={(e) => {
-    handleChange(e);
+                        <div className="relative bank-dropdown-container">
+  <button
+    type="button"
+    onClick={() => !bankVerified && setBankDropdownOpen(!bankDropdownOpen)}
+    disabled={bankVerified}
+    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] text-left flex justify-between items-center ${
+      bankVerified ? 'bg-green-50 border-green-300' : 'bg-white'
+    }`}
+  >
+    <span className={formData.bankName ? 'text-gray-900' : 'text-gray-500'}>
+      {formData.bankName === 'OTHER'
+        ? 'Other'
+        : formData.bankName
+          ? BANKS.find(b => b.code === formData.bankName)?.name || formData.bankName
+          : 'Select Bank'}
+    </span>
+    <svg className={`w-5 h-5 text-gray-400 transition-transform ${bankDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
+  </button>
 
-    if (e.target.value !== 'OTHER') {
-      setFormData(prev => ({ ...prev, customBankName: '' }));
-    }
-
-    setBankVerified(false);
-  }}
-  disabled={bankVerified}
-  className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-    bankVerified ? 'bg-green-50 border-green-300' : ''
-  }`}
->
-  <option value="">Select Bank</option>
-
-  {BANKS.map((bank) => (
-    <option key={bank.code} value={bank.code}>
-      {bank.name}
-    </option>
-  ))}
-
-  <option value="OTHER">Other</option>
-</select>
+  {bankDropdownOpen && !bankVerified && (
+    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+      <div
+        className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-500"
+        onClick={() => {
+          setFormData(prev => ({ ...prev, bankName: '', customBankName: '' }));
+          setBankVerified(false);
+          setBankDropdownOpen(false);
+        }}
+      >
+        Select Bank
+      </div>
+      {BANKS.map((bank) => (
+        <div
+          key={bank.code}
+          className={`px-4 py-2 hover:bg-[#25B181] hover:text-white cursor-pointer ${
+            formData.bankName === bank.code ? 'bg-[#25B181] text-white' : ''
+          }`}
+          onClick={() => {
+            setFormData(prev => ({ ...prev, bankName: bank.code, customBankName: '' }));
+            setBankVerified(false);
+            setBankDropdownOpen(false);
+          }}
+        >
+          {bank.name}
+        </div>
+      ))}
+      <div
+        className={`px-4 py-2 hover:bg-[#25B181] hover:text-white cursor-pointer ${
+          formData.bankName === 'OTHER' ? 'bg-[#25B181] text-white' : ''
+        }`}
+        onClick={() => {
+          setFormData(prev => ({ ...prev, bankName: 'OTHER' }));
+          setBankVerified(false);
+          setBankDropdownOpen(false);
+        }}
+      >
+        Other
+      </div>
+    </div>
+  )}
+</div>
 
                         {/* Custom Bank Name Input - shown when "Other" is selected */}
                         {formData.bankName === 'OTHER' && (
