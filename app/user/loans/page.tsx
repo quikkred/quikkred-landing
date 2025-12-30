@@ -1177,7 +1177,7 @@ export default function MyLoansPage() {
                           placeholder="Enter loan amount"
                         />
                       </div>
-                      <p className="text-xs text-gray-500 mt-2">Min: ₹1,000 | Max: ₹5,00,000</p>
+                      <p className="text-xs text-gray-500 mt-2">Min: ₹5,000 | Max: ₹1,00,000</p>
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-3 mt-6">
