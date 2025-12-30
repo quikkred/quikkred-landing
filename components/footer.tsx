@@ -51,7 +51,7 @@ export function Footer() {
     try {
       console.log('Subscribing with email:', email);
 
-      const response = await fetch('https://api.bluechipfinmax.com/api/subscribe/create', {
+      const response = await fetch('https://alpha.quikkred.in/api/subscribe/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -83,20 +83,20 @@ export function Footer() {
   const footerLinks = {
 
     company: [
-      { name: t.footer.quickLinks.items.about, href: "/about" },
-      { name: t.footer.quickLinks.items.ourStory, href: "/about#story" },
-      { name: t.footer.quickLinks.items.leadershipTeam, href: "/about#leadership" },
+      { name: t.footer.quickLinks.items.about, href: "/about-us" },
+      { name: t.footer.quickLinks.items.ourStory, href: "/about-us/our-story" },
+      { name: t.footer.quickLinks.items.leadershipTeam, href: "/about-us/leadership-team" },
       { name: t.footer.quickLinks.items.careers, href: "/careers" },
-      // { name: t.footer.quickLinks.items.pressMedia, href: "/about/press" },
-      // { name: t.footer.quickLinks.items.awardsRecognition, href: "/about/awards" },
-      // { name: t.footer.quickLinks.items.csrInitiatives, href: "/about/csr" },
+      // { name: t.footer.quickLinks.items.pressMedia, href: "/about-us/press" },
+      // { name: t.footer.quickLinks.items.awardsRecognition, href: "/about-us/awards" },
+      // { name: t.footer.quickLinks.items.csrInitiatives, href: "/about-us/csr" },
       // { name: t.footer.quickLinks.items.testimonials, href: "/testimonials" },
     ],
     resources: [
       { name: t.navigation.emiCalculator, href: "/resources/emi-calculator" },
       { name: t.footer.resources.items.eligibilityCheck, href: "/resources/eligibility-check" },
-      { name: t.footer.resources.items.interestRates, href: "/resources/intrest-rate" },
-      { name: t.footer.resources.items.documentChecklist, href: "/resources/documents" },
+      { name: t.footer.resources.items.interestRates, href: "/resources/interest-rates" },
+      { name: t.footer.resources.items.documentChecklist, href: "/resources/document-checklist" },
       // { name: t.footer.resources.items.howToApply, href: "/resources/how-to-apply" },
       // { name: t.navigation.faqs, href: "/resources/faqs" },
       // { name: t.navigation.blog, href: "/blog" },
@@ -109,23 +109,23 @@ export function Footer() {
     //   { name: t.footer.support.items.locateBranch, href: "/branches" },
     // ],
     legal: [
-      { name: t.footer.legal.items.terms, href: "/terms" },
-      { name: t.footer.legal.items.cookiePolicy, href: "/cookies" },
+      { name: t.footer.legal.items.terms, href: "/terms-and-conditions" },
+      { name: t.footer.legal.items.cookiePolicy, href: "/cookie-policy" },
       { name: t.footer.legal.items.rbiGuidelines, href: "/rbi-guidelines" },
-      { name: t.footer.legal.items.refundCancellation, href: "/rac" },
-      { name: t.footer.legal.items.disclaimerDisclosure, href: "/disclaimer-and-disclosure" },
-      { name: t.footer.legal.items.fairPracticeCode, href: "/fair-practice" },
+      { name: t.footer.legal.items.refundCancellation, href: "/refund-cancellation" },
+      { name: t.footer.legal.items.disclaimerDisclosure, href: "/disclaimer-disclosure" },
+      { name: t.footer.legal.items.fairPracticeCode, href: "/fair-practice-code" },
       { name: t.footer.legal.items.itSecurityPolicy, href: "/it-security-policy" },
     ],
     policyLinks: [
-      { name: t.footer.policyLinks.items.interestRatePolicy, href: "/interest-policy" },
-      { name: t.footer.policyLinks.items.kycPolicy, href: "/kyc-policy" },
+      { name: t.footer.policyLinks.items.interestRatePolicy, href: "/interest-rate-policy" },
+      { name: t.footer.policyLinks.items.kycPolicy, href: "/kyc-aml-policy" },
       { name: t.footer.policyLinks.items.grievanceRedressal, href: "/grievance-redressal-policy" },
       { name: t.footer.policyLinks.items.collectionPolicy, href: "/collection-policy" },
-      { name: t.footer.policyLinks.items.privacyPolicy, href: "/privacy" },
+      { name: t.footer.policyLinks.items.privacyPolicy, href: "/privacy-policy" },
       { name: t.footer.policyLinks.items.creditPolicy, href: "/credit-policy" },
       { name: t.footer.policyLinks.items.lendingPolicy, href: "/lending-policy" },
-      { name: t.footer.policyLinks.items.settlementWriteoffPolicy, href: "/settlement-and-writeoff-policy" },
+      { name: t.footer.policyLinks.items.settlementWriteoffPolicy, href: "/settlement-writeoff-policy" },
       { name: t.footer.policyLinks.items.investmentPolicy, href: "/investment-policy" },
     ],
   };
