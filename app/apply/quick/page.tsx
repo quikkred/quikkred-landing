@@ -57,6 +57,47 @@ const autoDecisionEngine = (data: any) => {
     processingFee: Math.round(loanAmount * 0.02)
   };
 };
+
+
+const BANKS = [
+  // ===== PSU Banks =====
+  { code: 'SBIN', name: 'State Bank of India' },
+  { code: 'PUNB', name: 'Punjab National Bank' },
+  { code: 'BARB', name: 'Bank of Baroda' },
+  { code: 'UBIN', name: 'Union Bank of India' },
+  { code: 'BKID', name: 'Bank of India' },
+  { code: 'CNRB', name: 'Canara Bank' },
+  { code: 'IDIB', name: 'Indian Bank' },
+  { code: 'IOBA', name: 'Indian Overseas Bank' },
+  { code: 'UCOB', name: 'UCO Bank' },
+  { code: 'MAHB', name: 'Bank of Maharashtra' },
+  { code: 'PSIB', name: 'Punjab & Sind Bank' },
+
+  // ===== Private Banks =====
+  { code: 'HDFC', name: 'HDFC Bank' },
+  { code: 'ICIC', name: 'ICICI Bank' },
+  { code: 'UTIB', name: 'Axis Bank' },
+  { code: 'KKBK', name: 'Kotak Mahindra Bank' },
+  { code: 'YESB', name: 'Yes Bank' },
+  { code: 'INDB', name: 'IndusInd Bank' },
+  { code: 'IDFB', name: 'IDFC First Bank' },
+  { code: 'FEDB', name: 'Federal Bank' },
+  { code: 'DCBL', name: 'DCB Bank' },
+  { code: 'RATN', name: 'RBL Bank' },
+  { code: 'CSBK', name: 'Catholic Syrian Bank (CSB Bank)' },
+  { code: 'SIBL', name: 'South Indian Bank' },
+
+  // ===== Small Finance Banks =====
+  { code: 'AUBL', name: 'AU Small Finance Bank' },
+  { code: 'ESFB', name: 'Equitas Small Finance Bank' },
+  { code: 'FINO', name: 'Fino Payments Bank' },
+  { code: 'AIRP', name: 'Airtel Payments Bank' },
+  { code: 'PYTM', name: 'Paytm Payments Bank' },
+
+  // ===== Others =====
+  { code: 'IBKL', name: 'IDBI Bank' }
+];
+
 export default function QuickLoanApplication() {
   // Generate unique document number for this session (stable across re-renders)
   const documentNumber = useMemo(() => `DOC${new Date().getFullYear()}${Date.now()}`, []);
@@ -1766,7 +1807,7 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
                     <div class="esign-box">
 
                      // eSign Place holder
-                     
+
                     </div>
                 </div>
               <div class="signature-box">
@@ -6230,35 +6271,33 @@ console.log('Sending OTP with payload:', payload);
                           Bank Name *
                         </label>
                         <select
-                          name="bankName"
-                          value={formData.bankName}
-                          onChange={(e) => {
-                            handleChange(e);
-                            // Clear custom bank name if not selecting "OTHER"
-                            if (e.target.value !== 'OTHER') {
-                              setFormData(prev => ({ ...prev, customBankName: '' }));
-                            }
-                            setBankVerified(false); // Reset verification on change
-                          }}
-                          disabled={bankVerified}
-                          className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] ${bankVerified ? 'bg-green-50 border-green-300' : ''}`}
-                        >
-                          <option value="">Select Bank</option>
-                          <option value="SBI">State Bank of India</option>
-                          <option value="HDFC">HDFC Bank</option>
-                          <option value="ICICI">ICICI Bank</option>
-                          <option value="AXIS">Axis Bank</option>
-                          <option value="PNB">Punjab National Bank</option>
-                          <option value="BOB">Bank of Baroda</option>
-                          <option value="KOTAK">Kotak Mahindra Bank</option>
-                          <option value="IDBI">IDBI Bank</option>
-                          <option value="YES">Yes Bank</option>
-                          <option value="INDUSIND">IndusInd Bank</option>
-                          <option value="BOI">Bank of India</option>
-                          <option value="CANARA">Canara Bank</option>
-                          <option value="UNION">Union Bank of India</option>
-                          <option value="OTHER">Other</option>
-                        </select>
+  name="bankName"
+  value={formData.bankName}
+  onChange={(e) => {
+    handleChange(e);
+
+    if (e.target.value !== 'OTHER') {
+      setFormData(prev => ({ ...prev, customBankName: '' }));
+    }
+
+    setBankVerified(false);
+  }}
+  disabled={bankVerified}
+  className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+    bankVerified ? 'bg-green-50 border-green-300' : ''
+  }`}
+>
+  <option value="">Select Bank</option>
+
+  {BANKS.map((bank) => (
+    <option key={bank.code} value={bank.code}>
+      {bank.name}
+    </option>
+  ))}
+
+  <option value="OTHER">Other</option>
+</select>
+
                         {/* Custom Bank Name Input - shown when "Other" is selected */}
                         {formData.bankName === 'OTHER' && (
                           <input
