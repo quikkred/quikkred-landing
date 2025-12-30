@@ -37,24 +37,7 @@ interface Document {
 export default function InvestorRelationsPage() {
   const { t } = useLanguage();
 
-  const metrics = [
-    {
-      label: "Assets Under Management",
-      value: "₹850M"
-    },
-    {
-      label: "Active Loan Portfolio",
-      value: "₹720M"
-    },
-    {
-      label: "Customer Base",
-      value: "2.5M"
-    },
-    {
-      label: "Gross NPA",
-      value: "1.8%"
-    }
-  ];
+  const metrics: { label: string; value: string }[] = [];
 
   const documents: Document[] = [
     {
@@ -160,24 +143,13 @@ export default function InvestorRelationsPage() {
             </div>
 
             {/* Metrics Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {metrics.map((metric, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="bg-white rounded-2xl p-8 text-center border border-[#EDEDED]"
-                >
-                  <div className="text-3xl sm:text-4xl font-bold text-[#0FAF9A] mb-3">
-                    {metric.value}
-                  </div>
-                  <div className="text-sm sm:text-base text-gray-500 font-medium">
-                    {metric.label}
-                  </div>
-                </motion.div>
-              ))}
+            <div className="bg-white rounded-2xl p-12 text-center border border-[#EDEDED]">
+              <div className="text-xl font-semibold text-gray-400 mb-2">
+                Financial Metrics
+              </div>
+              <div className="text-sm text-gray-500">
+                Detailed financial information will be available soon. Please contact us for investor inquiries.
+              </div>
             </div>
           </motion.div>
         </div>
