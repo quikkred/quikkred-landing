@@ -3488,6 +3488,7 @@ console.log('Sending OTP with payload:', payload);
                 accountHolderName: profileData.banks?.[0]?.accountHolderName || prev.accountHolderName,
                 accountNumber: profileData.banks?.[0]?.accountNumber || prev.accountNumber,
                 ifsc: profileData.banks?.[0]?.ifscCode || prev.ifsc,
+                loanAmount: profileData.requestedLoanAmount?.toString() || prev.loanAmount,
               }));
 
               // Set bank verified flag if bank has been verified via penny drop
@@ -5562,7 +5563,7 @@ console.log('Sending OTP with payload:', payload);
                     </label>
                     <input
                       type="text"
-                      name="requestedLoanAmount"
+                      name="loanAmount"
                       value={
                         formData.loanAmount
                           ? parseFloat(formData.loanAmount.replace(/,/g, "")).toLocaleString("en-IN")
@@ -5575,7 +5576,7 @@ console.log('Sending OTP with payload:', payload);
                           ...e,
                           target: {
                             ...e.target,
-                            name: "requestedLoanAmount",
+                            name: "loanAmount",
                             value: raw,
                           },
                         } as any);
