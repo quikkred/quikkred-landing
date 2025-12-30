@@ -770,8 +770,7 @@ export default function QuickLoanApplication() {
         const result = await response.json();
 
         // Check if e-Sign document is already signed
-        if (response.ok && result.success && result.message === "E-sign document is already signed and saved") {
-          console.log('[eSign] e-Sign document verified successfully (status = SUCCESS)');
+        if (response.ok && result.success && result.message === "E-sign document fetched successfully") {
           setESignVerified(true);
           setUserESignStatus('SUCCESS');
           toast({
@@ -782,12 +781,6 @@ export default function QuickLoanApplication() {
         } else {
           console.log('[eSign] e-Sign not completed:', result.message || 'Document not signed');
           setESignVerified(false);
-          // Show info message if e-Sign is pending
-          toast({
-            variant: "warning",
-            title: "e-Sign Pending",
-            description: "Please complete e-Sign verification.",
-          });
         }
 
         // Call customer/get API once after eSign/document API
