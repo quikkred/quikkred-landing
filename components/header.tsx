@@ -50,17 +50,17 @@ export function Header() {
     //     },
     //     {
     //       name: t.eligibility.check,
-    //       href: "/resources/eligibility-check",
+    //       href: "/eligibility-check",
     //       description: t.eligibility.checkDesc,
     //     },
     //     {
     //       name: t.eligibility.documentGuide,
-    //       href: "/resources/documents",
+    //       href: "/documents",
     //       description: t.eligibility.documentGuideDesc,
     //     },
     //     {
     //       name: t.eligibility.interestRates,
-    //       href: "/resources/intrest-rate",
+    //       href: "/intrest-rate",
     //       description: t.eligibility.interestRatesDesc,
     //     },
     //   ],
