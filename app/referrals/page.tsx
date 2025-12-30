@@ -101,54 +101,9 @@ export default function ReferralsPage() {
     }
   ];
 
-  const mockReferrals: Referral[] = [
-    {
-      id: '1',
-      name: 'Rahul Sharma',
-      email: 'rahul@example.com',
-      phone: '+91 98765 43210',
-      status: 'approved',
-      inviteDate: '2024-01-10',
-      joinDate: '2024-01-12',
-      loanAmount: 300000,
-      rewardEarned: 1000
-    },
-    {
-      id: '2',
-      name: 'Priya Patel',
-      email: 'priya@example.com',
-      phone: '+91 87654 32109',
-      status: 'applied',
-      inviteDate: '2024-01-15',
-      joinDate: '2024-01-18',
-      loanAmount: 500000
-    },
-    {
-      id: '3',
-      name: 'Amit Kumar',
-      email: 'amit@example.com',
-      phone: '+91 76543 21098',
-      status: 'registered',
-      inviteDate: '2024-01-20',
-      joinDate: '2024-01-22'
-    },
-    {
-      id: '4',
-      name: 'Sneha Reddy',
-      email: 'sneha@example.com',
-      phone: '+91 65432 10987',
-      status: 'invited',
-      inviteDate: '2024-01-25'
-    }
-  ];
+  const mockReferrals: Referral[] = [];
 
-  const leaderboard: LeaderboardEntry[] = [
-    { rank: 1, name: 'Vikram Singh', referrals: 25, earnings: 37500 },
-    { rank: 2, name: 'Anita Desai', referrals: 18, earnings: 18000 },
-    { rank: 3, name: 'Rajesh Verma', referrals: 15, earnings: 15000 },
-    { rank: 4, name: user?.name || 'You', referrals: 12, earnings: 12000 },
-    { rank: 5, name: 'Meera Joshi', referrals: 10, earnings: 10000 }
-  ];
+  const leaderboard: LeaderboardEntry[] = [];
 
   useEffect(() => {
     setReferralLink(`https://Quikkred.com/refer/${referralCode}`);
