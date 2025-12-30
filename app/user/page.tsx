@@ -48,8 +48,9 @@ interface DashboardData {
   oldApplicationNumber: string | null;
   oldApplicationDate: string | null;
   isBasicDetailsFilled: boolean;
-  isEmploymentDetailsFilled: boolean;
-  isVerificationDetailsFilled: boolean;
+  isKycDetailsFilled: boolean;
+  isBankDetailsFilled: boolean;
+  isSubmit: boolean;
   activeLoan: boolean;
   loans: LoanSummary[];
 }
@@ -305,9 +306,10 @@ export default function UserDashboard() {
     if (!data) return 0;
     let completed = 0;
     if (data.isBasicDetailsFilled) completed++;
-    if (data.isEmploymentDetailsFilled) completed++;
-    if (data.isVerificationDetailsFilled) completed++;
-    return Math.round((completed / 3) * 100);
+    if (data.isKycDetailsFilled) completed++;
+    if (data.isBankDetailsFilled) completed++;
+    if (data.isSubmit) completed++;
+    return Math.round((completed / 4) * 100);
   };
 
   const calculateTotalPayment = () => {
@@ -929,7 +931,7 @@ export default function UserDashboard() {
             Application Status
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div className={`p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 transition-all ${
               data?.isBasicDetailsFilled
                 ? 'bg-green-50 border-green-300 shadow-sm'
@@ -951,40 +953,60 @@ export default function UserDashboard() {
             </div>
 
             <div className={`p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 transition-all ${
-              data?.isEmploymentDetailsFilled
+              data?.isKycDetailsFilled
                 ? 'bg-green-50 border-green-300 shadow-sm'
                 : 'bg-gray-50 border-gray-200'
             }`}>
               <div className="flex items-center gap-2 sm:gap-3">
-                {data?.isEmploymentDetailsFilled ? (
+                {data?.isKycDetailsFilled ? (
                   <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-green-600" />
                 ) : (
                   <Clock className="w-6 h-6 sm:w-7 sm:h-7 text-gray-400" />
                 )}
                 <div>
-                  <p className="font-semibold text-gray-900 text-sm sm:text-base">Employment Details</p>
+                  <p className="font-semibold text-gray-900 text-sm sm:text-base">KYC Details</p>
                   <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                    {data?.isEmploymentDetailsFilled ? 'Completed ✓' : 'Pending'}
+                    {data?.isKycDetailsFilled ? 'Completed ✓' : 'Pending'}
                   </p>
                 </div>
               </div>
             </div>
 
             <div className={`p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 transition-all ${
-              data?.isVerificationDetailsFilled
+              data?.isBankDetailsFilled
                 ? 'bg-green-50 border-green-300 shadow-sm'
                 : 'bg-gray-50 border-gray-200'
             }`}>
               <div className="flex items-center gap-2 sm:gap-3">
-                {data?.isVerificationDetailsFilled ? (
+                {data?.isBankDetailsFilled ? (
                   <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-green-600" />
                 ) : (
                   <Clock className="w-6 h-6 sm:w-7 sm:h-7 text-gray-400" />
                 )}
                 <div>
-                  <p className="font-semibold text-gray-900 text-sm sm:text-base">Verification</p>
+                  <p className="font-semibold text-gray-900 text-sm sm:text-base">Bank Details</p>
                   <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                    {data?.isVerificationDetailsFilled ? 'Completed ✓' : 'Pending'}
+                    {data?.isBankDetailsFilled ? 'Completed ✓' : 'Pending'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className={`p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 transition-all ${
+              data?.isSubmit
+                ? 'bg-green-50 border-green-300 shadow-sm'
+                : 'bg-gray-50 border-gray-200'
+            }`}>
+              <div className="flex items-center gap-2 sm:gap-3">
+                {data?.isSubmit ? (
+                  <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-green-600" />
+                ) : (
+                  <Clock className="w-6 h-6 sm:w-7 sm:h-7 text-gray-400" />
+                )}
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm sm:text-base">Final Submission</p>
+                  <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                    {data?.isSubmit ? 'Completed ✓' : 'Pending'}
                   </p>
                 </div>
               </div>

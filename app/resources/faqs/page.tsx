@@ -492,7 +492,7 @@ export default function FAQsPage() {
         >
           <h2 className="text-2xl font-bold text-center mb-8">Additional Resources</h2>
           <div className="grid md:grid-cols-3 gap-6">
-            <Link href="/resources/emi-calculator">
+            <Link href="/emi-calculator">
               <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-shadow cursor-pointer">
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
                   <Clock className="w-6 h-6 text-blue-600" />
