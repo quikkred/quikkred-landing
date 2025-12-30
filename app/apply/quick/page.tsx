@@ -735,6 +735,21 @@ export default function QuickLoanApplication() {
             description: "Please complete e-Sign verification.",
           });
         }
+
+        // Call customer/get API once after eSign/document API
+        try {
+          console.log('[eSign] Calling customer/get API to refresh user data...');
+          await fetch('https://alpha.quikkred.in/api/customer/get', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          console.log('[eSign] customer/get API called successfully');
+        } catch (customerError) {
+          console.error('[eSign] Error calling customer/get API:', customerError);
+        }
       } catch (error: any) {
         if (error.name === 'AbortError') {
           console.error('[eSign] e-Sign document API timeout after 15 seconds');
@@ -1172,8 +1187,8 @@ export default function QuickLoanApplication() {
         .notice ul { margin: 0; padding-left: 12px; color: #78350f; }
         .notice li { margin: 3px 0; line-height: 1.3; }
         .signature-section { margin-top: 15px; padding-top: 12px; border-top: 1px solid #2d3748; }
-        .signature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px; }
-        .signature-box { text-align: center; }
+        .signature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px; align-items: stretch; }
+        .signature-box { text-align: center; height: 100%; }
         .esign-box {
             border: 1px dashed #25B181;
             padding: 12px 10px;
@@ -1181,6 +1196,8 @@ export default function QuickLoanApplication() {
             background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
             border-radius: 10px;
             min-height: 100px;
+            height: 100%;
+            box-sizing: border-box;
         }
         .esign-box:hover { border-style: solid; }
         .esign-box .icon { font-size: 20px; margin-bottom: 5px; }
@@ -1747,15 +1764,9 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
             <div class="signature-grid">
                 <div class="signature-box">
                     <div class="esign-box">
-                        <div class="icon">✍️</div>
-                        <div class="text">Borrower's eSign</div>
-                        <div class="subtext">Aadhaar-based Digital Signature</div>
-                        <div class="details">
-                            <div><strong>Name:</strong> ${getValue(data.fullName)}</div>
-                            <div><strong>Aadhaar:</strong> XXXX-XXXX-${maskAadhaar(data.aadhaar)}</div>
-                            <div><strong>Date:</strong> ${currentDate}</div>
-                            <div><strong>Time:</strong> ${currentTime}</div>
-                        </div>
+
+                     // eSign Place holder
+                     
                     </div>
                 </div>
               <div class="signature-box">
@@ -1812,6 +1823,8 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
     </div>
 
     <script>
+    // 🔹 Document number injected from React component (single source of truth)
+        const documentNumber = '${documentNumber}';
         // ========== PRINT-BASED PDF DOWNLOAD ==========
         function testGeneratePDF() {
             const btn = document.getElementById('test-btn');
@@ -2880,8 +2893,8 @@ y += boxHeight + 4;
         }
 
         // 🔹 Generate document number
-        const currentYear = new Date().getFullYear();
-        const documentNumber = 'DOC' + currentYear + Date.now();
+        // const currentYear = new Date().getFullYear();
+        // const documentNumber = 'DOC' + currentYear + Date.now();
 
         // 🔹 Hide approve section temporarily for PDF capture
         const approveSection = document.getElementById('approve-section');
@@ -4598,15 +4611,15 @@ console.log('Sending OTP with payload:', payload);
         }
 
         // Consent validation
-        if (!formData.creditBureauConsent || !formData.termsConsent) {
-          setConsentError(true);
-          toast({
-            variant: "warning",
-            title: "Consent Required",
-            description: "Please accept the required consents to proceed.",
-          });
-          return;
-        }
+        // if (!formData.creditBureauConsent || !formData.termsConsent) {
+        //   setConsentError(true);
+        //   toast({
+        //     variant: "warning",
+        //     title: "Consent Required",
+        //     description: "Please accept the required consents to proceed.",
+        //   });
+        //   return;
+        // }
 
         // Clear consent error if validation passes
         setConsentError(false);
