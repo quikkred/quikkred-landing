@@ -71,7 +71,7 @@ export default function LoanDetailsPage() {
   const mockLoanDetails: LoanDetails = {
     id: params.id as string,
     loanNumber: 'LN2024001234',
-    applicantName: user?.name || 'John Doe',
+    applicantName: user?.name || 'Applicant',
     loanAmount: 500000,
     disbursedAmount: 500000,
     outstandingAmount: 375000,
