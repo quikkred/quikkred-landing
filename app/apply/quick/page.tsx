@@ -5562,7 +5562,7 @@ console.log('Sending OTP with payload:', payload);
                     </label>
                     <input
                       type="text"
-                      name="requestedLoanAmount"
+                      name="loanAmount"
                       value={
                         formData.loanAmount
                           ? parseFloat(formData.loanAmount.replace(/,/g, "")).toLocaleString("en-IN")
