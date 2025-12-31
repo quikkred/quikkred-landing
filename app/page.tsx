@@ -144,10 +144,10 @@ export default function Home() {
         {/* Features Section - Full Screen */}
         <FeaturesSection/>
 
-        {/* Interactive Loan Calculator Section - Full Screen on Desktop Only */}
-        <section className="min-h-fit lg:h-screen lg:max-h-screen flex items-center py-8 sm:py-10 lg:py-12 bg-[#F6F6F6] lg:overflow-hidden">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 lg:h-full flex items-center">
-            <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 items-center w-full">
+        {/* Interactive Loan Calculator Section */}
+        <section className="flex items-center py-8 sm:py-10 lg:py-12 bg-[#F6F6F6]">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center">
+            <div className="grid lg:grid-cols-2 gap-4 lg:gap-6 items-center w-full">
               <motion.div
                 initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
