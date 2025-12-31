@@ -5053,7 +5053,7 @@ console.log('Sending OTP with payload:', payload);
                 router.push('/login'); // Redirect to login if not logged in
               }
             }}
-       className="flex items-center bg-white gap-2 px-4 py-2 text-gray-600 hover:text-white hover:bg-[#25b181] rounded-lg transition-all shadow-sm"
+     className="flex items-center bg-white gap-2 px-4 py-2 text-gray-600 hover:text-white hover:bg-[#25b181] rounded-lg transition-all shadow-sm"
           >
             <X className="w-5 h-5" />
             <span className="text-sm font-medium">Close</span>
@@ -5076,17 +5076,48 @@ console.log('Sending OTP with payload:', payload);
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2 gap-2">
             {[1, 2, 3, 4].map((step) => (
-              <div key={step} className="flex-1">
+              <button
+                key={step}
+                type="button"
+                disabled={step >= currentStep}
+                className={`flex-1 ${step < currentStep ? 'cursor-pointer' : 'cursor-default'}`}
+                onClick={() => {
+                  if (step < currentStep) {
+                    setCurrentStep(step);
+                  }
+                }}
+              >
                 <div className={`h-2 rounded-full transition-all ${
                   step <= currentStep ? 'bg-[#25B181]' : 'bg-gray-200'
-                }`} />
-              </div>
+                } ${step < currentStep ? 'hover:bg-[#1F8F68]' : ''}`} />
+              </button>
             ))}
           </div>
           <div className="flex justify-between text-xs sm:text-sm text-gray-600">
-            <span className={`text-center ${currentStep === 1 ? 'text-[#25B181] font-semibold' : ''}`}>Basic Details</span>
-            <span className={`text-center ${currentStep === 2 ? 'text-[#25B181] font-semibold' : ''}`}>Identity</span>
-            <span className={`text-center ${currentStep === 3 ? 'text-[#25B181] font-semibold' : ''}`}>Bank Details</span>
+            <button
+              type="button"
+              disabled={currentStep <= 1}
+              className={`text-center ${currentStep === 1 ? 'text-[#25B181] font-semibold' : ''} ${currentStep > 1 ? 'cursor-pointer hover:text-[#25B181]' : ''}`}
+              onClick={() => currentStep > 1 && setCurrentStep(1)}
+            >
+              Basic Details
+            </button>
+            <button
+              type="button"
+              disabled={currentStep <= 2}
+              className={`text-center ${currentStep === 2 ? 'text-[#25B181] font-semibold' : ''} ${currentStep > 2 ? 'cursor-pointer hover:text-[#25B181]' : ''}`}
+              onClick={() => currentStep > 2 && setCurrentStep(2)}
+            >
+              Identity
+            </button>
+            <button
+              type="button"
+              disabled={currentStep <= 3}
+              className={`text-center ${currentStep === 3 ? 'text-[#25B181] font-semibold' : ''} ${currentStep > 3 ? 'cursor-pointer hover:text-[#25B181]' : ''}`}
+              onClick={() => currentStep > 3 && setCurrentStep(3)}
+            >
+              Bank Details
+            </button>
             <span className={`text-center ${currentStep === 4 ? 'text-[#25B181] font-semibold' : ''}`}>Approval</span>
           </div>
         </div>
@@ -5235,7 +5266,7 @@ console.log('Sending OTP with payload:', payload);
         disabled={!formData.email || !!fieldErrors.email || loading || (otpSent && emailOtpTimer > 0)}
         className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
       >
-        {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Send OTP"}
+        {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Verify"}
       </button>
     )}
 
@@ -5311,7 +5342,7 @@ console.log('Sending OTP with payload:', payload);
                             disabled={!formData.mobile || loading || (otpSent && emailOtpTimer > 0)}
                             className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
                           >
-                            {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Send OTP"}
+                            {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Verify"}
                           </button>
                         )}
                         {formData.mobileVerified && (
@@ -5766,7 +5797,7 @@ console.log('Sending OTP with payload:', payload);
                           disabled={!formData.aadhaar || formData.aadhaar.length !== 12 || aadhaarVerifying || (aadhaarOtpSent && aadhaarOtpTimer > 0)}
                           className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                         >
-                          {aadhaarVerifying ? "Sending..." : aadhaarOtpSent ? (aadhaarOtpTimer > 0 ? `Resend (${aadhaarOtpTimer}s)` : "Resend OTP") : "Send OTP"}
+                          {aadhaarVerifying ? "Sending..." : aadhaarOtpSent ? (aadhaarOtpTimer > 0 ? `Resend (${aadhaarOtpTimer}s)` : "Resend OTP") : "Verify"}
                         </button>
                       )}
                       {aadhaarVerified && (
