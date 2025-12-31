@@ -5235,7 +5235,7 @@ console.log('Sending OTP with payload:', payload);
         disabled={!formData.email || !!fieldErrors.email || loading || (otpSent && emailOtpTimer > 0)}
         className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
       >
-        {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Send OTP"}
+        {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Verify"}
       </button>
     )}
 
@@ -5311,7 +5311,7 @@ console.log('Sending OTP with payload:', payload);
                             disabled={!formData.mobile || loading || (otpSent && emailOtpTimer > 0)}
                             className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
                           >
-                            {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Send OTP"}
+                            {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Verify"}
                           </button>
                         )}
                         {formData.mobileVerified && (
@@ -5766,7 +5766,7 @@ console.log('Sending OTP with payload:', payload);
                           disabled={!formData.aadhaar || formData.aadhaar.length !== 12 || aadhaarVerifying || (aadhaarOtpSent && aadhaarOtpTimer > 0)}
                           className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                         >
-                          {aadhaarVerifying ? "Sending..." : aadhaarOtpSent ? (aadhaarOtpTimer > 0 ? `Resend (${aadhaarOtpTimer}s)` : "Resend OTP") : "Send OTP"}
+                          {aadhaarVerifying ? "Sending..." : aadhaarOtpSent ? (aadhaarOtpTimer > 0 ? `Resend (${aadhaarOtpTimer}s)` : "Resend OTP") : "Verify"}
                         </button>
                       )}
                       {aadhaarVerified && (
