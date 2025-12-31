@@ -5076,17 +5076,48 @@ console.log('Sending OTP with payload:', payload);
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2 gap-2">
             {[1, 2, 3, 4].map((step) => (
-              <div key={step} className="flex-1">
+              <button
+                key={step}
+                type="button"
+                disabled={step >= currentStep}
+                className={`flex-1 ${step < currentStep ? 'cursor-pointer' : 'cursor-default'}`}
+                onClick={() => {
+                  if (step < currentStep) {
+                    setCurrentStep(step);
+                  }
+                }}
+              >
                 <div className={`h-2 rounded-full transition-all ${
                   step <= currentStep ? 'bg-[#25B181]' : 'bg-gray-200'
-                }`} />
-              </div>
+                } ${step < currentStep ? 'hover:bg-[#1F8F68]' : ''}`} />
+              </button>
             ))}
           </div>
           <div className="flex justify-between text-xs sm:text-sm text-gray-600">
-            <span className={`text-center ${currentStep === 1 ? 'text-[#25B181] font-semibold' : ''}`}>Basic Details</span>
-            <span className={`text-center ${currentStep === 2 ? 'text-[#25B181] font-semibold' : ''}`}>Identity</span>
-            <span className={`text-center ${currentStep === 3 ? 'text-[#25B181] font-semibold' : ''}`}>Bank Details</span>
+            <button
+              type="button"
+              disabled={currentStep <= 1}
+              className={`text-center ${currentStep === 1 ? 'text-[#25B181] font-semibold' : ''} ${currentStep > 1 ? 'cursor-pointer hover:text-[#25B181]' : ''}`}
+              onClick={() => currentStep > 1 && setCurrentStep(1)}
+            >
+              Basic Details
+            </button>
+            <button
+              type="button"
+              disabled={currentStep <= 2}
+              className={`text-center ${currentStep === 2 ? 'text-[#25B181] font-semibold' : ''} ${currentStep > 2 ? 'cursor-pointer hover:text-[#25B181]' : ''}`}
+              onClick={() => currentStep > 2 && setCurrentStep(2)}
+            >
+              Identity
+            </button>
+            <button
+              type="button"
+              disabled={currentStep <= 3}
+              className={`text-center ${currentStep === 3 ? 'text-[#25B181] font-semibold' : ''} ${currentStep > 3 ? 'cursor-pointer hover:text-[#25B181]' : ''}`}
+              onClick={() => currentStep > 3 && setCurrentStep(3)}
+            >
+              Bank Details
+            </button>
             <span className={`text-center ${currentStep === 4 ? 'text-[#25B181] font-semibold' : ''}`}>Approval</span>
           </div>
         </div>

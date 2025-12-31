@@ -386,15 +386,26 @@ export default function Hero() {
                 {/* Progress bars */}
                 <div className="flex gap-2 flex-1">
                   {steps.map((_, index) => (
-                    <motion.div
+                    <button
                       key={index}
-                      initial={{ scaleX: 0 }}
-                      animate={{ scaleX: 1 }}
-                      transition={{ delay: index * 0.1, duration: 0.4 }}
-                      className={`h-2 flex-1 rounded-full transition-all duration-500 ${
-                        currentStep >= index + 1 ? "bg-gradient-to-r from-teal-500 to-emerald-500" : "bg-slate-200"
-                      }`}
-                    />
+                      type="button"
+                      disabled={index + 1 >= currentStep}
+                      onClick={() => {
+                        if (index + 1 < currentStep) {
+                          setCurrentStep(index + 1);
+                        }
+                      }}
+                      className={`flex-1 ${index + 1 < currentStep ? 'cursor-pointer' : 'cursor-default'}`}
+                    >
+                      <motion.div
+                        initial={{ scaleX: 0 }}
+                        animate={{ scaleX: 1 }}
+                        transition={{ delay: index * 0.1, duration: 0.4 }}
+                        className={`h-2 w-full rounded-full transition-all duration-500 ${
+                          currentStep >= index + 1 ? "bg-gradient-to-r from-teal-500 to-emerald-500" : "bg-slate-200"
+                        } ${index + 1 < currentStep ? 'hover:from-teal-600 hover:to-emerald-600' : ''}`}
+                      />
+                    </button>
                   ))}
                 </div>
 
