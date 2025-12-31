@@ -1144,6 +1144,7 @@
     "interest": "Interest",
     "totalInterest": "Total Interest",
     "totalRepayment": "Total Repayment",
+    "disbursedAmount": "Amount You'll Receive",
     "totalPayable": "Total Payable",
     "monthlyEMI": "Your Monthly EMI",
     "for": "for",
