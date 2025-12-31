@@ -117,7 +117,7 @@ export default function UserDashboard() {
         return;
       }
 
-      const response = await fetch(`https://alpha.quikkred.in/api/loans/active/${loanNumber}`, {
+      const response = await fetch(`https://beta.quikkred.in/api/loans/active/${loanNumber}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -225,7 +225,7 @@ export default function UserDashboard() {
         return;
       }
 
-      const response = await fetch('https://alpha.quikkred.in/api/customer/dashboard', {
+      const response = await fetch('https://beta.quikkred.in/api/customer/dashboard', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -406,7 +406,7 @@ export default function UserDashboard() {
         description: `Processing payment of ₹${totalAmount.toLocaleString()}...`
       });
 
-      const response = await fetch('https://alpha.quikkred.in/api/emi/customerEmiPayment', {
+      const response = await fetch('https://beta.quikkred.in/api/emi/customerEmiPayment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
