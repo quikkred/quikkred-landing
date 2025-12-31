@@ -111,9 +111,9 @@ export default function FinancialLiteracyPage() {
   ];
 
   const calculators = [
-    { name: "EMI Calculator", href: "/resources/emi-calculator", icon: Calculator, color: "#1976D2" },
-    { name: "Loan Eligibility", href: "/resources/eligibility-check", icon: Target, color: "#006837" },
-    { name: "Interest Rates", href: "/resources/intrest-rate", icon: TrendingUp, color: "#F9A825" }
+    { name: "EMI Calculator", href: "/emi-calculator", icon: Calculator, color: "#1976D2" },
+    { name: "Loan Eligibility", href: "/eligibility-check", icon: Target, color: "#006837" },
+    { name: "Interest Rates", href: "/intrest-rate", icon: TrendingUp, color: "#F9A825" }
   ];
 
   return (
