@@ -873,7 +873,7 @@ switch (category) {
                 </div>
 
                 {/* Reopen Ticket Form */}
-                {!showReopenForm && (
+                {!showReopenForm && selectedTicket.status?.toUpperCase() !== 'CLOSED' && (
                   <div className="mb-6">
                     <button
                       onClick={() => setShowReopenForm(true)}

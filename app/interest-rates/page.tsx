@@ -484,7 +484,7 @@ export default function InterestRatesPage() {
                           Apply Now
                         </button>
                       </Link>
-                      <Link href="/resources/emi-calculator">
+                      <Link href="/emi-calculator">
                         <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-200:bg-gray-600 transition-colors">
                           Calculate EMI
                         </button>
@@ -591,7 +591,7 @@ export default function InterestRatesPage() {
               Check your eligibility and discover your personalized interest rate
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/resources/eligibility-check">
+              <Link href="/eligibility-check">
                 <button className="px-8 py-3 bg-white text-[#4A66FF] rounded-lg font-semibold hover:shadow-lg transition-all">
                   Check Eligibility
                 </button>

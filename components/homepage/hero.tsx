@@ -18,6 +18,7 @@ export default function Hero() {
   })
   const [currentStep, setCurrentStep] = useState(1)
   const [fieldError, setFieldError] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false)
   const languageDropdownRef = useRef<HTMLDivElement>(null)
   const heroRef = useRef<HTMLElement>(null)
@@ -100,13 +101,35 @@ export default function Hero() {
     }
   }
 
-  const handleSubmit = () => {
-    localStorage.setItem('heroFormData', JSON.stringify({
+  const handleSubmit = async () => {
+    setIsSubmitting(true)
+
+    // Remove commas from amount for API (e.g., "12,000" -> "12000")
+    const sanitizedAmount = formData.loanAmount.replace(/,/g, '')
+
+    const formPayload = {
       name: formData.name,
       mobile: formData.mobile,
-      amount: formData.loanAmount,
+      amount: sanitizedAmount,
       email: formData.email
-    }))
+    }
+
+    try {
+      // Call API to store instant form data
+      await fetch('https://alpha.quikkred.in/api/instantForm/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formPayload),
+      })
+    } catch (error) {
+      // Continue with flow even if API fails
+      console.error('Error saving instant form data:', error)
+    }
+
+    // Save to localStorage and navigate (regardless of API success)
+    localStorage.setItem('heroFormData', JSON.stringify(formPayload))
     router.push('/apply/quick')
   }
 
@@ -433,18 +456,31 @@ export default function Hero() {
                   )}
                   {!fieldError && <div className="mb-5"></div>}
                   <motion.button
-                    whileHover={{ scale: 1.02, boxShadow: "0 20px 40px -15px rgba(20, 184, 166, 0.4)" }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={!isSubmitting ? { scale: 1.02, boxShadow: "0 20px 40px -15px rgba(20, 184, 166, 0.4)" } : {}}
+                    whileTap={!isSubmitting ? { scale: 0.98 } : {}}
                     onClick={handleNext}
-                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white py-4 sm:py-5 text-lg sm:text-xl font-bold rounded-2xl shadow-lg transition-all"
+                    disabled={isSubmitting}
+                    className={`w-full flex items-center justify-center gap-2 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white py-4 sm:py-5 text-lg sm:text-xl font-bold rounded-2xl shadow-lg transition-all ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
                   >
-                    <span>{currentStep === 4 ? (t?.hero?.form?.cta || "Check Eligibility") : "Next"}</span>
-                    <motion.div
-                      animate={{ x: [0, 5, 0] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
-                    >
-                      <ArrowRight className="w-5 h-5" />
-                    </motion.div>
+                    {isSubmitting ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Please wait...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>{currentStep === 4 ? (t?.hero?.form?.cta || "Check Eligibility") : "Next"}</span>
+                        <motion.div
+                          animate={{ x: [0, 5, 0] }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                        >
+                          <ArrowRight className="w-5 h-5" />
+                        </motion.div>
+                      </>
+                    )}
                   </motion.button>
                 </motion.div>
               </AnimatePresence>
