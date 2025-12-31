@@ -92,7 +92,7 @@ export default function RootLayout({
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-WGTGMGGM');`,
+})(window,document,'script','dataLayer','GTM-5HM3XTXG');`,
           }}
         />
         {/* Google Analytics & Google Ads (gtag.js) */}
@@ -150,7 +150,7 @@ gtag('config', 'AW-17796230994');`,
               name: 'Quikkred',
               description: 'Instant personal loans with quick approval in 3 easy steps',
               url: 'https://www.quikkred.in',
-              logo: 'https://www.quikkred.in/logo.png',
+              logo: 'https://beta.quikkred.in/logo.png',
               address: {
                 '@type': 'PostalAddress',
                 addressCountry: 'IN',
@@ -160,11 +160,6 @@ gtag('config', 'AW-17796230994');`,
                 'https://twitter.com/quikkred',
                 'https://www.linkedin.com/company/quikkred'
               ],
-              aggregateRating: {
-                '@type': 'AggregateRating',
-                ratingValue: '4.8',
-                reviewCount: '50000'
-              },
               offers: {
                 '@type': 'Offer',
                 name: 'Personal Loan',
@@ -180,7 +175,7 @@ gtag('config', 'AW-17796230994');`,
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-WGTGMGGM"
+            src="https://www.googletagmanager.com/ns.html?id=GTM-5HM3XTXG"
             height="0"
             width="0"
             style={{ display: 'none', visibility: 'hidden' }}
