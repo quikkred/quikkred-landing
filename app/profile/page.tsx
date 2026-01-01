@@ -586,25 +586,22 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Profile Image (overlays fallback if available and loads successfully) */}
-                    {(imagePreview || (profileData.profileImage && !imageLoadError)) && (
-                      <img
-                        src={imagePreview || (
-                          typeof profileData.profileImage === 'string'
-                            ? profileData.profileImage
-                            : profileData.profileImage?.url
-                        )}
-                        alt="Profile"
-                        className="w-24 h-24 sm:w-32 sm:h-32 rounded-full absolute top-0 left-0 object-cover border-4 border-white shadow-lg"
-                        onError={() => {
-                          console.error('Failed to load profile image');
-                          setImageLoadError(true);
-                        }}
-                        onLoad={() => console.log('✅ Profile image loaded successfully')}
-                      />
-                    )}
+                {(imagePreview || profileData?.profile?.s3URL) && (
+  <img
+    src={imagePreview || profileData.profile.s3URL}
+    alt="Profile"
+    className="w-24 h-24 sm:w-32 sm:h-32 rounded-full absolute top-0 left-0 object-cover border-4 border-white shadow-lg"
+    onError={() => {
+      console.error('❌ Failed to load profile image');
+      setImageLoadError(true);
+    }}
+    onLoad={() => console.log('✅ Profile image loaded successfully')}
+  />
+)}
+
 
                     {/* Upload Button Overlay */}
-                    {!selectedImage && (
+                    {/* {!selectedImage && (
                       <label
                         htmlFor="profile-image-upload"
                         className="absolute bottom-0 right-0 w-8 h-8 sm:w-10 sm:h-10 bg-[#4A66FF] rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:bg-[#1565C0] transition-colors group"
@@ -618,7 +615,7 @@ export default function ProfilePage() {
                           className="hidden"
                         />
                       </label>
-                    )}
+                    )} */}
                   </div>
 
                   {/* Upload Actions */}
@@ -664,7 +661,15 @@ export default function ProfilePage() {
                   )}
 
                   <h2 className="mt-3 sm:mt-4 text-base sm:text-xl font-semibold text-gray-800 break-words">
-                    {profileData.fullName || `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim() || 'User'}
+                {(
+  profileData.fullName ||
+  `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim() ||
+  'User'
+)
+  .toLowerCase()
+  .replace(/\b\w/g, char => char.toUpperCase())
+}
+
                   </h2>
                   <p className="text-xs sm:text-sm text-gray-600 break-all">{profileData.email}</p>
                   <p className="text-xs sm:text-sm text-gray-600">{profileData.mobile || 'N/A'}</p>
@@ -793,10 +798,10 @@ export default function ProfilePage() {
 
                 {/* Account Info */}
                 <div className="mt-4 sm:mt-6 space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-600">
-                  <div className="flex items-center gap-2">
+                  {/* <div className="flex items-center gap-2">
                     <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#4A66FF] flex-shrink-0" />
                     <span>Role: {profileData.role}</span>
-                  </div>
+                  </div> */}
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#4A66FF] flex-shrink-0" />
                     <span>PAN: {profileData.isPanVerify ? 'Verified' : 'Not Verified'}</span>
@@ -854,11 +859,20 @@ export default function ProfilePage() {
                           Personal Details
                         </h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
-                          <InfoField
-                            icon={<User className="w-5 h-5 text-[#4A66FF]" />}
-                            label="Full Name"
-                            value={profileData.fullName || `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim() || 'N/A'}
-                          />
+                     <InfoField
+  icon={<User className="w-5 h-5 text-[#4A66FF]" />}
+  label="Full Name"
+  value={
+    (
+      profileData.fullName ||
+      `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim() ||
+      'N/A'
+    )
+      .toLowerCase()
+      .replace(/\b\w/g, char => char.toUpperCase())
+  }
+/>
+
                           <InfoField
                             icon={<Mail className="w-5 h-5 text-[#4A66FF]" />}
                             label="Email"
@@ -1032,7 +1046,8 @@ export default function ProfilePage() {
                               <InfoField
                                 icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
                                 label="Company Name"
-                                value={profileData.companyName}
+                                value={profileData.companyName.toLowerCase()
+    .replace(/\b\w/g, char => char.toUpperCase())}
                               />
                             )}
                             {profileData.employmentType && (
@@ -1216,10 +1231,10 @@ export default function ProfilePage() {
                       </div>
 
                       {/* Divider */}
-                      <div className="border-t border-[#E0E0E0]"></div>
+                      {/* <div className="border-t border-[#E0E0E0]"></div> */}
 
                       {/* References Section */}
-                      <div>
+                      {/* <div>
                         <h3 className="text-base sm:text-lg font-semibold text-[#1F8F68] mb-4 sm:mb-6 flex items-center gap-2">
                           <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                           References
@@ -1259,7 +1274,7 @@ export default function ProfilePage() {
                             <p className="text-gray-500 text-sm sm:text-base">No references added yet</p>
                           </div>
                         )}
-                      </div>
+                      </div> */}
                     </div>
                   )}
                 </div>
