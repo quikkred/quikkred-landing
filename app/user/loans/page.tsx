@@ -1598,10 +1598,12 @@ export default function MyLoansPage() {
                         <p className="text-sm text-gray-600">Product Name</p>
                         <p className="font-semibold text-gray-900">{detailedLoan.productName}</p>
                       </div>
+                      {detailedLoan.branch && (
                       <div>
                         <p className="text-sm text-gray-600">Branch</p>
                         <p className="font-semibold text-gray-900">{detailedLoan.branch.replace(/_/g, ' ')}</p>
                       </div>
+                      )}
                       <div>
                         <p className="text-sm text-gray-600">Status</p>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(detailedLoan.status)}`}>
@@ -1705,6 +1707,10 @@ export default function MyLoansPage() {
                       <div>
                         <p className="text-sm text-gray-600">Total Outstanding</p>
                         <p className="text-lg font-bold text-red-600">{formatCurrency(detailedLoan.totalOutstanding)}</p>
+                      </div>
+                       <div>
+                        <p className="text-sm text-gray-600">Late Charges Outstanding</p>
+                        <p className="text-lg font-bold text-red-600">{formatCurrency(detailedLoan.lateChargesOutstanding)}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">DPD (Days Past Due)</p>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import {
@@ -17,6 +17,12 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/toast';
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 interface LoanSummary {
   productName: string;
@@ -91,6 +97,22 @@ export default function UserDashboard() {
   const [selectedLoanNumber, setSelectedLoanNumber] = useState<string>('');
   const [activeLoanDetails, setActiveLoanDetails] = useState<ActiveLoanDetails | null>(null);
   const [loadingLoanDetails, setLoadingLoanDetails] = useState(false);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+  const isProcessingRef = useRef(false);
+
+  // Load Razorpay script
+  useEffect(() => {
+    if (window.Razorpay) {
+      setRazorpayLoaded(true);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => setRazorpayLoaded(true);
+    document.body.appendChild(script);
+  }, []);
 
   // Set default amount to remaining amount when loan details are loaded
   useEffect(() => {
@@ -406,7 +428,7 @@ export default function UserDashboard() {
         description: `Processing payment of ₹${totalAmount.toLocaleString()}...`
       });
 
-      const response = await fetch('https://alpha.quikkred.in/api/emi/customerEmiPayment', {
+      const payinResponse = await fetch('https://alpha.quikkred.in/api/emi/customerEmiPayment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -418,52 +440,153 @@ export default function UserDashboard() {
         })
       });
 
-      const result: PaymentResponse = await response.json();
-
-      if (response.ok && result.success) {
-        // Show success toast with payment details
-        toast({
-          variant: "success",
-          title: "Payment Successful!",
-          description: (
-            <div className="space-y-1">
-              <p className="font-semibold">{result.message}</p>
-              <div className="text-xs mt-2 space-y-1">
-            
-                <p>Transaction ID: {result.data.transactionId}</p>
-                <p>Amount Paid: ₹{result.data.paymentAmount.toLocaleString()}</p>
-                {/* <p>EMIs Paid: {result.data.emisPaid}</p>
-                <p>Remaining EMIs: {result.data.remainingEMIs}</p>
-                <p>Current Balance: ₹{result.data.customerBalance.toLocaleString()}</p> */}
-              </div>
-            </div>
-          )
-        });
-
-        // Refresh dashboard data and active loan details after successful payment
-        await fetchUserData();
-        if (selectedLoanNumber) {
-          await fetchActiveLoanDetails(selectedLoanNumber);
-        }
-
-        // Reset form - Clear amount so it recalculates from new remaining balance
-        setSelectedEmiCount(1);
-        setCustomAmount('');
-
-      } else {
-        console.log('❌ Payment failed', result);
-        throw new Error(result.message || 'Payment failed');
+      // Check if token expired (401 Unauthorized)
+      if (payinResponse.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        document.cookie = 'auth-token=; path=/; max-age=0';
+        document.cookie = 'user-role=; path=/; max-age=0';
+        router.push('/login');
+        setProcessingPayment(false);
+        isProcessingRef.current = false;
+        return;
       }
 
+      const payinResult = await payinResponse.json();
+
+      if (!payinResponse.ok || !payinResult.success) {
+        throw new Error(payinResult.message || 'Failed to initiate payment');
+      }
+
+      // Step 2: Get order_id (transactionId) and amount from response
+      // transactionId is the Razorpay order_id (starts with "order_")
+      const orderId = payinResult.data?.transactionId;
+      const paymentAmount = payinResult.data?.paymentAmount || totalAmount;
+      const amountInPaise = paymentAmount * 100; // Convert to paise
+
+      if (!orderId) {
+        console.error('Order ID (transactionId) not found in response:', payinResult.data);
+        throw new Error('Order ID not received from server');
+      }
+
+      console.log('Payin initiated successfully, Order ID:', orderId, 'Amount:', amountInPaise, 'paise');
+
+      // Step 3: Open Razorpay checkout with order details from API response
+      const options = {
+        key: "rzp_test_RudM9P8MHGIuf2",
+        amount: amountInPaise,
+        currency: "INR",
+        order_id: orderId,
+        name: "Payday Loan",
+        description: "EMI / Fee Payment",
+        prefill: {
+          name: user?.name || "",
+          email: user?.email || "",
+          contact: user?.mobile || "",
+        },
+        handler: async (response: any) => {
+          // Payment completed - Razorpay returns payment details
+          console.log("Payment completed:", response);
+
+          // Step 4: Call verify API
+          try {
+            const verifyResponse = await fetch('https://alpha.quikkred.in/api/disbursement/verify', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            });
+
+            const verifyResult = await verifyResponse.json();
+
+            if (verifyResult.success) {
+              toast({
+                variant: "success",
+                title: "Payment Verified Successfully!",
+                description: (
+                  <div className="space-y-1">
+                    <p className="font-semibold">Your payment was verified!</p>
+                    <div className="text-xs mt-2 space-y-1">
+                      <p>Payment ID: {verifyResult.data?.paymentId || response.razorpay_payment_id}</p>
+                      <p>Amount: ₹{((verifyResult.data?.amount || amountInPaise) / 100).toFixed(2)}</p>
+                    </div>
+                  </div>
+                )
+              });
+            } else {
+              toast({
+                variant: "error",
+                title: "Payment Verification Failed",
+                description: verifyResult.message || "Please contact support."
+              });
+            }
+          } catch (verifyError: any) {
+            console.error('Verification error:', verifyError);
+            toast({
+              variant: "error",
+              title: "Verification Error",
+              description: verifyError.message || "Payment verification failed."
+            });
+          }
+
+          // Refresh dashboard data and active loan details after successful payment
+          await fetchUserData();
+          if (selectedLoanNumber) {
+            await fetchActiveLoanDetails(selectedLoanNumber);
+          }
+
+          // Reset form
+          setSelectedEmiCount(1);
+          setCustomAmount('');
+          setProcessingPayment(false);
+          isProcessingRef.current = false;
+        },
+        modal: {
+          ondismiss: () => {
+            console.log("Payment cancelled");
+            toast({
+              variant: "default",
+              title: "Payment Cancelled",
+              description: "You cancelled the payment process."
+            });
+            setProcessingPayment(false);
+            isProcessingRef.current = false;
+          },
+        },
+        theme: { color: "#10B4A3" },
+      };
+
+      const rzp = new window.Razorpay(options);
+
+      rzp.on("payment.failed", (response: any) => {
+        console.log("Payment Failed:", response.error);
+        toast({
+          variant: "error",
+          title: "Payment Failed",
+          description: response.error.description || "Payment failed. Please try again."
+        });
+        setProcessingPayment(false);
+        isProcessingRef.current = false;
+      });
+
+      rzp.open();
+
     } catch (error: any) {
-      console.error('Payment error:', error);
+      console.error('Payment initiation error:', error);
       toast({
         variant: "error",
-        title: "Payment Failed",
-        description: error.message || "Unable to process payment. Please try again."
+        title: "Payment Error",
+        description: error.message || "Failed to initiate payment. Please try again."
       });
-    } finally {
       setProcessingPayment(false);
+      isProcessingRef.current = false;
     }
   };
 
@@ -890,9 +1013,9 @@ export default function UserDashboard() {
                 {/* Pay Button */}
                 <button
                   onClick={handlePayment}
-                  disabled={processingPayment}
+                  disabled={processingPayment || !razorpayLoaded}
                   className={`w-full mt-4 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-[#10B4A3] to-[#0E9A8B] text-white rounded-lg hover:shadow-lg transition-all font-semibold text-base sm:text-lg ${
-                    processingPayment ? 'opacity-70 cursor-not-allowed' : ''
+                    processingPayment || !razorpayLoaded ? 'opacity-70 cursor-not-allowed' : ''
                   }`}
                 >
                   {processingPayment ? (
