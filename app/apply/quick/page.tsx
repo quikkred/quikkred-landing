@@ -4758,17 +4758,6 @@ console.log('Sending OTP with payload:', payload);
         const payload = {
           isSubmit: true,
           approvedLoanAmount: selectedLoanAmount,
-          loanDetails: {
-            selectedLoanAmount: selectedLoanAmount,
-            tenure: calculatedLoanDetails?.tenure || approvalData?.tenure || formData.tenure,
-            tenureUnit: calculatedLoanDetails?.tenureUnit || approvalData?.tenureUnit || formData.tenureUnit,
-            interestRate: calculatedLoanDetails?.interestRate || approvalData?.interestRate,
-            processingFee: calculatedLoanDetails?.processingFee || approvalData?.processingFee,
-            totalInterest: calculatedLoanDetails?.totalInterest || approvalData?.totalInterest,
-            gstOnProcessingFee: calculatedLoanDetails?.gstOnProcessingFee || approvalData?.gstOnProcessingFee,
-            totalRepayment: calculatedLoanDetails?.totalRepayment || approvalData?.totalRepayment,
-            netDisbursalAmount: calculatedLoanDetails?.netDisbursalAmount || approvalData?.netDisbursalAmount
-          }
         };
 
         const response = await fetch(`https://alpha.quikkred.in/api/application/loan/create`, {
