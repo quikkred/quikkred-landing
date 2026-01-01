@@ -81,7 +81,7 @@ const BANKS = [
   { code: 'YESB', name: 'Yes Bank' },
   { code: 'INDB', name: 'IndusInd Bank' },
   { code: 'IDFB', name: 'IDFC First Bank' },
-  { code: 'FEDB', name: 'Federal Bank' },
+  { code: 'FDRL', name: 'Federal Bank' },
   { code: 'DCBL', name: 'DCB Bank' },
   { code: 'RATN', name: 'RBL Bank' },
   { code: 'CSBK', name: 'Catholic Syrian Bank (CSB Bank)' },
@@ -153,6 +153,12 @@ export default function QuickLoanApplication() {
   // Approval Data (Step 3)
   const [approvalData, setApprovalData] = useState<any>(null);
   const [approvalLoading, setApprovalLoading] = useState(false);
+
+  // User's desired loan amount (can be less than or equal to approved amount)
+  const [userDesiredAmount, setUserDesiredAmount] = useState<number | null>(null);
+  const [calculatedLoanDetails, setCalculatedLoanDetails] = useState<any>(null);
+  const [showAmountModal, setShowAmountModal] = useState(false);
+  const [tempAmount, setTempAmount] = useState<string>('');
 
   // BRE Status States
   const [rejectionCountdown, setRejectionCountdown] = useState(10);
@@ -934,6 +940,57 @@ export default function QuickLoanApplication() {
 
     fetchBREData();
   }, [currentStep, approvalData, toast]);
+
+  // Initialize userDesiredAmount when approvalData is loaded
+  useEffect(() => {
+    if (approvalData?.loanAmount && userDesiredAmount === null) {
+      setUserDesiredAmount(approvalData.loanAmount);
+      setCalculatedLoanDetails(null); // Will use original approvalData
+    }
+  }, [approvalData, userDesiredAmount]);
+
+  // Recalculate loan details when user changes desired amount
+  const recalculateLoanDetails = (amount: number) => {
+    if (!approvalData) return;
+
+    const maxAmount = approvalData.loanAmount || 0;
+    const validAmount = Math.min(Math.max(amount, 5000), maxAmount); // Min 5000, Max approved
+
+    // Calculate based on same interest rate and tenure
+    const interestRate = approvalData.interestRate || 0;
+    const tenure = approvalData.tenure || 1;
+    const tenureUnit = approvalData.tenureUnit || 'Months';
+
+    // Calculate interest based on tenure unit
+    let totalInterest = 0;
+    if (tenureUnit === 'Days') {
+      totalInterest = Math.round((validAmount * interestRate * tenure) / (100 * 365));
+    } else {
+      totalInterest = Math.round((validAmount * interestRate * tenure) / (100 * 12));
+    }
+
+    // Processing fee calculation (use same percentage as original)
+    const originalProcessingFeePercent = approvalData.loanAmount > 0
+      ? (approvalData.processingFee / approvalData.loanAmount) * 100
+      : 2;
+    const processingFee = Math.round(validAmount * (originalProcessingFeePercent / 100));
+    const gstOnProcessingFee = Math.round(processingFee * 0.18);
+
+    const totalRepayment = validAmount + totalInterest;
+    const netDisbursalAmount = validAmount - processingFee - gstOnProcessingFee;
+
+    setCalculatedLoanDetails({
+      loanAmount: validAmount,
+      interestRate,
+      tenure,
+      tenureUnit,
+      totalInterest,
+      processingFee,
+      gstOnProcessingFee,
+      totalRepayment,
+      netDisbursalAmount
+    });
+  };
 
   // Load form data from localStorage on mount
   useEffect(() => {
@@ -4696,10 +4753,22 @@ console.log('Sending OTP with payload:', payload);
           return;
         }
 
-        // Step 4 Final Submit - just submit the application
-        const principal = parseFloat(formData.loanAmount);
+        // Step 4 Final Submit - submit the application with user's selected loan amount
+        const selectedLoanAmount = calculatedLoanDetails?.loanAmount || userDesiredAmount || approvalData?.loanAmount || parseFloat(formData.loanAmount);
         const payload = {
-          isSubmit: true
+          isSubmit: true,
+          approvedLoanAmount: selectedLoanAmount,
+          loanDetails: {
+            selectedLoanAmount: selectedLoanAmount,
+            tenure: calculatedLoanDetails?.tenure || approvalData?.tenure || formData.tenure,
+            tenureUnit: calculatedLoanDetails?.tenureUnit || approvalData?.tenureUnit || formData.tenureUnit,
+            interestRate: calculatedLoanDetails?.interestRate || approvalData?.interestRate,
+            processingFee: calculatedLoanDetails?.processingFee || approvalData?.processingFee,
+            totalInterest: calculatedLoanDetails?.totalInterest || approvalData?.totalInterest,
+            gstOnProcessingFee: calculatedLoanDetails?.gstOnProcessingFee || approvalData?.gstOnProcessingFee,
+            totalRepayment: calculatedLoanDetails?.totalRepayment || approvalData?.totalRepayment,
+            netDisbursalAmount: calculatedLoanDetails?.netDisbursalAmount || approvalData?.netDisbursalAmount
+          }
         };
 
         const response = await fetch(`https://alpha.quikkred.in/api/application/loan/create`, {
@@ -5033,6 +5102,7 @@ console.log('Sending OTP with payload:', payload);
 
   // Main application form
   return (
+    <>
     <div className="min-h-screen bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5] py-8 px-4">
       <Toaster />
 
@@ -5998,12 +6068,29 @@ console.log('Sending OTP with payload:', payload);
                       )}
                     </div>
 
-                    {/* Loan Amount Highlight */}
+                    {/* Approved/Selected Loan Amount */}
                     <div className="bg-gradient-to-r from-[#25B181]/10 to-emerald-50 border-2 border-[#25B181] rounded-2xl p-6 text-center">
-                      <p className="text-sm text-[#25B181] font-medium mb-1">Approved Loan Amount</p>
-                      <p className="text-4xl font-bold text-gray-900">
-                        ₹{(approvalData.loanAmount || 0).toLocaleString('en-IN')}
+                      <p className="text-sm text-[#25B181] font-medium mb-1">
+                        {calculatedLoanDetails ? 'Your Selected Loan Amount' : 'Approved Loan Amount'}
                       </p>
+                      <p className="text-4xl font-bold text-gray-900">
+                        ₹{((calculatedLoanDetails?.loanAmount || userDesiredAmount || approvalData.loanAmount) || 0).toLocaleString('en-IN')}
+                      </p>
+                      {calculatedLoanDetails && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Max eligible: ₹{(approvalData.loanAmount || 0).toLocaleString('en-IN')}
+                        </p>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTempAmount((userDesiredAmount || approvalData.loanAmount || 0).toString());
+                          setShowAmountModal(true);
+                        }}
+                        className="mt-4 text-sm text-[#25B181] hover:text-[#1d8f68] underline font-medium"
+                      >
+                        {calculatedLoanDetails ? 'Change amount' : 'Want to take less amount?'}
+                      </button>
                     </div>
 
                     {/* Loan Details Grid */}
@@ -6011,33 +6098,42 @@ console.log('Sending OTP with payload:', payload);
                       <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                         <IndianRupee className="w-5 h-5 text-[#25B181]" />
                         Loan Details
+                        {calculatedLoanDetails && (
+                          <span className="text-xs font-normal text-gray-500 ml-2">(Based on your selected amount)</span>
+                        )}
                       </h3>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="bg-white rounded-lg p-4 border border-gray-200">
+                          <p className="text-sm text-gray-500 mb-1">Your Loan Amount</p>
+                          <p className="text-xl font-bold text-[#25B181]">
+                            ₹{((calculatedLoanDetails?.loanAmount || userDesiredAmount || approvalData.loanAmount) || 0).toLocaleString('en-IN')}
+                          </p>
+                        </div>
+                        <div className="bg-white rounded-lg p-4 border border-gray-200">
                           <p className="text-sm text-gray-500 mb-1">Tenure</p>
                           <p className="text-xl font-bold text-gray-900">
-                            {approvalData.tenure || 0} {approvalData.tenureUnit === 'Days' ? 'Days' : 'Months'}
+                            {(calculatedLoanDetails?.tenure || approvalData.tenure) || 0} {(calculatedLoanDetails?.tenureUnit || approvalData.tenureUnit) === 'Days' ? 'Days' : 'Months'}
                           </p>
                         </div>
                         <div className="bg-white rounded-lg p-4 border border-gray-200">
                           <p className="text-sm text-gray-500 mb-1">Interest Rate</p>
-                          <p className="text-xl font-bold text-gray-900">{approvalData.interestRate || 0}%</p>
+                          <p className="text-xl font-bold text-gray-900">{(calculatedLoanDetails?.interestRate || approvalData.interestRate) || 0}%</p>
                         </div>
                         <div className="bg-white rounded-lg p-4 border border-gray-200">
                           <p className="text-sm text-gray-500 mb-1">Interest Amount</p>
-                          <p className="text-xl font-bold text-gray-900">₹{(approvalData.totalInterest || 0).toLocaleString('en-IN')}</p>
+                          <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.totalInterest ?? approvalData.totalInterest) || 0).toLocaleString('en-IN')}</p>
                         </div>
                         <div className="bg-white rounded-lg p-4 border border-gray-200">
                           <p className="text-sm text-gray-500 mb-1">Processing Fee</p>
-                          <p className="text-xl font-bold text-gray-900">₹{(approvalData.processingFee || 0).toLocaleString('en-IN')}</p>
+                          <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.processingFee ?? approvalData.processingFee) || 0).toLocaleString('en-IN')}</p>
                         </div>
                         <div className="bg-white rounded-lg p-4 border border-gray-200">
                           <p className="text-sm text-gray-500 mb-1">GST on Processing Fee</p>
-                          <p className="text-xl font-bold text-gray-900">₹{(approvalData.gstOnProcessingFee || 0).toLocaleString('en-IN')}</p>
+                          <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.gstOnProcessingFee ?? approvalData.gstOnProcessingFee) || 0).toLocaleString('en-IN')}</p>
                         </div>
-                        <div className="bg-white rounded-lg p-4 border border-gray-200">
+                        <div className="bg-white rounded-lg p-4 border border-gray-200 col-span-2">
                           <p className="text-sm text-gray-500 mb-1">Total Repayment</p>
-                          <p className="text-xl font-bold text-gray-900">₹{(approvalData.totalRepayment || 0).toLocaleString('en-IN')}</p>
+                          <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.totalRepayment ?? approvalData.totalRepayment) || 0).toLocaleString('en-IN')}</p>
                         </div>
                       </div>
 
@@ -6048,7 +6144,7 @@ console.log('Sending OTP with payload:', payload);
                             <p className="text-sm text-green-600 font-medium">You Will Receive</p>
                             <p className="text-xs text-green-500">Net Disbursal Amount</p>
                           </div>
-                          <p className="text-2xl font-bold text-green-600">₹{(approvalData.netDisbursalAmount || 0).toLocaleString('en-IN')}</p>
+                          <p className="text-2xl font-bold text-green-600">₹{((calculatedLoanDetails?.netDisbursalAmount ?? approvalData.netDisbursalAmount) || 0).toLocaleString('en-IN')}</p>
                         </div>
                       </div>
                     </div>
@@ -6245,17 +6341,17 @@ console.log('Sending OTP with payload:', payload);
                                 accountNumber: formData.accountNumber || customerData.banks?.[0]?.accountNumber || '',
                                 ifscCode: formData.ifsc || customerData.banks?.[0]?.ifscCode || '',
                                 accountHolderName: formData.accountHolderName || customerData.banks?.[0]?.accountHolderName || formData.fullName || customerData.fullName || '',
-                                // Loan Details - use BRE API response (approvalData) first
-                                loanAmount: approvalData?.loanAmount || formData.loanAmount || '',
-                                tenure: approvalData?.tenure || formData.tenure || '',
-                                tenureUnit: approvalData?.tenureUnit || formData.tenureUnit || 'Days',
+                                // Loan Details - use user's selected amount first, then BRE API response
+                                loanAmount: calculatedLoanDetails?.loanAmount || userDesiredAmount || approvalData?.loanAmount || formData.loanAmount || '',
+                                tenure: calculatedLoanDetails?.tenure || approvalData?.tenure || formData.tenure || '',
+                                tenureUnit: calculatedLoanDetails?.tenureUnit || approvalData?.tenureUnit || formData.tenureUnit || 'Days',
                                 productName: selectedProduct?.productName || '',
-                                interestRate: approvalData?.interestRate || selectedProduct?.dailyInterestRate || '',
-                                processingFee: approvalData?.processingFee || selectedProduct?.processingFee || '',
-                                totalInterest: approvalData?.totalInterest || '',
-                                gstOnProcessingFee: approvalData?.gstOnProcessingFee || '',
-                                totalAmount: approvalData?.totalRepayment || emiCalculation?.totalAmount || '',
-                                disbursementAmount: approvalData?.netDisbursalAmount || (emiCalculation ? (emiCalculation.principal - emiCalculation.totalProcessingFee) : ''),
+                                interestRate: calculatedLoanDetails?.interestRate || approvalData?.interestRate || selectedProduct?.dailyInterestRate || '',
+                                processingFee: calculatedLoanDetails?.processingFee || approvalData?.processingFee || selectedProduct?.processingFee || '',
+                                totalInterest: calculatedLoanDetails?.totalInterest || approvalData?.totalInterest || '',
+                                gstOnProcessingFee: calculatedLoanDetails?.gstOnProcessingFee || approvalData?.gstOnProcessingFee || '',
+                                totalAmount: calculatedLoanDetails?.totalRepayment || approvalData?.totalRepayment || emiCalculation?.totalAmount || '',
+                                disbursementAmount: calculatedLoanDetails?.netDisbursalAmount || approvalData?.netDisbursalAmount || (emiCalculation ? (emiCalculation.principal - emiCalculation.totalProcessingFee) : ''),
                                 applicationNumber: approvalData?.applicationNumber || customerData.applicationNumber || '',
                               };
 
@@ -6603,5 +6699,98 @@ console.log('Sending OTP with payload:', payload);
         </div>
       </div>
     </div>
+
+    {/* Amount Change Modal - Rendered at root level for proper viewport positioning */}
+    {showAmountModal && (
+      <div
+        className="bg-black/50 flex items-start justify-center pt-80 p-4"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 9999
+        }}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            setShowAmountModal(false);
+            setTempAmount('');
+          }
+        }}
+      >
+        <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">
+            Enter Loan Amount
+          </h3>
+          <p className="text-sm text-gray-500 text-center mb-4">
+            Maximum eligible: ₹{(approvalData?.loanAmount || 0).toLocaleString('en-IN')}
+          </p>
+
+          <div className="relative mb-4">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-lg">₹</span>
+            <input
+              type="text"
+              value={tempAmount ? parseInt(tempAmount.replace(/,/g, '')).toLocaleString('en-IN') : ''}
+              onChange={(e) => {
+                const raw = e.target.value.replace(/,/g, '');
+                if (!/^\d*$/.test(raw)) return;
+                setTempAmount(raw);
+              }}
+              className="w-full pl-10 pr-4 py-4 text-2xl font-bold text-left border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-[#25B181] focus:border-[#25B181] focus:outline-none"
+              placeholder="Enter amount"
+              autoFocus
+            />
+          </div>
+
+          <p className="text-xs text-gray-500 text-center mb-4">
+            Enter amount between ₹5,000 and ₹{(approvalData?.loanAmount || 0).toLocaleString('en-IN')}
+          </p>
+
+          {parseInt(tempAmount) > (approvalData?.loanAmount || 0) && (
+            <p className="text-xs text-red-500 text-center mb-4">
+              Amount cannot exceed maximum eligible amount
+            </p>
+          )}
+
+          {parseInt(tempAmount) < 5000 && parseInt(tempAmount) > 0 && (
+            <p className="text-xs text-red-500 text-center mb-4">
+              Minimum amount is ₹5,000
+            </p>
+          )}
+
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setShowAmountModal(false);
+                setTempAmount('');
+              }}
+              className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const amount = parseInt(tempAmount) || 0;
+                const maxAmount = approvalData?.loanAmount || 0;
+                if (amount >= 5000 && amount <= maxAmount) {
+                  setUserDesiredAmount(amount);
+                  recalculateLoanDetails(amount);
+                  setShowAmountModal(false);
+                  setTempAmount('');
+                }
+              }}
+              disabled={!tempAmount || parseInt(tempAmount) < 5000 || parseInt(tempAmount) > (approvalData?.loanAmount || 0)}
+              className="flex-1 px-4 py-3 bg-[#25B181] text-white rounded-xl font-medium hover:bg-[#1d8f68] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
