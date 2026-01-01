@@ -19,6 +19,9 @@ interface Address {
   city?: string;
   state?: string;
   pincode?: string;
+  fullAddress?: string;
+  landmark?: string;
+  yearsAtAddress?: number;
   coordinates?: {
     coordinates: number[];
     type: string;
@@ -30,7 +33,9 @@ interface Bank {
   accountNumber: string;
   ifscCode: string;
   accountHolderName: string;
-  accountType: string;
+  accountType?: string;
+  pennyDropStatus?: string;
+  pennyDropDate?: string;
   _id: string;
 }
 
@@ -326,12 +331,15 @@ export default function ProfilePage() {
     switch (kycStatus?.toUpperCase()) {
       case 'VERIFIED':
       case 'COMPLETED':
+      case 'SUCCESS':
         return 'bg-green-100 text-green-800';
       case 'PENDING':
         return 'bg-yellow-100 text-yellow-800';
       case 'REJECTED':
+      case 'FAILED':
         return 'bg-red-100 text-red-800';
       case 'IN_PROGRESS':
+      case 'PROCESSING':
         return 'bg-blue-100 text-blue-800';
       default:
         return 'bg-yellow-100 text-yellow-800'; // Default to pending
@@ -889,7 +897,7 @@ export default function ProfilePage() {
                           Address Information
                         </h3>
 
-                        {(profileData.currentAddress?.city || profileData.currentAddress?.state || profileData.currentAddress?.pincode) ? (
+                        {(profileData.currentAddress?.city || profileData.currentAddress?.state || profileData.currentAddress?.pincode || profileData.currentAddress?.fullAddress) ? (
                           <div className="space-y-6">
                             {/* Current Address */}
                             <div>
@@ -898,11 +906,20 @@ export default function ProfilePage() {
                                 Current Address
                               </h4>
                               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
-                                {profileData.currentAddress?.street && (
+                                {profileData.currentAddress?.fullAddress && (
+                                  <div className="sm:col-span-2 lg:col-span-3">
+                                    <InfoField
+                                      icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
+                                      label="Full Address"
+                                      value={profileData.currentAddress.fullAddress}
+                                    />
+                                  </div>
+                                )}
+                                {profileData.currentAddress?.landmark && (
                                   <InfoField
                                     icon={<MapPin className="w-5 h-5 text-[#4A66FF]" />}
-                                    label="Street"
-                                    value={profileData.currentAddress.street}
+                                    label="Landmark"
+                                    value={profileData.currentAddress.landmark}
                                   />
                                 )}
                                 <InfoField
@@ -1009,23 +1026,50 @@ export default function ProfilePage() {
                           Employment Information
                         </h3>
 
-                        {profileData.isEmploymentDetailsFilled ? (
+                        {(profileData.isEmploymentDetailsFilled || profileData.companyName || profileData.employmentType || profileData.monthlyIncome || profileData.profession || profileData.designation) ? (
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
-                            <InfoField
-                              icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
-                              label="Company Name"
-                              value={profileData.companyName || 'N/A'}
-                            />
-                            <InfoField
-                              icon={<FileText className="w-5 h-5 text-[#4A66FF]" />}
-                              label="Employment Type"
-                              value={profileData.employmentType || 'N/A'}
-                            />
-                            <InfoField
-                              icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
-                              label="Monthly Income"
-                              value={profileData.monthlyIncome ? `₹${profileData.monthlyIncome.toLocaleString('en-IN')}` : 'N/A'}
-                            />
+                            {profileData.companyName && (
+                              <InfoField
+                                icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
+                                label="Company Name"
+                                value={profileData.companyName}
+                              />
+                            )}
+                            {profileData.employmentType && (
+                              <InfoField
+                                icon={<FileText className="w-5 h-5 text-[#4A66FF]" />}
+                                label="Employment Type"
+                                value={profileData.employmentType}
+                              />
+                            )}
+                            {profileData.profession && (
+                              <InfoField
+                                icon={<Briefcase className="w-5 h-5 text-[#4A66FF]" />}
+                                label="Profession"
+                                value={profileData.profession}
+                              />
+                            )}
+                            {profileData.designation && (
+                              <InfoField
+                                icon={<User className="w-5 h-5 text-[#4A66FF]" />}
+                                label="Designation"
+                                value={profileData.designation}
+                              />
+                            )}
+                            {profileData.monthlyIncome && (
+                              <InfoField
+                                icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
+                                label="Monthly Income"
+                                value={`₹${profileData.monthlyIncome.toLocaleString('en-IN')}`}
+                              />
+                            )}
+                            {profileData.workExperience !== undefined && profileData.workExperience > 0 && (
+                              <InfoField
+                                icon={<Clock className="w-5 h-5 text-[#4A66FF]" />}
+                                label="Work Experience"
+                                value={`${profileData.workExperience} years`}
+                              />
+                            )}
                           </div>
                         ) : (
                           <div className="text-center py-6 sm:py-8 bg-[#FAFAFA] rounded-lg">
@@ -1135,11 +1179,30 @@ export default function ProfilePage() {
                                     label="IFSC Code"
                                     value={bank.ifscCode}
                                   />
-                                  <InfoField
-                                    icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
-                                    label="Account Type"
-                                    value={bank.accountType}
-                                  />
+                                  {bank.accountType && (
+                                    <InfoField
+                                      icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
+                                      label="Account Type"
+                                      value={bank.accountType}
+                                    />
+                                  )}
+                                  {bank.pennyDropStatus && (
+                                    <div className="p-3 sm:p-4 bg-[#FAFAFA] rounded-lg border border-[#E0E0E0]">
+                                      <div className="flex items-start gap-2 sm:gap-3">
+                                        {bank.pennyDropStatus === 'VERIFIED' ? (
+                                          <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
+                                        ) : (
+                                          <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 flex-shrink-0" />
+                                        )}
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">Verification Status</p>
+                                          <p className={`font-medium text-xs sm:text-sm ${bank.pennyDropStatus === 'VERIFIED' ? 'text-green-600' : 'text-yellow-600'}`}>
+                                            {bank.pennyDropStatus}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             ))}
