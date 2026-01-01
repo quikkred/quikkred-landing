@@ -660,7 +660,7 @@ export default function UserDashboard() {
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-[#0A0A0A] flex items-center gap-2 sm:gap-3">
                 <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-[#FF9800]" />
-                <span className="break-words">Welcome back, {user?.name?.split(' ')[0]}!</span>
+                <span className="break-words">Welcome back, {user?.name?.split(' ')[0]?.charAt(0).toUpperCase() + (user?.name?.split(' ')[0]?.slice(1).toLowerCase() || '')}!</span>
               </h1>
               <p className="text-[#737373] mt-1 text-sm sm:text-base">Complete your profile to apply for loans</p>
             </div>
@@ -904,7 +904,7 @@ export default function UserDashboard() {
               <div className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg border border-orange-200">
                 <p className="text-xs sm:text-sm text-orange-700 mb-1 flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
-                  Next Due Date
+                  Due Date
                 </p>
                 <p className="text-sm sm:text-base font-semibold text-orange-900">{formatDateTime(activeLoanDetails.nextDueDate)}</p>
               </div>
