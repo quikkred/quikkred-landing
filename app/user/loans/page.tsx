@@ -39,6 +39,7 @@ interface PaymentHistoryItem {
   paymentDate: string;
   amount: number;
   paymentMode: string;
+  payinNumber: string;
   transactionId: string;
   utrNumber: string;
   receiptNumber: string;

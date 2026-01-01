@@ -45,6 +45,13 @@ interface Reference {
   relationship: string;
   _id: string;
 }
+interface Profile {
+  _id: string;
+  documentType: string;
+  s3URL: string;
+  status: 'VERIFIED' | 'PENDING' | 'REJECTED';
+}
+
 
 interface ProfileData {
   _id: string;
@@ -104,6 +111,7 @@ interface ProfileData {
   emergencyContactName?: string;
   emergencyContactPhone?: string;
   emergencyContactRelation?: string;
+  profile?: Profile;
 }
 
 export default function ProfilePage() {
@@ -588,7 +596,7 @@ export default function ProfilePage() {
                     {/* Profile Image (overlays fallback if available and loads successfully) */}
                 {(imagePreview || profileData?.profile?.s3URL) && (
   <img
-    src={imagePreview || profileData.profile.s3URL}
+    src={imagePreview || profileData?.profile?.s3URL}
     alt="Profile"
     className="w-24 h-24 sm:w-32 sm:h-32 rounded-full absolute top-0 left-0 object-cover border-4 border-white shadow-lg"
     onError={() => {
