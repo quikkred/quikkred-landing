@@ -47,6 +47,8 @@ export default function Hero() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
+
+    // Mobile validation - only numbers allowed
     if (name === 'mobile') {
       if (value && !/^\d*$/.test(value)) {
         setFieldError(t?.hero?.form?.errors?.numbersOnly || "Mobile number can only contain numbers")
@@ -59,23 +61,53 @@ export default function Hero() {
         setFieldError("")
       }
     }
+
+    // Name validation - only alphabets and spaces allowed
     if (name === 'name') {
-      if (value && /\d/.test(value)) {
-        setFieldError(t?.hero?.form?.errors?.nameNoNumbers || "Name cannot contain numbers")
+      if (value && !/^[a-zA-Z\s]*$/.test(value)) {
+        setFieldError(t?.hero?.form?.errors?.nameAlphabetsOnly || "Name can only contain alphabets")
         return
+      } else if (value && value.trim().length < 3) {
+        setFieldError(t?.hero?.form?.errors?.nameMinLength || "Name must be at least 3 characters")
       } else {
         setFieldError("")
       }
     }
-    if (name !== 'mobile' && name !== 'name') {
-      setFieldError("")
+
+    // Loan Amount validation - only numbers allowed
+    if (name === 'loanAmount') {
+      // Remove commas for validation, allow only digits and commas
+      const cleanValue = value.replace(/,/g, '')
+      if (value && !/^[\d,]*$/.test(value)) {
+        setFieldError(t?.hero?.form?.errors?.amountNumbersOnly || "Amount can only contain numbers")
+        return
+      } else if (cleanValue && parseInt(cleanValue) < 5000) {
+        setFieldError(t?.hero?.form?.errors?.amountMin || "Minimum loan amount is ₹5,000")
+      } else if (cleanValue && parseInt(cleanValue) > 100000) {
+        setFieldError(t?.hero?.form?.errors?.amountMax || "Maximum loan amount is ₹1,00,000")
+      } else {
+        setFieldError("")
+      }
     }
+
+    // Email validation
+    if (name === 'email') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+      if (value && !emailRegex.test(value)) {
+        setFieldError(t?.hero?.form?.errors?.invalidEmail || "Please enter a valid email address")
+      } else {
+        setFieldError("")
+      }
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
   const handleNext = () => {
     const currentField = steps[currentStep - 1].field
     const fieldValue = formData[currentField as keyof typeof formData]
+
+    // Mobile validation
     if (currentField === 'mobile') {
       if (!fieldValue || fieldValue.length !== 10) {
         setFieldError(t?.hero?.form?.errors?.tenDigits || "Mobile number must be exactly 10 digits")
@@ -86,10 +118,49 @@ export default function Hero() {
         return
       }
     }
-    if (currentField === 'name' && !fieldValue) {
-      setFieldError(t?.hero?.form?.errors?.nameRequired || "Name is required")
-      return
+
+    // Name validation
+    if (currentField === 'name') {
+      if (!fieldValue || fieldValue.trim().length < 3) {
+        setFieldError(t?.hero?.form?.errors?.nameRequired || "Name must be at least 3 characters")
+        return
+      }
+      if (!/^[a-zA-Z\s]+$/.test(fieldValue)) {
+        setFieldError(t?.hero?.form?.errors?.nameAlphabetsOnly || "Name can only contain alphabets")
+        return
+      }
     }
+
+    // Loan Amount validation
+    if (currentField === 'loanAmount') {
+      const cleanValue = fieldValue.replace(/,/g, '')
+      if (!cleanValue) {
+        setFieldError(t?.hero?.form?.errors?.amountRequired || "Loan amount is required")
+        return
+      }
+      if (parseInt(cleanValue) < 5000) {
+        setFieldError(t?.hero?.form?.errors?.amountMin || "Minimum loan amount is ₹5,000")
+        return
+      }
+      if (parseInt(cleanValue) > 100000) {
+        setFieldError(t?.hero?.form?.errors?.amountMax || "Maximum loan amount is ₹1,00,000")
+        return
+      }
+    }
+
+    // Email validation
+    if (currentField === 'email') {
+      if (!fieldValue) {
+        setFieldError(t?.hero?.form?.errors?.emailRequired || "Email is required")
+        return
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+      if (!emailRegex.test(fieldValue)) {
+        setFieldError(t?.hero?.form?.errors?.invalidEmail || "Please enter a valid email address")
+        return
+      }
+    }
+
     if (fieldError) return
     if (fieldValue) {
       if (currentStep === 4) {
