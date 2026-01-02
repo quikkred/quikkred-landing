@@ -54,6 +54,7 @@ interface Profile {
 
 
 interface ProfileData {
+  isKycDetailsFilled: boolean;
   _id: string;
   customerUniqueId: string;
   role: string;
@@ -759,9 +760,16 @@ export default function ProfilePage() {
                   <div className="p-2 sm:p-3 bg-[#FAFAFA] rounded-lg">
                     <div className="flex items-center justify-between">
                       <span className="text-xs sm:text-sm font-medium text-gray-700">KYC Status</span>
-                      <span className={`px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-semibold rounded-full ${getKycStatusColor(profileData.kycStatus)}`}>
-                        {profileData.kycStatus || 'PENDING'}
-                      </span>
+                      <span
+  className={`px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-semibold rounded-full
+    ${profileData.isKycDetailsFilled
+      ? 'bg-green-100 text-green-700'
+      : 'bg-yellow-100 text-yellow-700'}
+  `}
+>
+  {profileData.isKycDetailsFilled ? 'VERIFIED' : 'PENDING'}
+</span>
+
                     </div>
                   </div>
 
