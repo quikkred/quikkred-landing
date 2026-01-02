@@ -6003,31 +6003,6 @@ console.log('Sending OTP with payload:', payload);
                       )}
                     </div>
 
-                    {/* Approved/Selected Loan Amount */}
-                    <div className="bg-gradient-to-r from-[#25B181]/10 to-emerald-50 border-2 border-[#25B181] rounded-2xl p-6 text-center">
-                      <p className="text-sm text-[#25B181] font-medium mb-1">
-                        {calculatedLoanDetails ? 'Your Selected Loan Amount' : 'Approved Loan Amount'}
-                      </p>
-                      <p className="text-4xl font-bold text-gray-900">
-                        ₹{((calculatedLoanDetails?.loanAmount || userDesiredAmount || approvalData.loanAmount) || 0).toLocaleString('en-IN')}
-                      </p>
-                      {calculatedLoanDetails && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          Max eligible: ₹{(approvalData.loanAmount || 0).toLocaleString('en-IN')}
-                        </p>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setTempAmount((userDesiredAmount || approvalData.loanAmount || 0).toString());
-                          setShowAmountModal(true);
-                        }}
-                        className="mt-4 text-sm text-[#25B181] hover:text-[#1d8f68] underline font-medium"
-                      >
-                        {calculatedLoanDetails ? 'Change amount' : 'Want to take less amount?'}
-                      </button>
-                    </div>
-
                     {/* Loan Details Grid */}
                     <div className="bg-gray-50 rounded-xl p-6">
                       <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
