@@ -941,56 +941,6 @@ export default function QuickLoanApplication() {
     fetchBREData();
   }, [currentStep, approvalData, toast]);
 
-  // Initialize userDesiredAmount when approvalData is loaded
-  useEffect(() => {
-    if (approvalData?.loanAmount && userDesiredAmount === null) {
-      setUserDesiredAmount(approvalData.loanAmount);
-      setCalculatedLoanDetails(null); // Will use original approvalData
-    }
-  }, [approvalData, userDesiredAmount]);
-
-  // Recalculate loan details when user changes desired amount
-  const recalculateLoanDetails = (amount: number) => {
-    if (!approvalData) return;
-
-    const maxAmount = approvalData.loanAmount || 0;
-    const validAmount = Math.min(Math.max(amount, 5000), maxAmount); // Min 5000, Max approved
-
-    // Calculate based on same interest rate and tenure
-    const interestRate = approvalData.interestRate || 0;
-    const tenure = approvalData.tenure || 1;
-    const tenureUnit = approvalData.tenureUnit || 'Months';
-
-    // Calculate interest based on tenure unit
-    let totalInterest = 0;
-    if (tenureUnit === 'Days') {
-      totalInterest = Math.round((validAmount * interestRate * tenure) / (100 * 365));
-    } else {
-      totalInterest = Math.round((validAmount * interestRate * tenure) / (100 * 12));
-    }
-
-    // Processing fee calculation (use same percentage as original)
-    const originalProcessingFeePercent = approvalData.loanAmount > 0
-      ? (approvalData.processingFee / approvalData.loanAmount) * 100
-      : 2;
-    const processingFee = Math.round(validAmount * (originalProcessingFeePercent / 100));
-    const gstOnProcessingFee = Math.round(processingFee * 0.18);
-
-    const totalRepayment = validAmount + totalInterest;
-    const netDisbursalAmount = validAmount - processingFee - gstOnProcessingFee;
-
-    setCalculatedLoanDetails({
-      loanAmount: validAmount,
-      interestRate,
-      tenure,
-      tenureUnit,
-      totalInterest,
-      processingFee,
-      gstOnProcessingFee,
-      totalRepayment,
-      netDisbursalAmount
-    });
-  };
 
   // Load form data from localStorage on mount
   useEffect(() => {
@@ -4754,10 +4704,8 @@ console.log('Sending OTP with payload:', payload);
         }
 
         // Step 4 Final Submit - submit the application with user's selected loan amount
-        const selectedLoanAmount = calculatedLoanDetails?.loanAmount || userDesiredAmount || approvalData?.loanAmount || parseFloat(formData.loanAmount);
         const payload = {
           isSubmit: true,
-          approvedLoanAmount: selectedLoanAmount,
         };
 
         const response = await fetch(`https://alpha.quikkred.in/api/application/loan/create`, {
@@ -5656,8 +5604,6 @@ console.log('Sending OTP with payload:', payload);
                           <option value="UNEMPLOYED">UNEMPLOYED</option>
                         <option value="STUDENT">STUDENT</option>
                          <option value="RETIRED">RETIRED</option>
-                        <option value="OTHER">OTHER</option>
-
                         {/* "SALARIED", "SELF-EMPLOYED", "UNEMPLOYED", "STUDENT", "RETIRED" */}
                       </select>
                     </div>
@@ -6689,97 +6635,7 @@ console.log('Sending OTP with payload:', payload);
       </div>
     </div>
 
-    {/* Amount Change Modal - Rendered at root level for proper viewport positioning */}
-    {showAmountModal && (
-      <div
-        className="bg-black/50 flex items-start justify-center pt-80 p-4"
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 9999
-        }}
-        onClick={(e) => {
-          if (e.target === e.currentTarget) {
-            setShowAmountModal(false);
-            setTempAmount('');
-          }
-        }}
-      >
-        <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
-          <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">
-            Enter Loan Amount
-          </h3>
-          <p className="text-sm text-gray-500 text-center mb-4">
-            Maximum eligible: ₹{(approvalData?.loanAmount || 0).toLocaleString('en-IN')}
-          </p>
 
-          <div className="relative mb-4">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-lg">₹</span>
-            <input
-              type="text"
-              value={tempAmount ? parseInt(tempAmount.replace(/,/g, '')).toLocaleString('en-IN') : ''}
-              onChange={(e) => {
-                const raw = e.target.value.replace(/,/g, '');
-                if (!/^\d*$/.test(raw)) return;
-                setTempAmount(raw);
-              }}
-              className="w-full pl-10 pr-4 py-4 text-2xl font-bold text-left border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-[#25B181] focus:border-[#25B181] focus:outline-none"
-              placeholder="Enter amount"
-              autoFocus
-            />
-          </div>
-
-          <p className="text-xs text-gray-500 text-center mb-4">
-            Enter amount between ₹5,000 and ₹{(approvalData?.loanAmount || 0).toLocaleString('en-IN')}
-          </p>
-
-          {parseInt(tempAmount) > (approvalData?.loanAmount || 0) && (
-            <p className="text-xs text-red-500 text-center mb-4">
-              Amount cannot exceed maximum eligible amount
-            </p>
-          )}
-
-          {parseInt(tempAmount) < 5000 && parseInt(tempAmount) > 0 && (
-            <p className="text-xs text-red-500 text-center mb-4">
-              Minimum amount is ₹5,000
-            </p>
-          )}
-
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                setShowAmountModal(false);
-                setTempAmount('');
-              }}
-              className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                const amount = parseInt(tempAmount) || 0;
-                const maxAmount = approvalData?.loanAmount || 0;
-                if (amount >= 5000 && amount <= maxAmount) {
-                  setUserDesiredAmount(amount);
-                  recalculateLoanDetails(amount);
-                  setShowAmountModal(false);
-                  setTempAmount('');
-                }
-              }}
-              disabled={!tempAmount || parseInt(tempAmount) < 5000 || parseInt(tempAmount) > (approvalData?.loanAmount || 0)}
-              className="flex-1 px-4 py-3 bg-[#25B181] text-white rounded-xl font-medium hover:bg-[#1d8f68] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Confirm
-            </button>
-          </div>
-        </div>
-      </div>
-    )}
     </>
   );
 }
