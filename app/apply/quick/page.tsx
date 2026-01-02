@@ -1081,7 +1081,6 @@ export default function QuickLoanApplication() {
             <td>&#8377;${(loanAmount)}</td>
             <td>&#8377;${(Math.round(interest))}</td>
             <td>&#8377;${(Math.round(totalAmount))}</td>
-            <td>N/A</td>
           </tr>
         `;
       }
@@ -1738,10 +1737,8 @@ export default function QuickLoanApplication() {
             <div class="info-grid">
                 <div class="info-row"><span class="info-label">Employment Type</span><span class="info-value">${getValue(data.employmentType)}</span></div>
                 <div class="info-row"><span class="info-label">Company / Business Name</span><span class="info-value">${getValue(data.companyName)}</span></div>
-                <div class="info-row"><span class="info-label">Designation</span><span class="info-value">${getValue(data.designation)}</span></div>
                 <div class="info-row"><span class="info-label">Monthly Income</span><span class="info-value">&#8377;${(data.monthlyIncome)}</span></div>
                 <div class="info-row"><span class="info-label">Salary Credit Date</span><span class="info-value">${getValue(data.salaryDate) !== 'N/A' ? data.salaryDate : '1st'} of every month</span></div>
-                <div class="info-row"><span class="info-label">Work Experience</span><span class="info-value">${getValue(data.workExperience)} years</span></div>
             </div>
         </div>
 
@@ -1774,7 +1771,13 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
             <div class="section-title">Repayment Schedule</div>
             <table class="schedule-table">
                 <thead>
-                    <tr><th>Instalment</th><th>Due Date</th><th>Principal</th><th>Interest</th><th>Total EMI</th><th>Payment Mode</th></tr>
+                    <tr>
+                       <th>Instalment</th>
+                       <th>Due Date</th>
+                       <th>Principal</th>
+                       <th>Interest</th>
+                       <th>Total EMI</th>
+                    </tr>
                 </thead>
                 <tbody>${generateRepaymentSchedule()}</tbody>
             </table>
