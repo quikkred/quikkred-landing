@@ -362,7 +362,7 @@ export default function Hero() {
           {/* Form Card - Centered */}
           <motion.div
             variants={itemVariants}
-            className="w-full max-w-xl mx-auto bg-white rounded-3xl shadow-2xl border border-slate-100 p-6 sm:p-8 mb-12 relative"
+            className="w-full max-w-xl mx-auto bg-white sm:rounded-3xl  sm:shadow-2xl sm:border border-slate-100 p-6 sm:p-8 mb-12 relative"
           >
             {/* Decorative glow */}
             <div className="absolute -inset-1 bg-gradient-to-r from-teal-500/20 via-emerald-500/20 to-teal-500/20 rounded-3xl blur-xl opacity-50" />
