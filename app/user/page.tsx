@@ -712,7 +712,7 @@ export default function UserDashboard() {
         </motion.div>
 
         {/* Old Application Info - Show only if oldApplication is true */}
-        {data?.oldApplication && data?.oldApplicationNumber && (
+        {data?.oldApplication && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -725,16 +725,28 @@ export default function UserDashboard() {
               </div>
               <div className="flex-1 w-full">
                 <h3 className="text-base sm:text-lg font-semibold text-amber-900 mb-2 sm:mb-3">Previous Application Found</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
-                  <div>
-                    <p className="text-sm text-amber-700 mb-1">Application Number</p>
-                    <p className="text-base font-semibold text-amber-900">{data.oldApplicationNumber}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-amber-700 mb-1">Application Date</p>
-                    <p className="text-base font-semibold text-amber-900">{formatDate(data.oldApplicationDate)}</p>
-                  </div>
-                </div>
+                {(data?.oldApplicationNumber || data?.oldApplicationDate) && (
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
+    {data?.oldApplicationNumber && (
+      <div>
+        <p className="text-sm text-amber-700 mb-1">Application Number</p>
+        <p className="text-base font-semibold text-amber-900">
+          {data.oldApplicationNumber}
+        </p>
+      </div>
+    )}
+
+    {data?.oldApplicationDate && (
+      <div>
+        <p className="text-sm text-amber-700 mb-1">Application Date</p>
+        <p className="text-base font-semibold text-amber-900">
+          {formatDate(data.oldApplicationDate)}
+        </p>
+      </div>
+    )}
+  </div>
+)}
+
                 <button
                   onClick={() => router.push('/apply/quick')}
                   className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg hover:shadow-lg transition-all font-medium text-sm sm:text-base"
