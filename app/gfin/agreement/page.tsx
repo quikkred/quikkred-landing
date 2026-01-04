@@ -93,7 +93,7 @@ export default function GfinAgreementPage() {
         return;
       }
 
-      const response = await fetch('https://alpha.quikkred.in/api/customer/get', {
+      const response = await fetch('https://api.quikkred.in/api/customer/get', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
