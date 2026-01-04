@@ -48,9 +48,8 @@ interface DashboardData {
   oldApplicationNumber: string | null;
   oldApplicationDate: string | null;
   isBasicDetailsFilled: boolean;
-  isKycDetailsFilled: boolean;
-  isBankDetailsFilled: boolean;
-  isSubmit: boolean;
+  isEmploymentDetailsFilled: boolean;
+  isVerificationDetailsFilled: boolean;
   activeLoan: boolean;
   loans: LoanSummary[];
 }
@@ -117,7 +116,7 @@ export default function UserDashboard() {
         return;
       }
 
-      const response = await fetch(`https://beta.quikkred.in/api/loans/active/${loanNumber}`, {
+      const response = await fetch(`https://api.quikkred.in/api/loans/active/${loanNumber}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -225,7 +224,7 @@ export default function UserDashboard() {
         return;
       }
 
-      const response = await fetch('https://beta.quikkred.in/api/customer/dashboard', {
+      const response = await fetch('https://api.quikkred.in/api/customer/dashboard', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -306,10 +305,9 @@ export default function UserDashboard() {
     if (!data) return 0;
     let completed = 0;
     if (data.isBasicDetailsFilled) completed++;
-    if (data.isKycDetailsFilled) completed++;
-    if (data.isBankDetailsFilled) completed++;
-    if (data.isSubmit) completed++;
-    return Math.round((completed / 4) * 100);
+    if (data.isEmploymentDetailsFilled) completed++;
+    if (data.isVerificationDetailsFilled) completed++;
+    return Math.round((completed / 3) * 100);
   };
 
   const calculateTotalPayment = () => {
@@ -406,7 +404,7 @@ export default function UserDashboard() {
         description: `Processing payment of ₹${totalAmount.toLocaleString()}...`
       });
 
-      const response = await fetch('https://beta.quikkred.in/api/emi/customerEmiPayment', {
+      const response = await fetch('https://api.quikkred.in/api/emi/customerEmiPayment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -931,7 +929,7 @@ export default function UserDashboard() {
             Application Status
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             <div className={`p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 transition-all ${
               data?.isBasicDetailsFilled
                 ? 'bg-green-50 border-green-300 shadow-sm'
@@ -953,60 +951,40 @@ export default function UserDashboard() {
             </div>
 
             <div className={`p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 transition-all ${
-              data?.isKycDetailsFilled
+              data?.isEmploymentDetailsFilled
                 ? 'bg-green-50 border-green-300 shadow-sm'
                 : 'bg-gray-50 border-gray-200'
             }`}>
               <div className="flex items-center gap-2 sm:gap-3">
-                {data?.isKycDetailsFilled ? (
+                {data?.isEmploymentDetailsFilled ? (
                   <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-green-600" />
                 ) : (
                   <Clock className="w-6 h-6 sm:w-7 sm:h-7 text-gray-400" />
                 )}
                 <div>
-                  <p className="font-semibold text-gray-900 text-sm sm:text-base">KYC Details</p>
+                  <p className="font-semibold text-gray-900 text-sm sm:text-base">Employment Details</p>
                   <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                    {data?.isKycDetailsFilled ? 'Completed ✓' : 'Pending'}
+                    {data?.isEmploymentDetailsFilled ? 'Completed ✓' : 'Pending'}
                   </p>
                 </div>
               </div>
             </div>
 
             <div className={`p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 transition-all ${
-              data?.isBankDetailsFilled
+              data?.isVerificationDetailsFilled
                 ? 'bg-green-50 border-green-300 shadow-sm'
                 : 'bg-gray-50 border-gray-200'
             }`}>
               <div className="flex items-center gap-2 sm:gap-3">
-                {data?.isBankDetailsFilled ? (
+                {data?.isVerificationDetailsFilled ? (
                   <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-green-600" />
                 ) : (
                   <Clock className="w-6 h-6 sm:w-7 sm:h-7 text-gray-400" />
                 )}
                 <div>
-                  <p className="font-semibold text-gray-900 text-sm sm:text-base">Bank Details</p>
+                  <p className="font-semibold text-gray-900 text-sm sm:text-base">Verification</p>
                   <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                    {data?.isBankDetailsFilled ? 'Completed ✓' : 'Pending'}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className={`p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 transition-all ${
-              data?.isSubmit
-                ? 'bg-green-50 border-green-300 shadow-sm'
-                : 'bg-gray-50 border-gray-200'
-            }`}>
-              <div className="flex items-center gap-2 sm:gap-3">
-                {data?.isSubmit ? (
-                  <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-green-600" />
-                ) : (
-                  <Clock className="w-6 h-6 sm:w-7 sm:h-7 text-gray-400" />
-                )}
-                <div>
-                  <p className="font-semibold text-gray-900 text-sm sm:text-base">Final Submission</p>
-                  <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                    {data?.isSubmit ? 'Completed ✓' : 'Pending'}
+                    {data?.isVerificationDetailsFilled ? 'Completed ✓' : 'Pending'}
                   </p>
                 </div>
               </div>
