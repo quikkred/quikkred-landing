@@ -57,47 +57,6 @@ const autoDecisionEngine = (data: any) => {
     processingFee: Math.round(loanAmount * 0.02)
   };
 };
-
-
-const BANKS = [
-  // ===== PSU Banks =====
-  { code: 'SBIN', name: 'State Bank of India' },
-  { code: 'PUNB', name: 'Punjab National Bank' },
-  { code: 'BARB', name: 'Bank of Baroda' },
-  { code: 'UBIN', name: 'Union Bank of India' },
-  { code: 'BKID', name: 'Bank of India' },
-  { code: 'CNRB', name: 'Canara Bank' },
-  { code: 'IDIB', name: 'Indian Bank' },
-  { code: 'IOBA', name: 'Indian Overseas Bank' },
-  { code: 'UCOB', name: 'UCO Bank' },
-  { code: 'MAHB', name: 'Bank of Maharashtra' },
-  { code: 'PSIB', name: 'Punjab & Sind Bank' },
-
-  // ===== Private Banks =====
-  { code: 'HDFC', name: 'HDFC Bank' },
-  { code: 'ICIC', name: 'ICICI Bank' },
-  { code: 'UTIB', name: 'Axis Bank' },
-  { code: 'KKBK', name: 'Kotak Mahindra Bank' },
-  { code: 'YESB', name: 'Yes Bank' },
-  { code: 'INDB', name: 'IndusInd Bank' },
-  { code: 'IDFB', name: 'IDFC First Bank' },
-  { code: 'FEDB', name: 'Federal Bank' },
-  { code: 'DCBL', name: 'DCB Bank' },
-  { code: 'RATN', name: 'RBL Bank' },
-  { code: 'CSBK', name: 'Catholic Syrian Bank (CSB Bank)' },
-  { code: 'SIBL', name: 'South Indian Bank' },
-
-  // ===== Small Finance Banks =====
-  { code: 'AUBL', name: 'AU Small Finance Bank' },
-  { code: 'ESFB', name: 'Equitas Small Finance Bank' },
-  { code: 'FINO', name: 'Fino Payments Bank' },
-  { code: 'AIRP', name: 'Airtel Payments Bank' },
-  { code: 'PYTM', name: 'Paytm Payments Bank' },
-
-  // ===== Others =====
-  { code: 'IBKL', name: 'IDBI Bank' }
-];
-
 export default function QuickLoanApplication() {
   // Generate unique document number for this session (stable across re-renders)
   const documentNumber = useMemo(() => `DOC${new Date().getFullYear()}${Date.now()}`, []);
@@ -148,7 +107,6 @@ export default function QuickLoanApplication() {
   const [emiCalculation, setEmiCalculation] = useState<any>(null);
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [amountError, setAmountError] = useState("")
-  const [bankDropdownOpen, setBankDropdownOpen] = useState(false);
 
   // Approval Data (Step 3)
   const [approvalData, setApprovalData] = useState<any>(null);
@@ -207,7 +165,6 @@ export default function QuickLoanApplication() {
       monthlyIncome: "",
       companyName: "",
       bankName: "",
-      customBankName: "",
       accountHolderName: "",
       accountNumber: "",
       ifsc: "",
@@ -253,18 +210,6 @@ export default function QuickLoanApplication() {
 
   const [formData, setFormData] = useState(getInitialFormData());
 
-  // Close bank dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (bankDropdownOpen && !target.closest('.bank-dropdown-container')) {
-        setBankDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [bankDropdownOpen]);
-
   // Load user data if logged in
   useEffect(() => {
     const loadUserData = async () => {
@@ -277,7 +222,7 @@ export default function QuickLoanApplication() {
 
           if (token) {
             // Fetch user profile data
-            const response = await fetch('https://beta.quikkred.in/api/customer/get', {
+            const response = await fetch('https://api.quikkred.in/api/customer/get', {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
@@ -290,6 +235,11 @@ export default function QuickLoanApplication() {
             if (response.ok && result.success && result.data) {
               const profileData = result.data;
               console.log('✅ User profile loaded successfully');
+              console.log('📊 Profile Data:', {
+                isBasicDetailsFilled: profileData.isBasicDetailsFilled,
+                isEmploymentDetailsFilled: profileData.isEmploymentDetailsFilled,
+                isVerificationDetailsFilled: profileData.isVerificationDetailsFilled
+              });
 
               // Convert ISO date to YYYY-MM-DD format for input field
               const formatDateForInput = (isoDate: string) => {
@@ -636,7 +586,7 @@ export default function QuickLoanApplication() {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-        const response = await fetch('https://beta.quikkred.in/api/kyc/aadhaar/status', {
+        const response = await fetch('https://api.quikkred.in/api/kyc/aadhaar/status', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -756,7 +706,7 @@ export default function QuickLoanApplication() {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-        const response = await fetch('https://beta.quikkred.in/api/kyc/eSign/document', {
+        const response = await fetch('https://api.quikkred.in/api/kyc/eSign/document', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -770,7 +720,8 @@ export default function QuickLoanApplication() {
         const result = await response.json();
 
         // Check if e-Sign document is already signed
-        if (response.ok && result.success && result.message === "E-sign document fetched successfully") {
+        if (response.ok && result.success && result.message === "E-sign document is already signed and saved") {
+          console.log('[eSign] e-Sign document verified successfully (status = SUCCESS)');
           setESignVerified(true);
           setUserESignStatus('SUCCESS');
           toast({
@@ -781,21 +732,12 @@ export default function QuickLoanApplication() {
         } else {
           console.log('[eSign] e-Sign not completed:', result.message || 'Document not signed');
           setESignVerified(false);
-        }
-
-        // Call customer/get API once after eSign/document API
-        try {
-          console.log('[eSign] Calling customer/get API to refresh user data...');
-          await fetch('https://beta.quikkred.in/api/customer/get', {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            }
+          // Show info message if e-Sign is pending
+          toast({
+            variant: "warning",
+            title: "e-Sign Pending",
+            description: "Please complete e-Sign verification.",
           });
-          console.log('[eSign] customer/get API called successfully');
-        } catch (customerError) {
-          console.error('[eSign] Error calling customer/get API:', customerError);
         }
       } catch (error: any) {
         if (error.name === 'AbortError') {
@@ -896,7 +838,7 @@ export default function QuickLoanApplication() {
       setApprovalLoading(true);
 
       try {
-        const response = await fetch('https://beta.quikkred.in/api/kyc/bre/initialize', {
+        const response = await fetch('https://api.quikkred.in/api/kyc/bre/initialize', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -965,7 +907,7 @@ export default function QuickLoanApplication() {
   //                     localStorage.getItem('authToken');
   //     setLoadingProducts(true);
   //     try {
-  //       const response = await fetch('https://beta.quikkred.in/api/loanProduct/allLoanProductsNameOnly', {
+  //       const response = await fetch('https://api.quikkred.in/api/loanProduct/allLoanProductsNameOnly', {
   //         method: 'GET',
   //         headers: {
   //           'Content-Type': 'application/json',
@@ -1049,15 +991,6 @@ export default function QuickLoanApplication() {
       const interestRate = parseFloat(data.interestRate) || 1;
       const totalAmount = parseFloat(data.totalAmount) || loanAmount;
 
-      function formatDate(date: Date | string): string {
-  const d = new Date(date);
-  return d.toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  });
-}
-
       if (!loanAmount) {
         return '<tr><td colspan="6" style="text-align: center;">N/A</td></tr>';
       }
@@ -1070,7 +1003,7 @@ export default function QuickLoanApplication() {
         return `
           <tr>
             <td>1</td>
-            <td>${formatDate(dueDate)}</td>
+            <td>N/A</td>
             <td>&#8377;${(loanAmount)}</td>
             <td>&#8377;${(Math.round(interest))}</td>
             <td>&#8377;${(Math.round(totalAmount))}</td>
@@ -1234,8 +1167,8 @@ export default function QuickLoanApplication() {
         .notice ul { margin: 0; padding-left: 12px; color: #78350f; }
         .notice li { margin: 3px 0; line-height: 1.3; }
         .signature-section { margin-top: 15px; padding-top: 12px; border-top: 1px solid #2d3748; }
-        .signature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px; align-items: stretch; }
-        .signature-box { text-align: center; height: 100%; }
+        .signature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px; }
+        .signature-box { text-align: center; }
         .esign-box {
             border: 1px dashed #25B181;
             padding: 12px 10px;
@@ -1243,17 +1176,12 @@ export default function QuickLoanApplication() {
             background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
             border-radius: 10px;
             min-height: 100px;
-            height: 100%;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
         }
         .esign-box:hover { border-style: solid; }
         .esign-box .icon { font-size: 20px; margin-bottom: 5px; }
         .esign-box .text { font-size: 9px; color: #25B181; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
         .esign-box .subtext { font-size: 7px; color: #718096; margin-top: 2px; }
-        .esign-box .details { margin-top: auto; font-size: 7px; color: #4a5568; line-height: 1.4; }
+        .esign-box .details { margin-top: 8px; font-size: 7px; color: #4a5568; line-height: 1.4; }
         .lender-box { border-color: #2d3748; background: white; }
         .lender-box .text { color: #2d3748; }
         .declaration {
@@ -1635,9 +1563,6 @@ export default function QuickLoanApplication() {
             background: #f0fdf4 !important;
             box-shadow: none !important;
             border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
         }
         body.pdf-mode .esign-box:hover {
             border-style: dashed !important;
@@ -1794,7 +1719,7 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
                     <li><strong>Loan Purpose:</strong> This loan is granted for personal/business use as declared by the Borrower.</li>
                     <li><strong>Disbursement:</strong> Upon successful verification, the loan amount will be disbursed within 24-48 hours.</li>
                     <li><strong>Repayment:</strong> The Borrower agrees to repay the loan as per the repayment schedule via eNACH/eMandate.</li>
-                    <li><strong>Interest & Charges:</strong> The applicable interest rate is ${getValue(data.interestRate) !== 'N/A' ? data.interestRate : '1.0'}% Daily (36.5% APR). Processing fee of ${getValue(data.processingFee) !== 'N/A' ? data.processingFee : '10%'} + 18% GST.</li>
+                    <li><strong>Interest & Charges:</strong> The applicable interest rate is ${getValue(data.interestRate) !== 'N/A' ? data.interestRate : '1.0'}% Daily (36.5% APR). Processing fee of ${getValue(data.processingFee) !== 'N/A' ? data.processingFee : '2'}% + 18% GST.</li>
                     <li><strong>Late Payment:</strong> Late fee of &#8377;
  500 and penal interest of 2% per day will apply on overdue amounts.</li>
                     <li><strong>Default & Recovery:</strong> Default may result in credit bureau reporting and legal action.</li>
@@ -1817,9 +1742,10 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
             <div class="signature-grid">
                 <div class="signature-box">
                     <div class="esign-box">
-
-                     
-<div class="details">
+                        <div class="icon">✍️</div>
+                        <div class="text">Borrower's eSign</div>
+                        <div class="subtext">Aadhaar-based Digital Signature</div>
+                        <div class="details">
                             <div><strong>Name:</strong> ${getValue(data.fullName)}</div>
                             <div><strong>Aadhaar:</strong> XXXX-XXXX-${maskAadhaar(data.aadhaar)}</div>
                             <div><strong>Date:</strong> ${currentDate}</div>
@@ -1881,8 +1807,6 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
     </div>
 
     <script>
-    // 🔹 Document number injected from React component (single source of truth)
-        const documentNumber = '${documentNumber}';
         // ========== PRINT-BASED PDF DOWNLOAD ==========
         function testGeneratePDF() {
             const btn = document.getElementById('test-btn');
@@ -2331,9 +2255,6 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
             background: #f0fff4;
             border-radius: 6px;
             min-height: 100px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
         }
 
         .esign-box .icon {
@@ -2954,8 +2875,8 @@ y += boxHeight + 4;
         }
 
         // 🔹 Generate document number
-        // const currentYear = new Date().getFullYear();
-        // const documentNumber = 'DOC' + currentYear + Date.now();
+        const currentYear = new Date().getFullYear();
+        const documentNumber = 'DOC' + currentYear + Date.now();
 
         // 🔹 Hide approve section temporarily for PDF capture
         const approveSection = document.getElementById('approve-section');
@@ -3009,12 +2930,20 @@ y += boxHeight + 4;
         if (approveSection) approveSection.style.display = 'block';
 
         // 🔹 Download PDF locally for user's copy
-     
+        const downloadUrl = URL.createObjectURL(pdfBlob);
+        const downloadLink = document.createElement('a');
+        downloadLink.href = downloadUrl;
+        downloadLink.download = 'Quikkred-Loan-Agreement-' + documentNumber + '.pdf';
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        URL.revokeObjectURL(downloadUrl);
+
         // 🔹 Upload PDF to API
         const formData = new FormData();
         formData.append('eSignDoc', pdfBlob, 'loan-agreement.pdf');
 
-        const response = await fetch('https://beta.quikkred.in/api/kyc/eSign/upload?documentNumber=' + documentNumber, {
+        const response = await fetch('https://api.quikkred.in/api/kyc/eSign/upload?documentNumber=' + documentNumber, {
             method: 'POST',
             headers: {
                 'Authorization': 'Bearer ' + token
@@ -3416,7 +3345,7 @@ y += boxHeight + 4;
         : { mobile: formData.mobile };
 console.log('Sending OTP with payload:', payload);
 
-      const response = await fetch("https://beta.quikkred.in/api/auth/customer/create", {
+      const response = await fetch("https://api.quikkred.in/api/auth/customer/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -3468,7 +3397,7 @@ console.log('Sending OTP with payload:', payload);
         ? { email: formData.email, otp: formData.otp }
         : { mobile: formData.mobile, otp: formData.otp };
 
-      const response = await fetch("https://beta.quikkred.in/api/auth/customer/verifyOtp", {
+      const response = await fetch("https://api.quikkred.in/api/auth/customer/verifyOtp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -3509,7 +3438,7 @@ console.log('Sending OTP with payload:', payload);
         if (token) {
           try {
             console.log('🔵 Fetching customer data after OTP verification...');
-            const customerResponse = await fetch('https://beta.quikkred.in/api/customer/get', {
+            const customerResponse = await fetch('https://api.quikkred.in/api/customer/get', {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
@@ -3554,7 +3483,6 @@ console.log('Sending OTP with payload:', payload);
                 accountHolderName: profileData.banks?.[0]?.accountHolderName || prev.accountHolderName,
                 accountNumber: profileData.banks?.[0]?.accountNumber || prev.accountNumber,
                 ifsc: profileData.banks?.[0]?.ifscCode || prev.ifsc,
-                loanAmount: profileData.requestedLoanAmount?.toString() || prev.loanAmount,
               }));
 
               // Set bank verified flag if bank has been verified via penny drop
@@ -3583,21 +3511,6 @@ console.log('Sending OTP with payload:', payload);
                 if (profileData.profile?.status === 'VERIFIED') {
                   setSelfieVerified(true);
                   console.log('✅ Selfie already verified - retake disabled');
-                }
-              }
-
-              // Check eSign status from profile
-              // Handle both formats: eSign: true (boolean) or eSign: { status: 'SUCCESS' } (object)
-              if (profileData.eSign === true) {
-                setUserESignStatus('SUCCESS');
-                setESignVerified(true);
-                console.log('✅ eSign already completed (boolean: true)');
-              } else if (profileData.eSign?.status) {
-                setUserESignStatus(profileData.eSign.status);
-                console.log('📝 eSign status from profile:', profileData.eSign.status);
-                if (profileData.eSign.status === 'SUCCESS') {
-                  setESignVerified(true);
-                  console.log('✅ eSign already completed (status: SUCCESS)');
                 }
               }
 
@@ -3689,7 +3602,7 @@ console.log('Sending OTP with payload:', payload);
         return dateStr;
       };
 
-      const response = await fetch('https://beta.quikkred.in/api/kyc/pan/verification', {
+      const response = await fetch('https://api.quikkred.in/api/kyc/pan/verification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3763,7 +3676,7 @@ console.log('Sending OTP with payload:', payload);
                     localStorage.getItem('authToken');
 
       // First call verification endpoint to check redirect
-      const verifyResponse = await fetch('https://beta.quikkred.in/api/kyc/aadhaar/verification', {
+      const verifyResponse = await fetch('https://api.quikkred.in/api/kyc/aadhaar/verification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3837,7 +3750,7 @@ console.log('Sending OTP with payload:', payload);
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      const response = await fetch('https://beta.quikkred.in/api/kyc/aadhaar/verify', {
+      const response = await fetch('https://api.quikkred.in/api/kyc/aadhaar/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3949,7 +3862,7 @@ console.log('Sending OTP with payload:', payload);
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      const response = await fetch('https://beta.quikkred.in/api/kyc/bank/verification', {
+      const response = await fetch('https://api.quikkred.in/api/kyc/bank/verification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3959,7 +3872,7 @@ console.log('Sending OTP with payload:', payload);
           accountNumber: formData.accountNumber,
           ifscCode: formData.ifsc,
           accountHolderName: formData.accountHolderName,
-          bankName: formData.bankName === 'OTHER' ? formData.customBankName : formData.bankName
+          bankName: formData.bankName
         }),
       });
 
@@ -4189,7 +4102,7 @@ console.log('Sending OTP with payload:', payload);
         //   console.log('✅ Adding selfie photo to Step 2:', formData.selfie.name);
         // }
 
-        const response = await fetch(`https://beta.quikkred.in/api/application/loan/create`, {
+        const response = await fetch(`https://api.quikkred.in/api/application/loan/create`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -4227,7 +4140,7 @@ console.log('Sending OTP with payload:', payload);
         };
       }
 
-      const response = await fetch(`https://beta.quikkred.in/api/application/loan/create`, {
+      const response = await fetch(`https://api.quikkred.in/api/application/loan/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -4527,16 +4440,6 @@ console.log('Sending OTP with payload:', payload);
         return;
       }
 
-      // Custom Bank Name validation when "Other" is selected
-      if (formData.bankName === 'OTHER' && !formData.customBankName?.trim()) {
-        toast({
-          variant: "warning",
-          title: "Bank Name Required",
-          description: "Please enter your bank name.",
-        });
-        return;
-      }
-
       // Account Number validation
       if (!formData.accountNumber || formData.accountNumber.length < 9 || formData.accountNumber.length > 18) {
         toast({
@@ -4590,7 +4493,7 @@ console.log('Sending OTP with payload:', payload);
         // Call both APIs in parallel - save bank details and get BRE data
         const [saveSuccess, breResponse] = await Promise.all([
           saveCustomerData(3), // Save bank details
-          fetch('https://beta.quikkred.in/api/kyc/bre/initialize', {
+          fetch('https://api.quikkred.in/api/kyc/bre/initialize', {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -4664,15 +4567,15 @@ console.log('Sending OTP with payload:', payload);
         }
 
         // Consent validation
-        // if (!formData.creditBureauConsent || !formData.termsConsent) {
-        //   setConsentError(true);
-        //   toast({
-        //     variant: "warning",
-        //     title: "Consent Required",
-        //     description: "Please accept the required consents to proceed.",
-        //   });
-        //   return;
-        // }
+        if (!formData.creditBureauConsent || !formData.termsConsent) {
+          setConsentError(true);
+          toast({
+            variant: "warning",
+            title: "Consent Required",
+            description: "Please accept the required consents to proceed.",
+          });
+          return;
+        }
 
         // Clear consent error if validation passes
         setConsentError(false);
@@ -4702,7 +4605,7 @@ console.log('Sending OTP with payload:', payload);
           isSubmit: true
         };
 
-        const response = await fetch(`https://beta.quikkred.in/api/application/loan/create`, {
+        const response = await fetch(`https://api.quikkred.in/api/application/loan/create`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -4991,7 +4894,6 @@ console.log('Sending OTP with payload:', payload);
                     monthlyIncome: "",
                     companyName: "",
                     bankName: "",
-                    customBankName: "",
                     accountHolderName: "",
                     accountNumber: "",
                     ifsc: "",
@@ -5053,7 +4955,7 @@ console.log('Sending OTP with payload:', payload);
                 router.push('/login'); // Redirect to login if not logged in
               }
             }}
-     className="flex items-center bg-white gap-2 px-4 py-2 text-gray-600 hover:text-white hover:bg-[#25b181] rounded-lg transition-all shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-white rounded-lg transition-all shadow-sm"
           >
             <X className="w-5 h-5" />
             <span className="text-sm font-medium">Close</span>
@@ -5076,48 +4978,17 @@ console.log('Sending OTP with payload:', payload);
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2 gap-2">
             {[1, 2, 3, 4].map((step) => (
-              <button
-                key={step}
-                type="button"
-                disabled={step >= currentStep}
-                className={`flex-1 ${step < currentStep ? 'cursor-pointer' : 'cursor-default'}`}
-                onClick={() => {
-                  if (step < currentStep) {
-                    setCurrentStep(step);
-                  }
-                }}
-              >
+              <div key={step} className="flex-1">
                 <div className={`h-2 rounded-full transition-all ${
                   step <= currentStep ? 'bg-[#25B181]' : 'bg-gray-200'
-                } ${step < currentStep ? 'hover:bg-[#1F8F68]' : ''}`} />
-              </button>
+                }`} />
+              </div>
             ))}
           </div>
           <div className="flex justify-between text-xs sm:text-sm text-gray-600">
-            <button
-              type="button"
-              disabled={currentStep <= 1}
-              className={`text-center ${currentStep === 1 ? 'text-[#25B181] font-semibold' : ''} ${currentStep > 1 ? 'cursor-pointer hover:text-[#25B181]' : ''}`}
-              onClick={() => currentStep > 1 && setCurrentStep(1)}
-            >
-              Basic Details
-            </button>
-            <button
-              type="button"
-              disabled={currentStep <= 2}
-              className={`text-center ${currentStep === 2 ? 'text-[#25B181] font-semibold' : ''} ${currentStep > 2 ? 'cursor-pointer hover:text-[#25B181]' : ''}`}
-              onClick={() => currentStep > 2 && setCurrentStep(2)}
-            >
-              Identity
-            </button>
-            <button
-              type="button"
-              disabled={currentStep <= 3}
-              className={`text-center ${currentStep === 3 ? 'text-[#25B181] font-semibold' : ''} ${currentStep > 3 ? 'cursor-pointer hover:text-[#25B181]' : ''}`}
-              onClick={() => currentStep > 3 && setCurrentStep(3)}
-            >
-              Bank Details
-            </button>
+            <span className={`text-center ${currentStep === 1 ? 'text-[#25B181] font-semibold' : ''}`}>Basic Details</span>
+            <span className={`text-center ${currentStep === 2 ? 'text-[#25B181] font-semibold' : ''}`}>Identity</span>
+            <span className={`text-center ${currentStep === 3 ? 'text-[#25B181] font-semibold' : ''}`}>Bank Details</span>
             <span className={`text-center ${currentStep === 4 ? 'text-[#25B181] font-semibold' : ''}`}>Approval</span>
           </div>
         </div>
@@ -5266,7 +5137,7 @@ console.log('Sending OTP with payload:', payload);
         disabled={!formData.email || !!fieldErrors.email || loading || (otpSent && emailOtpTimer > 0)}
         className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
       >
-        {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Verify"}
+        {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Send OTP"}
       </button>
     )}
 
@@ -5342,7 +5213,7 @@ console.log('Sending OTP with payload:', payload);
                             disabled={!formData.mobile || loading || (otpSent && emailOtpTimer > 0)}
                             className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
                           >
-                            {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Verify"}
+                            {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Send OTP"}
                           </button>
                         )}
                         {formData.mobileVerified && (
@@ -5797,7 +5668,7 @@ console.log('Sending OTP with payload:', payload);
                           disabled={!formData.aadhaar || formData.aadhaar.length !== 12 || aadhaarVerifying || (aadhaarOtpSent && aadhaarOtpTimer > 0)}
                           className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                         >
-                          {aadhaarVerifying ? "Sending..." : aadhaarOtpSent ? (aadhaarOtpTimer > 0 ? `Resend (${aadhaarOtpTimer}s)` : "Resend OTP") : "Verify"}
+                          {aadhaarVerifying ? "Sending..." : aadhaarOtpSent ? (aadhaarOtpTimer > 0 ? `Resend (${aadhaarOtpTimer}s)` : "Resend OTP") : "Send OTP"}
                         </button>
                       )}
                       {aadhaarVerified && (
@@ -6161,7 +6032,7 @@ console.log('Sending OTP with payload:', payload);
 
                               // Initialize e-Sign verification
                               try {
-                                const eSignResponse = await fetch('https://beta.quikkred.in/api/kyc/eSign/initialize', {
+                                const eSignResponse = await fetch('https://api.quikkred.in/api/kyc/eSign/initialize', {
                                   method: 'GET',
                                   headers: {
                                     'Content-Type': 'application/json',
@@ -6193,7 +6064,7 @@ console.log('Sending OTP with payload:', payload);
                               let customerData: any = {};
 
                               try {
-                                const response = await fetch('https://beta.quikkred.in/api/customer/get', {
+                                const response = await fetch('https://api.quikkred.in/api/customer/get', {
                                   method: 'GET',
                                   headers: {
                                     'Content-Type': 'application/json',
@@ -6205,18 +6076,6 @@ console.log('Sending OTP with payload:', payload);
 
                                 if (response.ok && result.success && result.data) {
                                   customerData = result.data;
-
-                                  // Check eSign status and update state
-                                  if (customerData.eSign === true) {
-                                    setUserESignStatus('SUCCESS');
-                                    setESignVerified(true);
-                                    console.log('✅ eSign already completed (boolean: true)');
-                                  } else if (customerData.eSign?.status === 'SUCCESS') {
-                                    setUserESignStatus('SUCCESS');
-                                    setESignVerified(true);
-                                    console.log('✅ eSign already completed (status: SUCCESS)');
-                                  }
-
                                 }
                               } catch (error) {
                                 console.error('Error fetching customer data:', error);
@@ -6241,7 +6100,7 @@ console.log('Sending OTP with payload:', payload);
                                 designation: customerData.designation || '',
                                 workExperience: customerData.workExperience || '',
                                 salaryDate: customerData.salaryDate || '',
-                                bankName: (formData.bankName === 'OTHER' ? formData.customBankName : formData.bankName) || customerData.banks?.[0]?.bankName || '',
+                                bankName: formData.bankName || customerData.banks?.[0]?.bankName || '',
                                 accountNumber: formData.accountNumber || customerData.banks?.[0]?.accountNumber || '',
                                 ifscCode: formData.ifsc || customerData.banks?.[0]?.ifscCode || '',
                                 accountHolderName: formData.accountHolderName || customerData.banks?.[0]?.accountHolderName || formData.fullName || customerData.fullName || '',
@@ -6313,86 +6172,32 @@ console.log('Sending OTP with payload:', payload);
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Bank Name *
                         </label>
-                        <div className="relative bank-dropdown-container">
-  <button
-    type="button"
-    onClick={() => !bankVerified && setBankDropdownOpen(!bankDropdownOpen)}
-    disabled={bankVerified}
-    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] text-left flex justify-between items-center ${
-      bankVerified ? 'bg-green-50 border-green-300' : 'bg-white'
-    }`}
-  >
-    <span className={formData.bankName ? 'text-gray-900' : 'text-gray-500'}>
-      {formData.bankName === 'OTHER'
-        ? 'Other'
-        : formData.bankName
-          ? BANKS.find(b => b.code === formData.bankName)?.name || formData.bankName
-          : 'Select Bank'}
-    </span>
-    <svg className={`w-5 h-5 text-gray-400 transition-transform ${bankDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-    </svg>
-  </button>
-
-  {bankDropdownOpen && !bankVerified && (
-    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-      <div
-        className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-500"
-        onClick={() => {
-          setFormData(prev => ({ ...prev, bankName: '', customBankName: '' }));
-          setBankVerified(false);
-          setBankDropdownOpen(false);
-        }}
-      >
-        Select Bank
-      </div>
-      {BANKS.map((bank) => (
-        <div
-          key={bank.code}
-          className={`px-4 py-2 hover:bg-[#25B181] hover:text-white cursor-pointer ${
-            formData.bankName === bank.code ? 'bg-[#25B181] text-white' : ''
-          }`}
-          onClick={() => {
-            setFormData(prev => ({ ...prev, bankName: bank.code, customBankName: '' }));
-            setBankVerified(false);
-            setBankDropdownOpen(false);
-          }}
-        >
-          {bank.name}
-        </div>
-      ))}
-      <div
-        className={`px-4 py-2 hover:bg-[#25B181] hover:text-white cursor-pointer ${
-          formData.bankName === 'OTHER' ? 'bg-[#25B181] text-white' : ''
-        }`}
-        onClick={() => {
-          setFormData(prev => ({ ...prev, bankName: 'OTHER' }));
-          setBankVerified(false);
-          setBankDropdownOpen(false);
-        }}
-      >
-        Other
-      </div>
-    </div>
-  )}
-</div>
-
-                        {/* Custom Bank Name Input - shown when "Other" is selected */}
-                        {formData.bankName === 'OTHER' && (
-                          <input
-                            type="text"
-                            name="customBankName"
-                            value={formData.customBankName}
-                            onChange={(e) => {
-                              const value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
-                              setFormData(prev => ({ ...prev, customBankName: value }));
-                              setBankVerified(false);
-                            }}
-                            disabled={bankVerified}
-                            className={`w-full mt-2 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] ${bankVerified ? 'bg-green-50 border-green-300' : ''}`}
-                            placeholder="Enter your bank name"
-                          />
-                        )}
+                        <select
+                          name="bankName"
+                          value={formData.bankName}
+                          onChange={(e) => {
+                            handleChange(e);
+                            setBankVerified(false); // Reset verification on change
+                          }}
+                          disabled={bankVerified}
+                          className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] ${bankVerified ? 'bg-green-50 border-green-300' : ''}`}
+                        >
+                          <option value="">Select Bank</option>
+                          <option value="SBI">State Bank of India</option>
+                          <option value="HDFC">HDFC Bank</option>
+                          <option value="ICICI">ICICI Bank</option>
+                          <option value="AXIS">Axis Bank</option>
+                          <option value="PNB">Punjab National Bank</option>
+                          <option value="BOB">Bank of Baroda</option>
+                          <option value="KOTAK">Kotak Mahindra Bank</option>
+                          <option value="IDBI">IDBI Bank</option>
+                          <option value="YES">Yes Bank</option>
+                          <option value="INDUSIND">IndusInd Bank</option>
+                          <option value="BOI">Bank of India</option>
+                          <option value="CANARA">Canara Bank</option>
+                          <option value="UNION">Union Bank of India</option>
+                          <option value="OTHER">Other</option>
+                        </select>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -6504,13 +6309,13 @@ console.log('Sending OTP with payload:', payload);
                       <button
                         type="button"
                         onClick={verifyBankAccount}
-                        disabled={bankVerifying || bankVerified || !formData.bankName || (formData.bankName === 'OTHER' && !formData.customBankName?.trim()) || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc}
+                        disabled={bankVerifying || bankVerified || !formData.bankName || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc}
                         className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all ${
                           bankVerified
                             ? 'bg-green-100 text-green-700 border border-green-300 cursor-not-allowed'
                             : bankVerifying
                             ? 'bg-gray-300 text-gray-600 cursor-wait'
-                            : !formData.bankName || (formData.bankName === 'OTHER' && !formData.customBankName?.trim()) || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc
+                            : !formData.bankName || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc
                             ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                             : 'bg-[#25B181] text-white hover:bg-[#1d9469]'
                         }`}
