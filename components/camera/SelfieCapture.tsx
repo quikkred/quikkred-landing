@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Camera, X, RotateCw, Check, AlertCircle, Loader2 } from "lucide-react";
+import { getApiUrl } from "@/lib/config";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface SelfieCaptureProps {
@@ -157,7 +158,7 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
 
   const verifyFaceLiveness = async (file: File): Promise<boolean> => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
       if (!token) {
         setError('Authentication required. Please login again.');
         return false;
@@ -166,7 +167,7 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
       const formData = new FormData();
       formData.append('photo', file);
 
-      const response = await fetch('https://alpha.quikkred.in/api/kyc/face/verification', {
+      const response = await fetch(getApiUrl('/api/kyc/face/verification'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
