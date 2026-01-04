@@ -175,7 +175,7 @@ export default function TrackApplicationPage() {
         ? `loanNumber=${encodeURIComponent(searchValue)}`
         : `mobile=${encodeURIComponent(searchValue)}`;
 
-      const response = await fetch(`https://alpha.quikkred.in/api/loans/status?${queryParam}`, {
+      const response = await fetch(`https://api.quikkred.in/api/loans/status?${queryParam}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
