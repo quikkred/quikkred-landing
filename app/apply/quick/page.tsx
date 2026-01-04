@@ -162,6 +162,9 @@ export default function QuickLoanApplication() {
 
   // BRE Status States
   const [rejectionCountdown, setRejectionCountdown] = useState(10);
+  const [ptbLoading, setPtbLoading] = useState(false);
+  const [finfactorSuccess, setFinfactorSuccess] = useState(false);
+  const [consentLoading, setConsentLoading] = useState(false);
 
   // User location state
   const [userLocation, setUserLocation] = useState<{latitude: number; longitude: number} | null>(null);
@@ -586,6 +589,15 @@ export default function QuickLoanApplication() {
       router.push('/');
     }
   }, [currentStep, approvalData?.status, rejectionCountdown, router]);
+
+  // Check for finfactor=success query param (redirect from finfudge)
+  useEffect(() => {
+    const finfactorParam = searchParams.get('finfactor');
+    if (finfactorParam === 'success') {
+      setFinfactorSuccess(true);
+      setCurrentStep(4); // Go to step 4 to show the consent UI
+    }
+  }, [searchParams]);
 
   // Check Aadhaar verification status when verified=true query param is present
   // Only calls API after user profile data is loaded AND if isAadhaarVerify !== true
@@ -1364,16 +1376,7 @@ export default function QuickLoanApplication() {
             box-shadow: 0 10px 30px rgba(37, 177, 129, 0.45);
         }
         .approve-btn:active { transform: translateY(-1px); }
-        @media (max-width: 768px) {
-            body { padding: 15px; }
-            .page { padding: 25px 20px; border-radius: 12px; }
-            .header { flex-direction: column; gap: 20px; }
-            .doc-info { text-align: left; }
-            .info-grid { grid-template-columns: 1fr; }
-            .loan-grid { grid-template-columns: 1fr 1fr; }
-            .signature-grid { grid-template-columns: 1fr; gap: 25px; }
-            .title h2 { padding: 12px 25px; font-size: 16px; }
-        }
+
         @page {
             size: A4;
             margin: 10mm 15mm;
@@ -5978,6 +5981,122 @@ console.log('Sending OTP with payload:', payload);
                       Go to Home
                     </button>
                   </div>
+                ) : finfactorSuccess ? (
+                  /* ========== FINFACTOR SUCCESS - CONSENT UI ========== */
+                  <div className="text-center py-8">
+                    <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <CheckCircle className="w-12 h-12 text-green-600" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-3">Bank Statement Verification</h2>
+                    <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                      Your bank statement process is complete. Click the button below to continue with your loan application.
+                    </p>
+                    <div className="mt-6">
+                      <button
+                        onClick={async () => {
+                          const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('authToken');
+                          if (!token) {
+                            toast({ variant: "error", title: "Authentication Error", description: "Please login again to continue." });
+                            return;
+                          }
+                          setConsentLoading(true);
+                          try {
+                            const customerId = localStorage.getItem('userId');
+                            if (!customerId) {
+                              toast({ variant: "error", title: "Error", description: "Customer ID not found. Please try again." });
+                              setConsentLoading(false);
+                              return;
+                            }
+                            const response = await fetch(`https://alpha.quikkred.in/api/kyc/consentHandleToFIRequest`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                              body: JSON.stringify({ customerId })
+                            });
+                            const result = await response.json();
+                            if (response.ok && result.success) {
+                              toast({ variant: "success", title: "Success", description: result.message || "Verification completed successfully." });
+                              // Update approvalData with BRE response if available
+                              if (result.data) {
+                                setApprovalData(result.data);
+                              }
+                              setFinfactorSuccess(false); // Hide this UI and show approval UI
+                            } else {
+                              toast({ variant: "error", title: "Failed", description: result.message || "Verification failed. Please try again." });
+                            }
+                          } catch (error: any) {
+                            console.error('Consent API error:', error);
+                            toast({ variant: "error", title: "Network Error", description: "Unable to connect to server. Please try again." });
+                          } finally {
+                            setConsentLoading(false);
+                          }
+                        }}
+                        disabled={consentLoading}
+                        className="bg-[#25B181] text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#1d9e6f] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
+                      >
+                        {consentLoading ? (<><Loader2 className="w-5 h-5 animate-spin" />Processing...</>) : (<>Continue Application<ArrowRight className="w-5 h-5" /></>)}
+                      </button>
+                    </div>
+                  </div>
+                ) : approvalData?.status === 'Proceed to Bank' ? (
+                  /* ========== PROCEED TO BANK STATUS ========== */
+                  <div className="text-center py-8">
+                    <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <svg className="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-3">Proceed to Bank Verification</h2>
+                    <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                      {approvalData.reason || 'Your application requires additional bank verification to proceed.'}
+                    </p>
+                    <div className="bg-gray-50 rounded-lg p-4 mb-6 inline-block">
+                      <p className="text-sm text-gray-500">Application Number</p>
+                      <p className="font-semibold text-gray-800">{approvalData.applicationNumber || 'N/A'}</p>
+                    </div>
+                    <div className="mt-6">
+                      <button
+                        onClick={async () => {
+                          const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('authToken');
+                          if (!token) {
+                            toast({ variant: "error", title: "Authentication Error", description: "Please login again to continue." });
+                            return;
+                          }
+                          setPtbLoading(true);
+                          try {
+                            const customerId = localStorage.getItem('userId');
+                            if (!customerId) {
+                              toast({ variant: "error", title: "Error", description: "Customer ID not found. Please try again." });
+                              setPtbLoading(false);
+                              return;
+                            }
+                            const response = await fetch(`https://alpha.quikkred.in/api/kyc/finfactorConsentRequest`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                              body: JSON.stringify({ customerId })
+                            });
+                            const result = await response.json();
+                            if (response.ok && result.success) {
+                              toast({ variant: "success", title: "Success", description: result.message || "Bank verification initiated successfully." });
+                              if (result.data) {
+                                window.open(result.data, '_blank');
+                              }
+                            } else {
+                              toast({ variant: "error", title: "Failed", description: result.message || "Failed to initiate bank verification." });
+                            }
+                          } catch (error: any) {
+                            console.error('PTB API error:', error);
+                            toast({ variant: "error", title: "Network Error", description: "Unable to connect to server. Please try again." });
+                          } finally {
+                            setPtbLoading(false);
+                          }
+                        }}
+                        disabled={ptbLoading}
+                        className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
+                      >
+                        {ptbLoading ? (<><Loader2 className="w-5 h-5 animate-spin" />Processing...</>) : (<>Proceed to Bank<ArrowRight className="w-5 h-5" /></>)}
+                      </button>
+                    </div>
+                  </div>
                 ) : approvalData ? (
                   /* ========== APPROVED STATUS - Attractive UI ========== */
                   <>
@@ -6563,8 +6682,8 @@ console.log('Sending OTP with payload:', payload);
             )}
           </AnimatePresence>
 
-          {/* Navigation Buttons - Hide when status is Reject */}
-          {!(currentStep === 4 && approvalData?.status === 'Reject') && (
+          {/* Navigation Buttons - Hide when status is Reject, Proceed to Bank, or finfactor success */}
+          {!(currentStep === 4 && (approvalData?.status === 'Reject' || approvalData?.status === 'Proceed to Bank' || finfactorSuccess)) && (
             <div className="flex gap-4 mt-8">
               {currentStep > 1 && (
                 <button
