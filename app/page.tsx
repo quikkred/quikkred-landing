@@ -195,7 +195,8 @@ export default function Home() {
         </section>
 
         {/* Loan Products Showcase - Full Screen */}
-        <LoansGrid/>
+        
+        {/* <LoansGrid/> */}
 
         {/* Testimonials Section */}
         {/* <Testimonials/> */}
