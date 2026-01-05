@@ -1,5 +1,5 @@
 // Environment-based configuration
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.quikkred.in';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://beta.quikkred.in';
 
 // Helper function to build API URLs
 export const getApiUrl = (endpoint: string): string => {
