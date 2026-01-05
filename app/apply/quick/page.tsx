@@ -275,7 +275,7 @@ export default function QuickLoanApplication() {
 
           if (token) {
             // Fetch user profile data
-            const response = await fetch('https://beta.quikkred.in/api/customer/get', {
+            const response = await fetch('https://alpha.quikkred.in/api/customer/get', {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
@@ -648,7 +648,7 @@ export default function QuickLoanApplication() {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-        const response = await fetch('https://beta.quikkred.in/api/kyc/aadhaar/status', {
+        const response = await fetch('https://alpha.quikkred.in/api/kyc/aadhaar/status', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -768,7 +768,7 @@ export default function QuickLoanApplication() {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-        const response = await fetch('https://beta.quikkred.in/api/kyc/eSign/document', {
+        const response = await fetch('https://alpha.quikkred.in/api/kyc/eSign/document', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -900,7 +900,7 @@ export default function QuickLoanApplication() {
       setApprovalLoading(true);
 
       try {
-        const response = await fetch('https://beta.quikkred.in/api/kyc/bre/initialize', {
+        const response = await fetch('https://alpha.quikkred.in/api/kyc/bre/initialize', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -970,7 +970,7 @@ export default function QuickLoanApplication() {
   //                     localStorage.getItem('authToken');
   //     setLoadingProducts(true);
   //     try {
-  //       const response = await fetch('https://beta.quikkred.in/api/loanProduct/allLoanProductsNameOnly', {
+  //       const response = await fetch('https://alpha.quikkred.in/api/loanProduct/allLoanProductsNameOnly', {
   //         method: 'GET',
   //         headers: {
   //           'Content-Type': 'application/json',
@@ -2999,7 +2999,7 @@ y += boxHeight + 4;
         const formData = new FormData();
         formData.append('eSignDoc', pdfBlob, 'loan-agreement.pdf');
 
-        const response = await fetch('https://beta.quikkred.in/api/kyc/eSign/upload?documentNumber=' + documentNumber, {
+        const response = await fetch('https://alpha.quikkred.in/api/kyc/eSign/upload?documentNumber=' + documentNumber, {
             method: 'POST',
             headers: {
                 'Authorization': 'Bearer ' + token
@@ -3401,7 +3401,7 @@ y += boxHeight + 4;
         : { mobile: formData.mobile };
 console.log('Sending OTP with payload:', payload);
 
-      const response = await fetch("https://beta.quikkred.in/api/auth/customer/create", {
+      const response = await fetch("https://alpha.quikkred.in/api/auth/customer/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -3453,7 +3453,7 @@ console.log('Sending OTP with payload:', payload);
         ? { email: formData.email, otp: formData.otp }
         : { mobile: formData.mobile, otp: formData.otp };
 
-      const response = await fetch("https://beta.quikkred.in/api/auth/customer/verifyOtp", {
+      const response = await fetch("https://alpha.quikkred.in/api/auth/customer/verifyOtp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -3494,7 +3494,7 @@ console.log('Sending OTP with payload:', payload);
         if (token) {
           try {
             console.log('🔵 Fetching customer data after OTP verification...');
-            const customerResponse = await fetch('https://beta.quikkred.in/api/customer/get', {
+            const customerResponse = await fetch('https://alpha.quikkred.in/api/customer/get', {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
@@ -3658,7 +3658,7 @@ console.log('Sending OTP with payload:', payload);
         return dateStr;
       };
 
-      const response = await fetch('https://beta.quikkred.in/api/kyc/pan/verification', {
+      const response = await fetch('https://alpha.quikkred.in/api/kyc/pan/verification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3732,7 +3732,7 @@ console.log('Sending OTP with payload:', payload);
                     localStorage.getItem('authToken');
 
       // First call verification endpoint to check redirect
-      const verifyResponse = await fetch('https://beta.quikkred.in/api/kyc/aadhaar/verification', {
+      const verifyResponse = await fetch('https://alpha.quikkred.in/api/kyc/aadhaar/verification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3806,7 +3806,7 @@ console.log('Sending OTP with payload:', payload);
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      const response = await fetch('https://beta.quikkred.in/api/kyc/aadhaar/verify', {
+      const response = await fetch('https://alpha.quikkred.in/api/kyc/aadhaar/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3918,7 +3918,7 @@ console.log('Sending OTP with payload:', payload);
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      const response = await fetch('https://beta.quikkred.in/api/kyc/bank/verification', {
+      const response = await fetch('https://alpha.quikkred.in/api/kyc/bank/verification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -4158,7 +4158,7 @@ console.log('Sending OTP with payload:', payload);
         //   console.log('✅ Adding selfie photo to Step 2:', formData.selfie.name);
         // }
 
-        const response = await fetch(`https://beta.quikkred.in/api/application/loan/create`, {
+        const response = await fetch(`https://alpha.quikkred.in/api/application/loan/create`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -4196,7 +4196,7 @@ console.log('Sending OTP with payload:', payload);
         };
       }
 
-      const response = await fetch(`https://beta.quikkred.in/api/application/loan/create`, {
+      const response = await fetch(`https://alpha.quikkred.in/api/application/loan/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -4549,7 +4549,7 @@ console.log('Sending OTP with payload:', payload);
         // Call both APIs in parallel - save bank details and get BRE data
         const [saveSuccess, breResponse] = await Promise.all([
           saveCustomerData(3), // Save bank details
-          fetch('https://beta.quikkred.in/api/kyc/bre/initialize', {
+          fetch('https://alpha.quikkred.in/api/kyc/bre/initialize', {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -4660,7 +4660,7 @@ console.log('Sending OTP with payload:', payload);
           isSubmit: true,
         };
 
-        const response = await fetch(`https://beta.quikkred.in/api/application/loan/create`, {
+        const response = await fetch(`https://alpha.quikkred.in/api/application/loan/create`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -6204,7 +6204,7 @@ console.log('Sending OTP with payload:', payload);
 
                               // Initialize e-Sign verification
                               try {
-                                const eSignResponse = await fetch('https://beta.quikkred.in/api/kyc/eSign/initialize', {
+                                const eSignResponse = await fetch('https://alpha.quikkred.in/api/kyc/eSign/initialize', {
                                   method: 'GET',
                                   headers: {
                                     'Content-Type': 'application/json',
@@ -6236,7 +6236,7 @@ console.log('Sending OTP with payload:', payload);
                               let customerData: any = {};
 
                               try {
-                                const response = await fetch('https://beta.quikkred.in/api/customer/get', {
+                                const response = await fetch('https://alpha.quikkred.in/api/customer/get', {
                                   method: 'GET',
                                   headers: {
                                     'Content-Type': 'application/json',
