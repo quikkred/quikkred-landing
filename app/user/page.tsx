@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import {
@@ -17,6 +17,12 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/toast';
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 interface LoanSummary {
   productName: string;
@@ -48,8 +54,9 @@ interface DashboardData {
   oldApplicationNumber: string | null;
   oldApplicationDate: string | null;
   isBasicDetailsFilled: boolean;
-  isEmploymentDetailsFilled: boolean;
-  isVerificationDetailsFilled: boolean;
+  isKycDetailsFilled: boolean;
+  isBankDetailsFilled: boolean;
+  isSubmit: boolean;
   activeLoan: boolean;
   loans: LoanSummary[];
 }
@@ -90,6 +97,22 @@ export default function UserDashboard() {
   const [selectedLoanNumber, setSelectedLoanNumber] = useState<string>('');
   const [activeLoanDetails, setActiveLoanDetails] = useState<ActiveLoanDetails | null>(null);
   const [loadingLoanDetails, setLoadingLoanDetails] = useState(false);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+  const isProcessingRef = useRef(false);
+
+  // Load Razorpay script
+  useEffect(() => {
+    if (window.Razorpay) {
+      setRazorpayLoaded(true);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => setRazorpayLoaded(true);
+    document.body.appendChild(script);
+  }, []);
 
   // Set default amount to remaining amount when loan details are loaded
   useEffect(() => {
@@ -305,9 +328,10 @@ export default function UserDashboard() {
     if (!data) return 0;
     let completed = 0;
     if (data.isBasicDetailsFilled) completed++;
-    if (data.isEmploymentDetailsFilled) completed++;
-    if (data.isVerificationDetailsFilled) completed++;
-    return Math.round((completed / 3) * 100);
+    if (data.isKycDetailsFilled) completed++;
+    if (data.isBankDetailsFilled) completed++;
+    if (data.isSubmit) completed++;
+    return Math.round((completed / 4) * 100);
   };
 
   const calculateTotalPayment = () => {
@@ -404,7 +428,7 @@ export default function UserDashboard() {
         description: `Processing payment of ₹${totalAmount.toLocaleString()}...`
       });
 
-      const response = await fetch('https://alpha.quikkred.in/api/emi/customerEmiPayment', {
+      const payinResponse = await fetch('https://alpha.quikkred.in/api/emi/customerEmiPayment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -416,52 +440,153 @@ export default function UserDashboard() {
         })
       });
 
-      const result: PaymentResponse = await response.json();
-
-      if (response.ok && result.success) {
-        // Show success toast with payment details
-        toast({
-          variant: "success",
-          title: "Payment Successful!",
-          description: (
-            <div className="space-y-1">
-              <p className="font-semibold">{result.message}</p>
-              <div className="text-xs mt-2 space-y-1">
-            
-                <p>Transaction ID: {result.data.transactionId}</p>
-                <p>Amount Paid: ₹{result.data.paymentAmount.toLocaleString()}</p>
-                {/* <p>EMIs Paid: {result.data.emisPaid}</p>
-                <p>Remaining EMIs: {result.data.remainingEMIs}</p>
-                <p>Current Balance: ₹{result.data.customerBalance.toLocaleString()}</p> */}
-              </div>
-            </div>
-          )
-        });
-
-        // Refresh dashboard data and active loan details after successful payment
-        await fetchUserData();
-        if (selectedLoanNumber) {
-          await fetchActiveLoanDetails(selectedLoanNumber);
-        }
-
-        // Reset form - Clear amount so it recalculates from new remaining balance
-        setSelectedEmiCount(1);
-        setCustomAmount('');
-
-      } else {
-        console.log('❌ Payment failed', result);
-        throw new Error(result.message || 'Payment failed');
+      // Check if token expired (401 Unauthorized)
+      if (payinResponse.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        document.cookie = 'auth-token=; path=/; max-age=0';
+        document.cookie = 'user-role=; path=/; max-age=0';
+        router.push('/login');
+        setProcessingPayment(false);
+        isProcessingRef.current = false;
+        return;
       }
 
+      const payinResult = await payinResponse.json();
+
+      if (!payinResponse.ok || !payinResult.success) {
+        throw new Error(payinResult.message || 'Failed to initiate payment');
+      }
+
+      // Step 2: Get order_id (transactionId) and amount from response
+      // transactionId is the Razorpay order_id (starts with "order_")
+      const orderId = payinResult.data?.transactionId;
+      const paymentAmount = payinResult.data?.paymentAmount || totalAmount;
+      const amountInPaise = paymentAmount * 100; // Convert to paise
+
+      if (!orderId) {
+        console.error('Order ID (transactionId) not found in response:', payinResult.data);
+        throw new Error('Order ID not received from server');
+      }
+
+      console.log('Payin initiated successfully, Order ID:', orderId, 'Amount:', amountInPaise, 'paise');
+
+      // Step 3: Open Razorpay checkout with order details from API response
+      const options = {
+        key: "rzp_test_RudM9P8MHGIuf2",
+        amount: amountInPaise,
+        currency: "INR",
+        order_id: orderId,
+        name: "Payday Loan",
+        description: "EMI / Fee Payment",
+        prefill: {
+          name: user?.name || "",
+          email: user?.email || "",
+          contact: user?.mobile || "",
+        },
+        handler: async (response: any) => {
+          // Payment completed - Razorpay returns payment details
+          console.log("Payment completed:", response);
+
+          // Step 4: Call verify API
+          try {
+            const verifyResponse = await fetch('https://alpha.quikkred.in/api/disbursement/verify', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            });
+
+            const verifyResult = await verifyResponse.json();
+
+            if (verifyResult.success) {
+              toast({
+                variant: "success",
+                title: "Payment Verified Successfully!",
+                description: (
+                  <div className="space-y-1">
+                    <p className="font-semibold">Your payment was verified!</p>
+                    <div className="text-xs mt-2 space-y-1">
+                      <p>Payment ID: {verifyResult.data?.paymentId || response.razorpay_payment_id}</p>
+                      <p>Amount: ₹{((verifyResult.data?.amount || amountInPaise) / 100).toFixed(2)}</p>
+                    </div>
+                  </div>
+                )
+              });
+            } else {
+              toast({
+                variant: "error",
+                title: "Payment Verification Failed",
+                description: verifyResult.message || "Please contact support."
+              });
+            }
+          } catch (verifyError: any) {
+            console.error('Verification error:', verifyError);
+            toast({
+              variant: "error",
+              title: "Verification Error",
+              description: verifyError.message || "Payment verification failed."
+            });
+          }
+
+          // Refresh dashboard data and active loan details after successful payment
+          await fetchUserData();
+          if (selectedLoanNumber) {
+            await fetchActiveLoanDetails(selectedLoanNumber);
+          }
+
+          // Reset form
+          setSelectedEmiCount(1);
+          setCustomAmount('');
+          setProcessingPayment(false);
+          isProcessingRef.current = false;
+        },
+        modal: {
+          ondismiss: () => {
+            console.log("Payment cancelled");
+            toast({
+              variant: "default",
+              title: "Payment Cancelled",
+              description: "You cancelled the payment process."
+            });
+            setProcessingPayment(false);
+            isProcessingRef.current = false;
+          },
+        },
+        theme: { color: "#10B4A3" },
+      };
+
+      const rzp = new window.Razorpay(options);
+
+      rzp.on("payment.failed", (response: any) => {
+        console.log("Payment Failed:", response.error);
+        toast({
+          variant: "error",
+          title: "Payment Failed",
+          description: response.error.description || "Payment failed. Please try again."
+        });
+        setProcessingPayment(false);
+        isProcessingRef.current = false;
+      });
+
+      rzp.open();
+
     } catch (error: any) {
-      console.error('Payment error:', error);
+      console.error('Payment initiation error:', error);
       toast({
         variant: "error",
-        title: "Payment Failed",
-        description: error.message || "Unable to process payment. Please try again."
+        title: "Payment Error",
+        description: error.message || "Failed to initiate payment. Please try again."
       });
-    } finally {
       setProcessingPayment(false);
+      isProcessingRef.current = false;
     }
   };
 
@@ -535,7 +660,7 @@ export default function UserDashboard() {
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-[#0A0A0A] flex items-center gap-2 sm:gap-3">
                 <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-[#FF9800]" />
-                <span className="break-words">Welcome back, {user?.name?.split(' ')[0]}!</span>
+                <span className="break-words">Welcome back, {user?.name?.split(' ')[0]?.charAt(0).toUpperCase() + (user?.name?.split(' ')[0]?.slice(1).toLowerCase() || '')}!</span>
               </h1>
               <p className="text-[#737373] mt-1 text-sm sm:text-base">Complete your profile to apply for loans</p>
             </div>
@@ -587,7 +712,7 @@ export default function UserDashboard() {
         </motion.div>
 
         {/* Old Application Info - Show only if oldApplication is true */}
-        {data?.oldApplication && data?.oldApplicationNumber && (
+        {data?.oldApplication && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -600,16 +725,28 @@ export default function UserDashboard() {
               </div>
               <div className="flex-1 w-full">
                 <h3 className="text-base sm:text-lg font-semibold text-amber-900 mb-2 sm:mb-3">Previous Application Found</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
-                  <div>
-                    <p className="text-sm text-amber-700 mb-1">Application Number</p>
-                    <p className="text-base font-semibold text-amber-900">{data.oldApplicationNumber}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-amber-700 mb-1">Application Date</p>
-                    <p className="text-base font-semibold text-amber-900">{formatDate(data.oldApplicationDate)}</p>
-                  </div>
-                </div>
+                {(data?.oldApplicationNumber || data?.oldApplicationDate) && (
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
+    {data?.oldApplicationNumber && (
+      <div>
+        <p className="text-sm text-amber-700 mb-1">Application Number</p>
+        <p className="text-base font-semibold text-amber-900">
+          {data.oldApplicationNumber}
+        </p>
+      </div>
+    )}
+
+    {data?.oldApplicationDate && (
+      <div>
+        <p className="text-sm text-amber-700 mb-1">Application Date</p>
+        <p className="text-base font-semibold text-amber-900">
+          {formatDate(data.oldApplicationDate)}
+        </p>
+      </div>
+    )}
+  </div>
+)}
+
                 <button
                   onClick={() => router.push('/apply/quick')}
                   className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg hover:shadow-lg transition-all font-medium text-sm sm:text-base"
@@ -779,7 +916,7 @@ export default function UserDashboard() {
               <div className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg border border-orange-200">
                 <p className="text-xs sm:text-sm text-orange-700 mb-1 flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
-                  Next Due Date
+                  Due Date
                 </p>
                 <p className="text-sm sm:text-base font-semibold text-orange-900">{formatDateTime(activeLoanDetails.nextDueDate)}</p>
               </div>
@@ -888,9 +1025,9 @@ export default function UserDashboard() {
                 {/* Pay Button */}
                 <button
                   onClick={handlePayment}
-                  disabled={processingPayment}
+                  disabled={processingPayment || !razorpayLoaded}
                   className={`w-full mt-4 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-[#10B4A3] to-[#0E9A8B] text-white rounded-lg hover:shadow-lg transition-all font-semibold text-base sm:text-lg ${
-                    processingPayment ? 'opacity-70 cursor-not-allowed' : ''
+                    processingPayment || !razorpayLoaded ? 'opacity-70 cursor-not-allowed' : ''
                   }`}
                 >
                   {processingPayment ? (
@@ -929,7 +1066,7 @@ export default function UserDashboard() {
             Application Status
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div className={`p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 transition-all ${
               data?.isBasicDetailsFilled
                 ? 'bg-green-50 border-green-300 shadow-sm'
@@ -951,40 +1088,60 @@ export default function UserDashboard() {
             </div>
 
             <div className={`p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 transition-all ${
-              data?.isEmploymentDetailsFilled
+              data?.isKycDetailsFilled
                 ? 'bg-green-50 border-green-300 shadow-sm'
                 : 'bg-gray-50 border-gray-200'
             }`}>
               <div className="flex items-center gap-2 sm:gap-3">
-                {data?.isEmploymentDetailsFilled ? (
+                {data?.isKycDetailsFilled ? (
                   <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-green-600" />
                 ) : (
                   <Clock className="w-6 h-6 sm:w-7 sm:h-7 text-gray-400" />
                 )}
                 <div>
-                  <p className="font-semibold text-gray-900 text-sm sm:text-base">Employment Details</p>
+                  <p className="font-semibold text-gray-900 text-sm sm:text-base">KYC Details</p>
                   <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                    {data?.isEmploymentDetailsFilled ? 'Completed ✓' : 'Pending'}
+                    {data?.isKycDetailsFilled ? 'Completed ✓' : 'Pending'}
                   </p>
                 </div>
               </div>
             </div>
 
             <div className={`p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 transition-all ${
-              data?.isVerificationDetailsFilled
+              data?.isBankDetailsFilled
                 ? 'bg-green-50 border-green-300 shadow-sm'
                 : 'bg-gray-50 border-gray-200'
             }`}>
               <div className="flex items-center gap-2 sm:gap-3">
-                {data?.isVerificationDetailsFilled ? (
+                {data?.isBankDetailsFilled ? (
                   <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-green-600" />
                 ) : (
                   <Clock className="w-6 h-6 sm:w-7 sm:h-7 text-gray-400" />
                 )}
                 <div>
-                  <p className="font-semibold text-gray-900 text-sm sm:text-base">Verification</p>
+                  <p className="font-semibold text-gray-900 text-sm sm:text-base">Bank Details</p>
                   <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                    {data?.isVerificationDetailsFilled ? 'Completed ✓' : 'Pending'}
+                    {data?.isBankDetailsFilled ? 'Completed ✓' : 'Pending'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className={`p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 transition-all ${
+              data?.isSubmit
+                ? 'bg-green-50 border-green-300 shadow-sm'
+                : 'bg-gray-50 border-gray-200'
+            }`}>
+              <div className="flex items-center gap-2 sm:gap-3">
+                {data?.isSubmit ? (
+                  <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-green-600" />
+                ) : (
+                  <Clock className="w-6 h-6 sm:w-7 sm:h-7 text-gray-400" />
+                )}
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm sm:text-base">Final Submission</p>
+                  <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                    {data?.isSubmit ? 'Completed ✓' : 'Pending'}
                   </p>
                 </div>
               </div>
