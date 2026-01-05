@@ -682,13 +682,13 @@ export default function MyLoansPage() {
               <span className="hidden sm:inline">Refresh</span>
             </button>
             {/* Apply New button */}
-            <button
+            {/* <button
               onClick={() => setIsNewLoanModalOpen(true)}
               className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
             >
               <Plus className="w-4 h-4" />
               <span>Apply New</span>
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
@@ -1632,20 +1632,14 @@ export default function MyLoansPage() {
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Interest Rate</p>
-                        <p className="font-semibold text-gray-900">{detailedLoan.interestRate}% p.d.</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.interestRate}% /day</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Tenure</p>
                         <p className="font-semibold text-gray-900">{detailedLoan.tenure} {detailedLoan.tenureUnit}</p>
                       </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Number of EMIs</p>
-                        <p className="font-semibold text-gray-900">{detailedLoan.numberOfEMIs}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">EMI Amount</p>
-                        <p className="text-lg font-bold text-green-700">{formatCurrency(detailedLoan.emiAmount)}</p>
-                      </div>
+                   
+                     
                       <div>
                         <p className="text-sm text-gray-600">Total Repayment</p>
                         <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.totalRepayment)}</p>
@@ -1804,7 +1798,7 @@ export default function MyLoansPage() {
                               <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Due Date</th>
                                 <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Principal</th>
                                 <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Interest</th>
-                              <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">EMI Amount</th>
+                              <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Total Repayment</th>
                             
                               
                               <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Paid Amount</th>
