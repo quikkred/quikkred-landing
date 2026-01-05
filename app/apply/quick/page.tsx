@@ -1048,10 +1048,10 @@ export default function QuickLoanApplication() {
       }
     };
 
-    const formatCurrency = (value: any) => {
-      if (!value || value === 'N/A' || isNaN(value)) return 'N/A';
-      return Number(value).toLocaleString('en-IN');
-    };
+    // const formatCurrency = (value: any) => {
+    //   if (!value || value === 'N/A' || isNaN(value)) return 'N/A';
+    //   return Number(value).toLocaleString('en-IN');
+    // };
 
     const maskAadhaar = (aadhaar: string) => {
       if (!aadhaar || aadhaar.length < 4) return 'N/A';
@@ -1126,7 +1126,7 @@ export default function QuickLoanApplication() {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=900, initial-scale=1.0">
     <title>Loan Agreement - Quikkred</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -1879,7 +1879,6 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
         <div class="approve-section" id="approve-section">
             <p style="font-size: 14px; color: #333; margin-bottom: 20px;">By clicking "I Agree & Approve", you confirm that you have read and understood all terms and conditions.</p>
             <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                <button class="test-btn" id="test-btn" onclick="testGeneratePDF()" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; border: none; padding: 14px 35px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); transition: all 0.3s ease;">Download PDF</button>
                 <button class="approve-btn" id="approve-btn" onclick="approveAgreement()">I Agree & Approve</button>
             </div>
             <p style="font-size: 11px; color: #666; margin-top: 15px;">Download PDF button saves a copy locally. Approve button downloads PDF, uploads to server and proceeds.</p>
