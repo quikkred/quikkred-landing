@@ -190,6 +190,7 @@ export default function QuickLoanApplication() {
   const [bankVerifying, setBankVerifying] = useState(false);
   const [bankVerified, setBankVerified] = useState(false);
   const [bankVerifyError, setBankVerifyError] = useState("");
+  const [bankDropdownOpen, setBankDropdownOpen] = useState(false);
 
   // Consent validation error
   const [consentError, setConsentError] = useState(false);
@@ -216,6 +217,7 @@ export default function QuickLoanApplication() {
       monthlyIncome: "",
       companyName: "",
       bankName: "",
+      customBankName: "",
       accountHolderName: "",
       accountNumber: "",
       ifsc: "",
@@ -4947,6 +4949,7 @@ console.log('Sending OTP with payload:', payload);
                     monthlyIncome: "",
                     companyName: "",
                     bankName: "",
+                    customBankName: "",
                     accountHolderName: "",
                     accountNumber: "",
                     ifsc: "",
