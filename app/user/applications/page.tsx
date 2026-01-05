@@ -708,24 +708,21 @@ export default function MyApplicationsPage() {
                         <p className="text-sm text-gray-600">Tenure</p>
                         <p className="font-semibold text-gray-900">{detailedApplication.tenure || '-'}{" "}{detailedApplication.tenureUnit || ''}</p>
                       </div>
-                      <div>
-                        <p className="text-sm text-gray-600">EMI Amount</p>
-                        <p className="text-lg font-bold text-blue-700">₹{(detailedApplication.emiAmount || 0).toLocaleString()}</p>
-                      </div>
+                     
                       {/* <div>
                         <p className="text-sm text-gray-600">Purpose</p>
                         <p className="font-semibold text-gray-900">{detailedApplication.purpose || '-'}</p>
                       </div> */}
                       <div>
-                        <p className="text-sm text-gray-600">Interest Rate (p.d%)</p>
+                        <p className="text-sm text-gray-600">Interest Rate (per day)</p>
                         <p className="font-semibold text-gray-900">{detailedApplication.interestRate || 0}%</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">Processing Fee({detailedApplication.productId?.processingFee || 0}%)</p>
+                        <p className="text-sm text-gray-600">Processing Fee</p>
                         <p className="font-semibold text-gray-900">₹{(detailedApplication.processingFee || 0).toLocaleString()}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">GST on Fee({detailedApplication.productId?.gst || 0}%)</p>
+                        <p className="text-sm text-gray-600">GST on Fee</p>
                         <p className="font-semibold text-gray-900">₹{(detailedApplication.gstOnProcessingFee || 0).toLocaleString()}</p>
                       </div>
 <div>
