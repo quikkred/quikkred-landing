@@ -1632,7 +1632,7 @@ export default function MyLoansPage() {
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Interest Rate</p>
-                        <p className="font-semibold text-gray-900">{detailedLoan.interestRate}% /day</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.interestRate}% per day</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Tenure</p>
