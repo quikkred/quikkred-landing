@@ -6476,12 +6476,12 @@ console.log('Sending OTP with payload:', payload);
       </div>
       {BANKS.map((bank) => (
         <div
-          key={bank.code}
+          key={bank.value}
           className={`px-4 py-2 hover:bg-[#25B181] hover:text-white cursor-pointer ${
-            formData.bankName === bank.code ? 'bg-[#25B181] text-white' : ''
+            formData.bankName === bank.value ? 'bg-[#25B181] text-white' : ''
           }`}
           onClick={() => {
-            setFormData(prev => ({ ...prev, bankName: bank.code, customBankName: '' }));
+            setFormData(prev => ({ ...prev, bankName: bank.value, customBankName: '' }));
             setBankVerified(false);
             setBankDropdownOpen(false);
           }}
