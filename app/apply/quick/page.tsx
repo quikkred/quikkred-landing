@@ -61,42 +61,43 @@ const autoDecisionEngine = (data: any) => {
 
 const BANKS = [
   // ===== PSU Banks =====
-  { code: 'SBIN', name: 'State Bank of India' },
-  { code: 'PUNB', name: 'Punjab National Bank' },
-  { code: 'BARB', name: 'Bank of Baroda' },
-  { code: 'UBIN', name: 'Union Bank of India' },
-  { code: 'BKID', name: 'Bank of India' },
-  { code: 'CNRB', name: 'Canara Bank' },
-  { code: 'IDIB', name: 'Indian Bank' },
-  { code: 'IOBA', name: 'Indian Overseas Bank' },
-  { code: 'UCOB', name: 'UCO Bank' },
-  { code: 'MAHB', name: 'Bank of Maharashtra' },
-  { code: 'PSIB', name: 'Punjab & Sind Bank' },
+  { value: 'state bank of india', name: 'State Bank of India' },
+  { value: 'punjab national bank', name: 'Punjab National Bank' },
+  { value: 'bank of baroda', name: 'Bank of Baroda' },
+  { value: 'union bank of india', name: 'Union Bank of India' },
+  { value: 'bank of india', name: 'Bank of India' },
+  { value: 'canara bank', name: 'Canara Bank' },
+  { value: 'indian bank', name: 'Indian Bank' },
+  { value: 'indian overseas bank', name: 'Indian Overseas Bank' },
+  { value: 'uco bank', name: 'UCO Bank' },
+  { value: 'bank of maharashtra', name: 'Bank of Maharashtra' },
+  { value: 'punjab & sind bank', name: 'Punjab & Sind Bank' },
 
   // ===== Private Banks =====
-  { code: 'HDFC', name: 'HDFC Bank' },
-  { code: 'ICIC', name: 'ICICI Bank' },
-  { code: 'UTIB', name: 'Axis Bank' },
-  { code: 'KKBK', name: 'Kotak Mahindra Bank' },
-  { code: 'YESB', name: 'Yes Bank' },
-  { code: 'INDB', name: 'IndusInd Bank' },
-  { code: 'IDFB', name: 'IDFC First Bank' },
-  { code: 'FDRL', name: 'Federal Bank' },
-  { code: 'DCBL', name: 'DCB Bank' },
-  { code: 'RATN', name: 'RBL Bank' },
-  { code: 'CSBK', name: 'Catholic Syrian Bank (CSB Bank)' },
-  { code: 'SIBL', name: 'South Indian Bank' },
+  { value: 'hdfc bank', name: 'HDFC Bank' },
+  { value: 'icici bank', name: 'ICICI Bank' },
+  { value: 'axis bank', name: 'Axis Bank' },
+  { value: 'kotak mahindra bank', name: 'Kotak Mahindra Bank' },
+  { value: 'yes bank', name: 'Yes Bank' },
+  { value: 'indusind bank', name: 'IndusInd Bank' },
+  { value: 'idfc first bank', name: 'IDFC First Bank' },
+  { value: 'federal bank', name: 'Federal Bank' },
+  { value: 'dcb bank', name: 'DCB Bank' },
+  { value: 'rbl bank', name: 'RBL Bank' },
+  { value: 'catholic syrian bank (csb bank)', name: 'Catholic Syrian Bank (CSB Bank)' },
+  { value: 'south indian bank', name: 'South Indian Bank' },
 
-  // ===== Small Finance Banks =====
-  { code: 'AUBL', name: 'AU Small Finance Bank' },
-  { code: 'ESFB', name: 'Equitas Small Finance Bank' },
-  { code: 'FINO', name: 'Fino Payments Bank' },
-  { code: 'AIRP', name: 'Airtel Payments Bank' },
-  { code: 'PYTM', name: 'Paytm Payments Bank' },
+  // ===== Small Finance / Payments Banks =====
+  { value: 'au small finance bank', name: 'AU Small Finance Bank' },
+  { value: 'equitas small finance bank', name: 'Equitas Small Finance Bank' },
+  { value: 'fino payments bank', name: 'Fino Payments Bank' },
+  { value: 'airtel payments bank', name: 'Airtel Payments Bank' },
+  { value: 'paytm payments bank', name: 'Paytm Payments Bank' },
 
   // ===== Others =====
-  { code: 'IBKL', name: 'IDBI Bank' }
+  { value: 'idbi bank', name: 'IDBI Bank' }
 ];
+
 
 export default function QuickLoanApplication() {
   // Generate unique document number for this session (stable across re-renders)
