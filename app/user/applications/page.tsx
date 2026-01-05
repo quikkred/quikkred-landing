@@ -722,7 +722,7 @@ export default function MyApplicationsPage() {
                         <p className="font-semibold text-gray-900">₹{(detailedApplication.processingFee || 0).toLocaleString()}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">GST on Fee</p>
+                        <p className="text-sm text-gray-600">GST on Processing Fee</p>
                         <p className="font-semibold text-gray-900">₹{(detailedApplication.gstOnProcessingFee || 0).toLocaleString()}</p>
                       </div>
 <div>
