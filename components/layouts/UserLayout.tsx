@@ -99,7 +99,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
         }
 
         console.log('Fetching notifications...');
-        const response = await fetch('https://beta.quikkred.in/api/notification/getAll', {
+        const response = await fetch('https://alpha.quikkred.in/api/notification/getAll', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
