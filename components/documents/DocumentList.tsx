@@ -74,7 +74,7 @@ export function DocumentList({
         return;
       }
 
-      const response = await fetch('https://alpha.quikkred.in/api/document/get', {
+      const response = await fetch('https://beta.quikkred.in/api/document/get', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
