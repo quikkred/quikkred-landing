@@ -305,7 +305,7 @@ export default function MyLoansPage() {
       const currentLimit = limit || pagination.limit;
 
       const response = await fetch(
-        `https://alpha.quikkred.in/api/loans/get?page=${currentPage}&limit=${currentLimit}`,
+        `https://beta.quikkred.in/api/loans/get?page=${currentPage}&limit=${currentLimit}`,
         {
           method: 'GET',
           headers: {
@@ -421,7 +421,7 @@ export default function MyLoansPage() {
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch('https://alpha.quikkred.in/api/customer/get', {
+      const response = await fetch('https://beta.quikkred.in/api/customer/get', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -530,7 +530,7 @@ export default function MyLoansPage() {
         }
       };
 
-      const response = await fetch('https://alpha.quikkred.in/api/application/loan/new', {
+      const response = await fetch('https://beta.quikkred.in/api/application/loan/new', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1178,7 +1178,7 @@ export default function MyLoansPage() {
                           placeholder="Enter loan amount"
                         />
                       </div>
-                      <p className="text-xs text-gray-500 mt-2">Min: ₹5,000 | Max: ₹1,00,000</p>
+                      <p className="text-xs text-gray-500 mt-2">Min: ₹1,000 | Max: ₹5,00,000</p>
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-3 mt-6">
