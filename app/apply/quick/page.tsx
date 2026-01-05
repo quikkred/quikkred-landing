@@ -165,6 +165,8 @@ export default function QuickLoanApplication() {
   const [ptbLoading, setPtbLoading] = useState(false);
   const [finfactorSuccess, setFinfactorSuccess] = useState(false);
   const [consentLoading, setConsentLoading] = useState(false);
+  const [brePolling, setBrePolling] = useState(false);
+  const [brePollingMessage, setBrePollingMessage] = useState('');
 
   // User location state
   const [userLocation, setUserLocation] = useState<{latitude: number; longitude: number} | null>(null);
@@ -5896,6 +5898,21 @@ console.log('Sending OTP with payload:', payload);
                       Go to Home
                     </button>
                   </div>
+                ) : brePolling ? (
+                  /* ========== BRE POLLING - PROCESSING UI ========== */
+                  <div className="text-center py-8">
+                    <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-3">Processing Your Application</h2>
+                    <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                      {brePollingMessage || 'Please wait while we verify your bank statement...'}
+                    </p>
+                    <div className="bg-gray-50 rounded-lg p-4 mb-6 inline-block">
+                      <p className="text-sm text-gray-500">This may take a few moments</p>
+                      <p className="text-xs text-gray-400 mt-1">Please do not close this window</p>
+                    </div>
+                  </div>
                 ) : finfactorSuccess ? (
                   /* ========== FINFACTOR SUCCESS - CONSENT UI ========== */
                   <div className="text-center py-8">
@@ -5930,11 +5947,55 @@ console.log('Sending OTP with payload:', payload);
                             const result = await response.json();
                             if (response.ok && result.success) {
                               toast({ variant: "success", title: "Success", description: result.message || "Verification completed successfully." });
-                              // Update approvalData with BRE response if available
-                              if (result.data) {
-                                setApprovalData(result.data);
-                              }
-                              setFinfactorSuccess(false); // Hide this UI and show approval UI
+                              // Start polling finfactor/initialize API
+                              setBrePolling(true);
+                              setBrePollingMessage('Processing your bank statement...');
+
+                              const pollBREStatus = async () => {
+                                let shouldContinuePolling = true;
+                                while (shouldContinuePolling) {
+                                  try {
+                                    const breResponse = await fetch(`https://alpha.quikkred.in/api/kyc/finfactor/initialize`, {
+                                      method: 'GET',
+                                      headers: { 'Authorization': `Bearer ${token}` }
+                                    });
+                                    const breResult = await breResponse.json();
+
+                                    if (breResult.message === 'Statement not fetched yet') {
+                                      setBrePollingMessage('Fetching your bank statement...');
+                                      // Wait 10 seconds before next poll
+                                      await new Promise(resolve => setTimeout(resolve, 10000));
+                                    } else if (breResult.message === 'BRE checked successfully') {
+                                      // BRE check complete - update approval data and stop polling
+                                      shouldContinuePolling = false;
+                                      setBrePolling(false);
+                                      setBrePollingMessage('');
+                                      if (breResult.data) {
+                                        setApprovalData(breResult.data);
+                                      }
+                                      setFinfactorSuccess(false);
+                                      toast({ variant: "success", title: "Success", description: "BRE verification completed successfully." });
+                                    } else {
+                                      // Any other response - stop polling and update UI
+                                      shouldContinuePolling = false;
+                                      setBrePolling(false);
+                                      setBrePollingMessage('');
+                                      if (breResult.data) {
+                                        setApprovalData(breResult.data);
+                                      }
+                                      setFinfactorSuccess(false);
+                                    }
+                                  } catch (pollError) {
+                                    console.error('BRE polling error:', pollError);
+                                    setBrePollingMessage('Retrying...');
+                                    // Wait 10 seconds before retry on error
+                                    await new Promise(resolve => setTimeout(resolve, 10000));
+                                  }
+                                }
+                              };
+
+                              // Start polling
+                              pollBREStatus();
                             } else {
                               toast({ variant: "error", title: "Failed", description: result.message || "Verification failed. Please try again." });
                             }
