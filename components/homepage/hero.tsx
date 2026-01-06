@@ -18,6 +18,7 @@ export default function Hero() {
   })
   const [currentStep, setCurrentStep] = useState(1)
   const [fieldError, setFieldError] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false)
   const languageDropdownRef = useRef<HTMLDivElement>(null)
   const heroRef = useRef<HTMLElement>(null)
@@ -46,6 +47,8 @@ export default function Hero() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
+
+    // Mobile validation - only numbers allowed
     if (name === 'mobile') {
       if (value && !/^\d*$/.test(value)) {
         setFieldError(t?.hero?.form?.errors?.numbersOnly || "Mobile number can only contain numbers")
@@ -58,23 +61,53 @@ export default function Hero() {
         setFieldError("")
       }
     }
+
+    // Name validation - only alphabets and spaces allowed
     if (name === 'name') {
-      if (value && /\d/.test(value)) {
-        setFieldError(t?.hero?.form?.errors?.nameNoNumbers || "Name cannot contain numbers")
+      if (value && !/^[a-zA-Z\s]*$/.test(value)) {
+        setFieldError(t?.hero?.form?.errors?.nameAlphabetsOnly || "Name can only contain alphabets")
         return
+      } else if (value && value.trim().length < 3) {
+        setFieldError(t?.hero?.form?.errors?.nameMinLength || "Name must be at least 3 characters")
       } else {
         setFieldError("")
       }
     }
-    if (name !== 'mobile' && name !== 'name') {
-      setFieldError("")
+
+    // Loan Amount validation - only numbers allowed
+    if (name === 'loanAmount') {
+      // Remove commas for validation, allow only digits and commas
+      const cleanValue = value.replace(/,/g, '')
+      if (value && !/^[\d,]*$/.test(value)) {
+        setFieldError(t?.hero?.form?.errors?.amountNumbersOnly || "Amount can only contain numbers")
+        return
+      } else if (cleanValue && parseInt(cleanValue) < 5000) {
+        setFieldError(t?.hero?.form?.errors?.amountMin || "Minimum loan amount is ₹5,000")
+      } else if (cleanValue && parseInt(cleanValue) > 100000) {
+        setFieldError(t?.hero?.form?.errors?.amountMax || "Maximum loan amount is ₹1,00,000")
+      } else {
+        setFieldError("")
+      }
     }
+
+    // Email validation
+    if (name === 'email') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+      if (value && !emailRegex.test(value)) {
+        setFieldError(t?.hero?.form?.errors?.invalidEmail || "Please enter a valid email address")
+      } else {
+        setFieldError("")
+      }
+    }
+
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
   const handleNext = () => {
     const currentField = steps[currentStep - 1].field
     const fieldValue = formData[currentField as keyof typeof formData]
+
+    // Mobile validation
     if (currentField === 'mobile') {
       if (!fieldValue || fieldValue.length !== 10) {
         setFieldError(t?.hero?.form?.errors?.tenDigits || "Mobile number must be exactly 10 digits")
@@ -85,10 +118,49 @@ export default function Hero() {
         return
       }
     }
-    if (currentField === 'name' && !fieldValue) {
-      setFieldError(t?.hero?.form?.errors?.nameRequired || "Name is required")
-      return
+
+    // Name validation
+    if (currentField === 'name') {
+      if (!fieldValue || fieldValue.trim().length < 3) {
+        setFieldError(t?.hero?.form?.errors?.nameRequired || "Name must be at least 3 characters")
+        return
+      }
+      if (!/^[a-zA-Z\s]+$/.test(fieldValue)) {
+        setFieldError(t?.hero?.form?.errors?.nameAlphabetsOnly || "Name can only contain alphabets")
+        return
+      }
     }
+
+    // Loan Amount validation
+    if (currentField === 'loanAmount') {
+      const cleanValue = fieldValue.replace(/,/g, '')
+      if (!cleanValue) {
+        setFieldError(t?.hero?.form?.errors?.amountRequired || "Loan amount is required")
+        return
+      }
+      if (parseInt(cleanValue) < 5000) {
+        setFieldError(t?.hero?.form?.errors?.amountMin || "Minimum loan amount is ₹5,000")
+        return
+      }
+      if (parseInt(cleanValue) > 100000) {
+        setFieldError(t?.hero?.form?.errors?.amountMax || "Maximum loan amount is ₹1,00,000")
+        return
+      }
+    }
+
+    // Email validation
+    if (currentField === 'email') {
+      if (!fieldValue) {
+        setFieldError(t?.hero?.form?.errors?.emailRequired || "Email is required")
+        return
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+      if (!emailRegex.test(fieldValue)) {
+        setFieldError(t?.hero?.form?.errors?.invalidEmail || "Please enter a valid email address")
+        return
+      }
+    }
+
     if (fieldError) return
     if (fieldValue) {
       if (currentStep === 4) {
@@ -100,13 +172,35 @@ export default function Hero() {
     }
   }
 
-  const handleSubmit = () => {
-    localStorage.setItem('heroFormData', JSON.stringify({
+  const handleSubmit = async () => {
+    setIsSubmitting(true)
+
+    // Remove commas from amount for API (e.g., "12,000" -> "12000")
+    const sanitizedAmount = formData.loanAmount.replace(/,/g, '')
+
+    const formPayload = {
       name: formData.name,
       mobile: formData.mobile,
-      amount: formData.loanAmount,
+      amount: sanitizedAmount,
       email: formData.email
-    }))
+    }
+
+    try {
+      // Call API to store instant form data
+      await fetch('https://api.quikkred.in/api/instantForm/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formPayload),
+      })
+    } catch (error) {
+      // Continue with flow even if API fails
+      console.error('Error saving instant form data:', error)
+    }
+
+    // Save to localStorage and navigate (regardless of API success)
+    localStorage.setItem('heroFormData', JSON.stringify(formPayload))
     router.push('/apply/quick')
   }
 
@@ -339,7 +433,7 @@ export default function Hero() {
           {/* Form Card - Centered */}
           <motion.div
             variants={itemVariants}
-            className="w-full max-w-xl mx-auto bg-white rounded-3xl shadow-2xl border border-slate-100 p-6 sm:p-8 mb-12 relative"
+            className="w-full max-w-xl mx-auto bg-white sm:rounded-3xl  sm:shadow-2xl sm:border border-slate-100 p-6 sm:p-8 mb-12 relative"
           >
             {/* Decorative glow */}
             <div className="absolute -inset-1 bg-gradient-to-r from-teal-500/20 via-emerald-500/20 to-teal-500/20 rounded-3xl blur-xl opacity-50" />
@@ -363,15 +457,26 @@ export default function Hero() {
                 {/* Progress bars */}
                 <div className="flex gap-2 flex-1">
                   {steps.map((_, index) => (
-                    <motion.div
+                    <button
                       key={index}
-                      initial={{ scaleX: 0 }}
-                      animate={{ scaleX: 1 }}
-                      transition={{ delay: index * 0.1, duration: 0.4 }}
-                      className={`h-2 flex-1 rounded-full transition-all duration-500 ${
-                        currentStep >= index + 1 ? "bg-gradient-to-r from-teal-500 to-emerald-500" : "bg-slate-200"
-                      }`}
-                    />
+                      type="button"
+                      disabled={index + 1 >= currentStep}
+                      onClick={() => {
+                        if (index + 1 < currentStep) {
+                          setCurrentStep(index + 1);
+                        }
+                      }}
+                      className={`flex-1 ${index + 1 < currentStep ? 'cursor-pointer' : 'cursor-default'}`}
+                    >
+                      <motion.div
+                        initial={{ scaleX: 0 }}
+                        animate={{ scaleX: 1 }}
+                        transition={{ delay: index * 0.1, duration: 0.4 }}
+                        className={`h-2 w-full rounded-full transition-all duration-500 ${
+                          currentStep >= index + 1 ? "bg-gradient-to-r from-teal-500 to-emerald-500" : "bg-slate-200"
+                        } ${index + 1 < currentStep ? 'hover:from-teal-600 hover:to-emerald-600' : ''}`}
+                      />
+                    </button>
                   ))}
                 </div>
 
@@ -433,18 +538,31 @@ export default function Hero() {
                   )}
                   {!fieldError && <div className="mb-5"></div>}
                   <motion.button
-                    whileHover={{ scale: 1.02, boxShadow: "0 20px 40px -15px rgba(20, 184, 166, 0.4)" }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={!isSubmitting ? { scale: 1.02, boxShadow: "0 20px 40px -15px rgba(20, 184, 166, 0.4)" } : {}}
+                    whileTap={!isSubmitting ? { scale: 0.98 } : {}}
                     onClick={handleNext}
-                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white py-4 sm:py-5 text-lg sm:text-xl font-bold rounded-2xl shadow-lg transition-all"
+                    disabled={isSubmitting}
+                    className={`w-full flex items-center justify-center gap-2 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white py-4 sm:py-5 text-lg sm:text-xl font-bold rounded-2xl shadow-lg transition-all ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
                   >
-                    <span>{currentStep === 4 ? (t?.hero?.form?.cta || "Check Eligibility") : "Next"}</span>
-                    <motion.div
-                      animate={{ x: [0, 5, 0] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
-                    >
-                      <ArrowRight className="w-5 h-5" />
-                    </motion.div>
+                    {isSubmitting ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Please wait...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>{currentStep === 4 ? (t?.hero?.form?.cta || "Check Eligibility") : "Next"}</span>
+                        <motion.div
+                          animate={{ x: [0, 5, 0] }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                        >
+                          <ArrowRight className="w-5 h-5" />
+                        </motion.div>
+                      </>
+                    )}
                   </motion.button>
                 </motion.div>
               </AnimatePresence>

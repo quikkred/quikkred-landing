@@ -39,24 +39,29 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
   const validateForm = (): boolean => {
     const errors: FormErrors = {};
 
+    const nameRegex = /^[A-Za-z\s]+$/;
     if (!formData.name.trim()) {
       errors.name = "Name is required";
     } else if (formData.name.trim().length < 2) {
       errors.name = "Name must be at least 2 characters";
+    } else if (!nameRegex.test(formData.name.trim())) {
+      errors.name = "Name should contain only alphabets";
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!formData.email.trim()) {
       errors.email = "Email is required";
     } else if (!emailRegex.test(formData.email)) {
       errors.email = "Please enter a valid email address";
     }
 
-    const phoneRegex = /^[\d\s\+\-\(\)]{10,}$/;
+    const digitsOnly = formData.phone.replace(/\D/g, '');
     if (!formData.phone.trim()) {
       errors.phone = "Phone number is required";
-    } else if (!phoneRegex.test(formData.phone)) {
-      errors.phone = "Please enter a valid phone number (min 10 digits)";
+    } else if (digitsOnly.length < 10) {
+      errors.phone = "Phone number must be at least 10 digits";
+    } else if (digitsOnly.length > 12) {
+      errors.phone = "Phone number must not exceed 12 digits";
     }
 
     if (!formData.message.trim()) {
@@ -71,9 +76,22 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
+
+    let processedValue = value;
+
+    // For name field - allow only alphabets and spaces
+    if (name === 'name') {
+      processedValue = value.replace(/[^A-Za-z\s]/g, '');
+    }
+
+    // For phone field - allow only numbers, max 12 digits
+    if (name === 'phone') {
+      processedValue = value.replace(/\D/g, '').slice(0, 12);
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: processedValue,
     }))
 
     if (formErrors[name as keyof FormErrors]) {
@@ -115,7 +133,7 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
 
       const apiSubject = formData.subject ? subjectMap[formData.subject] : "GENERAL_INQUIRY";
 
-      const response = await fetch('https://alpha.quikkred.in/api/contactUs/create', {
+      const response = await fetch('https://api.quikkred.in/api/contactUs/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -276,12 +294,13 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
                         name="phone"
                         value={formData.phone}
                         onChange={handleChange}
+                        maxLength={12}
                         className={`w-full pl-11 pr-4 py-3 border-2 rounded-xl focus:outline-none transition-all ${
                           formErrors.phone
                             ? 'border-red-300 focus:border-red-500 bg-red-50'
                             : 'border-gray-200 focus:border-[#25B181] hover:border-gray-300'
                         }`}
-                        placeholder="+91 98765 43210"
+                        placeholder="Enter your mobile number"
                       />
                     </div>
                     {formErrors.phone && (
