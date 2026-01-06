@@ -2,7 +2,7 @@
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.quikkred.in';
 
 // WebSocket Configuration
-export const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'wss://alpha.quikkred.in';
+export const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'wss://api.quikkred.in';
 
 
 // Helper function to build API URLs
