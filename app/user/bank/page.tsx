@@ -62,7 +62,7 @@ export default function BankAccountsPage() {
         return;
       }
 
-      const response = await fetch('https://api.quikkred.in/api/bankAccount/getAll', {
+      const response = await fetch('https://alpha.quikkred.in/api/bankAccount/getAll', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -177,7 +177,7 @@ export default function BankAccountsPage() {
 
       if (editingAccount) {
         // Update existing account
-        response = await fetch(`https://api.quikkred.in/api/bankAccount/update/${editingAccount._id}`, {
+        response = await fetch(`https://alpha.quikkred.in/api/bankAccount/update/${editingAccount._id}`, {
           method: 'PATCH',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -193,7 +193,7 @@ export default function BankAccountsPage() {
         });
       } else {
         // Create new account
-        response = await fetch('https://api.quikkred.in/api/bankAccount/create', {
+        response = await fetch('https://alpha.quikkred.in/api/bankAccount/create', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,

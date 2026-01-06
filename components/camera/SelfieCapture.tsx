@@ -166,7 +166,7 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
       const formData = new FormData();
       formData.append('photo', file);
 
-      const response = await fetch('https://api.quikkred.in/api/kyc/face/verification', {
+      const response = await fetch('https://alpha.quikkred.in/api/kyc/face/verification', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

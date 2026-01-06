@@ -42,7 +42,7 @@ export function FinancialCTA({
     setError("")
 
     try {
-      const response = await fetch('https://api.quikkred.in/api/subscribe/create', {
+      const response = await fetch('https://alpha.quikkred.in/api/subscribe/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
