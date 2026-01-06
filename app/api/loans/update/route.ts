@@ -16,7 +16,7 @@ export async function PUT(request: NextRequest) {
     const authHeader = request.headers.get('Authorization');
 
     // Forward the update request to the backend API
-    const response = await fetch(`https://api.quikkred.in/api/application/loan/update/${applicationId}`, {
+    const response = await fetch(`https://alpha.quikkred.in/api/application/loan/update/${applicationId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
