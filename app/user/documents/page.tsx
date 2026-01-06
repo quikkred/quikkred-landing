@@ -8,6 +8,7 @@ import {
   XCircle, Clock, Eye, AlertCircle, Plus, FolderOpen, RefreshCw
 } from 'lucide-react';
 import { toast, Toaster } from '@/components/ui/toast';
+import { API_BASE_URL } from '@/lib/config';
 
 interface Document {
   id: string;
@@ -41,7 +42,7 @@ export default function DocumentsPage() {
         return;
       }
 
-      const response = await fetch('https://alpha.quikkred.in/api/document/get', {
+      const response = await fetch(`${API_BASE_URL}/api/document/get`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -342,7 +343,7 @@ export default function DocumentsPage() {
         return;
       }
 
-      const response = await fetch('https://alpha.quikkred.in/api/document/delete', {
+      const response = await fetch(`${API_BASE_URL}/api/document/delete`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -418,7 +419,7 @@ export default function DocumentsPage() {
       const formData = new FormData();
       formData.append(docType, file);
 
-      const response = await fetch('https://alpha.quikkred.in/api/document/upload', {
+      const response = await fetch(`${API_BASE_URL}/api/document/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

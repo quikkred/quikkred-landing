@@ -7,6 +7,7 @@ import {
   Clock, ArrowLeft, Loader2
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { API_BASE_URL } from '@/lib/config';
 
 interface Notification {
   _id: string;
@@ -42,7 +43,7 @@ export default function NotificationsPage() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-      const response = await fetch('https://alpha.quikkred.in/api/notification/getAll', {
+      const response = await fetch(`${API_BASE_URL}/api/notification/getAll`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
