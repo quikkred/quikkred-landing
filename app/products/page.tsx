@@ -27,6 +27,7 @@ import {
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import Products from "@/components/Product/Products";
+import { API_BASE_URL } from '@/lib/config';
 
 // Icon mapping based on product name
 const getProductIcon = (productName: string) => {
@@ -85,7 +86,7 @@ export default function ProductsPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch("https://alpha.quikkred.in/api/loanProduct/getAll");
+        const response = await fetch(`${API_BASE_URL}/api/loanProduct/getAll`);
         const data = await response.json();
         if (data.success) {
           // Filter only active products

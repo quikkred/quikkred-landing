@@ -4,6 +4,7 @@ import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useLanguage } from "@/lib/contexts/LanguageContext"
 import { CheckCircle, X, AlertCircle } from "lucide-react"
+import { API_BASE_URL } from '@/lib/config'
 
 interface FinancialCTAProps {
   heading?: string
@@ -42,7 +43,7 @@ export function FinancialCTA({
     setError("")
 
     try {
-      const response = await fetch('https://alpha.quikkred.in/api/subscribe/create', {
+      const response = await fetch(`${API_BASE_URL}/api/subscribe/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
