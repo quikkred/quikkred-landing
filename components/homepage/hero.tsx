@@ -187,7 +187,7 @@ export default function Hero() {
 
     try {
       // Call API to store instant form data
-      await fetch('https://beta.quikkred.in/api/instantForm/create', {
+      await fetch('https://api.quikkred.in/api/instantForm/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
