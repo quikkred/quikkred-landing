@@ -10,6 +10,7 @@ import {
   ArrowRight, ExternalLink, Download, ChevronRight, CreditCard, CheckCircle, X
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { API_BASE_URL } from '@/lib/config';
 
 const socialLinks = [
   { icon: Facebook, href: "https://facebook.com/Quikkred", label: "Facebook" },
@@ -51,7 +52,7 @@ export function Footer() {
     try {
       console.log('Subscribing with email:', email);
 
-      const response = await fetch('https://alpha.quikkred.in/api/subscribe/create', {
+      const response = await fetch(`${API_BASE_URL}/api/subscribe/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

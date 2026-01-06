@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/toast';
+import { API_BASE_URL } from '@/lib/config';
 
 declare global {
   interface Window {
@@ -139,7 +140,7 @@ export default function UserDashboard() {
         return;
       }
 
-      const response = await fetch(`https://alpha.quikkred.in/api/loans/active/${loanNumber}`, {
+      const response = await fetch(`${API_BASE_URL}/api/loans/active/${loanNumber}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -247,7 +248,7 @@ export default function UserDashboard() {
         return;
       }
 
-      const response = await fetch('https://alpha.quikkred.in/api/customer/dashboard', {
+      const response = await fetch(`${API_BASE_URL}/api/customer/dashboard`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -428,7 +429,7 @@ export default function UserDashboard() {
         description: `Processing payment of ₹${totalAmount.toLocaleString()}...`
       });
 
-      const payinResponse = await fetch('https://alpha.quikkred.in/api/emi/customerEmiPayment', {
+      const payinResponse = await fetch(`${API_BASE_URL}/api/emi/customerEmiPayment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -492,7 +493,7 @@ export default function UserDashboard() {
 
           // Step 4: Call verify API
           try {
-            const verifyResponse = await fetch('https://alpha.quikkred.in/api/disbursement/verify', {
+            const verifyResponse = await fetch(`${API_BASE_URL}/api/disbursement/verify`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json'

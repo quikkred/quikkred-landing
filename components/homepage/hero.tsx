@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { useLanguage } from "@/lib/contexts/LanguageContext"
 import { Globe, ChevronDown, ArrowRight, Shield, Clock, CheckCircle2 } from "lucide-react"
+import { API_BASE_URL } from '@/lib/config'
 
 export default function Hero() {
   const router = useRouter()
@@ -187,7 +188,7 @@ export default function Hero() {
 
     try {
       // Call API to store instant form data
-      await fetch('https://alpha.quikkred.in/api/instantForm/create', {
+      await fetch(`${API_BASE_URL}/api/instantForm/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
