@@ -2,7 +2,7 @@
 
 ## Base URL
 ```
-Production: https://beta.quikkred.in/v1
+Production: https://api.quikkred.in/v1
 Staging: https://api-staging.Quikkred.com/v1
 ```
 
