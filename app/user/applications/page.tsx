@@ -99,10 +99,11 @@ interface DetailedApplication {
       s3Key: string;
       s3URL: string;
       status: string;
+      uploadedAt: string;
     };
     documentType: string;
     documentName: string;
-    uploadedAt: string;
+  
   }>;
   internalNotes: Array<{
     note: string;
@@ -663,7 +664,8 @@ export default function MyApplicationsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <div>
                         <p className="text-sm text-gray-600">Full Name</p>
-                        <p className="font-semibold text-gray-900">{detailedApplication.customerId.fullName}</p>
+                        <p className="font-semibold text-gray-900">{detailedApplication.customerId.fullName .toLowerCase()
+    .replace(/\b\w/g, char => char.toUpperCase())}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Email</p>
@@ -706,24 +708,21 @@ export default function MyApplicationsPage() {
                         <p className="text-sm text-gray-600">Tenure</p>
                         <p className="font-semibold text-gray-900">{detailedApplication.tenure || '-'}{" "}{detailedApplication.tenureUnit || ''}</p>
                       </div>
-                      <div>
-                        <p className="text-sm text-gray-600">EMI Amount</p>
-                        <p className="text-lg font-bold text-blue-700">₹{(detailedApplication.emiAmount || 0).toLocaleString()}</p>
-                      </div>
-                      <div>
+                     
+                      {/* <div>
                         <p className="text-sm text-gray-600">Purpose</p>
                         <p className="font-semibold text-gray-900">{detailedApplication.purpose || '-'}</p>
-                      </div>
+                      </div> */}
                       <div>
-                        <p className="text-sm text-gray-600">Interest Rate (p.d%)</p>
+                        <p className="text-sm text-gray-600">Interest Rate (per day)</p>
                         <p className="font-semibold text-gray-900">{detailedApplication.interestRate || 0}%</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">Processing Fee({detailedApplication.productId?.processingFee || 0}%)</p>
+                        <p className="text-sm text-gray-600">Processing Fee</p>
                         <p className="font-semibold text-gray-900">₹{(detailedApplication.processingFee || 0).toLocaleString()}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">GST on Fee({detailedApplication.productId?.gst || 0}%)</p>
+                        <p className="text-sm text-gray-600">GST on Processing Fee</p>
                         <p className="font-semibold text-gray-900">₹{(detailedApplication.gstOnProcessingFee || 0).toLocaleString()}</p>
                       </div>
 <div>
@@ -776,9 +775,15 @@ export default function MyApplicationsPage() {
                           <div key={idx} className="bg-white rounded-lg p-4 border border-amber-100">
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
-                                <p className="font-semibold text-gray-800">{doc.documentType.replace(/_/g, ' ')}</p>
+                              <p className="font-semibold text-gray-800">
+  {doc.documentType
+    .replace(/_/g, ' ')
+    .toLowerCase()
+    .replace(/^./, str => str.toUpperCase())}
+</p>
+
                                 <p className="text-xs text-gray-500 mt-1">
-                                  Uploaded: {new Date(doc.uploadedAt).toLocaleDateString()}
+                                  Uploaded: {new Date(doc.documentId.uploadedAt).toLocaleDateString()}
                                 </p>
                                 <span className={`inline-block mt-2 px-2 py-1 rounded-full text-xs font-medium ${
                                   doc.documentId.status === 'VERIFIED' ? 'text-green-600 bg-green-100' :

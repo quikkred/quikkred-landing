@@ -298,10 +298,12 @@
             grid-template-columns: 1fr 1fr;
             gap: 40px;
             margin-top: 20px;
+            align-items: stretch;
         }
 
         .signature-box {
             text-align: center;
+            height: 100%;
         }
 
         .esign-box {
@@ -311,6 +313,11 @@
             background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
             border-radius: 12px;
             min-height: 180px;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .esign-box .icon {
@@ -332,7 +339,7 @@
         }
 
         .esign-box .details {
-            margin-top: 15px;
+            margin-top: auto;
             font-size: 9px;
             color: #666;
             line-height: 1.6;

@@ -99,7 +99,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
         }
 
         console.log('Fetching notifications...');
-        const response = await fetch('https://alpha.quikkred.in/api/notification/getAll', {
+        const response = await fetch('https://api.quikkred.in/api/notification/getAll', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -313,7 +313,8 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                 <span className={`font-medium ${
                   pathname === item.href ? 'text-white' : 'text-[#0A0A0A]'
                 }`}>
-                  {item.title}
+                  {item.title.toLowerCase()
+    .replace(/\b\w/g, char => char.toUpperCase())}
                 </span>
               )}
             </button>
@@ -414,7 +415,8 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                   <span className={`font-medium ${
                     pathname === item.href ? 'text-white' : 'text-[#0A0A0A]'
                   }`}>
-                    {item.title}
+                    {item.title.toLowerCase()
+    .replace(/\b\w/g, char => char.toUpperCase())}
                   </span>
                 </button>
               ))}
@@ -646,11 +648,11 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                     </div>
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#25B181] to-[#51C9AF] flex items-center justify-center text-white font-bold text-sm shadow-md">
-                      {userData.name.split(' ').map(n => n[0]).join('')}
+                      {userData.name.split(' ').map(n => n[0]?.toUpperCase()).join('')}
                     </div>
                   )}
                   <div className="text-left hidden md:block">
-                    <p className="text-sm font-medium text-gray-800">{userData.name.split(' ')[0]}</p>
+                    <p className="text-sm font-medium text-gray-800">{userData.name.split(' ')[0]?.charAt(0).toUpperCase() + userData.name.split(' ')[0]?.slice(1).toLowerCase()}</p>
                     {/* <p className="text-xs text-gray-500">ID: {userData.customerId}</p> */}
                   </div>
                   <ChevronDown className="w-4 h-4 text-gray-600 hidden sm:block" />
@@ -665,7 +667,8 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                       className="absolute right-0 top-full mt-2 w-[calc(100vw-24px)] sm:w-64 max-w-[256px] bg-white rounded-xl shadow-xl border border-[#E0E0E0] p-2 z-50"
                     >
                       <div className="p-3 border-b border-[#E0E0E0]">
-                        <p className="font-medium text-gray-800">{userData.name}</p>
+                        <p className="font-medium text-gray-800">{userData.name.toLowerCase()
+    .replace(/\b\w/g, char => char.toUpperCase())}</p>
                         <p className="text-sm text-gray-600">{userData.email}</p>
 
                         {/* <div className="flex items-center gap-2 mt-2">
