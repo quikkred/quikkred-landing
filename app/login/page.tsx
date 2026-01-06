@@ -371,7 +371,10 @@ const verifyOtp = async () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
 
                   {/* Login Method Toggle */}
-                  <div className="flex bg-gray-50 rounded-lg p-1 border border-gray-200">
+
+
+                  
+                  {/* <div className="flex bg-gray-50 rounded-lg p-1 border border-gray-200">
                     <button
                       type="button"
                       onClick={() => {
@@ -408,7 +411,7 @@ const verifyOtp = async () => {
                       <Phone className="w-4 h-4 inline mr-2" />
                       Phone
                     </button>
-                  </div>
+                  </div> */}
 
                   {/* Auth Method Toggle (Password or OTP) */}
                   {/* <div className="flex bg-emerald-50 rounded-lg p-1 border border-emerald-200">
