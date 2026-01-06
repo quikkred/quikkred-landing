@@ -5030,7 +5030,7 @@ console.log('Sending OTP with payload:', payload);
                 ) : (
                   <>
                     {/* Verification Method Toggle - Only show for non-logged in users */}
-                    <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                    {/* <div className="bg-gray-50 rounded-xl p-4 mb-6">
                       <label className="block text-sm font-medium text-gray-700 mb-3">
                         Choose Verification Method *
                       </label>
@@ -5068,7 +5068,7 @@ console.log('Sending OTP with payload:', payload);
                           Verify with Mobile
                         </button>
                       </div>
-                    </div>
+                    </div> */}
                   </>
                 )}
 
