@@ -5131,7 +5131,7 @@ console.log('Sending OTP with payload:', payload);
                 router.push('/login'); // Redirect to login if not logged in
               }
             }}
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-white rounded-lg transition-all shadow-sm"
+            className="flex items-center bg-white gap-2 px-4 py-2 text-gray-600 hover:text-white hover:bg-[#25b181] rounded-lg transition-all shadow-sm"
           >
             <X className="w-5 h-5" />
             <span className="text-sm font-medium">Close</span>
@@ -5206,7 +5206,7 @@ console.log('Sending OTP with payload:', payload);
                 ) : (
                   <>
                     {/* Verification Method Toggle - Only show for non-logged in users */}
-                    <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                    {/* <div className="bg-gray-50 rounded-xl p-4 mb-6">
                       <label className="block text-sm font-medium text-gray-700 mb-3">
                         Choose Verification Method *
                       </label>
@@ -5244,7 +5244,7 @@ console.log('Sending OTP with payload:', payload);
                           Verify with Mobile
                         </button>
                       </div>
-                    </div>
+                    </div> */}
                   </>
                 )}
 
