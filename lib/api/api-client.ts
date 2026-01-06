@@ -15,7 +15,7 @@ class ApiClient {
     // In Next.js, we use relative URLs for API routes
     this.baseURL = '';
     // External API URL
-    this.externalBaseURL = 'https://beta.quikkred.in';
+    this.externalBaseURL = 'https://api.quikkred.in';
     // 'https://77q1g1gk-5050.inc1.devtunnels.m's;
     // http://93.127.167.88:505
     if (typeof window !== 'undefined') {
