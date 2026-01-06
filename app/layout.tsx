@@ -150,7 +150,7 @@ gtag('config', 'AW-17796230994');`,
               name: 'Quikkred',
               description: 'Instant personal loans with quick approval in 3 easy steps',
               url: 'https://www.quikkred.in',
-              logo: 'https://www.quikkred.in/logo.png',
+              logo: 'https://api.quikkred.in/logo.png',
               address: {
                 '@type': 'PostalAddress',
                 addressCountry: 'IN',

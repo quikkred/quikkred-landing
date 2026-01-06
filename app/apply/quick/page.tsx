@@ -57,6 +57,48 @@ const autoDecisionEngine = (data: any) => {
     processingFee: Math.round(loanAmount * 0.02)
   };
 };
+
+
+const BANKS = [
+  // ===== PSU Banks =====
+  { value: 'state bank of india', name: 'State Bank of India' },
+  { value: 'punjab national bank', name: 'Punjab National Bank' },
+  { value: 'bank of baroda', name: 'Bank of Baroda' },
+  { value: 'union bank of india', name: 'Union Bank of India' },
+  { value: 'bank of india', name: 'Bank of India' },
+  { value: 'canara bank', name: 'Canara Bank' },
+  { value: 'indian bank', name: 'Indian Bank' },
+  { value: 'indian overseas bank', name: 'Indian Overseas Bank' },
+  { value: 'uco bank', name: 'UCO Bank' },
+  { value: 'bank of maharashtra', name: 'Bank of Maharashtra' },
+  { value: 'punjab & sind bank', name: 'Punjab & Sind Bank' },
+
+  // ===== Private Banks =====
+  { value: 'hdfc bank', name: 'HDFC Bank' },
+  { value: 'icici bank', name: 'ICICI Bank' },
+  { value: 'axis bank', name: 'Axis Bank' },
+  { value: 'kotak mahindra bank', name: 'Kotak Mahindra Bank' },
+  { value: 'yes bank', name: 'Yes Bank' },
+  { value: 'indusind bank', name: 'IndusInd Bank' },
+  { value: 'idfc first bank', name: 'IDFC First Bank' },
+  { value: 'federal bank', name: 'Federal Bank' },
+  { value: 'dcb bank', name: 'DCB Bank' },
+  { value: 'rbl bank', name: 'RBL Bank' },
+  { value: 'catholic syrian bank (csb bank)', name: 'Catholic Syrian Bank (CSB Bank)' },
+  { value: 'south indian bank', name: 'South Indian Bank' },
+
+  // ===== Small Finance / Payments Banks =====
+  { value: 'au small finance bank', name: 'AU Small Finance Bank' },
+  { value: 'equitas small finance bank', name: 'Equitas Small Finance Bank' },
+  { value: 'fino payments bank', name: 'Fino Payments Bank' },
+  { value: 'airtel payments bank', name: 'Airtel Payments Bank' },
+  { value: 'paytm payments bank', name: 'Paytm Payments Bank' },
+
+  // ===== Others =====
+  { value: 'idbi bank', name: 'IDBI Bank' }
+];
+
+
 export default function QuickLoanApplication() {
   // Generate unique document number for this session (stable across re-renders)
   const documentNumber = useMemo(() => `DOC${new Date().getFullYear()}${Date.now()}`, []);
@@ -112,8 +154,19 @@ export default function QuickLoanApplication() {
   const [approvalData, setApprovalData] = useState<any>(null);
   const [approvalLoading, setApprovalLoading] = useState(false);
 
+  // User's desired loan amount (can be less than or equal to approved amount)
+  const [userDesiredAmount, setUserDesiredAmount] = useState<number | null>(null);
+  const [calculatedLoanDetails, setCalculatedLoanDetails] = useState<any>(null);
+  const [showAmountModal, setShowAmountModal] = useState(false);
+  const [tempAmount, setTempAmount] = useState<string>('');
+
   // BRE Status States
   const [rejectionCountdown, setRejectionCountdown] = useState(10);
+  const [ptbLoading, setPtbLoading] = useState(false);
+  const [finfactorSuccess, setFinfactorSuccess] = useState(false);
+  const [consentLoading, setConsentLoading] = useState(false);
+  const [brePolling, setBrePolling] = useState(false);
+  const [brePollingMessage, setBrePollingMessage] = useState('');
 
   // User location state
   const [userLocation, setUserLocation] = useState<{latitude: number; longitude: number} | null>(null);
@@ -139,6 +192,7 @@ export default function QuickLoanApplication() {
   const [bankVerifying, setBankVerifying] = useState(false);
   const [bankVerified, setBankVerified] = useState(false);
   const [bankVerifyError, setBankVerifyError] = useState("");
+  const [bankDropdownOpen, setBankDropdownOpen] = useState(false);
 
   // Consent validation error
   const [consentError, setConsentError] = useState(false);
@@ -165,6 +219,7 @@ export default function QuickLoanApplication() {
       monthlyIncome: "",
       companyName: "",
       bankName: "",
+      customBankName: "",
       accountHolderName: "",
       accountNumber: "",
       ifsc: "",
@@ -210,6 +265,18 @@ export default function QuickLoanApplication() {
 
   const [formData, setFormData] = useState(getInitialFormData());
 
+  // Close bank dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (bankDropdownOpen && !target.closest('.bank-dropdown-container')) {
+        setBankDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [bankDropdownOpen]);
+
   // Load user data if logged in
   useEffect(() => {
     const loadUserData = async () => {
@@ -235,11 +302,6 @@ export default function QuickLoanApplication() {
             if (response.ok && result.success && result.data) {
               const profileData = result.data;
               console.log('✅ User profile loaded successfully');
-              console.log('📊 Profile Data:', {
-                isBasicDetailsFilled: profileData.isBasicDetailsFilled,
-                isEmploymentDetailsFilled: profileData.isEmploymentDetailsFilled,
-                isVerificationDetailsFilled: profileData.isVerificationDetailsFilled
-              });
 
               // Convert ISO date to YYYY-MM-DD format for input field
               const formatDateForInput = (isoDate: string) => {
@@ -531,6 +593,15 @@ export default function QuickLoanApplication() {
     }
   }, [currentStep, approvalData?.status, rejectionCountdown, router]);
 
+  // Check for finfactor=success query param (redirect from finfudge)
+  useEffect(() => {
+    const finfactorParam = searchParams.get('finfactor');
+    if (finfactorParam === 'success') {
+      setFinfactorSuccess(true);
+      setCurrentStep(4); // Go to step 4 to show the consent UI
+    }
+  }, [searchParams]);
+
   // Check Aadhaar verification status when verified=true query param is present
   // Only calls API after user profile data is loaded AND if isAadhaarVerify !== true
   useEffect(() => {
@@ -720,8 +791,7 @@ export default function QuickLoanApplication() {
         const result = await response.json();
 
         // Check if e-Sign document is already signed
-        if (response.ok && result.success && result.message === "E-sign document is already signed and saved") {
-          console.log('[eSign] e-Sign document verified successfully (status = SUCCESS)');
+        if (response.ok && result.success && result.message === "E-sign document fetched successfully") {
           setESignVerified(true);
           setUserESignStatus('SUCCESS');
           toast({
@@ -732,12 +802,21 @@ export default function QuickLoanApplication() {
         } else {
           console.log('[eSign] e-Sign not completed:', result.message || 'Document not signed');
           setESignVerified(false);
-          // Show info message if e-Sign is pending
-          toast({
-            variant: "warning",
-            title: "e-Sign Pending",
-            description: "Please complete e-Sign verification.",
+        }
+
+        // Call customer/get API once after eSign/document API
+        try {
+          console.log('[eSign] Calling customer/get API to refresh user data...');
+          await fetch('https://api.quikkred.in/api/customer/get', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
           });
+          console.log('[eSign] customer/get API called successfully');
+        } catch (customerError) {
+          console.error('[eSign] Error calling customer/get API:', customerError);
         }
       } catch (error: any) {
         if (error.name === 'AbortError') {
@@ -877,6 +956,7 @@ export default function QuickLoanApplication() {
     fetchBREData();
   }, [currentStep, approvalData, toast]);
 
+
   // Load form data from localStorage on mount
   useEffect(() => {
     const savedData = localStorage.getItem('quickLoanFormData');
@@ -970,10 +1050,10 @@ export default function QuickLoanApplication() {
       }
     };
 
-    const formatCurrency = (value: any) => {
-      if (!value || value === 'N/A' || isNaN(value)) return 'N/A';
-      return Number(value).toLocaleString('en-IN');
-    };
+    // const formatCurrency = (value: any) => {
+    //   if (!value || value === 'N/A' || isNaN(value)) return 'N/A';
+    //   return Number(value).toLocaleString('en-IN');
+    // };
 
     const maskAadhaar = (aadhaar: string) => {
       if (!aadhaar || aadhaar.length < 4) return 'N/A';
@@ -991,6 +1071,15 @@ export default function QuickLoanApplication() {
       const interestRate = parseFloat(data.interestRate) || 1;
       const totalAmount = parseFloat(data.totalAmount) || loanAmount;
 
+      function formatDate(date: Date | string): string {
+  const d = new Date(date);
+  return d.toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+}
+
       if (!loanAmount) {
         return '<tr><td colspan="6" style="text-align: center;">N/A</td></tr>';
       }
@@ -1003,11 +1092,10 @@ export default function QuickLoanApplication() {
         return `
           <tr>
             <td>1</td>
-            <td>N/A</td>
+            <td>${formatDate(dueDate)}</td>
             <td>&#8377;${(loanAmount)}</td>
             <td>&#8377;${(Math.round(interest))}</td>
             <td>&#8377;${(Math.round(totalAmount))}</td>
-            <td>N/A</td>
           </tr>
         `;
       }
@@ -1040,7 +1128,7 @@ export default function QuickLoanApplication() {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=900, initial-scale=1.0">
     <title>Loan Agreement - Quikkred</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -1167,8 +1255,8 @@ export default function QuickLoanApplication() {
         .notice ul { margin: 0; padding-left: 12px; color: #78350f; }
         .notice li { margin: 3px 0; line-height: 1.3; }
         .signature-section { margin-top: 15px; padding-top: 12px; border-top: 1px solid #2d3748; }
-        .signature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px; }
-        .signature-box { text-align: center; }
+ .signature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px; align-items: stretch; }
+        .signature-box { text-align: center; height: 100%; }
         .esign-box {
             border: 1px dashed #25B181;
             padding: 12px 10px;
@@ -1176,12 +1264,17 @@ export default function QuickLoanApplication() {
             background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
             border-radius: 10px;
             min-height: 100px;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         .esign-box:hover { border-style: solid; }
         .esign-box .icon { font-size: 20px; margin-bottom: 5px; }
         .esign-box .text { font-size: 9px; color: #25B181; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
         .esign-box .subtext { font-size: 7px; color: #718096; margin-top: 2px; }
-        .esign-box .details { margin-top: 8px; font-size: 7px; color: #4a5568; line-height: 1.4; }
+        .esign-box .details { margin-top: auto; font-size: 7px; color: #4a5568; line-height: 1.4; }
         .lender-box { border-color: #2d3748; background: white; }
         .lender-box .text { color: #2d3748; }
         .declaration {
@@ -1286,16 +1379,7 @@ export default function QuickLoanApplication() {
             box-shadow: 0 10px 30px rgba(37, 177, 129, 0.45);
         }
         .approve-btn:active { transform: translateY(-1px); }
-        @media (max-width: 768px) {
-            body { padding: 15px; }
-            .page { padding: 25px 20px; border-radius: 12px; }
-            .header { flex-direction: column; gap: 20px; }
-            .doc-info { text-align: left; }
-            .info-grid { grid-template-columns: 1fr; }
-            .loan-grid { grid-template-columns: 1fr 1fr; }
-            .signature-grid { grid-template-columns: 1fr; gap: 25px; }
-            .title h2 { padding: 12px 25px; font-size: 16px; }
-        }
+
         @page {
             size: A4;
             margin: 10mm 15mm;
@@ -1557,12 +1641,15 @@ export default function QuickLoanApplication() {
             padding: 0 10px !important;
             vertical-align: top !important;
         }
-        body.pdf-mode .esign-box {
+body.pdf-mode .esign-box {
             padding: 15px;
             min-height: 140px;
             background: #f0fdf4 !important;
             box-shadow: none !important;
             border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         body.pdf-mode .esign-box:hover {
             border-style: dashed !important;
@@ -1656,10 +1743,8 @@ export default function QuickLoanApplication() {
             <div class="info-grid">
                 <div class="info-row"><span class="info-label">Employment Type</span><span class="info-value">${getValue(data.employmentType)}</span></div>
                 <div class="info-row"><span class="info-label">Company / Business Name</span><span class="info-value">${getValue(data.companyName)}</span></div>
-                <div class="info-row"><span class="info-label">Designation</span><span class="info-value">${getValue(data.designation)}</span></div>
                 <div class="info-row"><span class="info-label">Monthly Income</span><span class="info-value">&#8377;${(data.monthlyIncome)}</span></div>
                 <div class="info-row"><span class="info-label">Salary Credit Date</span><span class="info-value">${getValue(data.salaryDate) !== 'N/A' ? data.salaryDate : '1st'} of every month</span></div>
-                <div class="info-row"><span class="info-label">Work Experience</span><span class="info-value">${getValue(data.workExperience)} years</span></div>
             </div>
         </div>
 
@@ -1692,7 +1777,13 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
             <div class="section-title">Repayment Schedule</div>
             <table class="schedule-table">
                 <thead>
-                    <tr><th>Instalment</th><th>Due Date</th><th>Principal</th><th>Interest</th><th>Total EMI</th><th>Payment Mode</th></tr>
+                    <tr>
+                       <th>Instalment</th>
+                       <th>Due Date</th>
+                       <th>Principal</th>
+                       <th>Interest</th>
+                       <th>Total EMI</th>
+                    </tr>
                 </thead>
                 <tbody>${generateRepaymentSchedule()}</tbody>
             </table>
@@ -1742,10 +1833,9 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
             <div class="signature-grid">
                 <div class="signature-box">
                     <div class="esign-box">
-                        <div class="icon">✍️</div>
-                        <div class="text">Borrower's eSign</div>
-                        <div class="subtext">Aadhaar-based Digital Signature</div>
-                        <div class="details">
+
+                     
+<div class="details">
                             <div><strong>Name:</strong> ${getValue(data.fullName)}</div>
                             <div><strong>Aadhaar:</strong> XXXX-XXXX-${maskAadhaar(data.aadhaar)}</div>
                             <div><strong>Date:</strong> ${currentDate}</div>
@@ -1791,7 +1881,6 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
         <div class="approve-section" id="approve-section">
             <p style="font-size: 14px; color: #333; margin-bottom: 20px;">By clicking "I Agree & Approve", you confirm that you have read and understood all terms and conditions.</p>
             <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                <button class="test-btn" id="test-btn" onclick="testGeneratePDF()" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; border: none; padding: 14px 35px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); transition: all 0.3s ease;">Download PDF</button>
                 <button class="approve-btn" id="approve-btn" onclick="approveAgreement()">I Agree & Approve</button>
             </div>
             <p style="font-size: 11px; color: #666; margin-top: 15px;">Download PDF button saves a copy locally. Approve button downloads PDF, uploads to server and proceeds.</p>
@@ -2255,6 +2344,9 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
             background: #f0fff4;
             border-radius: 6px;
             min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .esign-box .icon {
@@ -2930,15 +3022,7 @@ y += boxHeight + 4;
         if (approveSection) approveSection.style.display = 'block';
 
         // 🔹 Download PDF locally for user's copy
-        const downloadUrl = URL.createObjectURL(pdfBlob);
-        const downloadLink = document.createElement('a');
-        downloadLink.href = downloadUrl;
-        downloadLink.download = 'Quikkred-Loan-Agreement-' + documentNumber + '.pdf';
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-        URL.revokeObjectURL(downloadUrl);
-
+     
         // 🔹 Upload PDF to API
         const formData = new FormData();
         formData.append('eSignDoc', pdfBlob, 'loan-agreement.pdf');
@@ -3422,6 +3506,10 @@ console.log('Sending OTP with payload:', payload);
           localStorage.setItem('authToken', data.data.accessToken);
           console.log('✅ Access token stored');
         }
+        // Store userId if provided
+        if (data.data?.userId) {
+          localStorage.setItem('userId', data.data.userId);
+        }
 
         toast({
           variant: "success",
@@ -3451,6 +3539,29 @@ console.log('Sending OTP with payload:', payload);
             if (customerResponse.ok && customerResult.success && customerResult.data) {
               const profileData = customerResult.data;
               console.log('✅ Customer data fetched successfully');
+
+              // Store user info in localStorage for AuthContext
+              console.log('📝 Storing user info in localStorage:', {
+                fullName: profileData.fullName,
+                email: profileData.email,
+                mobile: profileData.mobile,
+                _id: profileData._id
+              });
+              if (profileData.fullName) {
+                localStorage.setItem('userName', profileData.fullName);
+                console.log('✅ userName stored:', profileData.fullName);
+              } else {
+                console.warn('⚠️ fullName is empty, not storing userName');
+              }
+              if (profileData.email) {
+                localStorage.setItem('userEmail', profileData.email);
+              }
+              if (profileData.mobile) {
+                localStorage.setItem('userMobile', profileData.mobile);
+              }
+              if (profileData._id) {
+                localStorage.setItem('userId', profileData._id);
+              }
 
               // Convert ISO date to YYYY-MM-DD format for input field
               const formatDateForInput = (isoDate: string) => {
@@ -3483,6 +3594,7 @@ console.log('Sending OTP with payload:', payload);
                 accountHolderName: profileData.banks?.[0]?.accountHolderName || prev.accountHolderName,
                 accountNumber: profileData.banks?.[0]?.accountNumber || prev.accountNumber,
                 ifsc: profileData.banks?.[0]?.ifscCode || prev.ifsc,
+                loanAmount: profileData.requestedLoanAmount?.toString() || prev.loanAmount,
               }));
 
               // Set bank verified flag if bank has been verified via penny drop
@@ -3514,6 +3626,21 @@ console.log('Sending OTP with payload:', payload);
                 }
               }
 
+              // Check eSign status from profile
+              // Handle both formats: eSign: true (boolean) or eSign: { status: 'SUCCESS' } (object)
+              if (profileData.eSign === true) {
+                setUserESignStatus('SUCCESS');
+                setESignVerified(true);
+                console.log('✅ eSign already completed (boolean: true)');
+              } else if (profileData.eSign?.status) {
+                setUserESignStatus(profileData.eSign.status);
+                console.log('📝 eSign status from profile:', profileData.eSign.status);
+                if (profileData.eSign.status === 'SUCCESS') {
+                  setESignVerified(true);
+                  console.log('✅ eSign already completed (status: SUCCESS)');
+                }
+              }
+
               // Auto-fill references if available
               if (profileData.references && profileData.references.length > 0) {
                 const ref1 = profileData.references[0];
@@ -3540,6 +3667,44 @@ console.log('Sending OTP with payload:', payload);
               }
 
               console.log('🟢 Form auto-filled with customer data');
+
+              // ============================================
+              // CHECKLIST-BASED REDIRECT LOGIC (after OTP verification)
+              // If all onboarding steps are complete, redirect to Dashboard
+              // ============================================
+              const toBoolean = (value: unknown): boolean => {
+                if (typeof value === 'boolean') return value;
+                if (typeof value === 'string') return value.toLowerCase() === 'true';
+                if (typeof value === 'number') return value === 1;
+                return false;
+              };
+
+              const isBasicDetailsFilled = toBoolean(profileData.isBasicDetailsFilled);
+              const isKycDetailsFilled = toBoolean(profileData.isKycDetailsFilled);
+              const isBankDetailsFilled = toBoolean(profileData.isBankDetailsFilled);
+              const isSubmit = toBoolean(profileData.isSubmit);
+
+              console.log('📋 Checklist after OTP:', {
+                isBasicDetailsFilled,
+                isKycDetailsFilled,
+                isBankDetailsFilled,
+                isSubmit
+              });
+
+              const allChecklistComplete = isBasicDetailsFilled && isKycDetailsFilled && isBankDetailsFilled && isSubmit;
+
+              if (allChecklistComplete) {
+                console.log('✅ All checklist items complete - redirecting to Dashboard');
+                toast({
+                  variant: "success",
+                  title: "Welcome Back!",
+                  description: "Your application is complete. Redirecting to dashboard...",
+                });
+                // Use full page reload to ensure AuthContext reinitializes with updated localStorage
+                window.location.href = '/user';
+                return;
+              }
+
               toast({
                 variant: "success",
                 title: "Data Loaded!",
@@ -3872,7 +4037,7 @@ console.log('Sending OTP with payload:', payload);
           accountNumber: formData.accountNumber,
           ifscCode: formData.ifsc,
           accountHolderName: formData.accountHolderName,
-          bankName: formData.bankName
+          bankName: formData.bankName === 'OTHER' ? formData.customBankName : formData.bankName
         }),
       });
 
@@ -4440,6 +4605,16 @@ console.log('Sending OTP with payload:', payload);
         return;
       }
 
+      // Custom Bank Name validation when "Other" is selected
+      if (formData.bankName === 'OTHER' && !formData.customBankName?.trim()) {
+        toast({
+          variant: "warning",
+          title: "Bank Name Required",
+          description: "Please enter your bank name.",
+        });
+        return;
+      }
+
       // Account Number validation
       if (!formData.accountNumber || formData.accountNumber.length < 9 || formData.accountNumber.length > 18) {
         toast({
@@ -4567,15 +4742,15 @@ console.log('Sending OTP with payload:', payload);
         }
 
         // Consent validation
-        if (!formData.creditBureauConsent || !formData.termsConsent) {
-          setConsentError(true);
-          toast({
-            variant: "warning",
-            title: "Consent Required",
-            description: "Please accept the required consents to proceed.",
-          });
-          return;
-        }
+        // if (!formData.creditBureauConsent || !formData.termsConsent) {
+        //   setConsentError(true);
+        //   toast({
+        //     variant: "warning",
+        //     title: "Consent Required",
+        //     description: "Please accept the required consents to proceed.",
+        //   });
+        //   return;
+        // }
 
         // Clear consent error if validation passes
         setConsentError(false);
@@ -4599,10 +4774,9 @@ console.log('Sending OTP with payload:', payload);
           return;
         }
 
-        // Step 4 Final Submit - just submit the application
-        const principal = parseFloat(formData.loanAmount);
+        // Step 4 Final Submit - submit the application with user's selected loan amount
         const payload = {
-          isSubmit: true
+          isSubmit: true,
         };
 
         const response = await fetch(`https://api.quikkred.in/api/application/loan/create`, {
@@ -4894,6 +5068,7 @@ console.log('Sending OTP with payload:', payload);
                     monthlyIncome: "",
                     companyName: "",
                     bankName: "",
+                    customBankName: "",
                     accountHolderName: "",
                     accountNumber: "",
                     ifsc: "",
@@ -4935,6 +5110,7 @@ console.log('Sending OTP with payload:', payload);
 
   // Main application form
   return (
+    <>
     <div className="min-h-screen bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5] py-8 px-4">
       <Toaster />
 
@@ -5137,7 +5313,7 @@ console.log('Sending OTP with payload:', payload);
         disabled={!formData.email || !!fieldErrors.email || loading || (otpSent && emailOtpTimer > 0)}
         className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
       >
-        {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Send OTP"}
+        {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Verify"}
       </button>
     )}
 
@@ -5213,7 +5389,7 @@ console.log('Sending OTP with payload:', payload);
                             disabled={!formData.mobile || loading || (otpSent && emailOtpTimer > 0)}
                             className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
                           >
-                            {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Send OTP"}
+                            {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Verify"}
                           </button>
                         )}
                         {formData.mobileVerified && (
@@ -5465,11 +5641,9 @@ console.log('Sending OTP with payload:', payload);
                       >
                         <option value="SALARIED">SALARIED</option>
                          <option value="SELF-EMPLOYED">SELF-EMPLOYED</option>
-                          <option value="UNEMPLOYED">UNEMPLOYED</option>
+                          {/* <option value="UNEMPLOYED">UNEMPLOYED</option>
                         <option value="STUDENT">STUDENT</option>
-                         <option value="RETIRED">RETIRED</option>
-                        <option value="OTHER">OTHER</option>
-
+                         <option value="RETIRED">RETIRED</option> */}
                         {/* "SALARIED", "SELF-EMPLOYED", "UNEMPLOYED", "STUDENT", "RETIRED" */}
                       </select>
                     </div>
@@ -5668,7 +5842,7 @@ console.log('Sending OTP with payload:', payload);
                           disabled={!formData.aadhaar || formData.aadhaar.length !== 12 || aadhaarVerifying || (aadhaarOtpSent && aadhaarOtpTimer > 0)}
                           className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                         >
-                          {aadhaarVerifying ? "Sending..." : aadhaarOtpSent ? (aadhaarOtpTimer > 0 ? `Resend (${aadhaarOtpTimer}s)` : "Resend OTP") : "Send OTP"}
+                          {aadhaarVerifying ? "Sending..." : aadhaarOtpSent ? (aadhaarOtpTimer > 0 ? `Resend (${aadhaarOtpTimer}s)` : "Resend OTP") : "Verify"}
                         </button>
                       )}
                       {aadhaarVerified && (
@@ -5841,6 +6015,181 @@ console.log('Sending OTP with payload:', payload);
                       Go to Home
                     </button>
                   </div>
+                ) : brePolling ? (
+                  /* ========== BRE POLLING - PROCESSING UI ========== */
+                  <div className="text-center py-8">
+                    <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-3">Processing Your Application</h2>
+                    <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                      {brePollingMessage || 'Please wait while we verify your bank statement...'}
+                    </p>
+                    <div className="bg-gray-50 rounded-lg p-4 mb-6 inline-block">
+                      <p className="text-sm text-gray-500">This may take a few moments</p>
+                      <p className="text-xs text-gray-400 mt-1">Please do not close this window</p>
+                    </div>
+                  </div>
+                ) : finfactorSuccess ? (
+                  /* ========== FINFACTOR SUCCESS - CONSENT UI ========== */
+                  <div className="text-center py-8">
+                    <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <CheckCircle className="w-12 h-12 text-green-600" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-3">Bank Statement Verification</h2>
+                    <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                      Your bank statement process is complete. Click the button below to continue with your loan application.
+                    </p>
+                    <div className="mt-6">
+                      <button
+                        onClick={async () => {
+                          const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('authToken');
+                          if (!token) {
+                            toast({ variant: "error", title: "Authentication Error", description: "Please login again to continue." });
+                            return;
+                          }
+                          setConsentLoading(true);
+                          try {
+                            const customerId = localStorage.getItem('userId');
+                            if (!customerId) {
+                              toast({ variant: "error", title: "Error", description: "Customer ID not found. Please try again." });
+                              setConsentLoading(false);
+                              return;
+                            }
+                            const response = await fetch(`https://api.quikkred.in/api/kyc/consentHandleToFIRequest`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                              body: JSON.stringify({ customerId })
+                            });
+                            const result = await response.json();
+                            if (response.ok && result.success) {
+                              toast({ variant: "success", title: "Success", description: result.message || "Verification completed successfully." });
+                              // Start polling finfactor/initialize API
+                              setBrePolling(true);
+                              setBrePollingMessage('Processing your bank statement...');
+
+                              const pollBREStatus = async () => {
+                                let shouldContinuePolling = true;
+                                while (shouldContinuePolling) {
+                                  try {
+                                    const breResponse = await fetch(`https://api.quikkred.in/api/kyc/finfactor/initialize`, {
+                                      method: 'GET',
+                                      headers: { 'Authorization': `Bearer ${token}` }
+                                    });
+                                    const breResult = await breResponse.json();
+
+                                    if (breResult.message === 'Statement not fetched yet') {
+                                      setBrePollingMessage('Fetching your bank statement...');
+                                      // Wait 10 seconds before next poll
+                                      await new Promise(resolve => setTimeout(resolve, 10000));
+                                    } else if (breResult.message === 'BRE checked successfully') {
+                                      // BRE check complete - update approval data and stop polling
+                                      shouldContinuePolling = false;
+                                      setBrePolling(false);
+                                      setBrePollingMessage('');
+                                      if (breResult.data) {
+                                        setApprovalData(breResult.data);
+                              }
+                                      setFinfactorSuccess(false);
+                                      toast({ variant: "success", title: "Success", description: "BRE verification completed successfully." });
+                                    } else {
+                                      // Any other response - stop polling and update UI
+                                      shouldContinuePolling = false;
+                                      setBrePolling(false);
+                                      setBrePollingMessage('');
+                                      if (breResult.data) {
+                                        setApprovalData(breResult.data);
+                                      }
+                                      setFinfactorSuccess(false);
+                                    }
+                                  } catch (pollError) {
+                                    console.error('BRE polling error:', pollError);
+                                    setBrePollingMessage('Retrying...');
+                                    // Wait 10 seconds before retry on error
+                                    await new Promise(resolve => setTimeout(resolve, 10000));
+                                  }
+                                }
+                              };
+
+                              // Start polling
+                              pollBREStatus();
+                            } else {
+                              toast({ variant: "error", title: "Failed", description: result.message || "Verification failed. Please try again." });
+                            }
+                          } catch (error: any) {
+                            console.error('Consent API error:', error);
+                            toast({ variant: "error", title: "Network Error", description: "Unable to connect to server. Please try again." });
+                          } finally {
+                            setConsentLoading(false);
+                          }
+                        }}
+                        disabled={consentLoading}
+                        className="bg-[#25B181] text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#1d9e6f] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
+                      >
+                        {consentLoading ? (<><Loader2 className="w-5 h-5 animate-spin" />Processing...</>) : (<>Continue Application<ArrowRight className="w-5 h-5" /></>)}
+                      </button>
+                    </div>
+                  </div>
+                ) : approvalData?.status === 'Proceed to Bank' ? (
+                  /* ========== PROCEED TO BANK STATUS ========== */
+                  <div className="text-center py-8">
+                    <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <svg className="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-3">Proceed to Bank Verification</h2>
+                    <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                      {approvalData.reason || 'Your application requires additional bank verification to proceed.'}
+                    </p>
+                    <div className="bg-gray-50 rounded-lg p-4 mb-6 inline-block">
+                      <p className="text-sm text-gray-500">Application Number</p>
+                      <p className="font-semibold text-gray-800">{approvalData.applicationNumber || 'N/A'}</p>
+                    </div>
+                    <div className="mt-6">
+                      <button
+                        onClick={async () => {
+                          const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('authToken');
+                          if (!token) {
+                            toast({ variant: "error", title: "Authentication Error", description: "Please login again to continue." });
+                            return;
+                          }
+                          setPtbLoading(true);
+                          try {
+                            const customerId = localStorage.getItem('userId');
+                            if (!customerId) {
+                              toast({ variant: "error", title: "Error", description: "Customer ID not found. Please try again." });
+                              setPtbLoading(false);
+                              return;
+                            }
+                            const response = await fetch(`https://api.quikkred.in/api/kyc/finfactorConsentRequest`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                              body: JSON.stringify({ customerId })
+                            });
+                            const result = await response.json();
+                            if (response.ok && result.success) {
+                              toast({ variant: "success", title: "Success", description: result.message || "Bank verification initiated successfully." });
+                              if (result.data) {
+                                window.open(result.data, '_blank');
+                              }
+                            } else {
+                              toast({ variant: "error", title: "Failed", description: result.message || "Failed to initiate bank verification." });
+                            }
+                          } catch (error: any) {
+                            console.error('PTB API error:', error);
+                            toast({ variant: "error", title: "Network Error", description: "Unable to connect to server. Please try again." });
+                          } finally {
+                            setPtbLoading(false);
+                          }
+                        }}
+                        disabled={ptbLoading}
+                        className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
+                      >
+                        {ptbLoading ? (<><Loader2 className="w-5 h-5 animate-spin" />Processing...</>) : (<>Proceed to Bank<ArrowRight className="w-5 h-5" /></>)}
+                      </button>
+                    </div>
+                  </div>
                 ) : approvalData ? (
                   /* ========== APPROVED STATUS - Attractive UI ========== */
                   <>
@@ -5869,46 +6218,47 @@ console.log('Sending OTP with payload:', payload);
                       )}
                     </div>
 
-                    {/* Loan Amount Highlight */}
-                    <div className="bg-gradient-to-r from-[#25B181]/10 to-emerald-50 border-2 border-[#25B181] rounded-2xl p-6 text-center">
-                      <p className="text-sm text-[#25B181] font-medium mb-1">Approved Loan Amount</p>
-                      <p className="text-4xl font-bold text-gray-900">
-                        ₹{(approvalData.loanAmount || 0).toLocaleString('en-IN')}
-                      </p>
-                    </div>
-
                     {/* Loan Details Grid */}
                     <div className="bg-gray-50 rounded-xl p-6">
                       <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                         <IndianRupee className="w-5 h-5 text-[#25B181]" />
                         Loan Details
+                        {calculatedLoanDetails && (
+                          <span className="text-xs font-normal text-gray-500 ml-2">(Based on your selected amount)</span>
+                        )}
                       </h3>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="bg-white rounded-lg p-4 border border-gray-200">
+                          <p className="text-sm text-gray-500 mb-1">Your Loan Amount</p>
+                          <p className="text-xl font-bold text-[#25B181]">
+                            ₹{((calculatedLoanDetails?.loanAmount || userDesiredAmount || approvalData.loanAmount) || 0).toLocaleString('en-IN')}
+                          </p>
+                        </div>
+                        <div className="bg-white rounded-lg p-4 border border-gray-200">
                           <p className="text-sm text-gray-500 mb-1">Tenure</p>
                           <p className="text-xl font-bold text-gray-900">
-                            {approvalData.tenure || 0} {approvalData.tenureUnit === 'Days' ? 'Days' : 'Months'}
+                            {(calculatedLoanDetails?.tenure || approvalData.tenure) || 0} {(calculatedLoanDetails?.tenureUnit || approvalData.tenureUnit) === 'Days' ? 'Days' : 'Months'}
                           </p>
                         </div>
                         <div className="bg-white rounded-lg p-4 border border-gray-200">
                           <p className="text-sm text-gray-500 mb-1">Interest Rate</p>
-                          <p className="text-xl font-bold text-gray-900">{approvalData.interestRate || 0}%</p>
+                          <p className="text-xl font-bold text-gray-900">{(calculatedLoanDetails?.interestRate || approvalData.interestRate) || 0}%</p>
                         </div>
                         <div className="bg-white rounded-lg p-4 border border-gray-200">
                           <p className="text-sm text-gray-500 mb-1">Interest Amount</p>
-                          <p className="text-xl font-bold text-gray-900">₹{(approvalData.totalInterest || 0).toLocaleString('en-IN')}</p>
+                          <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.totalInterest ?? approvalData.totalInterest) || 0).toLocaleString('en-IN')}</p>
                         </div>
                         <div className="bg-white rounded-lg p-4 border border-gray-200">
                           <p className="text-sm text-gray-500 mb-1">Processing Fee</p>
-                          <p className="text-xl font-bold text-gray-900">₹{(approvalData.processingFee || 0).toLocaleString('en-IN')}</p>
+                          <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.processingFee ?? approvalData.processingFee) || 0).toLocaleString('en-IN')}</p>
                         </div>
                         <div className="bg-white rounded-lg p-4 border border-gray-200">
                           <p className="text-sm text-gray-500 mb-1">GST on Processing Fee</p>
-                          <p className="text-xl font-bold text-gray-900">₹{(approvalData.gstOnProcessingFee || 0).toLocaleString('en-IN')}</p>
+                          <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.gstOnProcessingFee ?? approvalData.gstOnProcessingFee) || 0).toLocaleString('en-IN')}</p>
                         </div>
-                        <div className="bg-white rounded-lg p-4 border border-gray-200">
+                        <div className="bg-white rounded-lg p-4 border border-gray-200 col-span-2">
                           <p className="text-sm text-gray-500 mb-1">Total Repayment</p>
-                          <p className="text-xl font-bold text-gray-900">₹{(approvalData.totalRepayment || 0).toLocaleString('en-IN')}</p>
+                          <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.totalRepayment ?? approvalData.totalRepayment) || 0).toLocaleString('en-IN')}</p>
                         </div>
                       </div>
 
@@ -5919,7 +6269,7 @@ console.log('Sending OTP with payload:', payload);
                             <p className="text-sm text-green-600 font-medium">You Will Receive</p>
                             <p className="text-xs text-green-500">Net Disbursal Amount</p>
                           </div>
-                          <p className="text-2xl font-bold text-green-600">₹{(approvalData.netDisbursalAmount || 0).toLocaleString('en-IN')}</p>
+                          <p className="text-2xl font-bold text-green-600">₹{((calculatedLoanDetails?.netDisbursalAmount ?? approvalData.netDisbursalAmount) || 0).toLocaleString('en-IN')}</p>
                         </div>
                       </div>
                     </div>
@@ -6076,6 +6426,18 @@ console.log('Sending OTP with payload:', payload);
 
                                 if (response.ok && result.success && result.data) {
                                   customerData = result.data;
+
+                                  // Check eSign status and update state
+                                  if (customerData.eSign === true) {
+                                    setUserESignStatus('SUCCESS');
+                                    setESignVerified(true);
+                                    console.log('✅ eSign already completed (boolean: true)');
+                                  } else if (customerData.eSign?.status === 'SUCCESS') {
+                                    setUserESignStatus('SUCCESS');
+                                    setESignVerified(true);
+                                    console.log('✅ eSign already completed (status: SUCCESS)');
+                                  }
+
                                 }
                               } catch (error) {
                                 console.error('Error fetching customer data:', error);
@@ -6100,21 +6462,21 @@ console.log('Sending OTP with payload:', payload);
                                 designation: customerData.designation || '',
                                 workExperience: customerData.workExperience || '',
                                 salaryDate: customerData.salaryDate || '',
-                                bankName: formData.bankName || customerData.banks?.[0]?.bankName || '',
+                                bankName: (formData.bankName === 'OTHER' ? formData.customBankName : formData.bankName) || customerData.banks?.[0]?.bankName || '',
                                 accountNumber: formData.accountNumber || customerData.banks?.[0]?.accountNumber || '',
                                 ifscCode: formData.ifsc || customerData.banks?.[0]?.ifscCode || '',
                                 accountHolderName: formData.accountHolderName || customerData.banks?.[0]?.accountHolderName || formData.fullName || customerData.fullName || '',
-                                // Loan Details - use BRE API response (approvalData) first
-                                loanAmount: approvalData?.loanAmount || formData.loanAmount || '',
-                                tenure: approvalData?.tenure || formData.tenure || '',
-                                tenureUnit: approvalData?.tenureUnit || formData.tenureUnit || 'Days',
+                                // Loan Details - use user's selected amount first, then BRE API response
+                                loanAmount: calculatedLoanDetails?.loanAmount || userDesiredAmount || approvalData?.loanAmount || formData.loanAmount || '',
+                                tenure: calculatedLoanDetails?.tenure || approvalData?.tenure || formData.tenure || '',
+                                tenureUnit: calculatedLoanDetails?.tenureUnit || approvalData?.tenureUnit || formData.tenureUnit || 'Days',
                                 productName: selectedProduct?.productName || '',
-                                interestRate: approvalData?.interestRate || selectedProduct?.dailyInterestRate || '',
-                                processingFee: approvalData?.processingFee || selectedProduct?.processingFee || '',
-                                totalInterest: approvalData?.totalInterest || '',
-                                gstOnProcessingFee: approvalData?.gstOnProcessingFee || '',
-                                totalAmount: approvalData?.totalRepayment || emiCalculation?.totalAmount || '',
-                                disbursementAmount: approvalData?.netDisbursalAmount || (emiCalculation ? (emiCalculation.principal - emiCalculation.totalProcessingFee) : ''),
+                                interestRate: calculatedLoanDetails?.interestRate || approvalData?.interestRate || selectedProduct?.dailyInterestRate || '',
+                                processingFee: calculatedLoanDetails?.processingFee || approvalData?.processingFee || selectedProduct?.processingFee || '',
+                                totalInterest: calculatedLoanDetails?.totalInterest || approvalData?.totalInterest || '',
+                                gstOnProcessingFee: calculatedLoanDetails?.gstOnProcessingFee || approvalData?.gstOnProcessingFee || '',
+                                totalAmount: calculatedLoanDetails?.totalRepayment || approvalData?.totalRepayment || emiCalculation?.totalAmount || '',
+                                disbursementAmount: calculatedLoanDetails?.netDisbursalAmount || approvalData?.netDisbursalAmount || (emiCalculation ? (emiCalculation.principal - emiCalculation.totalProcessingFee) : ''),
                                 applicationNumber: approvalData?.applicationNumber || customerData.applicationNumber || '',
                               };
 
@@ -6172,32 +6534,86 @@ console.log('Sending OTP with payload:', payload);
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Bank Name *
                         </label>
-                        <select
-                          name="bankName"
-                          value={formData.bankName}
-                          onChange={(e) => {
-                            handleChange(e);
-                            setBankVerified(false); // Reset verification on change
-                          }}
-                          disabled={bankVerified}
-                          className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] ${bankVerified ? 'bg-green-50 border-green-300' : ''}`}
-                        >
-                          <option value="">Select Bank</option>
-                          <option value="SBI">State Bank of India</option>
-                          <option value="HDFC">HDFC Bank</option>
-                          <option value="ICICI">ICICI Bank</option>
-                          <option value="AXIS">Axis Bank</option>
-                          <option value="PNB">Punjab National Bank</option>
-                          <option value="BOB">Bank of Baroda</option>
-                          <option value="KOTAK">Kotak Mahindra Bank</option>
-                          <option value="IDBI">IDBI Bank</option>
-                          <option value="YES">Yes Bank</option>
-                          <option value="INDUSIND">IndusInd Bank</option>
-                          <option value="BOI">Bank of India</option>
-                          <option value="CANARA">Canara Bank</option>
-                          <option value="UNION">Union Bank of India</option>
-                          <option value="OTHER">Other</option>
-                        </select>
+                        <div className="relative bank-dropdown-container">
+  <button
+    type="button"
+    onClick={() => !bankVerified && setBankDropdownOpen(!bankDropdownOpen)}
+    disabled={bankVerified}
+    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] text-left flex justify-between items-center ${
+      bankVerified ? 'bg-green-50 border-green-300' : 'bg-white'
+    }`}
+  >
+    <span className={formData.bankName ? 'text-gray-900' : 'text-gray-500'}>
+      {formData.bankName === 'OTHER'
+        ? 'Other'
+        : formData.bankName
+          ? BANKS.find(b => b.value === formData.bankName)?.name || formData.bankName
+          : 'Select Bank'}
+    </span>
+    <svg className={`w-5 h-5 text-gray-400 transition-transform ${bankDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
+  </button>
+
+  {bankDropdownOpen && !bankVerified && (
+    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+      <div
+        className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-500"
+        onClick={() => {
+          setFormData(prev => ({ ...prev, bankName: '', customBankName: '' }));
+          setBankVerified(false);
+          setBankDropdownOpen(false);
+        }}
+      >
+        Select Bank
+      </div>
+      {BANKS.map((bank) => (
+        <div
+          key={bank.value}
+          className={`px-4 py-2 hover:bg-[#25B181] hover:text-white cursor-pointer ${
+            formData.bankName === bank.value ? 'bg-[#25B181] text-white' : ''
+          }`}
+          onClick={() => {
+            setFormData(prev => ({ ...prev, bankName: bank.value, customBankName: '' }));
+            setBankVerified(false);
+            setBankDropdownOpen(false);
+          }}
+        >
+          {bank.name}
+        </div>
+      ))}
+      <div
+        className={`px-4 py-2 hover:bg-[#25B181] hover:text-white cursor-pointer ${
+          formData.bankName === 'OTHER' ? 'bg-[#25B181] text-white' : ''
+        }`}
+        onClick={() => {
+          setFormData(prev => ({ ...prev, bankName: 'OTHER' }));
+          setBankVerified(false);
+          setBankDropdownOpen(false);
+        }}
+      >
+        Other
+      </div>
+    </div>
+  )}
+</div>
+
+                        {/* Custom Bank Name Input - shown when "Other" is selected */}
+                        {formData.bankName === 'OTHER' && (
+                          <input
+                            type="text"
+                            name="customBankName"
+                            value={formData.customBankName}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                              setFormData(prev => ({ ...prev, customBankName: value }));
+                              setBankVerified(false);
+                            }}
+                            disabled={bankVerified}
+                            className={`w-full mt-2 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] ${bankVerified ? 'bg-green-50 border-green-300' : ''}`}
+                            placeholder="Enter your bank name"
+                          />
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -6309,13 +6725,13 @@ console.log('Sending OTP with payload:', payload);
                       <button
                         type="button"
                         onClick={verifyBankAccount}
-                        disabled={bankVerifying || bankVerified || !formData.bankName || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc}
+                        disabled={bankVerifying || bankVerified || !formData.bankName || (formData.bankName === 'OTHER' && !formData.customBankName?.trim()) || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc}
                         className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all ${
                           bankVerified
                             ? 'bg-green-100 text-green-700 border border-green-300 cursor-not-allowed'
                             : bankVerifying
                             ? 'bg-gray-300 text-gray-600 cursor-wait'
-                            : !formData.bankName || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc
+                            : !formData.bankName || (formData.bankName === 'OTHER' && !formData.customBankName?.trim()) || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc
                             ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                             : 'bg-[#25B181] text-white hover:bg-[#1d9469]'
                         }`}
@@ -6359,8 +6775,8 @@ console.log('Sending OTP with payload:', payload);
             )}
           </AnimatePresence>
 
-          {/* Navigation Buttons - Hide when status is Reject */}
-          {!(currentStep === 4 && approvalData?.status === 'Reject') && (
+          {/* Navigation Buttons - Hide when status is Reject, Proceed to Bank, or finfactor success */}
+          {!(currentStep === 4 && (approvalData?.status === 'Reject' || approvalData?.status === 'Proceed to Bank' || finfactorSuccess)) && (
             <div className="flex gap-4 mt-8">
               {currentStep > 1 && (
                 <button
@@ -6408,5 +6824,8 @@ console.log('Sending OTP with payload:', payload);
         </div>
       </div>
     </div>
+
+
+    </>
   );
 }

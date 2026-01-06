@@ -1,3 +1,5 @@
+# Quikkred Landing & Dashboard CI/CD Pipeline
+# Last updated: 2025-12-30 - Fixed auto-trigger for push events
 name: Quikkred Landing & Dashboard CI/CD Pipeline
 
 on:
@@ -53,7 +55,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          NEXT_PUBLIC_API_URL: ${{ github.ref == 'refs/heads/main' && 'https://api.quikkred.in' || github.ref == 'refs/heads/staging' && 'https://beta.quikkred.in' || 'https://alpha.quikkred.in' }}
+          NEXT_PUBLIC_API_URL: ${{ github.ref == 'refs/heads/main' && 'https://api.quikkred.in' || github.ref == 'refs/heads/staging' && 'https://beta.quikkred.in' || github.ref == 'refs/heads/develop' && 'https://alpha.quikkred.in' }}
 
   # ============================================
   # DEPLOY TO ALPHA (Hostinger KVM8)
