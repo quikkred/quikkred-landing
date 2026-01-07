@@ -4,6 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import Image from "next/image"
 import { User, Mail, Phone, Send, MessageSquare, CheckCircle } from "lucide-react"
+import { API_BASE_URL } from '@/lib/config'
 
 interface FormData {
   name: string;
@@ -133,7 +134,7 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
 
       const apiSubject = formData.subject ? subjectMap[formData.subject] : "GENERAL_INQUIRY";
 
-      const response = await fetch('https://api.quikkred.in/api/contactUs/create', {
+      const response = await fetch(`${API_BASE_URL}/api/contactUs/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
