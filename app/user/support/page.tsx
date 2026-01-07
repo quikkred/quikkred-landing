@@ -9,6 +9,7 @@ import {
   FileText, User, Calendar, Tag, AlertTriangle, Mail, Phone
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { API_BASE_URL } from '@/lib/config';
 
 interface SupportTicket {
   _id: string;
@@ -104,7 +105,7 @@ export default function SupportPage() {
         return;
       }
 
-      const response = await fetch('https://api.quikkred.in/api/supportTicket/getAll', {
+      const response = await fetch(`${API_BASE_URL}/api/supportTicket/getAll`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -166,7 +167,7 @@ export default function SupportPage() {
         return;
       }
 
-      const response = await fetch('https://api.quikkred.in/api/supportTicket/create', {
+      const response = await fetch(`${API_BASE_URL}/api/supportTicket/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -223,7 +224,7 @@ export default function SupportPage() {
         return;
       }
 
-      const response = await fetch(`https://api.quikkred.in/api/supportTicket/update/${selectedTicket._id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/supportTicket/update/${selectedTicket._id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

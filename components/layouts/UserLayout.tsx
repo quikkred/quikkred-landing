@@ -12,6 +12,7 @@ import {
   Sparkles, Plus, Send, Shield, UserCheck, Eye, X
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { API_BASE_URL } from '@/lib/config';
 
 interface UserLayoutProps {
   children: React.ReactNode;
@@ -99,7 +100,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
         }
 
         console.log('Fetching notifications...');
-        const response = await fetch('https://api.quikkred.in/api/notification/getAll', {
+        const response = await fetch(`${API_BASE_URL}/api/notification/getAll`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
