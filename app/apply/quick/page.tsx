@@ -1781,7 +1781,7 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
                        <th>Due Date</th>
                        <th>Principal</th>
                        <th>Interest</th>
-                       <th>Total EMI</th>
+                       <th>Total Repayment</th>
                     </tr>
                 </thead>
                 <tbody>${generateRepaymentSchedule()}</tbody>
@@ -5722,10 +5722,22 @@ console.log('Sending OTP with payload:', payload);
                           },
                         } as any);
                       }}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                      placeholder="₹ 50,000"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                        formData.loanAmount && (parseFloat(formData.loanAmount.replace(/,/g, "")) < 5000 || parseFloat(formData.loanAmount.replace(/,/g, "")) > 25000)
+                          ? "border-red-500"
+                          : "border-gray-300"
+                      }`}
+                      placeholder="₹ 5,000 - ₹ 25,000"
                     />
-                    <p className="mt-1 text-xs text-gray-500">Enter the approximate loan amount you require</p>
+                    {formData.loanAmount && parseFloat(formData.loanAmount.replace(/,/g, "")) < 5000 && (
+                      <p className="mt-1 text-xs text-red-500">Minimum loan amount is ₹5,000</p>
+                    )}
+                    {formData.loanAmount && parseFloat(formData.loanAmount.replace(/,/g, "")) > 25000 && (
+                      <p className="mt-1 text-xs text-red-500">Maximum loan amount is ₹25,000</p>
+                    )}
+                    {(!formData.loanAmount || (parseFloat(formData.loanAmount.replace(/,/g, "")) >= 5000 && parseFloat(formData.loanAmount.replace(/,/g, "")) <= 25000)) && (
+                      <p className="mt-1 text-xs text-gray-500">Enter the approximate loan amount you require</p>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -6787,7 +6799,7 @@ console.log('Sending OTP with payload:', payload);
               )}
               <button
                 onClick={handleNext}
-                disabled={loading || (currentStep === 1 && !isStep1Valid())}
+                disabled={loading || (currentStep === 1 && !isStep1Valid())|| (currentStep === 4 && !eSignVerified)}
                 className="flex-1 px-6 py-3 bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white rounded-lg hover:shadow-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
