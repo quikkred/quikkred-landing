@@ -167,6 +167,8 @@ export default function QuickLoanApplication() {
   const [consentLoading, setConsentLoading] = useState(false);
   const [brePolling, setBrePolling] = useState(false);
   const [brePollingMessage, setBrePollingMessage] = useState('');
+  const [bsaStatusUpdated, setBsaStatusUpdated] = useState(false);
+  const [bsaStatus, setBsaStatus] = useState<string | null>(null);
 
   // User location state
   const [userLocation, setUserLocation] = useState<{latitude: number; longitude: number} | null>(null);
@@ -376,6 +378,24 @@ export default function QuickLoanApplication() {
                 if (profileData.eSign.status === 'SUCCESS') {
                   setESignVerified(true);
                   console.log('✅ eSign already completed');
+                }
+              }
+
+              // Check BSA status from profile
+              if (profileData.bsaStatus) {
+                setBsaStatus(profileData.bsaStatus);
+                console.log('📊 BSA status from profile:', profileData.bsaStatus);
+
+                // If BSA is PROCESSED and ?finfactor=success is not in URL, redirect to add it
+                if (profileData.bsaStatus === 'PROCESSED') {
+                  const currentUrl = new URL(window.location.href);
+                  const finfactorParam = currentUrl.searchParams.get('finfactor');
+                  if (finfactorParam !== 'success') {
+                    console.log('📊 BSA is PROCESSED, redirecting with ?finfactor=success');
+                    currentUrl.searchParams.set('finfactor', 'success');
+                    router.replace(currentUrl.pathname + currentUrl.search);
+                    return; // Exit early as we're redirecting
+                  }
                 }
               }
 
@@ -594,13 +614,164 @@ export default function QuickLoanApplication() {
   }, [currentStep, approvalData?.status, rejectionCountdown, router]);
 
   // Check for finfactor=success query param (redirect from finfudge)
+  // Also update BSA status to PROCESSED on redirect
   useEffect(() => {
     const finfactorParam = searchParams.get('finfactor');
     if (finfactorParam === 'success') {
       setFinfactorSuccess(true);
       setCurrentStep(4); // Go to step 4 to show the consent UI
+
+      // Call PATCH API to update BSA status to PROCESSED (only once)
+      const updateBsaStatus = async () => {
+        // Prevent duplicate calls
+        if (bsaStatusUpdated) {
+          console.log('BSA status already updated, skipping API call');
+          return;
+        }
+
+        const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('authToken');
+        if (!token) {
+          console.error('No auth token found for BSA status update');
+          return;
+        }
+
+        try {
+          setBsaStatusUpdated(true); // Mark as updated immediately to prevent race conditions
+          const response = await fetch('https://api.quikkred.in/api/kyc/bsa/update', {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ status: 'PROCESSED' })
+          });
+
+          const result = await response.json();
+          if (response.ok && result.success) {
+            console.log('BSA status updated successfully:', result.data);
+            // Update local bsaStatus state
+            setBsaStatus('PROCESSED');
+          } else {
+            console.error('Failed to update BSA status:', result.message);
+            // Reset flag on failure so it can be retried
+            setBsaStatusUpdated(false);
+          }
+        } catch (error) {
+          console.error('Error updating BSA status:', error);
+          // Reset flag on error so it can be retried
+          setBsaStatusUpdated(false);
+        }
+      };
+
+      updateBsaStatus();
     }
-  }, [searchParams]);
+  }, [searchParams, bsaStatusUpdated]);
+
+  // Auto-trigger consentHandleToFIRequest when BSA is already PROCESSED
+  // This handles the case when user returns with ?finfactor=success and BSA was already processed
+  useEffect(() => {
+    const autoTriggerConsentHandler = async () => {
+      const finfactorParam = searchParams.get('finfactor');
+
+      // Only proceed if:
+      // 1. finfactor=success is in URL
+      // 2. bsaStatus is PROCESSED (from API or just updated)
+      // 3. Not already loading or polling
+      // 4. finfactorSuccess is true (UI state is set)
+      if (finfactorParam !== 'success' || bsaStatus !== 'PROCESSED' || consentLoading || brePolling || !finfactorSuccess) {
+        return;
+      }
+
+      console.log('📊 BSA already PROCESSED, auto-triggering consentHandleToFIRequest...');
+
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('authToken');
+      if (!token) {
+        console.error('No auth token found for auto consent trigger');
+        return;
+      }
+
+      const customerId = localStorage.getItem('userId');
+      if (!customerId) {
+        console.error('Customer ID not found for auto consent trigger');
+        return;
+      }
+
+      setConsentLoading(true);
+
+      try {
+        const response = await fetch('https://api.quikkred.in/api/kyc/consentHandleToFIRequest', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ customerId })
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          console.log('✅ Auto consent handler successful, starting BRE polling...');
+          toast({ variant: "success", title: "Success", description: result.message || "Verification completed successfully." });
+
+          // Start BRE polling
+          setBrePolling(true);
+          setBrePollingMessage('Processing your bank statement...');
+
+          const pollBREStatus = async () => {
+            let shouldContinuePolling = true;
+            while (shouldContinuePolling) {
+              try {
+                const breResponse = await fetch('https://api.quikkred.in/api/kyc/finfactor/initialize', {
+                  method: 'GET',
+                  headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const breResult = await breResponse.json();
+
+                if (breResult.message === 'Statement not fetched yet') {
+                  setBrePollingMessage('Fetching your bank statement...');
+                  await new Promise(resolve => setTimeout(resolve, 10000));
+                } else if (breResult.message === 'BRE checked successfully') {
+                  shouldContinuePolling = false;
+                  setBrePolling(false);
+                  setBrePollingMessage('');
+                  if (breResult.data) {
+                    setApprovalData(breResult.data);
+                  }
+                  setFinfactorSuccess(false);
+                  toast({ variant: "success", title: "Success", description: "BRE verification completed successfully." });
+                } else {
+                  shouldContinuePolling = false;
+                  setBrePolling(false);
+                  setBrePollingMessage('');
+                  if (breResult.data) {
+                    setApprovalData(breResult.data);
+                  }
+                  setFinfactorSuccess(false);
+                }
+              } catch (pollError) {
+                console.error('BRE polling error:', pollError);
+                setBrePollingMessage('Retrying...');
+                await new Promise(resolve => setTimeout(resolve, 10000));
+              }
+            }
+          };
+
+          pollBREStatus();
+        } else {
+          console.error('Auto consent handler failed:', result.message);
+          toast({ variant: "error", title: "Failed", description: result.message || "Verification failed. Please try again." });
+        }
+      } catch (error) {
+        console.error('Error in auto consent trigger:', error);
+        toast({ variant: "error", title: "Error", description: "Failed to process. Please try again." });
+      } finally {
+        setConsentLoading(false);
+      }
+    };
+
+    autoTriggerConsentHandler();
+  }, [searchParams, bsaStatus, finfactorSuccess, consentLoading, brePolling, toast]);
 
   // Check Aadhaar verification status when verified=true query param is present
   // Only calls API after user profile data is loaded AND if isAadhaarVerify !== true
@@ -5972,6 +6143,8 @@ console.log('Sending OTP with payload:', payload);
                     </>
                   )}
                 </div>
+
+
 
               </motion.div>
             )}

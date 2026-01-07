@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
+import { API_BASE_URL } from '@/lib/config';
 
 interface ApplicationStatus {
   _id: string;
@@ -170,7 +171,7 @@ export default function TrackApplicationPage() {
         ? `loanNumber=${encodeURIComponent(searchValue)}`
         : `mobile=${encodeURIComponent(searchValue)}`;
 
-      const response = await fetch(`https://api.quikkred.in/api/loans/status?${queryParam}`, {
+      const response = await fetch(`${API_BASE_URL}/api/loans/status?${queryParam}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
