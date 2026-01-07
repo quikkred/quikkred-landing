@@ -7,6 +7,7 @@ import {
   User, Phone, Mail, CreditCard, Building,
   Calendar, IndianRupee, Search, RefreshCw
 } from "lucide-react";
+import { API_BASE_URL } from '@/lib/config';
 
 interface CustomerData {
   fullName: string;
@@ -93,7 +94,7 @@ export default function GfinAgreementPage() {
         return;
       }
 
-      const response = await fetch('https://api.quikkred.in/api/customer/get', {
+      const response = await fetch(`${API_BASE_URL}/api/customer/get`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

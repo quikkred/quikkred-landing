@@ -27,6 +27,7 @@ import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast, Toaster } from "@/components/ui/toast";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { API_BASE_URL } from '@/lib/config';
 
 interface LoginForm {
   emailOrPhone: string;
@@ -112,7 +113,7 @@ export default function LoginPage() {
         ? { email: formData.emailOrPhone }
         : { mobile: formData.emailOrPhone };
 
-      const response = await fetch("https://api.quikkred.in/api/auth/customer/login", {
+      const response = await fetch(`${API_BASE_URL}/api/auth/customer/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -172,7 +173,7 @@ const verifyOtp = async () => {
         ? { email: formData.emailOrPhone, otp }
         : { mobile: formData.emailOrPhone, otp };
 
-    const response = await fetch("https://api.quikkred.in/api/auth/customer/verifyOtp", {
+    const response = await fetch(`${API_BASE_URL}/api/auth/customer/verifyOtp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),

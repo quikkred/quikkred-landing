@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { loansService } from '@/lib/api/loans.service';
+import { API_BASE_URL } from '@/lib/config';
 
 interface Application {
   _id: string;
@@ -210,7 +211,7 @@ export default function MyApplicationsPage() {
       const currentLimit = limit || pagination.limit;
 
       const response = await fetch(
-        `https://api.quikkred.in/api/application/loan/get?page=${currentPage}&limit=${currentLimit}`,
+        `${API_BASE_URL}/api/application/loan/get?page=${currentPage}&limit=${currentLimit}`,
         {
           method: 'GET',
           headers: {
