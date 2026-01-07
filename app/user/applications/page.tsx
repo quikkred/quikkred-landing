@@ -77,6 +77,8 @@ interface DetailedApplication {
   
   isSubmit: boolean;
   requestedLoanAmount: number;
+  approvedLoanAmount?: number;
+  breApprovedLoanAmount: number;
   tenure: number;
   tenureUnit: number;
   interestRate: number;
@@ -457,13 +459,13 @@ export default function MyApplicationsPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-[#FAFAFA] border-b border-[#E0E0E0]">
-                <tr>
+               <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Application No.</th>
                   {/* <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Customer</th> */}
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">EMI Amount</th>
+                  <th className="px-2 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Total Repayment</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Tenure</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Priority</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Status</th>
+                  <th className="px-8 py-2 text-left text-xs font-semibold text-gray-700 uppercase">Status</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Actions</th>
                 </tr>
               </thead>
@@ -701,18 +703,17 @@ export default function MyApplicationsPage() {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                       <div>
-                        <p className="text-sm text-gray-600">Loan Amount</p>
-                        <p className="text-lg font-bold text-green-700">₹{(detailedApplication.requestedLoanAmount || 0).toLocaleString()}</p>
+                        <p className="text-sm text-gray-600">Requested Loan Amount</p>
+                        <p className="text-lg font-bold text-blue-700">₹{(detailedApplication.requestedLoanAmount || 0).toLocaleString()}</p>
+                      </div>
+                        <div>
+                        <p className="text-sm text-gray-600">Approved Loan Amount</p>
+                        <p className="text-lg font-bold text-green-700">₹{(detailedApplication.approvedLoanAmount || 0).toLocaleString()}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Tenure</p>
                         <p className="font-semibold text-gray-900">{detailedApplication.tenure || '-'}{" "}{detailedApplication.tenureUnit || ''}</p>
                       </div>
-                     
-                      {/* <div>
-                        <p className="text-sm text-gray-600">Purpose</p>
-                        <p className="font-semibold text-gray-900">{detailedApplication.purpose || '-'}</p>
-                      </div> */}
                       <div>
                         <p className="text-sm text-gray-600">Interest Rate (per day)</p>
                         <p className="font-semibold text-gray-900">{detailedApplication.interestRate || 0}%</p>
