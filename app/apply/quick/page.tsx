@@ -2067,6 +2067,8 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
     </div>
 
     <script>
+    // 🔹 Document number injected from React component (single source of truth)
+        const documentNumber = '${documentNumber}';
         // ========== PRINT-BASED PDF DOWNLOAD ==========
         function testGeneratePDF() {
             const btn = document.getElementById('test-btn');
@@ -3138,8 +3140,8 @@ y += boxHeight + 4;
         }
 
         // 🔹 Generate document number
-        const currentYear = new Date().getFullYear();
-        const documentNumber = 'DOC' + currentYear + Date.now();
+        // const currentYear = new Date().getFullYear();
+        // const documentNumber = 'DOC' + currentYear + Date.now();
 
         // 🔹 Hide approve section temporarily for PDF capture
         const approveSection = document.getElementById('approve-section');
