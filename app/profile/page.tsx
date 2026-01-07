@@ -11,6 +11,7 @@ import {
   CheckCircle2, XCircle, Globe, Users, RefreshCw
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { API_BASE_URL } from '@/lib/config';
 
 interface Address {
   street?: string;
@@ -149,7 +150,7 @@ export default function ProfilePage() {
       }
 
       console.log('🔵 Fetching profile from API...');
-      const response = await fetch('https://api.quikkred.in/api/customer/get', {
+      const response = await fetch(`${API_BASE_URL}/api/customer/get`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -233,7 +234,7 @@ export default function ProfilePage() {
       };
 
       console.log('🔵 Updating profile...', payload);
-      const response = await fetch('https://api.quikkred.in/api/customer/profile', {
+      const response = await fetch(`${API_BASE_URL}/api/customer/profile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -417,7 +418,7 @@ export default function ProfilePage() {
       formData.append('profileImage', selectedImage);
 
       console.log('🔵 Uploading profile image...');
-      const response = await fetch('https://api.quikkred.in/api/customer/profile/update', {
+      const response = await fetch(`${API_BASE_URL}/api/customer/profile/update`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`
