@@ -15,7 +15,7 @@ import { FinancialFeatureSection } from "@/components/financial-feature-section"
 import ContactForm from "@/components/Contact-form";
 
 const stats = [
-  { label: "Years of Excellence", value: "Since ", icon: Clock },
+  { label: "Years of Excellence", value: "Since 2026", icon: Clock },
   { label: "RBI-Registered Partner", value: "", icon: Shield },
   { label: "Pan India Presence", value: "28 States", icon: Globe },
   { label: "Customer Satisfaction", value: "%", icon: Star },
