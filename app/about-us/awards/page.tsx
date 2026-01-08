@@ -10,7 +10,7 @@ export default function AwardsPage() {
 
   const awards = [
     {
-      year: "2024",
+      year: "2026",
       title: "Best Digital Lender of the Year",
       organization: "Financial Services Excellence Awards",
       description: "Recognized for outstanding performance and customer satisfaction in the digital lending sector",
@@ -18,7 +18,7 @@ export default function AwardsPage() {
       color: "#FFD600"
     },
     {
-      year: "2024",
+      year: "2026",
       title: "Innovation in Fintech",
       organization: "Digital Finance Awards India",
       description: "Awarded for our AI-powered loan approval system and digital-first approach",
@@ -26,7 +26,7 @@ export default function AwardsPage() {
       color: "#4A66FF"
     },
     {
-      year: "2023",
+      year: "2026",
       title: "AAA Credit Rating",
       organization: "CRISIL",
       description: "Highest safety rating for financial stability and trustworthiness",
@@ -34,7 +34,7 @@ export default function AwardsPage() {
       color: "#25B181"
     },
     {
-      year: "2023",
+      year: "2026",
       title: "Customer Choice Award",
       organization: "National Consumer Forum",
       description: "Voted as the most preferred digital lending platform by customers across India",
@@ -42,7 +42,7 @@ export default function AwardsPage() {
       color: "#FF9C70"
     },
     {
-      year: "2023",
+      year: "2026",
       title: "Best Digital Lending Platform",
       organization: "Banking & Finance Awards",
       description: "Excellence in digital lending innovation and customer experience",
