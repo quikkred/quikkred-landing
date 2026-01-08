@@ -48,8 +48,9 @@ export default function OurStoryPage() {
                 traditional metrics.
               </p>
               <p className="text-slate-600">
-                Today, we&apos;re proud to be an RBI-licensed NBFC serving customers across all
-                28 states of India, helping them achieve their financial goals with quick,
+                Today, we&apos;re proud to be a trusted digital lending platform, partnered with
+                Satsai Finlease Private Limited (an RBI-registered NBFC), serving customers across
+                all 28 states of India, helping them achieve their financial goals with quick,
                 transparent, and affordable credit solutions.
               </p>
             </motion.div>
@@ -73,10 +74,9 @@ export default function OurStoryPage() {
             <h3 className="text-2xl font-bold text-center text-slate-900 mb-12">Our Journey</h3>
             <div className="space-y-8">
               {[
-                { year: "2023", title: "Foundation", desc: "Quikkred was established with RBI license" },
-                { year: "2024", title: "Growth", desc: "Expanded operations to 28 states across India" },
-                { year: "2024", title: "Innovation", desc: "Launched AI-powered instant loan approval" },
-                { year: "2025", title: "Impact", desc: "Serving thousands of customers with 4.8+ rating" },
+                { year: "2026", title: "Foundation", desc: "Quikkred was established as a digital lending platform" },
+                { year: "2026", title: "Growth", desc: "Expanding operations across India" },
+                { year: "2026", title: "Innovation", desc: "AI-powered instant loan approval launched" },
               ].map((item, idx) => (
                 <motion.div
                   key={idx}

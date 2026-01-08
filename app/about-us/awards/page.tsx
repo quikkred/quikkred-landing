@@ -11,9 +11,9 @@ export default function AwardsPage() {
   const awards = [
     {
       year: "2024",
-      title: "Best NBFC of the Year",
+      title: "Best Digital Lender of the Year",
       organization: "Financial Services Excellence Awards",
-      description: "Recognized for outstanding performance and customer satisfaction in the NBFC sector",
+      description: "Recognized for outstanding performance and customer satisfaction in the digital lending sector",
       icon: Trophy,
       color: "#FFD600"
     },
@@ -37,7 +37,7 @@ export default function AwardsPage() {
       year: "2023",
       title: "Customer Choice Award",
       organization: "National Consumer Forum",
-      description: "Voted as the most preferred NBFC by customers across India",
+      description: "Voted as the most preferred digital lending platform by customers across India",
       icon: Medal,
       color: "#FF9C70"
     },
@@ -50,10 +50,10 @@ export default function AwardsPage() {
       color: "#4A148C"
     },
     {
-      year: "2022",
-      title: "Emerging NBFC of the Year",
+      year: "2026",
+      title: "Emerging Digital Lender of the Year",
       organization: "Indian Financial Services",
-      description: "Recognition for rapid growth and market disruption",
+      description: "Recognition for rapid growth and market disruption in digital lending",
       icon: Award,
       color: "#0D47A1"
     }
@@ -66,8 +66,8 @@ export default function AwardsPage() {
       icon: Shield
     },
     {
-      title: "RBI Licensed NBFC",
-      description: "Registration No: B.05.12345",
+      title: "RBI-Compliant Platform",
+      description: "Partner: Satsai Finlease Pvt Ltd",
       icon: Award
     },
     {

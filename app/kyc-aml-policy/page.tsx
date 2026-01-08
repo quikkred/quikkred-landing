@@ -13,7 +13,7 @@ export default function KYCPolicyPage() {
             Know Your Customer (KYC) &amp;<br />Anti-Money Laundering (AML) Policy
           </h1>
           <p style={{ color: '#ffffff', marginTop: '16px', fontSize: '1.1rem' }}>
-            Satsai Finance Pvt. Ltd.
+            Satsai Finlease Pvt. Ltd.
           </p>
           <p style={{ color: 'rgba(255,255,255,0.9)', marginTop: '8px', fontSize: '0.95rem' }}>
             (This policy was reviewed and approved by the Board of Directors in the Board Meeting held on April 21, 2025.)
@@ -62,7 +62,7 @@ export default function KYCPolicyPage() {
           <div className={styles.contentSection}>
             <h3 className={styles.contentHeading}>1. Preamble</h3>
             <p className={styles.paragraph}>
-              Satsai Finance Private Limited (&quot;RKBFL&quot; / &quot;the Company&quot;), being a Base Non-Banking Financial Company (NBFC) registered with the Reserve Bank of India (RBI), engaged in the business of Payday Loans, EMI-based Loans, Loan Against Property (LAP) and other business loans, recognizes its responsibility to prevent misuse of its financial services for money laundering, terrorist financing and other unlawful activities.
+              Satsai Finlease Private Limited (&quot;RKBFL&quot; / &quot;the Company&quot;), being a Base Non-Banking Financial Company (NBFC) registered with the Reserve Bank of India (RBI), engaged in the business of Payday Loans, EMI-based Loans, Loan Against Property (LAP) and other business loans, recognizes its responsibility to prevent misuse of its financial services for money laundering, terrorist financing and other unlawful activities.
             </p>
             <p className={styles.paragraph}>
               Accordingly, this Know Your Customer (KYC) and Anti-Money Laundering (AML) Policy is formulated in compliance with:
@@ -413,7 +413,7 @@ export default function KYCPolicyPage() {
           <div className={styles.contentSection}>
             <h3 className={styles.contentHeading}>Board Approval</h3>
             <div className={styles.infoBox}>
-              <p><strong>Approved by the Board of Directors of Satsai Finance Private Limited</strong></p>
+              <p><strong>Approved by the Board of Directors of Satsai Finlease Private Limited</strong></p>
               <p><span className={styles.infoLabel}>Approved Date:</span> 21.04.2025</p>
             </div>
           </div>
