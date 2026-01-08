@@ -22,7 +22,7 @@ export default function SettlementAndWriteoffPolicyPage() {
               Settlement &amp; Write-off Policy
             </h1>
             <p className="text-xl">Comprehensive Policy on Settlements &amp; Write-offs</p>
-            <p className="text-sm mt-2 opacity-90">Satsai Finance Pvt. Ltd.</p>
+            <p className="text-sm mt-2 opacity-90">Satsai Finlease Pvt. Ltd.</p>
           </motion.div>
         </div>
       </section>
@@ -51,7 +51,7 @@ export default function SettlementAndWriteoffPolicyPage() {
                 1. Preamble
               </h2>
               <p className="text-[#2b2b2b] leading-[1.7]">
-                Satsai Finance Private Limited (&quot;the Company&quot;), a Non-Banking Financial Company (Base Layer) registered with the Reserve Bank of India (RBI), provides unsecured payday loans, personal loans, EMI-based loans, Loan Against Property (LAP), and corporate/business loans. The Company&apos;s primary objective is to maintain healthy asset quality while ensuring recovery actions are cost-effective, compliant, transparent and consistent with RBI regulations.
+                Satsai Finlease Private Limited (&quot;the Company&quot;), a Non-Banking Financial Company (Base Layer) registered with the Reserve Bank of India (RBI), provides unsecured payday loans, personal loans, EMI-based loans, Loan Against Property (LAP), and corporate/business loans. The Company&apos;s primary objective is to maintain healthy asset quality while ensuring recovery actions are cost-effective, compliant, transparent and consistent with RBI regulations.
               </p>
             </div>
 
@@ -578,7 +578,7 @@ export default function SettlementAndWriteoffPolicyPage() {
                 13. Effective Date
               </h2>
               <p className="text-[#2b2b2b] leading-[1.7]">
-                This Loan Settlement Policy is approved by the Board of Directors of Satsai Finance Private Limited at its meeting held on <strong>April 21, 2025</strong> and shall be effective from the same date.
+                This Loan Settlement Policy is approved by the Board of Directors of Satsai Finlease Private Limited at its meeting held on <strong>April 21, 2025</strong> and shall be effective from the same date.
               </p>
             </div>
 
@@ -587,7 +587,7 @@ export default function SettlementAndWriteoffPolicyPage() {
               <div className="bg-gradient-to-br from-[#25B181]/10 to-[#4A66FF]/10 rounded-lg p-6 border-l-4 border-[#25B181]">
                 <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
                   <Building className="w-6 h-6 text-[#25B181]" />
-                  For Satsai Finance Private Limited
+                  For Satsai Finlease Private Limited
                 </h3>
                 <p className="text-[#2b2b2b] leading-[1.7]">
                   <strong>Authorized Signatory</strong>
