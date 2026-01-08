@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast, Toaster } from "@/components/ui/toast";
 import SelfieCapture from "@/components/camera/SelfieCapture";
 import { BANKS } from "@/lib/constants/banks";
+import { useCustomer } from "@/store/hooks/useCustomer";
 
 // Auto-decision engine
 
@@ -69,6 +70,25 @@ export default function QuickLoanApplication() {
   const searchParams = useSearchParams();
   const { login, user, isLoading } = useAuth();
   const { toast } = useToast();
+
+  // Redux hooks for GET APIs
+  const {
+    customer: reduxCustomer,
+    customerLoading: reduxCustomerLoading,
+    getCustomer,
+    aadhaarStatus: reduxAadhaarStatus,
+    getAadhaarStatus,
+    eSignStatus: reduxESignStatus,
+    getESignStatus,
+    breData: reduxBreData,
+    breLoading: reduxBreLoading,
+    initBRE,
+    finfactorData: reduxFinfactorData,
+    finfactorLoading: reduxFinfactorLoading,
+    getFinfactor,
+    initESign,
+  } = useCustomer();
+
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [decision, setDecision] = useState<any>(null);
@@ -251,18 +271,10 @@ export default function QuickLoanApplication() {
                         localStorage.getItem('authToken');
 
           if (token) {
-            // Fetch user profile data
-            const response = await fetch('https://alpha.quikkred.in/api/customer/get', {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              }
-            });
+            // Fetch user profile data using Redux
+            const result = await getCustomer();
 
-            const result = await response.json();
-
-            if (response.ok && result.success && result.data) {
+            if (result.success && result.data) {
               const profileData = result.data;
               console.log('✅ User profile loaded successfully');
 
@@ -649,11 +661,8 @@ export default function QuickLoanApplication() {
             let shouldContinuePolling = true;
             while (shouldContinuePolling) {
               try {
-                const breResponse = await fetch('https://alpha.quikkred.in/api/kyc/finfactor/initialize', {
-                  method: 'GET',
-                  headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const breResult = await breResponse.json();
+                // Using Redux for finfactor/initialize API
+                const breResult = await getFinfactor();
 
                 if (breResult.message === 'Statement not fetched yet') {
                   setBrePollingMessage('Fetching your bank statement...');
@@ -751,25 +760,11 @@ export default function QuickLoanApplication() {
       setAadhaarStatusLoading(true);
 
       try {
-        // Create AbortController for timeout handling (15 seconds)
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-        const response = await fetch('https://alpha.quikkred.in/api/kyc/aadhaar/status', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        const result = await response.json();
+        // Using Redux for aadhaar/status API
+        const result = await getAadhaarStatus();
 
         // STEP 7: Handle API response
-        if (response.ok && result.success && result.data?.isAadhaarVerify === true) {
+        if (result.success && result.data?.isAadhaarVerify === true) {
           console.log('✅ Aadhaar verified successfully from status API');
           console.log('📝 Backend has updated isAadhaarVerify = true in database');
           setAadhaarVerified(true);
@@ -872,24 +867,11 @@ export default function QuickLoanApplication() {
       setESignStatusLoading(true);
 
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-        const response = await fetch('https://alpha.quikkred.in/api/kyc/eSign/document', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        const result = await response.json();
+        // Using Redux for eSign/document API
+        const result = await getESignStatus();
 
         // Check if e-Sign document is already signed
-        if (response.ok && result.success && result.message === "E-sign document fetched successfully") {
+        if (result.success && result.message === "E-sign document fetched successfully") {
           setESignVerified(true);
           setUserESignStatus('SUCCESS');
           toast({
@@ -902,16 +884,10 @@ export default function QuickLoanApplication() {
           setESignVerified(false);
         }
 
-        // Call customer/get API once after eSign/document API
+        // Call customer/get API once after eSign/document API using Redux
         try {
           console.log('[eSign] Calling customer/get API to refresh user data...');
-          await fetch('https://alpha.quikkred.in/api/customer/get', {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            }
-          });
+          await getCustomer();
           console.log('[eSign] customer/get API called successfully');
         } catch (customerError) {
           console.error('[eSign] Error calling customer/get API:', customerError);
@@ -1015,17 +991,10 @@ export default function QuickLoanApplication() {
       setApprovalLoading(true);
 
       try {
-        const response = await fetch('https://alpha.quikkred.in/api/kyc/bre/initialize', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        // Using Redux for bre/initialize API
+        const result = await initBRE();
 
-        const result = await response.json();
-
-        if (response.ok && result.success && result.data) {
+        if (result.success && result.data) {
           console.log('[Step 4] BRE data fetched successfully');
           // Store BRE response data only (don't include formData to avoid dependency)
           setApprovalData(result.data);
@@ -1074,52 +1043,6 @@ export default function QuickLoanApplication() {
     }
   }, [user]);
 
-  // Fetch loan products
-
-
-
-  // useEffect(() => {
-  //   const fetchLoanProducts = async () => {
-  //     const token =   localStorage.getItem('accessToken') ||
-  //                     localStorage.getItem('token') ||
-  //                     localStorage.getItem('authToken');
-  //     setLoadingProducts(true);
-  //     try {
-  //       const response = await fetch('https://alpha.quikkred.in/api/loanProduct/allLoanProductsNameOnly', {
-  //         method: 'GET',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //           'Authorization': `Bearer ${token}`
-  //         },
-  //       });
-
-  //       const result = await response.json();
-
-  //       if (response.ok && result.success && result.data) {
-  //         setLoanProducts(result.data);
-  //         console.log('✅ Loan products loaded:', result.data);
-  //       } else {
-  //         console.error('Failed to fetch loan products:', result.message);
-  //         toast({
-  //           title: "Error",
-  //           description: "Failed to load loan products. Please refresh the page.",
-  //           variant: "error"
-  //         });
-  //       }
-  //     } catch (error) {
-  //       console.error('Error fetching loan products:', error);
-  //       toast({
-  //         title: "Error",
-  //         description: "Failed to load loan products. Please refresh the page.",
-  //         variant: "error"
-  //       });
-  //     } finally {
-  //       setLoadingProducts(false);
-  //     }
-  //   };
-
-  //   fetchLoanProducts();
-  // }, []);
 
   // Calculate EMI when loan amount, tenure, tenure unit, or product changes
   useEffect(() => {
@@ -1147,11 +1070,6 @@ export default function QuickLoanApplication() {
         return 'N/A';
       }
     };
-
-    // const formatCurrency = (value: any) => {
-    //   if (!value || value === 'N/A' || isNaN(value)) return 'N/A';
-    //   return Number(value).toLocaleString('en-IN');
-    // };
 
     const maskAadhaar = (aadhaar: string) => {
       if (!aadhaar || aadhaar.length < 4) return 'N/A';
@@ -3626,17 +3544,10 @@ console.log('Sending OTP with payload:', payload);
         if (token) {
           try {
             console.log('🔵 Fetching customer data after OTP verification...');
-            const customerResponse = await fetch('https://alpha.quikkred.in/api/customer/get', {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              }
-            });
+            // Using Redux for customer/get API
+            const customerResult = await getCustomer();
 
-            const customerResult = await customerResponse.json();
-
-            if (customerResponse.ok && customerResult.success && customerResult.data) {
+            if (customerResult.success && customerResult.data) {
               const profileData = customerResult.data;
               console.log('✅ Customer data fetched successfully');
 
@@ -4765,16 +4676,10 @@ console.log('Sending OTP with payload:', payload);
                       localStorage.getItem('token') ||
                       localStorage.getItem('authToken');
 
-        // Call both APIs in parallel - save bank details and get BRE data
+        // Call both APIs in parallel - save bank details and get BRE data using Redux
         const [saveSuccess, breResponse] = await Promise.all([
           saveCustomerData(3), // Save bank details
-          fetch('https://alpha.quikkred.in/api/kyc/bre/initialize', {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            }
-          }).then(res => res.json()).catch(err => {
+          initBRE().catch((err: any) => {
             console.error('BRE API error:', err);
             return null;
           })
@@ -6174,11 +6079,8 @@ console.log('Sending OTP with payload:', payload);
                                 let shouldContinuePolling = true;
                                 while (shouldContinuePolling) {
                                   try {
-                                    const breResponse = await fetch(`https://alpha.quikkred.in/api/kyc/finfactor/initialize`, {
-                                      method: 'GET',
-                                      headers: { 'Authorization': `Bearer ${token}` }
-                                    });
-                                    const breResult = await breResponse.json();
+                                    // Using Redux for finfactor/initialize API
+                                    const breResult = await getFinfactor();
 
                                     if (breResult.message === 'Statement not fetched yet') {
                                       setBrePollingMessage('Fetching your bank statement...');
@@ -6482,19 +6384,11 @@ console.log('Sending OTP with payload:', payload);
                                 return;
                               }
 
-                              // Initialize e-Sign verification
+                              // Initialize e-Sign verification using Redux
                               try {
-                                const eSignResponse = await fetch('https://alpha.quikkred.in/api/kyc/eSign/initialize', {
-                                  method: 'GET',
-                                  headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${token}`
-                                  }
-                                });
+                                const eSignResult = await initESign();
 
-                                const eSignResult = await eSignResponse.json();
-
-                                if (!eSignResponse.ok || !eSignResult.success) {
+                                if (!eSignResult.success) {
                                   toast({
                                     title: "e-Sign Initialization Failed",
                                     description: eSignResult.message || "Failed to initialize e-sign verification",
@@ -6512,21 +6406,13 @@ console.log('Sending OTP with payload:', payload);
                                 return;
                               }
 
-                              // Fetch customer data from API
+                              // Fetch customer data from API using Redux
                               let customerData: any = {};
 
                               try {
-                                const response = await fetch('https://alpha.quikkred.in/api/customer/get', {
-                                  method: 'GET',
-                                  headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${token}`
-                                  }
-                                });
+                                const result = await getCustomer();
 
-                                const result = await response.json();
-
-                                if (response.ok && result.success && result.data) {
+                                if (result.success && result.data) {
                                   customerData = result.data;
 
                                   // Check eSign status and update state
@@ -6926,8 +6812,6 @@ console.log('Sending OTP with payload:', payload);
         </div>
       </div>
     </div>
-
-
     </>
   );
 }
