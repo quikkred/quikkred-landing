@@ -16,7 +16,7 @@ import ContactForm from "@/components/Contact-form";
 
 const stats = [
   { label: "Years of Excellence", value: "Since ", icon: Clock },
-  { label: "Licensed by RBI", value: "", icon: Shield },
+  { label: "RBI-Registered Partner", value: "", icon: Shield },
   { label: "Pan India Presence", value: "28 States", icon: Globe },
   { label: "Customer Satisfaction", value: "%", icon: Star },
 ];
@@ -118,7 +118,7 @@ export default function AboutPage() {
           // highlightWord="Kred"
           // {t('products.pages.personalLoan.hero.highlightWord')}
           // title1={t('products.pages.personalLoan.hero.title1')}
-          subtitle="We are India's most trusted AI-powered NBFC, committed to making credit accessible, affordable, and transparent for every Indian. Our mission is to empower dreams and enable financial inclusion through technology and trust."
+          subtitle="We are India's most trusted AI-powered digital lending platform, committed to making credit accessible, affordable, and transparent for every Indian. Our mission is to empower dreams and enable financial inclusion through technology and trust."
           // {t('products.pages.personalLoan.hero.subtitle')}
           buttonPrimaryText="Contact Us"
           // {t('products.pages.personalLoan.hero.buttonPrimary')}
@@ -146,7 +146,7 @@ export default function AboutPage() {
                 </h1>
         
                 {/* Subtitle (optional) */}
-               <p className="text-gray-600 text-lg">QuikKred began in 2018 as a leading RBI-registered NBFC with a clear goal: to build a seamless lending experience for the underserved population of India. We recognized that millions of individuals and small businesses were excluded from traditional financial systems, facing complex processes and limited access to credit.</p>
+               <p className="text-gray-600 text-lg">QuikKred began in 2018 as a digital lending platform with a clear goal: to build a seamless lending experience for the underserved population of India. In partnership with Satsai Finlease Private Limited (an RBI-registered NBFC), we recognized that millions of individuals and small businesses were excluded from traditional financial systems, facing complex processes and limited access to credit.</p>
                <p className="text-gray-600 text-lg">We saw the challenges many faced with traditional financing and knew that by leveraging cutting-edge technology, we could offer accessible and fair loan products. Our digital-first approach removes barriers, simplifies the lending process, and empowers individuals to achieve their financial goals with dignity and ease.</p>
                <p className="text-[#2b2b2b] text-lg font-bold">Today, we continue to innovate and expand, staying true to our mission of making financial services accessible to everyone who needs them.</p>
               </div>
