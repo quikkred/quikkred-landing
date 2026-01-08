@@ -24,7 +24,7 @@ export default function CookiePolicyPage() {
               Introduction
             </h2>
             <p className="text-gray-600 leading-relaxed mb-4">
-              QuikkRed Financial Services Private Limited (&quot;QuikkRed&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) uses cookies and similar tracking technologies on our website and mobile application. This Cookie Policy explains what cookies are, how we use them, and your choices regarding their use.
+              QuikkRed is a digital lending platform operated by Fluxusforge Private Limited (Loan Service Provider). Throughout this Cookie Policy, &quot;QuikkRed&quot;, &quot;we&quot;, &quot;us&quot;, or &quot;our&quot; refers to Fluxusforge Private Limited. We use cookies and similar tracking technologies on our website and mobile application. This Cookie Policy explains what cookies are, how we use them, and your choices regarding their use.
             </p>
             <p className="text-gray-600 leading-relaxed">
               By continuing to use our website, you consent to the use of cookies in accordance with this Cookie Policy.
@@ -233,10 +233,10 @@ export default function CookiePolicyPage() {
             <div className="bg-gradient-to-br from-[#2BB89A]/10 to-[#2BB89A]/5 border-l-4 border-[#2BB89A] rounded-lg p-6">
               <ul className="space-y-2">
                 <li className="text-gray-600">
-                  <strong className="text-gray-700">Email:</strong> privacy@quikkred.com
+                  <strong className="text-gray-700">Email:</strong> info@quikkred.in
                 </li>
                 <li className="text-gray-600">
-                  <strong className="text-gray-700">Address:</strong> QuikkRed, Head Office, Plot No. 420, Digital Lane, Sector-44, Gurugram – 122003
+                  <strong className="text-gray-700">Address:</strong> 1008, 10th Floor, Vikrant Tower, Rajendra Place, New Delhi - 110005
                 </li>
               </ul>
             </div>

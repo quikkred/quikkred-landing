@@ -42,7 +42,7 @@ export default function PrivacyPage() {
                 1. Introduction
               </h2>
               <p className="text-gray-600 mb-4">
-                Quikkred, a brand of Fluxusforge OPC Private Limited, operates as a Lending Service Provider (LSP), in partnership with Satsai Finance Private Limited (an RBI-registered NBFC) for loan disbursement. This Privacy Policy governs all users of Quikkred&apos;s all digital platforms, ensuring compliance with RBI Digital Lending Directions 2025 and the Digital Personal Data Protection Act 2023 (DPDPA).
+                Quikkred, a brand of Fluxusforge Private Limited, operates as a Lending Service Provider (LSP), in partnership with Satsai Finlease Private Limited (an RBI-registered NBFC) for loan disbursement. This Privacy Policy governs all users of Quikkred&apos;s all digital platforms, ensuring compliance with RBI Digital Lending Directions 2025 and the Digital Personal Data Protection Act 2023 (DPDPA).
               </p>
             </div>
 
@@ -268,7 +268,7 @@ export default function PrivacyPage() {
                 10. Regulatory Compliance
               </h2>
               <p className="text-gray-600 mb-4">
-                Quikkred acts only as LSP, with loans issued by RBI-regulated Satsai Finance Private Limited (NBFC). Digital copies of RBI and NBFC registrations and policies are available on our support site.
+                Quikkred acts only as LSP, with loans issued by RBI-regulated Satsai Finlease Private Limited (NBFC). Digital copies of RBI and NBFC registrations and policies are available on our support site.
               </p>
               <div className="bg-green-50 border-l-4 border-green-400 p-4">
                 <p className="text-gray-700">

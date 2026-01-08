@@ -22,7 +22,7 @@ export default function InvestmentPolicyPage() {
               Investment Policy
             </h1>
             <p className="text-xl">Guidelines for Investment &amp; Management of Funds</p>
-            <p className="text-sm mt-2 opacity-90">Satsai Finance Pvt. Ltd.</p>
+            <p className="text-sm mt-2 opacity-90">Satsai Finlease Pvt. Ltd.</p>
           </motion.div>
         </div>
       </section>
@@ -87,7 +87,7 @@ export default function InvestmentPolicyPage() {
                 </table>
               </div>
               <p className="text-[#2b2b2b] leading-[1.7] mt-4 italic">
-                This policy was adopted by the Board of Directors of &quot;Satsai Finance Pvt. Ltd.&quot; on &quot;21st April 2025&quot;, to provide guidelines for investment and management of idle funds kept in the bank account.
+                This policy was adopted by the Board of Directors of &quot;Satsai Finlease Pvt. Ltd.&quot; on &quot;21st April 2025&quot;, to provide guidelines for investment and management of idle funds kept in the bank account.
               </p>
             </div>
 
@@ -313,7 +313,7 @@ export default function InvestmentPolicyPage() {
               <div className="bg-gradient-to-br from-[#25B181]/10 to-[#4A66FF]/10 rounded-lg p-6 border-l-4 border-[#25B181]">
                 <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
                   <Building className="w-6 h-6 text-[#25B181]" />
-                  For Satsai Finance Private Limited
+                  For Satsai Finlease Private Limited
                 </h3>
                 <p className="text-[#2b2b2b] leading-[1.7]">
                   <strong>Authorized Signatory</strong>
