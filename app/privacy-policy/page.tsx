@@ -230,8 +230,8 @@ export default function PrivacyPage() {
                 <p className="font-semibold mb-2">Data Protection Officer</p>
                 <p className="text-gray-600">
                   Miss Priya<br />
-                  Email: info@quikkred.in<br />
-                  Contact: 9599238889
+                  Email: dpo@quikkred.in<br />
+                  Contact: +91-9311964796
                 </p>
               </div>
               <p className="text-gray-600 mt-4">

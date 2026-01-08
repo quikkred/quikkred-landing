@@ -66,8 +66,8 @@ const contactCards = [
     icon: Mail,
     title: "Email Us",
     description: "Send us your queries anytime",
-    contact: "info@quikkred.in",
-    link: "mailto:info@quikkred.in"
+    contact: "support@quikkred.in",
+    link: "mailto:support@quikkred.in"
   },
   {
     icon: MapPin,
