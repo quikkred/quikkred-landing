@@ -10,42 +10,42 @@ export default function PressPage() {
 
   const pressReleases = [
     {
-      date: "October 15, 2024",
+      date: "October 15, 2026",
       title: "Quikkred Crosses ₹500 Crore Milestone in Loan Disbursements",
       excerpt: "Leading digital lending platform achieves significant growth milestone, serving over 50,000 customers across 15+ cities",
       category: "Company News",
       color: "#25B181"
     },
     {
-      date: "September 28, 2024",
+      date: "September 28, 2026",
       title: "AI-Powered Loan Approval System Reduces Processing Time to 30 Seconds",
       excerpt: "Revolutionary technology enables instant loan approvals with 99.2% accuracy rate",
       category: "Technology",
       color: "#4A66FF"
     },
     {
-      date: "September 10, 2024",
-      title: "Quikkred Awarded 'Best Digital Lending Platform of the Year 2024'",
+      date: "September 10, 2026",
+      title: "Quikkred Awarded 'Best Digital Lending Platform of the Year 2026'",
       excerpt: "Recognized for outstanding performance and customer satisfaction at Financial Services Excellence Awards",
       category: "Awards",
       color: "#FFD600"
     },
     {
-      date: "August 22, 2024",
+      date: "August 22, 2026",
       title: "New Branch Expansion in Tier 2 Cities Announced",
       excerpt: "Strategic expansion to bring financial services to underserved markets across India",
       category: "Expansion",
       color: "#FF9C70"
     },
     {
-      date: "August 5, 2024",
+      date: "August 5, 2026",
       title: "Partnership with Leading Banks for Co-Lending Products",
       excerpt: "Collaboration to enhance credit availability and offer competitive interest rates",
       category: "Partnership",
       color: "#4A148C"
     },
     {
-      date: "July 18, 2024",
+      date: "July 18, 2026",
       title: "CSR Initiative: 10,000 Trees Planted Across 15 Cities",
       excerpt: "Environmental sustainability drive as part of corporate social responsibility",
       category: "CSR",
