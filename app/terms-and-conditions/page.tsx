@@ -42,9 +42,10 @@ export default function TermsPage() {
               </h2>
               <p className="text-gray-600 mb-4">
                 Welcome to Quikkred. These Terms and Conditions govern your use of our services
-                and form a binding legal agreement between you and Quikkred Financial Services
-                Private Limited, a Non-Banking Financial Company (NBFC) registered with the
-                Reserve Bank of India.
+                and form a binding legal agreement between you and Quikkred (a brand of Fluxusforge
+                Private Limited, acting as Loan Service Provider), operating in partnership with
+                Satsai Finlease Private Limited, a Non-Banking Financial Company (NBFC) registered
+                with the Reserve Bank of India (RBI Registration No: B-14.01646).
               </p>
               <p className="text-gray-600">
                 By accessing or using our services, you agree to be bound by these terms. If you
@@ -187,7 +188,7 @@ export default function TermsPage() {
                 <li>1. Internal grievance redressal mechanism</li>
                 <li>2. Banking Ombudsman (if not resolved internally)</li>
                 <li>3. Arbitration under the Arbitration and Conciliation Act, 1996</li>
-                <li>4. Courts of Mumbai shall have exclusive jurisdiction</li>
+                <li>4. Courts of Delhi shall have exclusive jurisdiction</li>
               </ol>
             </div>
 
@@ -205,12 +206,16 @@ export default function TermsPage() {
             <div className="mb-8">
               <h2 className="text-2xl font-bold mb-4">8. Contact Information</h2>
               <div className="bg-gray-50 rounded-lg p-6">
-                <p className="font-semibold mb-2">Quikkred Financial Services Pvt. Ltd.</p>
+                <p className="font-semibold mb-2">Quikkred (A brand of Fluxusforge Private Limited)</p>
+                <p className="text-gray-600 mb-3">
+                  <strong>Lending Partner:</strong> Satsai Finlease Private Limited<br />
+                  RBI Registration No: B-14.01646
+                </p>
                 <p className="text-gray-600">
-                  RBI Registration No: B-14.03215<br />
-                  Email: legal@Quikkred.com<br />
-                  Phone: 1800-123-5555<br />
-                  Registered Office: Mumbai, Maharashtra
+                  Email: support@quikkred.in<br />
+                  Phone: +91-9311964796<br />
+                  Registered Office: 1008, 10th Floor, Vikrant Tower,<br />
+                  Rajendra Place, New Delhi - 110005
                 </p>
               </div>
             </div>
