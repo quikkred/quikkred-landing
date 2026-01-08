@@ -12,7 +12,7 @@ export default function PressPage() {
     {
       date: "October 15, 2024",
       title: "Quikkred Crosses ₹500 Crore Milestone in Loan Disbursements",
-      excerpt: "Leading NBFC achieves significant growth milestone, serving over 50,000 customers across 15+ cities",
+      excerpt: "Leading digital lending platform achieves significant growth milestone, serving over 50,000 customers across 15+ cities",
       category: "Company News",
       color: "#25B181"
     },
@@ -25,7 +25,7 @@ export default function PressPage() {
     },
     {
       date: "September 10, 2024",
-      title: "Quikkred Awarded 'Best NBFC of the Year 2024'",
+      title: "Quikkred Awarded 'Best Digital Lending Platform of the Year 2024'",
       excerpt: "Recognized for outstanding performance and customer satisfaction at Financial Services Excellence Awards",
       category: "Awards",
       color: "#FFD600"
