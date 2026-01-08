@@ -62,7 +62,7 @@ export default function KYCPolicyPage() {
           <div className={styles.contentSection}>
             <h3 className={styles.contentHeading}>1. Preamble</h3>
             <p className={styles.paragraph}>
-              Satsai Finlease Private Limited (&quot;RKBFL&quot; / &quot;the Company&quot;), being a Base Non-Banking Financial Company (NBFC) registered with the Reserve Bank of India (RBI), engaged in the business of Payday Loans, EMI-based Loans, Loan Against Property (LAP) and other business loans, recognizes its responsibility to prevent misuse of its financial services for money laundering, terrorist financing and other unlawful activities.
+              Satsai Finlease Private Limited (&quot;SFPL&quot; / &quot;the Company&quot;), being a Base Non-Banking Financial Company (NBFC) registered with the Reserve Bank of India (RBI) under Registration No. B-14.01646, engaged in the business of Payday Loans, EMI-based Loans, Loan Against Property (LAP) and other business loans, recognizes its responsibility to prevent misuse of its financial services for money laundering, terrorist financing and other unlawful activities.
             </p>
             <p className={styles.paragraph}>
               Accordingly, this Know Your Customer (KYC) and Anti-Money Laundering (AML) Policy is formulated in compliance with:
@@ -125,7 +125,7 @@ export default function KYCPolicyPage() {
                 <strong>&quot;Central KYC Records Registry&quot; (CKYCR)</strong> means an entity defined under Rule 2(1) (aa) of the Rules, to receive, store, safeguard and retrieve the KYC records in digital form of a customer
               </li>
               <li className={styles.listItem}>
-                <strong>&quot;RamFincorp&quot;</strong> means mobile based applications, products of the Company, which provides instant personal loan to the approved end user customers of the Company
+                <strong>&quot;Quikkred&quot;</strong> means the digital lending platform and mobile application operated by Fluxusforge Private Limited (as LSP) in partnership with the Company, which provides instant personal loans to approved customers
               </li>
               <li className={styles.listItem}>
                 <strong>&quot;Designated Director&quot;</strong> means a person designated by the Company to ensure overall compliance with the obligations imposed under Chapter IV of the Act and the Rules and shall include Managing Director or a whole-time director, duly authorized by the Board

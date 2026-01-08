@@ -90,8 +90,8 @@ export default function NodalOfficerPage() {
                 <Mail className="w-6 h-6 text-[#25B181] flex-shrink-0" />
                 <div>
                   <h3 className="font-bold mb-1">Email Address</h3>
-                  <a href="mailto:nodal@Quikkred.com" className="text-[#25B181] hover:underline">
-                    nodal@Quikkred.com
+                  <a href="mailto:nodal@quikkred.in" className="text-[#25B181] hover:underline">
+                    nodal@quikkred.in
                   </a>
                 </div>
               </div>
@@ -100,8 +100,8 @@ export default function NodalOfficerPage() {
                 <Phone className="w-6 h-6 text-[#25B181] flex-shrink-0" />
                 <div>
                   <h3 className="font-bold mb-1">Phone Number</h3>
-                  <a href="tel:+912212345678" className="text-[#25B181] hover:underline">
-                    +91-22-1234-5678
+                  <a href="tel:+919311964796" className="text-[#25B181] hover:underline">
+                    +91-9311964796
                   </a>
                 </div>
               </div>
@@ -111,8 +111,9 @@ export default function NodalOfficerPage() {
                 <div>
                   <h3 className="font-bold mb-1">Office Address</h3>
                   <p className="text-sm text-gray-600">
-                    Quikkred Finance Ltd.<br />
-                    123 Business Hub, Mumbai - 400001
+                    Quikkred (Fluxusforge Pvt. Ltd.)<br />
+                    1008, 10th Floor, Vikrant Tower,<br />
+                    Rajendra Place, New Delhi - 110005
                   </p>
                 </div>
               </div>
@@ -194,11 +195,11 @@ export default function NodalOfficerPage() {
               <div className="space-y-2">
                 <p className="flex items-center gap-2">
                   <Mail className="w-4 h-4" />
-                  <span>principal.nodal@Quikkred.com</span>
+                  <span>principal.nodal@quikkred.in</span>
                 </p>
                 <p className="flex items-center gap-2">
                   <Phone className="w-4 h-4" />
-                  <span>+91-22-1234-5679</span>
+                  <span>+91-9311964796</span>
                 </p>
               </div>
             </div>
