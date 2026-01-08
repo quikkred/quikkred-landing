@@ -12,91 +12,54 @@ import { loansService } from "@/lib/api/loans.service";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast, Toaster } from "@/components/ui/toast";
 import SelfieCapture from "@/components/camera/SelfieCapture";
+import { BANKS } from "@/lib/constants/banks";
 
 // Auto-decision engine
-const autoDecisionEngine = (data: any) => {
-  const { monthlyIncome, loanAmount, pan, aadhaar } = data;
-
-  // Simple rule-based decision
-  const minIncome = 25000;
-  const maxLoanToIncome = 40;
-  const maxEligibleAmount = monthlyIncome * maxLoanToIncome;
-
-  // Check basic eligibility
-  if (monthlyIncome < minIncome) {
-    return {
-      approved: false,
-      reason: "Minimum monthly income requirement not met (₹25,000)",
-      suggestedAction: "Please reapply when your monthly income is ₹25,000 or above"
-    };
-  }
-
-  if (loanAmount > maxEligibleAmount) {
-    return {
-      approved: false,
-      reason: `Requested amount exceeds maximum eligible amount (₹${maxEligibleAmount.toLocaleString()})`,
-      suggestedAction: `Maximum loan amount you can apply for: ₹${maxEligibleAmount.toLocaleString()}`
-    };
-  }
-
-  if (!pan || !aadhaar) {
-    return {
-      approved: false,
-      reason: "PAN and Aadhaar details are mandatory",
-      suggestedAction: "Please provide valid PAN and Aadhaar numbers"
-    };
-  }
-
-  // Approved!
-  return {
-    approved: true,
-    approvedAmount: loanAmount,
-    interestRate: 12.5,
-    tenure: data.tenure || 12,
-    emi: Math.round((loanAmount * (12.5/100/12) * Math.pow(1 + 12.5/100/12, 12)) / (Math.pow(1 + 12.5/100/12, 12) - 1)),
-    processingFee: Math.round(loanAmount * 0.02)
-  };
-};
 
 
-const BANKS = [
-  // ===== PSU Banks =====
-  { value: 'state bank of india', name: 'State Bank of India' },
-  { value: 'punjab national bank', name: 'Punjab National Bank' },
-  { value: 'bank of baroda', name: 'Bank of Baroda' },
-  { value: 'union bank of india', name: 'Union Bank of India' },
-  { value: 'bank of india', name: 'Bank of India' },
-  { value: 'canara bank', name: 'Canara Bank' },
-  { value: 'indian bank', name: 'Indian Bank' },
-  { value: 'indian overseas bank', name: 'Indian Overseas Bank' },
-  { value: 'uco bank', name: 'UCO Bank' },
-  { value: 'bank of maharashtra', name: 'Bank of Maharashtra' },
-  { value: 'punjab & sind bank', name: 'Punjab & Sind Bank' },
+// const autoDecisionEngine = (data: any) => {
+//   const { monthlyIncome, loanAmount, pan, aadhaar } = data;
 
-  // ===== Private Banks =====
-  { value: 'hdfc bank', name: 'HDFC Bank' },
-  { value: 'icici bank', name: 'ICICI Bank' },
-  { value: 'axis bank', name: 'Axis Bank' },
-  { value: 'kotak mahindra bank', name: 'Kotak Mahindra Bank' },
-  { value: 'yes bank', name: 'Yes Bank' },
-  { value: 'indusind bank', name: 'IndusInd Bank' },
-  { value: 'idfc first bank', name: 'IDFC First Bank' },
-  { value: 'federal bank', name: 'Federal Bank' },
-  { value: 'dcb bank', name: 'DCB Bank' },
-  { value: 'rbl bank', name: 'RBL Bank' },
-  { value: 'catholic syrian bank (csb bank)', name: 'Catholic Syrian Bank (CSB Bank)' },
-  { value: 'south indian bank', name: 'South Indian Bank' },
+  
+//   const minIncome = 25000;
+//   const maxLoanToIncome = 40;
+//   const maxEligibleAmount = monthlyIncome * maxLoanToIncome;
 
-  // ===== Small Finance / Payments Banks =====
-  { value: 'au small finance bank', name: 'AU Small Finance Bank' },
-  { value: 'equitas small finance bank', name: 'Equitas Small Finance Bank' },
-  { value: 'fino payments bank', name: 'Fino Payments Bank' },
-  { value: 'airtel payments bank', name: 'Airtel Payments Bank' },
-  { value: 'paytm payments bank', name: 'Paytm Payments Bank' },
+ 
+//   if (monthlyIncome < minIncome) {
+//     return {
+//       approved: false,
+//       reason: "Minimum monthly income requirement not met (₹25,000)",
+//       suggestedAction: "Please reapply when your monthly income is ₹25,000 or above"
+//     };
+//   }
 
-  // ===== Others =====
-  { value: 'idbi bank', name: 'IDBI Bank' }
-];
+//   if (loanAmount > maxEligibleAmount) {
+//     return {
+//       approved: false,
+//       reason: `Requested amount exceeds maximum eligible amount (₹${maxEligibleAmount.toLocaleString()})`,
+//       suggestedAction: `Maximum loan amount you can apply for: ₹${maxEligibleAmount.toLocaleString()}`
+//     };
+//   }
+
+//   if (!pan || !aadhaar) {
+//     return {
+//       approved: false,
+//       reason: "PAN and Aadhaar details are mandatory",
+//       suggestedAction: "Please provide valid PAN and Aadhaar numbers"
+//     };
+//   }
+
+//   // Approved!
+//   return {
+//     approved: true,
+//     approvedAmount: loanAmount,
+//     interestRate: 12.5,
+//     tenure: data.tenure || 12,
+//     emi: Math.round((loanAmount * (12.5/100/12) * Math.pow(1 + 12.5/100/12, 12)) / (Math.pow(1 + 12.5/100/12, 12) - 1)),
+//     processingFee: Math.round(loanAmount * 0.02)
+//   };
+// };
 
 
 export default function QuickLoanApplication() {
@@ -157,8 +120,6 @@ export default function QuickLoanApplication() {
   // User's desired loan amount (can be less than or equal to approved amount)
   const [userDesiredAmount, setUserDesiredAmount] = useState<number | null>(null);
   const [calculatedLoanDetails, setCalculatedLoanDetails] = useState<any>(null);
-  const [showAmountModal, setShowAmountModal] = useState(false);
-  const [tempAmount, setTempAmount] = useState<string>('');
 
   // BRE Status States
   const [rejectionCountdown, setRejectionCountdown] = useState(10);
@@ -411,34 +372,14 @@ export default function QuickLoanApplication() {
               const isBankDetailsFilled = toBoolean(profileData.isBankDetailsFilled);
               const isSubmit = toBoolean(profileData.isSubmit);
 
-              // Debug logging for checklist
-              console.log('📋 CHECKLIST API Response:', {
-                raw: {
-                  isEmailVerified: profileData.isEmailVerified,
-                  isBasicDetailsFilled: profileData.isBasicDetailsFilled,
-                  isKycDetailsFilled: profileData.isKycDetailsFilled,
-                  isBankDetailsFilled: profileData.isBankDetailsFilled,
-                  isSubmit: profileData.isSubmit,
-                },
-                normalized: {
-                  isEmailVerified,
-                  isBasicDetailsFilled,
-                  isKycDetailsFilled,
-                  isBankDetailsFilled,
-                  isSubmit,
-                }
-              });
-
               // Load selfie preview from profile if available
               if (profileData.profile?.s3URL) {
                 setSelfiePreview(profileData.profile.s3URL);
                 setSelfieCaptured(true);
-                console.log('✅ Selfie loaded from profile:', profileData.profile.s3URL);
 
                 // Check if selfie/profile is verified - disable retake if verified
                 if (profileData.profile?.status === 'VERIFIED') {
                   setSelfieVerified(true);
-                  console.log('✅ Selfie already verified - retake disabled');
                 }
               }
 
@@ -446,7 +387,6 @@ export default function QuickLoanApplication() {
               const allChecklistComplete = isBasicDetailsFilled && isKycDetailsFilled && isBankDetailsFilled && isSubmit;
 
               if (allChecklistComplete) {
-                console.log('✅ All checklist items complete - redirecting to Dashboard');
                 router.push('/user');
                 return;
               }
@@ -457,27 +397,17 @@ export default function QuickLoanApplication() {
 
               if (!isBasicDetailsFilled) {
                 // Step 1 not complete - check email verification requirement
-                if (!isEmailVerified) {
-                  console.log('📍 Step 1: Basic Details not filled, email not verified');
-                } else {
-                  console.log('📍 Step 1: Basic Details not filled (email verified)');
-                }
                 firstPendingStep = 1;
               } else if (!isKycDetailsFilled) {
                 // Step 1 COMPLETE - go to Step 2 (don't force back to Step 1)
                 firstPendingStep = 2;
-                console.log('📍 First pending: Step 2 (KYC/Identity) - Step 1 already complete');
               } else if (!isBankDetailsFilled) {
                 // Step 1 & 2 COMPLETE - go to Step 3
                 firstPendingStep = 3;
-                console.log('📍 First pending: Step 3 (Bank Details) - Steps 1-2 already complete');
               } else if (!isSubmit) {
                 // Step 1, 2 & 3 COMPLETE - go to Step 4
                 firstPendingStep = 4;
-                console.log('📍 First pending: Step 4 (Approval/Submit) - Steps 1-3 already complete');
               }
-
-              console.log('🎯 Navigating to step:', firstPendingStep);
 
               // Set the determined step
               setApiDeterminedStep(firstPendingStep);
@@ -518,7 +448,6 @@ export default function QuickLoanApplication() {
   useEffect(() => {
     // Clear the localStorage after reading (already loaded in initial state)
     if (localStorage.getItem('heroFormData')) {
-      console.log('🗑️ Clearing hero form data from localStorage');
       localStorage.removeItem('heroFormData');
     }
   }, []);
@@ -526,7 +455,6 @@ export default function QuickLoanApplication() {
   // Get user location when they land on the apply page (after clicking "Apply Now")
   useEffect(() => {
     const requestLocation = async () => {
-      console.log('📍 Requesting user location on page load...');
       await getLocation();
     };
     requestLocation();
@@ -535,7 +463,6 @@ export default function QuickLoanApplication() {
   // Apply API-determined step after data is loaded
   useEffect(() => {
     if (apiDeterminedStep !== null && apiDeterminedStep !== currentStep) {
-      console.log(`🎯 Applying API-determined step: ${apiDeterminedStep}`);
       setCurrentStep(apiDeterminedStep);
       toast({
         variant: "success",
