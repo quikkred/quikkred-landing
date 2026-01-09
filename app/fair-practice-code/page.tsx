@@ -71,7 +71,7 @@ export default function FairPracticeCodePage() {
                 The Company's Fair lending practices shall apply across all aspects of our operations including marketing, loan origination, processing, servicing and collection activities. Our commitment to Fair Practice Code would be demonstrated in terms of employee accountability, monitoring and auditing programs, training and technology.
               </p>
               <p className="text-[#2b2b2b] leading-[1.7] mb-4">
-                The Company's Board of Directors and the management Team is responsible for establishing practices designed to ensure that our operations reflect our strong commitment to fair lending and that all employees are aware of that commitment. Satsai Finance Private Limited is committed to providing service of the highest quality to its clients.
+                The Company's Board of Directors and the management Team is responsible for establishing practices designed to ensure that our operations reflect our strong commitment to fair lending and that all employees are aware of that commitment. Satsai Finlease Private Limited is committed to providing service of the highest quality to its clients.
               </p>
               <p className="text-[#2b2b2b] leading-[1.7] mb-4">
                 This Fair Practices Code applies to all categories of products and services offered by us (currently offered or which may be introduced at a future date).
