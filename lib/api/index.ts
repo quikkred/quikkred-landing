@@ -8,6 +8,7 @@ export { paymentsService } from './payments.service';
 export { aiService } from './ai.service';
 export { notificationsService } from './notifications.service';
 export { supportService } from './support.service';
+export { customerService } from './customer.service';
 
 // Export all types
 export type {
@@ -84,3 +85,16 @@ export type {
   SupportAgent,
   ChatMessage,
 } from './support.service';
+
+export type {
+  DashboardData,
+  CustomerProfile,
+  LoanApplication as CustomerLoanApplication,
+  ApplicationPagination,
+  BankAccount as CustomerBankAccount,
+  CustomerDocument,
+  CustomerNotification,
+  LoanProduct as CustomerLoanProduct,
+  SupportTicket as CustomerSupportTicket,
+  LoanStatus,
+} from './customer.service';
