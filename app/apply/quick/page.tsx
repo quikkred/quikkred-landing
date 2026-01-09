@@ -574,22 +574,14 @@ export default function QuickLoanApplication() {
       setFinfactorSuccess(true); // Show loading UI
 
       try {
-        const response = await fetch('https://alpha.quikkred.in/api/kyc/bre/finFactor', {
+        const response = await fetch('https://api.quikkred.in/api/kyc/bre/finFactor', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
 
-        try {
-          const response = await fetch('https://api.quikkred.in/api/kyc/consentHandleToFIRequest', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ customerId })
-          });
+        const result = await response.json();
 
         if (response.ok && result.success) {
           console.log('✅ BRE finFactor result fetched successfully:', result.data);
