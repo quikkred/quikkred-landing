@@ -1760,7 +1760,6 @@ body.pdf-mode .esign-box {
                 <div class="info-row"><span class="info-label">Employment Type</span><span class="info-value">${getValue(data.employmentType)}</span></div>
                 <div class="info-row"><span class="info-label">Company / Business Name</span><span class="info-value">${getValue(data.companyName)}</span></div>
                 <div class="info-row"><span class="info-label">Monthly Income</span><span class="info-value">&#8377;${(data.monthlyIncome)}</span></div>
-                <div class="info-row"><span class="info-label">Salary Credit Date</span><span class="info-value">${getValue(data.salaryDate) !== 'N/A' ? data.salaryDate : '1st'} of every month</span></div>
             </div>
         </div>
 
@@ -1771,7 +1770,7 @@ body.pdf-mode .esign-box {
                     <div class="loan-item"><div class="amount">&#8377;${(data.loanAmount)}</div><div class="label">Principal Amount</div></div>
                     <div class="loan-item"><div class="amount">${getValue(data.interestRate) !== 'N/A' ? data.interestRate : '1.0'}%</div><div class="label">Interest Rate (Daily)</div></div>
                     <div class="loan-item"><div class="amount">${getValue(data.tenure)} ${getValue(data.tenureUnit) !== 'N/A' ? data.tenureUnit : 'days'}</div><div class="label">Loan Tenure</div></div>
-                    <div class="loan-item"><div class="amount">&#8377;${(data.processingFee)}</div><div class="label">Processing Fee</div></div>
+                    <div class="loan-item"><div class="amount">&#8377;${(data.processingFee)} + &#8377;${(data.gstOnProcessingFee)} GST (18%)</div><div class="label">Processing Fee</div></div>
                     <div class="loan-item highlight"><div class="amount">&#8377;${(data.disbursementAmount)}</div><div class="label">Disbursement Amount</div></div>
                     <div class="loan-item highlight"><div class="amount">&#8377;
 ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
@@ -1798,7 +1797,7 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
                        <th>Due Date</th>
                        <th>Principal</th>
                        <th>Interest</th>
-                       <th>Total EMI</th>
+                       <th>Total Repayment</th>
                     </tr>
                 </thead>
                 <tbody>${generateRepaymentSchedule()}</tbody>
@@ -1826,7 +1825,7 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
                     <li><strong>Loan Purpose:</strong> This loan is granted for personal/business use as declared by the Borrower.</li>
                     <li><strong>Disbursement:</strong> Upon successful verification, the loan amount will be disbursed within 24-48 hours.</li>
                     <li><strong>Repayment:</strong> The Borrower agrees to repay the loan as per the repayment schedule via eNACH/eMandate.</li>
-                    <li><strong>Interest & Charges:</strong> The applicable interest rate is ${getValue(data.interestRate) !== 'N/A' ? data.interestRate : '1.0'}% Daily (36.5% APR). Processing fee of ${getValue(data.processingFee) !== 'N/A' ? data.processingFee : '2'}% + 18% GST.</li>
+                    <li><strong>Interest & Charges:</strong> The applicable interest rate is ${getValue(data.interestRate) !== 'N/A' ? data.interestRate : '1.0'}% Daily (36.5% APR). Processing fee of ${getValue(data.processingFee) !== 'N/A' ? data.processingFee : '2%'} + 18% GST.</li>
                     <li><strong>Late Payment:</strong> Late fee of &#8377;
  500 and penal interest of 2% per day will apply on overdue amounts.</li>
                     <li><strong>Default & Recovery:</strong> Default may result in credit bureau reporting and legal action.</li>
@@ -1912,8 +1911,9 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
     </div>
 
     <script>
-    // 🔹 Document number injected from React component (single source of truth)
+// 🔹 Document number injected from React component (single source of truth)
         const documentNumber = '${documentNumber}';
+
         // ========== PRINT-BASED PDF DOWNLOAD ==========
         function testGeneratePDF() {
             const btn = document.getElementById('test-btn');
@@ -5728,10 +5728,22 @@ console.log('Sending OTP with payload:', payload);
                           },
                         } as any);
                       }}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                      placeholder="₹ 50,000"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                        formData.loanAmount && (parseFloat(formData.loanAmount.replace(/,/g, "")) < 5000 || parseFloat(formData.loanAmount.replace(/,/g, "")) > 25000)
+                          ? "border-red-500"
+                          : "border-gray-300"
+                      }`}
+                      placeholder="₹ 5,000 - ₹ 25,000"
                     />
-                    <p className="mt-1 text-xs text-gray-500">Enter the approximate loan amount you require</p>
+                    {formData.loanAmount && parseFloat(formData.loanAmount.replace(/,/g, "")) < 5000 && (
+                      <p className="mt-1 text-xs text-red-500">Minimum loan amount is ₹5,000</p>
+                    )}
+                    {formData.loanAmount && parseFloat(formData.loanAmount.replace(/,/g, "")) > 25000 && (
+                      <p className="mt-1 text-xs text-red-500">Maximum loan amount is ₹25,000</p>
+                    )}
+                    {(!formData.loanAmount || (parseFloat(formData.loanAmount.replace(/,/g, "")) >= 5000 && parseFloat(formData.loanAmount.replace(/,/g, "")) <= 25000)) && (
+                      <p className="mt-1 text-xs text-gray-500">Enter the approximate loan amount you require</p>
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -6776,7 +6788,7 @@ console.log('Sending OTP with payload:', payload);
               )}
               <button
                 onClick={handleNext}
-                disabled={loading || (currentStep === 1 && !isStep1Valid())}
+                disabled={loading || (currentStep === 1 && !isStep1Valid())|| (currentStep === 4 && !eSignVerified)}
                 className="flex-1 px-6 py-3 bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white rounded-lg hover:shadow-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (

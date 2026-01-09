@@ -1,4 +1,4 @@
-# 🏦 Quikkred - AI-Powered NBFC Platform
+# 🏦 Quikkred - AI-Powered Digital Lending Platform
 
 > **Your Gateway to Prosperity** - Instant loans with AI-driven decisions and multilingual support
 
@@ -9,13 +9,23 @@
 
 ## 🌟 Overview
 
-**Quikkred** is a revolutionary NBFC (Non-Banking Financial Company) platform that democratizes access to instant loans across India. Built with cutting-edge AI technology and supporting 13 Indian languages, Quikkred transforms the traditional lending landscape with:
+**Quikkred** is an AI-powered digital lending platform that democratizes access to instant loans across India. Built with cutting-edge AI technology and supporting 13 Indian languages, Quikkred provides a seamless borrowing experience with:
 
 - ⚡ **Instant Approval** - AI-powered decisions in under 30 seconds
 - 🌐 **Multilingual Support** - Available in 13 Indian languages
-- 🛡️ **Bank-Grade Security** - ISO 27001 certified with RBI compliance
+- 🛡️ **Bank-Grade Security** - ISO 27001 certified platform
 - 📱 **Mobile-First Design** - Optimized for smartphones and tablets
 - 🤖 **AI-Driven Intelligence** - Smart risk assessment and personalization
+
+## 📋 Regulatory Information
+
+**Quikkred** is a digital lending platform powered by **Fluxusforge Private Limited** (Loan Service Provider). All loans are disbursed by **Satsai Finlease Private Limited**, an RBI-registered Non-Banking Financial Company (NBFC).
+
+| Entity | Role | Website |
+|--------|------|---------|
+| **Quikkred** | Digital Lending Platform (Brand) | [quikkred.in](https://quikkred.in) |
+| **Satsai Finlease Private Limited** | Lending Partner (RBI-registered NBFC) | [satsaifinlease.com](https://satsaifinlease.com) |
+| **Fluxusforge Private Limited** | LSP & Technology Partner | [fluxusforge.in](https://fluxusforge.in) |
 
 ## 🚀 Features
 
@@ -297,22 +307,21 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 ### Developer Support
 - **WhatsApp**: Developers have direct access to project owner's WhatsApp
 - **GitHub Issues**: [Report bugs or request features](https://github.com/Quikkred/issues)
-- **Backend Team**: backend@Quikkred.com
-- **Frontend Team**: frontend@Quikkred.com
+- **Backend Team**: backend@quikkred.com
+- **Frontend Team**: frontend@quikkred.com
 
 ### Business Inquiries
-- **Partnerships**: partners@Quikkred.com
-- **Enterprise**: enterprise@Quikkred.com
-- **Press**: press@Quikkred.com
+- **Partnerships**: partners@quikkred.com
+- **Enterprise**: enterprise@quikkred.com
+- **Press**: press@quikkred.com
 
 ---
 
 ## 🏆 Recognition
 
-- **RBI Licensed NBFC** - Fully compliant with regulatory requirements
 - **ISO 27001 Certified** - Information security management
-- **AAA Credit Rating** - Highest credit worthiness
 - **Startup India Recognized** - Government backed innovation
+- **RBI Compliant Platform** - Operates in partnership with RBI-registered NBFC
 
 ---
 
@@ -320,6 +329,10 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 
 **Built with ❤️ by the Quikkred Team**
 
-[Website](https://Quikkred.com) • [API Docs](./docs/API_SPECIFICATION.md) • [Support](mailto:support@quikkred.com)
+[Website](https://quikkred.in) • [API Docs](./docs/API_SPECIFICATION.md) • [Support](mailto:support@quikkred.com)
+
+---
+
+**Disclaimer**: Quikkred is a digital lending platform. All loans are provided by Satsai Finlease Private Limited, an RBI-registered NBFC. Quikkred (powered by Fluxusforge Private Limited) is the technology and servicing partner.
 
 </div>
