@@ -14,6 +14,19 @@ import { useToast, Toaster } from "@/components/ui/toast";
 import SelfieCapture from "@/components/camera/SelfieCapture";
 import { BANKS } from "@/lib/constants/banks";
 import { useCustomer } from "@/store/hooks/useCustomer";
+import { QuickApplyFormData, FieldErrors } from "@/lib/types/quickApply";
+import { getInitialFormData, initialFieldErrors, INDIAN_STATES, BLACKLISTED_STATES } from "@/lib/constants/quickApply";
+import {
+  formatDateForInput,
+  formatDateForDisplay,
+  formatDOBForAPI,
+  formatDOBFromAPI,
+  toBoolean,
+  maskAadhaar,
+  getValue,
+  formatCurrency,
+  getAuthToken,
+} from "@/lib/helpers/quickApply";
 
 // Auto-decision engine
 
@@ -154,22 +167,8 @@ export default function QuickLoanApplication() {
   // User location state
   const [userLocation, setUserLocation] = useState<{latitude: number; longitude: number} | null>(null);
 
-  // Field validation errors for Step 1 and Step 4
-  const [fieldErrors, setFieldErrors] = useState({
-    email: "",
-    mobile: "",
-    fullName: "",
-    dob: "",
-    aadhaar: "",
-    pan: "",
-    accountHolderName: "",
-    accountNumber: "",
-    ifsc: "",
-    reference1Name: "",
-    reference1Mobile: "",
-    reference2Name: "",
-    reference2Mobile: ""
-  });
+  // Field validation errors (using imported initial values)
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>(initialFieldErrors);
 
   // Bank verification state
   const [bankVerifying, setBankVerifying] = useState(false);
@@ -183,69 +182,7 @@ export default function QuickLoanApplication() {
   // Data agreement checkbox for Step 2
   const [dataAgreementChecked, setDataAgreementChecked] = useState(false);
 
-  // Load hero form data FIRST (before useState)
-  const getInitialFormData = () => {
-    const initialData = {
-      // Step 1: Basic Details
-      mobile: "",
-      otp: "",
-      mobileVerified: false,
-      emailVerified: false,
-      fullName: "",
-      pan: "",
-      aadhaar: "",
-      dob: "",
-      email: "",
-
-      // Step 2: Employment & Bank
-      employmentType: "SALARIED",
-      monthlyIncome: "",
-      companyName: "",
-      bankName: "",
-      customBankName: "",
-      accountHolderName: "",
-      accountNumber: "",
-      ifsc: "",
-
-      // Step 3: Loan & Consent
-      loanAmount: "",
-      tenure: "",
-      tenureUnit: "",
-      productId: "",
-      purpose: "",
-      reference1Name: "",
-      reference1Mobile: "",
-      reference1Relationship: "",
-      reference2Name: "",
-      reference2Mobile: "",
-      reference2Relationship: "",
-      selfie: null as File | null,
-      creditBureauConsent: false,
-      termsConsent: false,
-      eSignConsent: false
-    };
-
-    // Try to load hero form data from localStorage
-    if (typeof window !== 'undefined') {
-      try {
-        const heroData = localStorage.getItem('heroFormData');
-        if (heroData) {
-          const data = JSON.parse(heroData);
-          console.log('💾 Loading hero data into initial state:', data);
-          initialData.fullName = data.name || initialData.fullName;
-          initialData.mobile = data.mobile || initialData.mobile;
-          initialData.loanAmount = data.amount || initialData.loanAmount;
-          initialData.email = data.email || initialData.email;
-          // Don't clear yet - will clear after component mounts
-        }
-      } catch (error) {
-        console.error('Error loading hero data:', error);
-      }
-    }
-
-    return initialData;
-  };
-
+  // Form data state (using imported initial values)
   const [formData, setFormData] = useState(getInitialFormData());
 
   // Close bank dropdown when clicking outside
@@ -278,22 +215,7 @@ export default function QuickLoanApplication() {
               const profileData = result.data;
               console.log('✅ User profile loaded successfully');
 
-              // Convert ISO date to YYYY-MM-DD format for input field
-              const formatDateForInput = (isoDate: string) => {
-                if (!isoDate) return '';
-                try {
-                  const date = new Date(isoDate);
-                  const year = date.getFullYear();
-                  const month = String(date.getMonth() + 1).padStart(2, '0');
-                  const day = String(date.getDate()).padStart(2, '0');
-                  return `${year}-${month}-${day}`;
-                } catch (error) {
-                  console.error('Error formatting date:', error);
-                  return '';
-                }
-              };
-
-              // Pre-fill form data
+              // Pre-fill form data (using imported formatDateForInput)
               setFormData(prev => ({
                 ...prev,
                 fullName: profileData.fullName || prev.fullName,
@@ -319,17 +241,7 @@ export default function QuickLoanApplication() {
                 console.log('✅ Loan amount loaded from API:', profileData.requestedLoanAmount);
               }
 
-              // Set verification flags from API
-              // Helper function to safely convert any value to boolean
-              // Handles: true, "true", "TRUE", 1, "1", false, "false", undefined, null
-              const toBoolean = (value: unknown): boolean => {
-                if (typeof value === 'boolean') return value;
-                if (typeof value === 'string') return value.toLowerCase() === 'true';
-                if (typeof value === 'number') return value === 1;
-                return false;
-              };
-
-              // Check verification statuses (using toBoolean for string safety)
+              // Check verification statuses (using imported toBoolean)
               if (toBoolean(profileData.isPanVerify)) {
                 setPanVerified(true);
                 console.log('✅ PAN already verified');
@@ -3195,6 +3107,10 @@ y += boxHeight + 4;
     const actualAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
     if (actualAge < 18) return false;
 
+    // State validation (must be selected and not blacklisted)
+    if (!formData.state) return false;
+    if (BLACKLISTED_STATES.includes(formData.state.toLowerCase())) return false;
+
     // Employment Type validation
     if (!formData.employmentType) return false;
 
@@ -3574,22 +3490,7 @@ console.log('Sending OTP with payload:', payload);
                 localStorage.setItem('userId', profileData._id);
               }
 
-              // Convert ISO date to YYYY-MM-DD format for input field
-              const formatDateForInput = (isoDate: string) => {
-                if (!isoDate) return '';
-                try {
-                  const date = new Date(isoDate);
-                  const year = date.getFullYear();
-                  const month = String(date.getMonth() + 1).padStart(2, '0');
-                  const day = String(date.getDate()).padStart(2, '0');
-                  return `${year}-${month}-${day}`;
-                } catch (error) {
-                  console.error('Error formatting date:', error);
-                  return '';
-                }
-              };
-
-              // Auto-fill form data from customer API response
+              // Auto-fill form data (using imported formatDateForInput)
               setFormData(prev => ({
                 ...prev,
                 fullName: profileData.fullName || prev.fullName,
@@ -3682,14 +3583,8 @@ console.log('Sending OTP with payload:', payload);
               // ============================================
               // CHECKLIST-BASED REDIRECT LOGIC (after OTP verification)
               // If all onboarding steps are complete, redirect to Dashboard
+              // (using imported toBoolean)
               // ============================================
-              const toBoolean = (value: unknown): boolean => {
-                if (typeof value === 'boolean') return value;
-                if (typeof value === 'string') return value.toLowerCase() === 'true';
-                if (typeof value === 'number') return value === 1;
-                return false;
-              };
-
               const isBasicDetailsFilled = toBoolean(profileData.isBasicDetailsFilled);
               const isKycDetailsFilled = toBoolean(profileData.isKycDetailsFilled);
               const isBankDetailsFilled = toBoolean(profileData.isBankDetailsFilled);
@@ -4367,6 +4262,7 @@ console.log('Sending OTP with payload:', payload);
         mobile: "",
         fullName: "",
         dob: "",
+        state: "",
         aadhaar: "",
         pan: "",
         accountHolderName: "",
@@ -4449,6 +4345,15 @@ console.log('Sending OTP with payload:', payload);
           errors.dob = "You must be at least 18 years old";
           hasError = true;
         }
+      }
+
+      // State validation
+      if (!formData.state) {
+        errors.state = "Please select your state";
+        hasError = true;
+      } else if (BLACKLISTED_STATES.includes(formData.state.toLowerCase())) {
+        errors.state = "Sorry, our services are currently not available in this state/region.";
+        hasError = true;
       }
 
       // Update field errors
@@ -5629,6 +5534,43 @@ console.log('Sending OTP with payload:', payload);
                     )}
                   </>
                 )}
+
+                {/* State Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    State *
+                  </label>
+                  <select
+                    name="state"
+                    value={formData.state}
+                    onChange={(e) => {
+                      const selectedState = e.target.value.toLowerCase();
+                      setFormData(prev => ({ ...prev, state: selectedState }));
+
+                      // Check if state is blacklisted
+                      if (BLACKLISTED_STATES.includes(selectedState)) {
+                        setFieldErrors(prev => ({
+                          ...prev,
+                          state: "Sorry, our services are currently not available in this state/region."
+                        }));
+                      } else {
+                        setFieldErrors(prev => ({ ...prev, state: '' }));
+                      }
+                    }}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                      fieldErrors.state ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  >
+                    {INDIAN_STATES.map((state) => (
+                      <option key={state.value} value={state.value}>
+                        {state.label}
+                      </option>
+                    ))}
+                  </select>
+                  {fieldErrors.state && (
+                    <p className="mt-1 text-xs text-red-600">{fieldErrors.state}</p>
+                  )}
+                </div>
 
                 {/* Employment Details - Added to Step 1 */}
                 <div className="border-t border-gray-200 pt-6 mt-6">
