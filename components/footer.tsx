@@ -127,7 +127,6 @@ export function Footer() {
       { name: t.footer.policyLinks.items.creditPolicy, href: "/credit-policy" },
       { name: t.footer.policyLinks.items.lendingPolicy, href: "/lending-policy" },
       { name: t.footer.policyLinks.items.settlementWriteoffPolicy, href: "/settlement-writeoff-policy" },
-      { name: t.footer.policyLinks.items.investmentPolicy, href: "/investment-policy" },
     ],
   };
 
