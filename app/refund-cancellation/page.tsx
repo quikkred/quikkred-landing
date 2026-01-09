@@ -57,7 +57,7 @@ export default function RefundCancellationPage() {
                 Refund and Cancellation
               </h2>
               <p className="text-[#2b2b2b] leading-[1.7] mb-4">
-                Satsai Finance Private Limited will automatically start billing as per Your selected Payment Method for the relevant Subscription plan(s) and any Add-on(s) selected by You at the time of registration through the third party payment gateway.
+                Satsai Finlease Private Limited will automatically start billing as per Your selected Payment Method for the relevant Subscription plan(s) and any Add-on(s) selected by You at the time of registration through the third party payment gateway.
               </p>
               <p className="text-[#2b2b2b] leading-[1.7] mb-4">
                 The cancellation of a Subscription can be done through the &quot;My Account&quot; section of the Site.
@@ -66,7 +66,7 @@ export default function RefundCancellationPage() {
                 <div className="flex items-start gap-3">
                   <Clock className="w-5 h-5 text-blue-500 mt-1 flex-shrink-0" />
                   <p className="text-[#2b2b2b] leading-[1.7]">
-                    It may take up to <strong>three business days</strong> for Your payment made to Satsai Finance Private Limited to be reflected in your Bank Account.
+                    It may take up to <strong>three business days</strong> for Your payment made to Satsai Finlease Private Limited to be reflected in your Bank Account.
                   </p>
                 </div>
               </div>
@@ -80,7 +80,7 @@ export default function RefundCancellationPage() {
                   Board Approval
                 </h3>
                 <p className="text-[#2b2b2b] leading-[1.7]">
-                  <strong>Approved by:</strong> Board of Directors, Satsai Finance Private Limited
+                  <strong>Approved by:</strong> Board of Directors, Satsai Finlease Private Limited
                 </p>
               </div>
             </div>
