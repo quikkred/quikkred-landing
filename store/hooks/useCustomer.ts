@@ -7,7 +7,6 @@ import {
   fetchAadhaarStatus,
   fetchESignStatus,
   initializeBRE,
-  updateBSA,
   fetchLoanProducts,
   fetchFinfactor,
   initializeESign,
@@ -61,9 +60,9 @@ export const useCustomer = () => {
     return dispatch(initializeBRE() as any);
   }, [dispatch]);
 
-  const updateBSAStatus = useCallback(() => {
-    return dispatch(updateBSA() as any);
-  }, [dispatch]);
+  // const updateBSAStatus = useCallback(() => {
+  //   return dispatch(updateBSA() as any);
+  // }, [dispatch]);
 
   const getLoanProducts = useCallback(() => {
     return dispatch(fetchLoanProducts() as any);
@@ -110,7 +109,6 @@ export const useCustomer = () => {
     getAadhaarStatus,
     getESignStatus,
     initBRE,
-    updateBSAStatus,
     getLoanProducts,
     getFinfactor,
     initESign,

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { API_BASE_URL } from '@/lib/config';
+import { useProfile } from '@/store/hooks/useProfile';
 
 interface Address {
   street?: string;
@@ -119,6 +120,15 @@ interface ProfileData {
 export default function ProfilePage() {
   const { user } = useAuth();
   const router = useRouter();
+
+  // Redux state for profile
+  const {
+    profileData: reduxProfileData,
+    loading: profileLoading,
+    error: profileError,
+    fetchProfile: reduxFetchProfile,
+  } = useProfile();
+
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("personal");
   const [error, setError] = useState<string | null>(null);
@@ -134,45 +144,40 @@ export default function ProfilePage() {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
+  // Update local state from Redux
+  useEffect(() => {
+    if (reduxProfileData) {
+      setProfileData(reduxProfileData);
+      setEditedData(reduxProfileData);
+      setImageLoadError(false);
+    }
+  }, [reduxProfileData]);
+
+  useEffect(() => {
+    setIsLoading(profileLoading);
+  }, [profileLoading]);
+
+  useEffect(() => {
+    if (profileError) {
+      setError(profileError);
+    }
+  }, [profileError]);
+
   useEffect(() => {
     fetchProfile();
   }, []);
 
+  // Fetch profile using Redux
   const fetchProfile = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
+    const result = await reduxFetchProfile();
 
-      const token = localStorage.getItem('token') || localStorage.getItem('authToken');
-      if (!token) {
-        setError("No authentication token found");
-        return;
-      }
+    if (result?.requiresAuth) {
+      router.push('/login');
+      return;
+    }
 
-      console.log('🔵 Fetching profile from API...');
-      const response = await fetch(`${API_BASE_URL}/api/customer/get`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const result = await response.json();
-      console.log('🟢 Profile API Response:', result);
-
-      if (response.ok && result.success && result.data) {
-        setProfileData(result.data);
-        setEditedData(result.data);
-        setImageLoadError(false); // Reset image error state on new profile load
-      } else {
-        setError(result.message || 'Failed to load profile data');
-      }
-    } catch (err: any) {
-      console.error("❌ Failed to fetch profile:", err);
-      setError(err.message || "Failed to load profile data");
-    } finally {
-      setIsLoading(false);
+    if (result?.success) {
+      console.log('🟢 Profile data loaded successfully');
     }
   };
 
