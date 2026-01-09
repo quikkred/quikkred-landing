@@ -513,7 +513,7 @@ export default function QuickLoanApplication() {
 
       //   try {
       //     setBsaStatusUpdated(true); // Mark as updated immediately to prevent race conditions
-      //     const response = await fetch('https://alpha.quikkred.in/api/kyc/bsa/update', {
+      //     const response = await fetch('https://api.quikkred.in/api/kyc/bsa/update', {
       //       method: 'PATCH',
       //       headers: {
       //         'Content-Type': 'application/json',
@@ -6076,7 +6076,7 @@ console.log('Sending OTP with payload:', payload);
                           }
                           setPtbLoading(true);
                           try {
-                            const response = await fetch(`https://alpha.quikkred.in/api/kyc/finfactorConsentRequest`, {
+                            const response = await fetch(`https://api.quikkred.in/api/kyc/finfactorConsentRequest`, {
                               method: 'GET',
                               headers: { 'Authorization': `Bearer ${token}` }
                             });

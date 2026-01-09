@@ -181,7 +181,7 @@ class CustomerService {
       ? localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('authToken')
       : null;
 
-    const response = await fetch('https://alpha.quikkred.in/api/document/upload', {
+    const response = await fetch('https://api.quikkred.in/api/document/upload', {
       method: 'POST',
       headers: {
         ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
