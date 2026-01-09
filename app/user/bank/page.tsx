@@ -9,6 +9,7 @@ import {
   Shield, TrendingUp, Calendar, Edit, X
 } from 'lucide-react';
 import { API_BASE_URL } from '@/lib/config';
+import { useBanks } from '@/store/hooks/useBanks';
 
 interface BankAccount {
   _id: string;
@@ -31,12 +32,19 @@ interface BankAccount {
 
 export default function BankAccountsPage() {
   const router = useRouter();
-  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  // Redux state for bank accounts
+  const {
+    accounts: bankAccounts,
+    loading,
+    error,
+    fetchBankAccounts: reduxFetchBankAccounts,
+  } = useBanks();
+
   const [visibleAccounts, setVisibleAccounts] = useState<Set<string>>(new Set());
   const [showAddForm, setShowAddForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [editingAccount, setEditingAccount] = useState<BankAccount | null>(null);
   const [formData, setFormData] = useState({
     accountHolderName: '',
@@ -53,56 +61,9 @@ export default function BankAccountsPage() {
   }, []);
 
   const fetchBankAccounts = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
-      if (!token) {
-        setError('Authentication required');
-        return;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/api/bankAccount/getAll`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      // Check if token expired (401 Unauthorized) - Full logout and redirect
-      if (response.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('role');
-        localStorage.removeItem('userEmail');
-        localStorage.removeItem('email');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('userId');
-        localStorage.removeItem('userMobile');
-        localStorage.removeItem('customerUniqueId');
-        document.cookie = 'auth-token=; path=/; max-age=0';
-        document.cookie = 'user-role=; path=/; max-age=0';
-        router.push('/login');
-        return;
-      }
-
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        setBankAccounts(result.data || []);
-      } else {
-        setError(result.message || 'Failed to fetch bank accounts');
-      }
-    } catch (err) {
-      setError('Failed to load bank accounts');
-      console.error(err);
-    } finally {
-      setLoading(false);
+    const result = await reduxFetchBankAccounts();
+    if (result?.requiresAuth) {
+      router.push('/login');
     }
   };
 
@@ -166,11 +127,11 @@ export default function BankAccountsPage() {
     e.preventDefault();
     try {
       setIsSubmitting(true);
-      setError(null);
+      setFormError(null);
 
       const token = localStorage.getItem('authToken') || localStorage.getItem('token');
       if (!token) {
-        setError('Authentication required');
+        setFormError('Authentication required');
         return;
       }
 
@@ -211,10 +172,10 @@ export default function BankAccountsPage() {
         // Refresh bank accounts list
         fetchBankAccounts();
       } else {
-        setError(result.message || `Failed to ${editingAccount ? 'update' : 'create'} bank account`);
+        setFormError(result.message || `Failed to ${editingAccount ? 'update' : 'create'} bank account`);
       }
     } catch (err) {
-      setError(`Failed to ${editingAccount ? 'update' : 'create'} bank account`);
+      setFormError(`Failed to ${editingAccount ? 'update' : 'create'} bank account`);
       console.error(err);
     } finally {
       setIsSubmitting(false);

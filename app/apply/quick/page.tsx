@@ -14,6 +14,19 @@ import { useToast, Toaster } from "@/components/ui/toast";
 import SelfieCapture from "@/components/camera/SelfieCapture";
 import { BANKS } from "@/lib/constants/banks";
 import { useCustomer } from "@/store/hooks/useCustomer";
+import { QuickApplyFormData, FieldErrors } from "@/lib/types/quickApply";
+import { getInitialFormData, initialFieldErrors, INDIAN_STATES, BLACKLISTED_STATES } from "@/lib/constants/quickApply";
+import {
+  formatDateForInput,
+  formatDateForDisplay,
+  formatDOBForAPI,
+  formatDOBFromAPI,
+  toBoolean,
+  maskAadhaar,
+  getValue,
+  formatCurrency,
+  getAuthToken,
+} from "@/lib/helpers/quickApply";
 
 // Auto-decision engine
 
@@ -154,22 +167,8 @@ export default function QuickLoanApplication() {
   // User location state
   const [userLocation, setUserLocation] = useState<{latitude: number; longitude: number} | null>(null);
 
-  // Field validation errors for Step 1 and Step 4
-  const [fieldErrors, setFieldErrors] = useState({
-    email: "",
-    mobile: "",
-    fullName: "",
-    dob: "",
-    aadhaar: "",
-    pan: "",
-    accountHolderName: "",
-    accountNumber: "",
-    ifsc: "",
-    reference1Name: "",
-    reference1Mobile: "",
-    reference2Name: "",
-    reference2Mobile: ""
-  });
+  // Field validation errors (using imported initial values)
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>(initialFieldErrors);
 
   // Bank verification state
   const [bankVerifying, setBankVerifying] = useState(false);
@@ -177,75 +176,17 @@ export default function QuickLoanApplication() {
   const [bankVerifyError, setBankVerifyError] = useState("");
   const [bankDropdownOpen, setBankDropdownOpen] = useState(false);
 
+  // State dropdown state
+  const [stateDropdownOpen, setStateDropdownOpen] = useState(false);
+  const [stateSearchTerm, setStateSearchTerm] = useState('');
+
   // Consent validation error
   const [consentError, setConsentError] = useState(false);
 
   // Data agreement checkbox for Step 2
   const [dataAgreementChecked, setDataAgreementChecked] = useState(false);
 
-  // Load hero form data FIRST (before useState)
-  const getInitialFormData = () => {
-    const initialData = {
-      // Step 1: Basic Details
-      mobile: "",
-      otp: "",
-      mobileVerified: false,
-      emailVerified: false,
-      fullName: "",
-      pan: "",
-      aadhaar: "",
-      dob: "",
-      email: "",
-
-      // Step 2: Employment & Bank
-      employmentType: "SALARIED",
-      monthlyIncome: "",
-      companyName: "",
-      bankName: "",
-      customBankName: "",
-      accountHolderName: "",
-      accountNumber: "",
-      ifsc: "",
-
-      // Step 3: Loan & Consent
-      loanAmount: "",
-      tenure: "",
-      tenureUnit: "",
-      productId: "",
-      purpose: "",
-      reference1Name: "",
-      reference1Mobile: "",
-      reference1Relationship: "",
-      reference2Name: "",
-      reference2Mobile: "",
-      reference2Relationship: "",
-      selfie: null as File | null,
-      creditBureauConsent: false,
-      termsConsent: false,
-      eSignConsent: false
-    };
-
-    // Try to load hero form data from localStorage
-    if (typeof window !== 'undefined') {
-      try {
-        const heroData = localStorage.getItem('heroFormData');
-        if (heroData) {
-          const data = JSON.parse(heroData);
-          console.log('💾 Loading hero data into initial state:', data);
-          initialData.fullName = data.name || initialData.fullName;
-          initialData.mobile = data.mobile || initialData.mobile;
-          initialData.loanAmount = data.amount || initialData.loanAmount;
-          initialData.email = data.email || initialData.email;
-          // Don't clear yet - will clear after component mounts
-        }
-      } catch (error) {
-        console.error('Error loading hero data:', error);
-      }
-    }
-
-    return initialData;
-  };
-
+  // Form data state (using imported initial values)
   const [formData, setFormData] = useState(getInitialFormData());
 
   // Close bank dropdown when clicking outside
@@ -255,10 +196,14 @@ export default function QuickLoanApplication() {
       if (bankDropdownOpen && !target.closest('.bank-dropdown-container')) {
         setBankDropdownOpen(false);
       }
+      if (stateDropdownOpen && !target.closest('.state-dropdown-container')) {
+        setStateDropdownOpen(false);
+        setStateSearchTerm('');
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [bankDropdownOpen]);
+  }, [bankDropdownOpen, stateDropdownOpen]);
 
   // Load user data if logged in
   useEffect(() => {
@@ -278,22 +223,7 @@ export default function QuickLoanApplication() {
               const profileData = result.data;
               console.log('✅ User profile loaded successfully');
 
-              // Convert ISO date to YYYY-MM-DD format for input field
-              const formatDateForInput = (isoDate: string) => {
-                if (!isoDate) return '';
-                try {
-                  const date = new Date(isoDate);
-                  const year = date.getFullYear();
-                  const month = String(date.getMonth() + 1).padStart(2, '0');
-                  const day = String(date.getDate()).padStart(2, '0');
-                  return `${year}-${month}-${day}`;
-                } catch (error) {
-                  console.error('Error formatting date:', error);
-                  return '';
-                }
-              };
-
-              // Pre-fill form data
+              // Pre-fill form data (using imported formatDateForInput)
               setFormData(prev => ({
                 ...prev,
                 fullName: profileData.fullName || prev.fullName,
@@ -319,17 +249,7 @@ export default function QuickLoanApplication() {
                 console.log('✅ Loan amount loaded from API:', profileData.requestedLoanAmount);
               }
 
-              // Set verification flags from API
-              // Helper function to safely convert any value to boolean
-              // Handles: true, "true", "TRUE", 1, "1", false, "false", undefined, null
-              const toBoolean = (value: unknown): boolean => {
-                if (typeof value === 'boolean') return value;
-                if (typeof value === 'string') return value.toLowerCase() === 'true';
-                if (typeof value === 'number') return value === 1;
-                return false;
-              };
-
-              // Check verification statuses (using toBoolean for string safety)
+              // Check verification statuses (using imported toBoolean)
               if (toBoolean(profileData.isPanVerify)) {
                 setPanVerified(true);
                 console.log('✅ PAN already verified');
@@ -370,6 +290,21 @@ export default function QuickLoanApplication() {
                     return; // Exit early as we're redirecting
                   }
                 }
+              }
+
+              // Check if bsaInitiated is true - redirect to finfactor success flow
+              if (toBoolean(profileData.bsaInitiated)) {
+                console.log('📊 bsaInitiated is true, redirecting to finfactor success flow');
+                const currentUrl = new URL(window.location.href);
+                const finfactorParam = currentUrl.searchParams.get('finfactor');
+                if (finfactorParam !== 'success') {
+                  currentUrl.searchParams.set('finfactor', 'success');
+                  router.replace(currentUrl.pathname + currentUrl.search);
+                  return; // Exit early as we're redirecting
+                }
+                // If already has ?finfactor=success, set states for the UI
+                setFinfactorSuccess(true);
+                setCurrentStep(4);
               }
 
               // ============================================
@@ -561,86 +496,90 @@ export default function QuickLoanApplication() {
       setCurrentStep(4); // Go to step 4 to show the consent UI
 
       // Call PATCH API to update BSA status to PROCESSED (only once)
-      const updateBsaStatus = async () => {
-        // Prevent duplicate calls
-        if (bsaStatusUpdated) {
-          console.log('BSA status already updated, skipping API call');
-          return;
-        }
 
-        const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('authToken');
-        if (!token) {
-          console.error('No auth token found for BSA status update');
-          return;
-        }
 
-        try {
-          setBsaStatusUpdated(true); // Mark as updated immediately to prevent race conditions
-          const response = await fetch('https://api.quikkred.in/api/kyc/bsa/update', {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ status: 'PROCESSED' })
-          });
+      // const updateBsaStatus = async () => {
+      //   // Prevent duplicate calls
+      //   if (bsaStatusUpdated) {
+      //     console.log('BSA status already updated, skipping API call');
+      //     return;
+      //   }
 
-          const result = await response.json();
-          if (response.ok && result.success) {
-            console.log('BSA status updated successfully:', result.data);
-            // Update local bsaStatus state
-            setBsaStatus('PROCESSED');
-          } else {
-            console.error('Failed to update BSA status:', result.message);
-            // Reset flag on failure so it can be retried
-            setBsaStatusUpdated(false);
-          }
-        } catch (error) {
-          console.error('Error updating BSA status:', error);
-          // Reset flag on error so it can be retried
-          setBsaStatusUpdated(false);
-        }
-      };
+      //   const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('authToken');
+      //   if (!token) {
+      //     console.error('No auth token found for BSA status update');
+      //     return;
+      //   }
 
-      updateBsaStatus();
+      //   try {
+      //     setBsaStatusUpdated(true); // Mark as updated immediately to prevent race conditions
+      //     const response = await fetch('https://alpha.quikkred.in/api/kyc/bsa/update', {
+      //       method: 'PATCH',
+      //       headers: {
+      //         'Content-Type': 'application/json',
+      //         'Authorization': `Bearer ${token}`
+      //       },
+      //       body: JSON.stringify({ status: 'PROCESSED' })
+      //     });
+
+      //     const result = await response.json();
+      //     if (response.ok && result.success) {
+      //       console.log('BSA status updated successfully:', result.data);
+      //       // Update local bsaStatus state
+      //       setBsaStatus('PROCESSED');
+      //     } else {
+      //       console.error('Failed to update BSA status:', result.message);
+      //       // Reset flag on failure so it can be retried
+      //       setBsaStatusUpdated(false);
+      //     }
+      //   } catch (error) {
+      //     console.error('Error updating BSA status:', error);
+      //     // Reset flag on error so it can be retried
+      //     setBsaStatusUpdated(false);
+      //   }
+      // };
+
+      // updateBsaStatus();
     }
   }, [searchParams, bsaStatusUpdated]);
 
-  // Auto-trigger consentHandleToFIRequest when BSA is already PROCESSED
-  // This handles the case when user returns with ?finfactor=success and BSA was already processed
+  // Auto-trigger BRE finFactor API when ?finfactor=success is in URL
+  // This handles the case when user returns after finfactor process or bsaInitiated is true
+  const breFinFactorCalledRef = useRef(false);
+
   useEffect(() => {
-    const autoTriggerConsentHandler = async () => {
+    const fetchBreFinfactorResult = async () => {
       const finfactorParam = searchParams.get('finfactor');
 
       // Only proceed if:
       // 1. finfactor=success is in URL
-      // 2. bsaStatus is PROCESSED (from API or just updated)
-      // 3. Not already loading or polling
-      // 4. finfactorSuccess is true (UI state is set)
-      if (finfactorParam !== 'success' || bsaStatus !== 'PROCESSED' || consentLoading || brePolling || !finfactorSuccess) {
+      // 2. Not already loading
+      // 3. Not already called
+      // 4. No approvalData yet
+      if (finfactorParam !== 'success' || consentLoading || breFinFactorCalledRef.current || approvalData) {
         return;
       }
 
-      console.log('📊 BSA already PROCESSED, auto-triggering consentHandleToFIRequest...');
+      console.log('📊 finfactor=success detected, auto-calling BRE finFactor API...');
 
       const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('authToken');
       if (!token) {
-        console.error('No auth token found for auto consent trigger');
+        console.error('No auth token found for BRE finFactor');
         return;
       }
 
-      const customerId = localStorage.getItem('userId');
-      if (!customerId) {
-        console.error('Customer ID not found for auto consent trigger');
-        return;
-      }
-
+      breFinFactorCalledRef.current = true;
       setConsentLoading(true);
+      setCurrentStep(4); // Ensure we're on Step 4
+      setFinfactorSuccess(true); // Show loading UI
 
-      // Helper function to call consent API with retry for pending status
-      const callConsentAPI = async (retryCount = 0): Promise<boolean> => {
-        const MAX_CONSENT_RETRIES = 5;
-        const CONSENT_RETRY_DELAY = 5000; // 5 seconds
+      try {
+        const response = await fetch('https://alpha.quikkred.in/api/kyc/bre/finFactor', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
 
         try {
           const response = await fetch('https://api.quikkred.in/api/kyc/consentHandleToFIRequest', {
@@ -652,125 +591,30 @@ export default function QuickLoanApplication() {
             body: JSON.stringify({ customerId })
           });
 
-          const result = await response.json();
+        if (response.ok && result.success) {
+          console.log('✅ BRE finFactor result fetched successfully:', result.data);
+          toast({ variant: "success", title: "Success", description: result.message || "BRE verification completed successfully." });
 
-          // Success case
-          if (response.ok && result.success) {
-            console.log('✅ Auto consent handler successful, starting BRE polling...');
-            toast({ variant: "success", title: "Success", description: result.message || "Verification completed successfully." });
-            return true;
+          if (result.data) {
+            setApprovalData(result.data);
           }
-
-          // Handle pending consent (202 status) - retry automatically
-          if (response.status === 202 || result.consentStatus === 'PENDING' || result.retryable) {
-            if (retryCount < MAX_CONSENT_RETRIES) {
-              console.log(`📊 Consent pending, retrying in ${CONSENT_RETRY_DELAY/1000}s... (attempt ${retryCount + 1}/${MAX_CONSENT_RETRIES})`);
-              setBrePollingMessage('Waiting for consent approval...');
-              await new Promise(resolve => setTimeout(resolve, CONSENT_RETRY_DELAY));
-              return callConsentAPI(retryCount + 1);
-            } else {
-              toast({
-                variant: "error",
-                title: "Consent Pending",
-                description: "Please approve the consent request on your bank's app and try again."
-              });
-              return false;
-            }
-          }
-
-          // Handle terminal error states
-          if (result.consentStatus === 'REJECTED' || result.consentStatus === 'REVOKED' || result.consentStatus === 'EXPIRED') {
-            toast({
-              variant: "error",
-              title: "Consent Failed",
-              description: result.message || "Please initiate a new bank verification request."
-            });
-            setFinfactorSuccess(false);
-            return false;
-          }
-
-          // Generic error
-          console.error('Auto consent handler failed:', result.message);
+          setFinfactorSuccess(false);
+        } else {
+          console.error('BRE finFactor failed:', result.message);
           toast({ variant: "error", title: "Failed", description: result.message || "Verification failed. Please try again." });
-          return false;
-
-        } catch (error) {
-          console.error('Error calling consent API:', error);
-          if (retryCount < MAX_CONSENT_RETRIES) {
-            await new Promise(resolve => setTimeout(resolve, CONSENT_RETRY_DELAY));
-            return callConsentAPI(retryCount + 1);
-          }
-          throw error;
-        }
-      };
-
-      try {
-        const consentSuccess = await callConsentAPI();
-
-        if (consentSuccess) {
-          // Start BRE polling
-          setBrePolling(true);
-          setBrePollingMessage('Processing your bank statement...');
-
-          const pollBREStatus = async () => {
-            let shouldContinuePolling = true;
-            let pollAttempts = 0;
-            const MAX_POLL_ATTEMPTS = 30; // Max 5 minutes of polling (30 * 10s)
-
-            while (shouldContinuePolling && pollAttempts < MAX_POLL_ATTEMPTS) {
-              pollAttempts++;
-              try {
-                // Using Redux for finfactor/initialize API
-                const breResult = await getFinfactor();
-
-                if (breResult.message === 'Statement not fetched yet') {
-                  setBrePollingMessage('Fetching your bank statement...');
-                  await new Promise(resolve => setTimeout(resolve, 10000));
-                } else if (breResult.message === 'BRE checked successfully') {
-                  shouldContinuePolling = false;
-                  setBrePolling(false);
-                  setBrePollingMessage('');
-                  if (breResult.data) {
-                    setApprovalData(breResult.data);
-                  }
-                  setFinfactorSuccess(false);
-                  toast({ variant: "success", title: "Success", description: "BRE verification completed successfully." });
-                } else {
-                  shouldContinuePolling = false;
-                  setBrePolling(false);
-                  setBrePollingMessage('');
-                  if (breResult.data) {
-                    setApprovalData(breResult.data);
-                  }
-                  setFinfactorSuccess(false);
-                }
-              } catch (pollError) {
-                console.error('BRE polling error:', pollError);
-                setBrePollingMessage('Retrying...');
-                await new Promise(resolve => setTimeout(resolve, 10000));
-              }
-            }
-
-            // Handle max attempts reached
-            if (pollAttempts >= MAX_POLL_ATTEMPTS) {
-              setBrePolling(false);
-              setBrePollingMessage('');
-              toast({ variant: "error", title: "Timeout", description: "Bank statement processing timed out. Please try again." });
-            }
-          };
-
-          pollBREStatus();
+          breFinFactorCalledRef.current = false; // Allow retry on failure
         }
       } catch (error) {
-        console.error('Error in auto consent trigger:', error);
+        console.error('Error fetching BRE finFactor:', error);
         toast({ variant: "error", title: "Error", description: "Failed to process. Please try again." });
+        breFinFactorCalledRef.current = false; // Allow retry on error
       } finally {
         setConsentLoading(false);
       }
     };
 
-    autoTriggerConsentHandler();
-  }, [searchParams, bsaStatus, finfactorSuccess, consentLoading, brePolling, toast]);
+    fetchBreFinfactorResult();
+  }, [searchParams, consentLoading, approvalData, toast]);
 
   // Check Aadhaar verification status when verified=true query param is present
   // Only calls API after user profile data is loaded AND if isAadhaarVerify !== true
@@ -1027,6 +871,13 @@ export default function QuickLoanApplication() {
         return;
       }
 
+      // Skip if finfactor=success is in URL (will call /api/kyc/bre/finFactor instead)
+      const finfactorParam = searchParams.get('finfactor');
+      if (finfactorParam === 'success') {
+        console.log('[Step 4] finfactor=success detected, skipping bre/initialize (will call bre/finFactor)');
+        return;
+      }
+
       // Skip if already called in this session
       if (breApiCalledRef.current) {
         console.log('[Step 4] BRE API already called, skipping');
@@ -1084,7 +935,7 @@ export default function QuickLoanApplication() {
     };
 
     fetchBREData();
-  }, [currentStep, approvalData, toast]);
+  }, [currentStep, approvalData, toast, searchParams]);
 
 
   // Load form data from localStorage on mount
@@ -3258,6 +3109,10 @@ y += boxHeight + 4;
     const actualAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
     if (actualAge < 18) return false;
 
+    // State validation (must be selected and not blacklisted)
+    if (!formData.state) return false;
+    if (BLACKLISTED_STATES.includes(formData.state.toLowerCase())) return false;
+
     // Employment Type validation
     if (!formData.employmentType) return false;
 
@@ -3637,22 +3492,7 @@ console.log('Sending OTP with payload:', payload);
                 localStorage.setItem('userId', profileData._id);
               }
 
-              // Convert ISO date to YYYY-MM-DD format for input field
-              const formatDateForInput = (isoDate: string) => {
-                if (!isoDate) return '';
-                try {
-                  const date = new Date(isoDate);
-                  const year = date.getFullYear();
-                  const month = String(date.getMonth() + 1).padStart(2, '0');
-                  const day = String(date.getDate()).padStart(2, '0');
-                  return `${year}-${month}-${day}`;
-                } catch (error) {
-                  console.error('Error formatting date:', error);
-                  return '';
-                }
-              };
-
-              // Auto-fill form data from customer API response
+              // Auto-fill form data (using imported formatDateForInput)
               setFormData(prev => ({
                 ...prev,
                 fullName: profileData.fullName || prev.fullName,
@@ -3745,14 +3585,8 @@ console.log('Sending OTP with payload:', payload);
               // ============================================
               // CHECKLIST-BASED REDIRECT LOGIC (after OTP verification)
               // If all onboarding steps are complete, redirect to Dashboard
+              // (using imported toBoolean)
               // ============================================
-              const toBoolean = (value: unknown): boolean => {
-                if (typeof value === 'boolean') return value;
-                if (typeof value === 'string') return value.toLowerCase() === 'true';
-                if (typeof value === 'number') return value === 1;
-                return false;
-              };
-
               const isBasicDetailsFilled = toBoolean(profileData.isBasicDetailsFilled);
               const isKycDetailsFilled = toBoolean(profileData.isKycDetailsFilled);
               const isBankDetailsFilled = toBoolean(profileData.isBankDetailsFilled);
@@ -4430,6 +4264,7 @@ console.log('Sending OTP with payload:', payload);
         mobile: "",
         fullName: "",
         dob: "",
+        state: "",
         aadhaar: "",
         pan: "",
         accountHolderName: "",
@@ -4512,6 +4347,15 @@ console.log('Sending OTP with payload:', payload);
           errors.dob = "You must be at least 18 years old";
           hasError = true;
         }
+      }
+
+      // State validation
+      if (!formData.state) {
+        errors.state = "Please select your state";
+        hasError = true;
+      } else if (BLACKLISTED_STATES.includes(formData.state.toLowerCase())) {
+        errors.state = "Sorry, our services are currently not available in this state/region.";
+        hasError = true;
       }
 
       // Update field errors
@@ -5132,6 +4976,7 @@ console.log('Sending OTP with payload:', payload);
                     aadhaar: "",
                     dob: "",
                     email: "",
+                    state: "",
                     employmentType: "SALARIED",
                     monthlyIncome: "",
                     companyName: "",
@@ -5693,6 +5538,92 @@ console.log('Sending OTP with payload:', payload);
                   </>
                 )}
 
+                {/* State Selection with Search */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    State *
+                  </label>
+                  <div className="relative state-dropdown-container">
+                    <button
+                      type="button"
+                      onClick={() => setStateDropdownOpen(!stateDropdownOpen)}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] text-left flex justify-between items-center bg-white ${
+                        fieldErrors.state ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    >
+                      <span className={formData.state ? 'text-gray-900' : 'text-gray-500'}>
+                        {formData.state
+                          ? INDIAN_STATES.find(s => s.value === formData.state)?.label || formData.state
+                          : 'Select State'}
+                      </span>
+                      <svg className={`w-5 h-5 text-gray-400 transition-transform ${stateDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    {stateDropdownOpen && (
+                      <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+                        {/* Search Input */}
+                        <div className="p-2 border-b border-gray-200">
+                          <input
+                            type="text"
+                            placeholder="Search state..."
+                            value={stateSearchTerm}
+                            onChange={(e) => setStateSearchTerm(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#25B181] focus:border-transparent text-sm"
+                            autoFocus
+                          />
+                        </div>
+                        {/* States List */}
+                        <div className="max-h-48 overflow-y-auto">
+                          {INDIAN_STATES
+                            .filter(state =>
+                              state.value === '' ||
+                              state.label.toLowerCase().includes(stateSearchTerm.toLowerCase())
+                            )
+                            .map((state) => (
+                              <div
+                                key={state.value}
+                                className={`px-4 py-2 hover:bg-[#25B181] hover:text-white cursor-pointer ${
+                                  formData.state === state.value ? 'bg-[#25B181] text-white' : ''
+                                } ${state.value === '' ? 'text-gray-500' : ''}`}
+                                onClick={() => {
+                                  const selectedState = state.value.toLowerCase();
+                                  setFormData(prev => ({ ...prev, state: selectedState }));
+                                  setStateDropdownOpen(false);
+                                  setStateSearchTerm('');
+
+                                  // Check if state is blacklisted
+                                  if (BLACKLISTED_STATES.includes(selectedState)) {
+                                    setFieldErrors(prev => ({
+                                      ...prev,
+                                      state: "Sorry, our services are currently not available in this state/region."
+                                    }));
+                                  } else {
+                                    setFieldErrors(prev => ({ ...prev, state: '' }));
+                                  }
+                                }}
+                              >
+                                {state.label}
+                              </div>
+                            ))}
+                          {INDIAN_STATES.filter(state =>
+                            state.value === '' ||
+                            state.label.toLowerCase().includes(stateSearchTerm.toLowerCase())
+                          ).length === 0 && (
+                            <div className="px-4 py-3 text-gray-500 text-sm text-center">
+                              No states found
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  {fieldErrors.state && (
+                    <p className="mt-1 text-xs text-red-600">{fieldErrors.state}</p>
+                  )}
+                </div>
+
                 {/* Employment Details - Added to Step 1 */}
                 <div className="border-t border-gray-200 pt-6 mt-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Employment Details</h3>
@@ -6068,9 +5999,9 @@ console.log('Sending OTP with payload:', payload);
                     {/* Title */}
                     <h2 className="text-2xl font-bold text-gray-900 mb-3">Application Not Approved</h2>
 
-                    {/* Message */}
+                    {/* Message - Show reason from API if available */}
                     <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                      We regret to inform you that your loan application could not be approved based on our eligibility criteria.
+                      {approvalData.reason || 'We regret to inform you that your loan application could not be approved based on our eligibility criteria.'}
                     </p>
 
                     {/* Application Number */}
@@ -6113,162 +6044,18 @@ console.log('Sending OTP with payload:', payload);
                     </div>
                   </div>
                 ) : finfactorSuccess ? (
-                  /* ========== FINFACTOR SUCCESS - CONSENT UI ========== */
+                  /* ========== FINFACTOR SUCCESS - AUTO PROCESSING UI ========== */
                   <div className="text-center py-8">
-                    <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <CheckCircle className="w-12 h-12 text-green-600" />
+                    <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-3">Bank Statement Verification</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-3">Processing Your Application</h2>
                     <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                      Your bank statement process is complete. Click the button below to continue with your loan application.
+                      Please wait while we verify your bank statement and process your loan application...
                     </p>
-                    <div className="mt-6">
-                      <button
-                        onClick={async () => {
-                          const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('authToken');
-                          if (!token) {
-                            toast({ variant: "error", title: "Authentication Error", description: "Please login again to continue." });
-                            return;
-                          }
-                          const customerId = localStorage.getItem('userId');
-                          if (!customerId) {
-                            toast({ variant: "error", title: "Error", description: "Customer ID not found. Please try again." });
-                            return;
-                          }
-
-                          setConsentLoading(true);
-                          setBrePolling(true);
-                          setBrePollingMessage('Verifying consent...');
-
-                          // Helper function to call consent API with retry for pending status
-                          const callConsentAPIManual = async (retryCount = 0): Promise<boolean> => {
-                            const MAX_CONSENT_RETRIES = 5;
-                            const CONSENT_RETRY_DELAY = 5000;
-
-                            try {
-                              const response = await fetch(`https://api.quikkred.in/api/kyc/consentHandleToFIRequest`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                                body: JSON.stringify({ customerId })
-                              });
-                              const result = await response.json();
-
-                              if (response.ok && result.success) {
-                                toast({ variant: "success", title: "Success", description: result.message || "Verification completed successfully." });
-                                return true;
-                              }
-
-                              // Handle pending consent (202 status) - retry automatically
-                              if (response.status === 202 || result.consentStatus === 'PENDING' || result.retryable) {
-                                if (retryCount < MAX_CONSENT_RETRIES) {
-                                  setBrePollingMessage('Waiting for consent approval...');
-                                  await new Promise(resolve => setTimeout(resolve, CONSENT_RETRY_DELAY));
-                                  return callConsentAPIManual(retryCount + 1);
-                                } else {
-                                  toast({
-                                    variant: "error",
-                                    title: "Consent Pending",
-                                    description: "Please approve the consent request on your bank's app and try again."
-                                  });
-                                  return false;
-                                }
-                              }
-
-                              // Handle terminal error states
-                              if (result.consentStatus === 'REJECTED' || result.consentStatus === 'REVOKED' || result.consentStatus === 'EXPIRED') {
-                                toast({
-                                  variant: "error",
-                                  title: "Consent Failed",
-                                  description: result.message || "Please initiate a new bank verification request."
-                                });
-                                setFinfactorSuccess(false);
-                                return false;
-                              }
-
-                              toast({ variant: "error", title: "Failed", description: result.message || "Verification failed. Please try again." });
-                              return false;
-
-                            } catch (error) {
-                              console.error('Consent API error:', error);
-                              if (retryCount < MAX_CONSENT_RETRIES) {
-                                await new Promise(resolve => setTimeout(resolve, CONSENT_RETRY_DELAY));
-                                return callConsentAPIManual(retryCount + 1);
-                              }
-                              throw error;
-                            }
-                          };
-
-                          try {
-                            const consentSuccess = await callConsentAPIManual();
-
-                            if (consentSuccess) {
-                              setBrePollingMessage('Processing your bank statement...');
-
-                              const pollBREStatus = async () => {
-                                let shouldContinuePolling = true;
-                                let pollAttempts = 0;
-                                const MAX_POLL_ATTEMPTS = 30;
-
-                                while (shouldContinuePolling && pollAttempts < MAX_POLL_ATTEMPTS) {
-                                  pollAttempts++;
-                                  try {
-                                    // Using Redux for finfactor/initialize API
-                                    const breResult = await getFinfactor();
-
-                                    if (breResult.message === 'Statement not fetched yet') {
-                                      setBrePollingMessage('Fetching your bank statement...');
-                                      await new Promise(resolve => setTimeout(resolve, 10000));
-                                    } else if (breResult.message === 'BRE checked successfully') {
-                                      shouldContinuePolling = false;
-                                      setBrePolling(false);
-                                      setBrePollingMessage('');
-                                      if (breResult.data) {
-                                        setApprovalData(breResult.data);
-                                      }
-                                      setFinfactorSuccess(false);
-                                      toast({ variant: "success", title: "Success", description: "BRE verification completed successfully." });
-                                    } else {
-                                      shouldContinuePolling = false;
-                                      setBrePolling(false);
-                                      setBrePollingMessage('');
-                                      if (breResult.data) {
-                                        setApprovalData(breResult.data);
-                                      }
-                                      setFinfactorSuccess(false);
-                                    }
-                                  } catch (pollError) {
-                                    console.error('BRE polling error:', pollError);
-                                    setBrePollingMessage('Retrying...');
-                                    await new Promise(resolve => setTimeout(resolve, 10000));
-                                  }
-                                }
-
-                                if (pollAttempts >= MAX_POLL_ATTEMPTS) {
-                                  setBrePolling(false);
-                                  setBrePollingMessage('');
-                                  toast({ variant: "error", title: "Timeout", description: "Bank statement processing timed out. Please try again." });
-                                }
-                              };
-
-                              pollBREStatus();
-                            } else {
-                              setBrePolling(false);
-                              setBrePollingMessage('');
-                            }
-                          } catch (error: any) {
-                            console.error('Consent API error:', error);
-                            toast({ variant: "error", title: "Network Error", description: "Unable to connect to server. Please try again." });
-                            setBrePolling(false);
-                            setBrePollingMessage('');
-                          } finally {
-                            setConsentLoading(false);
-                          }
-                        }}
-                        disabled={consentLoading}
-                        className="bg-[#25B181] text-white px-8 py-3 rounded-xl font-semibold hover:bg-[#1d9e6f] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
-                      >
-                        {consentLoading ? (<><Loader2 className="w-5 h-5 animate-spin" />Processing...</>) : (<>Continue Application<ArrowRight className="w-5 h-5" /></>)}
-                      </button>
+                    <div className="bg-gray-50 rounded-lg p-4 mb-6 inline-block">
+                      <p className="text-sm text-gray-500">This may take a few moments</p>
+                      <p className="text-xs text-gray-400 mt-1">Please do not close this window</p>
                     </div>
                   </div>
                 ) : approvalData?.status === 'Proceed to Bank' ? (
@@ -6297,29 +6084,22 @@ console.log('Sending OTP with payload:', payload);
                           }
                           setPtbLoading(true);
                           try {
-                            const customerId = localStorage.getItem('userId');
-                            if (!customerId) {
-                              toast({ variant: "error", title: "Error", description: "Customer ID not found. Please try again." });
-                              setPtbLoading(false);
-                              return;
-                            }
-                            const response = await fetch(`https://api.quikkred.in/api/kyc/finfactorConsentRequest`, {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                              body: JSON.stringify({ customerId })
+                            const response = await fetch(`https://alpha.quikkred.in/api/kyc/finfactorConsentRequest`, {
+                              method: 'GET',
+                              headers: { 'Authorization': `Bearer ${token}` }
                             });
                             const result = await response.json();
                             if (response.ok && result.success) {
                               toast({ variant: "success", title: "Success", description: result.message || "Bank verification initiated successfully." });
-                              if (result.data) {
-                                window.open(result.data, '_blank');
+                              if (result.data?.url) {
+                                window.location.href = result.data.url;
                               }
                             } else {
                               toast({ variant: "error", title: "Failed", description: result.message || "Failed to initiate bank verification." });
                             }
                           } catch (error: any) {
                             console.error('PTB API error:', error);
-                            toast({ variant: "error", title: "Network Error", description: "Unable to connect to server. Please try again." });
+                            toast({ variant: "error", title: "Network Error", description: error?.message || "Unable to connect to server. Please try again." });
                           } finally {
                             setPtbLoading(false);
                           }

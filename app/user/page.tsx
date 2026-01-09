@@ -18,6 +18,8 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/toast';
 import { API_BASE_URL } from '@/lib/config';
+import { useDashboard } from '@/store/hooks/useDashboard';
+import { useLoans } from '@/store/hooks/useLoans';
 
 declare global {
   interface Window {
@@ -89,6 +91,22 @@ export default function UserDashboard() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+
+  // Redux state for dashboard
+  const {
+    dashboardData,
+    loading: dashboardLoading,
+    error: dashboardError,
+    fetchDashboard: reduxFetchDashboard,
+  } = useDashboard();
+
+  // Redux state for active loan
+  const {
+    activeLoan: reduxActiveLoan,
+    activeLoanLoading,
+    fetchActiveLoan: reduxFetchActiveLoan,
+  } = useLoans();
+
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedEmiCount, setSelectedEmiCount] = useState<number>(1);
@@ -100,6 +118,27 @@ export default function UserDashboard() {
   const [loadingLoanDetails, setLoadingLoanDetails] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const isProcessingRef = useRef(false);
+
+  // Update local state from Redux
+  useEffect(() => {
+    if (dashboardData) {
+      setData(dashboardData);
+    }
+  }, [dashboardData]);
+
+  useEffect(() => {
+    if (reduxActiveLoan) {
+      setActiveLoanDetails(reduxActiveLoan);
+    }
+  }, [reduxActiveLoan]);
+
+  useEffect(() => {
+    setLoading(dashboardLoading);
+  }, [dashboardLoading]);
+
+  useEffect(() => {
+    setLoadingLoanDetails(activeLoanLoading);
+  }, [activeLoanLoading]);
 
   // Load Razorpay script
   useEffect(() => {
@@ -123,76 +162,27 @@ export default function UserDashboard() {
     }
   }, [activeLoanDetails]);
 
-  // Fetch active loan details when selected loan changes
+  // Fetch active loan details using Redux
   const fetchActiveLoanDetails = async (loanNumber: string) => {
     if (!loanNumber) return;
 
-    try {
-      setLoadingLoanDetails(true);
-      setCustomAmount(''); // Reset custom amount
+    setCustomAmount(''); // Reset custom amount
 
-      const token = localStorage.getItem('authToken') ||
-                    localStorage.getItem('token') ||
-                    localStorage.getItem('accessToken');
+    const result = await reduxFetchActiveLoan(loanNumber);
 
-      if (!token) {
-        console.error('No auth token found');
-        return;
-      }
+    if (result?.requiresAuth) {
+      router.push('/login');
+      return;
+    }
 
-      const response = await fetch(`${API_BASE_URL}/api/loans/active/${loanNumber}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      // Check if token expired (401 Unauthorized) - Full logout and redirect
-      if (response.status === 401) {
-        // Clear all authentication tokens
-        localStorage.removeItem('token');
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-
-        // Clear user data
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('role');
-        localStorage.removeItem('userEmail');
-        localStorage.removeItem('email');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('userId');
-        localStorage.removeItem('userMobile');
-        localStorage.removeItem('customerUniqueId');
-
-        // Clear cookies
-        document.cookie = 'auth-token=; path=/; max-age=0';
-        document.cookie = 'user-role=; path=/; max-age=0';
-
-        // Redirect to login
-        router.push('/login');
-        return;
-      }
-
-      const result = await response.json();
-
-      if (response.ok && result.success && result.data) {
-        setActiveLoanDetails(result.data);
-        console.log('✅ Active loan details loaded successfully');
-      } else {
-        throw new Error(result.message || 'Failed to fetch loan details');
-      }
-
-    } catch (error) {
-      console.error('Error fetching active loan details:', error);
+    if (result?.success) {
+      console.log('✅ Active loan details loaded successfully');
+    } else if (result?.error) {
       toast({
         variant: "error",
         title: "Error Loading Loan",
         description: "Unable to fetch loan details. Please try again."
       });
-    } finally {
-      setLoadingLoanDetails(false);
     }
   };
 
@@ -234,73 +224,23 @@ export default function UserDashboard() {
     fetchUserData();
   }, []);
 
+  // Fetch user data using Redux
   const fetchUserData = async () => {
-    try {
-      setLoading(true);
+    const result = await reduxFetchDashboard();
 
-      const token = localStorage.getItem('authToken') ||
-                    localStorage.getItem('token') ||
-                    localStorage.getItem('accessToken');
+    if (result?.requiresAuth) {
+      router.push('/login');
+      return;
+    }
 
-      if (!token) {
-        console.error('No auth token found');
-        router.push('/login');
-        return;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/api/customer/dashboard`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      // Check if token expired (401 Unauthorized) - Full logout and redirect
-      if (response.status === 401) {
-        // Clear all authentication tokens
-        localStorage.removeItem('token');
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-
-        // Clear user data
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('role');
-        localStorage.removeItem('userEmail');
-        localStorage.removeItem('email');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('userId');
-        localStorage.removeItem('userMobile');
-        localStorage.removeItem('customerUniqueId');
-
-        // Clear cookies
-        document.cookie = 'auth-token=; path=/; max-age=0';
-        document.cookie = 'user-role=; path=/; max-age=0';
-
-        // Redirect to login
-        router.push('/login');
-        return;
-      }
-
-      const result = await response.json();
-
-      if (response.ok && result.success && result.data) {
-        setData(result.data);
-        console.log('✅ Dashboard data loaded successfully');
-      } else {
-        throw new Error(result.message || 'Failed to fetch dashboard data');
-      }
-
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+    if (result?.success) {
+      console.log('✅ Dashboard data loaded successfully');
+    } else if (result?.error) {
       toast({
         variant: "error",
         title: "Error Loading Data",
         description: "Unable to fetch your dashboard data. Please try again."
       });
-    } finally {
-      setLoading(false);
     }
   };
 
