@@ -650,7 +650,8 @@
     "contact": {
       "title": "Contact Us",
       "address": "1008, 10th floor, Vikrant tower, Rajendra Place, New Delhi, Delhi, Pin Code 110005",
-      "email": "support@quikkred.com",
+      "email": "support@quikkred.in",
+      "phone": "+91-9311964796",
       "hours": "Mon-Sat: 9 AM - 6 PM"
     },
     "social": {
@@ -667,8 +668,8 @@
       "comingSoon": "Coming Soon!",
       "comingSoonMessage": "Our mobile app will be available soon. Stay tuned!"
     },
-    "copyright": "© 2025 Quikkred. All rights reserved.",
-    "disclaimer": "Quikkred is a registered NBFC regulated by RBI"
+    "copyright": "© 2026 Quikkred. All rights reserved.",
+    "disclaimer": "Quikkred is a digital lending platform powered by Satsai Finlease Pvt. Ltd., an RBI registered NBFC"
   },
   "contact": {
     "title": "Get in Touch",

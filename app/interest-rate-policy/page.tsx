@@ -58,7 +58,7 @@ export default function InterestRatePolicyPage() {
               The Reserve Bank of India (&quot;RBI&quot;) vide its Master Direction – Reserve Bank of India (Non-Banking Financial Company – Scale Based Regulation) Directions, 2023 advised all Non-Systemically Important Non-Deposit taking NBFCs to lay out appropriate internal principles and procedures in determining interest rates, processing fee and other charges. RBI also directed to make the policy available on the website of the NBFC, and update whenever there is a change.
             </p>
             <p className={styles.paragraph}>
-              The Board of Directors of Satsai Finance Private Limited (&quot;Company&quot;) in their meeting held on June 30, 2023, had adopted the Interest Rate Policy (&quot;the Policy&quot;) in accordance with the RBI Directions earlier applicable on the Company. The same has now been revised to reflect the changes in internal policies etc.
+              The Board of Directors of Satsai Finlease Private Limited (&quot;Company&quot;) in their meeting held on June 30, 2023, had adopted the Interest Rate Policy (&quot;the Policy&quot;) in accordance with the RBI Directions earlier applicable on the Company. The same has now been revised to reflect the changes in internal policies etc.
             </p>
             <p className={styles.paragraph}>
               This Policy should always be read in conjunction with extant RBI guidelines, directives, circulars and instructions.

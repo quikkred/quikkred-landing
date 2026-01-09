@@ -104,7 +104,7 @@ export default function DisclaimerDisclosurePage() {
                   Board Approval
                 </h3>
                 <p className="text-[#2b2b2b] leading-[1.7]">
-                  <strong>Approved by:</strong> Board of Directors, Satsai Finance Private Limited
+                  <strong>Approved by:</strong> Board of Directors, Satsai Finlease Private Limited
                 </p>
               </div>
             </div>
