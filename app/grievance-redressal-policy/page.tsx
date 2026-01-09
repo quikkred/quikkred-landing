@@ -37,7 +37,7 @@ export default function GrievanceRedressalPolicyPage() {
               <li className="flex items-start">
                 <span className="inline-block w-2 h-2 bg-[#2BB89A] rounded-full mt-2 mr-3 flex-shrink-0"></span>
                 <span className="text-gray-600">
-                  <strong className="text-gray-700">Helpline No.:</strong> +91-88776-65544 &amp; +91-99887-76655
+                  <strong className="text-gray-700">Helpline No.:</strong> +91-9311964796
                 </span>
               </li>
               <li className="flex items-start">
@@ -105,13 +105,13 @@ export default function GrievanceRedressalPolicyPage() {
                   <strong className="text-gray-700">Grievance Redressal Officer (Nodal Officer):</strong> Mr. Manish Soni
                 </li>
                 <li className="text-gray-600">
-                  <strong className="text-gray-700">Address:</strong> QuikkRed, Head Office, Plot No. 420, Digital Lane, Sector-44, Gurugram – 122003
+                  <strong className="text-gray-700">Address:</strong> Quikkred, 1008, 10th Floor, Vikrant Tower, Rajendra Place, New Delhi - 110005
                 </li>
                 <li className="text-gray-600">
-                  <strong className="text-gray-700">Contact No.:</strong> +91-98765-43210
+                  <strong className="text-gray-700">Contact No.:</strong> +91-9311964796
                 </li>
                 <li className="text-gray-600">
-                  <strong className="text-gray-700">Email Id:</strong> Manish@quikkred.com
+                  <strong className="text-gray-700">Email Id:</strong> grievance@quikkred.in
                 </li>
               </ul>
             </div>

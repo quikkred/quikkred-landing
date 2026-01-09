@@ -57,7 +57,7 @@ export default function CreditPolicyPage() {
                 1. Preamble
               </h2>
               <p className="text-[#2b2b2b] leading-[1.7] mb-4">
-                Satsai Finance Private Limited (&quot;the Company&quot;) is registered with the Reserve Bank of India (RBI) as a Non-Banking Financial Company Base Layer (NBFC-BL) under the Scale Based Regulation (SBR) framework and is primarily engaged in the business of Pay Day Loans, Loans Against Property (LAP), EMI-based Retail Loans and Corporate Business Loans.
+                Satsai Finlease Private Limited (&quot;the Company&quot;) is registered with the Reserve Bank of India (RBI) as a Non-Banking Financial Company Base Layer (NBFC-BL) under the Scale Based Regulation (SBR) framework and is primarily engaged in the business of Pay Day Loans, Loans Against Property (LAP), EMI-based Retail Loans and Corporate Business Loans.
               </p>
               <p className="text-[#2b2b2b] leading-[1.7] mb-4">
                 The purpose of this policy is to establish a harmonised framework for credit origination, risk control, portfolio diversification, liquidity stability and regulatory compliance in alignment with RBI Master Directions, circulars and prudential norms as amended from time to time.
@@ -607,7 +607,7 @@ export default function CreditPolicyPage() {
                   Board Approval
                 </h3>
                 <p className="text-[#2b2b2b] leading-[1.7]">
-                  <strong>Approved by:</strong> Board of Directors, Satsai Finance Private Limited
+                  <strong>Approved by:</strong> Board of Directors, Satsai Finlease Private Limited
                 </p>
               </div>
             </div>

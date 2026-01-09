@@ -75,8 +75,8 @@ export default function LoanCalculatorAll() {
               className="w-full h-1 bg-gradient-to-r from-[#51C9AF] to-slate-300 rounded-lg appearance-none cursor-pointer accent-[#25B181]"
             />
             <div className="flex justify-between text-[9px] text-slate-500">
-              <span>₹5k</span>
-              <span>₹1L</span>
+              <span>₹2k</span>
+              <span>₹25L</span>
             </div>
           </div>
 
