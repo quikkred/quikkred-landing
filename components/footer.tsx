@@ -366,12 +366,12 @@ export function Footer() {
             <p className="text-slate-400 mb-2 text-xs sm:text-sm">
               {t.footer.copyright}
             </p>
-            {/* <p className="text-xs text-slate-500 break-words">
-              CIN: U65929MH2024PTC123456 | NBFC Registration: B.05.12345 | GSTIN: 27AABCL1234N1Z5
+            <p className="text-xs text-slate-500 mb-2">
+              <span className="font-medium text-slate-400">Quikkred</span> is a brand owned by <span className="font-medium text-slate-400">FluxusForge Private Limited</span>
             </p>
-            <p className="text-xs text-gray-500 mt-2">
-              {t.footer.disclaimer}
-            </p> */}
+            <p className="text-xs text-slate-500">
+              Lending Partner: <span className="font-medium text-slate-400">Satsai Finlease Private Limited</span> (RBI Registered NBFC)
+            </p>
           </div>
 
           {/* Mobile App Download */}
