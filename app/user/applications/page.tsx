@@ -13,6 +13,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { loansService } from '@/lib/api/loans.service';
 import { API_BASE_URL } from '@/lib/config';
+import { useApplications } from '@/store/hooks/useApplications';
 
 interface Application {
   _id: string;
@@ -169,8 +170,16 @@ interface PaginationInfo {
 export default function MyApplicationsPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  // Redux state for applications
+  const {
+    applications,
+    pagination: reduxPagination,
+    loading,
+    error,
+    fetchApplications: reduxFetchApplications,
+  } = useApplications();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'processing' | 'approved' | 'rejected'>('all');
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
@@ -184,6 +193,13 @@ export default function MyApplicationsPage() {
     limit: 10
   });
 
+  // Update local pagination from Redux state
+  useEffect(() => {
+    if (reduxPagination) {
+      setPagination(reduxPagination);
+    }
+  }, [reduxPagination]);
+
   // Check authentication
   useEffect(() => {
     if (!isLoading && !user) {
@@ -191,55 +207,19 @@ export default function MyApplicationsPage() {
     }
   }, [user, isLoading, router]);
 
-  // Fetch applications
+  // Fetch applications using Redux
   useEffect(() => {
     fetchApplications();
   }, [pagination.currentPage, pagination.limit]);
 
   const fetchApplications = async (page?: number, limit?: number) => {
-    try {
-      setLoading(true);
+    const currentPage = page || pagination.currentPage;
+    const currentLimit = limit || pagination.limit;
 
-      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+    const result = await reduxFetchApplications(currentPage, currentLimit);
 
-      if (!token) {
-        router.push('/login');
-        return;
-      }
-
-      const currentPage = page || pagination.currentPage;
-      const currentLimit = limit || pagination.limit;
-
-      const response = await fetch(
-        `${API_BASE_URL}/api/application/loan/get?page=${currentPage}&limit=${currentLimit}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
-
-      const result = await response.json();
-
-      if (response.ok && result.success && result.data) {
-        setApplications(result.data);
-
-        // Update pagination info
-        if (result.pagination) {
-          setPagination({
-            totalRecords: result.pagination.totalRecords || 0,
-            totalPages: result.pagination.totalPages || 1,
-            currentPage: result.pagination.currentPage || 1,
-            limit: result.pagination.limit || 10
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching applications:', error);
-    } finally {
-      setLoading(false);
+    if (result?.requiresAuth) {
+      router.push('/login');
     }
   };
 
