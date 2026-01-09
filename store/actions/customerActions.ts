@@ -1,7 +1,7 @@
 import { Dispatch } from 'redux';
 import * as actionTypes from '../actionTypes/customerActionTypes';
 
-const API_BASE_URL = 'https://alpha.quikkred.in/api';
+const API_BASE_URL = 'https://api.quikkred.in/api';
 
 // Helper to get auth token
 const getAuthToken = (): string | null => {
