@@ -576,7 +576,7 @@ export default function QuickLoanApplication() {
 
         try {
           setBsaStatusUpdated(true); // Mark as updated immediately to prevent race conditions
-          const response = await fetch('https://alpha.quikkred.in/api/kyc/bsa/update', {
+          const response = await fetch('https://api.quikkred.in/api/kyc/bsa/update', {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
@@ -638,7 +638,7 @@ export default function QuickLoanApplication() {
       setConsentLoading(true);
 
       try {
-        const response = await fetch('https://alpha.quikkred.in/api/kyc/consentHandleToFIRequest', {
+        const response = await fetch('https://api.quikkred.in/api/kyc/consentHandleToFIRequest', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -3045,7 +3045,7 @@ y += boxHeight + 4;
         const formData = new FormData();
         formData.append('eSignDoc', pdfBlob, 'loan-agreement.pdf');
 
-        const response = await fetch('https://alpha.quikkred.in/api/kyc/eSign/upload?documentNumber=' + documentNumber, {
+        const response = await fetch('https://api.quikkred.in/api/kyc/eSign/upload?documentNumber=' + documentNumber, {
             method: 'POST',
             headers: {
                 'Authorization': 'Bearer ' + token
@@ -3447,7 +3447,7 @@ y += boxHeight + 4;
         : { mobile: formData.mobile };
 console.log('Sending OTP with payload:', payload);
 
-      const response = await fetch("https://alpha.quikkred.in/api/auth/customer/create", {
+      const response = await fetch("https://api.quikkred.in/api/auth/customer/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -3499,7 +3499,7 @@ console.log('Sending OTP with payload:', payload);
         ? { email: formData.email, otp: formData.otp }
         : { mobile: formData.mobile, otp: formData.otp };
 
-      const response = await fetch("https://alpha.quikkred.in/api/auth/customer/verifyOtp", {
+      const response = await fetch("https://api.quikkred.in/api/auth/customer/verifyOtp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -3778,7 +3778,7 @@ console.log('Sending OTP with payload:', payload);
         return dateStr;
       };
 
-      const response = await fetch('https://alpha.quikkred.in/api/kyc/pan/verification', {
+      const response = await fetch('https://api.quikkred.in/api/kyc/pan/verification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3852,7 +3852,7 @@ console.log('Sending OTP with payload:', payload);
                     localStorage.getItem('authToken');
 
       // First call verification endpoint to check redirect
-      const verifyResponse = await fetch('https://alpha.quikkred.in/api/kyc/aadhaar/verification', {
+      const verifyResponse = await fetch('https://api.quikkred.in/api/kyc/aadhaar/verification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3926,7 +3926,7 @@ console.log('Sending OTP with payload:', payload);
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      const response = await fetch('https://alpha.quikkred.in/api/kyc/aadhaar/verify', {
+      const response = await fetch('https://api.quikkred.in/api/kyc/aadhaar/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -4038,7 +4038,7 @@ console.log('Sending OTP with payload:', payload);
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      const response = await fetch('https://alpha.quikkred.in/api/kyc/bank/verification', {
+      const response = await fetch('https://api.quikkred.in/api/kyc/bank/verification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -4278,7 +4278,7 @@ console.log('Sending OTP with payload:', payload);
         //   console.log('✅ Adding selfie photo to Step 2:', formData.selfie.name);
         // }
 
-        const response = await fetch(`https://alpha.quikkred.in/api/application/loan/create`, {
+        const response = await fetch(`https://api.quikkred.in/api/application/loan/create`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -4316,7 +4316,7 @@ console.log('Sending OTP with payload:', payload);
         };
       }
 
-      const response = await fetch(`https://alpha.quikkred.in/api/application/loan/create`, {
+      const response = await fetch(`https://api.quikkred.in/api/application/loan/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -4784,7 +4784,7 @@ console.log('Sending OTP with payload:', payload);
           isSubmit: true,
         };
 
-        const response = await fetch(`https://alpha.quikkred.in/api/application/loan/create`, {
+        const response = await fetch(`https://api.quikkred.in/api/application/loan/create`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -6075,7 +6075,7 @@ console.log('Sending OTP with payload:', payload);
                               setConsentLoading(false);
                               return;
                             }
-                            const response = await fetch(`https://alpha.quikkred.in/api/kyc/consentHandleToFIRequest`, {
+                            const response = await fetch(`https://api.quikkred.in/api/kyc/consentHandleToFIRequest`, {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                               body: JSON.stringify({ customerId })
@@ -6178,7 +6178,7 @@ console.log('Sending OTP with payload:', payload);
                               setPtbLoading(false);
                               return;
                             }
-                            const response = await fetch(`https://alpha.quikkred.in/api/kyc/finfactorConsentRequest`, {
+                            const response = await fetch(`https://api.quikkred.in/api/kyc/finfactorConsentRequest`, {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                               body: JSON.stringify({ customerId })
