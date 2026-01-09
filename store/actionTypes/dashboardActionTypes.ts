@@ -1,0 +1,9 @@
+// Dashboard Action Types
+
+// Fetch Dashboard Data
+export const FETCH_DASHBOARD_REQUEST = 'FETCH_DASHBOARD_REQUEST';
+export const FETCH_DASHBOARD_SUCCESS = 'FETCH_DASHBOARD_SUCCESS';
+export const FETCH_DASHBOARD_FAILURE = 'FETCH_DASHBOARD_FAILURE';
+
+// Clear Dashboard
+export const CLEAR_DASHBOARD = 'CLEAR_DASHBOARD';

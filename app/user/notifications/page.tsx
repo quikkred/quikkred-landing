@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { API_BASE_URL } from '@/lib/config';
+import { useNotifications } from '@/store/hooks/useNotifications';
 
 interface Notification {
   _id: string;
@@ -21,80 +22,23 @@ interface Notification {
 
 export default function NotificationsPage() {
   const router = useRouter();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  // Redux state for notifications
+  const {
+    notifications,
+    loading: isLoading,
+    error,
+    fetchNotifications: reduxFetchNotifications,
+  } = useNotifications();
 
   useEffect(() => {
     fetchNotifications();
   }, []);
 
   const fetchNotifications = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const token = localStorage.getItem('token') || localStorage.getItem('authToken');
-      if (!token) {
-        setError("No authentication token found");
-        return;
-      }
-
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-      const response = await fetch(`${API_BASE_URL}/api/notification/getAll`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        signal: controller.signal
-      });
-
-      clearTimeout(timeoutId);
-
-      // Check if token expired (401 Unauthorized) - Full logout and redirect
-      if (response.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('role');
-        localStorage.removeItem('userEmail');
-        localStorage.removeItem('email');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('userId');
-        localStorage.removeItem('userMobile');
-        localStorage.removeItem('customerUniqueId');
-        document.cookie = 'auth-token=; path=/; max-age=0';
-        document.cookie = 'user-role=; path=/; max-age=0';
-        router.push('/login');
-        return;
-      }
-
-      const result = await response.json();
-
-      if (result.status === 403 || response.status === 403) {
-        setError('Notifications not available for your account type');
-        setNotifications([]);
-        return;
-      }
-
-      if (response.ok && result.success && result.data) {
-        setNotifications(result.data);
-      } else {
-        setError(result.message || 'Failed to load notifications');
-      }
-    } catch (err: any) {
-      if (err.name === 'AbortError') {
-        setError('Request timeout - please try again');
-      } else {
-        setError(err.message || "Failed to load notifications");
-      }
-    } finally {
-      setIsLoading(false);
+    const result = await reduxFetchNotifications();
+    if (result?.requiresAuth) {
+      router.push('/login');
     }
   };
 
