@@ -12,91 +12,55 @@ import { loansService } from "@/lib/api/loans.service";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast, Toaster } from "@/components/ui/toast";
 import SelfieCapture from "@/components/camera/SelfieCapture";
+import { BANKS } from "@/lib/constants/banks";
+import { useCustomer } from "@/store/hooks/useCustomer";
 
 // Auto-decision engine
-const autoDecisionEngine = (data: any) => {
-  const { monthlyIncome, loanAmount, pan, aadhaar } = data;
-
-  // Simple rule-based decision
-  const minIncome = 25000;
-  const maxLoanToIncome = 40;
-  const maxEligibleAmount = monthlyIncome * maxLoanToIncome;
-
-  // Check basic eligibility
-  if (monthlyIncome < minIncome) {
-    return {
-      approved: false,
-      reason: "Minimum monthly income requirement not met (₹25,000)",
-      suggestedAction: "Please reapply when your monthly income is ₹25,000 or above"
-    };
-  }
-
-  if (loanAmount > maxEligibleAmount) {
-    return {
-      approved: false,
-      reason: `Requested amount exceeds maximum eligible amount (₹${maxEligibleAmount.toLocaleString()})`,
-      suggestedAction: `Maximum loan amount you can apply for: ₹${maxEligibleAmount.toLocaleString()}`
-    };
-  }
-
-  if (!pan || !aadhaar) {
-    return {
-      approved: false,
-      reason: "PAN and Aadhaar details are mandatory",
-      suggestedAction: "Please provide valid PAN and Aadhaar numbers"
-    };
-  }
-
-  // Approved!
-  return {
-    approved: true,
-    approvedAmount: loanAmount,
-    interestRate: 12.5,
-    tenure: data.tenure || 12,
-    emi: Math.round((loanAmount * (12.5/100/12) * Math.pow(1 + 12.5/100/12, 12)) / (Math.pow(1 + 12.5/100/12, 12) - 1)),
-    processingFee: Math.round(loanAmount * 0.02)
-  };
-};
 
 
-const BANKS = [
-  // ===== PSU Banks =====
-  { value: 'state bank of india', name: 'State Bank of India' },
-  { value: 'punjab national bank', name: 'Punjab National Bank' },
-  { value: 'bank of baroda', name: 'Bank of Baroda' },
-  { value: 'union bank of india', name: 'Union Bank of India' },
-  { value: 'bank of india', name: 'Bank of India' },
-  { value: 'canara bank', name: 'Canara Bank' },
-  { value: 'indian bank', name: 'Indian Bank' },
-  { value: 'indian overseas bank', name: 'Indian Overseas Bank' },
-  { value: 'uco bank', name: 'UCO Bank' },
-  { value: 'bank of maharashtra', name: 'Bank of Maharashtra' },
-  { value: 'punjab & sind bank', name: 'Punjab & Sind Bank' },
+// const autoDecisionEngine = (data: any) => {
+//   const { monthlyIncome, loanAmount, pan, aadhaar } = data;
 
-  // ===== Private Banks =====
-  { value: 'hdfc bank', name: 'HDFC Bank' },
-  { value: 'icici bank', name: 'ICICI Bank' },
-  { value: 'axis bank', name: 'Axis Bank' },
-  { value: 'kotak mahindra bank', name: 'Kotak Mahindra Bank' },
-  { value: 'yes bank', name: 'Yes Bank' },
-  { value: 'indusind bank', name: 'IndusInd Bank' },
-  { value: 'idfc first bank', name: 'IDFC First Bank' },
-  { value: 'federal bank', name: 'Federal Bank' },
-  { value: 'dcb bank', name: 'DCB Bank' },
-  { value: 'rbl bank', name: 'RBL Bank' },
-  { value: 'catholic syrian bank (csb bank)', name: 'Catholic Syrian Bank (CSB Bank)' },
-  { value: 'south indian bank', name: 'South Indian Bank' },
+  
+//   const minIncome = 25000;
+//   const maxLoanToIncome = 40;
+//   const maxEligibleAmount = monthlyIncome * maxLoanToIncome;
 
-  // ===== Small Finance / Payments Banks =====
-  { value: 'au small finance bank', name: 'AU Small Finance Bank' },
-  { value: 'equitas small finance bank', name: 'Equitas Small Finance Bank' },
-  { value: 'fino payments bank', name: 'Fino Payments Bank' },
-  { value: 'airtel payments bank', name: 'Airtel Payments Bank' },
-  { value: 'paytm payments bank', name: 'Paytm Payments Bank' },
+ 
+//   if (monthlyIncome < minIncome) {
+//     return {
+//       approved: false,
+//       reason: "Minimum monthly income requirement not met (₹25,000)",
+//       suggestedAction: "Please reapply when your monthly income is ₹25,000 or above"
+//     };
+//   }
 
-  // ===== Others =====
-  { value: 'idbi bank', name: 'IDBI Bank' }
-];
+//   if (loanAmount > maxEligibleAmount) {
+//     return {
+//       approved: false,
+//       reason: `Requested amount exceeds maximum eligible amount (₹${maxEligibleAmount.toLocaleString()})`,
+//       suggestedAction: `Maximum loan amount you can apply for: ₹${maxEligibleAmount.toLocaleString()}`
+//     };
+//   }
+
+//   if (!pan || !aadhaar) {
+//     return {
+//       approved: false,
+//       reason: "PAN and Aadhaar details are mandatory",
+//       suggestedAction: "Please provide valid PAN and Aadhaar numbers"
+//     };
+//   }
+
+//   // Approved!
+//   return {
+//     approved: true,
+//     approvedAmount: loanAmount,
+//     interestRate: 12.5,
+//     tenure: data.tenure || 12,
+//     emi: Math.round((loanAmount * (12.5/100/12) * Math.pow(1 + 12.5/100/12, 12)) / (Math.pow(1 + 12.5/100/12, 12) - 1)),
+//     processingFee: Math.round(loanAmount * 0.02)
+//   };
+// };
 
 
 export default function QuickLoanApplication() {
@@ -106,6 +70,25 @@ export default function QuickLoanApplication() {
   const searchParams = useSearchParams();
   const { login, user, isLoading } = useAuth();
   const { toast } = useToast();
+
+  // Redux hooks for GET APIs
+  const {
+    customer: reduxCustomer,
+    customerLoading: reduxCustomerLoading,
+    getCustomer,
+    aadhaarStatus: reduxAadhaarStatus,
+    getAadhaarStatus,
+    eSignStatus: reduxESignStatus,
+    getESignStatus,
+    breData: reduxBreData,
+    breLoading: reduxBreLoading,
+    initBRE,
+    finfactorData: reduxFinfactorData,
+    finfactorLoading: reduxFinfactorLoading,
+    getFinfactor,
+    initESign,
+  } = useCustomer();
+
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [decision, setDecision] = useState<any>(null);
@@ -157,8 +140,6 @@ export default function QuickLoanApplication() {
   // User's desired loan amount (can be less than or equal to approved amount)
   const [userDesiredAmount, setUserDesiredAmount] = useState<number | null>(null);
   const [calculatedLoanDetails, setCalculatedLoanDetails] = useState<any>(null);
-  const [showAmountModal, setShowAmountModal] = useState(false);
-  const [tempAmount, setTempAmount] = useState<string>('');
 
   // BRE Status States
   const [rejectionCountdown, setRejectionCountdown] = useState(10);
@@ -290,18 +271,10 @@ export default function QuickLoanApplication() {
                         localStorage.getItem('authToken');
 
           if (token) {
-            // Fetch user profile data
-            const response = await fetch('https://api.quikkred.in/api/customer/get', {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              }
-            });
+            // Fetch user profile data using Redux
+            const result = await getCustomer();
 
-            const result = await response.json();
-
-            if (response.ok && result.success && result.data) {
+            if (result.success && result.data) {
               const profileData = result.data;
               console.log('✅ User profile loaded successfully');
 
@@ -411,34 +384,14 @@ export default function QuickLoanApplication() {
               const isBankDetailsFilled = toBoolean(profileData.isBankDetailsFilled);
               const isSubmit = toBoolean(profileData.isSubmit);
 
-              // Debug logging for checklist
-              console.log('📋 CHECKLIST API Response:', {
-                raw: {
-                  isEmailVerified: profileData.isEmailVerified,
-                  isBasicDetailsFilled: profileData.isBasicDetailsFilled,
-                  isKycDetailsFilled: profileData.isKycDetailsFilled,
-                  isBankDetailsFilled: profileData.isBankDetailsFilled,
-                  isSubmit: profileData.isSubmit,
-                },
-                normalized: {
-                  isEmailVerified,
-                  isBasicDetailsFilled,
-                  isKycDetailsFilled,
-                  isBankDetailsFilled,
-                  isSubmit,
-                }
-              });
-
               // Load selfie preview from profile if available
               if (profileData.profile?.s3URL) {
                 setSelfiePreview(profileData.profile.s3URL);
                 setSelfieCaptured(true);
-                console.log('✅ Selfie loaded from profile:', profileData.profile.s3URL);
 
                 // Check if selfie/profile is verified - disable retake if verified
                 if (profileData.profile?.status === 'VERIFIED') {
                   setSelfieVerified(true);
-                  console.log('✅ Selfie already verified - retake disabled');
                 }
               }
 
@@ -446,7 +399,6 @@ export default function QuickLoanApplication() {
               const allChecklistComplete = isBasicDetailsFilled && isKycDetailsFilled && isBankDetailsFilled && isSubmit;
 
               if (allChecklistComplete) {
-                console.log('✅ All checklist items complete - redirecting to Dashboard');
                 router.push('/user');
                 return;
               }
@@ -457,27 +409,17 @@ export default function QuickLoanApplication() {
 
               if (!isBasicDetailsFilled) {
                 // Step 1 not complete - check email verification requirement
-                if (!isEmailVerified) {
-                  console.log('📍 Step 1: Basic Details not filled, email not verified');
-                } else {
-                  console.log('📍 Step 1: Basic Details not filled (email verified)');
-                }
                 firstPendingStep = 1;
               } else if (!isKycDetailsFilled) {
                 // Step 1 COMPLETE - go to Step 2 (don't force back to Step 1)
                 firstPendingStep = 2;
-                console.log('📍 First pending: Step 2 (KYC/Identity) - Step 1 already complete');
               } else if (!isBankDetailsFilled) {
                 // Step 1 & 2 COMPLETE - go to Step 3
                 firstPendingStep = 3;
-                console.log('📍 First pending: Step 3 (Bank Details) - Steps 1-2 already complete');
               } else if (!isSubmit) {
                 // Step 1, 2 & 3 COMPLETE - go to Step 4
                 firstPendingStep = 4;
-                console.log('📍 First pending: Step 4 (Approval/Submit) - Steps 1-3 already complete');
               }
-
-              console.log('🎯 Navigating to step:', firstPendingStep);
 
               // Set the determined step
               setApiDeterminedStep(firstPendingStep);
@@ -518,7 +460,6 @@ export default function QuickLoanApplication() {
   useEffect(() => {
     // Clear the localStorage after reading (already loaded in initial state)
     if (localStorage.getItem('heroFormData')) {
-      console.log('🗑️ Clearing hero form data from localStorage');
       localStorage.removeItem('heroFormData');
     }
   }, []);
@@ -526,7 +467,6 @@ export default function QuickLoanApplication() {
   // Get user location when they land on the apply page (after clicking "Apply Now")
   useEffect(() => {
     const requestLocation = async () => {
-      console.log('📍 Requesting user location on page load...');
       await getLocation();
     };
     requestLocation();
@@ -535,7 +475,6 @@ export default function QuickLoanApplication() {
   // Apply API-determined step after data is loaded
   useEffect(() => {
     if (apiDeterminedStep !== null && apiDeterminedStep !== currentStep) {
-      console.log(`🎯 Applying API-determined step: ${apiDeterminedStep}`);
       setCurrentStep(apiDeterminedStep);
       toast({
         variant: "success",
@@ -637,7 +576,7 @@ export default function QuickLoanApplication() {
 
         try {
           setBsaStatusUpdated(true); // Mark as updated immediately to prevent race conditions
-          const response = await fetch('https://api.quikkred.in/api/kyc/bsa/update', {
+          const response = await fetch('https://alpha.quikkred.in/api/kyc/bsa/update', {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
@@ -699,7 +638,7 @@ export default function QuickLoanApplication() {
       setConsentLoading(true);
 
       try {
-        const response = await fetch('https://api.quikkred.in/api/kyc/consentHandleToFIRequest', {
+        const response = await fetch('https://alpha.quikkred.in/api/kyc/consentHandleToFIRequest', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -722,11 +661,8 @@ export default function QuickLoanApplication() {
             let shouldContinuePolling = true;
             while (shouldContinuePolling) {
               try {
-                const breResponse = await fetch('https://api.quikkred.in/api/kyc/finfactor/initialize', {
-                  method: 'GET',
-                  headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const breResult = await breResponse.json();
+                // Using Redux for finfactor/initialize API
+                const breResult = await getFinfactor();
 
                 if (breResult.message === 'Statement not fetched yet') {
                   setBrePollingMessage('Fetching your bank statement...');
@@ -824,25 +760,11 @@ export default function QuickLoanApplication() {
       setAadhaarStatusLoading(true);
 
       try {
-        // Create AbortController for timeout handling (15 seconds)
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-        const response = await fetch('https://api.quikkred.in/api/kyc/aadhaar/status', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        const result = await response.json();
+        // Using Redux for aadhaar/status API
+        const result = await getAadhaarStatus();
 
         // STEP 7: Handle API response
-        if (response.ok && result.success && result.data?.isAadhaarVerify === true) {
+        if (result.success && result.data?.isAadhaarVerify === true) {
           console.log('✅ Aadhaar verified successfully from status API');
           console.log('📝 Backend has updated isAadhaarVerify = true in database');
           setAadhaarVerified(true);
@@ -945,24 +867,11 @@ export default function QuickLoanApplication() {
       setESignStatusLoading(true);
 
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-        const response = await fetch('https://api.quikkred.in/api/kyc/eSign/document', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        const result = await response.json();
+        // Using Redux for eSign/document API
+        const result = await getESignStatus();
 
         // Check if e-Sign document is already signed
-        if (response.ok && result.success && result.message === "E-sign document fetched successfully") {
+        if (result.success && result.message === "E-sign document fetched successfully") {
           setESignVerified(true);
           setUserESignStatus('SUCCESS');
           toast({
@@ -975,16 +884,10 @@ export default function QuickLoanApplication() {
           setESignVerified(false);
         }
 
-        // Call customer/get API once after eSign/document API
+        // Call customer/get API once after eSign/document API using Redux
         try {
           console.log('[eSign] Calling customer/get API to refresh user data...');
-          await fetch('https://api.quikkred.in/api/customer/get', {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            }
-          });
+          await getCustomer();
           console.log('[eSign] customer/get API called successfully');
         } catch (customerError) {
           console.error('[eSign] Error calling customer/get API:', customerError);
@@ -1088,17 +991,10 @@ export default function QuickLoanApplication() {
       setApprovalLoading(true);
 
       try {
-        const response = await fetch('https://api.quikkred.in/api/kyc/bre/initialize', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        // Using Redux for bre/initialize API
+        const result = await initBRE();
 
-        const result = await response.json();
-
-        if (response.ok && result.success && result.data) {
+        if (result.success && result.data) {
           console.log('[Step 4] BRE data fetched successfully');
           // Store BRE response data only (don't include formData to avoid dependency)
           setApprovalData(result.data);
@@ -1147,52 +1043,6 @@ export default function QuickLoanApplication() {
     }
   }, [user]);
 
-  // Fetch loan products
-
-
-
-  // useEffect(() => {
-  //   const fetchLoanProducts = async () => {
-  //     const token =   localStorage.getItem('accessToken') ||
-  //                     localStorage.getItem('token') ||
-  //                     localStorage.getItem('authToken');
-  //     setLoadingProducts(true);
-  //     try {
-  //       const response = await fetch('https://api.quikkred.in/api/loanProduct/allLoanProductsNameOnly', {
-  //         method: 'GET',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //           'Authorization': `Bearer ${token}`
-  //         },
-  //       });
-
-  //       const result = await response.json();
-
-  //       if (response.ok && result.success && result.data) {
-  //         setLoanProducts(result.data);
-  //         console.log('✅ Loan products loaded:', result.data);
-  //       } else {
-  //         console.error('Failed to fetch loan products:', result.message);
-  //         toast({
-  //           title: "Error",
-  //           description: "Failed to load loan products. Please refresh the page.",
-  //           variant: "error"
-  //         });
-  //       }
-  //     } catch (error) {
-  //       console.error('Error fetching loan products:', error);
-  //       toast({
-  //         title: "Error",
-  //         description: "Failed to load loan products. Please refresh the page.",
-  //         variant: "error"
-  //       });
-  //     } finally {
-  //       setLoadingProducts(false);
-  //     }
-  //   };
-
-  //   fetchLoanProducts();
-  // }, []);
 
   // Calculate EMI when loan amount, tenure, tenure unit, or product changes
   useEffect(() => {
@@ -1220,11 +1070,6 @@ export default function QuickLoanApplication() {
         return 'N/A';
       }
     };
-
-    // const formatCurrency = (value: any) => {
-    //   if (!value || value === 'N/A' || isNaN(value)) return 'N/A';
-    //   return Number(value).toLocaleString('en-IN');
-    // };
 
     const maskAadhaar = (aadhaar: string) => {
       if (!aadhaar || aadhaar.length < 4) return 'N/A';
@@ -3200,7 +3045,7 @@ y += boxHeight + 4;
         const formData = new FormData();
         formData.append('eSignDoc', pdfBlob, 'loan-agreement.pdf');
 
-        const response = await fetch('https://api.quikkred.in/api/kyc/eSign/upload?documentNumber=' + documentNumber, {
+        const response = await fetch('https://alpha.quikkred.in/api/kyc/eSign/upload?documentNumber=' + documentNumber, {
             method: 'POST',
             headers: {
                 'Authorization': 'Bearer ' + token
@@ -3602,7 +3447,7 @@ y += boxHeight + 4;
         : { mobile: formData.mobile };
 console.log('Sending OTP with payload:', payload);
 
-      const response = await fetch("https://api.quikkred.in/api/auth/customer/create", {
+      const response = await fetch("https://alpha.quikkred.in/api/auth/customer/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -3654,7 +3499,7 @@ console.log('Sending OTP with payload:', payload);
         ? { email: formData.email, otp: formData.otp }
         : { mobile: formData.mobile, otp: formData.otp };
 
-      const response = await fetch("https://api.quikkred.in/api/auth/customer/verifyOtp", {
+      const response = await fetch("https://alpha.quikkred.in/api/auth/customer/verifyOtp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -3699,17 +3544,10 @@ console.log('Sending OTP with payload:', payload);
         if (token) {
           try {
             console.log('🔵 Fetching customer data after OTP verification...');
-            const customerResponse = await fetch('https://api.quikkred.in/api/customer/get', {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              }
-            });
+            // Using Redux for customer/get API
+            const customerResult = await getCustomer();
 
-            const customerResult = await customerResponse.json();
-
-            if (customerResponse.ok && customerResult.success && customerResult.data) {
+            if (customerResult.success && customerResult.data) {
               const profileData = customerResult.data;
               console.log('✅ Customer data fetched successfully');
 
@@ -3940,7 +3778,7 @@ console.log('Sending OTP with payload:', payload);
         return dateStr;
       };
 
-      const response = await fetch('https://api.quikkred.in/api/kyc/pan/verification', {
+      const response = await fetch('https://alpha.quikkred.in/api/kyc/pan/verification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -4014,7 +3852,7 @@ console.log('Sending OTP with payload:', payload);
                     localStorage.getItem('authToken');
 
       // First call verification endpoint to check redirect
-      const verifyResponse = await fetch('https://api.quikkred.in/api/kyc/aadhaar/verification', {
+      const verifyResponse = await fetch('https://alpha.quikkred.in/api/kyc/aadhaar/verification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -4088,7 +3926,7 @@ console.log('Sending OTP with payload:', payload);
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      const response = await fetch('https://api.quikkred.in/api/kyc/aadhaar/verify', {
+      const response = await fetch('https://alpha.quikkred.in/api/kyc/aadhaar/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -4200,7 +4038,7 @@ console.log('Sending OTP with payload:', payload);
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      const response = await fetch('https://api.quikkred.in/api/kyc/bank/verification', {
+      const response = await fetch('https://alpha.quikkred.in/api/kyc/bank/verification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -4440,7 +4278,7 @@ console.log('Sending OTP with payload:', payload);
         //   console.log('✅ Adding selfie photo to Step 2:', formData.selfie.name);
         // }
 
-        const response = await fetch(`https://api.quikkred.in/api/application/loan/create`, {
+        const response = await fetch(`https://alpha.quikkred.in/api/application/loan/create`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -4478,7 +4316,7 @@ console.log('Sending OTP with payload:', payload);
         };
       }
 
-      const response = await fetch(`https://api.quikkred.in/api/application/loan/create`, {
+      const response = await fetch(`https://alpha.quikkred.in/api/application/loan/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -4838,16 +4676,10 @@ console.log('Sending OTP with payload:', payload);
                       localStorage.getItem('token') ||
                       localStorage.getItem('authToken');
 
-        // Call both APIs in parallel - save bank details and get BRE data
+        // Call both APIs in parallel - save bank details and get BRE data using Redux
         const [saveSuccess, breResponse] = await Promise.all([
           saveCustomerData(3), // Save bank details
-          fetch('https://api.quikkred.in/api/kyc/bre/initialize', {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            }
-          }).then(res => res.json()).catch(err => {
+          initBRE().catch((err: any) => {
             console.error('BRE API error:', err);
             return null;
           })
@@ -4952,7 +4784,7 @@ console.log('Sending OTP with payload:', payload);
           isSubmit: true,
         };
 
-        const response = await fetch(`https://api.quikkred.in/api/application/loan/create`, {
+        const response = await fetch(`https://alpha.quikkred.in/api/application/loan/create`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -6243,7 +6075,7 @@ console.log('Sending OTP with payload:', payload);
                               setConsentLoading(false);
                               return;
                             }
-                            const response = await fetch(`https://api.quikkred.in/api/kyc/consentHandleToFIRequest`, {
+                            const response = await fetch(`https://alpha.quikkred.in/api/kyc/consentHandleToFIRequest`, {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                               body: JSON.stringify({ customerId })
@@ -6259,11 +6091,8 @@ console.log('Sending OTP with payload:', payload);
                                 let shouldContinuePolling = true;
                                 while (shouldContinuePolling) {
                                   try {
-                                    const breResponse = await fetch(`https://api.quikkred.in/api/kyc/finfactor/initialize`, {
-                                      method: 'GET',
-                                      headers: { 'Authorization': `Bearer ${token}` }
-                                    });
-                                    const breResult = await breResponse.json();
+                                    // Using Redux for finfactor/initialize API
+                                    const breResult = await getFinfactor();
 
                                     if (breResult.message === 'Statement not fetched yet') {
                                       setBrePollingMessage('Fetching your bank statement...');
@@ -6349,7 +6178,7 @@ console.log('Sending OTP with payload:', payload);
                               setPtbLoading(false);
                               return;
                             }
-                            const response = await fetch(`https://api.quikkred.in/api/kyc/finfactorConsentRequest`, {
+                            const response = await fetch(`https://alpha.quikkred.in/api/kyc/finfactorConsentRequest`, {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                               body: JSON.stringify({ customerId })
@@ -6567,19 +6396,11 @@ console.log('Sending OTP with payload:', payload);
                                 return;
                               }
 
-                              // Initialize e-Sign verification
+                              // Initialize e-Sign verification using Redux
                               try {
-                                const eSignResponse = await fetch('https://api.quikkred.in/api/kyc/eSign/initialize', {
-                                  method: 'GET',
-                                  headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${token}`
-                                  }
-                                });
+                                const eSignResult = await initESign();
 
-                                const eSignResult = await eSignResponse.json();
-
-                                if (!eSignResponse.ok || !eSignResult.success) {
+                                if (!eSignResult.success) {
                                   toast({
                                     title: "e-Sign Initialization Failed",
                                     description: eSignResult.message || "Failed to initialize e-sign verification",
@@ -6597,21 +6418,13 @@ console.log('Sending OTP with payload:', payload);
                                 return;
                               }
 
-                              // Fetch customer data from API
+                              // Fetch customer data from API using Redux
                               let customerData: any = {};
 
                               try {
-                                const response = await fetch('https://api.quikkred.in/api/customer/get', {
-                                  method: 'GET',
-                                  headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${token}`
-                                  }
-                                });
+                                const result = await getCustomer();
 
-                                const result = await response.json();
-
-                                if (response.ok && result.success && result.data) {
+                                if (result.success && result.data) {
                                   customerData = result.data;
 
                                   // Check eSign status and update state
@@ -7011,8 +6824,6 @@ console.log('Sending OTP with payload:', payload);
         </div>
       </div>
     </div>
-
-
     </>
   );
 }
