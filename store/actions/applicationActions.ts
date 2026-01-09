@@ -20,15 +20,16 @@ export const fetchApplications = (page: number = 1, limit: number = 10) => {
       const result = await customerService.getApplications(page, limit);
 
       if (result.success) {
+        // API returns { success, message, pagination, data } at top level
         dispatch({
           type: FETCH_APPLICATIONS_SUCCESS,
           payload: {
-            data: result.data?.data || [],
-            pagination: result.data?.pagination || {
-              totalRecords: 0,
-              totalPages: 1,
-              currentPage: page,
-              limit,
+            data: result.data || [],
+            pagination: {
+              totalRecords: (result as any).pagination?.total || 0,
+              totalPages: (result as any).pagination?.totalPages || 1,
+              currentPage: (result as any).pagination?.page || page,
+              limit: (result as any).pagination?.limit || limit,
             },
           },
         });
