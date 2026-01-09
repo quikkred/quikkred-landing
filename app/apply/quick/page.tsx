@@ -637,29 +637,88 @@ export default function QuickLoanApplication() {
 
       setConsentLoading(true);
 
+      // Helper function to call consent API with retry for pending status
+      const callConsentAPI = async (retryCount = 0): Promise<boolean> => {
+        const MAX_CONSENT_RETRIES = 5;
+        const CONSENT_RETRY_DELAY = 5000; // 5 seconds
+
+        try {
+          const response = await fetch('https://api.quikkred.in/api/kyc/consentHandleToFIRequest', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ customerId })
+          });
+
+          const result = await response.json();
+
+          // Success case
+          if (response.ok && result.success) {
+            console.log('✅ Auto consent handler successful, starting BRE polling...');
+            toast({ variant: "success", title: "Success", description: result.message || "Verification completed successfully." });
+            return true;
+          }
+
+          // Handle pending consent (202 status) - retry automatically
+          if (response.status === 202 || result.consentStatus === 'PENDING' || result.retryable) {
+            if (retryCount < MAX_CONSENT_RETRIES) {
+              console.log(`📊 Consent pending, retrying in ${CONSENT_RETRY_DELAY/1000}s... (attempt ${retryCount + 1}/${MAX_CONSENT_RETRIES})`);
+              setBrePollingMessage('Waiting for consent approval...');
+              await new Promise(resolve => setTimeout(resolve, CONSENT_RETRY_DELAY));
+              return callConsentAPI(retryCount + 1);
+            } else {
+              toast({
+                variant: "error",
+                title: "Consent Pending",
+                description: "Please approve the consent request on your bank's app and try again."
+              });
+              return false;
+            }
+          }
+
+          // Handle terminal error states
+          if (result.consentStatus === 'REJECTED' || result.consentStatus === 'REVOKED' || result.consentStatus === 'EXPIRED') {
+            toast({
+              variant: "error",
+              title: "Consent Failed",
+              description: result.message || "Please initiate a new bank verification request."
+            });
+            setFinfactorSuccess(false);
+            return false;
+          }
+
+          // Generic error
+          console.error('Auto consent handler failed:', result.message);
+          toast({ variant: "error", title: "Failed", description: result.message || "Verification failed. Please try again." });
+          return false;
+
+        } catch (error) {
+          console.error('Error calling consent API:', error);
+          if (retryCount < MAX_CONSENT_RETRIES) {
+            await new Promise(resolve => setTimeout(resolve, CONSENT_RETRY_DELAY));
+            return callConsentAPI(retryCount + 1);
+          }
+          throw error;
+        }
+      };
+
       try {
-        const response = await fetch('https://api.quikkred.in/api/kyc/consentHandleToFIRequest', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ customerId })
-        });
+        const consentSuccess = await callConsentAPI();
 
-        const result = await response.json();
-
-        if (response.ok && result.success) {
-          console.log('✅ Auto consent handler successful, starting BRE polling...');
-          toast({ variant: "success", title: "Success", description: result.message || "Verification completed successfully." });
-
+        if (consentSuccess) {
           // Start BRE polling
           setBrePolling(true);
           setBrePollingMessage('Processing your bank statement...');
 
           const pollBREStatus = async () => {
             let shouldContinuePolling = true;
-            while (shouldContinuePolling) {
+            let pollAttempts = 0;
+            const MAX_POLL_ATTEMPTS = 30; // Max 5 minutes of polling (30 * 10s)
+
+            while (shouldContinuePolling && pollAttempts < MAX_POLL_ATTEMPTS) {
+              pollAttempts++;
               try {
                 // Using Redux for finfactor/initialize API
                 const breResult = await getFinfactor();
@@ -691,12 +750,16 @@ export default function QuickLoanApplication() {
                 await new Promise(resolve => setTimeout(resolve, 10000));
               }
             }
+
+            // Handle max attempts reached
+            if (pollAttempts >= MAX_POLL_ATTEMPTS) {
+              setBrePolling(false);
+              setBrePollingMessage('');
+              toast({ variant: "error", title: "Timeout", description: "Bank statement processing timed out. Please try again." });
+            }
           };
 
           pollBREStatus();
-        } else {
-          console.error('Auto consent handler failed:', result.message);
-          toast({ variant: "error", title: "Failed", description: result.message || "Verification failed. Please try again." });
         }
       } catch (error) {
         console.error('Error in auto consent trigger:', error);
@@ -6067,49 +6130,104 @@ console.log('Sending OTP with payload:', payload);
                             toast({ variant: "error", title: "Authentication Error", description: "Please login again to continue." });
                             return;
                           }
+                          const customerId = localStorage.getItem('userId');
+                          if (!customerId) {
+                            toast({ variant: "error", title: "Error", description: "Customer ID not found. Please try again." });
+                            return;
+                          }
+
                           setConsentLoading(true);
-                          try {
-                            const customerId = localStorage.getItem('userId');
-                            if (!customerId) {
-                              toast({ variant: "error", title: "Error", description: "Customer ID not found. Please try again." });
-                              setConsentLoading(false);
-                              return;
+                          setBrePolling(true);
+                          setBrePollingMessage('Verifying consent...');
+
+                          // Helper function to call consent API with retry for pending status
+                          const callConsentAPIManual = async (retryCount = 0): Promise<boolean> => {
+                            const MAX_CONSENT_RETRIES = 5;
+                            const CONSENT_RETRY_DELAY = 5000;
+
+                            try {
+                              const response = await fetch(`https://api.quikkred.in/api/kyc/consentHandleToFIRequest`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                                body: JSON.stringify({ customerId })
+                              });
+                              const result = await response.json();
+
+                              if (response.ok && result.success) {
+                                toast({ variant: "success", title: "Success", description: result.message || "Verification completed successfully." });
+                                return true;
+                              }
+
+                              // Handle pending consent (202 status) - retry automatically
+                              if (response.status === 202 || result.consentStatus === 'PENDING' || result.retryable) {
+                                if (retryCount < MAX_CONSENT_RETRIES) {
+                                  setBrePollingMessage('Waiting for consent approval...');
+                                  await new Promise(resolve => setTimeout(resolve, CONSENT_RETRY_DELAY));
+                                  return callConsentAPIManual(retryCount + 1);
+                                } else {
+                                  toast({
+                                    variant: "error",
+                                    title: "Consent Pending",
+                                    description: "Please approve the consent request on your bank's app and try again."
+                                  });
+                                  return false;
+                                }
+                              }
+
+                              // Handle terminal error states
+                              if (result.consentStatus === 'REJECTED' || result.consentStatus === 'REVOKED' || result.consentStatus === 'EXPIRED') {
+                                toast({
+                                  variant: "error",
+                                  title: "Consent Failed",
+                                  description: result.message || "Please initiate a new bank verification request."
+                                });
+                                setFinfactorSuccess(false);
+                                return false;
+                              }
+
+                              toast({ variant: "error", title: "Failed", description: result.message || "Verification failed. Please try again." });
+                              return false;
+
+                            } catch (error) {
+                              console.error('Consent API error:', error);
+                              if (retryCount < MAX_CONSENT_RETRIES) {
+                                await new Promise(resolve => setTimeout(resolve, CONSENT_RETRY_DELAY));
+                                return callConsentAPIManual(retryCount + 1);
+                              }
+                              throw error;
                             }
-                            const response = await fetch(`https://api.quikkred.in/api/kyc/consentHandleToFIRequest`, {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                              body: JSON.stringify({ customerId })
-                            });
-                            const result = await response.json();
-                            if (response.ok && result.success) {
-                              toast({ variant: "success", title: "Success", description: result.message || "Verification completed successfully." });
-                              // Start polling finfactor/initialize API
-                              setBrePolling(true);
+                          };
+
+                          try {
+                            const consentSuccess = await callConsentAPIManual();
+
+                            if (consentSuccess) {
                               setBrePollingMessage('Processing your bank statement...');
 
                               const pollBREStatus = async () => {
                                 let shouldContinuePolling = true;
-                                while (shouldContinuePolling) {
+                                let pollAttempts = 0;
+                                const MAX_POLL_ATTEMPTS = 30;
+
+                                while (shouldContinuePolling && pollAttempts < MAX_POLL_ATTEMPTS) {
+                                  pollAttempts++;
                                   try {
                                     // Using Redux for finfactor/initialize API
                                     const breResult = await getFinfactor();
 
                                     if (breResult.message === 'Statement not fetched yet') {
                                       setBrePollingMessage('Fetching your bank statement...');
-                                      // Wait 10 seconds before next poll
                                       await new Promise(resolve => setTimeout(resolve, 10000));
                                     } else if (breResult.message === 'BRE checked successfully') {
-                                      // BRE check complete - update approval data and stop polling
                                       shouldContinuePolling = false;
                                       setBrePolling(false);
                                       setBrePollingMessage('');
                                       if (breResult.data) {
                                         setApprovalData(breResult.data);
-                              }
+                                      }
                                       setFinfactorSuccess(false);
                                       toast({ variant: "success", title: "Success", description: "BRE verification completed successfully." });
                                     } else {
-                                      // Any other response - stop polling and update UI
                                       shouldContinuePolling = false;
                                       setBrePolling(false);
                                       setBrePollingMessage('');
@@ -6121,20 +6239,27 @@ console.log('Sending OTP with payload:', payload);
                                   } catch (pollError) {
                                     console.error('BRE polling error:', pollError);
                                     setBrePollingMessage('Retrying...');
-                                    // Wait 10 seconds before retry on error
                                     await new Promise(resolve => setTimeout(resolve, 10000));
                                   }
                                 }
+
+                                if (pollAttempts >= MAX_POLL_ATTEMPTS) {
+                                  setBrePolling(false);
+                                  setBrePollingMessage('');
+                                  toast({ variant: "error", title: "Timeout", description: "Bank statement processing timed out. Please try again." });
+                                }
                               };
 
-                              // Start polling
                               pollBREStatus();
                             } else {
-                              toast({ variant: "error", title: "Failed", description: result.message || "Verification failed. Please try again." });
+                              setBrePolling(false);
+                              setBrePollingMessage('');
                             }
                           } catch (error: any) {
                             console.error('Consent API error:', error);
                             toast({ variant: "error", title: "Network Error", description: "Unable to connect to server. Please try again." });
+                            setBrePolling(false);
+                            setBrePollingMessage('');
                           } finally {
                             setConsentLoading(false);
                           }
