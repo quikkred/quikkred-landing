@@ -102,7 +102,7 @@ class UsersService {
       method: 'POST',
       body: formData,
       headers: {
-        'Authorization': `Bearer ${apiClient['token']}`,
+        'Authorization': `Bearer ${apiClient.getToken()}`,
       },
     });
 
@@ -129,7 +129,7 @@ class UsersService {
       method: 'POST',
       body: formData,
       headers: {
-        'Authorization': `Bearer ${apiClient['token']}`,
+        'Authorization': `Bearer ${apiClient.getToken()}`,
       },
     });
 
@@ -194,7 +194,7 @@ class UsersService {
       method: 'POST',
       body: formData,
       headers: {
-        'Authorization': `Bearer ${apiClient['token']}`,
+        'Authorization': `Bearer ${apiClient.getToken()}`,
       },
     });
 
