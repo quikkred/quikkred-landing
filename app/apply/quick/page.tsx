@@ -27,6 +27,7 @@ import {
   formatCurrency,
   getAuthToken,
 } from "@/lib/helpers/quickApply";
+import { API_BASE_URL } from "@/lib/config";
 
 // Auto-decision engine
 
@@ -176,6 +177,13 @@ export default function QuickLoanApplication() {
   const [bankVerifyError, setBankVerifyError] = useState("");
   const [bankDropdownOpen, setBankDropdownOpen] = useState(false);
 
+  // IFSC auto-detection state
+  const [ifscLookupLoading, setIfscLookupLoading] = useState(false);
+  const [ifscLookupError, setIfscLookupError] = useState("");
+  const [ifscDetectedBank, setIfscDetectedBank] = useState<string | null>(null);
+  const [ifscBranchName, setIfscBranchName] = useState<string | null>(null);
+  const ifscLookupTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // State dropdown state
   const [stateDropdownOpen, setStateDropdownOpen] = useState(false);
   const [stateSearchTerm, setStateSearchTerm] = useState('');
@@ -232,6 +240,7 @@ export default function QuickLoanApplication() {
                 pan: profileData.panCard || prev.pan,
                 aadhaar: profileData.aadhaarNumber || prev.aadhaar,
                 dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
+                state: profileData.state ? profileData.state.toLowerCase() : prev.state,
                 employmentType: profileData.employmentType || prev.employmentType,
                 monthlyIncome: profileData.monthlyIncome?.toString() || prev.monthlyIncome,
                 companyName: profileData.companyName || prev.companyName,
@@ -243,11 +252,6 @@ export default function QuickLoanApplication() {
                 mobileVerified: profileData.isMobileVerified || true, // True if logged in with mobile
                 emailVerified: profileData.isEmailVerified || false // Only true if email is actually verified
               }));
-
-              // Log loan amount for debugging
-              if (profileData.requestedLoanAmount) {
-                console.log('✅ Loan amount loaded from API:', profileData.requestedLoanAmount);
-              }
 
               // Check verification statuses (using imported toBoolean)
               if (toBoolean(profileData.isPanVerify)) {
@@ -264,6 +268,12 @@ export default function QuickLoanApplication() {
                 console.log('✅ Bank already verified (penny drop)');
               }
 
+              // Set detected bank if IFSC and bank name are pre-filled
+              if (profileData.banks?.[0]?.ifscCode && profileData.banks?.[0]?.bankName) {
+                setIfscDetectedBank(profileData.banks[0].bankName);
+                console.log('✅ Bank name pre-filled from profile:', profileData.banks[0].bankName);
+              }
+
               // Check eSign status from profile
               if (profileData.eSign?.status) {
                 setUserESignStatus(profileData.eSign.status);
@@ -275,22 +285,23 @@ export default function QuickLoanApplication() {
               }
 
               // Check BSA status from profile
-              if (profileData.bsaStatus) {
-                setBsaStatus(profileData.bsaStatus);
-                console.log('📊 BSA status from profile:', profileData.bsaStatus);
 
-                // If BSA is PROCESSED and ?finfactor=success is not in URL, redirect to add it
-                if (profileData.bsaStatus === 'PROCESSED') {
-                  const currentUrl = new URL(window.location.href);
-                  const finfactorParam = currentUrl.searchParams.get('finfactor');
-                  if (finfactorParam !== 'success') {
-                    console.log('📊 BSA is PROCESSED, redirecting with ?finfactor=success');
-                    currentUrl.searchParams.set('finfactor', 'success');
-                    router.replace(currentUrl.pathname + currentUrl.search);
-                    return; // Exit early as we're redirecting
-                  }
-                }
-              }
+              // if (profileData.bsaStatus) {
+              //   setBsaStatus(profileData.bsaStatus);
+              //   console.log('📊 BSA status from profile:', profileData.bsaStatus);
+
+              //   // If BSA is PROCESSED and ?finfactor=success is not in URL, redirect to add it
+              //   if (profileData.bsaStatus === 'PROCESSED') {
+              //     const currentUrl = new URL(window.location.href);
+              //     const finfactorParam = currentUrl.searchParams.get('finfactor');
+              //     if (finfactorParam !== 'success') {
+              //       console.log('📊 BSA is PROCESSED, redirecting with ?finfactor=success');
+              //       currentUrl.searchParams.set('finfactor', 'success');
+              //       router.replace(currentUrl.pathname + currentUrl.search);
+              //       return; // Exit early as we're redirecting
+              //     }
+              //   }
+              // }
 
               // Check if bsaInitiated is true - redirect to finfactor success flow
               if (toBoolean(profileData.bsaInitiated)) {
@@ -419,27 +430,16 @@ export default function QuickLoanApplication() {
     }
   }, [apiDeterminedStep]);
 
-  // Auto-redirect to dashboard or login after successful submission
+  // Auto-redirect to application-status page after successful submission
   useEffect(() => {
     if (decision && decision.approved) {
-      setRedirectCountdown(5); // Reset countdown
-      const timer = setInterval(() => {
-        setRedirectCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            // Redirect based on login status
-            if (user) {
-              router.push('/user');
-            } else {
-              router.push('/user');
-            }
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer);
+      // Store status data in localStorage for the status page to read
+      localStorage.setItem('applicationStatusData', JSON.stringify({
+        status: 'approved',
+        loanNumber: decision.loanNumber || '',
+        amount: decision.approvedAmount?.toString() || ''
+      }));
+      router.push('/application-status');
     }
   }, [decision, router]);
 
@@ -475,17 +475,18 @@ export default function QuickLoanApplication() {
     }
   }, [aadhaarReverifyTimer]);
 
-  // Rejection countdown timer - auto redirect to home after 10 seconds
+  // Rejection - immediately redirect to application-status page
   useEffect(() => {
-    if (currentStep === 4 && approvalData?.status === 'Reject' && rejectionCountdown > 0) {
-      const timer = setTimeout(() => {
-        setRejectionCountdown(prev => prev - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (currentStep === 4 && approvalData?.status === 'Reject' && rejectionCountdown === 0) {
-      router.push('/');
+    if (currentStep === 4 && approvalData?.status === 'Reject') {
+      // Store status data in localStorage for the status page to read
+      localStorage.setItem('applicationStatusData', JSON.stringify({
+        status: 'rejected',
+        loanNumber: approvalData.applicationNumber || '',
+        reason: approvalData.reason || ''
+      }));
+      router.push('/application-status');
     }
-  }, [currentStep, approvalData?.status, rejectionCountdown, router]);
+  }, [currentStep, approvalData?.status, approvalData?.applicationNumber, approvalData?.reason, router]);
 
   // Check for finfactor=success query param (redirect from finfudge)
   // Also update BSA status to PROCESSED on redirect
@@ -513,7 +514,7 @@ export default function QuickLoanApplication() {
 
       //   try {
       //     setBsaStatusUpdated(true); // Mark as updated immediately to prevent race conditions
-      //     const response = await fetch('https://api.quikkred.in/api/kyc/bsa/update', {
+      //     const response = await fetch('${API_BASE_URL}/api/kyc/bsa/update', {
       //       method: 'PATCH',
       //       headers: {
       //         'Content-Type': 'application/json',
@@ -574,7 +575,7 @@ export default function QuickLoanApplication() {
       setFinfactorSuccess(true); // Show loading UI
 
       try {
-        const response = await fetch('https://api.quikkred.in/api/kyc/bre/finFactor', {
+        const response = await fetch(`${API_BASE_URL}/api/kyc/bre/finFactor`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -1817,8 +1818,9 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
     </div>
 
     <script>
-// 🔹 Document number injected from React component (single source of truth)
+// 🔹 Variables injected from React component (single source of truth)
         const documentNumber = '${documentNumber}';
+        const apiBaseUrl = '${API_BASE_URL}';
 
         // ========== PRINT-BASED PDF DOWNLOAD ==========
         function testGeneratePDF() {
@@ -2951,7 +2953,7 @@ y += boxHeight + 4;
         const formData = new FormData();
         formData.append('eSignDoc', pdfBlob, 'loan-agreement.pdf');
 
-        const response = await fetch('https://api.quikkred.in/api/kyc/eSign/upload?documentNumber=' + documentNumber, {
+        const response = await fetch(apiBaseUrl + '/api/kyc/eSign/upload?documentNumber=' + documentNumber, {
             method: 'POST',
             headers: {
                 'Authorization': 'Bearer ' + token
@@ -3357,7 +3359,7 @@ y += boxHeight + 4;
         : { mobile: formData.mobile };
 console.log('Sending OTP with payload:', payload);
 
-      const response = await fetch("https://api.quikkred.in/api/auth/customer/create", {
+      const response = await fetch(`${API_BASE_URL}/api/auth/customer/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -3409,7 +3411,7 @@ console.log('Sending OTP with payload:', payload);
         ? { email: formData.email, otp: formData.otp }
         : { mobile: formData.mobile, otp: formData.otp };
 
-      const response = await fetch("https://api.quikkred.in/api/auth/customer/verifyOtp", {
+      const response = await fetch(`${API_BASE_URL}/api/auth/customer/verifyOtp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -3493,6 +3495,7 @@ console.log('Sending OTP with payload:', payload);
                 pan: profileData.panCard || prev.pan,
                 aadhaar: profileData.aadhaarNumber || prev.aadhaar,
                 dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
+                state: profileData.state ? profileData.state.toLowerCase() : prev.state,
                 employmentType: profileData.employmentType || prev.employmentType,
                 monthlyIncome: profileData.monthlyIncome?.toString() || prev.monthlyIncome,
                 companyName: profileData.companyName || prev.companyName,
@@ -3507,6 +3510,12 @@ console.log('Sending OTP with payload:', payload);
               if (profileData.banks?.[0]?.pennyDropStatus === 'VERIFIED') {
                 setBankVerified(true);
                 console.log('✅ Bank already verified (penny drop)');
+              }
+
+              // Set detected bank if IFSC and bank name are pre-filled
+              if (profileData.banks?.[0]?.ifscCode && profileData.banks?.[0]?.bankName) {
+                setIfscDetectedBank(profileData.banks[0].bankName);
+                console.log('✅ Bank name pre-filled from profile:', profileData.banks[0].bankName);
               }
 
               // Set verification flags from API if available
@@ -3605,11 +3614,34 @@ console.log('Sending OTP with payload:', payload);
                 return;
               }
 
-              toast({
-                variant: "success",
-                title: "Data Loaded!",
-                description: "Your profile information has been auto-filled. Please review and proceed.",
-              });
+              // Determine which step to go to based on completion flags
+              let targetStep = 1;
+              if (!isBasicDetailsFilled) {
+                targetStep = 1;
+              } else if (!isKycDetailsFilled) {
+                targetStep = 2;
+              } else if (!isBankDetailsFilled) {
+                targetStep = 3;
+              } else if (!isSubmit) {
+                targetStep = 4;
+              }
+
+              console.log('📍 Redirecting to step:', targetStep);
+
+              if (targetStep > 1) {
+                setCurrentStep(targetStep);
+                toast({
+                  variant: "success",
+                  title: "Welcome Back!",
+                  description: `Your progress has been saved. Continue from Step ${targetStep}.`,
+                });
+              } else {
+                toast({
+                  variant: "success",
+                  title: "Data Loaded!",
+                  description: "Your profile information has been auto-filled. Please review and proceed.",
+                });
+              }
             } else {
               console.log('⚠️ Customer API returned no data');
             }
@@ -3667,7 +3699,7 @@ console.log('Sending OTP with payload:', payload);
         return dateStr;
       };
 
-      const response = await fetch('https://api.quikkred.in/api/kyc/pan/verification', {
+      const response = await fetch(`${API_BASE_URL}/api/kyc/pan/verification`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3741,7 +3773,7 @@ console.log('Sending OTP with payload:', payload);
                     localStorage.getItem('authToken');
 
       // First call verification endpoint to check redirect
-      const verifyResponse = await fetch('https://api.quikkred.in/api/kyc/aadhaar/verification', {
+      const verifyResponse = await fetch(`${API_BASE_URL}/api/kyc/aadhaar/verification`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3815,7 +3847,7 @@ console.log('Sending OTP with payload:', payload);
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      const response = await fetch('https://api.quikkred.in/api/kyc/aadhaar/verify', {
+      const response = await fetch(`${API_BASE_URL}/api/kyc/aadhaar/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3886,6 +3918,112 @@ console.log('Sending OTP with payload:', payload);
     }
   };
 
+  // IFSC Lookup using Razorpay API
+  const lookupIFSC = async (ifscCode: string) => {
+    if (!ifscCode || ifscCode.length !== 11) {
+      return;
+    }
+
+    // Validate IFSC format
+    const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+    if (!ifscRegex.test(ifscCode)) {
+      setIfscLookupError("Invalid IFSC format");
+      setIfscDetectedBank(null);
+      setIfscBranchName(null);
+      return;
+    }
+
+    setIfscLookupLoading(true);
+    setIfscLookupError("");
+
+    try {
+      const response = await fetch(`https://ifsc.razorpay.com/${ifscCode}`);
+
+      if (response.ok) {
+        const data = await response.json();
+        const bankName = data.BANK || "";
+        const branchName = data.BRANCH || "";
+
+        setIfscDetectedBank(bankName);
+        setIfscBranchName(branchName);
+        setIfscLookupError("");
+
+        // Auto-fill the bank name
+        setFormData(prev => ({
+          ...prev,
+          bankName: bankName,
+          customBankName: ""
+        }));
+
+        // Clear any existing field error for ifsc
+        setFieldErrors(prev => ({ ...prev, ifsc: "" }));
+
+        toast({
+          variant: "success",
+          title: "Bank Detected",
+          description: `${bankName}${branchName ? ` - ${branchName}` : ""}`,
+        });
+      } else if (response.status === 404) {
+        setIfscLookupError("Invalid IFSC code. Please check and try again.");
+        setIfscDetectedBank(null);
+        setIfscBranchName(null);
+        setFormData(prev => ({ ...prev, bankName: "", customBankName: "" }));
+      } else {
+        setIfscLookupError("Unable to verify IFSC. Please try again.");
+        setIfscDetectedBank(null);
+        setIfscBranchName(null);
+      }
+    } catch (error) {
+      console.error("IFSC lookup error:", error);
+      setIfscLookupError("Network error. Please check your connection.");
+      setIfscDetectedBank(null);
+      setIfscBranchName(null);
+    } finally {
+      setIfscLookupLoading(false);
+    }
+  };
+
+  // Debounced IFSC lookup handler
+  const handleIFSCChange = (value: string) => {
+    const upperValue = value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 11);
+
+    setFormData(prev => ({ ...prev, ifsc: upperValue }));
+    setBankVerified(false);
+
+    // Clear previous timeout
+    if (ifscLookupTimeoutRef.current) {
+      clearTimeout(ifscLookupTimeoutRef.current);
+    }
+
+    // Reset states when IFSC changes
+    if (upperValue.length < 11) {
+      setIfscDetectedBank(null);
+      setIfscBranchName(null);
+      setIfscLookupError("");
+      // Clear bank name when IFSC is incomplete
+      if (ifscDetectedBank) {
+        setFormData(prev => ({ ...prev, bankName: "", customBankName: "" }));
+      }
+    }
+
+    // Validate format as user types
+    if (upperValue.length === 11) {
+      const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+      if (!ifscRegex.test(upperValue)) {
+        setFieldErrors(prev => ({ ...prev, ifsc: "Invalid IFSC code format (e.g., SBIN0001234)" }));
+        return;
+      }
+      setFieldErrors(prev => ({ ...prev, ifsc: "" }));
+
+      // Debounce the API call
+      ifscLookupTimeoutRef.current = setTimeout(() => {
+        lookupIFSC(upperValue);
+      }, 300);
+    } else if (upperValue.length > 0) {
+      setFieldErrors(prev => ({ ...prev, ifsc: "" }));
+    }
+  };
+
   // Verify Bank Account
   const verifyBankAccount = async () => {
     // Validate required fields
@@ -3927,7 +4065,7 @@ console.log('Sending OTP with payload:', payload);
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      const response = await fetch('https://api.quikkred.in/api/kyc/bank/verification', {
+      const response = await fetch(`${API_BASE_URL}/api/kyc/bank/verification`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -4133,6 +4271,7 @@ console.log('Sending OTP with payload:', payload);
             mobile: mobileToSave,
             email: emailToSave,
             dateOfBirth: formData.dob,
+            state: formData.state,
             employmentType: formData.employmentType,
             companyName: formData.companyName,
             monthlyIncome: parseFloat(formData.monthlyIncome),
@@ -4167,7 +4306,7 @@ console.log('Sending OTP with payload:', payload);
         //   console.log('✅ Adding selfie photo to Step 2:', formData.selfie.name);
         // }
 
-        const response = await fetch(`https://api.quikkred.in/api/application/loan/create`, {
+        const response = await fetch(`${API_BASE_URL}/api/application/loan/create`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -4205,7 +4344,7 @@ console.log('Sending OTP with payload:', payload);
         };
       }
 
-      const response = await fetch(`https://api.quikkred.in/api/application/loan/create`, {
+      const response = await fetch(`${API_BASE_URL}/api/application/loan/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -4505,22 +4644,12 @@ console.log('Sending OTP with payload:', payload);
     if (currentStep === 3) {
       // Step 3: Bank Details Validation & BRE API Call
 
-      // Bank Name validation
+      // Bank Name validation (auto-detected from IFSC)
       if (!formData.bankName) {
         toast({
           variant: "warning",
           title: "Bank Name Required",
-          description: "Please select your bank name.",
-        });
-        return;
-      }
-
-      // Custom Bank Name validation when "Other" is selected
-      if (formData.bankName === 'OTHER' && !formData.customBankName?.trim()) {
-        toast({
-          variant: "warning",
-          title: "Bank Name Required",
-          description: "Please enter your bank name.",
+          description: "Please enter a valid IFSC code to auto-detect your bank.",
         });
         return;
       }
@@ -4683,7 +4812,7 @@ console.log('Sending OTP with payload:', payload);
           isSubmit: true,
         };
 
-        const response = await fetch(`https://api.quikkred.in/api/application/loan/create`, {
+        const response = await fetch(`${API_BASE_URL}/api/application/loan/create`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -4757,7 +4886,7 @@ console.log('Sending OTP with payload:', payload);
     await new Promise(resolve => setTimeout(resolve, 2000));
     setLoading(false);
 
-    // Redirect to dashboard
+    // Redirect to application-status page
     toast({
       variant: "success",
       title: "Loan Approved & Disbursed!",
@@ -4765,7 +4894,12 @@ console.log('Sending OTP with payload:', payload);
     });
 
     setTimeout(() => {
-      router.push("/user");
+      const params = new URLSearchParams({
+        status: 'approved',
+        ...(approvalData?.applicationNumber && { loanNumber: approvalData.applicationNumber }),
+        ...(approvalData?.loanAmount && { amount: approvalData.loanAmount.toString() })
+      });
+      router.push(`/application-status?${params.toString()}`);
     }, 1500);
   };
 
@@ -5719,7 +5853,7 @@ console.log('Sending OTP with payload:', payload);
                           ? "border-red-500"
                           : "border-gray-300"
                       }`}
-                      placeholder="₹ 5,000 - ₹ 25,000"
+                      placeholder="₹ 2,000 - ₹ 25,000"
                     />
                     {formData.loanAmount && parseFloat(formData.loanAmount.replace(/,/g, "")) < 5000 && (
                       <p className="mt-1 text-xs text-red-500">Minimum loan amount is ₹5,000</p>
@@ -6076,7 +6210,7 @@ console.log('Sending OTP with payload:', payload);
                           }
                           setPtbLoading(true);
                           try {
-                            const response = await fetch(`https://api.quikkred.in/api/kyc/finfactorConsentRequest`, {
+                            const response = await fetch(`${API_BASE_URL}/api/kyc/finfactorConsentRequest`, {
                               method: 'GET',
                               headers: { 'Authorization': `Bearer ${token}` }
                             });
@@ -6426,92 +6560,89 @@ console.log('Sending OTP with payload:', payload);
                     )}
                   </div>
                   <div className="space-y-4">
+                    {/* Row 1: IFSC Code and Bank Name */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* IFSC Code - Primary input for auto-detection */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          IFSC Code *
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            name="ifsc"
+                            value={formData.ifsc}
+                            onChange={(e) => handleIFSCChange(e.target.value)}
+                            disabled={bankVerified}
+                            maxLength={11}
+                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] pr-12 ${
+                              fieldErrors.ifsc || ifscLookupError
+                                ? 'border-red-500'
+                                : ifscDetectedBank
+                                  ? 'bg-green-50 border-green-300'
+                                  : bankVerified
+                                    ? 'bg-green-50 border-green-300'
+                                    : 'border-gray-300'
+                            }`}
+                            placeholder="Enter IFSC (e.g., SBIN0001234)"
+                            style={{ textTransform: 'uppercase' }}
+                          />
+                          {/* Loading/Success indicator inside input */}
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            {ifscLookupLoading ? (
+                              <Loader2 className="w-5 h-5 text-[#25B181] animate-spin" />
+                            ) : ifscDetectedBank ? (
+                              <CheckCircle className="w-5 h-5 text-green-500" />
+                            ) : formData.ifsc.length === 11 && ifscLookupError ? (
+                              <AlertCircle className="w-5 h-5 text-red-500" />
+                            ) : null}
+                          </div>
+                        </div>
+                        {fieldErrors.ifsc ? (
+                          <p className="mt-1 text-xs text-red-600">{fieldErrors.ifsc}</p>
+                        ) : ifscLookupError ? (
+                          <p className="mt-1 text-xs text-red-600">{ifscLookupError}</p>
+                        ) : ifscDetectedBank && ifscBranchName ? (
+                          <p className="mt-1 text-xs text-green-600">Branch: {ifscBranchName}</p>
+                        ) : (
+                          <p className="mt-1 text-xs text-gray-500">Enter 11-character IFSC to auto-detect bank</p>
+                        )}
+                      </div>
+
+                      {/* Bank Name - Auto-filled from IFSC lookup */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Bank Name *
+                          {ifscDetectedBank && (
+                            <span className="ml-2 text-xs text-green-600 font-normal">(Auto-detected)</span>
+                          )}
                         </label>
-                        <div className="relative bank-dropdown-container">
-  <button
-    type="button"
-    onClick={() => !bankVerified && setBankDropdownOpen(!bankDropdownOpen)}
-    disabled={bankVerified}
-    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] text-left flex justify-between items-center ${
-      bankVerified ? 'bg-green-50 border-green-300' : 'bg-white'
-    }`}
-  >
-    <span className={formData.bankName ? 'text-gray-900' : 'text-gray-500'}>
-      {formData.bankName === 'OTHER'
-        ? 'Other'
-        : formData.bankName
-          ? BANKS.find(b => b.value === formData.bankName)?.name || formData.bankName
-          : 'Select Bank'}
-    </span>
-    <svg className={`w-5 h-5 text-gray-400 transition-transform ${bankDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-    </svg>
-  </button>
-
-  {bankDropdownOpen && !bankVerified && (
-    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-      <div
-        className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-500"
-        onClick={() => {
-          setFormData(prev => ({ ...prev, bankName: '', customBankName: '' }));
-          setBankVerified(false);
-          setBankDropdownOpen(false);
-        }}
-      >
-        Select Bank
-      </div>
-      {BANKS.map((bank) => (
-        <div
-          key={bank.value}
-          className={`px-4 py-2 hover:bg-[#25B181] hover:text-white cursor-pointer ${
-            formData.bankName === bank.value ? 'bg-[#25B181] text-white' : ''
-          }`}
-          onClick={() => {
-            setFormData(prev => ({ ...prev, bankName: bank.value, customBankName: '' }));
-            setBankVerified(false);
-            setBankDropdownOpen(false);
-          }}
-        >
-          {bank.name}
-        </div>
-      ))}
-      <div
-        className={`px-4 py-2 hover:bg-[#25B181] hover:text-white cursor-pointer ${
-          formData.bankName === 'OTHER' ? 'bg-[#25B181] text-white' : ''
-        }`}
-        onClick={() => {
-          setFormData(prev => ({ ...prev, bankName: 'OTHER' }));
-          setBankVerified(false);
-          setBankDropdownOpen(false);
-        }}
-      >
-        Other
-      </div>
-    </div>
-  )}
-</div>
-
-                        {/* Custom Bank Name Input - shown when "Other" is selected */}
-                        {formData.bankName === 'OTHER' && (
+                        <div className="relative">
                           <input
                             type="text"
-                            name="customBankName"
-                            value={formData.customBankName}
-                            onChange={(e) => {
-                              const value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
-                              setFormData(prev => ({ ...prev, customBankName: value }));
-                              setBankVerified(false);
-                            }}
-                            disabled={bankVerified}
-                            className={`w-full mt-2 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] ${bankVerified ? 'bg-green-50 border-green-300' : ''}`}
-                            placeholder="Enter your bank name"
+                            name="bankName"
+                            value={formData.bankName}
+                            readOnly={!!ifscDetectedBank}
+                            disabled={bankVerified || !!ifscDetectedBank}
+                            className={`w-full px-4 py-3 border rounded-lg ${
+                              ifscDetectedBank || bankVerified
+                                ? 'bg-green-50 border-green-300 cursor-not-allowed'
+                                : 'border-gray-300 focus:ring-2 focus:ring-[#25B181]'
+                            }`}
+                            placeholder={ifscLookupLoading ? "Detecting bank..." : "Enter IFSC to auto-detect"}
                           />
+                          {ifscDetectedBank && (
+                            <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+                          )}
+                        </div>
+                        {!ifscDetectedBank && !ifscLookupLoading && formData.ifsc.length < 11 && (
+                          <p className="mt-1 text-xs text-gray-500">Bank will be auto-filled from IFSC</p>
                         )}
                       </div>
+                    </div>
+
+                    {/* Row 2: Account Holder Name and Account Number */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Account Holder Name *
@@ -6542,9 +6673,7 @@ console.log('Sending OTP with payload:', payload);
                           <p className="mt-1 text-xs text-red-600">{fieldErrors.accountHolderName}</p>
                         )}
                       </div>
-                    </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Account Number *
@@ -6577,41 +6706,6 @@ console.log('Sending OTP with payload:', payload);
                           <p className="mt-1 text-xs text-gray-500">Enter 9-18 digit bank account number</p>
                         )}
                       </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          IFSC Code *
-                        </label>
-                        <input
-                          type="text"
-                          name="ifsc"
-                          value={formData.ifsc}
-                          onChange={(e) => {
-                            const value = e.target.value.toUpperCase().slice(0, 11);
-                            const syntheticEvent = {
-                              target: {
-                                name: 'ifsc',
-                                value: value
-                              }
-                            } as React.ChangeEvent<HTMLInputElement>;
-                            handleChange(syntheticEvent);
-                            setBankVerified(false); // Reset verification on change
-                          }}
-                          disabled={bankVerified}
-                          pattern="[A-Z]{4}0[A-Z0-9]{6}"
-                          maxLength={11}
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                            fieldErrors.ifsc ? 'border-red-500' : bankVerified ? 'bg-green-50 border-green-300' : 'border-gray-300'
-                          }`}
-                          placeholder="SBIN0001234"
-                          style={{ textTransform: 'uppercase' }}
-                        />
-                        {fieldErrors.ifsc ? (
-                          <p className="mt-1 text-xs text-red-600">{fieldErrors.ifsc}</p>
-                        ) : (
-                          <p className="mt-1 text-xs text-gray-500">11-character bank code (e.g., SBIN0001234)</p>
-                        )}
-                      </div>
                     </div>
 
                     {/* Verify Bank Button */}
@@ -6622,13 +6716,13 @@ console.log('Sending OTP with payload:', payload);
                       <button
                         type="button"
                         onClick={verifyBankAccount}
-                        disabled={bankVerifying || bankVerified || !formData.bankName || (formData.bankName === 'OTHER' && !formData.customBankName?.trim()) || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc}
+                        disabled={bankVerifying || bankVerified || !formData.bankName || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc || ifscLookupLoading}
                         className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all ${
                           bankVerified
                             ? 'bg-green-100 text-green-700 border border-green-300 cursor-not-allowed'
                             : bankVerifying
                             ? 'bg-gray-300 text-gray-600 cursor-wait'
-                            : !formData.bankName || (formData.bankName === 'OTHER' && !formData.customBankName?.trim()) || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc
+                            : !formData.bankName || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc || ifscLookupLoading
                             ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                             : 'bg-[#25B181] text-white hover:bg-[#1d9469]'
                         }`}

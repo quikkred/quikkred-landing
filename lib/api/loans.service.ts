@@ -169,7 +169,7 @@ async applyLoan(data: LoanApplication): Promise<ApiResponse<any>> {
       method: 'POST',
       body: documents,
       headers: {
-        'Authorization': `Bearer ${apiClient['token']}`,
+        'Authorization': `Bearer ${apiClient.getToken()}`,
       },
     });
 
