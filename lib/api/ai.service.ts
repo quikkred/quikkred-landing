@@ -189,7 +189,7 @@ class AIService {
       method: 'POST',
       body: formData,
       headers: {
-        'Authorization': `Bearer ${apiClient['token']}`,
+        'Authorization': `Bearer ${apiClient.getToken()}`,
       },
     });
 
@@ -281,7 +281,7 @@ class AIService {
       method: 'POST',
       body: formData,
       headers: {
-        'Authorization': `Bearer ${apiClient['token']}`,
+        'Authorization': `Bearer ${apiClient.getToken()}`,
       },
     });
 
@@ -302,7 +302,7 @@ class AIService {
       method: 'POST',
       body: formData,
       headers: {
-        'Authorization': `Bearer ${apiClient['token']}`,
+        'Authorization': `Bearer ${apiClient.getToken()}`,
       },
     });
 

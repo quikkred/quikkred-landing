@@ -318,29 +318,37 @@ export default function MyLoansPage() {
 
       // Check if token expired (401 Unauthorized) - Full logout and redirect
       if (response.status === 401) {
-        // Clear all authentication tokens
-        localStorage.removeItem('token');
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
+        // Check if user just logged in - don't clear storage during grace period
+        const loginTimestamp = localStorage.getItem('loginTimestamp');
+        const justLoggedIn = loginTimestamp &&
+          (Date.now() - parseInt(loginTimestamp, 10)) < 10000; // 10 second grace period
 
-        // Clear user data
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('role');
-        localStorage.removeItem('userEmail');
-        localStorage.removeItem('email');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('userId');
-        localStorage.removeItem('userMobile');
-        localStorage.removeItem('customerUniqueId');
+        if (!justLoggedIn) {
+          // Clear all authentication tokens
+          localStorage.removeItem('token');
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('loginTimestamp');
 
-        // Clear cookies
-        document.cookie = 'auth-token=; path=/; max-age=0';
-        document.cookie = 'user-role=; path=/; max-age=0';
+          // Clear user data
+          localStorage.removeItem('userRole');
+          localStorage.removeItem('role');
+          localStorage.removeItem('userEmail');
+          localStorage.removeItem('email');
+          localStorage.removeItem('userName');
+          localStorage.removeItem('userId');
+          localStorage.removeItem('userMobile');
+          localStorage.removeItem('customerUniqueId');
 
-        // Redirect to login
-        router.push('/login');
-        return;
+          // Clear cookies
+          document.cookie = 'auth-token=; path=/; max-age=0';
+          document.cookie = 'user-role=; path=/; max-age=0';
+
+          // Redirect to login
+          router.push('/login');
+          return;
+        }
       }
 
       const result = await response.json();
