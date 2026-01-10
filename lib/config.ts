@@ -1,8 +1,8 @@
 // API Configuration - Use environment variable or fallback to default
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://alpha.quikkred.in';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://beta.quikkred.in';
 
 // WebSocket Configuration
-export const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'wss://api.quikkred.in';
+export const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'wss://beta.quikkred.in';
 
 
 // Helper function to build API URLs
