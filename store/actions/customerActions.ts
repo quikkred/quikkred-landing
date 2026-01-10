@@ -1,7 +1,9 @@
 import { Dispatch } from 'redux';
 import * as actionTypes from '../actionTypes/customerActionTypes';
+import { API_BASE_URL } from '@/lib/config';
 
-const API_BASE_URL = 'https://api.quikkred.in/api';
+// Build API URL with /api prefix
+const API_URL = `${API_BASE_URL}/api`;
 
 // Helper to get auth token
 const getAuthToken = (): string | null => {
@@ -14,7 +16,7 @@ const getAuthToken = (): string | null => {
 // Helper for API calls
 const apiCall = async (endpoint: string, options: RequestInit = {}) => {
   const token = getAuthToken();
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
