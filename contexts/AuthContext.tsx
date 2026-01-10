@@ -151,6 +151,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('userEmail', userData.email);
         localStorage.setItem('userName', userData.name);
         localStorage.setItem('userId', apiData.userId);
+        // Add login timestamp for grace period handling in api-client
+        localStorage.setItem('loginTimestamp', Date.now().toString());
         if (userData.mobile) {
           localStorage.setItem('userMobile', userData.mobile);
         }
@@ -192,6 +194,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('authToken');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
+    localStorage.removeItem('loginTimestamp');
     localStorage.removeItem('userRole');
     localStorage.removeItem('role');
     localStorage.removeItem('userEmail');

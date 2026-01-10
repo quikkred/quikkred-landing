@@ -27,6 +27,7 @@ import {
   formatCurrency,
   getAuthToken,
 } from "@/lib/helpers/quickApply";
+import { API_BASE_URL } from "@/lib/config";
 
 // Auto-decision engine
 
@@ -232,6 +233,7 @@ export default function QuickLoanApplication() {
                 pan: profileData.panCard || prev.pan,
                 aadhaar: profileData.aadhaarNumber || prev.aadhaar,
                 dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
+                state: profileData.state ? profileData.state.toLowerCase() : prev.state,
                 employmentType: profileData.employmentType || prev.employmentType,
                 monthlyIncome: profileData.monthlyIncome?.toString() || prev.monthlyIncome,
                 companyName: profileData.companyName || prev.companyName,
@@ -243,11 +245,6 @@ export default function QuickLoanApplication() {
                 mobileVerified: profileData.isMobileVerified || true, // True if logged in with mobile
                 emailVerified: profileData.isEmailVerified || false // Only true if email is actually verified
               }));
-
-              // Log loan amount for debugging
-              if (profileData.requestedLoanAmount) {
-                console.log('✅ Loan amount loaded from API:', profileData.requestedLoanAmount);
-              }
 
               // Check verification statuses (using imported toBoolean)
               if (toBoolean(profileData.isPanVerify)) {
@@ -275,22 +272,23 @@ export default function QuickLoanApplication() {
               }
 
               // Check BSA status from profile
-              if (profileData.bsaStatus) {
-                setBsaStatus(profileData.bsaStatus);
-                console.log('📊 BSA status from profile:', profileData.bsaStatus);
 
-                // If BSA is PROCESSED and ?finfactor=success is not in URL, redirect to add it
-                if (profileData.bsaStatus === 'PROCESSED') {
-                  const currentUrl = new URL(window.location.href);
-                  const finfactorParam = currentUrl.searchParams.get('finfactor');
-                  if (finfactorParam !== 'success') {
-                    console.log('📊 BSA is PROCESSED, redirecting with ?finfactor=success');
-                    currentUrl.searchParams.set('finfactor', 'success');
-                    router.replace(currentUrl.pathname + currentUrl.search);
-                    return; // Exit early as we're redirecting
-                  }
-                }
-              }
+              // if (profileData.bsaStatus) {
+              //   setBsaStatus(profileData.bsaStatus);
+              //   console.log('📊 BSA status from profile:', profileData.bsaStatus);
+
+              //   // If BSA is PROCESSED and ?finfactor=success is not in URL, redirect to add it
+              //   if (profileData.bsaStatus === 'PROCESSED') {
+              //     const currentUrl = new URL(window.location.href);
+              //     const finfactorParam = currentUrl.searchParams.get('finfactor');
+              //     if (finfactorParam !== 'success') {
+              //       console.log('📊 BSA is PROCESSED, redirecting with ?finfactor=success');
+              //       currentUrl.searchParams.set('finfactor', 'success');
+              //       router.replace(currentUrl.pathname + currentUrl.search);
+              //       return; // Exit early as we're redirecting
+              //     }
+              //   }
+              // }
 
               // Check if bsaInitiated is true - redirect to finfactor success flow
               if (toBoolean(profileData.bsaInitiated)) {
@@ -419,27 +417,16 @@ export default function QuickLoanApplication() {
     }
   }, [apiDeterminedStep]);
 
-  // Auto-redirect to dashboard or login after successful submission
+  // Auto-redirect to application-status page after successful submission
   useEffect(() => {
     if (decision && decision.approved) {
-      setRedirectCountdown(5); // Reset countdown
-      const timer = setInterval(() => {
-        setRedirectCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            // Redirect based on login status
-            if (user) {
-              router.push('/user');
-            } else {
-              router.push('/user');
-            }
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer);
+      // Store status data in localStorage for the status page to read
+      localStorage.setItem('applicationStatusData', JSON.stringify({
+        status: 'approved',
+        loanNumber: decision.loanNumber || '',
+        amount: decision.approvedAmount?.toString() || ''
+      }));
+      router.push('/application-status');
     }
   }, [decision, router]);
 
@@ -475,17 +462,18 @@ export default function QuickLoanApplication() {
     }
   }, [aadhaarReverifyTimer]);
 
-  // Rejection countdown timer - auto redirect to home after 10 seconds
+  // Rejection - immediately redirect to application-status page
   useEffect(() => {
-    if (currentStep === 4 && approvalData?.status === 'Reject' && rejectionCountdown > 0) {
-      const timer = setTimeout(() => {
-        setRejectionCountdown(prev => prev - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (currentStep === 4 && approvalData?.status === 'Reject' && rejectionCountdown === 0) {
-      router.push('/');
+    if (currentStep === 4 && approvalData?.status === 'Reject') {
+      // Store status data in localStorage for the status page to read
+      localStorage.setItem('applicationStatusData', JSON.stringify({
+        status: 'rejected',
+        loanNumber: approvalData.applicationNumber || '',
+        reason: approvalData.reason || ''
+      }));
+      router.push('/application-status');
     }
-  }, [currentStep, approvalData?.status, rejectionCountdown, router]);
+  }, [currentStep, approvalData?.status, approvalData?.applicationNumber, approvalData?.reason, router]);
 
   // Check for finfactor=success query param (redirect from finfudge)
   // Also update BSA status to PROCESSED on redirect
@@ -513,7 +501,7 @@ export default function QuickLoanApplication() {
 
       //   try {
       //     setBsaStatusUpdated(true); // Mark as updated immediately to prevent race conditions
-      //     const response = await fetch('https://api.quikkred.in/api/kyc/bsa/update', {
+      //     const response = await fetch('${API_BASE_URL}/api/kyc/bsa/update', {
       //       method: 'PATCH',
       //       headers: {
       //         'Content-Type': 'application/json',
@@ -574,7 +562,7 @@ export default function QuickLoanApplication() {
       setFinfactorSuccess(true); // Show loading UI
 
       try {
-        const response = await fetch('https://api.quikkred.in/api/kyc/bre/finFactor', {
+        const response = await fetch(`${API_BASE_URL}/api/kyc/bre/finFactor`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -1817,8 +1805,9 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
     </div>
 
     <script>
-// 🔹 Document number injected from React component (single source of truth)
+// 🔹 Variables injected from React component (single source of truth)
         const documentNumber = '${documentNumber}';
+        const apiBaseUrl = '${API_BASE_URL}';
 
         // ========== PRINT-BASED PDF DOWNLOAD ==========
         function testGeneratePDF() {
@@ -2951,7 +2940,7 @@ y += boxHeight + 4;
         const formData = new FormData();
         formData.append('eSignDoc', pdfBlob, 'loan-agreement.pdf');
 
-        const response = await fetch('https://api.quikkred.in/api/kyc/eSign/upload?documentNumber=' + documentNumber, {
+        const response = await fetch(apiBaseUrl + '/api/kyc/eSign/upload?documentNumber=' + documentNumber, {
             method: 'POST',
             headers: {
                 'Authorization': 'Bearer ' + token
@@ -3357,7 +3346,7 @@ y += boxHeight + 4;
         : { mobile: formData.mobile };
 console.log('Sending OTP with payload:', payload);
 
-      const response = await fetch("https://api.quikkred.in/api/auth/customer/create", {
+      const response = await fetch(`${API_BASE_URL}/api/auth/customer/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -3409,7 +3398,7 @@ console.log('Sending OTP with payload:', payload);
         ? { email: formData.email, otp: formData.otp }
         : { mobile: formData.mobile, otp: formData.otp };
 
-      const response = await fetch("https://api.quikkred.in/api/auth/customer/verifyOtp", {
+      const response = await fetch(`${API_BASE_URL}/api/auth/customer/verifyOtp`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -3493,6 +3482,7 @@ console.log('Sending OTP with payload:', payload);
                 pan: profileData.panCard || prev.pan,
                 aadhaar: profileData.aadhaarNumber || prev.aadhaar,
                 dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
+                state: profileData.state ? profileData.state.toLowerCase() : prev.state,
                 employmentType: profileData.employmentType || prev.employmentType,
                 monthlyIncome: profileData.monthlyIncome?.toString() || prev.monthlyIncome,
                 companyName: profileData.companyName || prev.companyName,
@@ -3605,11 +3595,34 @@ console.log('Sending OTP with payload:', payload);
                 return;
               }
 
-              toast({
-                variant: "success",
-                title: "Data Loaded!",
-                description: "Your profile information has been auto-filled. Please review and proceed.",
-              });
+              // Determine which step to go to based on completion flags
+              let targetStep = 1;
+              if (!isBasicDetailsFilled) {
+                targetStep = 1;
+              } else if (!isKycDetailsFilled) {
+                targetStep = 2;
+              } else if (!isBankDetailsFilled) {
+                targetStep = 3;
+              } else if (!isSubmit) {
+                targetStep = 4;
+              }
+
+              console.log('📍 Redirecting to step:', targetStep);
+
+              if (targetStep > 1) {
+                setCurrentStep(targetStep);
+                toast({
+                  variant: "success",
+                  title: "Welcome Back!",
+                  description: `Your progress has been saved. Continue from Step ${targetStep}.`,
+                });
+              } else {
+                toast({
+                  variant: "success",
+                  title: "Data Loaded!",
+                  description: "Your profile information has been auto-filled. Please review and proceed.",
+                });
+              }
             } else {
               console.log('⚠️ Customer API returned no data');
             }
@@ -3667,7 +3680,7 @@ console.log('Sending OTP with payload:', payload);
         return dateStr;
       };
 
-      const response = await fetch('https://api.quikkred.in/api/kyc/pan/verification', {
+      const response = await fetch(`${API_BASE_URL}/api/kyc/pan/verification`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3741,7 +3754,7 @@ console.log('Sending OTP with payload:', payload);
                     localStorage.getItem('authToken');
 
       // First call verification endpoint to check redirect
-      const verifyResponse = await fetch('https://api.quikkred.in/api/kyc/aadhaar/verification', {
+      const verifyResponse = await fetch(`${API_BASE_URL}/api/kyc/aadhaar/verification`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3815,7 +3828,7 @@ console.log('Sending OTP with payload:', payload);
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      const response = await fetch('https://api.quikkred.in/api/kyc/aadhaar/verify', {
+      const response = await fetch(`${API_BASE_URL}/api/kyc/aadhaar/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3927,7 +3940,7 @@ console.log('Sending OTP with payload:', payload);
                     localStorage.getItem('token') ||
                     localStorage.getItem('authToken');
 
-      const response = await fetch('https://api.quikkred.in/api/kyc/bank/verification', {
+      const response = await fetch(`${API_BASE_URL}/api/kyc/bank/verification`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -4133,6 +4146,7 @@ console.log('Sending OTP with payload:', payload);
             mobile: mobileToSave,
             email: emailToSave,
             dateOfBirth: formData.dob,
+            state: formData.state,
             employmentType: formData.employmentType,
             companyName: formData.companyName,
             monthlyIncome: parseFloat(formData.monthlyIncome),
@@ -4167,7 +4181,7 @@ console.log('Sending OTP with payload:', payload);
         //   console.log('✅ Adding selfie photo to Step 2:', formData.selfie.name);
         // }
 
-        const response = await fetch(`https://api.quikkred.in/api/application/loan/create`, {
+        const response = await fetch(`${API_BASE_URL}/api/application/loan/create`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -4205,7 +4219,7 @@ console.log('Sending OTP with payload:', payload);
         };
       }
 
-      const response = await fetch(`https://api.quikkred.in/api/application/loan/create`, {
+      const response = await fetch(`${API_BASE_URL}/api/application/loan/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -4683,7 +4697,7 @@ console.log('Sending OTP with payload:', payload);
           isSubmit: true,
         };
 
-        const response = await fetch(`https://api.quikkred.in/api/application/loan/create`, {
+        const response = await fetch(`${API_BASE_URL}/api/application/loan/create`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -4757,7 +4771,7 @@ console.log('Sending OTP with payload:', payload);
     await new Promise(resolve => setTimeout(resolve, 2000));
     setLoading(false);
 
-    // Redirect to dashboard
+    // Redirect to application-status page
     toast({
       variant: "success",
       title: "Loan Approved & Disbursed!",
@@ -4765,7 +4779,12 @@ console.log('Sending OTP with payload:', payload);
     });
 
     setTimeout(() => {
-      router.push("/user");
+      const params = new URLSearchParams({
+        status: 'approved',
+        ...(approvalData?.applicationNumber && { loanNumber: approvalData.applicationNumber }),
+        ...(approvalData?.loanAmount && { amount: approvalData.loanAmount.toString() })
+      });
+      router.push(`/application-status?${params.toString()}`);
     }, 1500);
   };
 
@@ -5719,7 +5738,7 @@ console.log('Sending OTP with payload:', payload);
                           ? "border-red-500"
                           : "border-gray-300"
                       }`}
-                      placeholder="₹ 5,000 - ₹ 25,000"
+                      placeholder="₹ 2,000 - ₹ 25,000"
                     />
                     {formData.loanAmount && parseFloat(formData.loanAmount.replace(/,/g, "")) < 5000 && (
                       <p className="mt-1 text-xs text-red-500">Minimum loan amount is ₹5,000</p>
@@ -6076,7 +6095,7 @@ console.log('Sending OTP with payload:', payload);
                           }
                           setPtbLoading(true);
                           try {
-                            const response = await fetch(`https://api.quikkred.in/api/kyc/finfactorConsentRequest`, {
+                            const response = await fetch(`${API_BASE_URL}/api/kyc/finfactorConsentRequest`, {
                               method: 'GET',
                               headers: { 'Authorization': `Bearer ${token}` }
                             });
