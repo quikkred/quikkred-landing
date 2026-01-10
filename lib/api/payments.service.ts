@@ -191,7 +191,7 @@ class PaymentsService {
   async getPaymentReceipt(transactionId: string): Promise<Blob> {
     const response = await fetch(`/api/payments/receipt/${transactionId}`, {
       headers: {
-        'Authorization': `Bearer ${apiClient['token']}`,
+        'Authorization': `Bearer ${apiClient.getToken()}`,
       },
     });
     return response.blob();
