@@ -218,9 +218,12 @@ class AdminService {
   }
 
   async downloadReport(reportId: string): Promise<Blob> {
+    const token = localStorage.getItem('authToken') ||
+                  localStorage.getItem('accessToken') ||
+                  localStorage.getItem('token');
     const response = await fetch(`/api/admin/reports/${reportId}/download`, {
       headers: {
-        'Authorization': `Bearer ${apiClient['token']}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
     return response.blob();
