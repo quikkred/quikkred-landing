@@ -1,3 +1,5 @@
+import { API_BASE_URL } from '@/lib/config';
+
 // Core API Client with type-safe methods for all backend endpoints
 interface ApiResponse<T = any> {
   success: boolean;
@@ -9,18 +11,22 @@ interface ApiResponse<T = any> {
 class ApiClient {
   private baseURL: string;
   private externalBaseURL: string;
-  private token: string | null = null;
 
   constructor() {
     // In Next.js, we use relative URLs for API routes
     this.baseURL = '';
-    // External API URL
-    this.externalBaseURL = 'https://api.quikkred.in';
-    // 'https://77q1g1gk-5050.inc1.devtunnels.m's;
-    // http://93.127.167.88:505
+    // External API URL from environment config
+    this.externalBaseURL = API_BASE_URL;
+  }
+
+  // Get fresh token from localStorage before each request
+  getToken(): string | null {
     if (typeof window !== 'undefined') {
-      this.token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      return localStorage.getItem('authToken') ||
+             localStorage.getItem('accessToken') ||
+             localStorage.getItem('token');
     }
+    return null;
   }
 
   private async request<T>(
@@ -32,13 +38,16 @@ class ApiClient {
       ? `${this.externalBaseURL}${endpoint}`
       : `${this.baseURL}${endpoint}`;
 
+    // Get fresh token for each request
+    const token = this.getToken();
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
     };
 
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
 
     try {
@@ -47,31 +56,40 @@ class ApiClient {
         headers,
       });
 
-      // Handle token expiration (401 Unauthorized) - Full logout and redirect
+      // Handle token expiration (401 Unauthorized)
       if (response.status === 401) {
         if (typeof window !== 'undefined') {
-          // Clear all authentication tokens
-          localStorage.removeItem('token');
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
+          // Check if we're on login page or just logged in - don't clear storage
+          const isLoginPage = window.location.pathname === '/login';
+          const loginTimestamp = localStorage.getItem('loginTimestamp');
+          const justLoggedIn = loginTimestamp &&
+            (Date.now() - parseInt(loginTimestamp, 10)) < 10000; // 10 second grace period
 
-          // Clear user data
-          localStorage.removeItem('userRole');
-          localStorage.removeItem('role');
-          localStorage.removeItem('userEmail');
-          localStorage.removeItem('email');
-          localStorage.removeItem('userName');
-          localStorage.removeItem('userId');
-          localStorage.removeItem('userMobile');
-          localStorage.removeItem('customerUniqueId');
+          if (!isLoginPage && !justLoggedIn) {
+            // Clear all authentication tokens
+            localStorage.removeItem('token');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('loginTimestamp');
 
-          // Clear cookies
-          document.cookie = 'auth-token=; path=/; max-age=0';
-          document.cookie = 'user-role=; path=/; max-age=0';
+            // Clear user data
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('role');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('email');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userMobile');
+            localStorage.removeItem('customerUniqueId');
 
-          // Redirect to login
-          window.location.href = '/login';
+            // Clear cookies
+            document.cookie = 'auth-token=; path=/; max-age=0';
+            document.cookie = 'user-role=; path=/; max-age=0';
+
+            // Redirect to login
+            window.location.href = '/login';
+          }
         }
         throw new Error('Session expired. Please login again.');
       }
@@ -90,16 +108,18 @@ class ApiClient {
   }
 
   setToken(token: string) {
-    this.token = token;
     if (typeof window !== 'undefined') {
       localStorage.setItem('authToken', token);
+      localStorage.setItem('accessToken', token);
+      localStorage.setItem('token', token);
     }
   }
 
   clearToken() {
-    this.token = null;
     if (typeof window !== 'undefined') {
       localStorage.removeItem('authToken');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('token');
     }
   }
 
