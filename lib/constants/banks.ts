@@ -11,7 +11,7 @@ export const BANKS = [
   { value: 'uco bank', name: 'UCO Bank' },
   { value: 'bank of maharashtra', name: 'Bank of Maharashtra' },
   { value: 'punjab & sind bank', name: 'Punjab & Sind Bank' },
-  { value: 'jammu & kashmir bank', name: 'Jammu & Kashmir Bank' },
+  { value: 'jammu and kashmir bank', name: 'Jammu and Kashmir Bank' },
 
   // ===== Private Banks =====
   { value: 'hdfc bank', name: 'HDFC Bank' },
