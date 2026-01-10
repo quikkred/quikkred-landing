@@ -1,5 +1,6 @@
 // Customer Service - Centralized API service for Redux actions
 import { apiClient, ApiResponse } from './api-client';
+import { API_BASE_URL } from '@/lib/config';
 
 // Dashboard
 export interface DashboardData {
@@ -181,7 +182,7 @@ class CustomerService {
       ? localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('authToken')
       : null;
 
-    const response = await fetch('https://api.quikkred.in/api/document/upload', {
+    const response = await fetch(`${API_BASE_URL}/api/document/upload`, {
       method: 'POST',
       headers: {
         ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
