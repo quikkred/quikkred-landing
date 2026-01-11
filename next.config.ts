@@ -45,7 +45,7 @@ devIndicators: false,
 
   // Environment variables exposed to browser
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://beta.quikkred.in',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_APP_NAME: 'Quikkred',
   },
 
