@@ -6379,7 +6379,7 @@ console.log('Sending OTP with payload:', payload);
 
                     {/* Confirm Button */}
                     <div className="bg-gray-50 rounded-xl p-6">
-                      {dataAgreementChecked ? (
+                      {/* {dataAgreementChecked ? ( */}
                         <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-lg p-4">
                           <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
                           <div>
@@ -6389,7 +6389,8 @@ console.log('Sending OTP with payload:', payload);
                             </p>
                           </div>
                         </div>
-                      ) : eSignVerified ? (
+                      {/* ) : eSignVerified ? (
+                       
                         <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-lg p-4">
                           <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
                           <div>
@@ -6400,6 +6401,7 @@ console.log('Sending OTP with payload:', payload);
                           </div>
                         </div>
                       ) : (
+                        
                         <div className="space-y-4">
                           <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg p-4">
                             <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
@@ -6524,7 +6526,7 @@ console.log('Sending OTP with payload:', payload);
                             Confirm Details
                           </button>
                         </div>
-                      )}
+                      )} */}
                     </div>
                   </>
                 ) : (
@@ -6779,7 +6781,7 @@ console.log('Sending OTP with payload:', payload);
               )}
               <button
                 onClick={handleNext}
-                disabled={loading || (currentStep === 1 && !isStep1Valid())|| (currentStep === 4 && !eSignVerified)}
+                disabled={loading || (currentStep === 1 && !isStep1Valid())}
                 className="flex-1 px-6 py-3 bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white rounded-lg hover:shadow-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
