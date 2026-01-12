@@ -18,7 +18,6 @@ import {
   AlertCircle
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Suspense } from "react";
 
 interface ApplicationStatusData {
@@ -29,9 +28,12 @@ interface ApplicationStatusData {
 }
 
 function ApplicationStatusContent() {
-  const router = useRouter();
-  const [statusData, setStatusData] = useState<ApplicationStatusData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [statusData, setStatusData] = useState<ApplicationStatusData>({
+    status: "approved",
+    loanNumber: "",
+    amount: "",
+    reason: ""
+  });
 
   useEffect(() => {
     // Read data from localStorage
@@ -47,38 +49,11 @@ function ApplicationStatusContent() {
         });
         // Clear localStorage after reading
         localStorage.removeItem('applicationStatusData');
-        setIsLoading(false);
       } catch (error) {
         console.error('Error parsing application status data:', error);
-        redirectBasedOnAuth();
-      }
-    } else {
-      // No data found - redirect based on auth status
-      redirectBasedOnAuth();
-    }
-
-    function redirectBasedOnAuth() {
-      const token = localStorage.getItem('token') ||
-                    localStorage.getItem('authToken') ||
-                    localStorage.getItem('accessToken');
-      if (token) {
-        // User is logged in - redirect to dashboard
-        router.replace('/user');
-      } else {
-        // User is not logged in - redirect to homepage
-        router.replace('/');
       }
     }
-  }, [router]);
-
-  // Show loading while checking for data
-  if (isLoading || !statusData) {
-    return (
-      <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-[#25B181] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  }, []);
 
   const { status, loanNumber, amount, reason } = statusData;
   const isApproved = status.toLowerCase() === "approved";
@@ -185,11 +160,19 @@ function ApplicationStatusContent() {
                 </h2>
 
                 <div className="space-y-4 text-left">
-                
-
                   <div className="flex items-start p-4 bg-[#FAFAFA] rounded-lg">
                     <div className="w-8 h-8 bg-[#25B181] text-white rounded-full flex items-center justify-center text-sm font-bold mr-4 flex-shrink-0">
                       1
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-800">E-Sign Agreement</p>
+                      <p className="text-sm text-gray-600">Complete the e-signature process for your loan agreement</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start p-4 bg-[#FAFAFA] rounded-lg">
+                    <div className="w-8 h-8 bg-[#25B181] text-white rounded-full flex items-center justify-center text-sm font-bold mr-4 flex-shrink-0">
+                      2
                     </div>
                     <div>
                       <p className="font-semibold text-gray-800">Bank Verification</p>
@@ -199,7 +182,7 @@ function ApplicationStatusContent() {
 
                   <div className="flex items-start p-4 bg-[#FAFAFA] rounded-lg">
                     <div className="w-8 h-8 bg-[#25B181] text-white rounded-full flex items-center justify-center text-sm font-bold mr-4 flex-shrink-0">
-                      2
+                      3
                     </div>
                     <div>
                       <p className="font-semibold text-gray-800">Receive Funds</p>
@@ -220,6 +203,12 @@ function ApplicationStatusContent() {
                   <button className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-[#25B181] to-[#1F8F68] text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center">
                     <FileText className="w-5 h-5 mr-2" />
                     Go to Dashboard
+                  </button>
+                </Link>
+                <Link href="/track-application">
+                  <button className="w-full sm:w-auto px-8 py-3 bg-white border-2 border-[#25B181] text-[#25B181] rounded-lg font-semibold hover:bg-[#25B181] hover:text-white transition-all flex items-center justify-center">
+                    <RefreshCw className="w-5 h-5 mr-2" />
+                    Track Application
                   </button>
                 </Link>
               </motion.div>
@@ -292,7 +281,7 @@ function ApplicationStatusContent() {
                     <div className="text-left">
                       <p className="font-medium text-[#4A66FF] mb-1">What does this mean?</p>
                       <p className="text-sm text-gray-700">
-                        This decision is based on our current eligibility criteria. You may be eligible to apply again after 60 days.
+                        This decision is based on our current eligibility criteria. You may be eligible to apply again after 30 days.
                       </p>
                     </div>
                   </div>
@@ -337,7 +326,7 @@ function ApplicationStatusContent() {
                       3
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-800">Reapply After 60 Days</p>
+                      <p className="font-semibold text-gray-800">Reapply After 30 Days</p>
                       <p className="text-sm text-gray-600">You can submit a new application after the cooling period</p>
                     </div>
                   </div>
@@ -357,19 +346,18 @@ function ApplicationStatusContent() {
                     Back to Home
                   </button>
                 </Link>
-                {/* <Link href="/contact">
+                <Link href="/contact">
                   <button className="w-full sm:w-auto px-8 py-3 bg-white border-2 border-[#4A66FF] text-[#4A66FF] rounded-lg font-semibold hover:bg-[#4A66FF] hover:text-white transition-all flex items-center justify-center">
                     <Phone className="w-5 h-5 mr-2" />
                     Contact Support
                   </button>
-                </Link> */}
+                </Link>
               </motion.div>
             </motion.div>
           )}
 
           {/* Contact Support Section */}
-
-          {/* <motion.div
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
@@ -393,7 +381,7 @@ function ApplicationStatusContent() {
                 Email Us
               </a>
             </div>
-          </motion.div> */}
+          </motion.div>
         </div>
       </section>
     </div>

@@ -177,13 +177,6 @@ export default function QuickLoanApplication() {
   const [bankVerifyError, setBankVerifyError] = useState("");
   const [bankDropdownOpen, setBankDropdownOpen] = useState(false);
 
-  // IFSC auto-detection state
-  const [ifscLookupLoading, setIfscLookupLoading] = useState(false);
-  const [ifscLookupError, setIfscLookupError] = useState("");
-  const [ifscDetectedBank, setIfscDetectedBank] = useState<string | null>(null);
-  const [ifscBranchName, setIfscBranchName] = useState<string | null>(null);
-  const ifscLookupTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
   // State dropdown state
   const [stateDropdownOpen, setStateDropdownOpen] = useState(false);
   const [stateSearchTerm, setStateSearchTerm] = useState('');
@@ -266,12 +259,6 @@ export default function QuickLoanApplication() {
               if (profileData.banks?.[0]?.pennyDropStatus === 'VERIFIED') {
                 setBankVerified(true);
                 console.log('✅ Bank already verified (penny drop)');
-              }
-
-              // Set detected bank if IFSC and bank name are pre-filled
-              if (profileData.banks?.[0]?.ifscCode && profileData.banks?.[0]?.bankName) {
-                setIfscDetectedBank(profileData.banks[0].bankName);
-                console.log('✅ Bank name pre-filled from profile:', profileData.banks[0].bankName);
               }
 
               // Check eSign status from profile
@@ -3512,12 +3499,6 @@ console.log('Sending OTP with payload:', payload);
                 console.log('✅ Bank already verified (penny drop)');
               }
 
-              // Set detected bank if IFSC and bank name are pre-filled
-              if (profileData.banks?.[0]?.ifscCode && profileData.banks?.[0]?.bankName) {
-                setIfscDetectedBank(profileData.banks[0].bankName);
-                console.log('✅ Bank name pre-filled from profile:', profileData.banks[0].bankName);
-              }
-
               // Set verification flags from API if available
               if (profileData.isPanVerify) {
                 setPanVerified(true);
@@ -3915,112 +3896,6 @@ console.log('Sending OTP with payload:', payload);
       });
     } finally {
       setAadhaarVerifying(false);
-    }
-  };
-
-  // IFSC Lookup using Razorpay API
-  const lookupIFSC = async (ifscCode: string) => {
-    if (!ifscCode || ifscCode.length !== 11) {
-      return;
-    }
-
-    // Validate IFSC format
-    const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
-    if (!ifscRegex.test(ifscCode)) {
-      setIfscLookupError("Invalid IFSC format");
-      setIfscDetectedBank(null);
-      setIfscBranchName(null);
-      return;
-    }
-
-    setIfscLookupLoading(true);
-    setIfscLookupError("");
-
-    try {
-      const response = await fetch(`https://ifsc.razorpay.com/${ifscCode}`);
-
-      if (response.ok) {
-        const data = await response.json();
-        const bankName = data.BANK || "";
-        const branchName = data.BRANCH || "";
-
-        setIfscDetectedBank(bankName);
-        setIfscBranchName(branchName);
-        setIfscLookupError("");
-
-        // Auto-fill the bank name
-        setFormData(prev => ({
-          ...prev,
-          bankName: bankName,
-          customBankName: ""
-        }));
-
-        // Clear any existing field error for ifsc
-        setFieldErrors(prev => ({ ...prev, ifsc: "" }));
-
-        toast({
-          variant: "success",
-          title: "Bank Detected",
-          description: `${bankName}${branchName ? ` - ${branchName}` : ""}`,
-        });
-      } else if (response.status === 404) {
-        setIfscLookupError("Invalid IFSC code. Please check and try again.");
-        setIfscDetectedBank(null);
-        setIfscBranchName(null);
-        setFormData(prev => ({ ...prev, bankName: "", customBankName: "" }));
-      } else {
-        setIfscLookupError("Unable to verify IFSC. Please try again.");
-        setIfscDetectedBank(null);
-        setIfscBranchName(null);
-      }
-    } catch (error) {
-      console.error("IFSC lookup error:", error);
-      setIfscLookupError("Network error. Please check your connection.");
-      setIfscDetectedBank(null);
-      setIfscBranchName(null);
-    } finally {
-      setIfscLookupLoading(false);
-    }
-  };
-
-  // Debounced IFSC lookup handler
-  const handleIFSCChange = (value: string) => {
-    const upperValue = value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 11);
-
-    setFormData(prev => ({ ...prev, ifsc: upperValue }));
-    setBankVerified(false);
-
-    // Clear previous timeout
-    if (ifscLookupTimeoutRef.current) {
-      clearTimeout(ifscLookupTimeoutRef.current);
-    }
-
-    // Reset states when IFSC changes
-    if (upperValue.length < 11) {
-      setIfscDetectedBank(null);
-      setIfscBranchName(null);
-      setIfscLookupError("");
-      // Clear bank name when IFSC is incomplete
-      if (ifscDetectedBank) {
-        setFormData(prev => ({ ...prev, bankName: "", customBankName: "" }));
-      }
-    }
-
-    // Validate format as user types
-    if (upperValue.length === 11) {
-      const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
-      if (!ifscRegex.test(upperValue)) {
-        setFieldErrors(prev => ({ ...prev, ifsc: "Invalid IFSC code format (e.g., SBIN0001234)" }));
-        return;
-      }
-      setFieldErrors(prev => ({ ...prev, ifsc: "" }));
-
-      // Debounce the API call
-      ifscLookupTimeoutRef.current = setTimeout(() => {
-        lookupIFSC(upperValue);
-      }, 300);
-    } else if (upperValue.length > 0) {
-      setFieldErrors(prev => ({ ...prev, ifsc: "" }));
     }
   };
 
@@ -4644,12 +4519,22 @@ console.log('Sending OTP with payload:', payload);
     if (currentStep === 3) {
       // Step 3: Bank Details Validation & BRE API Call
 
-      // Bank Name validation (auto-detected from IFSC)
+      // Bank Name validation
       if (!formData.bankName) {
         toast({
           variant: "warning",
           title: "Bank Name Required",
-          description: "Please enter a valid IFSC code to auto-detect your bank.",
+          description: "Please select your bank name.",
+        });
+        return;
+      }
+
+      // Custom Bank Name validation when "Other" is selected
+      if (formData.bankName === 'OTHER' && !formData.customBankName?.trim()) {
+        toast({
+          variant: "warning",
+          title: "Bank Name Required",
+          description: "Please enter your bank name.",
         });
         return;
       }
@@ -4762,6 +4647,33 @@ console.log('Sending OTP with payload:', payload);
 
     if (currentStep === 4) {
       // Step 4: Approval - Final submission
+      // If eSign is already verified (SUCCESS), skip all validations and submit directly
+      if (!eSignVerified) {
+        // Only validate if eSign is NOT verified
+        if (!dataAgreementChecked) {
+          toast({
+            variant: "warning",
+            title: "Confirmation Required",
+            description: "Please click 'Confirm Details' button to review and confirm your application data.",
+          });
+          return;
+        }
+
+        // Consent validation
+        // if (!formData.creditBureauConsent || !formData.termsConsent) {
+        //   setConsentError(true);
+        //   toast({
+        //     variant: "warning",
+        //     title: "Consent Required",
+        //     description: "Please accept the required consents to proceed.",
+        //   });
+        //   return;
+        // }
+
+        // Clear consent error if validation passes
+        setConsentError(false);
+      }
+
       // Final step - submit application (bank details already saved in step 3)
       setLoading(true);
 
@@ -4815,16 +4727,9 @@ console.log('Sending OTP with payload:', payload);
             description: "Your loan application has been submitted successfully.",
           });
 
-          // Store data for application-status page
-          localStorage.setItem('applicationStatusData', JSON.stringify({
-            status: 'approved',
-            loanNumber: result.data?.applicationNumber || result.data?.loanNumber || approvalData?.applicationNumber || '',
-            amount: calculatedLoanDetails?.loanAmount || userDesiredAmount || approvalData?.loanAmount || ''
-          }));
-
-          // Redirect to congratulations page
+          // Redirect to dashboard
           setLoading(false);
-          router.push('/application-status');
+          router.push('/user');
           return;
         } else {
           // API returned error - show error and stay on step 4
@@ -6218,17 +6123,31 @@ console.log('Sending OTP with payload:', payload);
                     </div>
                   </div>
                 ) : approvalData ? (
-                  /* ========== APPROVED STATUS - Show loan details before submit ========== */
+                  /* ========== APPROVED STATUS - Attractive UI ========== */
                   <>
-                    {/* Pre-submit Header */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
-                      <div className="flex items-center gap-3">
-                        <CheckCircle className="w-6 h-6 text-blue-600" />
-                        <div>
-                          <h3 className="font-semibold text-blue-800">Review Your Loan Details</h3>
-                          <p className="text-sm text-blue-600">Please review the details below and click &quot;Submit Application&quot; to proceed.</p>
-                        </div>
+                    {/* Congratulations Banner */}
+                    <div className="bg-gradient-to-r from-[#25B181] to-[#1d9e6f] rounded-2xl p-6 text-white text-center relative overflow-hidden">
+                      {/* Decorative elements */}
+                      <div className="absolute top-2 left-4">
+                        <Sparkles className="w-6 h-6 text-yellow-300 opacity-80" />
                       </div>
+                      <div className="absolute top-4 right-6">
+                        <Sparkles className="w-4 h-4 text-yellow-200 opacity-60" />
+                      </div>
+                      <div className="absolute bottom-3 right-10">
+                        <Sparkles className="w-5 h-5 text-yellow-300 opacity-70" />
+                      </div>
+
+                      <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
+                        <CheckCircle className="w-10 h-10 text-[#25B181]" />
+                      </div>
+                      <h2 className="text-2xl font-bold mb-1">Congratulations!</h2>
+                      <p className="text-green-100">Your loan has been approved</p>
+                      {approvalData.applicationNumber && (
+                        <p className="text-sm text-white/80 mt-2">
+                          Application No: {approvalData.applicationNumber}
+                        </p>
+                      )}
                     </div>
 
                     {/* Loan Details Grid */}
@@ -6343,6 +6262,155 @@ console.log('Sending OTP with payload:', payload);
                       </div>
                     </div>
 
+                    {/* Confirm Button */}
+                    <div className="bg-gray-50 rounded-xl p-6">
+                      {dataAgreementChecked ? (
+                        <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-lg p-4">
+                          <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
+                          <div>
+                            <h4 className="font-semibold text-green-800">Application Data Confirmed</h4>
+                            <p className="text-sm text-green-700 mt-1">
+                              You have reviewed and confirmed your application data. Click &quot;Next&quot; to proceed to bank details.
+                            </p>
+                          </div>
+                        </div>
+                      ) : eSignVerified ? (
+                        <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-lg p-4">
+                          <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <h4 className="font-semibold text-green-800">e-Sign Completed</h4>
+                            <p className="text-sm text-green-700 mt-1">
+                              Your document has been signed successfully. You can proceed with the application.
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <div>
+                              <h4 className="font-semibold text-blue-800">Review Required</h4>
+                              <p className="text-sm text-blue-700 mt-1">
+                                Please review your details above and click the &quot;Confirm Details&quot; button to proceed.
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              // Get auth token
+                              const token = localStorage.getItem('accessToken') ||
+                                            localStorage.getItem('token') ||
+                                            localStorage.getItem('authToken');
+
+                              if (!token) {
+                                toast({
+                                  title: "Authentication Error",
+                                  description: "Please login to continue",
+                                  variant: "error"
+                                });
+                                return;
+                              }
+
+                              // Initialize e-Sign verification using Redux
+                              try {
+                                const eSignResult = await initESign();
+
+                                if (!eSignResult.success) {
+                                  toast({
+                                    title: "e-Sign Initialization Failed",
+                                    description: eSignResult.message || "Failed to initialize e-sign verification",
+                                    variant: "error"
+                                  });
+                                  return;
+                                }
+                              } catch (error) {
+                                console.error('Error initializing e-sign:', error);
+                                toast({
+                                  title: "e-Sign Error",
+                                  description: "Failed to initialize e-sign verification. Please try again.",
+                                  variant: "error"
+                                });
+                                return;
+                              }
+
+                              // Fetch customer data from API using Redux
+                              let customerData: any = {};
+
+                              try {
+                                const result = await getCustomer();
+
+                                if (result.success && result.data) {
+                                  customerData = result.data;
+
+                                  // Check eSign status and update state
+                                  if (customerData.eSign === true) {
+                                    setUserESignStatus('SUCCESS');
+                                    setESignVerified(true);
+                                    console.log('✅ eSign already completed (boolean: true)');
+                                  } else if (customerData.eSign?.status === 'SUCCESS') {
+                                    setUserESignStatus('SUCCESS');
+                                    setESignVerified(true);
+                                    console.log('✅ eSign already completed (status: SUCCESS)');
+                                  }
+
+                                }
+                              } catch (error) {
+                                console.error('Error fetching customer data:', error);
+                              }
+
+                              // Combine API data with form data
+                              const agreementData = {
+                                fullName: formData.fullName || customerData.fullName || '',
+                                email: formData.email || customerData.email || '',
+                                mobile: formData.mobile || customerData.mobile || '',
+                                dob: formData.dob || customerData.dateOfBirth || '',
+                                pan: formData.pan || customerData.panCard || '',
+                                aadhaar: formData.aadhaar || customerData.aadhaarNumber || '',
+                                address: customerData.currentAddress?.fullAddress || aadhaarAddress?.fullAddress || '',
+                                landmark: customerData.currentAddress?.landmark || '',
+                                city: customerData.currentAddress?.city || aadhaarAddress?.city || '',
+                                state: customerData.currentAddress?.state || aadhaarAddress?.state || '',
+                                pincode: customerData.currentAddress?.pincode || aadhaarAddress?.pincode || '',
+                                employmentType: formData.employmentType || customerData.employmentType || '',
+                                monthlyIncome: formData.monthlyIncome || customerData.monthlyIncome || '',
+                                companyName: formData.companyName || customerData.companyName || '',
+                                designation: customerData.designation || '',
+                                workExperience: customerData.workExperience || '',
+                                salaryDate: customerData.salaryDate || '',
+                                bankName: (formData.bankName === 'OTHER' ? formData.customBankName : formData.bankName) || customerData.banks?.[0]?.bankName || '',
+                                accountNumber: formData.accountNumber || customerData.banks?.[0]?.accountNumber || '',
+                                ifscCode: formData.ifsc || customerData.banks?.[0]?.ifscCode || '',
+                                accountHolderName: formData.accountHolderName || customerData.banks?.[0]?.accountHolderName || formData.fullName || customerData.fullName || '',
+                                // Loan Details - use user's selected amount first, then BRE API response
+                                loanAmount: calculatedLoanDetails?.loanAmount || userDesiredAmount || approvalData?.loanAmount || formData.loanAmount || '',
+                                tenure: calculatedLoanDetails?.tenure || approvalData?.tenure || formData.tenure || '',
+                                tenureUnit: calculatedLoanDetails?.tenureUnit || approvalData?.tenureUnit || formData.tenureUnit || 'Days',
+                                productName: selectedProduct?.productName || '',
+                                interestRate: calculatedLoanDetails?.interestRate || approvalData?.interestRate || selectedProduct?.dailyInterestRate || '',
+                                processingFee: calculatedLoanDetails?.processingFee || approvalData?.processingFee || selectedProduct?.processingFee || '',
+                                totalInterest: calculatedLoanDetails?.totalInterest || approvalData?.totalInterest || '',
+                                gstOnProcessingFee: calculatedLoanDetails?.gstOnProcessingFee || approvalData?.gstOnProcessingFee || '',
+                                totalAmount: calculatedLoanDetails?.totalRepayment || approvalData?.totalRepayment || emiCalculation?.totalAmount || '',
+                                disbursementAmount: calculatedLoanDetails?.netDisbursalAmount || approvalData?.netDisbursalAmount || (emiCalculation ? (emiCalculation.principal - emiCalculation.totalProcessingFee) : ''),
+                                applicationNumber: approvalData?.applicationNumber || customerData.applicationNumber || '',
+                              };
+
+                              // Generate HTML and open in new tab
+                              const htmlContent = generateAgreementHTML(agreementData);
+                              const blob = new Blob([htmlContent], { type: 'text/html' });
+                              const url = URL.createObjectURL(blob);
+                              window.open(url, '_blank');
+                              localStorage.removeItem('dataAgreementApproved');
+                            }}
+                            className="w-full px-6 py-4 bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white rounded-lg hover:shadow-lg font-semibold transition-all flex items-center justify-center gap-2"
+                          >
+                            <FileText className="w-5 h-5" />
+                            Confirm Details
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </>
                 ) : (
                   <div className="text-center py-12">
@@ -6377,89 +6445,92 @@ console.log('Sending OTP with payload:', payload);
                     )}
                   </div>
                   <div className="space-y-4">
-                    {/* Row 1: IFSC Code and Bank Name */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {/* IFSC Code - Primary input for auto-detection */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          IFSC Code *
-                        </label>
-                        <div className="relative">
-                          <input
-                            type="text"
-                            name="ifsc"
-                            value={formData.ifsc}
-                            onChange={(e) => handleIFSCChange(e.target.value)}
-                            disabled={bankVerified}
-                            maxLength={11}
-                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] pr-12 ${
-                              fieldErrors.ifsc || ifscLookupError
-                                ? 'border-red-500'
-                                : ifscDetectedBank
-                                  ? 'bg-green-50 border-green-300'
-                                  : bankVerified
-                                    ? 'bg-green-50 border-green-300'
-                                    : 'border-gray-300'
-                            }`}
-                            placeholder="Enter IFSC (e.g., SBIN0001234)"
-                            style={{ textTransform: 'uppercase' }}
-                          />
-                          {/* Loading/Success indicator inside input */}
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                            {ifscLookupLoading ? (
-                              <Loader2 className="w-5 h-5 text-[#25B181] animate-spin" />
-                            ) : ifscDetectedBank ? (
-                              <CheckCircle className="w-5 h-5 text-green-500" />
-                            ) : formData.ifsc.length === 11 && ifscLookupError ? (
-                              <AlertCircle className="w-5 h-5 text-red-500" />
-                            ) : null}
-                          </div>
-                        </div>
-                        {fieldErrors.ifsc ? (
-                          <p className="mt-1 text-xs text-red-600">{fieldErrors.ifsc}</p>
-                        ) : ifscLookupError ? (
-                          <p className="mt-1 text-xs text-red-600">{ifscLookupError}</p>
-                        ) : ifscDetectedBank && ifscBranchName ? (
-                          <p className="mt-1 text-xs text-green-600">Branch: {ifscBranchName}</p>
-                        ) : (
-                          <p className="mt-1 text-xs text-gray-500">Enter 11-character IFSC to auto-detect bank</p>
-                        )}
-                      </div>
-
-                      {/* Bank Name - Auto-filled from IFSC lookup */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Bank Name *
-                          {ifscDetectedBank && (
-                            <span className="ml-2 text-xs text-green-600 font-normal">(Auto-detected)</span>
-                          )}
                         </label>
-                        <div className="relative">
+                        <div className="relative bank-dropdown-container">
+  <button
+    type="button"
+    onClick={() => !bankVerified && setBankDropdownOpen(!bankDropdownOpen)}
+    disabled={bankVerified}
+    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] text-left flex justify-between items-center ${
+      bankVerified ? 'bg-green-50 border-green-300' : 'bg-white'
+    }`}
+  >
+    <span className={formData.bankName ? 'text-gray-900' : 'text-gray-500'}>
+      {formData.bankName === 'OTHER'
+        ? 'Other'
+        : formData.bankName
+          ? BANKS.find(b => b.value === formData.bankName)?.name || formData.bankName
+          : 'Select Bank'}
+    </span>
+    <svg className={`w-5 h-5 text-gray-400 transition-transform ${bankDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    </svg>
+  </button>
+
+  {bankDropdownOpen && !bankVerified && (
+    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+      <div
+        className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-gray-500"
+        onClick={() => {
+          setFormData(prev => ({ ...prev, bankName: '', customBankName: '' }));
+          setBankVerified(false);
+          setBankDropdownOpen(false);
+        }}
+      >
+        Select Bank
+      </div>
+      {BANKS.map((bank) => (
+        <div
+          key={bank.value}
+          className={`px-4 py-2 hover:bg-[#25B181] hover:text-white cursor-pointer ${
+            formData.bankName === bank.value ? 'bg-[#25B181] text-white' : ''
+          }`}
+          onClick={() => {
+            setFormData(prev => ({ ...prev, bankName: bank.value, customBankName: '' }));
+            setBankVerified(false);
+            setBankDropdownOpen(false);
+          }}
+        >
+          {bank.name}
+        </div>
+      ))}
+      <div
+        className={`px-4 py-2 hover:bg-[#25B181] hover:text-white cursor-pointer ${
+          formData.bankName === 'OTHER' ? 'bg-[#25B181] text-white' : ''
+        }`}
+        onClick={() => {
+          setFormData(prev => ({ ...prev, bankName: 'OTHER' }));
+          setBankVerified(false);
+          setBankDropdownOpen(false);
+        }}
+      >
+        Other
+      </div>
+    </div>
+  )}
+</div>
+
+                        {/* Custom Bank Name Input - shown when "Other" is selected */}
+                        {formData.bankName === 'OTHER' && (
                           <input
                             type="text"
-                            name="bankName"
-                            value={formData.bankName}
-                            readOnly={!!ifscDetectedBank}
-                            disabled={bankVerified || !!ifscDetectedBank}
-                            className={`w-full px-4 py-3 border rounded-lg ${
-                              ifscDetectedBank || bankVerified
-                                ? 'bg-green-50 border-green-300 cursor-not-allowed'
-                                : 'border-gray-300 focus:ring-2 focus:ring-[#25B181]'
-                            }`}
-                            placeholder={ifscLookupLoading ? "Detecting bank..." : "Enter IFSC to auto-detect"}
+                            name="customBankName"
+                            value={formData.customBankName}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                              setFormData(prev => ({ ...prev, customBankName: value }));
+                              setBankVerified(false);
+                            }}
+                            disabled={bankVerified}
+                            className={`w-full mt-2 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] ${bankVerified ? 'bg-green-50 border-green-300' : ''}`}
+                            placeholder="Enter your bank name"
                           />
-                          {ifscDetectedBank && (
-                            <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
-                          )}
-                        </div>
-                        {!ifscDetectedBank && !ifscLookupLoading && formData.ifsc.length < 11 && (
-                          <p className="mt-1 text-xs text-gray-500">Bank will be auto-filled from IFSC</p>
                         )}
                       </div>
-                    </div>
-
-                    {/* Row 2: Account Holder Name and Account Number */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Account Holder Name *
@@ -6490,7 +6561,9 @@ console.log('Sending OTP with payload:', payload);
                           <p className="mt-1 text-xs text-red-600">{fieldErrors.accountHolderName}</p>
                         )}
                       </div>
+                    </div>
 
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Account Number *
@@ -6523,6 +6596,41 @@ console.log('Sending OTP with payload:', payload);
                           <p className="mt-1 text-xs text-gray-500">Enter 9-18 digit bank account number</p>
                         )}
                       </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          IFSC Code *
+                        </label>
+                        <input
+                          type="text"
+                          name="ifsc"
+                          value={formData.ifsc}
+                          onChange={(e) => {
+                            const value = e.target.value.toUpperCase().slice(0, 11);
+                            const syntheticEvent = {
+                              target: {
+                                name: 'ifsc',
+                                value: value
+                              }
+                            } as React.ChangeEvent<HTMLInputElement>;
+                            handleChange(syntheticEvent);
+                            setBankVerified(false); // Reset verification on change
+                          }}
+                          disabled={bankVerified}
+                          pattern="[A-Z]{4}0[A-Z0-9]{6}"
+                          maxLength={11}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                            fieldErrors.ifsc ? 'border-red-500' : bankVerified ? 'bg-green-50 border-green-300' : 'border-gray-300'
+                          }`}
+                          placeholder="SBIN0001234"
+                          style={{ textTransform: 'uppercase' }}
+                        />
+                        {fieldErrors.ifsc ? (
+                          <p className="mt-1 text-xs text-red-600">{fieldErrors.ifsc}</p>
+                        ) : (
+                          <p className="mt-1 text-xs text-gray-500">11-character bank code (e.g., SBIN0001234)</p>
+                        )}
+                      </div>
                     </div>
 
                     {/* Verify Bank Button */}
@@ -6533,13 +6641,13 @@ console.log('Sending OTP with payload:', payload);
                       <button
                         type="button"
                         onClick={verifyBankAccount}
-                        disabled={bankVerifying || bankVerified || !formData.bankName || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc || ifscLookupLoading}
+                        disabled={bankVerifying || bankVerified || !formData.bankName || (formData.bankName === 'OTHER' && !formData.customBankName?.trim()) || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc}
                         className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all ${
                           bankVerified
                             ? 'bg-green-100 text-green-700 border border-green-300 cursor-not-allowed'
                             : bankVerifying
                             ? 'bg-gray-300 text-gray-600 cursor-wait'
-                            : !formData.bankName || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc || ifscLookupLoading
+                            : !formData.bankName || (formData.bankName === 'OTHER' && !formData.customBankName?.trim()) || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc
                             ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                             : 'bg-[#25B181] text-white hover:bg-[#1d9469]'
                         }`}
@@ -6596,7 +6704,7 @@ console.log('Sending OTP with payload:', payload);
               )}
               <button
                 onClick={handleNext}
-                disabled={loading || (currentStep === 1 && !isStep1Valid())}
+                disabled={loading || (currentStep === 1 && !isStep1Valid())|| (currentStep === 4 && !eSignVerified)}
                 className="flex-1 px-6 py-3 bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white rounded-lg hover:shadow-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
