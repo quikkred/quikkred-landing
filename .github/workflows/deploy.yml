@@ -223,7 +223,7 @@ jobs:
           IMAGE_TAG: prod-${{ github.sha }}
         run: |
           docker build \
-            --build-arg NEXT_PUBLIC_API_URL=https://api.quikkred.in\
+            --build-arg NEXT_PUBLIC_API_URL=https://api.quikkred.in \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
             .

@@ -79,7 +79,7 @@ export default function PrivacyPage() {
 
                 <div className="bg-gray-50 rounded-lg p-4">
                   <h3 className="font-semibold mb-2">Third-Party Data</h3>
-                  <p>Collected only from authorized service providers <a href="https://api.quikkred.in/partner" className="text-[#25B181] hover:underline">https://api.quikkred.in/partner</a>.</p>
+                  <p>Collected only from authorized service providers <a href="https://quikkred.in/partners" className="text-[#25B181] hover:underline">https://quikkred.in/partners</a>.</p>
                 </div>
               </div>
 
