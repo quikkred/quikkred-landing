@@ -25,7 +25,7 @@ Allow: /contact
 Allow: /resources/*
 
 # Sitemap location
-Sitemap: https://api.quikkred.in/sitemap.xml
+Sitemap: https://quikkred.in/sitemap.xml
 
 # Crawl-delay for politeness
 Crawl-delay: 1
