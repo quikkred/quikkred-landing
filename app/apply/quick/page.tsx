@@ -4762,33 +4762,6 @@ console.log('Sending OTP with payload:', payload);
 
     if (currentStep === 4) {
       // Step 4: Approval - Final submission
-      // If eSign is already verified (SUCCESS), skip all validations and submit directly
-      if (!eSignVerified) {
-        // Only validate if eSign is NOT verified
-        if (!dataAgreementChecked) {
-          toast({
-            variant: "warning",
-            title: "Confirmation Required",
-            description: "Please click 'Confirm Details' button to review and confirm your application data.",
-          });
-          return;
-        }
-
-        // Consent validation
-        // if (!formData.creditBureauConsent || !formData.termsConsent) {
-        //   setConsentError(true);
-        //   toast({
-        //     variant: "warning",
-        //     title: "Consent Required",
-        //     description: "Please accept the required consents to proceed.",
-        //   });
-        //   return;
-        // }
-
-        // Clear consent error if validation passes
-        setConsentError(false);
-      }
-
       // Final step - submit application (bank details already saved in step 3)
       setLoading(true);
 
@@ -4842,9 +4815,16 @@ console.log('Sending OTP with payload:', payload);
             description: "Your loan application has been submitted successfully.",
           });
 
-          // Redirect to dashboard
+          // Store data for application-status page
+          localStorage.setItem('applicationStatusData', JSON.stringify({
+            status: 'approved',
+            loanNumber: result.data?.applicationNumber || result.data?.loanNumber || approvalData?.applicationNumber || '',
+            amount: calculatedLoanDetails?.loanAmount || userDesiredAmount || approvalData?.loanAmount || ''
+          }));
+
+          // Redirect to congratulations page
           setLoading(false);
-          router.push('/user');
+          router.push('/application-status');
           return;
         } else {
           // API returned error - show error and stay on step 4
@@ -6238,31 +6218,17 @@ console.log('Sending OTP with payload:', payload);
                     </div>
                   </div>
                 ) : approvalData ? (
-                  /* ========== APPROVED STATUS - Attractive UI ========== */
+                  /* ========== APPROVED STATUS - Show loan details before submit ========== */
                   <>
-                    {/* Congratulations Banner */}
-                    <div className="bg-gradient-to-r from-[#25B181] to-[#1d9e6f] rounded-2xl p-6 text-white text-center relative overflow-hidden">
-                      {/* Decorative elements */}
-                      <div className="absolute top-2 left-4">
-                        <Sparkles className="w-6 h-6 text-yellow-300 opacity-80" />
+                    {/* Pre-submit Header */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle className="w-6 h-6 text-blue-600" />
+                        <div>
+                          <h3 className="font-semibold text-blue-800">Review Your Loan Details</h3>
+                          <p className="text-sm text-blue-600">Please review the details below and click &quot;Submit Application&quot; to proceed.</p>
+                        </div>
                       </div>
-                      <div className="absolute top-4 right-6">
-                        <Sparkles className="w-4 h-4 text-yellow-200 opacity-60" />
-                      </div>
-                      <div className="absolute bottom-3 right-10">
-                        <Sparkles className="w-5 h-5 text-yellow-300 opacity-70" />
-                      </div>
-
-                      <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
-                        <CheckCircle className="w-10 h-10 text-[#25B181]" />
-                      </div>
-                      <h2 className="text-2xl font-bold mb-1">Congratulations!</h2>
-                      <p className="text-green-100">Your loan has been approved</p>
-                      {approvalData.applicationNumber && (
-                        <p className="text-sm text-white/80 mt-2">
-                          Application No: {approvalData.applicationNumber}
-                        </p>
-                      )}
                     </div>
 
                     {/* Loan Details Grid */}
@@ -6377,155 +6343,6 @@ console.log('Sending OTP with payload:', payload);
                       </div>
                     </div>
 
-                    {/* Confirm Button */}
-                    <div className="bg-gray-50 rounded-xl p-6">
-                      {dataAgreementChecked ? (
-                        <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-lg p-4">
-                          <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
-                          <div>
-                            <h4 className="font-semibold text-green-800">Application Data Confirmed</h4>
-                            <p className="text-sm text-green-700 mt-1">
-                              You have reviewed and confirmed your application data. Click &quot;Next&quot; to proceed to bank details.
-                            </p>
-                          </div>
-                        </div>
-                      ) : eSignVerified ? (
-                        <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-lg p-4">
-                          <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <h4 className="font-semibold text-green-800">e-Sign Completed</h4>
-                            <p className="text-sm text-green-700 mt-1">
-                              Your document has been signed successfully. You can proceed with the application.
-                            </p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                            <div>
-                              <h4 className="font-semibold text-blue-800">Review Required</h4>
-                              <p className="text-sm text-blue-700 mt-1">
-                                Please review your details above and click the &quot;Confirm Details&quot; button to proceed.
-                              </p>
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              // Get auth token
-                              const token = localStorage.getItem('accessToken') ||
-                                            localStorage.getItem('token') ||
-                                            localStorage.getItem('authToken');
-
-                              if (!token) {
-                                toast({
-                                  title: "Authentication Error",
-                                  description: "Please login to continue",
-                                  variant: "error"
-                                });
-                                return;
-                              }
-
-                              // Initialize e-Sign verification using Redux
-                              try {
-                                const eSignResult = await initESign();
-
-                                if (!eSignResult.success) {
-                                  toast({
-                                    title: "e-Sign Initialization Failed",
-                                    description: eSignResult.message || "Failed to initialize e-sign verification",
-                                    variant: "error"
-                                  });
-                                  return;
-                                }
-                              } catch (error) {
-                                console.error('Error initializing e-sign:', error);
-                                toast({
-                                  title: "e-Sign Error",
-                                  description: "Failed to initialize e-sign verification. Please try again.",
-                                  variant: "error"
-                                });
-                                return;
-                              }
-
-                              // Fetch customer data from API using Redux
-                              let customerData: any = {};
-
-                              try {
-                                const result = await getCustomer();
-
-                                if (result.success && result.data) {
-                                  customerData = result.data;
-
-                                  // Check eSign status and update state
-                                  if (customerData.eSign === true) {
-                                    setUserESignStatus('SUCCESS');
-                                    setESignVerified(true);
-                                    console.log('✅ eSign already completed (boolean: true)');
-                                  } else if (customerData.eSign?.status === 'SUCCESS') {
-                                    setUserESignStatus('SUCCESS');
-                                    setESignVerified(true);
-                                    console.log('✅ eSign already completed (status: SUCCESS)');
-                                  }
-
-                                }
-                              } catch (error) {
-                                console.error('Error fetching customer data:', error);
-                              }
-
-                              // Combine API data with form data
-                              const agreementData = {
-                                fullName: formData.fullName || customerData.fullName || '',
-                                email: formData.email || customerData.email || '',
-                                mobile: formData.mobile || customerData.mobile || '',
-                                dob: formData.dob || customerData.dateOfBirth || '',
-                                pan: formData.pan || customerData.panCard || '',
-                                aadhaar: formData.aadhaar || customerData.aadhaarNumber || '',
-                                address: customerData.currentAddress?.fullAddress || aadhaarAddress?.fullAddress || '',
-                                landmark: customerData.currentAddress?.landmark || '',
-                                city: customerData.currentAddress?.city || aadhaarAddress?.city || '',
-                                state: customerData.currentAddress?.state || aadhaarAddress?.state || '',
-                                pincode: customerData.currentAddress?.pincode || aadhaarAddress?.pincode || '',
-                                employmentType: formData.employmentType || customerData.employmentType || '',
-                                monthlyIncome: formData.monthlyIncome || customerData.monthlyIncome || '',
-                                companyName: formData.companyName || customerData.companyName || '',
-                                designation: customerData.designation || '',
-                                workExperience: customerData.workExperience || '',
-                                salaryDate: customerData.salaryDate || '',
-                                bankName: (formData.bankName === 'OTHER' ? formData.customBankName : formData.bankName) || customerData.banks?.[0]?.bankName || '',
-                                accountNumber: formData.accountNumber || customerData.banks?.[0]?.accountNumber || '',
-                                ifscCode: formData.ifsc || customerData.banks?.[0]?.ifscCode || '',
-                                accountHolderName: formData.accountHolderName || customerData.banks?.[0]?.accountHolderName || formData.fullName || customerData.fullName || '',
-                                // Loan Details - use user's selected amount first, then BRE API response
-                                loanAmount: calculatedLoanDetails?.loanAmount || userDesiredAmount || approvalData?.loanAmount || formData.loanAmount || '',
-                                tenure: calculatedLoanDetails?.tenure || approvalData?.tenure || formData.tenure || '',
-                                tenureUnit: calculatedLoanDetails?.tenureUnit || approvalData?.tenureUnit || formData.tenureUnit || 'Days',
-                                productName: selectedProduct?.productName || '',
-                                interestRate: calculatedLoanDetails?.interestRate || approvalData?.interestRate || selectedProduct?.dailyInterestRate || '',
-                                processingFee: calculatedLoanDetails?.processingFee || approvalData?.processingFee || selectedProduct?.processingFee || '',
-                                totalInterest: calculatedLoanDetails?.totalInterest || approvalData?.totalInterest || '',
-                                gstOnProcessingFee: calculatedLoanDetails?.gstOnProcessingFee || approvalData?.gstOnProcessingFee || '',
-                                totalAmount: calculatedLoanDetails?.totalRepayment || approvalData?.totalRepayment || emiCalculation?.totalAmount || '',
-                                disbursementAmount: calculatedLoanDetails?.netDisbursalAmount || approvalData?.netDisbursalAmount || (emiCalculation ? (emiCalculation.principal - emiCalculation.totalProcessingFee) : ''),
-                                applicationNumber: approvalData?.applicationNumber || customerData.applicationNumber || '',
-                              };
-
-                              // Generate HTML and open in new tab
-                              const htmlContent = generateAgreementHTML(agreementData);
-                              const blob = new Blob([htmlContent], { type: 'text/html' });
-                              const url = URL.createObjectURL(blob);
-                              window.open(url, '_blank');
-                              localStorage.removeItem('dataAgreementApproved');
-                            }}
-                            className="w-full px-6 py-4 bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white rounded-lg hover:shadow-lg font-semibold transition-all flex items-center justify-center gap-2"
-                          >
-                            <FileText className="w-5 h-5" />
-                            Confirm Details
-                          </button>
-                        </div>
-                      )}
-                    </div>
                   </>
                 ) : (
                   <div className="text-center py-12">
@@ -6779,7 +6596,7 @@ console.log('Sending OTP with payload:', payload);
               )}
               <button
                 onClick={handleNext}
-                disabled={loading || (currentStep === 1 && !isStep1Valid())|| (currentStep === 4 && !eSignVerified)}
+                disabled={loading || (currentStep === 1 && !isStep1Valid())}
                 className="flex-1 px-6 py-3 bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white rounded-lg hover:shadow-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
