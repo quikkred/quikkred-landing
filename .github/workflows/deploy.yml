@@ -99,7 +99,7 @@ jobs:
       - name: Health Check
         run: |
           sleep 15
-          response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://app-alpha.quikkred.in || echo "000")
+          response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://alpha.quikkred.in || echo "000")
           echo "Alpha health check: $response"
 
   # ============================================
@@ -188,7 +188,7 @@ jobs:
       - name: Health Check
         run: |
           sleep 15
-          response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://app-beta.quikkred.in || echo "000")
+          response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://beta.quikkred.in || echo "000")
           echo "Beta health check: $response"
 
   # ============================================
@@ -223,7 +223,7 @@ jobs:
           IMAGE_TAG: prod-${{ github.sha }}
         run: |
           docker build \
-            --build-arg NEXT_PUBLIC_API_URL=https://api.quikkred.in \
+            --build-arg NEXT_PUBLIC_API_URL=https://api.quikkred.in\
             -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
             -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
             .
@@ -287,7 +287,7 @@ jobs:
       - name: Health Check
         run: |
           sleep 15
-          response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://quikkred.in || echo "000")
+          response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://api.quikkred.in || echo "000")
           echo "Production health check: $response"
 
       - name: Notify Team
