@@ -326,7 +326,7 @@ function ApplicationStatusContent() {
                       3
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-800">Reapply After 30 Days</p>
+                      <p className="font-semibold text-gray-800">Reapply After 60 Days</p>
                       <p className="text-sm text-gray-600">You can submit a new application after the cooling period</p>
                     </div>
                   </div>
