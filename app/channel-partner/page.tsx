@@ -105,7 +105,7 @@ export default function ChannelPartnersPage() {
             className="text-center max-w-4xl mx-auto"
           >
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold font-sora leading-tight mb-6">
-              Become a QuikKred Channel Partner
+              Become a Quikkred Channel Partner
             </h1>
             <p className="text-lg sm:text-xl lg:text-2xl text-white/90 leading-relaxed max-w-3xl mx-auto">
               Earn attractive commissions by helping your network get the financial help they need.
