@@ -65,7 +65,8 @@ export default function LoanCalculatorAll() {
               step="5000"
               value={loanAmount}
               onChange={(e) => setLoanAmount(Number(e.target.value))}
-              className="w-full h-1.5 bg-gradient-to-r from-[#51C9AF] to-slate-300 rounded-lg appearance-none cursor-pointer accent-[#25B181]"
+              className="w-full h-2 sm:h-1.5 bg-gradient-to-r from-[#51C9AF] to-slate-300 rounded-lg appearance-none cursor-pointer accent-[#25B181]"
+              style={{ touchAction: 'none' }}
             />
             <div className="flex justify-between text-[9px] text-slate-500 mt-1">
               <span>₹10,000</span>
@@ -81,7 +82,7 @@ export default function LoanCalculatorAll() {
                 <button
                   key={days}
                   onClick={() => setTenureDays(days)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  className={`px-4 py-2.5 min-h-[44px] rounded-lg text-xs sm:text-sm font-medium transition-colors ${
                     tenureDays === days
                       ? "bg-[#25B181] text-white"
                       : "bg-slate-100 text-slate-700 hover:bg-slate-200"
@@ -141,7 +142,7 @@ export default function LoanCalculatorAll() {
           {/* Apply Button */}
           <Button
             onClick={() => router.push('/apply/quick')}
-            className="w-full bg-[#25B181] hover:bg-[#1F8F68] text-white font-bold py-2.5 sm:py-3 rounded-xl mb-2 transition-all duration-300 text-xs sm:text-sm shadow-lg hover:shadow-xl"
+            className="w-full bg-[#25B181] hover:bg-[#1F8F68] text-white font-bold py-3 sm:py-3.5 min-h-[48px] rounded-xl mb-2 transition-all duration-300 text-sm sm:text-base shadow-lg hover:shadow-xl"
           >
             {t?.calculator?.applyButton || "Apply for This Loan"}
           </Button>

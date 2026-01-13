@@ -272,7 +272,7 @@ export default function Hero() {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setLanguage(lang.code)}
-                className={`text-[10px] sm:text-xs px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full transition-all ${
+                className={`text-xs px-2.5 py-1.5 min-h-[32px] rounded-full transition-all ${
                   language === lang.code
                     ? "bg-[#25B181] text-white font-semibold shadow-sm"
                     : "text-slate-600 hover:text-[#25B181] hover:bg-[#D3F1EB]"
@@ -301,7 +301,7 @@ export default function Hero() {
               <div className="relative" ref={languageDropdownRef}>
                 <button
                   onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
-                  className="text-[10px] sm:text-xs text-[#25B181] hover:text-[#1F8F68] flex items-center gap-0.5 sm:gap-1 font-medium"
+                  className="text-xs text-[#25B181] hover:text-[#1F8F68] flex items-center gap-1 font-medium min-h-[32px] px-2"
                 >
                   <span className="sm:hidden">+{availableLanguages.length - 4}</span>
                   <span className="hidden sm:inline">+{availableLanguages.length - 8} {t?.hero?.languageBar?.more || "more"}</span>
@@ -510,7 +510,8 @@ export default function Hero() {
                         onChange={handleChange}
                         onKeyDown={handleKeyDown}
                         maxLength={10}
-                        className="flex-1 px-2 xs:px-2.5 sm:px-4 py-2.5 xs:py-3 sm:py-4 text-sm xs:text-base sm:text-lg md:text-xl font-medium bg-transparent outline-none placeholder-slate-400 min-w-0"
+                        className="flex-1 px-2 xs:px-2.5 sm:px-4 py-2.5 xs:py-3 sm:py-4 text-base sm:text-lg md:text-xl font-medium bg-transparent outline-none placeholder-slate-400 min-w-0"
+                        style={{ fontSize: '16px' }}
                         autoFocus
                       />
                     </div>
@@ -522,9 +523,10 @@ export default function Hero() {
                       value={formData[currentStepData.field as keyof typeof formData]}
                       onChange={handleChange}
                       onKeyDown={handleKeyDown}
-                      className={`w-full px-2.5 xs:px-3 sm:px-5 py-2.5 xs:py-3 sm:py-4 text-sm xs:text-base sm:text-lg md:text-xl font-medium border-2 rounded-lg sm:rounded-xl md:rounded-2xl mb-2 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 placeholder-slate-400 transition-all ${
+                      className={`w-full px-2.5 xs:px-3 sm:px-5 py-2.5 xs:py-3 sm:py-4 text-base sm:text-lg md:text-xl font-medium border-2 rounded-lg sm:rounded-xl md:rounded-2xl mb-2 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 placeholder-slate-400 transition-all ${
                         fieldError ? 'border-red-400' : 'border-slate-200'
                       }`}
+                      style={{ fontSize: '16px' }}
                       autoFocus
                     />
                   )}

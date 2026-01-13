@@ -196,8 +196,29 @@ export function Header() {
           </div>
 
           {/* Right Side - CTA Button */}
-          <div className="flex items-center gap-3">
-            {/* CTA Button */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Mobile CTA Button - Always visible on mobile */}
+            {user ? (
+              <Link href="/user" className="sm:hidden">
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  className="px-3 py-2 bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-xs font-semibold rounded-lg shadow-md min-h-[36px]"
+                >
+                  Dashboard
+                </motion.button>
+              </Link>
+            ) : (
+              <Link href={isHomePage ? "/login" : "/apply/quick"} className="sm:hidden">
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  className="px-3 py-2 bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-xs font-semibold rounded-lg shadow-md min-h-[36px]"
+                >
+                  {isHomePage ? t.navigation.login : t.common.apply}
+                </motion.button>
+              </Link>
+            )}
+
+            {/* Desktop CTA Button */}
             {user ? (
               <Link href="/user">
                 <motion.button
@@ -233,10 +254,11 @@ export function Header() {
               </Link>
             )}
 
-            {/* Mobile Menu Toggle */}
+            {/* Mobile Menu Toggle - 44px touch target */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 text-slate-600 hover:text-teal-600 hover:bg-slate-100 rounded-lg transition-colors"
+              className="lg:hidden p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-600 hover:text-teal-600 hover:bg-slate-100 rounded-xl transition-colors"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             >
               {mobileMenuOpen ? (
                 <X className="w-6 h-6" />
