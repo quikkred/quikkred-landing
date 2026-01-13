@@ -180,7 +180,7 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
           </p>
           <button
             onClick={() => setSubmitted(false)}
-            className="bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white py-3 px-8 rounded-xl font-semibold hover:shadow-lg transition-all"
+            className="bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white py-3.5 px-8 min-h-[48px] rounded-xl font-semibold hover:shadow-lg transition-all text-sm sm:text-base"
           >
             Send Another Message
           </button>
@@ -244,12 +244,13 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      className={`w-full pl-11 pr-4 py-3 border-2 rounded-xl focus:outline-none transition-all ${
+                      className={`w-full pl-11 pr-4 py-3 border-2 rounded-xl focus:outline-none transition-all text-base ${
                         formErrors.name
                           ? 'border-red-300 focus:border-red-500 bg-red-50'
                           : 'border-gray-200 focus:border-[#25B181] hover:border-gray-300'
                       }`}
                       placeholder="John Doe"
+                      style={{ fontSize: '16px' }}
                     />
                   </div>
                   {formErrors.name && (
@@ -270,12 +271,13 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
-                        className={`w-full pl-11 pr-4 py-3 border-2 rounded-xl focus:outline-none transition-all ${
+                        className={`w-full pl-11 pr-4 py-3 border-2 rounded-xl focus:outline-none transition-all text-base ${
                           formErrors.email
                             ? 'border-red-300 focus:border-red-500 bg-red-50'
                             : 'border-gray-200 focus:border-[#25B181] hover:border-gray-300'
                         }`}
                         placeholder="john@example.com"
+                        style={{ fontSize: '16px' }}
                       />
                     </div>
                     {formErrors.email && (
@@ -296,12 +298,13 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
                         value={formData.phone}
                         onChange={handleChange}
                         maxLength={12}
-                        className={`w-full pl-11 pr-4 py-3 border-2 rounded-xl focus:outline-none transition-all ${
+                        className={`w-full pl-11 pr-4 py-3 border-2 rounded-xl focus:outline-none transition-all text-base ${
                           formErrors.phone
                             ? 'border-red-300 focus:border-red-500 bg-red-50'
                             : 'border-gray-200 focus:border-[#25B181] hover:border-gray-300'
                         }`}
                         placeholder="Enter your mobile number"
+                        style={{ fontSize: '16px' }}
                       />
                     </div>
                     {formErrors.phone && (
@@ -319,7 +322,8 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
                     name="subject"
                     value={formData.subject}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#25B181] hover:border-gray-300 transition-all bg-white"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#25B181] hover:border-gray-300 transition-all bg-white text-base"
+                    style={{ fontSize: '16px' }}
                   >
                     <option value="">Select a subject</option>
                     <option value="loan-inquiry">Loan Inquiry</option>
@@ -346,12 +350,13 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
                     onChange={handleChange}
                     maxLength={500}
                     rows={4}
-                    className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-all resize-none ${
+                    className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-all resize-none text-base ${
                       formErrors.message
                         ? 'border-red-300 focus:border-red-500 bg-red-50'
                         : 'border-gray-200 focus:border-[#25B181] hover:border-gray-300'
                     }`}
                     placeholder="How can we help you today?"
+                    style={{ fontSize: '16px' }}
                   />
                   {formErrors.message && (
                     <p className="mt-1 text-xs text-red-600">{formErrors.message}</p>
@@ -362,7 +367,7 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex-1 bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white py-3.5 px-6 rounded-xl font-semibold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-[#25B181]/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white py-3.5 px-6 min-h-[48px] rounded-xl font-semibold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-[#25B181]/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                   >
                     {isSubmitting ? (
                       <>
@@ -380,7 +385,7 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
                     type="button"
                     onClick={handleReset}
                     disabled={isSubmitting}
-                    className="px-6 py-3.5 border-2 border-gray-200 text-gray-600 rounded-xl font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50"
+                    className="px-4 sm:px-6 py-3.5 min-h-[48px] border-2 border-gray-200 text-gray-600 rounded-xl font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50 text-sm sm:text-base"
                   >
                     Reset
                   </button>
