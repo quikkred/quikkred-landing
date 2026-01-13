@@ -258,6 +258,119 @@ class SupportService {
   }>> {
     return apiClient.post('/api/support/emergency', { reason });
   }
+
+  // ==================== AI Chat Methods ====================
+
+  /**
+   * Send a message to the AI chat assistant
+   */
+  async sendAIChatMessage(
+    message: string,
+    conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }> = []
+  ): Promise<ApiResponse<{
+    response: string;
+    source: 'ai' | 'faq';
+    ticketCreated?: boolean;
+    ticketNumber?: string;
+    question?: string;
+  }>> {
+    return apiClient.post('/api/ai/chat', {
+      message,
+      conversationHistory
+    });
+  }
+
+  /**
+   * Get AI FAQs
+   */
+  async getAIFAQs(search?: string): Promise<ApiResponse<{
+    count: number;
+    faqs: Array<{
+      id: string;
+      question: string;
+      answer: string;
+      category: string;
+    }>;
+  }>> {
+    const queryParams = search ? `?search=${encodeURIComponent(search)}` : '';
+    return apiClient.get(`/api/ai/faqs${queryParams}`);
+  }
+
+  /**
+   * Calculate EMI using AI service
+   */
+  async calculateEMI(principal: number, tenure: number, interestRate?: number): Promise<ApiResponse<{
+    calculation: {
+      principal: string;
+      processingFee: string;
+      gst: string;
+      disbursementAmount: string;
+      totalInterest: string;
+      totalRepayment: string;
+      tenure: string;
+      interestRate: string;
+    };
+  }>> {
+    return apiClient.post('/api/ai/calculate-emi', { principal, tenure, interestRate });
+  }
+
+  /**
+   * Get loan details via AI service (for authenticated users)
+   */
+  async getAILoanDetails(loanNumber?: string): Promise<ApiResponse<{
+    found: boolean;
+    loans?: Array<{
+      loanNumber: string;
+      principalAmount: string;
+      outstanding: string;
+      status: string;
+      dpd: number;
+      nextDueDate: string;
+      emiAmount: string;
+      tenure: string;
+    }>;
+  }>> {
+    const queryParams = loanNumber ? `?loanNumber=${loanNumber}` : '';
+    return apiClient.get(`/api/ai/loan-details${queryParams}`);
+  }
+
+  /**
+   * Get application status via AI service (for authenticated users)
+   */
+  async getAIApplicationStatus(applicationNumber?: string): Promise<ApiResponse<{
+    found: boolean;
+    applications?: Array<{
+      applicationNumber: string;
+      status: string;
+      requestedAmount: string;
+      approvedAmount: string;
+      appliedDate: string;
+      kycStatus: {
+        panVerified: boolean;
+        aadhaarVerified: boolean;
+        bankVerified: boolean;
+      };
+    }>;
+  }>> {
+    const queryParams = applicationNumber ? `?applicationNumber=${applicationNumber}` : '';
+    return apiClient.get(`/api/ai/application-status${queryParams}`);
+  }
+
+  /**
+   * Create a support ticket via AI
+   */
+  async createAITicket(data: {
+    category: string;
+    subject: string;
+    description: string;
+    priority?: string;
+  }): Promise<ApiResponse<{
+    success: boolean;
+    ticketNumber: string;
+    message: string;
+  }>> {
+    return apiClient.post('/api/ai/create-ticket', data);
+  }
 }
 
 export const supportService = new SupportService();
