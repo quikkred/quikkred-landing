@@ -8,6 +8,7 @@ import { SecurityBanner } from "@/components/security-banner";
 import ConditionalLayout from "@/components/layouts/ConditionalLayout";
 import LanguageGuard from "@/components/LanguageGuard";
 import { Toaster } from "@/components/ui/toast";
+import LiveSupportChat from "@/components/support-chat/LiveSupportChat";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -219,6 +220,7 @@ fbq('track', 'PageView');`,
             </ConditionalLayout>
           </LanguageGuard>
           <Toaster />
+          <LiveSupportChat />
         </Providers>
       </body>
     </html>
