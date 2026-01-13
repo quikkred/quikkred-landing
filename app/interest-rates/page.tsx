@@ -240,14 +240,14 @@ export default function InterestRatesPage() {
             </div>
 
             <p className="text-sm sm:text-base lg:text-xl mb-6 sm:mb-8 opacity-90 max-w-3xl">
-              Transparent pricing: 1% flat interest + 10% platform fee + 18% GST
+              Transparent pricing: 1% per day interest + 10% platform fee + 18% GST
             </p>
 
             {/* Features */}
             <div className="flex flex-wrap gap-4 sm:gap-6 text-sm sm:text-base">
               <div className="flex items-center gap-2">
                 <TrendingDown className="w-5 h-5" />
-                <span>1% Flat Interest</span>
+                <span>1% Per Day Interest</span>
               </div>
               <div className="flex items-center gap-2">
                 <Shield className="w-5 h-5" />

@@ -381,7 +381,7 @@
         "description": "Quick cash for all your personal needs",
         "amount": "₹10,000 - ₹5,00,000",
         "tenure": "7 - 90 days",
-        "rate": "1% flat + 10% platform fee + GST",
+        "rate": "1% per day + 10% platform fee + GST",
         "features": [
           "30-second AI approval",
           "Flexible tenure: 7, 15, 30, 60, 90 days",
@@ -394,7 +394,7 @@
         "description": "Get advance before your payday arrives",
         "amount": "₹10,000 - ₹2,00,000",
         "tenure": "7 - 30 days",
-        "rate": "1% flat + 10% platform fee + GST",
+        "rate": "1% per day + 10% platform fee + GST",
         "features": [
           "Instant approval for salaried",
           "Repay on next payday",
@@ -407,7 +407,7 @@
         "description": "24/7 support for urgent needs",
         "amount": "₹10,000 - ₹2,00,000",
         "tenure": "7 - 90 days",
-        "rate": "1% flat + 10% platform fee + GST",
+        "rate": "1% per day + 10% platform fee + GST",
         "features": [
           "24/7 approval",
           "Instant disbursal",
@@ -420,7 +420,7 @@
         "description": "Celebrate every festival without worry",
         "amount": "₹10,000 - ₹1,00,000",
         "tenure": "15 - 60 days",
-        "rate": "1% flat + 10% platform fee + GST",
+        "rate": "1% per day + 10% platform fee + GST",
         "features": [
           "Quick approval",
           "Flexible repayment",
@@ -433,7 +433,7 @@
         "description": "Healthcare financing when you need it",
         "amount": "₹10,000 - ₹5,00,000",
         "tenure": "30 - 90 days",
-        "rate": "1% flat + 10% platform fee + GST",
+        "rate": "1% per day + 10% platform fee + GST",
         "features": [
           "Fast approval",
           "Hospital tie-ups available",
@@ -446,7 +446,7 @@
         "description": "Travel now, pay later",
         "amount": "₹10,000 - ₹3,00,000",
         "tenure": "30 - 90 days",
-        "rate": "1% flat + 10% platform fee + GST",
+        "rate": "1% per day + 10% platform fee + GST",
         "features": [
           "Instant approval",
           "Book your trip today",
@@ -561,7 +561,7 @@
   "footer": {
     "about": {
       "title": "About Quikkred",
-      "description": "India's most trusted AI-powered digital lending platform. Get payday loans from ₹10,000 to ₹5,00,000 with transparent fees: 10% platform fee, 18% GST, and 1% flat interest."
+      "description": "India's most trusted AI-powered digital lending platform. Get payday loans from ₹10,000 to ₹5,00,000 with transparent fees: 10% platform fee, 18% GST, and 1% per day interest."
     },
     "quickLinks": {
       "title": "Quick Links",
@@ -669,7 +669,7 @@
       "comingSoonMessage": "Our mobile app will be available soon. Stay tuned!"
     },
     "copyright": "© 2018-2026 Quikkred. All rights reserved.",
-    "disclaimer": "Quikkred is a digital lending platform powered by Satsai Finlease Private Limited, an RBI registered NBFC (Registration No: B-14.01646). Loan Amount: ₹10,000 to ₹5,00,000. Platform Fee: 10% + 18% GST. Interest: 1% flat. Tenure: 7-90 days."
+    "disclaimer": "Quikkred is a digital lending platform powered by Satsai Finlease Private Limited, an RBI registered NBFC (Registration No: B-14.01646). Loan Amount: ₹10,000 to ₹5,00,000. Platform Fee: 10% + 18% GST. Interest: 1% per day. Tenure: 7-90 days."
   },
   "contact": {
     "title": "Get in Touch",
@@ -949,7 +949,7 @@
   },
   {
     "question": "What are the fees and interest rates?",
-    "answer": "Interest rate is 1% flat on the loan amount. Platform fee is 10% of loan amount with 18% GST on platform fee. Example: For ₹50,000 loan - Platform Fee ₹5,000 + GST ₹900 + Interest ₹500 = ₹6,400 deducted. You receive ₹43,600 and repay ₹50,000."
+    "answer": "Interest rate is 1% per day on the loan amount. Platform fee is 10% of loan amount with 18% GST on platform fee. Example: For ₹50,000 loan - Platform Fee ₹5,000 + GST ₹900 + Interest ₹500 = ₹6,400 deducted. You receive ₹43,600 and repay ₹50,000."
   },
   {
     "question": "How quickly can I get approved?",
@@ -1025,22 +1025,22 @@
       "personal": {
         "name": "Payday Loan",
         "description": "Quick cash before your payday",
-        "rate": "1% flat + 10% platform fee"
+        "rate": "1% per day + 10% platform fee"
       },
       "business": {
         "name": "Salary Advance",
         "description": "Get advance on your salary",
-        "rate": "1% flat + 10% platform fee"
+        "rate": "1% per day + 10% platform fee"
       },
       "emergency": {
         "name": "Emergency Fund",
         "description": "Instant cash for urgencies",
-        "rate": "1% flat + 10% platform fee"
+        "rate": "1% per day + 10% platform fee"
       },
       "education": {
         "name": "Festival Advance",
         "description": "Celebrate without worries",
-        "rate": "1% flat + 10% platform fee"
+        "rate": "1% per day + 10% platform fee"
       }
     },
     "steps": {
@@ -1150,7 +1150,7 @@
     "processingFee": "Platform Fee",
     "platformFee": "Platform Fee (10%)",
     "gst": "GST (18% on Platform Fee)",
-    "interest": "Interest (1% flat)",
+    "interest": "Interest (1% per day)",
     "principalAmount": "Loan Amount",
     "totalInterest": "Total Charges",
     "totalRepayment": "Total Repayment",
