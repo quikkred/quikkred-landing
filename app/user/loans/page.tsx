@@ -1758,6 +1758,7 @@ export default function MyLoansPage() {
                   </div>
 
                   {/* Payment Behavior */}
+                  {detailedLoan.paymentBehavior && (
                   <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-teal-200">
                     <div className="flex items-center gap-2 mb-3 sm:mb-4">
                       <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600" />
@@ -1774,7 +1775,7 @@ export default function MyLoansPage() {
                       </div> */}
                       <div className="text-center">
                         <p className="text-xs sm:text-sm text-gray-600 mb-1">On-Time Payments</p>
-                        <div className="text-xl sm:text-2xl font-bold text-green-600">{detailedLoan.paymentBehavior.onTimePayments}</div>
+                        <div className="text-xl sm:text-2xl font-bold text-green-600">{detailedLoan?.paymentBehavior?.onTimePayments}</div>
                       </div>
                       {/* <div className="text-center">
                         <p className="text-xs sm:text-sm text-gray-600 mb-1">Late Payments</p>
@@ -1782,18 +1783,19 @@ export default function MyLoansPage() {
                       </div> */}
                         <div className="text-center">
                         <p className="text-xs sm:text-sm text-gray-600 mb-1">Partial Payments</p>
-                        <div className="text-xl sm:text-2xl font-bold text-blue-600">{detailedLoan.paymentBehavior.partialPaymentCount}</div>
+                        <div className="text-xl sm:text-2xl font-bold text-blue-600">{detailedLoan?.paymentBehavior?.partialPaymentCount}</div>
                       </div>
                       <div className="text-center">
                         <p className="text-xs sm:text-sm text-gray-600 mb-1">Bounce Count</p>
-                        <div className="text-xl sm:text-2xl font-bold text-red-600">{detailedLoan.paymentBehavior.bounceCount}</div>
+                        <div className="text-xl sm:text-2xl font-bold text-red-600">{detailedLoan?.paymentBehavior?.bounceCount}</div>
                       </div>
-                    
+
                     </div>
                   </div>
+                  )}
 
                   {/* EMI Schedule */}
-                  {detailedLoan.schedule && detailedLoan.schedule.length > 0 && (
+                  {detailedLoan?.schedule && detailedLoan?.schedule.length > 0 && (
                     <div className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-200">
                       <div className="flex items-center gap-2 mb-3 sm:mb-4">
                         <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
