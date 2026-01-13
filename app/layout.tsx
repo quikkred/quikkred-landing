@@ -107,7 +107,7 @@ gtag('config', 'AW-17796230994');`,
           }}
         />
         {/* Meta Pixel Code - Beta & Production only */}
-        {process.env.NEXT_PUBLIC_API_URL !== 'https://alpha.quikkred.in' && (
+        {process.env.NEXT_PUBLIC_API_URL !== 'https://api.quikkred.in' && (
           <>
             <script
               dangerouslySetInnerHTML={{
@@ -201,7 +201,7 @@ fbq('track', 'PageView');`,
           />
         </noscript>
         {/* Meta Pixel (noscript) - Beta & Production only */}
-        {process.env.NEXT_PUBLIC_API_URL !== 'https://alpha.quikkred.in' && (
+        {process.env.NEXT_PUBLIC_API_URL !== 'https://api.quikkred.in' && (
           <noscript>
             <img
               height="1"
