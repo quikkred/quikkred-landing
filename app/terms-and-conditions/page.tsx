@@ -20,7 +20,7 @@ export default function TermsPage() {
             <h1 className="text-4xl md:text-5xl font-bold mb-4 font-sora">
               Terms & Conditions
             </h1>
-            <p className="text-xl">Effective Date: January 1, 2024</p>
+            <p className="text-xl">Effective Date: January 1, 2026</p>
           </motion.div>
         </div>
       </section>
