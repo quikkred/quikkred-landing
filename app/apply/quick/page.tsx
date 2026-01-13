@@ -28,6 +28,7 @@ import {
   getAuthToken,
 } from "@/lib/helpers/quickApply";
 import { API_BASE_URL } from "@/lib/config";
+import { tracking } from "@/lib/tracking";
 
 // Auto-decision engine
 
@@ -212,6 +213,24 @@ export default function QuickLoanApplication() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [bankDropdownOpen, stateDropdownOpen]);
+
+  // Initialize tracking on component mount
+  useEffect(() => {
+    tracking.init({ mobile: formData.mobile, email: formData.email });
+    tracking.applicationStarted('quick_apply_page');
+    tracking.stepViewed(1, 'Basic Details');
+  }, []);
+
+  // Track step changes
+  useEffect(() => {
+    const stepNames: Record<number, string> = {
+      1: 'Basic Details',
+      2: 'KYC Verification',
+      3: 'Bank Details',
+      4: 'Approval & E-Sign'
+    };
+    tracking.stepViewed(currentStep, stepNames[currentStep]);
+  }, [currentStep]);
 
   // Load user data if logged in
   useEffect(() => {
@@ -774,6 +793,7 @@ export default function QuickLoanApplication() {
         if (result.success && result.message === "E-sign document fetched successfully") {
           setESignVerified(true);
           setUserESignStatus('SUCCESS');
+          tracking.esignSuccess();
           toast({
             variant: "success",
             title: "e-Sign Completed",
@@ -3684,6 +3704,7 @@ console.log('Sending OTP with payload:', payload);
     }
 
     setPanVerifying(true);
+    tracking.panVerificationAttempt();
     try {
       const token = localStorage.getItem('accessToken') ||
                     localStorage.getItem('token') ||
@@ -3720,6 +3741,7 @@ console.log('Sending OTP with payload:', payload);
         setPanData(result.data || null);
         setPanError(""); // Clear any errors
         setPanReverifyTimer(15); // Start 15 second cooldown for reverify
+        tracking.panVerificationSuccess();
 
         toast({
           variant: "success",
@@ -3731,6 +3753,7 @@ console.log('Sending OTP with payload:', payload);
         const errorMsg = result.message || 'Failed to verify PAN. Please check the PAN number and try again.';
         setPanError(errorMsg);
         setPanReverifyTimer(15); // Start 15 second cooldown before retry
+        tracking.panVerificationFailed(errorMsg);
         toast({
           variant: "error",
           title: "Verification Failed",
@@ -3741,6 +3764,7 @@ console.log('Sending OTP with payload:', payload);
       const errorMsg = error.message || 'Failed to verify PAN. Please try again.';
       setPanError(errorMsg);
       setPanReverifyTimer(30); // Start 30 second cooldown before retry
+      tracking.panVerificationFailed(errorMsg);
       toast({
         variant: "error",
         title: "Verification Error",
@@ -3800,6 +3824,7 @@ console.log('Sending OTP with payload:', payload);
           setAadhaarOtpSent(true);
           setAadhaarOtpTimer(30); // Start 30 second countdown
           setAadhaarError(""); // Clear any errors
+          tracking.aadhaarOtpSent();
           toast({
             variant: "success",
             title: "OTP Sent Successfully!",
@@ -3809,6 +3834,7 @@ console.log('Sending OTP with payload:', payload);
       } else {
         const errorMsg = verifyResult.message || 'Aadhaar verification failed. Please check the number and try again.';
         setAadhaarError(errorMsg);
+        tracking.aadhaarVerificationFailed(errorMsg);
         toast({
           variant: "error",
           title: "Verification Failed",
@@ -3818,6 +3844,7 @@ console.log('Sending OTP with payload:', payload);
     } catch (error: any) {
       const errorMsg = error.message || 'Network error. Please check your connection and try again.';
       setAadhaarError(errorMsg);
+      tracking.aadhaarVerificationFailed(errorMsg);
       toast({
         variant: "error",
         title: "Error",
@@ -3889,6 +3916,7 @@ console.log('Sending OTP with payload:', payload);
           console.log('📊 Address data stored:', result.data.address);
         }
 
+        tracking.aadhaarVerificationSuccess();
         toast({
           variant: "success",
           title: "Aadhaar Verified Successfully! ✓",
@@ -3898,6 +3926,7 @@ console.log('Sending OTP with payload:', payload);
         const errorMsg = result.message || result.error || 'Invalid OTP. Please check and try again.';
         setAadhaarError(errorMsg);
         setAadhaarReverifyTimer(30); // Start 30 second cooldown before retry
+        tracking.aadhaarVerificationFailed(errorMsg);
         toast({
           variant: "error",
           title: "Verification Failed",
@@ -3908,6 +3937,7 @@ console.log('Sending OTP with payload:', payload);
       const errorMsg = error.message || 'Network error. Please check your connection and try again.';
       setAadhaarError(errorMsg);
       setAadhaarReverifyTimer(30); // Start 30 second cooldown before retry
+      tracking.aadhaarVerificationFailed(errorMsg);
       toast({
         variant: "error",
         title: "Verification Error",
@@ -4059,6 +4089,7 @@ console.log('Sending OTP with payload:', payload);
 
     setBankVerifying(true);
     setBankVerifyError("");
+    tracking.bankVerificationAttempt(formData.bankName);
 
     try {
       const token = localStorage.getItem('accessToken') ||
@@ -4093,6 +4124,7 @@ console.log('Sending OTP with payload:', payload);
           }));
         }
 
+        tracking.bankVerificationSuccess(formData.bankName);
         toast({
           variant: "success",
           title: "Bank Account Verified! ✓",
@@ -4104,6 +4136,7 @@ console.log('Sending OTP with payload:', payload);
         const errorMsg = result.message || result.error || 'Bank verification failed. Please check your details.';
         setBankVerifyError(errorMsg);
         setBankVerified(false);
+        tracking.bankVerificationFailed(errorMsg, formData.bankName);
         toast({
           variant: "error",
           title: "Verification Failed",
@@ -4114,6 +4147,7 @@ console.log('Sending OTP with payload:', payload);
       const errorMsg = error.message || 'Network error. Please check your connection and try again.';
       setBankVerifyError(errorMsg);
       setBankVerified(false);
+      tracking.bankVerificationFailed(errorMsg, formData.bankName);
       toast({
         variant: "error",
         title: "Verification Error",
@@ -4126,11 +4160,13 @@ console.log('Sending OTP with payload:', payload);
 
   const captureSelfi = () => {
     setSelfieCapture(true);
+    tracking.selfieCapture('started');
   };
 
   const handleSelfieCapture = (imageFile: File) => {
     // Validate image file
     if (!imageFile) {
+      tracking.selfieCapture('failed', 'Invalid selfie photo');
       toast({
         variant: "error",
         title: "Invalid Selfie",
@@ -4141,6 +4177,7 @@ console.log('Sending OTP with payload:', payload);
 
     // Check file size (max 5MB)
     if (imageFile.size > 5 * 1024 * 1024) {
+      tracking.selfieCapture('failed', 'File too large');
       toast({
         variant: "error",
         title: "File Too Large",
@@ -4151,6 +4188,7 @@ console.log('Sending OTP with payload:', payload);
 
     // Check file type
     if (!imageFile.type.startsWith('image/')) {
+      tracking.selfieCapture('failed', 'Invalid file type');
       toast({
         variant: "error",
         title: "Invalid File Type",
@@ -4161,6 +4199,7 @@ console.log('Sending OTP with payload:', payload);
 
     // Validate image is not blank/empty by checking file size
     if (imageFile.size < 1000) { // Less than 1KB is likely a blank/corrupt image
+      tracking.selfieCapture('failed', 'Blank image detected');
       toast({
         variant: "error",
         title: "Blank Image Detected",
@@ -4179,6 +4218,7 @@ console.log('Sending OTP with payload:', payload);
 
     // Face verification (livenessStatus) succeeded - disable retake
     setSelfieVerified(true);
+    tracking.selfieCapture('success');
 
     toast({
       variant: "success",
@@ -4806,6 +4846,15 @@ console.log('Sending OTP with payload:', payload);
             if (result.data.customerId) localStorage.setItem('userId', result.data.customerId);
             if (result.data.applicationNumber) localStorage.setItem('applicationId', result.data.applicationNumber);
             if (result.data.loanNumber) localStorage.setItem('loanNumber', result.data.loanNumber);
+
+            // Track application submission and link journey to customer
+            tracking.applicationSubmitted(result.data.applicationNumber || '', parseFloat(formData.loanAmount) || 0);
+            tracking.linkToCustomer({
+              customerId: result.data.customerId,
+              applicationId: result.data.applicationNumber,
+              mobile: formData.mobile,
+              email: formData.email
+            });
           }
 
           // Show success toast
@@ -4829,6 +4878,7 @@ console.log('Sending OTP with payload:', payload);
         } else {
           // API returned error - show error and stay on step 4
           console.error('❌ Loan application failed:', result.message);
+          tracking.apiError('/api/application/loan/create', response.status, result.message || 'Application failed', 4);
           toast({
             variant: "error",
             title: "Application Failed",
@@ -4839,6 +4889,7 @@ console.log('Sending OTP with payload:', payload);
         }
       } catch (error: any) {
         console.error('Error submitting loan application:', error);
+        tracking.clientError(error.message || 'Application submission error', 'step4_submission');
         // Show error toast and stay on step 4
         toast({
           variant: "error",
@@ -4853,6 +4904,14 @@ console.log('Sending OTP with payload:', payload);
       return;
     }
 
+    // Track step completion before moving to next step
+    const stepNames: Record<number, string> = {
+      1: 'Basic Details',
+      2: 'KYC Verification',
+      3: 'Bank Details',
+      4: 'Approval & E-Sign'
+    };
+    tracking.stepCompleted(currentStep, stepNames[currentStep]);
     setCurrentStep(prev => prev + 1);
   };
 
