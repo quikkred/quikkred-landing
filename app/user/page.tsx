@@ -13,7 +13,8 @@ import {
   Shield, UserCheck, History, Gift, HelpCircle,
   Smartphone, Globe, Heart, Zap, Activity,
   PieChart, BarChart3, TrendingDown, Package,
-  CopyIcon, ExternalLink, ChevronRight, Sparkles, ChevronDown
+  CopyIcon, ExternalLink, ChevronRight, Sparkles, ChevronDown,
+  Upload, Camera, Image, X, CheckCircle2, XCircle, Loader2
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/toast';
@@ -49,6 +50,10 @@ interface ActiveLoanDetails {
   paidAmount: number;
   totalEMIsPaid: number;
   installment: number;
+  appliedDate?: string;
+  applicationNumber?: string;
+  disbursementDate?: string;
+  loanCreatedDate?: string;
 }
 
 interface DashboardData {
@@ -87,6 +92,21 @@ interface PaymentResponse {
   };
 }
 
+interface PaymentProof {
+  _id: string;
+  loanNumber: string;
+  amountPaid: number;
+  transactionReference: string;
+  paymentDate: string;
+  paymentMode: string;
+  status: 'PENDING' | 'VERIFIED' | 'REJECTED';
+  proofImage?: { url: string };
+  remarks?: string;
+  rejectionReason?: string;
+  verifiedAt?: string;
+  createdAt: string;
+}
+
 export default function UserDashboard() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
@@ -118,6 +138,19 @@ export default function UserDashboard() {
   const [loadingLoanDetails, setLoadingLoanDetails] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const isProcessingRef = useRef(false);
+
+  // Payment Proof States
+  const [showProofUpload, setShowProofUpload] = useState(false);
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [proofPreview, setProofPreview] = useState<string | null>(null);
+  const [proofAmount, setProofAmount] = useState('');
+  const [proofUTR, setProofUTR] = useState('');
+  const [proofPaymentMode, setProofPaymentMode] = useState('BANK_TRANSFER');
+  const [proofRemarks, setProofRemarks] = useState('');
+  const [submittingProof, setSubmittingProof] = useState(false);
+  const [myPaymentProofs, setMyPaymentProofs] = useState<PaymentProof[]>([]);
+  const [loadingProofs, setLoadingProofs] = useState(false);
+  const proofFileInputRef = useRef<HTMLInputElement>(null);
 
   // Update local state from Redux
   useEffect(() => {
@@ -546,6 +579,150 @@ export default function UserDashboard() {
     }
   };
 
+  // Payment Proof Functions
+  const handleProofFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({ variant: "error", title: "File too large", description: "Maximum file size is 5MB" });
+        return;
+      }
+      if (!file.type.startsWith('image/')) {
+        toast({ variant: "error", title: "Invalid file", description: "Please upload an image file" });
+        return;
+      }
+      setProofFile(file);
+      setProofPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const clearProofFile = () => {
+    setProofFile(null);
+    setProofPreview(null);
+    if (proofFileInputRef.current) {
+      proofFileInputRef.current.value = '';
+    }
+  };
+
+  const fetchMyPaymentProofs = async () => {
+    if (!activeLoanDetails) return;
+
+    setLoadingProofs(true);
+    try {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await fetch(`${API_BASE_URL}/api/payment-proof/my-submissions?loanId=${activeLoanDetails._id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setMyPaymentProofs(result.data || []);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching payment proofs:', error);
+    } finally {
+      setLoadingProofs(false);
+    }
+  };
+
+  // Fetch proofs when loan details change
+  useEffect(() => {
+    if (activeLoanDetails?._id) {
+      fetchMyPaymentProofs();
+    }
+  }, [activeLoanDetails?._id]);
+
+  const submitPaymentProof = async () => {
+    if (!activeLoanDetails || !proofFile) return;
+
+    if (!proofUTR.trim()) {
+      toast({ variant: "error", title: "Missing Information", description: "Please enter the transaction/UTR number" });
+      return;
+    }
+    if (!proofAmount || parseFloat(proofAmount) <= 0) {
+      toast({ variant: "error", title: "Missing Information", description: "Please enter the payment amount" });
+      return;
+    }
+
+    setSubmittingProof(true);
+    try {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('loanId', activeLoanDetails._id);
+      formData.append('amountPaid', proofAmount);
+      formData.append('transactionReference', proofUTR.trim());
+      formData.append('paymentMode', proofPaymentMode);
+      formData.append('proofImage', proofFile);
+      if (proofRemarks) formData.append('remarks', proofRemarks);
+
+      const response = await fetch(`${API_BASE_URL}/api/payment-proof/submit`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          variant: "success",
+          title: "Payment Proof Submitted!",
+          description: result.message || "Your payment proof has been submitted for verification."
+        });
+
+        // Reset form
+        clearProofFile();
+        setProofAmount('');
+        setProofUTR('');
+        setProofPaymentMode('BANK_TRANSFER');
+        setProofRemarks('');
+        setShowProofUpload(false);
+
+        // Refresh proofs list
+        fetchMyPaymentProofs();
+      } else {
+        toast({
+          variant: "error",
+          title: "Submission Failed",
+          description: result.message || "Failed to submit payment proof"
+        });
+      }
+    } catch (error: any) {
+      toast({
+        variant: "error",
+        title: "Error",
+        description: error.message || "Failed to submit payment proof"
+      });
+    } finally {
+      setSubmittingProof(false);
+    }
+  };
+
+  const getProofStatusColor = (status: string) => {
+    switch (status) {
+      case 'VERIFIED': return 'bg-green-100 text-green-800 border-green-300';
+      case 'REJECTED': return 'bg-red-100 text-red-800 border-red-300';
+      default: return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+    }
+  };
+
+  const getProofStatusIcon = (status: string) => {
+    switch (status) {
+      case 'VERIFIED': return <CheckCircle2 className="w-4 h-4" />;
+      case 'REJECTED': return <XCircle className="w-4 h-4" />;
+      default: return <Clock className="w-4 h-4" />;
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
@@ -828,6 +1005,40 @@ export default function UserDashboard() {
             </div>
 
 
+            {/* Important Dates Section */}
+            <div className="bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl p-4 sm:p-6 border border-slate-200 mb-6">
+              <h3 className="text-sm sm:text-base font-semibold text-slate-900 flex items-center gap-2 mb-4">
+                <Calendar className="w-4 h-4" />
+                Important Dates
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {activeLoanDetails.appliedDate && (
+                  <div className="text-center p-3 bg-white rounded-lg border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Applied Date</p>
+                    <p className="text-sm font-semibold text-slate-900">{formatDate(activeLoanDetails.appliedDate)}</p>
+                  </div>
+                )}
+                {activeLoanDetails.disbursementDate && (
+                  <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
+                    <p className="text-xs text-green-700 mb-1">Disbursed Date</p>
+                    <p className="text-sm font-semibold text-green-900">{formatDate(activeLoanDetails.disbursementDate)}</p>
+                  </div>
+                )}
+                {activeLoanDetails.firstDueDate && (
+                  <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-xs text-blue-700 mb-1">First Due Date</p>
+                    <p className="text-sm font-semibold text-blue-900">{formatDate(activeLoanDetails.firstDueDate)}</p>
+                  </div>
+                )}
+                {activeLoanDetails.maturityDate && (
+                  <div className="text-center p-3 bg-purple-50 rounded-lg border border-purple-200">
+                    <p className="text-xs text-purple-700 mb-1">Maturity Date</p>
+                    <p className="text-sm font-semibold text-purple-900">{formatDate(activeLoanDetails.maturityDate)}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Loan Details Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
               <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
@@ -1042,6 +1253,223 @@ export default function UserDashboard() {
                     {' '}or email{' '}
                     <a href="mailto:support@quikkred.in" className="text-[#10B4A3] font-semibold">support@quikkred.in</a>
                   </p>
+                </div>
+
+                {/* Payment Proof Upload Section */}
+                <div className="mt-6 border-t border-gray-200 pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-base sm:text-lg font-semibold text-[#0A0A0A] flex items-center gap-2">
+                      <Upload className="w-4 h-4 sm:w-5 sm:h-5 text-[#10B4A3]" />
+                      Submit Payment Proof
+                    </h3>
+                    {!showProofUpload && (
+                      <button
+                        onClick={() => setShowProofUpload(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-[#10B4A3] text-white rounded-lg hover:bg-[#0EA594] transition-all text-sm font-medium"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Upload Proof</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Upload Form */}
+                  {showProofUpload && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="bg-gradient-to-br from-teal-50 to-emerald-50 rounded-xl p-4 sm:p-6 border-2 border-teal-200 mb-6"
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="text-base font-semibold text-teal-900 flex items-center gap-2">
+                          <Camera className="w-5 h-5" />
+                          Upload Payment Screenshot
+                        </h4>
+                        <button
+                          onClick={() => {
+                            setShowProofUpload(false);
+                            clearProofFile();
+                          }}
+                          className="p-1 hover:bg-teal-100 rounded-lg transition-colors"
+                        >
+                          <X className="w-5 h-5 text-teal-700" />
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        {/* File Upload */}
+                        <div>
+                          <label className="block text-sm font-medium text-teal-800 mb-2">Payment Screenshot *</label>
+                          {!proofPreview ? (
+                            <div
+                              onClick={() => proofFileInputRef.current?.click()}
+                              className="border-2 border-dashed border-teal-300 rounded-xl p-6 text-center cursor-pointer hover:border-teal-500 hover:bg-teal-50 transition-all"
+                            >
+                              <Image className="w-12 h-12 text-teal-400 mx-auto mb-2" />
+                              <p className="text-sm text-teal-700 font-medium">Click to upload screenshot</p>
+                              <p className="text-xs text-teal-600 mt-1">PNG, JPG up to 5MB</p>
+                            </div>
+                          ) : (
+                            <div className="relative">
+                              <img
+                                src={proofPreview}
+                                alt="Payment proof preview"
+                                className="w-full max-h-60 object-contain rounded-lg border border-teal-200"
+                              />
+                              <button
+                                onClick={clearProofFile}
+                                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          )}
+                          <input
+                            ref={proofFileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleProofFileChange}
+                            className="hidden"
+                          />
+                        </div>
+
+                        {/* Amount & UTR in a Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-teal-800 mb-2">Amount Paid (₹) *</label>
+                            <input
+                              type="number"
+                              value={proofAmount}
+                              onChange={(e) => setProofAmount(e.target.value)}
+                              placeholder="Enter amount"
+                              className="w-full px-4 py-2.5 border border-teal-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-teal-800 mb-2">UTR/Transaction Number *</label>
+                            <input
+                              type="text"
+                              value={proofUTR}
+                              onChange={(e) => setProofUTR(e.target.value)}
+                              placeholder="Enter UTR number"
+                              className="w-full px-4 py-2.5 border border-teal-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Payment Mode */}
+                        <div>
+                          <label className="block text-sm font-medium text-teal-800 mb-2">Payment Mode</label>
+                          <select
+                            value={proofPaymentMode}
+                            onChange={(e) => setProofPaymentMode(e.target.value)}
+                            className="w-full px-4 py-2.5 border border-teal-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900"
+                          >
+                            <option value="BANK_TRANSFER">Bank Transfer (NEFT/RTGS)</option>
+                            <option value="IMPS">IMPS</option>
+                            <option value="UPI">UPI</option>
+                            <option value="NEFT">NEFT</option>
+                            <option value="RTGS">RTGS</option>
+                            <option value="OTHER">Other</option>
+                          </select>
+                        </div>
+
+                        {/* Remarks */}
+                        <div>
+                          <label className="block text-sm font-medium text-teal-800 mb-2">Remarks (Optional)</label>
+                          <textarea
+                            value={proofRemarks}
+                            onChange={(e) => setProofRemarks(e.target.value)}
+                            placeholder="Any additional information..."
+                            rows={2}
+                            className="w-full px-4 py-2.5 border border-teal-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none text-gray-900 resize-none"
+                          />
+                        </div>
+
+                        {/* Submit Button */}
+                        <button
+                          onClick={submitPaymentProof}
+                          disabled={submittingProof || !proofFile}
+                          className="w-full py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-lg font-semibold hover:from-teal-700 hover:to-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          {submittingProof ? (
+                            <>
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                              <span>Submitting...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="w-5 h-5" />
+                              <span>Submit Payment Proof</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Previous Submissions */}
+                  {myPaymentProofs.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                        <History className="w-4 h-4" />
+                        Your Previous Submissions
+                      </h4>
+                      <div className="space-y-3">
+                        {myPaymentProofs.map((proof) => (
+                          <div
+                            key={proof._id}
+                            className={`p-4 rounded-lg border ${
+                              proof.status === 'VERIFIED' ? 'bg-green-50 border-green-200' :
+                              proof.status === 'REJECTED' ? 'bg-red-50 border-red-200' :
+                              'bg-yellow-50 border-yellow-200'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${getProofStatusColor(proof.status)}`}>
+                                    {getProofStatusIcon(proof.status)}
+                                    {proof.status}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    {formatDate(proof.createdAt)}
+                                  </span>
+                                </div>
+                                <p className="text-sm font-semibold text-gray-900">₹{proof.amountPaid.toLocaleString()}</p>
+                                <p className="text-xs text-gray-600 font-mono truncate">UTR: {proof.transactionReference}</p>
+                                {proof.status === 'REJECTED' && proof.rejectionReason && (
+                                  <p className="text-xs text-red-600 mt-1">Reason: {proof.rejectionReason}</p>
+                                )}
+                              </div>
+                              {proof.proofImage?.url && (
+                                <a
+                                  href={proof.proofImage.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-gray-200 hover:border-[#10B4A3] transition-colors"
+                                >
+                                  <img
+                                    src={proof.proofImage.url}
+                                    alt="Payment proof"
+                                    className="w-full h-full object-cover"
+                                  />
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {loadingProofs && (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="w-5 h-5 animate-spin text-[#10B4A3] mr-2" />
+                      <span className="text-sm text-gray-600">Loading submissions...</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
