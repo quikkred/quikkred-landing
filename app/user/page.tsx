@@ -898,96 +898,151 @@ export default function UserDashboard() {
               <div className="border-t border-gray-200 pt-4 sm:pt-6">
                 <h3 className="text-base sm:text-lg font-semibold text-[#0A0A0A] mb-4 flex items-center gap-2">
                   <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-[#10B4A3]" />
-                  Pay Installment
+                  Pay Your Loan
                 </h3>
 
-                {activeLoanDetails.overdueCount > 0 && (
-                  <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-lg p-4 mb-4 border border-red-200">
-                    <div className="flex items-start gap-2 mb-2">
-                      <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm font-semibold text-red-900">Payment Failed Alert</p>
-                        <p className="text-xs text-red-700 mt-1">
-                          {activeLoanDetails.overdueCount} payment attempt{activeLoanDetails.overdueCount > 1 ? 's' : ''} failed.
-                          You have ₹{getRemainingAmount().toLocaleString()} remaining to pay. Please complete payment to avoid penalties.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {activeLoanDetails.overdueCount === 0 && (
-                  <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-4 mb-4 border border-blue-200">
-                    <div className="flex items-start gap-2 mb-2">
-                      <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm font-semibold text-blue-900">Pay Your Installment</p>
-                        <p className="text-xs text-blue-700 mt-1">
-                          You have ₹{getRemainingAmount().toLocaleString()} remaining to complete your loan (Installment #{getCurrentInstallment()}).
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="space-y-4">
-                  {/* Payment Amount Input */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Enter Payment Amount
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
-                      <input
-                        type="number"
-                        value={customAmount}
-                        onChange={(e) => setCustomAmount(e.target.value)}
-                        placeholder={getRemainingAmount().toLocaleString()}
-                        min="1"
-                        max={getRemainingAmount()}
-                        className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10B4A3] focus:border-transparent outline-none transition-all"
-                      />
-                    </div>
-                    <p className="text-xs text-gray-600 mt-1">
-                      You can reduce the amount to pay partially
+                {/* Amount to Pay - Prominent Display */}
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 sm:p-6 mb-4 border-2 border-green-300">
+                  <div className="text-center">
+                    <p className="text-sm text-green-700 mb-1">Amount to Pay</p>
+                    <p className="text-3xl sm:text-4xl font-bold text-green-800">
+                      ₹{getRemainingAmount().toLocaleString()}
                     </p>
-                  </div>
-
-                  {/* Payment Summary Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                 
-
-                 
-
-               
+                    <p className="text-xs text-green-600 mt-2">
+                      Due Date: {formatDate(activeLoanDetails.nextDueDate)}
+                    </p>
                   </div>
                 </div>
 
-                {/* Pay Button */}
-                <button
-                  onClick={handlePayment}
-                  disabled={processingPayment || !razorpayLoaded}
-                  className={`w-full mt-4 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-[#10B4A3] to-[#0E9A8B] text-white rounded-lg hover:shadow-lg transition-all font-semibold text-base sm:text-lg ${
-                    processingPayment || !razorpayLoaded ? 'opacity-70 cursor-not-allowed' : ''
-                  }`}
-                >
-                  {processingPayment ? (
-                    <>
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                      />
-                      <span>Processing Payment...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="w-5 h-5" />
-                      Pay ₹{calculateTotalPayment().toLocaleString()}
-                      <ChevronRight className="w-5 h-5" />
-                    </>
-                  )}
-                </button>
+                {activeLoanDetails.overdueCount > 0 && (
+                  <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-lg p-4 mb-4 border border-red-200">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-semibold text-red-900">Payment Overdue</p>
+                        <p className="text-xs text-red-700 mt-1">
+                          Please pay immediately to avoid additional late charges and penalties.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Bank Account Details for Manual Payment */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 border-2 border-blue-200">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Building className="w-5 h-5 text-blue-700" />
+                    <h4 className="text-base font-semibold text-blue-900">Bank Transfer Details</h4>
+                  </div>
+
+                  <div className="space-y-3">
+                    {/* Account Name */}
+                    <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-blue-100">
+                      <div>
+                        <p className="text-xs text-gray-500">Account Name</p>
+                        <p className="text-sm font-semibold text-gray-900">Satsai Finlease Pvt Ltd</p>
+                      </div>
+                    </div>
+
+                    {/* Account Number */}
+                    <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-blue-100">
+                      <div>
+                        <p className="text-xs text-gray-500">Account Number</p>
+                        <p className="text-base font-bold text-gray-900 font-mono">401655461518</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText('401655461518');
+                          toast({ variant: "success", title: "Copied!", description: "Account number copied to clipboard" });
+                        }}
+                        className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
+                      >
+                        <CopyIcon className="w-4 h-4 text-blue-600" />
+                      </button>
+                    </div>
+
+                    {/* IFSC Code */}
+                    <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-blue-100">
+                      <div>
+                        <p className="text-xs text-gray-500">IFSC Code</p>
+                        <p className="text-base font-bold text-gray-900 font-mono">RATN0000315</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText('RATN0000315');
+                          toast({ variant: "success", title: "Copied!", description: "IFSC code copied to clipboard" });
+                        }}
+                        className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
+                      >
+                        <CopyIcon className="w-4 h-4 text-blue-600" />
+                      </button>
+                    </div>
+
+                    {/* Bank Name */}
+                    <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-blue-100">
+                      <div>
+                        <p className="text-xs text-gray-500">Bank Name</p>
+                        <p className="text-sm font-semibold text-gray-900">RBL Bank</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Payment Instructions */}
+                  <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs font-semibold text-amber-800">Important Instructions</p>
+                        <ul className="text-xs text-amber-700 mt-1 space-y-1 list-disc list-inside">
+                          <li>Transfer exact amount: ₹{getRemainingAmount().toLocaleString()}</li>
+                          <li>Use IMPS/NEFT/UPI for instant transfer</li>
+                          <li>Add your Loan Number <span className="font-mono font-bold">{activeLoanDetails.loanNumber}</span> in remarks</li>
+                          <li>Payment will be updated within 24 hours</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* UPI Payment Option */}
+                <div className="mt-4 bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl p-4 border-2 border-purple-200">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Smartphone className="w-5 h-5 text-purple-700" />
+                    <h4 className="text-base font-semibold text-purple-900">Pay via UPI</h4>
+                  </div>
+                  <p className="text-sm text-purple-700 mb-2">
+                    You can also pay using any UPI app (Google Pay, PhonePe, Paytm, etc.)
+                  </p>
+                  <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-purple-100">
+                    <div>
+                      <p className="text-xs text-gray-500">UPI ID</p>
+                      <p className="text-sm font-bold text-gray-900 font-mono">satsaifinlease@rbl</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText('satsaifinlease@rbl');
+                        toast({ variant: "success", title: "Copied!", description: "UPI ID copied to clipboard" });
+                      }}
+                      className="p-2 hover:bg-purple-100 rounded-lg transition-colors"
+                    >
+                      <CopyIcon className="w-4 h-4 text-purple-600" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Help Section */}
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <HelpCircle className="w-4 h-4 text-gray-600" />
+                    <p className="text-sm font-semibold text-gray-800">Need Help?</p>
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    If you face any issues with payment, contact us at{' '}
+                    <a href="tel:+919876543210" className="text-[#10B4A3] font-semibold">+91 98765 43210</a>
+                    {' '}or email{' '}
+                    <a href="mailto:support@quikkred.in" className="text-[#10B4A3] font-semibold">support@quikkred.in</a>
+                  </p>
+                </div>
               </div>
             )}
             </>
