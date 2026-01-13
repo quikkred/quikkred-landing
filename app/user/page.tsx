@@ -13,7 +13,7 @@ import {
   Shield, UserCheck, History, Gift, HelpCircle,
   Smartphone, Globe, Heart, Zap, Activity,
   PieChart, BarChart3, TrendingDown, Package,
-  CopyIcon, ExternalLink, ChevronRight, Sparkles, ChevronDown,
+  Copy, ExternalLink, ChevronRight, Sparkles, ChevronDown,
   Upload, Camera, Image, X, CheckCircle2, XCircle, Loader2
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -1168,7 +1168,7 @@ export default function UserDashboard() {
                         }}
                         className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
                       >
-                        <CopyIcon className="w-4 h-4 text-blue-600" />
+                        <Copy className="w-4 h-4 text-blue-600" />
                       </button>
                     </div>
 
@@ -1185,7 +1185,7 @@ export default function UserDashboard() {
                         }}
                         className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
                       >
-                        <CopyIcon className="w-4 h-4 text-blue-600" />
+                        <Copy className="w-4 h-4 text-blue-600" />
                       </button>
                     </div>
 
@@ -1236,7 +1236,7 @@ export default function UserDashboard() {
                       }}
                       className="p-2 hover:bg-purple-100 rounded-lg transition-colors"
                     >
-                      <CopyIcon className="w-4 h-4 text-purple-600" />
+                      <Copy className="w-4 h-4 text-purple-600" />
                     </button>
                   </div>
                 </div>
