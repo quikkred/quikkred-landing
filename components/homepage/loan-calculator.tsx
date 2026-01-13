@@ -25,7 +25,7 @@ export default function LoanCalculatorAll() {
   // Quikkred Fee Structure:
   // - Platform Fee: 10% of loan amount
   // - GST: 18% on platform fee
-  // - Interest: 1% flat on loan amount
+  // - Interest: 1% per day on loan amount
   const platformFeePercent = 10
   const gstPercent = 18
   const interestPercent = 1
@@ -33,7 +33,8 @@ export default function LoanCalculatorAll() {
   // Calculations
   const platformFee = Math.round(loanAmount * (platformFeePercent / 100))
   const gstOnPlatformFee = Math.round(platformFee * (gstPercent / 100))
-  const interest = Math.round(loanAmount * (interestPercent / 100))
+  // Interest is 1% PER DAY × number of tenure days
+  const interest = Math.round(loanAmount * (interestPercent / 100) * tenureDays)
   const totalDeductions = platformFee + gstOnPlatformFee + interest
   const disbursedAmount = loanAmount - totalDeductions
   const totalRepayment = loanAmount // You repay the principal only
@@ -110,7 +111,7 @@ export default function LoanCalculatorAll() {
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-slate-700 text-[10px] sm:text-xs">Interest ({interestPercent}% flat)</span>
+              <span className="text-slate-700 text-[10px] sm:text-xs">Interest ({interestPercent}% × {tenureDays} days)</span>
               <span className="text-red-500 font-semibold text-[10px] sm:text-xs">- ₹{interest.toLocaleString('en-IN')}</span>
             </div>
 
@@ -152,7 +153,7 @@ export default function LoanCalculatorAll() {
 
           {/* Trust Message */}
           <p className="text-center text-[8px] sm:text-[9px] text-slate-500 mt-2">
-            Platform Fee 10% + GST 18% + Interest 1% flat • No hidden charges • RBI registered NBFC
+            Platform Fee 10% + GST 18% + Interest 1% per day • No hidden charges • RBI registered NBFC
           </p>
         </div>
       </div>
