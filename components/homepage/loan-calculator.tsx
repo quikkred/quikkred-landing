@@ -19,17 +19,27 @@ const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ child
 export default function LoanCalculatorAll() {
   const router = useRouter()
   const { t } = useLanguage()
-  const [loanPurpose, setLoanPurpose] = useState("Personal")
-  const [loanAmount, setLoanAmount] = useState(25000)
+  const [loanAmount, setLoanAmount] = useState(50000)
   const [tenureDays, setTenureDays] = useState(30)
-  const [dailyInterestRate, setDailyInterestRate] = useState(1.5) // 1.5% per day
-  const [processingFeePercent, setProcessingFeePercent] = useState(2) // 2% processing fee
 
-  // Daily interest calculation for payday bullet loans
-  const totalInterest = (loanAmount * (dailyInterestRate / 100) * tenureDays).toFixed(0)
-  const processingFee = (loanAmount * (processingFeePercent / 100)).toFixed(0)
-  const disbursedAmount = (loanAmount - Number(processingFee)).toFixed(0)
-  const totalRepay = (Number(loanAmount) + Number(totalInterest)).toFixed(0)
+  // Quikkred Fee Structure:
+  // - Platform Fee: 10% of loan amount
+  // - GST: 18% on platform fee
+  // - Interest: 1% flat on loan amount
+  const platformFeePercent = 10
+  const gstPercent = 18
+  const interestPercent = 1
+
+  // Calculations
+  const platformFee = Math.round(loanAmount * (platformFeePercent / 100))
+  const gstOnPlatformFee = Math.round(platformFee * (gstPercent / 100))
+  const interest = Math.round(loanAmount * (interestPercent / 100))
+  const totalDeductions = platformFee + gstOnPlatformFee + interest
+  const disbursedAmount = loanAmount - totalDeductions
+  const totalRepayment = loanAmount // You repay the principal only
+
+  // Tenure options for button selection
+  const tenureOptions = [7, 15, 30, 60, 90]
 
   return (
     <section className="py-0 px-0">
@@ -37,139 +47,113 @@ export default function LoanCalculatorAll() {
         <div className="max-w-2xl mx-auto bg-white rounded-2xl p-4 sm:p-5 shadow-xl">
           {/* Payday Loan Calculator Header */}
           <div className="mb-3 sm:mb-4">
-            <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-0.5">{t?.calculator?.title}</h3>
-            <p className="text-slate-600 text-[10px] sm:text-xs">{t?.calculator?.subtitle}</p>
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-0.5">{t?.calculator?.title || "Payday Loan Calculator"}</h3>
+            <p className="text-slate-600 text-[10px] sm:text-xs">{t?.calculator?.subtitle || "Calculate Your Loan Amount & Fees"}</p>
           </div>
 
-          {/* <div className="mb-4 sm:mb-5">
-            <label className="block text-xs font-semibold text-slate-900 mb-2">{t?.calculator?.loanPurpose}</label>
-            <div className="flex flex-wrap gap-1.5">
-              {purposes.map((purpose) => (
+          {/* Loan Amount Slider */}
+          <div className="mb-3 sm:mb-4">
+            <div className="flex justify-between items-center mb-1">
+              <label className="block text-[10px] sm:text-xs font-semibold text-slate-900">{t?.calculator?.loanAmount || "Loan Amount"}</label>
+              <span className="text-slate-900 font-semibold text-[10px] sm:text-xs">₹{loanAmount.toLocaleString('en-IN')}</span>
+            </div>
+            <input
+              type="range"
+              min="10000"
+              max="500000"
+              step="5000"
+              value={loanAmount}
+              onChange={(e) => setLoanAmount(Number(e.target.value))}
+              className="w-full h-1.5 bg-gradient-to-r from-[#51C9AF] to-slate-300 rounded-lg appearance-none cursor-pointer accent-[#25B181]"
+            />
+            <div className="flex justify-between text-[9px] text-slate-500 mt-1">
+              <span>₹10,000</span>
+              <span>₹5,00,000</span>
+            </div>
+          </div>
+
+          {/* Tenure Selection Buttons */}
+          <div className="mb-3 sm:mb-4">
+            <label className="block text-[10px] sm:text-xs font-semibold text-slate-900 mb-2">{t?.calculator?.tenure || "Loan Tenure"}</label>
+            <div className="flex flex-wrap gap-2">
+              {tenureOptions.map((days) => (
                 <button
-                  key={purpose}
-                  onClick={() => setLoanPurpose(purpose)}
-                  className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-md text-xs font-medium transition-colors ${
-                    loanPurpose === purpose
+                  key={days}
+                  onClick={() => setTenureDays(days)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    tenureDays === days
                       ? "bg-[#25B181] text-white"
                       : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                   }`}
                 >
-                  {t?.calculator?.purposes[purpose as keyof typeof t?.calculator?.purposes]}
+                  {days} days
                 </button>
               ))}
             </div>
-          </div> */}
-
-          <div className="mb-2 sm:mb-3">
-            <div className="flex justify-between items-center mb-1">
-              <label className="block text-[10px] sm:text-xs font-semibold text-slate-900">{t?.calculator?.loanAmount}</label>
-              <span className="text-slate-900 font-semibold text-[10px] sm:text-xs">₹{loanAmount.toLocaleString()}</span>
-            </div>
-            <input
-              type="range"
-              min="5000"
-              max="100000"
-              step="1000"
-              value={loanAmount}
-              onChange={(e) => setLoanAmount(Number(e.target.value))}
-              className="w-full h-1 bg-gradient-to-r from-[#51C9AF] to-slate-300 rounded-lg appearance-none cursor-pointer accent-[#25B181]"
-            />
-            <div className="flex justify-between text-[9px] text-slate-500">
-              <span>₹2k</span>
-              <span>₹25L</span>
-            </div>
           </div>
 
-          <div className="mb-2 sm:mb-3">
-            <div className="flex justify-between items-center mb-1">
-              <label className="block text-[10px] sm:text-xs font-semibold text-slate-900">{t?.calculator?.tenure}</label>
-              <span className="text-slate-900 font-semibold text-[10px] sm:text-xs">{tenureDays} {t?.calculator?.tenureDays}</span>
-            </div>
-            <input
-              type="range"
-              min="7"
-              max="45"
-              step="1"
-              value={tenureDays}
-              onChange={(e) => setTenureDays(Number(e.target.value))}
-              className="w-full h-1 bg-gradient-to-r from-[#51C9AF] via-[#51C9AF] to-slate-300 rounded-lg appearance-none cursor-pointer accent-[#25B181]"
-            />
-            <div className="flex justify-between text-[9px] text-slate-500">
-              <span>7 {t?.calculator?.tenureDays}</span>
-              <span>45 {t?.calculator?.tenureDays}</span>
-            </div>
-          </div>
-
-          <div className="mb-2 sm:mb-3">
-            <div className="flex justify-between items-center mb-1">
-              <label className="block text-[10px] sm:text-xs font-semibold text-slate-900">{t?.calculator?.dailyInterestRate}</label>
-              <span className="text-slate-900 font-semibold text-[10px] sm:text-xs">{dailyInterestRate.toFixed(1)}% {t?.calculator?.perDay}</span>
-            </div>
-            <input
-              type="range"
-              min="0.5"
-              max="3"
-              step="0.1"
-              value={dailyInterestRate}
-              onChange={(e) => setDailyInterestRate(Number(e.target.value))}
-              className="w-full h-1 bg-gradient-to-r from-[#51C9AF] to-slate-300 rounded-lg appearance-none cursor-pointer accent-[#25B181]"
-            />
-            <div className="flex justify-between text-[9px] text-slate-500">
-              <span>0.5%</span>
-              <span>3%</span>
-            </div>
-          </div>
-
-          <div className="mb-2 sm:mb-3">
-            <div className="flex justify-between items-center mb-1">
-              <label className="block text-[10px] sm:text-xs font-semibold text-slate-900">{t?.calculator?.processingFee}</label>
-              <span className="text-slate-900 font-semibold text-[10px] sm:text-xs">{processingFeePercent}%</span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="10"
-              step="0.5"
-              value={processingFeePercent}
-              onChange={(e) => setProcessingFeePercent(Number(e.target.value))}
-              className="w-full h-1 bg-gradient-to-r from-[#51C9AF] to-slate-300 rounded-lg appearance-none cursor-pointer accent-[#25B181]"
-            />
-            <div className="flex justify-between text-[9px] text-slate-500">
-              <span>0%</span>
-              <span>10%</span>
-            </div>
-          </div>
-
-          <div className="space-y-1.5 mb-3 pb-2 border-b border-slate-200">
+          {/* Fee Breakdown */}
+          <div className="space-y-2 mb-3 pb-3 border-b border-slate-200">
             <div className="flex justify-between items-center">
-              <span className="text-slate-700 text-[10px] sm:text-xs">{t?.calculator?.principalAmount}</span>
-              <span className="text-slate-900 font-semibold text-[10px] sm:text-xs">₹{loanAmount.toLocaleString()}</span>
+              <span className="text-slate-700 text-[10px] sm:text-xs">{t?.calculator?.principalAmount || "Loan Amount"}</span>
+              <span className="text-slate-900 font-semibold text-[10px] sm:text-xs">₹{loanAmount.toLocaleString('en-IN')}</span>
             </div>
+
             <div className="flex justify-between items-center">
-              <span className="text-slate-700 text-[10px] sm:text-xs">{t?.calculator?.processingFee} ({processingFeePercent}%)</span>
-              <span className="text-red-500 font-semibold text-[10px] sm:text-xs">- ₹{processingFee}</span>
+              <span className="text-slate-700 text-[10px] sm:text-xs">Platform Fee ({platformFeePercent}%)</span>
+              <span className="text-red-500 font-semibold text-[10px] sm:text-xs">- ₹{platformFee.toLocaleString('en-IN')}</span>
             </div>
-            <div className="flex justify-between items-center pt-1.5 border-t border-slate-200 bg-green-50 -mx-4 sm:-mx-5 px-4 sm:px-5 py-1.5">
+
+            <div className="flex justify-between items-center">
+              <span className="text-slate-700 text-[10px] sm:text-xs">GST ({gstPercent}% on fee)</span>
+              <span className="text-red-500 font-semibold text-[10px] sm:text-xs">- ₹{gstOnPlatformFee.toLocaleString('en-IN')}</span>
+            </div>
+
+            <div className="flex justify-between items-center">
+              <span className="text-slate-700 text-[10px] sm:text-xs">Interest ({interestPercent}% flat)</span>
+              <span className="text-red-500 font-semibold text-[10px] sm:text-xs">- ₹{interest.toLocaleString('en-IN')}</span>
+            </div>
+
+            <div className="flex justify-between items-center pt-2 border-t border-slate-200">
+              <span className="text-slate-700 text-[10px] sm:text-xs font-medium">Total Deductions</span>
+              <span className="text-red-600 font-bold text-[10px] sm:text-xs">- ₹{totalDeductions.toLocaleString('en-IN')}</span>
+            </div>
+          </div>
+
+          {/* Amount You'll Receive */}
+          <div className="bg-green-50 -mx-4 sm:-mx-5 px-4 sm:px-5 py-3 mb-3">
+            <div className="flex justify-between items-center">
               <span className="text-green-700 font-bold text-xs sm:text-sm">{t?.calculator?.disbursedAmount || "Amount You'll Receive"}</span>
-              <span className="text-green-600 font-bold text-sm sm:text-base">₹{Number(disbursedAmount).toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between items-center pt-1.5">
-              <span className="text-slate-700 text-[10px] sm:text-xs">{t?.calculator?.interest} ({dailyInterestRate.toFixed(1)}% × {tenureDays} {t?.calculator?.tenureDays})</span>
-              <span className="text-slate-900 font-semibold text-[10px] sm:text-xs">₹{totalInterest}</span>
-            </div>
-            <div className="flex justify-between items-center pt-1.5 border-t border-slate-200">
-              <span className="text-slate-900 font-bold text-xs sm:text-sm">{t?.calculator?.totalRepayment}</span>
-              <span className="text-[#25B181] font-bold text-sm sm:text-base">₹{Number(totalRepay).toLocaleString()}</span>
+              <span className="text-green-600 font-bold text-lg sm:text-xl">₹{disbursedAmount.toLocaleString('en-IN')}</span>
             </div>
           </div>
 
+          {/* Total Repayment */}
+          <div className="flex justify-between items-center mb-4 pb-3 border-b border-slate-200">
+            <div>
+              <span className="text-slate-900 font-bold text-xs sm:text-sm block">{t?.calculator?.totalRepayment || "Amount to Repay"}</span>
+              <span className="text-slate-500 text-[9px] sm:text-[10px]">After {tenureDays} days</span>
+            </div>
+            <span className="text-[#25B181] font-bold text-lg sm:text-xl">₹{totalRepayment.toLocaleString('en-IN')}</span>
+          </div>
+
+          {/* Apply Button */}
           <Button
             onClick={() => router.push('/apply/quick')}
-            className="w-full bg-[#25B181] hover:bg-[#1F8F68] text-white font-bold py-2.5 sm:py-3 rounded-xl mb-1.5 transition-all duration-300 text-xs sm:text-sm shadow-lg hover:shadow-xl"
+            className="w-full bg-[#25B181] hover:bg-[#1F8F68] text-white font-bold py-2.5 sm:py-3 rounded-xl mb-2 transition-all duration-300 text-xs sm:text-sm shadow-lg hover:shadow-xl"
           >
-            {t?.calculator?.applyButton}
+            {t?.calculator?.applyButton || "Apply for This Loan"}
           </Button>
-          <p className="text-center text-[9px] sm:text-[10px] text-slate-600">{t?.calculator?.footer}</p>
+
+          {/* Footer Info */}
+          <p className="text-center text-[9px] sm:text-[10px] text-slate-600">
+            {t?.calculator?.footer || "Get Instant Approval • Money in Bank Within 30 Minutes"}
+          </p>
+
+          {/* Trust Message */}
+          <p className="text-center text-[8px] sm:text-[9px] text-slate-500 mt-2">
+            Platform Fee 10% + GST 18% + Interest 1% flat • No hidden charges • RBI registered NBFC
+          </p>
         </div>
       </div>
     </section>
