@@ -218,10 +218,10 @@ export function Footer() {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-9 h-9 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center shadow-soft hover:shadow-glow hover:-translate-y-1 transition-all"
+                  className="w-11 h-11 sm:w-11 sm:h-11 bg-white rounded-full flex items-center justify-center shadow-soft hover:shadow-glow hover:-translate-y-1 transition-all"
                   aria-label={social.label}
                 >
-                  <social.icon className="w-4 h-4 sm:w-5 sm:h-5 text-[#25B181]" />
+                  <social.icon className="w-5 h-5 text-[#25B181]" />
                 </a>
               ))}
             </div>
@@ -238,7 +238,7 @@ export function Footer() {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-slate-400 hover:text-[#25B181] transition-colors flex items-center gap-1 text-xs sm:text-sm"
+                    className="text-slate-400 hover:text-[#25B181] transition-colors flex items-center gap-1.5 text-sm"
                   >
                     <ChevronRight className="w-3 h-3 flex-shrink-0" />
                     <span className="truncate">{link.name}</span>
@@ -256,7 +256,7 @@ export function Footer() {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-slate-400 hover:text-[#25B181] transition-colors flex items-center gap-1 text-xs sm:text-sm"
+                    className="text-slate-400 hover:text-[#25B181] transition-colors flex items-center gap-1.5 text-sm"
                   >
                     <ChevronRight className="w-3 h-3 flex-shrink-0" />
                     <span className="truncate">{link.name}</span>
@@ -274,7 +274,7 @@ export function Footer() {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-slate-400 hover:text-[#25B181] transition-colors flex items-center gap-1 text-xs sm:text-sm"
+                    className="text-slate-400 hover:text-[#25B181] transition-colors flex items-center gap-1.5 text-sm"
                   >
                     <ChevronRight className="w-3 h-3 flex-shrink-0" />
                     <span className="truncate">{link.name}</span>
@@ -292,7 +292,7 @@ export function Footer() {
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-slate-400 hover:text-[#25B181] transition-colors flex items-center gap-1 text-xs sm:text-sm"
+                    className="text-slate-400 hover:text-[#25B181] transition-colors flex items-center gap-1.5 text-sm"
                   >
                     <ChevronRight className="w-3 h-3 flex-shrink-0" />
                     <span className="truncate">{link.name}</span>
@@ -413,7 +413,7 @@ export function Footer() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-8 right-8 z-50 bg-white rounded-lg shadow-2xl p-6 max-w-sm"
+            className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50 bg-white rounded-lg shadow-2xl p-4 sm:p-6 max-w-[calc(100vw-2rem)] sm:max-w-sm"
           >
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 bg-[#E7F4EB] rounded-full flex items-center justify-center flex-shrink-0">
@@ -441,7 +441,7 @@ export function Footer() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-8 right-8 z-50 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-lg shadow-2xl p-6 max-w-sm"
+            className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-lg shadow-2xl p-4 sm:p-6 max-w-[calc(100vw-2rem)] sm:max-w-sm"
           >
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center flex-shrink-0">

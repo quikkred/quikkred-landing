@@ -91,12 +91,12 @@ export default function ContactPage() {
           <div className="space-y-3">
             <button
               onClick={() => setSubmitted(false)}
-              className="w-full bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white py-3 px-6 rounded-lg font-semibold hover:shadow-lg transition-all"
+              className="w-full bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white py-3.5 px-6 min-h-[48px] rounded-lg font-semibold hover:shadow-lg transition-all text-sm sm:text-base"
             >
               Send Another Message
             </button>
             <Link href="/">
-              <button className="w-full bg-white border-2 border-[#4A66FF] text-[#4A66FF] py-3 px-6 rounded-lg font-semibold hover:bg-gray-50 transition-all">
+              <button className="w-full bg-white border-2 border-[#4A66FF] text-[#4A66FF] py-3.5 px-6 min-h-[48px] rounded-lg font-semibold hover:bg-gray-50 transition-all text-sm sm:text-base">
                 Back to Home
               </button>
             </Link>
