@@ -28,6 +28,7 @@ import {
   getAuthToken,
 } from "@/lib/helpers/quickApply";
 import { API_BASE_URL } from "@/lib/config";
+import { getSession } from "next-auth/react";
 
 // Auto-decision engine
 
@@ -82,7 +83,7 @@ export default function QuickLoanApplication() {
   const documentNumber = useMemo(() => `DOC${new Date().getFullYear()}${Date.now()}`, []);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login, user, isLoading } = useAuth();
+  const { login, user } = useAuth();
   const { toast } = useToast();
 
   // Redux hooks for GET APIs
@@ -397,10 +398,10 @@ export default function QuickLoanApplication() {
       }
     };
 
-    if (!isLoading) {
-      loadUserData();
-    }
-  }, [user, isLoading, userDataLoaded, router]);
+    // if (!isLoading) {
+    //   loadUserData();
+    // }
+  }, [user, userDataLoaded, router]);
 
   // Clean up hero form data from localStorage after component mounts
   useEffect(() => {
@@ -563,7 +564,8 @@ export default function QuickLoanApplication() {
 
       console.log('📊 finfactor=success detected, auto-calling BRE finFactor API...');
 
-      const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('authToken');
+      const sessionToken = await getSession();
+      const token = (sessionToken as any)?.accessToken || localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('authToken');
       if (!token) {
         console.error('No auth token found for BRE finFactor');
         return;
