@@ -71,7 +71,7 @@ const filterOptions: FilterOption[] = [
 ];
 
 function SearchDashboardContent() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const { data, loading, error } = useUserDashboard();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -117,10 +117,10 @@ function SearchDashboardContent() {
 
   // Check authentication
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (!user) {
       router.push('/login');
     }
-  }, [user, authLoading, router]);
+  }, [user, router]);
 
   // Handle search
   const handleSearch = (searchQuery: string) => {
@@ -133,7 +133,7 @@ function SearchDashboardContent() {
     setFilters(newFilters);
   };
 
-  if (authLoading || loading) {
+  if (loading) {
     return <DashboardLoading role="USER" message="Loading search dashboard..." />;
   }
 

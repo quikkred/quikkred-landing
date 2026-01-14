@@ -168,7 +168,7 @@ interface PaginationInfo {
 }
 
 export default function MyApplicationsPage() {
-  const { user, isLoading } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
 
   // Redux state for applications
@@ -202,10 +202,10 @@ export default function MyApplicationsPage() {
 
   // Check authentication
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!user) {
       router.push('/login');
     }
-  }, [user, isLoading, router]);
+  }, [user, router]);
 
   // Fetch applications using Redux
   useEffect(() => {
@@ -310,7 +310,7 @@ export default function MyApplicationsPage() {
     return matchesStatus && matchesSearch;
   });
 
-  if (isLoading || loading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <RefreshCw className="w-8 h-8 text-[#25B181] animate-spin" />
