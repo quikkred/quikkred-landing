@@ -28,6 +28,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast, Toaster } from "@/components/ui/toast";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { API_BASE_URL } from '@/lib/config';
+import GoogleAuth from "@/components/buttons/GoogleAuth";
+import TruecallerAuth from "@/components/buttons/TruecallerAuth";
+import { getSession, signIn } from "next-auth/react";
 
 interface LoginForm {
   emailOrPhone: string;
@@ -37,7 +40,7 @@ interface LoginForm {
 
 export default function LoginPage() {
   const { t } = useLanguage();
-  const { login, isLoading } = useAuth();
+  const { login, setUser } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
@@ -153,87 +156,147 @@ export default function LoginPage() {
     }
   };
 
-const verifyOtp = async () => {
-  if (!otp || otp.length !== 6) {
-    setError('Please enter valid 6-digit OTP');
-    toast({
-      variant: "warning",
-      title: "Invalid OTP",
-      description: "Please enter a valid 6-digit OTP.",
-    });
-    return;
-  }
+  // const verifyOtp = async () => {
+  //   if (!otp || otp.length !== 6) {
+  //     setError('Please enter valid 6-digit OTP');
+  //     toast({
+  //       variant: "warning",
+  //       title: "Invalid OTP",
+  //       description: "Please enter a valid 6-digit OTP.",
+  //     });
+  //     return;
+  //   }
 
-  setVerifyingOtp(true);
-  setError(null);
+  //   setVerifyingOtp(true);
+  //   setError(null);
 
-  try {
-    const payload =
-      loginMethod === 'email'
-        ? { email: formData.emailOrPhone, otp }
-        : { mobile: formData.emailOrPhone, otp };
+  //   try {
+  //     const payload =
+  //       loginMethod === 'email'
+  //         ? { email: formData.emailOrPhone, otp }
+  //         : { mobile: formData.emailOrPhone, otp };
 
-    const response = await fetch(`${API_BASE_URL}/api/auth/customer/verifyOtp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+  //     const response = await fetch(`${API_BASE_URL}/api/auth/customer/verifyOtp`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(payload),
+  //     });
 
-    const data = await response.json();
+  //     const data = await response.json();
 
-    if (response.ok && data.success && data.data) {
-      // ✅ Extract data from response
-      const { userId, role, accessToken, refreshToken, email, customerUniqueId } = data.data;
+  //     if (response.ok && data.success && data.data) {
+  //       // ✅ Extract data from response
+  //       const { userId, role, accessToken, refreshToken, email, customerUniqueId } = data.data;
 
-      // ✅ Save important details in localStorage
-      localStorage.setItem("userId", userId);
-      localStorage.setItem("role", role);
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
-      localStorage.setItem("email", email || "");
-      localStorage.setItem("customerUniqueId", customerUniqueId || "");
+  //       // ✅ Save important details in localStorage
+  //       localStorage.setItem("userId", userId);
+  //       localStorage.setItem("role", role);
+  //       localStorage.setItem("accessToken", accessToken);
+  //       localStorage.setItem("refreshToken", refreshToken);
+  //       localStorage.setItem("email", email || "");
+  //       localStorage.setItem("customerUniqueId", customerUniqueId || "");
 
-      // ✅ Continue with your login handler
-      const success = await login(
-        formData.emailOrPhone,
+  //       // ✅ Continue with your login handler
+  //       const success = await login(
+  //         formData.emailOrPhone,
+  //         otp,
+  //         data.data // API response data
+  //       );
+
+  //       if (success) {
+  //         toast({
+  //           variant: "success",
+  //           title: "Login Successful!",
+  //           description: "Welcome back! Redirecting to your dashboard...",
+  //         });
+  //       } else {
+  //         setError("Login failed. Please try again.");
+  //         toast({
+  //           variant: "error",
+  //           title: "Login Failed",
+  //           description: "Unable to log you in. Please try again.",
+  //         });
+  //       }
+  //     } else {
+  //       setError(data.message || "Invalid OTP. Please try again.");
+  //       toast({
+  //         variant: "error",
+  //         title: "Invalid OTP",
+  //         description: data.message || "The OTP you entered is incorrect. Please try again.",
+  //       });
+  //     }
+  //   } catch (err: any) {
+  //     setError(err.message || "Verification failed. Please try again.");
+  //     toast({
+  //       variant: "error",
+  //       title: "Verification Error",
+  //       description: err.message || "Verification failed. Please try again.",
+  //     });
+  //   } finally {
+  //     setVerifyingOtp(false);
+  //   }
+  // };
+
+  const verifyOtp = async () => {
+    if (!otp || otp.length !== 6) {
+      setError("Please enter valid 6-digit OTP");
+      toast({
+        variant: "warning",
+        title: "Invalid OTP",
+        description: "Please enter a valid 6-digit OTP.",
+      });
+      return;
+    }
+
+    setVerifyingOtp(true);
+    setError(null);
+
+    try {
+      // ✅ Call NextAuth OTP provider (it will call backend verifyOtp inside authorize())
+      const res = await signIn("otp", {
+        redirect: false,
+        emailOrPhone: formData.emailOrPhone,
         otp,
-        data.data // API response data
-      );
+        loginMethod, // "email" | "mobile"
+      });
 
-      if (success) {
+      // NextAuth returns { ok, error, status, url }
+      if (res?.ok) {
+        const userData = await getSession();
+        console.log("user data", userData)
         toast({
           variant: "success",
           title: "Login Successful!",
           description: "Welcome back! Redirecting to your dashboard...",
         });
-      } else {
-        setError("Login failed. Please try again.");
-        toast({
-          variant: "error",
-          title: "Login Failed",
-          description: "Unable to log you in. Please try again.",
-        });
+
+        // ✅ redirect where you want
+        // router.push("/dashboard");
+        if (userData) {
+          await login(userData?.user?.email || "", "", userData);
+        }
+        router.push("/user");
+        return;
       }
-    } else {
-      setError(data.message || "Invalid OTP. Please try again.");
+
+      // If credentials invalid, NextAuth usually returns error: "CredentialsSignin"
+      setError("Invalid OTP. Please try again.");
       toast({
         variant: "error",
         title: "Invalid OTP",
-        description: data.message || "The OTP you entered is incorrect. Please try again.",
+        description: "The OTP you entered is incorrect. Please try again.",
       });
+    } catch (err: any) {
+      setError(err?.message || "Verification failed. Please try again.");
+      toast({
+        variant: "error",
+        title: "Verification Error",
+        description: err?.message || "Verification failed. Please try again.",
+      });
+    } finally {
+      setVerifyingOtp(false);
     }
-  } catch (err: any) {
-    setError(err.message || "Verification failed. Please try again.");
-    toast({
-      variant: "error",
-      title: "Verification Error",
-      description: err.message || "Verification failed. Please try again.",
-    });
-  } finally {
-    setVerifyingOtp(false);
-  }
-};
-
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -368,13 +431,25 @@ const verifyOtp = async () => {
               transition={{ delay: 0.2 }}
               className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100"
             >
+              {/* google auth */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <GoogleAuth />
+                <TruecallerAuth />
+              </div>
+
+              <div className="flex text-neutral-500 my-2 justify-center w-full gap-2 items-center">
+                <div className="bg-neutral-400 w-full h-[1px]" />
+                <span>or</span>
+                <div className="bg-neutral-400 w-full h-[1px]" />
+              </div>
+
               {activeTab === 'login' ? (
                 <form onSubmit={handleSubmit} className="space-y-6">
 
                   {/* Login Method Toggle */}
 
 
-                  
+
                   {/* <div className="flex bg-gray-50 rounded-lg p-1 border border-gray-200">
                     <button
                       type="button"
@@ -467,9 +542,8 @@ const verifyOtp = async () => {
                         onChange={handleInputChange}
                         maxLength={loginMethod === 'phone' ? 10 : undefined}
                         required
-                        className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white ${
-                          loginMethod === 'phone' && mobileError ? 'border-red-500' : 'border-gray-300'
-                        }`}
+                        className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white ${loginMethod === 'phone' && mobileError ? 'border-red-500' : 'border-gray-300'
+                          }`}
                         placeholder={loginMethod === 'email' ? 'Enter your email' : 'Enter 10-digit mobile number'}
                       />
                     </div>
@@ -602,23 +676,23 @@ const verifyOtp = async () => {
                     {/* Login Button */}
                     <button
                       type="submit"
-                      disabled={isLoading || sendingOtp || verifyingOtp || (authMethod === 'otp' && otpSent && otp.length !== 6)}
+                      disabled={sendingOtp || verifyingOtp || (authMethod === 'otp' && otpSent && otp.length !== 6)}
                       className="w-full bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white py-3 px-6 rounded-xl font-semibold flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-50"
                     >
-                      {(isLoading || sendingOtp || verifyingOtp) ? (
+                      {(sendingOtp || verifyingOtp) ? (
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                       ) : (
                         <User className="w-5 h-5 mr-2" />
                       )}
                       {authMethod === 'otp'
                         ? (otpSent
-                            ? (verifyingOtp ? 'Verifying...' : 'Verify OTP & Login')
-                            : (sendingOtp ? 'Sending OTP...' : 'Send OTP'))
-                        : (isLoading ? 'Signing In...' : 'Sign In')
+                          ? (verifyingOtp ? 'Verifying...' : 'Verify OTP & Login')
+                          : (sendingOtp ? 'Sending OTP...' : 'Send OTP'))
+                        : 'Signing In...'
                       }
                     </button>
 
-                     {/* Apply Now Button */}
+                    {/* Apply Now Button */}
                     <Link href="/apply/quick" className="block">
                       <motion.button
                         whileHover={{ scale: 1.02 }}

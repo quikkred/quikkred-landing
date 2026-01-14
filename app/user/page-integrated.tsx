@@ -18,7 +18,7 @@ import { DashboardLoading, CardSkeleton, TableSkeleton } from '@/components/ui/L
 import { DashboardErrorBoundary, ComponentErrorBoundary } from '@/components/error/ErrorBoundary';
 
 function UserDashboardContent() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const { data, loading, error, refetch } = useUserDashboard({ refreshInterval: 30000 });
   const { trackPageView, trackAction } = useAnalytics();
@@ -38,13 +38,13 @@ function UserDashboardContent() {
 
   // Check authentication
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (!user) {
       router.push('/login');
     }
-  }, [user, authLoading, router]);
+  }, [user, router]);
 
   // Show loading state
-  if (authLoading || loading) {
+  if (loading) {
     return <DashboardLoading role="USER" message="Loading your dashboard..." />;
   }
 

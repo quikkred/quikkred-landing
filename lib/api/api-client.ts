@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '@/lib/config';
+import { getSession } from 'next-auth/react';
 
 // Core API Client with type-safe methods for all backend endpoints
 interface ApiResponse<T = any> {
@@ -40,14 +41,15 @@ class ApiClient {
 
     // Get fresh token for each request
     const token = this.getToken();
+    const sessionToken = await getSession();
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
     };
 
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+    if (sessionToken || token) {
+      headers['Authorization'] = `Bearer ${(sessionToken as any)?.accessToken || token}`;
     }
 
     try {
