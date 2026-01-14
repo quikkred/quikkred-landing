@@ -87,7 +87,7 @@ function RealTimeMetrics({ metrics }: { metrics: any }) {
 }
 
 function UserDashboardRealtimeContent() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const { data, loading, error, refetch } = useUserDashboard({ refreshInterval: 30000 });
   const { trackPageView, trackAction } = useAnalytics();
@@ -111,10 +111,10 @@ function UserDashboardRealtimeContent() {
 
   // Check authentication
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (!user) {
       router.push('/login');
     }
-  }, [user, authLoading, router]);
+  }, [user, router]);
 
   // Track WebSocket connection
   useEffect(() => {
@@ -132,7 +132,7 @@ function UserDashboardRealtimeContent() {
   }, [connected]);
 
   // Show loading state
-  if (authLoading || loading) {
+  if (loading) {
     return <DashboardLoading role="USER" message="Loading real-time dashboard..." />;
   }
 

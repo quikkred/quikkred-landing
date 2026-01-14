@@ -10,26 +10,26 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, isLoading } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const isAuthenticated = !!user;
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isAuthenticated) {
       router.push('/login');
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, router]);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5]">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-[#0ea5e9] mx-auto mb-4" />
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5]">
+  //       <div className="text-center">
+  //         <Loader2 className="w-12 h-12 animate-spin text-[#0ea5e9] mx-auto mb-4" />
+  //         <p className="text-gray-600">Loading...</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   if (!isAuthenticated) {
     return null;
