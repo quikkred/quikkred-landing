@@ -1,0 +1,34 @@
+{
+  "title": "Refund and Cancellation",
+  "subtitle": "Our Policy on Refunds & Cancellations",
+  "sections": {
+    "documentDetails": {
+      "title": "Document Details",
+      "fields": {
+        "titleLabel": "Title:",
+        "titleValue": "Refund and Cancellation Policy",
+        "classificationLabel": "Classification:",
+        "classificationValue": "Public",
+        "effectiveDateLabel": "Effective Date:",
+        "effectiveDateValue": "1st April 2025",
+        "approvedByLabel": "Approved by:",
+        "approvedByValue": "Board of Directors"
+      }
+    },
+    "refundPolicy": {
+      "title": "Refund and Cancellation",
+      "paragraph1": "Satsai Finlease Private Limited will automatically start billing as per Your selected Payment Method for the relevant Subscription plan(s) and any Add-on(s) selected by You at the time of registration through the third party payment gateway.",
+      "paragraph2": "The cancellation of a Subscription can be done through the \"My Account\" section of the Site.",
+      "processingTime": {
+        "prefix": "It may take up to ",
+        "highlight": "three business days",
+        "suffix": " for Your payment made to Satsai Finlease Private Limited to be reflected in your Bank Account."
+      }
+    },
+    "boardApproval": {
+      "title": "Board Approval",
+      "content": "Approved by:",
+      "value": "Board of Directors, Satsai Finlease Private Limited"
+    }
+  }
+}
