@@ -15,8 +15,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { loansService } from '@/lib/api/loans.service';
 import { usersService } from '@/lib/api/users.service';
 import { API_BASE_URL } from '@/lib/config';
-import { getSession } from 'next-auth/react';
-import useFetch from '@/hooks/useFetch';
 
 interface Loan {
   id: string;
@@ -206,10 +204,10 @@ interface PaginationInfo {
 }
 
 export default function MyLoansPage() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
   const [loans, setLoans] = useState<Loan[]>([]);
-  // const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [showBalanceActive, setShowBalanceActive] = useState(false);
   const [showBalanceOverdue, setShowBalanceOverdue] = useState(false);
   const [showBalanceClosed, setShowBalanceClosed] = useState(false);
@@ -227,7 +225,6 @@ export default function MyLoansPage() {
     page: 1,
     limit: 10
   });
-  const { get, loading } = useFetch();
 
   // New Loan Application Modal State
   const [isNewLoanModalOpen, setIsNewLoanModalOpen] = useState(false);
@@ -264,11 +261,18 @@ export default function MyLoansPage() {
 
   // Check authentication and authorization
   useEffect(() => {
-    if (!user) {
-      router.push('/login');
-      return;
+    if (!isLoading) {
+      if (!user) {
+        router.push('/login');
+        return;
+      }
+
+      if (false) {
+        router.push('/login');
+        return;
+      }
     }
-  }, [user, router]);
+  }, [user, isLoading, router]);
 
   // Fetch loans data
   useEffect(() => {
@@ -287,145 +291,106 @@ export default function MyLoansPage() {
     }
   };
 
-  // const fetchLoans = async (page?: number, limit?: number) => {
-  //   try {
-  //     setLoading(true);
-
-  //     const sessionToken = await getSession();
-  //     const token = (sessionToken as any)?.accessToken || localStorage.getItem('accessToken') || localStorage.getItem('token');
-
-  //     if (!token) {
-  //       console.log("redirect call.....!")
-  //       router.push('/login');
-  //       return;
-  //     }
-
-  //     const currentPage = page || pagination.page;
-  //     const currentLimit = limit || pagination.limit;
-
-  //     const response = await fetch(
-  //       `${API_BASE_URL}/api/loans/get?page=${currentPage}&limit=${currentLimit}`,
-  //       {
-  //         method: 'GET',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //           'Authorization': `Bearer ${token}`
-  //         }
-  //       }
-  //     );
-
-  //     // Check if token expired (401 Unauthorized) - Full logout and redirect
-  //     if (response.status === 401) {
-  //       // Check if user just logged in - don't clear storage during grace period
-  //       const loginTimestamp = localStorage.getItem('loginTimestamp');
-  //       const justLoggedIn = loginTimestamp &&
-  //         (Date.now() - parseInt(loginTimestamp, 10)) < 10000; // 10 second grace period
-
-  //       if (!justLoggedIn) {
-  //         // Clear all authentication tokens
-  //         localStorage.removeItem('token');
-  //         localStorage.removeItem('authToken');
-  //         localStorage.removeItem('accessToken');
-  //         localStorage.removeItem('refreshToken');
-  //         localStorage.removeItem('loginTimestamp');
-
-  //         // Clear user data
-  //         localStorage.removeItem('userRole');
-  //         localStorage.removeItem('role');
-  //         localStorage.removeItem('userEmail');
-  //         localStorage.removeItem('email');
-  //         localStorage.removeItem('userName');
-  //         localStorage.removeItem('userId');
-  //         localStorage.removeItem('userMobile');
-  //         localStorage.removeItem('customerUniqueId');
-
-  //         // Clear cookies
-  //         document.cookie = 'auth-token=; path=/; max-age=0';
-  //         document.cookie = 'user-role=; path=/; max-age=0';
-
-  //         // Redirect to login
-  //         router.push('/login');
-  //         return;
-  //       }
-  //     }
-
-  //     const result = await response.json();
-
-  //     if (response.ok && result.success && result.data) {
-  //       const mappedLoans = result.data.map((loan: any) => ({
-  //         id: loan._id,
-  //         loanNumber: loan.loanNumber,
-  //         principalAmount: loan.principalAmount || 0,
-  //         interestRate: loan.interestRate || 0,
-  //         tenure: loan.tenure || 0,
-  //         tenureUnit: loan.tenureUnit || 'months',
-  //         totalRepayment: loan.totalRepayment || 0,
-  //         emiAmount: loan.emiAmount || 0,
-  //         disbursementAmount: loan.disbursementAmount || 0,
-  //         status: loan.status,
-  //         createdAt: loan.createdAt,
-  //         customerName: loan.customerId?.fullName,
-  //         customerEmail: loan.customerId?.email,
-  //         customerId: loan.customerId?._id
-  //       }));
-
-  //       setLoans(mappedLoans);
-
-  //       // Update pagination info
-  //       if (result.pagination) {
-  //         setPagination({
-  //           total: result.pagination.total,
-  //           totalPages: result.pagination.totalPages,
-  //           page: result.pagination.page,
-  //           limit: result.pagination.limit
-  //         });
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching loans:', error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // Pagination handlers
-
   const fetchLoans = async (page?: number, limit?: number) => {
-    // setLoading(true);
-    const result = await get<{ data: any[]; pagination: any; }>(`/api/loans/get?page=${page || pagination.page}&limit=${limit || pagination.limit}`);
+    try {
+      setLoading(true);
 
-    if (result) {
-      const mappedLoans = result.data.map((loan: any) => ({
-        id: loan._id,
-        loanNumber: loan.loanNumber,
-        principalAmount: loan.principalAmount || 0,
-        interestRate: loan.interestRate || 0,
-        tenure: loan.tenure || 0,
-        tenureUnit: loan.tenureUnit || 'months',
-        totalRepayment: loan.totalRepayment || 0,
-        emiAmount: loan.emiAmount || 0,
-        disbursementAmount: loan.disbursementAmount || 0,
-        status: loan.status,
-        createdAt: loan.createdAt,
-        customerName: loan.customerId?.fullName,
-        customerEmail: loan.customerId?.email,
-        customerId: loan.customerId?._id
-      }));
+      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
 
-      setLoans(mappedLoans);
-
-      // Update pagination info
-      if (result.pagination) {
-        setPagination({
-          total: result.pagination.total,
-          totalPages: result.pagination.totalPages,
-          page: result.pagination.page,
-          limit: result.pagination.limit
-        });
+      if (!token) {
+        router.push('/login');
+        return;
       }
+
+      const currentPage = page || pagination.page;
+      const currentLimit = limit || pagination.limit;
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/loans/get?page=${currentPage}&limit=${currentLimit}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      // Check if token expired (401 Unauthorized) - Full logout and redirect
+      if (response.status === 401) {
+        // Check if user just logged in - don't clear storage during grace period
+        const loginTimestamp = localStorage.getItem('loginTimestamp');
+        const justLoggedIn = loginTimestamp &&
+          (Date.now() - parseInt(loginTimestamp, 10)) < 10000; // 10 second grace period
+
+        if (!justLoggedIn) {
+          // Clear all authentication tokens
+          localStorage.removeItem('token');
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('loginTimestamp');
+
+          // Clear user data
+          localStorage.removeItem('userRole');
+          localStorage.removeItem('role');
+          localStorage.removeItem('userEmail');
+          localStorage.removeItem('email');
+          localStorage.removeItem('userName');
+          localStorage.removeItem('userId');
+          localStorage.removeItem('userMobile');
+          localStorage.removeItem('customerUniqueId');
+
+          // Clear cookies
+          document.cookie = 'auth-token=; path=/; max-age=0';
+          document.cookie = 'user-role=; path=/; max-age=0';
+
+          // Redirect to login
+          router.push('/login');
+          return;
+        }
+      }
+
+      const result = await response.json();
+
+      if (response.ok && result.success && result.data) {
+        const mappedLoans = result.data.map((loan: any) => ({
+          id: loan._id,
+          loanNumber: loan.loanNumber,
+          principalAmount: loan.principalAmount || 0,
+          interestRate: loan.interestRate || 0,
+          tenure: loan.tenure || 0,
+          tenureUnit: loan.tenureUnit || 'months',
+          totalRepayment: loan.totalRepayment || 0,
+          emiAmount: loan.emiAmount || 0,
+          disbursementAmount: loan.disbursementAmount || 0,
+          status: loan.status,
+          createdAt: loan.createdAt,
+          customerName: loan.customerId?.fullName,
+          customerEmail: loan.customerId?.email,
+          customerId: loan.customerId?._id
+        }));
+
+        setLoans(mappedLoans);
+
+        // Update pagination info
+        if (result.pagination) {
+          setPagination({
+            total: result.pagination.total,
+            totalPages: result.pagination.totalPages,
+            page: result.pagination.page,
+            limit: result.pagination.limit
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching loans:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Pagination handlers
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= pagination.totalPages) {
       setPagination(prev => ({ ...prev, page: newPage }));
@@ -675,7 +640,7 @@ export default function MyLoansPage() {
   const activeLoans = loans.filter(loan => loan.status.toUpperCase() === 'ACTIVE');
 
   // Show loading while checking authentication
-  if (loading) {
+  if (isLoading || loading) {
     return (
       <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
         <div className="text-center">
@@ -933,28 +898,31 @@ export default function MyLoansPage() {
           <div className="flex gap-2 overflow-x-auto pb-1">
             <button
               onClick={() => setFilterStatus('all')}
-              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${filterStatus === 'all'
-                ? 'bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white'
-                : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
-                }`}
+              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${
+                filterStatus === 'all'
+                  ? 'bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white'
+                  : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
+              }`}
             >
               All ({loans.length})
             </button>
             <button
               onClick={() => setFilterStatus('active')}
-              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${filterStatus === 'active'
-                ? 'bg-[#4A66FF] text-white'
-                : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
-                }`}
+              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${
+                filterStatus === 'active'
+                  ? 'bg-[#4A66FF] text-white'
+                  : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
+              }`}
             >
               Active ({activeLoans.length})
             </button>
             <button
               onClick={() => setFilterStatus('closed')}
-              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${filterStatus === 'closed'
-                ? 'bg-[#25B181] text-white'
-                : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
-                }`}
+              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${
+                filterStatus === 'closed'
+                  ? 'bg-[#25B181] text-white'
+                  : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
+              }`}
             >
               Closed ({loans.filter(l => {
                 const s = l.status.toLowerCase();
@@ -1086,10 +1054,11 @@ export default function MyLoansPage() {
                       <button
                         key={pageNumber}
                         onClick={() => handlePageChange(pageNumber)}
-                        className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${pagination.page === pageNumber
-                          ? 'bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white'
-                          : 'text-gray-700 bg-white border border-[#E0E0E0] hover:bg-[#FAFAFA]'
-                          }`}
+                        className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                          pagination.page === pageNumber
+                            ? 'bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white'
+                            : 'text-gray-700 bg-white border border-[#E0E0E0] hover:bg-[#FAFAFA]'
+                        }`}
                       >
                         {pageNumber}
                       </button>
@@ -1335,14 +1304,16 @@ export default function MyLoansPage() {
                                 key={bank.id}
                                 type="button"
                                 onClick={() => handleSelectExistingBank(bank.id)}
-                                className={`w-full p-3 rounded-lg border-2 text-left transition-all ${selectedBankId === bank.id
-                                  ? 'border-[#25B181] bg-[#25B181]/5'
-                                  : 'border-[#E0E0E0] hover:border-[#25B181]/50'
-                                  }`}
+                                className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
+                                  selectedBankId === bank.id
+                                    ? 'border-[#25B181] bg-[#25B181]/5'
+                                    : 'border-[#E0E0E0] hover:border-[#25B181]/50'
+                                }`}
                               >
                                 <div className="flex items-center gap-3">
-                                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${selectedBankId === bank.id ? 'bg-[#25B181]' : 'bg-gray-100'
-                                    }`}>
+                                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                                    selectedBankId === bank.id ? 'bg-[#25B181]' : 'bg-gray-100'
+                                  }`}>
                                     <Building className={`w-5 h-5 ${selectedBankId === bank.id ? 'text-white' : 'text-gray-500'}`} />
                                   </div>
                                   <div className="flex-1 min-w-0">
@@ -1533,10 +1504,11 @@ export default function MyLoansPage() {
                           <TrendingUp className="w-4 h-4 text-[#4A66FF]" />
                           Priority
                         </span>
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${newLoanResult.priority === 'High' ? 'bg-red-100 text-red-700' :
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          newLoanResult.priority === 'High' ? 'bg-red-100 text-red-700' :
                           newLoanResult.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
-                            'bg-green-100 text-green-700'
-                          }`}>
+                          'bg-green-100 text-green-700'
+                        }`}>
                           {newLoanResult.priority}
                         </span>
                       </div>
@@ -1626,8 +1598,8 @@ export default function MyLoansPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-4 lg:grid-cols-4 gap-1 sm:gap-1">
                       <div>
                         <p className="text-sm text-gray-600">Customer Name</p>
-                        <p className="font-semibold text-gray-900">{detailedLoan.customerId.fullName.toLowerCase()
-                          .replace(/\b\w/g, char => char.toUpperCase())}</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.customerId.fullName .toLowerCase()
+    .replace(/\b\w/g, char => char.toUpperCase())}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Customer Email</p>
@@ -1638,10 +1610,10 @@ export default function MyLoansPage() {
                         <p className="font-semibold text-gray-900">{detailedLoan.productName}</p>
                       </div> */}
                       {detailedLoan.branch && (
-                        <div>
-                          <p className="text-sm text-gray-600">Branch</p>
-                          <p className="font-semibold text-gray-900">{detailedLoan.branch.replace(/_/g, ' ')}</p>
-                        </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Branch</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.branch.replace(/_/g, ' ')}</p>
+                      </div>
                       )}
                       <div>
                         <p className="text-sm text-gray-600">Status</p>
@@ -1675,14 +1647,14 @@ export default function MyLoansPage() {
                         <p className="text-sm text-gray-600">Tenure</p>
                         <p className="font-semibold text-gray-900">{detailedLoan.tenure} {detailedLoan.tenureUnit}</p>
                       </div>
-
-
+                   
+                     
                       <div>
                         <p className="text-sm text-gray-600">Total Repayment</p>
                         <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.totalRepayment)}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">Total Interest ({detailedLoan.interestRate * detailedLoan.tenure}%)</p>
+                        <p className="text-sm text-gray-600">Total Interest ({detailedLoan.interestRate*detailedLoan.tenure}%)</p>
                         <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.totalRepayment - detailedLoan.principalAmount)}</p>
                       </div>
                       <div>
@@ -1738,31 +1710,31 @@ export default function MyLoansPage() {
                         <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.interestOutstanding)}</p>
                       </div>
 
-                      <div>
+                       <div>
                         <p className="text-sm text-gray-600">Late Charges Outstanding</p>
                         <p className="text-lg font-bold text-red-600">{formatCurrency(detailedLoan.lateChargesOutstanding)}</p>
                       </div>
-                      <div>
+                                            <div>
                         <p className="text-sm text-gray-600">Total Outstanding</p>
                         <p className="text-lg font-bold text-red-600">{formatCurrency(detailedLoan.totalOutstanding)}</p>
                       </div>
-                      {detailedLoan?.dpd > 1 && (
-                        <>
-                          <div>
-                            <p className="text-sm text-gray-600">DPD (Days Past Due)</p>
-                            <p className="font-semibold text-gray-900">
-                              {detailedLoan.dpd} days
-                            </p>
-                          </div>
+{detailedLoan?.dpd > 1 && (
+  <>
+    <div>
+      <p className="text-sm text-gray-600">DPD (Days Past Due)</p>
+      <p className="font-semibold text-gray-900">
+        {detailedLoan.dpd} days
+      </p>
+    </div>
 
-                          <div>
-                            <p className="text-sm text-gray-600">DPD Bucket</p>
-                            <p className="font-semibold text-gray-900">
-                              {detailedLoan.dpdBucket}
-                            </p>
-                          </div>
-                        </>
-                      )}
+    <div>
+      <p className="text-sm text-gray-600">DPD Bucket</p>
+      <p className="font-semibold text-gray-900">
+        {detailedLoan.dpdBucket}
+      </p>
+    </div>
+  </>
+)}
 
                       {/* <div>
                         <p className="text-sm text-gray-600">First Due Date</p>
@@ -1808,7 +1780,7 @@ export default function MyLoansPage() {
                         <p className="text-xs sm:text-sm text-gray-600 mb-1">Late Payments</p>
                         <div className="text-xl sm:text-2xl font-bold text-orange-600">{detailedLoan.paymentBehavior.latePayments}</div>
                       </div> */}
-                      <div className="text-center">
+                        <div className="text-center">
                         <p className="text-xs sm:text-sm text-gray-600 mb-1">Partial Payments</p>
                         <div className="text-xl sm:text-2xl font-bold text-blue-600">{detailedLoan.paymentBehavior.partialPaymentCount}</div>
                       </div>
@@ -1816,7 +1788,7 @@ export default function MyLoansPage() {
                         <p className="text-xs sm:text-sm text-gray-600 mb-1">Bounce Count</p>
                         <div className="text-xl sm:text-2xl font-bold text-red-600">{detailedLoan.paymentBehavior.bounceCount}</div>
                       </div>
-
+                    
                     </div>
                   </div>
 
@@ -1833,11 +1805,11 @@ export default function MyLoansPage() {
                             <tr>
                               <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Installment</th>
                               <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Due Date</th>
-                              <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Principal</th>
-                              <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Interest</th>
+                                <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Principal</th>
+                                <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Interest</th>
                               <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Total Repayment</th>
-
-
+                            
+                              
                               <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Paid Amount</th>
                               <th className="px-3 py-2 text-center text-xs font-semibold text-gray-700">Status</th>
                               <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Balance</th>
@@ -1848,17 +1820,18 @@ export default function MyLoansPage() {
                               <tr key={installment._id} className="hover:bg-slate-50">
                                 <td className="px-3 py-2 font-medium text-gray-900">{installment.installmentNo}</td>
                                 <td className="px-3 py-2 text-gray-900">{new Date(installment.dueDate).toLocaleDateString()}</td>
-                                <td className="px-3 py-2 text-right text-gray-900">{formatCurrency(installment.principal)}</td>
-                                <td className="px-3 py-2 text-right text-gray-900">{formatCurrency(installment.interest)}</td>
+                                 <td className="px-3 py-2 text-right text-gray-900">{formatCurrency(installment.principal)}</td>
+                                  <td className="px-3 py-2 text-right text-gray-900">{formatCurrency(installment.interest)}</td>
                                 <td className="px-3 py-2 text-right font-semibold text-gray-900">{formatCurrency(installment.emiAmount)}</td>
-
-
+                               
+                               
                                 <td className="px-3 py-2 text-right font-semibold text-green-600">{formatCurrency(installment.paidAmount)}</td>
                                 <td className="px-3 py-2 text-center">
-                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${installment.status === 'PAID' ? 'text-green-600 bg-green-100' :
+                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    installment.status === 'PAID' ? 'text-green-600 bg-green-100' :
                                     installment.status === 'PENDING' ? 'text-yellow-600 bg-yellow-100' :
-                                      'text-red-600 bg-red-100'
-                                    }`}>
+                                    'text-red-600 bg-red-100'
+                                  }`}>
                                     {installment.status}
                                   </span>
                                 </td>
@@ -1902,11 +1875,12 @@ export default function MyLoansPage() {
                                 <td className="px-3 py-2 font-mono text-xs text-gray-700">{payment.utrNumber || '-'}</td>
                                 {/* <td className="px-3 py-2 font-mono text-xs text-gray-700">{payment.receiptNumber || '-'}</td> */}
                                 <td className="px-3 py-2 text-center">
-                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${payment.status === 'SUCCESS' || payment.status === 'COMPLETED' ? 'text-green-600 bg-green-100' :
+                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    payment.status === 'SUCCESS' || payment.status === 'COMPLETED' ? 'text-green-600 bg-green-100' :
                                     payment.status === 'PENDING' ? 'text-yellow-600 bg-yellow-100' :
-                                      payment.status === 'FAILED' ? 'text-red-600 bg-red-100' :
-                                        'text-gray-600 bg-gray-100'
-                                    }`}>
+                                    payment.status === 'FAILED' ? 'text-red-600 bg-red-100' :
+                                    'text-gray-600 bg-gray-100'
+                                  }`}>
                                     {payment.status}
                                   </span>
                                 </td>
