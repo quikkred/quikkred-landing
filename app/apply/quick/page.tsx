@@ -195,6 +195,9 @@ export default function QuickLoanApplication() {
   // Data agreement checkbox for Step 2
   const [dataAgreementChecked, setDataAgreementChecked] = useState(false);
 
+  // Track if basic details have been filled (to disable editing when user navigates back)
+  const [basicDetailsFilled, setBasicDetailsFilled] = useState(false);
+
   // Form data state (using imported initial values)
   const [formData, setFormData] = useState(getInitialFormData());
 
@@ -348,6 +351,11 @@ export default function QuickLoanApplication() {
               const isKycDetailsFilled = toBoolean(profileData.isKycDetailsFilled);
               const isBankDetailsFilled = toBoolean(profileData.isBankDetailsFilled);
               const isSubmit = toBoolean(profileData.isSubmit);
+
+              // If basic details already filled from API, disable editing
+              if (isBasicDetailsFilled) {
+                setBasicDetailsFilled(true);
+              }
 
               // Load selfie preview from profile if available
               if (profileData.profile?.s3URL) {
@@ -3613,6 +3621,11 @@ console.log('Sending OTP with payload:', payload);
               const isBankDetailsFilled = toBoolean(profileData.isBankDetailsFilled);
               const isSubmit = toBoolean(profileData.isSubmit);
 
+              // If basic details already filled from API, disable editing
+              if (isBasicDetailsFilled) {
+                setBasicDetailsFilled(true);
+              }
+
               console.log('📋 Checklist after OTP:', {
                 isBasicDetailsFilled,
                 isKycDetailsFilled,
@@ -3648,6 +3661,17 @@ console.log('Sending OTP with payload:', payload);
 
               console.log('📍 Redirecting to step:', targetStep);
 
+              // Check if any meaningful data was auto-filled (not just email/mobile from verification)
+              const hasAutoFilledData = !!(
+                profileData.fullName ||
+                profileData.panCard ||
+                profileData.aadhaarNumber ||
+                profileData.dateOfBirth ||
+                profileData.monthlyIncome ||
+                profileData.companyName ||
+                profileData.banks?.[0]?.accountNumber
+              );
+
               if (targetStep > 1) {
                 setCurrentStep(targetStep);
                 toast({
@@ -3655,7 +3679,8 @@ console.log('Sending OTP with payload:', payload);
                   title: "Welcome Back!",
                   description: `Your progress has been saved. Continue from Step ${targetStep}.`,
                 });
-              } else {
+              } else if (hasAutoFilledData) {
+                // Only show "Data Loaded!" toast if there's actual profile data auto-filled
                 toast({
                   variant: "success",
                   title: "Data Loaded!",
@@ -4594,10 +4619,13 @@ console.log('Sending OTP with payload:', payload);
         toast({
           variant: "error",
           title: "Cannot Proceed",
-         
+
         });
         return;
       }
+
+      // Mark basic details as filled (disable editing when user navigates back)
+      setBasicDetailsFilled(true);
     }
 
     if (currentStep === 2) {
@@ -5355,7 +5383,7 @@ console.log('Sending OTP with payload:', payload);
           setFieldErrors((prev) => ({ ...prev, email: "" }));
         }
       }}
-      disabled={formData.emailVerified}
+      disabled={formData.emailVerified || basicDetailsFilled}
       className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${
         fieldErrors.email ? "border-red-500" : "border-gray-300"
       }`}
@@ -5363,7 +5391,7 @@ console.log('Sending OTP with payload:', payload);
     />
 
     {/* Send/Resend OTP button (only if not verified) */}
-    {!formData.emailVerified && (
+    {!formData.emailVerified && !basicDetailsFilled && (
       <button
         onClick={async () => {
           const email = formData.email;
@@ -5396,7 +5424,7 @@ console.log('Sending OTP with payload:', payload);
     )}
 
     {/* If email verified show green check */}
-    {formData.emailVerified && (
+    {(formData.emailVerified || basicDetailsFilled) && (
       <CheckCircle className="w-10 h-10 text-green-600" />
     )}
   </div>
@@ -5454,14 +5482,14 @@ console.log('Sending OTP with payload:', payload);
                           value={formData.mobile}
                           onChange={handleChange}
                           onBlur={handleMobileBlur}
-                          disabled={formData.mobileVerified}
+                          disabled={formData.mobileVerified || basicDetailsFilled}
                           maxLength={10}
                           className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${
                             fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
                           }`}
                           placeholder="enter mobile number"
                         />
-                        {!formData.mobileVerified && (
+                        {!formData.mobileVerified && !basicDetailsFilled && (
                           <button
                             onClick={sendOTP}
                             disabled={!formData.mobile || loading || (otpSent && emailOtpTimer > 0)}
@@ -5470,7 +5498,7 @@ console.log('Sending OTP with payload:', payload);
                             {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Verify"}
                           </button>
                         )}
-                        {formData.mobileVerified && (
+                        {(formData.mobileVerified || basicDetailsFilled) && (
                           <CheckCircle className="w-10 h-10 text-green-600" />
                         )}
                       </div>
@@ -5479,7 +5507,7 @@ console.log('Sending OTP with payload:', payload);
                       )}
                     </div>
 
-                    {!formData.mobileVerified && otpSent && (
+                    {!formData.mobileVerified && !basicDetailsFilled && otpSent && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Enter OTP *
@@ -5516,9 +5544,10 @@ console.log('Sending OTP with payload:', payload);
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleChange}
+                    disabled={basicDetailsFilled}
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
                       fieldErrors.fullName ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     placeholder="Enter your full name"
                   />
                   {fieldErrors.fullName && (
@@ -5538,10 +5567,10 @@ console.log('Sending OTP with payload:', payload);
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
-                        disabled={formData.emailVerified}
+                        disabled={formData.emailVerified || basicDetailsFilled}
                         className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
                           fieldErrors.email ? 'border-red-500' : 'border-gray-300'
-                        } ${formData.emailVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                        } ${(formData.emailVerified || basicDetailsFilled) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                         placeholder="your@email.com"
                       />
                       {fieldErrors.email ? (
@@ -5562,11 +5591,11 @@ console.log('Sending OTP with payload:', payload);
                           value={formData.mobile}
                           onChange={handleChange}
                           onBlur={handleMobileBlur}
-                          disabled={formData.mobileVerified}
+                          disabled={formData.mobileVerified || basicDetailsFilled}
                           maxLength={10}
                           className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
                             fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
-                          } ${formData.mobileVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                          } ${(formData.mobileVerified || basicDetailsFilled) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           placeholder="9876543210"
                         />
                         {fieldErrors.mobile && (
@@ -5582,6 +5611,7 @@ console.log('Sending OTP with payload:', payload);
                           name="dob"
                           value={formData.dob}
                           onChange={handleChange}
+                          disabled={basicDetailsFilled}
                           max={(() => {
                             const date = new Date();
                             date.setFullYear(date.getFullYear() - 18);
@@ -5589,7 +5619,7 @@ console.log('Sending OTP with payload:', payload);
                           })()}
                           className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
                             fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
-                          }`}
+                          } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                           required
                         />
                         {fieldErrors.dob && (
@@ -5614,10 +5644,11 @@ console.log('Sending OTP with payload:', payload);
                               value={formData.mobile}
                               onChange={handleChange}
                               onBlur={handleMobileBlur}
+                              disabled={basicDetailsFilled}
                               maxLength={10}
                               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
                                 fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
-                              }`}
+                              } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                               placeholder="9876543210"
                             />
                             {fieldErrors.mobile && (
@@ -5633,6 +5664,7 @@ console.log('Sending OTP with payload:', payload);
                               name="dob"
                               value={formData.dob}
                               onChange={handleChange}
+                              disabled={basicDetailsFilled}
                               max={(() => {
                                 const date = new Date();
                                 date.setFullYear(date.getFullYear() - 18);
@@ -5640,7 +5672,7 @@ console.log('Sending OTP with payload:', payload);
                               })()}
                               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
                                 fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
-                              }`}
+                              } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                               required
                             />
                             {fieldErrors.dob && (
@@ -5662,10 +5694,10 @@ console.log('Sending OTP with payload:', payload);
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
-                            disabled={formData.emailVerified}
+                            disabled={formData.emailVerified || basicDetailsFilled}
                             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
                               fieldErrors.email ? 'border-red-500' : 'border-gray-300'
-                            } ${formData.emailVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                            } ${(formData.emailVerified || basicDetailsFilled) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             placeholder="your@email.com"
                           />
                           {fieldErrors.email ? (
@@ -5684,6 +5716,7 @@ console.log('Sending OTP with payload:', payload);
                             name="dob"
                             value={formData.dob}
                             onChange={handleChange}
+                            disabled={basicDetailsFilled}
                             max={(() => {
                               const date = new Date();
                               date.setFullYear(date.getFullYear() - 18);
@@ -5691,7 +5724,7 @@ console.log('Sending OTP with payload:', payload);
                             })()}
                             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
                               fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
-                            }`}
+                            } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             required
                           />
                           {fieldErrors.dob && (
@@ -5711,10 +5744,11 @@ console.log('Sending OTP with payload:', payload);
                   <div className="relative state-dropdown-container">
                     <button
                       type="button"
-                      onClick={() => setStateDropdownOpen(!stateDropdownOpen)}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] text-left flex justify-between items-center bg-white ${
+                      onClick={() => !basicDetailsFilled && setStateDropdownOpen(!stateDropdownOpen)}
+                      disabled={basicDetailsFilled}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] text-left flex justify-between items-center ${
                         fieldErrors.state ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
                     >
                       <span className={formData.state ? 'text-gray-900' : 'text-gray-500'}>
                         {formData.state
@@ -6642,10 +6676,10 @@ console.log('Sending OTP with payload:', payload);
             )}
           </AnimatePresence>
 
-          {/* Navigation Buttons - Hide when status is Reject, Proceed to Bank, or finfactor success */}
-          {!(currentStep === 4 && (approvalData?.status === 'Reject' || approvalData?.status === 'Proceed to Bank' || finfactorSuccess)) && (
+          {/* Navigation Buttons - Show Next for steps 1-3, Show Submit only on step 4 when approval data is ready */}
+          {(currentStep < 4 || (currentStep === 4 && approvalData && approvalData.status !== 'Reject' && approvalData.status !== 'Proceed to Bank' && !finfactorSuccess)) && (
             <div className="flex gap-4 mt-8">
-              {currentStep > 1 && (
+              {currentStep > 1 && currentStep < 4 && (
                 <button
                   onClick={handlePrevious}
                   className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold"
