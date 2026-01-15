@@ -1,0 +1,82 @@
+{
+  "title": "Terms & Conditions",
+  "effectiveDate": "January 1, 2024",
+  "sections": {
+    "introduction": {
+      "title": "1. Introduction",
+      "content1": "Welcome to Quikkred. These Terms and Conditions govern your use of our services and form a binding legal agreement between you and Quikkred (a brand of Fluxusforge Private Limited, acting as Loan Service Provider), operating in partnership with Satsai Finlease Private Limited, a Non-Banking Financial Company (NBFC) registered with the Reserve Bank of India (RBI Registration No: B-14.01646).",
+      "content2": "By accessing or using our services, you agree to be bound by these terms. If you do not agree with any part of these terms, please do not use our services."
+    },
+    "eligibility": {
+      "title": "2. Eligibility Criteria",
+      "intro": "To use our loan services, you must:",
+      "items": [
+        "Be at least 21 years of age and not more than 65 years",
+        "Be an Indian citizen or resident",
+        "Have a valid PAN card and Aadhaar card",
+        "Have a minimum monthly income as specified for each loan product",
+        "Have a satisfactory credit score as determined by our credit assessment"
+      ]
+    },
+    "loanTerms": {
+      "title": "3. Loan Terms",
+      "interestRates": {
+        "title": "3.1 Interest Rates",
+        "content": "Interest rates range from 10.99% to 24% per annum, calculated on a reducing balance basis. The exact rate will be determined based on your credit profile, loan amount, and tenure."
+      },
+      "platformFees": {
+        "title": "3.2 Platform fees",
+        "content": "A Platform fee of up to 3% of the loan amount (plus applicable taxes) will be charged at the time of loan disbursal."
+      },
+      "prepayment": {
+        "title": "3.3 Prepayment",
+        "content": "You may prepay your loan in full or in part after 3 EMIs. Prepayment charges may apply as per RBI guidelines."
+      }
+    },
+    "privacySecurity": {
+      "title": "4. Privacy and Security",
+      "content": "We take your privacy seriously. All personal and financial information provided is encrypted and stored securely. We comply with all applicable data protection laws and RBI guidelines.",
+      "intro": "Your information will only be used for:",
+      "items": [
+        "Processing your loan application",
+        "Credit assessment and verification",
+        "Regulatory compliance and reporting",
+        "Customer service and support"
+      ]
+    },
+    "default": {
+      "title": "5. Default and Recovery",
+      "intro": "In case of default (failure to pay EMI within 90 days of due date):",
+      "items": [
+        "Late payment charges of 2% per month will be applied",
+        "Your credit score will be negatively impacted",
+        "Legal action may be initiated for recovery",
+        "The loan account may be classified as NPA as per RBI guidelines"
+      ]
+    },
+    "dispute": {
+      "title": "6. Dispute Resolution",
+      "intro": "Any disputes arising out of these terms shall be resolved through:",
+      "items": [
+        "Internal grievance redressal mechanism",
+        "Banking Ombudsman (if not resolved internally)",
+        "Arbitration under the Arbitration and Conciliation Act, 1996",
+        "Courts of Delhi shall have exclusive jurisdiction"
+      ]
+    },
+    "amendments": {
+      "title": "7. Amendments",
+      "content": "Quikkred reserves the right to modify these terms at any time. Changes will be effective immediately upon posting on our website. Continued use of our services after any modifications constitutes acceptance of the updated terms."
+    },
+    "contact": {
+      "title": "8. Contact Information",
+      "company": "Quikkred (A brand of Fluxusforge Private Limited)",
+      "lendingPartner": "Lending Partner",
+      "partnerName": "Satsai Finlease Private Limited",
+      "rbiReg": "RBI Registration No: B-14.01646",
+      "email": "support@quikkred.in",
+      "phone": "+91-9311964796",
+      "address": "1008, 10th Floor, Vikrant Tower, Rajendra Place, New Delhi - 110005"
+    }
+  }
+}
