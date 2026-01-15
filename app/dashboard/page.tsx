@@ -6,17 +6,17 @@ import { useAuth } from '@/contexts/AuthContext';
 export const dynamic = 'force-dynamic';
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    // if (isLoading) return;
+    if (isLoading) return;
 
     // Redirect to user dashboard or login
     if (user) {
       router.push('/user');
     }
-  }, [user, router]);
+  }, [user, isLoading, router]);
 
   // Loading state while redirecting
   return (
