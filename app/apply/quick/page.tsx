@@ -3648,6 +3648,17 @@ console.log('Sending OTP with payload:', payload);
 
               console.log('📍 Redirecting to step:', targetStep);
 
+              // Check if any meaningful data was auto-filled (not just email/mobile from verification)
+              const hasAutoFilledData = !!(
+                profileData.fullName ||
+                profileData.panCard ||
+                profileData.aadhaarNumber ||
+                profileData.dateOfBirth ||
+                profileData.monthlyIncome ||
+                profileData.companyName ||
+                profileData.banks?.[0]?.accountNumber
+              );
+
               if (targetStep > 1) {
                 setCurrentStep(targetStep);
                 toast({
@@ -3655,7 +3666,8 @@ console.log('Sending OTP with payload:', payload);
                   title: "Welcome Back!",
                   description: `Your progress has been saved. Continue from Step ${targetStep}.`,
                 });
-              } else {
+              } else if (hasAutoFilledData) {
+                // Only show "Data Loaded!" toast if there's actual profile data auto-filled
                 toast({
                   variant: "success",
                   title: "Data Loaded!",
@@ -6642,10 +6654,10 @@ console.log('Sending OTP with payload:', payload);
             )}
           </AnimatePresence>
 
-          {/* Navigation Buttons - Hide when status is Reject, Proceed to Bank, or finfactor success */}
-          {!(currentStep === 4 && (approvalData?.status === 'Reject' || approvalData?.status === 'Proceed to Bank' || finfactorSuccess)) && (
+          {/* Navigation Buttons - Show Next for steps 1-3, Show Submit only on step 4 when approval data is ready */}
+          {(currentStep < 4 || (currentStep === 4 && approvalData && approvalData.status !== 'Reject' && approvalData.status !== 'Proceed to Bank' && !finfactorSuccess)) && (
             <div className="flex gap-4 mt-8">
-              {currentStep > 1 && (
+              {currentStep > 1 && currentStep < 4 && (
                 <button
                   onClick={handlePrevious}
                   className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold"
