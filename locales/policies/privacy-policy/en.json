@@ -1,0 +1,128 @@
+{
+  "title": "Privacy Policy",
+  "subtitle": "Your privacy is our priority",
+  "effectiveDate": "18-02-2025",
+  "lastUpdatedDate": "18th February 2025",
+  "sections": {
+    "introduction": {
+      "title": "1. Introduction",
+      "content": "Quikkred, a brand of Fluxusforge Private Limited, operates as a Lending Service Provider (LSP), in partnership with Satsai Finlease Private Limited (an RBI-registered NBFC) for loan disbursement."
+    },
+    "dataCollection": {
+      "title": "2. Data We Collect",
+      "intro": "We collect only the minimum necessary data to provide lending services and comply with regulatory mandates:",
+      "items": {
+        "identification": {
+          "title": "Identification Data",
+          "content": "Full name, address, contact details, email, date of birth, Aadhaar, PAN."
+        },
+        "financial": {
+          "title": "Financial Data",
+          "content": "Bank account details, transactional history, income information strictly required for eligibility and processing."
+        },
+        "device": {
+          "title": "Device & Usage Data",
+          "content": "Device model, OS version, device identifiers (advertising ID, IP address), app crash logs, anonymized usage statistics."
+        },
+        "loan": {
+          "title": "Loan Application Data",
+          "content": "Application status, KYC progress, correspondence, documented digital consents."
+        },
+        "thirdParty": {
+          "title": "Third-Party Data",
+          "content": "Collected only from authorized service providers"
+        }
+      },
+      "note": "We do not collect or store biometric data (fingerprints, facial recognition) in any form on any necessary retention.",
+      "communication": "Unless expressly opted out by you, we may use channels such as email, SMS, RCS, Whatsapp, instant messaging apps and call to disseminate promotional or service-related communications."
+    },
+    "purpose": {
+      "title": "3. Purpose of Use",
+      "intro": "We use your information only to:",
+      "items": [
+        "Complete KYC, assess loan eligibility, approval and disbursal via our NBFC partner.",
+        "Meet regulatory and RBI digital lending requirements.",
+        "Prevent fraud and protect the app's security.",
+        "Provide customer support and improve services through anonymized analytics."
+      ]
+    },
+    "dataSharing": {
+      "title": "4. Data Sharing & Third Parties",
+      "intro": "We share data only with:",
+      "items": {
+        "nbfc": {
+          "title": "NBFC Lending Partner(s)",
+          "content": "For loan processing and disbursement."
+        },
+        "regulatory": {
+          "title": "Regulatory Authorities",
+          "content": "Where required by law."
+        },
+        "technical": {
+          "title": "Verified Technical Service Providers",
+          "content": "Under contractual data protection obligations."
+        }
+      }
+    },
+    "consent": {
+      "title": "5. Consent, Control & Withdrawal",
+      "items": [
+        "We obtain explicit consent prior to processing personal data.",
+        "You may withdraw consent at any time via the app settings or by contacting support.",
+        "Upon withdrawal, data deletion or restriction requests will be processed in compliance with RBI and legal requirements."
+      ]
+    },
+    "security": {
+      "title": "6. Data Security & Retention",
+      "items": [
+        "Your data is stored securely in India using AES-256 encryption and industry-standard access controls.",
+        "We retain personal data only as long as your account is active or as legally required.",
+        "Once retention periods expire, we securely delete or anonymize data.",
+        "We do not transfer or store data outside India."
+      ]
+    },
+    "rights": {
+      "title": "7. Your Rights",
+      "intro": "Under applicable laws, you have rights to:",
+      "items": {
+        "access": {
+          "title": "Access",
+          "content": "Access your personal data"
+        },
+        "rectify": {
+          "title": "Rectify",
+          "content": "Correct inaccurate information"
+        },
+        "erase": {
+          "title": "Erase",
+          "content": "Request deletion of your data"
+        },
+        "port": {
+          "title": "Port",
+          "content": "Receive your data in portable format"
+        }
+      },
+      "withdraw": "Withdraw consent or restrict processing. Lodge complaints with Quikkred's Data Protection Officer:",
+      "dpo": {
+        "title": "Data Protection Officer",
+        "name": "Miss Priya",
+        "email": "dpo@quikkred.in",
+        "phone": "+91-9311964796"
+      },
+      "grievanceTime": "We commit to addressing grievances within 30 days."
+    },
+    "children": {
+      "title": "8. Children's Privacy",
+      "content": "Our services are not intended for users under 18. We do not deliberately collect data from minors."
+    },
+    "updates": {
+      "title": "9. Policy Updates",
+      "content": "We will notify users of changes via the app and support page. Continued usage implies acceptance."
+    },
+    "compliance": {
+      "title": "10. Regulatory Compliance",
+      "content": "Quikkred acts only as LSP, with loans issued by RBI-regulated Satsai Finlease Private Limited (NBFC).",
+      "note": "Our policies ensure full compliance with RBI Digital Lending Directions 2025 and the DPDP Act 2023."
+    }
+  }
+}
