@@ -1,0 +1,57 @@
+{
+  "title": "Grievance Redressal Policy",
+  "subtitle": "We're Here to Help Resolve Your Concerns",
+  "introduction": "QuikkRed is committed to providing excellent customer service and resolving customer grievances in a timely and efficient manner. This Grievance Redressal Policy outlines the process for customers to escalate their concerns and the timelines within which they can expect resolution.",
+  "levels": {
+    "level1": {
+      "title": "Level 1: Customer Service/Helpdesk",
+      "description": "For any queries, complaints, or feedback, customers can reach out to our Customer Service team through the following channels:",
+      "helplineLabel": "Helpline Number",
+      "helpline": "+91-9311964796",
+      "emailLabel": "Email ID",
+      "email": "support@quikkred.com",
+      "timingsLabel": "Timings",
+      "timings": "Monday to Saturday (10 AM to 6 PM)",
+      "resolution": "We strive to resolve all queries within 7 working days from the date of receipt."
+    },
+    "level2": {
+      "title": "Level 2: Customer Relationship Manager (CRM)",
+      "description": "If your complaint is not resolved at Level 1 within 7 working days, or if you are unsatisfied with the resolution provided, you may escalate the matter to our Customer Relationship Manager:",
+      "contactNameLabel": "Contact Name",
+      "contactName": "Mr. Anuj Patel",
+      "emailLabel": "Email ID",
+      "email": "support@quikkred.com",
+      "timingsLabel": "Timings",
+      "timings": "Monday to Friday (11 AM to 5 PM)",
+      "resolution": "The CRM will review your complaint and provide a resolution within 10 working days from the date of escalation."
+    },
+    "level3": {
+      "title": "Level 3: Grievance Redressal Officer (GRO) / Nodal Officer",
+      "description": "If your complaint remains unresolved at Level 2, or if you are not satisfied with the resolution, you may further escalate your concern to our Grievance Redressal Officer (GRO):",
+      "officerLabel": "Grievance Redressal Officer (Nodal Officer)",
+      "officerName": "Mr. Manish Soni",
+      "addressLabel": "Address",
+      "address": "QuikkRed, 1008, 10th Floor, Vikrant Tower, Rajendra Place, New Delhi - 110005",
+      "contactLabel": "Contact Number",
+      "contact": "+91-9311964796",
+      "emailLabel": "Email ID",
+      "email": "grievance@quikkred.in",
+      "resolution": "The GRO will review your complaint and provide a final resolution within 15 working days from the date of escalation."
+    }
+  },
+  "rbiOmbudsman": {
+    "title": "Escalation to RBI Ombudsman",
+    "description": "If your complaint is not resolved satisfactorily within 30 days of approaching the company, you may approach the RBI Ombudsman under the Reserve Bank - Integrated Ombudsman Scheme, 2021.",
+    "linkText": "Click here for more details",
+    "link": "https://cms.rbi.org.in/"
+  },
+  "commitment": {
+    "title": "Our Commitment",
+    "items": [
+      "Acknowledge all complaints within 24 hours",
+      "Provide a resolution within the timelines specified above",
+      "Keep customers informed about the status of their complaint",
+      "Treat all complaints with fairness, respect, and confidentiality"
+    ]
+  }
+}

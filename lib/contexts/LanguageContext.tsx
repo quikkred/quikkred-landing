@@ -5,7 +5,22 @@ import { useTranslation } from 'react-i18next';
 import { usePathname } from 'next/navigation';
 import enData from '@/locales/en.json';
 
-type TranslationData = typeof enData;
+// Extend the base translation type to include dynamically loaded policy translations
+type TranslationData = typeof enData & {
+  policies?: {
+    common?: Record<string, string>;
+    collectionPolicy?: Record<string, any>;
+    grievanceRedressal?: Record<string, any>;
+    interestRate?: Record<string, any>;
+    itSecurity?: Record<string, any>;
+    kycAml?: Record<string, any>;
+    cookie?: Record<string, any>;
+    fairPractice?: Record<string, any>;
+    privacy?: Record<string, any>;
+    terms?: Record<string, any>;
+    [key: string]: Record<string, any> | undefined;
+  };
+};
 
 interface LanguageContextType {
   language: string;
@@ -37,6 +52,72 @@ const dynamicTranslations: Record<string, () => Promise<any>> = {
   ur: () => import('@/locales/ur.json').then(m => m.default),
 };
 
+// Dynamic loaders for policy translations from folder structure
+// Only include files that exist to avoid build errors
+const policyTranslationLoaders: Record<string, Record<string, () => Promise<any>>> = {
+  common: {
+    en: () => import('@/locales/policies/common/en.json').then(m => m.default),
+    hi: () => import('@/locales/policies/common/hi.json').then(m => m.default),
+    bn: () => import('@/locales/policies/common/bn.json').then(m => m.default),
+    ta: () => import('@/locales/policies/common/ta.json').then(m => m.default),
+    te: () => import('@/locales/policies/common/te.json').then(m => m.default),
+    mr: () => import('@/locales/policies/common/mr.json').then(m => m.default),
+    gu: () => import('@/locales/policies/common/gu.json').then(m => m.default),
+    kn: () => import('@/locales/policies/common/kn.json').then(m => m.default),
+    ml: () => import('@/locales/policies/common/ml.json').then(m => m.default),
+    pa: () => import('@/locales/policies/common/pa.json').then(m => m.default),
+    or: () => import('@/locales/policies/common/or.json').then(m => m.default),
+    as: () => import('@/locales/policies/common/as.json').then(m => m.default),
+    ur: () => import('@/locales/policies/common/ur.json').then(m => m.default),
+  },
+  collectionPolicy: {
+    en: () => import('@/locales/policies/collection-policy/en.json').then(m => m.default),
+    hi: () => import('@/locales/policies/collection-policy/hi.json').then(m => m.default),
+    bn: () => import('@/locales/policies/collection-policy/bn.json').then(m => m.default),
+    ta: () => import('@/locales/policies/collection-policy/ta.json').then(m => m.default),
+    te: () => import('@/locales/policies/collection-policy/te.json').then(m => m.default),
+    mr: () => import('@/locales/policies/collection-policy/mr.json').then(m => m.default),
+    gu: () => import('@/locales/policies/collection-policy/gu.json').then(m => m.default),
+  },
+  grievanceRedressal: {
+    en: () => import('@/locales/policies/grievance-redressal/en.json').then(m => m.default),
+  },
+  interestRate: {
+    en: () => import('@/locales/policies/interest-rate/en.json').then(m => m.default),
+  },
+  itSecurity: {
+    en: () => import('@/locales/policies/it-security/en.json').then(m => m.default),
+  },
+  kycAml: {
+    en: () => import('@/locales/policies/kyc-aml/en.json').then(m => m.default),
+  },
+};
+
+// Load all policy translations for a given language
+async function loadPolicyTranslations(langCode: string): Promise<any> {
+  const policyData: any = { common: {} };
+
+  const loadPromises = Object.entries(policyTranslationLoaders).map(async ([policyKey, langLoaders]) => {
+    const loader = langLoaders[langCode] || langLoaders['en'];
+    if (loader) {
+      try {
+        const data = await loader();
+        return { policyKey, data };
+      } catch {
+        return { policyKey, data: {} };
+      }
+    }
+    return { policyKey, data: {} };
+  });
+
+  const results = await Promise.all(loadPromises);
+  results.forEach(({ policyKey, data }) => {
+    policyData[policyKey] = data;
+  });
+
+  return policyData;
+}
+
 // Deep merge function to combine translations with English fallback
 function deepMerge(target: any, source: any): any {
   const result = { ...target };
@@ -52,25 +133,45 @@ function deepMerge(target: any, source: any): any {
 
 // Helper to get translation (loads dynamically if needed) with English fallback
 async function getTranslation(langCode: string): Promise<TranslationData> {
-  // English doesn't need fallback
-  if (langCode === 'en') {
-    return enData;
-  }
-
   if (translationCache[langCode]) {
     return translationCache[langCode];
   }
 
-  const loader = dynamicTranslations[langCode];
-  if (loader) {
-    const translation = await loader();
-    // Merge with English as fallback - English first, then override with translation
-    const mergedTranslation = deepMerge(enData, translation);
-    translationCache[langCode] = mergedTranslation;
-    return mergedTranslation;
+  // Load main translation file
+  let mainTranslation: any = enData;
+  if (langCode !== 'en') {
+    const loader = dynamicTranslations[langCode];
+    if (loader) {
+      const translation = await loader();
+      mainTranslation = deepMerge(enData, translation);
+    }
   }
 
-  return enData;
+  // Load policy translations from folder structure
+  const policyTranslations = await loadPolicyTranslations(langCode);
+
+  // Load English policy translations as fallback
+  const englishPolicyTranslations = langCode !== 'en' ? await loadPolicyTranslations('en') : policyTranslations;
+
+  // Merge policy translations with English fallback
+  const mergedPolicyTranslations = deepMerge(englishPolicyTranslations, policyTranslations);
+
+  // Merge policy translations into main translation under 'policies' key
+  const finalTranslation = {
+    ...mainTranslation,
+    policies: {
+      ...(mainTranslation.policies || {}),
+      common: mergedPolicyTranslations.common || {},
+      collectionPolicy: mergedPolicyTranslations.collectionPolicy || {},
+      grievanceRedressal: mergedPolicyTranslations.grievanceRedressal || {},
+      interestRate: mergedPolicyTranslations.interestRate || {},
+      itSecurity: mergedPolicyTranslations.itSecurity || {},
+      kycAml: mergedPolicyTranslations.kycAml || {},
+    }
+  };
+
+  translationCache[langCode] = finalTranslation as TranslationData;
+  return finalTranslation as TranslationData;
 }
 
 export const availableLanguages = [
