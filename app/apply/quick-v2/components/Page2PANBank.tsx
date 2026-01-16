@@ -251,7 +251,7 @@ export default function Page2PANBank({
       newErrors.monthlyIncome = 'Minimum income required is ₹15,000';
     }
 
-    if (formData.employmentType === 'salaried' && !formData.salaryDate) {
+    if (formData.employmentType === 'SALARIED' && !formData.salaryDate) {
       newErrors.salaryDate = 'Please select salary date';
     }
 
@@ -402,7 +402,7 @@ export default function Page2PANBank({
           </div>
 
           {/* Salary Date - only for salaried */}
-          {formData.employmentType === 'salaried' && (
+          {formData.employmentType === 'SALARIED' && (
             <div>
               <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
                 Salary Credit Date *
@@ -410,9 +410,9 @@ export default function Page2PANBank({
               <div className="relative">
                 <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                 <select
-                  value={formData.salaryDate}
+                  value={formData.salaryDate || ''}
                   onChange={(e) => {
-                    setFormData(prev => ({ ...prev, salaryDate: e.target.value }));
+                    setFormData(prev => ({ ...prev, salaryDate: parseInt(e.target.value) || 0 }));
                     setErrors(prev => ({ ...prev, salaryDate: '' }));
                   }}
                   className={`w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 border rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-[#25B181] appearance-none ${
