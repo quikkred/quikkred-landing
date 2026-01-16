@@ -194,7 +194,7 @@ export default function QuickLoanApplication() {
   // Data agreement checkbox for Step 2
   const [dataAgreementChecked, setDataAgreementChecked] = useState(false);
 
-  // Track if basic details have been filled (to disable editing when user navigates back)
+  // Track if PAN is verified (to disable basic details editing when user navigates back)
   const [basicDetailsFilled, setBasicDetailsFilled] = useState(false);
 
   // Form data state (using imported initial values)
@@ -333,8 +333,8 @@ export default function QuickLoanApplication() {
               const isBankDetailsFilled = toBoolean(profileData.isBankDetailsFilled);
               const isSubmit = toBoolean(profileData.isSubmit);
 
-              // If basic details already filled from API, disable editing
-              if (isBasicDetailsFilled) {
+              // If PAN is verified from API, disable basic details editing
+              if (toBoolean(profileData.isPanVerify)) {
                 setBasicDetailsFilled(true);
               }
 
@@ -3601,8 +3601,8 @@ console.log('Sending OTP with payload:', payload);
               const isBankDetailsFilled = toBoolean(profileData.isBankDetailsFilled);
               const isSubmit = toBoolean(profileData.isSubmit);
 
-              // If basic details already filled from API, disable editing
-              if (isBasicDetailsFilled) {
+              // If PAN is verified from API, disable basic details editing
+              if (toBoolean(profileData.isPanVerify)) {
                 setBasicDetailsFilled(true);
               }
 
@@ -4583,9 +4583,6 @@ console.log('Sending OTP with payload:', payload);
         });
         return;
       }
-
-      // Mark basic details as filled (disable editing when user navigates back)
-      setBasicDetailsFilled(true);
     }
 
     if (currentStep === 2) {
