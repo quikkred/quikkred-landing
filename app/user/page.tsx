@@ -21,6 +21,7 @@ import { API_BASE_URL } from '@/lib/config';
 import { useDashboard } from '@/store/hooks/useDashboard';
 import { useLoans } from '@/store/hooks/useLoans';
 import { signOut } from 'next-auth/react';
+import getToken from '@/lib/getToken';
 
 declare global {
   interface Window {
@@ -349,9 +350,7 @@ export default function UserDashboard() {
         return;
       }
 
-      const token = localStorage.getItem('authToken') ||
-        localStorage.getItem('token') ||
-        localStorage.getItem('accessToken');
+      const token = await getToken();
 
       if (!token) {
         toast({

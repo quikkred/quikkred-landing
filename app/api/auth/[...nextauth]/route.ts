@@ -67,9 +67,64 @@ export const authOptions: AuthOptions = {
         }
       },
     }),
+
+    // ✅ Truecaller Provider (Internal Retry Logic)
+    CredentialsProvider({
+      id: "truecaller",
+      name: "Truecaller",
+      credentials: {
+        requestId: { label: "Request ID", type: "text" },
+      },
+      async authorize(credentials) {
+        const requestId = credentials?.requestId;
+        if (!requestId) return null;
+
+        const maxRetries = 5; // Total attempts
+        const delayMs = 2000; // Wait 2 seconds between each try
+
+        for (let i = 0; i < maxRetries; i++) {
+          try {
+            const res = await fetch(`${API_BASE_URL}/test2/truecaller/verify`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ requestId }),
+            });
+
+            const json = await res.json().catch(() => null);
+
+            // If backend says VERIFIED, return the user immediately
+            if (res.ok && json?.success && json?.status === "VERIFIED" && json?.data) {
+              const d = json.data;
+              return {
+                id: d.userId,
+                email: d.email ?? null,
+                role: d.role,
+                accessToken: d.accessToken,
+                refreshToken: d.refreshToken,
+                customerUniqueId: d.customerUniqueId,
+                verifiedAt: new Date().toISOString(),
+              };
+            }
+
+            // If not verified yet (e.g. status is "PENDING" or 404), wait and retry
+            // console.log(`Attempt ${i + 1}: Data not ready, retrying...`);
+            if (i < maxRetries - 1) {
+              await new Promise((resolve) => setTimeout(resolve, delayMs));
+            }
+
+          } catch (err) {
+            console.error("Truecaller retry error:", err);
+          }
+        }
+
+        // If we reach here, it means all retries failed
+        return null;
+      },
+    })
   ],
 
   session: { strategy: "jwt" },
+  // debug: true,
 
   callbacks: {
     async jwt({ token, account, user }) {
@@ -90,6 +145,7 @@ export const authOptions: AuthOptions = {
             });
 
             const result = await res.json();
+            // console.log("Backend login result (google):", result);
 
             if (result?.success) {
               token.accessToken = result.data.accessToken;
@@ -118,6 +174,18 @@ export const authOptions: AuthOptions = {
 
         // keep session.user.email in sync
         token.email = (user as any).email;
+      }
+
+      if (account?.provider === "truecaller" && user) {
+        token.userId = user.id;
+        token.accessToken = (user as any).accessToken;
+        token.refreshToken = (user as any).refreshToken;
+        token.customerUniqueId = (user as any).customerUniqueId;
+        token.role = (user as any).role;
+        token.verifiedAt = (user as any).verifiedAt;
+        token.email = (user as any).email ?? token.email;
+        token.name = (user as any).name ?? token.name;
+        (token as any).phoneNumber = (user as any).phoneNumber;
       }
 
       return token;
