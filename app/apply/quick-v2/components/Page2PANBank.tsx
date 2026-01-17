@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
     CreditCard, CheckCircle, Loader2,
@@ -13,9 +13,9 @@ import {
     EMPLOYMENT_TYPES, SALARY_DATES
 } from '@/lib/constants/quickApplyV2';
 import { API_BASE_URL } from '@/lib/config';
+import { useQuickApplyTracking, useVerificationFrictionTracking } from '@/lib/hooks/useQuickApplyTracking';
 
 // MOCK MODE - Set to false for production with real APIs
-// Set to true only for local testing without backend
 const MOCK_MODE = false;
 
 interface Page2Props {
@@ -42,6 +42,36 @@ export default function Page2PANBank({
     // Submit Loading
     const [submitLoading, setSubmitLoading] = useState(false);
 
+    // Tracking
+    const {
+        trackStepViewed,
+        trackStepCompleted,
+        trackPANEntered,
+        trackPANVerifyStarted,
+        trackPANVerifySuccess,
+        trackPANVerifyFailed,
+        trackEmploymentTypeSelected,
+        trackIncomeEntered,
+        trackSalaryDateSelected,
+        trackApplicationSubmitted,
+        trackFieldFocus,
+        trackFieldPaste,
+        trackFormError,
+        trackAPIError,
+    } = useQuickApplyTracking();
+
+    // PAN verification friction tracking
+    const panFriction = useVerificationFrictionTracking('pan');
+
+    // Track step viewed
+    const hasTrackedStepRef = useRef(false);
+    useEffect(() => {
+        if (!hasTrackedStepRef.current) {
+            hasTrackedStepRef.current = true;
+            trackStepViewed(2, 'PAN & Employment');
+        }
+    }, [trackStepViewed]);
+
     // Loan calculation
     const loanCalc = calculateLoanDetails(formData.loanAmount, formData.tenure);
 
@@ -66,10 +96,20 @@ export default function Page2PANBank({
         }));
         setPanError('');
 
+        // Track PAN entered when complete
+        if (cleaned.length === 10) {
+            trackPANEntered(cleaned);
+        }
+
         // Auto-verify when valid PAN is entered
         if (cleaned.length === 10 && isValidPAN(cleaned)) {
             setTimeout(() => autoVerifyPAN(cleaned), 300);
         }
+    };
+
+    // Handle PAN paste detection
+    const handlePANPaste = () => {
+        trackFieldPaste('pan');
     };
 
     // Auto-verify PAN
@@ -78,6 +118,9 @@ export default function Page2PANBank({
 
         setPanLoading(true);
         setPanError('');
+        trackPANVerifyStarted();
+        panFriction.startTracking();
+        panFriction.recordAttempt();
 
         // MOCK MODE
         if (MOCK_MODE) {
@@ -98,8 +141,9 @@ export default function Page2PANBank({
                 dob: mockPanData.dateOfBirth,
             }));
 
+            trackPANVerifySuccess({ fullName: mockPanData.fullName });
+            panFriction.completeTracking(true);
             setPanReverifyTimer(TIMERS.REVERIFY_COOLDOWN);
-            console.log('✅ MOCK: PAN auto-verified -', pan);
             setPanLoading(false);
             return;
         }
@@ -134,26 +178,40 @@ export default function Page2PANBank({
                     dob: panData.dateOfBirth,
                 }));
 
+                trackPANVerifySuccess({ fullName: panData.fullName });
+                panFriction.completeTracking(true);
                 setPanReverifyTimer(TIMERS.REVERIFY_COOLDOWN);
             } else {
-                setPanError(data.message || 'PAN verification failed');
+                const errorMsg = data.message || 'PAN verification failed';
+                setPanError(errorMsg);
+                trackPANVerifyFailed(errorMsg, panFriction.getAttempts());
+                panFriction.completeTracking(false);
             }
         } catch (error) {
-            setPanError('Verification failed. Please try again.');
+            const errorMsg = 'Verification failed. Please try again.';
+            setPanError(errorMsg);
+            trackPANVerifyFailed(errorMsg, panFriction.getAttempts());
+            trackAPIError('/api/kyc/pan/verify', errorMsg);
+            panFriction.completeTracking(false);
         } finally {
             setPanLoading(false);
         }
     };
 
-    // Verify PAN
+    // Verify PAN (manual button click)
     const handleVerifyPAN = async () => {
         if (!isValidPAN(formData.pan)) {
-            setPanError('Invalid PAN format. Example: ABCDE1234F');
+            const errorMsg = 'Invalid PAN format. Example: ABCDE1234F';
+            setPanError(errorMsg);
+            trackFormError('pan', errorMsg, 2);
             return;
         }
 
         setPanLoading(true);
         setPanError('');
+        trackPANVerifyStarted();
+        panFriction.startTracking();
+        panFriction.recordAttempt();
 
         // MOCK MODE
         if (MOCK_MODE) {
@@ -174,8 +232,9 @@ export default function Page2PANBank({
                 dob: mockPanData.dateOfBirth,
             }));
 
+            trackPANVerifySuccess({ fullName: mockPanData.fullName });
+            panFriction.completeTracking(true);
             setPanReverifyTimer(TIMERS.REVERIFY_COOLDOWN);
-            console.log('✅ MOCK: PAN verified -', formData.pan);
             setPanLoading(false);
             return;
         }
@@ -212,15 +271,50 @@ export default function Page2PANBank({
                     dob: panData.dateOfBirth,
                 }));
 
+                trackPANVerifySuccess({ fullName: panData.fullName });
+                panFriction.completeTracking(true);
                 setPanReverifyTimer(TIMERS.REVERIFY_COOLDOWN);
             } else {
-                setPanError(data.message || 'PAN verification failed');
+                const errorMsg = data.message || 'PAN verification failed';
+                setPanError(errorMsg);
+                trackPANVerifyFailed(errorMsg, panFriction.getAttempts());
+                panFriction.completeTracking(false);
             }
         } catch (error) {
-            setPanError('Verification failed. Please try again.');
+            const errorMsg = 'Verification failed. Please try again.';
+            setPanError(errorMsg);
+            trackPANVerifyFailed(errorMsg, panFriction.getAttempts());
+            trackAPIError('/api/kyc/pan/verify', errorMsg);
+            panFriction.completeTracking(false);
         } finally {
             setPanLoading(false);
         }
+    };
+
+    // Handle employment type selection with tracking
+    const handleEmploymentTypeChange = (type: 'SALARIED' | 'SELF-EMPLOYED') => {
+        setFormData(prev => ({ ...prev, employmentType: type }));
+        setErrors(prev => ({ ...prev, employmentType: '' }));
+        trackEmploymentTypeSelected(type);
+    };
+
+    // Handle income change with tracking
+    const handleIncomeChange = (value: string) => {
+        const numValue = value.replace(/\D/g, '');
+        setFormData(prev => ({ ...prev, monthlyIncome: numValue }));
+        setErrors(prev => ({ ...prev, monthlyIncome: '' }));
+
+        // Track income when user stops typing (debounced effect)
+        if (numValue && parseInt(numValue) > 0) {
+            trackIncomeEntered(parseInt(numValue));
+        }
+    };
+
+    // Handle salary date selection with tracking
+    const handleSalaryDateChange = (date: number) => {
+        setFormData(prev => ({ ...prev, salaryDate: date }));
+        setErrors(prev => ({ ...prev, salaryDate: '' }));
+        trackSalaryDateSelected(date);
     };
 
     // Format DOB for display
@@ -242,25 +336,42 @@ export default function Page2PANBank({
     const handleSubmit = async () => {
         const newErrors: Record<string, string> = {};
 
+        // Track step completion
+        trackStepCompleted(2, 'PAN & Employment', {
+            employmentType: formData.employmentType,
+            panVerified: formData.panVerified,
+        });
+
+        // Track application submission
+        trackApplicationSubmitted({
+            loanAmount: formData.loanAmount,
+            tenure: formData.tenure,
+            employmentType: formData.employmentType,
+            monthlyIncome: formData.monthlyIncome ? parseInt(formData.monthlyIncome) : undefined,
+        });
+
         onNext();
         return;
 
-        // Employment validation
+        // Employment validation (kept for reference but currently bypassed)
         if (!formData.employmentType) {
             newErrors.employmentType = 'Please select employment type';
+            trackFormError('employmentType', newErrors.employmentType, 2);
         }
 
         if (!formData.monthlyIncome || parseInt(formData.monthlyIncome) < 15000) {
             newErrors.monthlyIncome = 'Minimum income required is ₹15,000';
+            trackFormError('monthlyIncome', newErrors.monthlyIncome, 2);
         }
 
         if (formData.employmentType === 'SALARIED' && !formData.salaryDate) {
             newErrors.salaryDate = 'Please select salary date';
+            trackFormError('salaryDate', newErrors.salaryDate, 2);
         }
 
-        // PAN validation
         if (!formData.panVerified) {
             newErrors.pan = 'Please verify your PAN';
+            trackFormError('pan', newErrors.pan, 2);
         }
 
         if (Object.keys(newErrors).length > 0) {
@@ -270,7 +381,6 @@ export default function Page2PANBank({
 
         setSubmitLoading(true);
 
-
         // MOCK MODE
         if (MOCK_MODE) {
             await new Promise(resolve => setTimeout(resolve, 1000));
@@ -278,7 +388,14 @@ export default function Page2PANBank({
             const mockAppNumber = 'QK' + Math.random().toString(36).substring(2, 8).toUpperCase();
             localStorage.setItem('applicationId', mockAppId);
             localStorage.setItem('applicationNumber', mockAppNumber);
-            console.log('✅ MOCK: Application submitted -', mockAppNumber);
+
+            trackApplicationSubmitted({
+                loanAmount: formData.loanAmount,
+                tenure: formData.tenure,
+                employmentType: formData.employmentType,
+                monthlyIncome: formData.monthlyIncome ? parseInt(formData.monthlyIncome) : undefined,
+            });
+
             setSubmitLoading(false);
             onNext();
             return;
@@ -321,12 +438,24 @@ export default function Page2PANBank({
                     localStorage.setItem('applicationId', data.data.applicationId);
                     localStorage.setItem('applicationNumber', data.data.applicationNumber);
                 }
+
+                trackApplicationSubmitted({
+                    loanAmount: formData.loanAmount,
+                    tenure: formData.tenure,
+                    employmentType: formData.employmentType,
+                    monthlyIncome: formData.monthlyIncome ? parseInt(formData.monthlyIncome) : undefined,
+                });
+
                 onNext();
             } else {
-                setErrors({ submit: data.message || 'Application submission failed' });
+                const errorMsg = data.message || 'Application submission failed';
+                setErrors({ submit: errorMsg });
+                trackAPIError('/api/loan/submit', errorMsg);
             }
         } catch (error) {
-            setErrors({ submit: 'Network error. Please try again.' });
+            const errorMsg = 'Network error. Please try again.';
+            setErrors({ submit: errorMsg });
+            trackAPIError('/api/loan/submit', errorMsg);
         } finally {
             setSubmitLoading(false);
         }
@@ -359,10 +488,7 @@ export default function Page2PANBank({
                                 <button
                                     key={type.value}
                                     type="button"
-                                    onClick={() => {
-                                        setFormData(prev => ({ ...prev, employmentType: type.value }));
-                                        setErrors(prev => ({ ...prev, employmentType: '' }));
-                                    }}
+                                    onClick={() => handleEmploymentTypeChange(type.value)}
                                     className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-medium text-xs sm:text-sm transition-all active:scale-[0.98] touch-manipulation ${formData.employmentType === type.value
                                             ? 'bg-[#25B181] text-white shadow-md'
                                             : 'bg-white text-gray-700 border border-gray-300 hover:border-[#25B181]'
@@ -388,11 +514,8 @@ export default function Page2PANBank({
                                 type="text"
                                 inputMode="numeric"
                                 value={formData.monthlyIncome}
-                                onChange={(e) => {
-                                    const value = e.target.value.replace(/\D/g, '');
-                                    setFormData(prev => ({ ...prev, monthlyIncome: value }));
-                                    setErrors(prev => ({ ...prev, monthlyIncome: '' }));
-                                }}
+                                onChange={(e) => handleIncomeChange(e.target.value)}
+                                onFocus={() => trackFieldFocus('monthlyIncome', 2)}
                                 className={`w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 border rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-[#25B181] ${errors.monthlyIncome ? 'border-red-500' : 'border-gray-300'
                                     }`}
                                 placeholder="Enter monthly income"
@@ -413,10 +536,8 @@ export default function Page2PANBank({
                                 <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                                 <select
                                     value={formData.salaryDate || ''}
-                                    onChange={(e) => {
-                                        setFormData(prev => ({ ...prev, salaryDate: parseInt(e.target.value) || 0 }));
-                                        setErrors(prev => ({ ...prev, salaryDate: '' }));
-                                    }}
+                                    onChange={(e) => handleSalaryDateChange(parseInt(e.target.value) || 0)}
+                                    onFocus={() => trackFieldFocus('salaryDate', 2)}
                                     className={`w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 border rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-[#25B181] appearance-none ${errors.salaryDate ? 'border-red-500' : 'border-gray-300'
                                         }`}
                                 >
@@ -454,6 +575,8 @@ export default function Page2PANBank({
                                     type="text"
                                     value={formData.pan}
                                     onChange={(e) => handlePANChange(e.target.value)}
+                                    onPaste={handlePANPaste}
+                                    onFocus={() => trackFieldFocus('pan', 2)}
                                     placeholder="ABCDE1234F"
                                     disabled={formData.panVerified}
                                     maxLength={10}
@@ -569,7 +692,6 @@ export default function Page2PANBank({
 
                 <button
                     onClick={handleSubmit}
-                    //   disabled={submitLoading || !formData.panVerified}
                     className="flex-1 py-3 sm:py-3.5 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg sm:rounded-xl font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 active:scale-[0.98] touch-manipulation"
                 >
                     {submitLoading ? (

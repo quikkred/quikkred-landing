@@ -2,16 +2,24 @@
 
 import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { useQuickApplyTracking } from "@/lib/hooks/useQuickApplyTracking";
 
 const GoogleVerify = () => {
     const [isLoading, setIsLoading] = useState(false);
 
+    // Tracking
+    const { trackGoogleAuthStarted, trackGoogleAuthFailed, trackAPIError } = useQuickApplyTracking();
+
     const handleSignIn = async () => {
         try {
             setIsLoading(true);
+            trackGoogleAuthStarted();
             await signIn("google", { callbackUrl: "/apply/quick-v2" });
         } catch (error) {
             console.error("Google Sign In Error:", error);
+            const errorMsg = error instanceof Error ? error.message : "Google sign-in failed";
+            trackGoogleAuthFailed(errorMsg);
+            trackAPIError('google-signin', errorMsg);
             setIsLoading(false);
         }
     };
