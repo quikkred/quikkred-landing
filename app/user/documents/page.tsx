@@ -10,6 +10,7 @@ import {
 import { toast, Toaster } from '@/components/ui/toast';
 import { API_BASE_URL } from '@/lib/config';
 import { useDocuments } from '@/store/hooks/useDocuments';
+import getToken from '@/lib/getToken';
 
 interface Document {
   id: string;
@@ -299,7 +300,7 @@ export default function DocumentsPage() {
     setDeleteConfirm({ show: false, doc: null });
 
     try {
-      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const token = await getToken();
       const userId = localStorage.getItem('userId');
 
       if (!token || !userId) {
@@ -373,7 +374,7 @@ export default function DocumentsPage() {
 
     try {
       setUploadingDocs(prev => ({ ...prev, [docType]: true }));
-      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const token = await getToken();
 
       if (!token) {
         toast({
