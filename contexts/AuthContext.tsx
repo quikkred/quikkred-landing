@@ -242,6 +242,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value: AuthContextType = {
     user,
+    setUser,
     login,
     logout,
     isLoading,
