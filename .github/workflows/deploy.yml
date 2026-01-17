@@ -18,9 +18,10 @@ on:
         required: false
         default: false
         type: boolean
-  schedule:
-    # 4:00 AM IST = 22:30 UTC (previous day)
-    - cron: '30 22 * * *'
+  # DISABLED - Mobile OTP issue, will enable on Monday
+  # schedule:
+  #   # 4:00 AM IST = 22:30 UTC (previous day)
+  #   - cron: '30 22 * * *'
   push:
     branches:
       - develop    # Deploy to Alpha (Hostinger KVM8)
