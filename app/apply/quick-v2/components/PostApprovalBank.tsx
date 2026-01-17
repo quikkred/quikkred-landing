@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
     Building2, CheckCircle, Loader2, AlertCircle,
@@ -9,6 +9,7 @@ import {
 import { QuickApplyV2FormData, ApprovalDetails } from '@/lib/types/quickApplyV2';
 import { isValidIFSC, isValidAccountNumber, formatCurrency } from '@/lib/constants/quickApplyV2';
 import { API_BASE_URL } from '@/lib/config';
+import { useQuickApplyTracking, useVerificationFrictionTracking } from '@/lib/hooks/useQuickApplyTracking';
 
 // MOCK MODE - Set to false for production with real APIs
 // Set to true only for local testing without backend
@@ -29,6 +30,30 @@ export default function PostApprovalBank({
     onNext,
     onBack,
 }: PostApprovalBankProps) {
+    // Tracking
+    const {
+        trackStepViewed,
+        trackStepCompleted,
+        trackBankVerifyStarted,
+        trackBankVerifySuccess,
+        trackBankVerifyFailed,
+        trackFieldFocus,
+        trackFormError,
+        trackAPIError,
+    } = useQuickApplyTracking();
+
+    // Bank verification friction tracking
+    const bankFriction = useVerificationFrictionTracking('bank');
+
+    // Track step viewed on mount
+    const hasTrackedStepRef = useRef(false);
+    useEffect(() => {
+        if (!hasTrackedStepRef.current) {
+            hasTrackedStepRef.current = true;
+            trackStepViewed(4, 'Bank Details');
+            bankFriction.startTracking();
+        }
+    }, [trackStepViewed, bankFriction]);
     // IFSC States
     const [ifscLoading, setIfscLoading] = useState(false);
     const [ifscError, setIfscError] = useState('');
@@ -129,15 +154,29 @@ export default function PostApprovalBank({
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
+            // Track form errors
+            Object.entries(newErrors).forEach(([field, message]) => {
+                trackFormError(field, message, 4);
+            });
             return;
         }
 
         setSubmitLoading(true);
+        trackBankVerifyStarted();
+        bankFriction.recordAttempt();
 
         // MOCK MODE
         if (MOCK_MODE) {
             await new Promise(resolve => setTimeout(resolve, 1000));
             console.log('✅ MOCK: Bank details saved');
+
+            // Track success
+            trackBankVerifySuccess(formData.bankName);
+            bankFriction.completeTracking(true);
+            trackStepCompleted(4, 'Bank Details', {
+                bankName: formData.bankName,
+            });
+
             setSubmitLoading(false);
             onNext();
             return;
@@ -167,13 +206,27 @@ export default function PostApprovalBank({
             const data = await response.json();
 
             if (data.success) {
+                // Track success
+                trackBankVerifySuccess(formData.bankName);
+                bankFriction.completeTracking(true);
+                trackStepCompleted(4, 'Bank Details', {
+                    bankName: formData.bankName,
+                });
                 onNext();
             } else {
-                setErrors({ submit: data.message || 'Failed to save bank details' });
+                const errorMsg = data.message || 'Failed to save bank details';
+                setErrors({ submit: errorMsg });
+                trackBankVerifyFailed(errorMsg, bankFriction.getAttempts());
             }
         } catch (error) {
             console.error('Bank details error:', error);
+            trackAPIError('/api/loan/update-bank', 'Network error');
             // Proceed anyway in case of error
+            trackBankVerifySuccess(formData.bankName);
+            bankFriction.completeTracking(true);
+            trackStepCompleted(4, 'Bank Details', {
+                bankName: formData.bankName,
+            });
             onNext();
         } finally {
             setSubmitLoading(false);

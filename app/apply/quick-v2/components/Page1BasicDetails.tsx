@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Phone, IndianRupee, CheckCircle, AlertCircle, Zap } from 'lucide-react';
 import { QuickApplyV2FormData } from '@/lib/types/quickApplyV2';
@@ -10,10 +10,7 @@ import TruecallerVerify from './ui/TruecallerVerify';
 import GoogleVerify from './ui/GoogleVerify';
 import { useAuth } from '@/contexts/AuthContext';
 import MobileVerify from './ui/MobileVerify';
-
-// MOCK MODE - Set to false for production with real APIs
-// const MOCK_MODE = false;
-// const MOCK_OTP = '123456'; 
+import { useQuickApplyTracking } from '@/lib/hooks/useQuickApplyTracking';
 
 interface Page1Props {
     formData: QuickApplyV2FormData;
@@ -25,6 +22,28 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
     // OTP States
     const [otpTimer, setOtpTimer] = useState(0);
     const { user } = useAuth();
+
+    // Tracking
+    const {
+        trackStepViewed,
+        trackStepCompleted,
+        trackLoanAmountChange,
+        trackTenureChange,
+        trackLoanSelection,
+    } = useQuickApplyTracking();
+
+    // Track previous values for change detection
+    const prevLoanAmountRef = useRef(formData.loanAmount);
+    const prevTenureRef = useRef(formData.tenure);
+    const hasTrackedStepRef = useRef(false);
+
+    // Track step viewed on mount
+    useEffect(() => {
+        if (!hasTrackedStepRef.current) {
+            hasTrackedStepRef.current = true;
+            trackStepViewed(1, 'Basic Details');
+        }
+    }, [trackStepViewed]);
 
     // The logic now correctly handles verification status from the AuthContext
     const isVerified = useMemo(() => user?.isEmailVerified || user?.isMobileVerified, [user]);
@@ -42,6 +61,41 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
     const canProceed = isVerified &&
         formData.loanAmount >= LOAN_CONFIG.MIN_AMOUNT &&
         formData.loanAmount <= LOAN_CONFIG.MAX_AMOUNT;
+
+    // Handle loan amount change with tracking
+    const handleLoanAmountChange = (newAmount: number) => {
+        const oldAmount = prevLoanAmountRef.current;
+        if (oldAmount !== newAmount) {
+            trackLoanAmountChange(oldAmount, newAmount);
+            prevLoanAmountRef.current = newAmount;
+        }
+        setFormData((prev: any) => ({ ...prev, loanAmount: newAmount }));
+    };
+
+    // Handle tenure change with tracking
+    const handleTenureChange = (newTenure: number) => {
+        const oldTenure = prevTenureRef.current;
+        if (oldTenure !== newTenure) {
+            trackTenureChange(oldTenure, newTenure);
+            prevTenureRef.current = newTenure;
+        }
+        setFormData((prev: any) => ({ ...prev, tenure: newTenure }));
+    };
+
+    // Handle continue with tracking
+    const handleContinue = () => {
+        // Track loan selection finalized
+        trackLoanSelection(formData.loanAmount, formData.tenure, loanCalc.netDisbursalAmount);
+
+        // Track step completed
+        trackStepCompleted(1, 'Basic Details', {
+            loanAmount: formData.loanAmount,
+            tenure: formData.tenure,
+            verificationMethod: user?.isMobileVerified ? 'mobile' : 'email',
+        });
+
+        onNext();
+    };
 
     return (
         <motion.div
@@ -117,7 +171,7 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
                         max={LOAN_CONFIG.MAX_AMOUNT}
                         step={5000}
                         value={formData.loanAmount}
-                        onChange={(e) => setFormData((prev: any) => ({ ...prev, loanAmount: parseInt(e.target.value) }))}
+                        onChange={(e) => handleLoanAmountChange(parseInt(e.target.value))}
                         className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-[#25B181]"
                     />
                 </div>
@@ -137,7 +191,7 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
                         <button
                             key={days}
                             type="button"
-                            onClick={() => setFormData((prev: any) => ({ ...prev, tenure: days }))}
+                            onClick={() => handleTenureChange(days)}
                             className={`py-2.5 sm:py-3 rounded-lg font-semibold text-xs sm:text-sm transition-all ${formData.tenure === days
                                 ? 'bg-[#25B181] text-white shadow-md shadow-[#25B181]/30'
                                 : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-[#25B181]'
@@ -167,7 +221,7 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
 
             {/* Continue Button */}
             <button
-                onClick={onNext}
+                onClick={handleContinue}
                 disabled={!canProceed}
                 className="w-full py-3.5 sm:py-4 bg-gradient-to-r disabled:cursor-not-allowed from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-xl font-bold text-base sm:text-lg shadow-lg shadow-[#25B181]/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
             >
