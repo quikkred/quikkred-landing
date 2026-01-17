@@ -9,6 +9,13 @@ import { API_BASE_URL } from './config';
 // TYPES
 // ============================================
 
+export type EntrySource =
+  | 'DIRECT'
+  | 'GOOGLE_ADS'
+  | 'META_ADS'
+  | 'REFERRAL'
+  | 'ORGANIC';
+
 type EventType =
   | 'APPLICATION_STARTED'
   | 'STEP_VIEWED'

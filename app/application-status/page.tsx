@@ -20,6 +20,8 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Suspense } from "react";
+import { getSession } from "next-auth/react";
+import getToken from "@/lib/getToken";
 
 interface ApplicationStatusData {
   status: string;
@@ -57,10 +59,8 @@ function ApplicationStatusContent() {
       redirectBasedOnAuth();
     }
 
-    function redirectBasedOnAuth() {
-      const token = localStorage.getItem('token') ||
-                    localStorage.getItem('authToken') ||
-                    localStorage.getItem('accessToken');
+    async function redirectBasedOnAuth() {
+      const token = await getToken();
       if (token) {
         // User is logged in - redirect to dashboard
         router.replace('/user');
