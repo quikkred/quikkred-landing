@@ -516,7 +516,7 @@ export default function FAQsPage() {
               </div>
             </Link>
 
-            <Link href="/apply/quick">
+            <Link href="/apply/quick-v2">
               <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-shadow cursor-pointer">
                 <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
                   <Bookmark className="w-6 h-6 text-purple-600" />
