@@ -7,6 +7,7 @@ import { Footer } from "@/components/footer";
 import { SecurityBanner } from "@/components/security-banner";
 import dynamic from "next/dynamic";
 import { Suspense, useEffect, useState } from "react";
+import getToken from "@/lib/getToken";
 
 // Lazy load user dashboard layout - only needed when authenticated
 const UserLayout = dynamic(() => import("./UserLayout"), {
@@ -70,7 +71,7 @@ const PUBLIC_ROUTES = [
 ];
 
 // Routes that should NOT show header/footer (full-page experiences for all users)
-const FULL_SCREEN_ROUTES = ['/select-language', '/apply/quick', '/apply/loan'];
+const FULL_SCREEN_ROUTES = ['/select-language', '/apply/quick-v2', '/apply/loan'];
 
 // Check if current path should use public layout
 const isPublicRoute = (pathname: string): boolean => {
@@ -89,11 +90,18 @@ const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
 
   // Check for token in localStorage on mount (for users who just completed form submission)
   useEffect(() => {
-    const token = localStorage.getItem('accessToken') ||
-                  localStorage.getItem('token') ||
-                  localStorage.getItem('authToken');
-    setHasToken(!!token);
+    let alive = true;
+
+    (async () => {
+      const token = await getToken();
+      if (alive) setHasToken(!!token);
+    })();
+
+    return () => {
+      alive = false;
+    };
   }, [pathname]);
+
 
   // Show loading screen when logging out to prevent UI flash
   if (isLoggingOut) {
