@@ -297,7 +297,7 @@ export default function TestimonialsPage() {
               Experience fast, transparent, and reliable loan services. Apply now and see why we're rated 4.9/5!
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Link href="/apply/quick">
+              <Link href="/apply/quick-v2">
                 <button
                   className="px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all"
                   style={{ backgroundColor: '#FFD600', color: '#145214' }}
