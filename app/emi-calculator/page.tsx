@@ -103,7 +103,7 @@ export default function EMICalculatorPage() {
             </h2>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid md:grid-cols-3 gap-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -162,14 +162,14 @@ export default function EMICalculatorPage() {
             <p className="text-white/90 text-sm sm:text-base lg:text-lg mb-8 max-w-2xl mx-auto">
               Apply now and get instant approval with our AI-powered system. Money disbursed within minutes!
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-              <Link href="/apply/quick">
-                <button className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 min-h-[48px] bg-white text-[#25B181] rounded-xl font-bold hover:shadow-lg transition-all text-sm sm:text-base">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/apply/quick-v2">
+                <button className="px-8 py-4 bg-white text-[#25B181] rounded-xl font-bold hover:shadow-lg transition-all text-sm sm:text-base">
                   Apply for Loan Now
                 </button>
               </Link>
               <Link href="/about-us">
-                <button className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 min-h-[48px] bg-transparent border-2 border-white text-white rounded-xl font-bold hover:bg-white hover:text-[#25B181] transition-all text-sm sm:text-base">
+                <button className="px-8 py-4 bg-transparent border-2 border-white text-white rounded-xl font-bold hover:bg-white hover:text-[#25B181] transition-all text-sm sm:text-base">
                   Learn More
                 </button>
               </Link>

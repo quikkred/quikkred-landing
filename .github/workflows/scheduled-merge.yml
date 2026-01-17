@@ -1,0 +1,85 @@
+# Scheduled Merge to Main
+# Merges feature branch to main at 4 AM IST (22:30 UTC)
+name: Scheduled Merge to Production
+
+on:
+  schedule:
+    # 4:00 AM IST = 22:30 UTC (previous day)
+    - cron: '30 22 * * *'
+  workflow_dispatch:
+    inputs:
+      source_branch:
+        description: 'Branch to merge from'
+        required: true
+        default: 'features/deepak'
+      confirm:
+        description: 'Type "CONFIRM" to proceed'
+        required: true
+
+env:
+  SOURCE_BRANCH: features/deepak
+  TARGET_BRANCH: main
+
+jobs:
+  scheduled-merge:
+    runs-on: ubuntu-latest
+    # Only run if scheduled OR if manual with confirmation
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.confirm == 'CONFIRM')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+      - name: Check if source branch has changes
+        id: check-changes
+        run: |
+          git fetch origin ${{ env.SOURCE_BRANCH }}
+          git fetch origin ${{ env.TARGET_BRANCH }}
+
+          COMMITS_AHEAD=$(git rev-list --count origin/${{ env.TARGET_BRANCH }}..origin/${{ env.SOURCE_BRANCH }})
+          echo "commits_ahead=$COMMITS_AHEAD" >> $GITHUB_OUTPUT
+
+          if [ "$COMMITS_AHEAD" -eq "0" ]; then
+            echo "No new commits to merge"
+            echo "should_merge=false" >> $GITHUB_OUTPUT
+          else
+            echo "Found $COMMITS_AHEAD commits to merge"
+            echo "should_merge=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Merge to main
+        if: steps.check-changes.outputs.should_merge == 'true'
+        run: |
+          git checkout ${{ env.TARGET_BRANCH }}
+          git merge origin/${{ env.SOURCE_BRANCH }} --no-ff -m "chore: Scheduled merge from ${{ env.SOURCE_BRANCH }} to ${{ env.TARGET_BRANCH }}
+
+          Automated merge triggered at $(date -u '+%Y-%m-%d %H:%M UTC')
+          Commits merged: ${{ steps.check-changes.outputs.commits_ahead }}"
+
+          git push origin ${{ env.TARGET_BRANCH }}
+          echo "✅ Successfully merged ${{ env.SOURCE_BRANCH }} to ${{ env.TARGET_BRANCH }}"
+
+      - name: Skip notification
+        if: steps.check-changes.outputs.should_merge == 'false'
+        run: |
+          echo "⏭️ Skipping merge - no new commits in ${{ env.SOURCE_BRANCH }}"
+
+      - name: Post merge summary
+        if: steps.check-changes.outputs.should_merge == 'true'
+        run: |
+          echo "## 🚀 Scheduled Merge Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Source:** ${{ env.SOURCE_BRANCH }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Target:** ${{ env.TARGET_BRANCH }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commits merged:** ${{ steps.check-changes.outputs.commits_ahead }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Time:** $(date -u '+%Y-%m-%d %H:%M UTC') (4:00 AM IST)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The deploy workflow will now automatically trigger." >> $GITHUB_STEP_SUMMARY

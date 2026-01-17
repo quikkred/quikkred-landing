@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { API_BASE_URL } from '@/lib/config';
+import { signOut } from 'next-auth/react';
 
 export interface User {
   id: string;
@@ -24,7 +25,8 @@ export interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string, apiData?: any) => Promise<boolean>;
+  login: (email: string, password: string, apiData?: any, isRedirect?: boolean) => Promise<boolean>;
+  setUser: (userData: User | null) => void;
   logout: () => void;
   isLoading: boolean;
   isLoggingOut: boolean;
@@ -124,7 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (email: string, password: string, apiData?: any): Promise<boolean> => {
+  const login = async (email: string, password: string, apiData?: any, isRedirect: boolean = true): Promise<boolean> => {
     setIsLoading(true);
 
     try {
@@ -169,7 +171,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await fetchUserProfile(authToken, userData);
 
         // Redirect to user dashboard
-        router.push('/user');
+        if(isRedirect){
+          router.push('/user');
+        }
 
         return true;
       }
@@ -184,35 +188,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     // Set logging out state immediately to hide UI
-    setIsLoggingOut(true);
-    setUser(null);
+    try {
+      setIsLoggingOut(true);
+      setUser(null);
 
-    // Clear all localStorage items
-    localStorage.removeItem('token');
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('loginTimestamp');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('role');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('email');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userMobile');
-    localStorage.removeItem('customerUniqueId');
-    localStorage.removeItem('heroFormData');
+      // Clear all localStorage items
+      localStorage.removeItem('token');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('loginTimestamp');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('role');
+      localStorage.removeItem('userEmail');
+      localStorage.removeItem('email');
+      localStorage.removeItem('userName');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('userMobile');
+      localStorage.removeItem('customerUniqueId');
+      localStorage.removeItem('heroFormData');
 
-    // Clear cookies
-    document.cookie = 'auth-token=; path=/; max-age=0';
-    document.cookie = 'user-role=; path=/; max-age=0';
+      // Clear cookies
+      document.cookie = 'auth-token=; path=/; max-age=0';
+      document.cookie = 'user-role=; path=/; max-age=0';
 
-    // Use setTimeout to ensure state is updated before redirect
-    setTimeout(() => {
-      window.location.href = '/login';
-    }, 0);
+      // ✅ IMPORTANT: let NextAuth clear its cookies
+      await signOut({ redirect: true, callbackUrl: "/login" });
+
+      // Use setTimeout to ensure state is updated before redirect
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 0);
+    } catch (er) {
+      console.log("logout error", er)
+    }
   };
 
   const updateUser = (userData: Partial<User>) => {
@@ -231,6 +242,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value: AuthContextType = {
     user,
+    setUser,
     login,
     logout,
     isLoading,
