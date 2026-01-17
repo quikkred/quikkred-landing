@@ -184,35 +184,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     // Set logging out state immediately to hide UI
-    setIsLoggingOut(true);
-    setUser(null);
+    try {
+      setIsLoggingOut(true);
+      setUser(null);
 
-    // Clear all localStorage items
-    localStorage.removeItem('token');
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('loginTimestamp');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('role');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('email');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userMobile');
-    localStorage.removeItem('customerUniqueId');
-    localStorage.removeItem('heroFormData');
+      console.log("call logout....!");
 
-    // Clear cookies
-    document.cookie = 'auth-token=; path=/; max-age=0';
-    document.cookie = 'user-role=; path=/; max-age=0';
+      // Clear all localStorage items
+      localStorage.removeItem('token');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('loginTimestamp');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('role');
+      localStorage.removeItem('userEmail');
+      localStorage.removeItem('email');
+      localStorage.removeItem('userName');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('userMobile');
+      localStorage.removeItem('customerUniqueId');
+      localStorage.removeItem('heroFormData');
 
-    // Use setTimeout to ensure state is updated before redirect
-    setTimeout(() => {
-      window.location.href = '/login';
-    }, 0);
+      // Clear cookies
+      document.cookie = 'auth-token=; path=/; max-age=0';
+      document.cookie = 'user-role=; path=/; max-age=0';
+      console.log("call logout login....!");
+
+      // ✅ IMPORTANT: let NextAuth clear its cookies
+      await signOut({ redirect: true, callbackUrl: "/login" });
+
+      // Use setTimeout to ensure state is updated before redirect
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 0);
+    } catch (er) {
+      console.log("logout error", er)
+    }
   };
 
   const updateUser = (userData: Partial<User>) => {
