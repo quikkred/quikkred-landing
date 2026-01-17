@@ -11,6 +11,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { API_BASE_URL } from '@/lib/config';
 import { useSupport } from '@/store/hooks/useSupport';
+import getToken from '@/lib/getToken';
 
 interface SupportTicket {
   _id: string;
@@ -114,9 +115,7 @@ export default function SupportPage() {
     setFormLoading(true);
 
     try {
-      const token = localStorage.getItem('accessToken') ||
-                    localStorage.getItem('authToken') ||
-                    localStorage.getItem('token');
+      const token = await getToken();
       const customerId = localStorage.getItem('userId');
 
       if (!token) {
