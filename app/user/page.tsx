@@ -21,6 +21,8 @@ import { useToast } from '@/components/ui/toast';
 import { API_BASE_URL } from '@/lib/config';
 import { useDashboard } from '@/store/hooks/useDashboard';
 import { useLoans } from '@/store/hooks/useLoans';
+import { signOut } from 'next-auth/react';
+import getToken from '@/lib/getToken';
 
 declare global {
   interface Window {
@@ -381,9 +383,7 @@ export default function UserDashboard() {
         return;
       }
 
-      const token = localStorage.getItem('authToken') ||
-                    localStorage.getItem('token') ||
-                    localStorage.getItem('accessToken');
+      const token = await getToken();
 
       if (!token) {
         toast({
@@ -866,7 +866,7 @@ export default function UserDashboard() {
 )}
 
                 <button
-                  onClick={() => router.push('/apply/quick')}
+                  onClick={() => router.push('/apply/quick-v2')}
                   className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg hover:shadow-lg transition-all font-medium text-sm sm:text-base"
                 >
                   <RefreshCw className="w-4 h-4" />
