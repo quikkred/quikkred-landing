@@ -40,7 +40,7 @@ interface LoginForm {
 
 export default function LoginPage() {
   const { t } = useLanguage();
-  const { login, setUser } = useAuth();
+  const { login } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
@@ -693,7 +693,7 @@ export default function LoginPage() {
                     </button>
 
                     {/* Apply Now Button */}
-                    <Link href="/apply/quick" className="block">
+                    <Link href="/apply/quick-v2" className="block">
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
@@ -743,7 +743,7 @@ export default function LoginPage() {
                   <p className="text-gray-700 mb-6">
                     Join thousands who have already transformed their financial journey with instant AI-powered loans.
                   </p>
-                  <Link href="/apply/quick">
+                  <Link href="/apply/quick-v2">
                     <button className="w-full bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all mb-4">
                       Start Your Application
                     </button>
