@@ -4,12 +4,23 @@ import { toast } from "@/components/ui/toast";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { useQuickApplyTracking } from "@/lib/hooks/useQuickApplyTracking";
 
 const TruecallerVerify = () => {
     const [loading, setLoading] = useState(false);
 
+    // Tracking
+    const {
+        trackTruecallerStarted,
+        trackTruecallerSuccess,
+        trackTruecallerFailed,
+        trackAPIError,
+    } = useQuickApplyTracking();
+
     const handleTruecallerLogin = async () => {
         setLoading(true);
+        trackTruecallerStarted();
+
         const id = uuidv4();
         const partnerKey = process.env.NEXT_PUBLIC_TRUECALLER_PARTNER_KEY || "zsyH7238a78c4b043444a96c02b328d657515";
 
@@ -41,11 +52,15 @@ const TruecallerVerify = () => {
                 });
 
                 if (result?.error) {
+                    trackTruecallerFailed(result.error);
                     toast({
                         variant: "error",
                         title: "Verification Failed",
                         description: "We couldn't verify your account. Please try again."
                     });
+                } else {
+                    // Mobile will be available in session after redirect
+                    trackTruecallerSuccess('truecaller_verified');
                 }
 
                 setLoading(false);
@@ -65,6 +80,8 @@ const TruecallerVerify = () => {
             if (document.hasFocus()) {
                 setLoading(false);
                 document.removeEventListener("visibilitychange", handleReturn);
+                const errorMsg = "Truecaller app not detected";
+                trackTruecallerFailed(errorMsg);
                 toast({
                     variant: "error",
                     title: "App Not Detected",
