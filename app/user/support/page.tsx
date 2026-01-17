@@ -377,9 +377,8 @@ switch (category) {
                 <option value="DOCUMENT_UPLOAD">Document Upload</option>
                 <option value="ACCOUNT_ACCESS">Account Access</option>
                 <option value="COMPLAINT">Complaint</option>
+                <option value="EMAIL_INQUIRY">Email Inquiry</option>
                 <option value="OTHER">Other</option>
-                <option value="BILLING">Billing</option>
-
               </select>
             </div>
 
