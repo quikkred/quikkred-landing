@@ -35,41 +35,41 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ userData, children }: { userData: User | null; children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(userData);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
 
-  // useEffect(() => {
-  //   // Check for existing session
-  //   const token = localStorage.getItem('token') ||
-  //                 localStorage.getItem('authToken') ||
-  //                 localStorage.getItem('accessToken');
-  //   const storedUserId = localStorage.getItem('userId');
-  //   const storedUserName = localStorage.getItem('userName');
-  //   const storedUserEmail = localStorage.getItem('userEmail') || localStorage.getItem('email');
-  //   const storedUserMobile = localStorage.getItem('userMobile');
+  useEffect(() => {
+    // Check for existing session
+    const token = localStorage.getItem('token') ||
+                  localStorage.getItem('authToken') ||
+                  localStorage.getItem('accessToken');
+    const storedUserId = localStorage.getItem('userId');
+    const storedUserName = localStorage.getItem('userName');
+    const storedUserEmail = localStorage.getItem('userEmail') || localStorage.getItem('email');
+    const storedUserMobile = localStorage.getItem('userMobile');
 
-  //   if (token && storedUserId) {
-  //     // Create user object from stored data
-  //     const userData: User = {
-  //       id: storedUserId,
-  //       name: storedUserName || 'User',
-  //       email: storedUserEmail || '',
-  //       mobile: storedUserMobile || undefined,
-  //     };
+    if (token && storedUserId) {
+      // Create user object from stored data
+      const userData: User = {
+        id: storedUserId,
+        name: storedUserName || 'User',
+        email: storedUserEmail || '',
+        mobile: storedUserMobile || undefined,
+      };
 
-  //     setUser(userData);
+      setUser(userData);
 
-  //     // Fetch real user profile if we have a real token (not mock)
-  //     if (token && !token.startsWith('mock_token_')) {
-  //       fetchUserProfile(token, userData);
-  //     }
-  //   }
+      // Fetch real user profile if we have a real token (not mock)
+      if (token && !token.startsWith('mock_token_')) {
+        fetchUserProfile(token, userData);
+      }
+    }
 
-  //   setIsLoading(false);
-  // }, []);
+    setIsLoading(false);
+  }, []);
 
   const fetchUserProfile = async (token: string, currentUser: User) => {
     console.log('🔵 Fetching user profile from API...');
@@ -131,7 +131,7 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
 
     try {
       // If API data is provided, use it for authentication
-      if (apiData && (apiData.user?.id || apiData.userId) && (apiData.token || apiData.accessToken)) {
+      if (apiData && apiData.userId && (apiData.token || apiData.accessToken)) {
         const authToken = apiData.accessToken || apiData.token;
 
         // Determine if login was with email or mobile
@@ -140,31 +140,30 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
 
         // Create user object from API data
         const userData: User = {
-          id: apiData.user?.id || apiData.userId,
+          id: apiData.userId,
           name: apiData.fullName || apiData.name || 'User',
           email: isEmailLogin ? email : (apiData.email || ''),
           mobile: isMobileLogin ? email : (apiData.mobile || ''),
         };
 
         // Store session in localStorage
-        // localStorage.setItem('token', authToken);
-        // localStorage.setItem('authToken', authToken);
-        // localStorage.setItem('accessToken', authToken);
-        // localStorage.setItem('userEmail', userData.email);
-        // localStorage.setItem('userName', userData.name);
-        // localStorage.setItem('userId', apiData.userId);
-
+        localStorage.setItem('token', authToken);
+        localStorage.setItem('authToken', authToken);
+        localStorage.setItem('accessToken', authToken);
+        localStorage.setItem('userEmail', userData.email);
+        localStorage.setItem('userName', userData.name);
+        localStorage.setItem('userId', apiData.userId);
         // Add login timestamp for grace period handling in api-client
-        // localStorage.setItem('loginTimestamp', Date.now().toString());
-        // if (userData.mobile) {
-        //   localStorage.setItem('userMobile', userData.mobile);
-        // }
-        // if (apiData.role) {
-        //   localStorage.setItem('role', apiData.role);
-        // }
+        localStorage.setItem('loginTimestamp', Date.now().toString());
+        if (userData.mobile) {
+          localStorage.setItem('userMobile', userData.mobile);
+        }
+        if (apiData.role) {
+          localStorage.setItem('role', apiData.role);
+        }
 
         // Set cookies for middleware to access
-        // document.cookie = `auth-token=${authToken}; path=/; max-age=2592000`;
+        document.cookie = `auth-token=${authToken}; path=/; max-age=2592000`;
 
         setUser(userData);
 
@@ -247,8 +246,7 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
     logout,
     isLoading,
     isLoggingOut,
-    updateUser,
-    setUser
+    updateUser
   };
 
   return (
