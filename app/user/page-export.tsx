@@ -22,7 +22,7 @@ import { DashboardErrorBoundary, ComponentErrorBoundary } from '@/components/err
 import { format } from 'date-fns';
 
 function UserDashboardExportContent() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const { data, loading, error, refetch } = useUserDashboard({ refreshInterval: 30000 });
   const { trackPageView, trackAction } = useAnalytics();
@@ -42,10 +42,10 @@ function UserDashboardExportContent() {
 
   // Check authentication
   useEffect(() => {
-    if (!user) {
+    if (!authLoading && !user) {
       router.push('/login');
     }
-  }, [user, router]);
+  }, [user, authLoading, router]);
 
   // Prepare data for export
   const prepareExportData = (exportFormat: string) => {
@@ -252,7 +252,7 @@ function UserDashboardExportContent() {
   };
 
   // Show loading state
-  if (loading) {
+  if (authLoading || loading) {
     return <DashboardLoading role="USER" message="Loading dashboard with export features..." />;
   }
 

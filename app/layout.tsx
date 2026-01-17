@@ -2,11 +2,12 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Sora } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
+import { SecurityBanner } from "@/components/security-banner";
 import ConditionalLayout from "@/components/layouts/ConditionalLayout";
 import LanguageGuard from "@/components/LanguageGuard";
 import { Toaster } from "@/components/ui/toast";
-import getUserDetails from "@/lib/get-user-details";
-import { AuthProvider } from "@/contexts/AuthContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -76,13 +77,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const userDetails = await getUserDetails();
-  // console.log('🌐 RootLayout - User Details:', userDetails);
   return (
     <html lang="en" className={`${inter.variable} ${sora.variable}`} suppressHydrationWarning>
       <head>
@@ -213,17 +212,14 @@ fbq('track', 'PageView');`,
             />
           </noscript>
         )}
-        <AuthProvider userData={userDetails}>
-          <Providers>
-            <LanguageGuard>
-              <ConditionalLayout>
-                {children}
-              </ConditionalLayout>
-            </LanguageGuard>
-            <Toaster />
-          </Providers>
-        </AuthProvider>
-
+        <Providers>
+          <LanguageGuard>
+            <ConditionalLayout>
+              {children}
+            </ConditionalLayout>
+          </LanguageGuard>
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );
