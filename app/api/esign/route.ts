@@ -303,6 +303,6 @@ export async function GET(request: NextRequest) {
 
   // Redirect to failure page
   return NextResponse.redirect(
-    new URL(`/apply/quick?esign_error=true`, request.url)
+    new URL(`/apply/quick-v2?esign_error=true`, request.url)
   );
 }
