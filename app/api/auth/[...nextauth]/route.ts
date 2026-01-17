@@ -19,19 +19,25 @@ export const authOptions: AuthOptions = {
       },
     }),
 
-    // ✅ OTP Login (calls verifyOtp API inside NextAuth)
+    // ✅ OTP Login
     CredentialsProvider({
       id: "otp",
       name: "OTP Login",
       credentials: {
         emailOrPhone: { label: "Email or Phone", type: "text" },
         otp: { label: "OTP", type: "text" },
-        loginMethod: { label: "loginMethod", type: "text" }, // "email" | "mobile"
+        loginMethod: { label: "loginMethod", type: "text" },
       },
       async authorize(credentials) {
         try {
-          if (!credentials?.emailOrPhone || !credentials?.otp || !credentials?.loginMethod) {
-            return null;
+          if (!credentials?.emailOrPhone) {
+            throw new Error("Mobile number or Email is required");
+          }
+          if (!credentials?.otp) {
+            throw new Error("Please enter the 6-digit OTP");
+          }
+          if (!credentials?.loginMethod) {
+            throw new Error("Invalid login method detected");
           }
 
           const payload =
@@ -47,13 +53,14 @@ export const authOptions: AuthOptions = {
 
           const data = await response.json().catch(() => null);
 
-          if (!response.ok || !data?.success || !data?.data) return null;
+          // ✅ Updated to throw backend message
+          if (!response.ok || !data?.success || !data?.data) {
+            throw new Error(data?.message || "Invalid code");
+          }
 
           const d = data.data;
-
-          // ✅ return "user" object (goes to jwt callback as `user`)
           return {
-            id: d.userId, // required
+            id: d.userId,
             email: d.email ?? null,
             role: d.role,
             accessToken: d.accessToken,
@@ -61,14 +68,14 @@ export const authOptions: AuthOptions = {
             customerUniqueId: d.customerUniqueId,
             verifiedAt: d.verifiedAt ?? null,
           };
-        } catch (e) {
-          console.error("OTP authorize error:", e);
-          return null;
+        } catch (e: any) {
+          // Re-throw the error so NextAuth passes the message to the frontend
+          throw new Error(e.message || "OTP Verification failed");
         }
       },
     }),
 
-    // ✅ Truecaller Provider (Internal Retry Logic)
+    // ✅ Truecaller Provider
     CredentialsProvider({
       id: "truecaller",
       name: "Truecaller",
@@ -79,8 +86,8 @@ export const authOptions: AuthOptions = {
         const requestId = credentials?.requestId;
         if (!requestId) return null;
 
-        const maxRetries = 5; // Total attempts
-        const delayMs = 2000; // Wait 2 seconds between each try
+        const maxRetries = 5;
+        const delayMs = 2000;
 
         for (let i = 0; i < maxRetries; i++) {
           try {
@@ -92,7 +99,6 @@ export const authOptions: AuthOptions = {
 
             const json = await res.json().catch(() => null);
 
-            // If backend says VERIFIED, return the user immediately
             if (res.ok && json?.success && json?.status === "VERIFIED" && json?.data) {
               const d = json.data;
               return {
@@ -106,29 +112,28 @@ export const authOptions: AuthOptions = {
               };
             }
 
-            // If not verified yet (e.g. status is "PENDING" or 404), wait and retry
-            // console.log(`Attempt ${i + 1}: Data not ready, retrying...`);
+            // ✅ If specifically rejected by backend on final attempt
+            if (i === maxRetries - 1 && (!json?.success || json?.status === "REJECTED")) {
+              throw new Error(json?.message || "Truecaller verification failed");
+            }
+
             if (i < maxRetries - 1) {
               await new Promise((resolve) => setTimeout(resolve, delayMs));
             }
-
-          } catch (err) {
-            console.error("Truecaller retry error:", err);
+          } catch (err: any) {
+            if (i === maxRetries - 1) throw new Error(err.message || "Truecaller timeout");
           }
         }
-
-        // If we reach here, it means all retries failed
         return null;
       },
-    })
+    }),
   ],
 
   session: { strategy: "jwt" },
-  // debug: true,
 
   callbacks: {
     async jwt({ token, account, user }) {
-      // ✅ 1) Google sign-in: call your backend and store tokens
+      // ✅ 1) Google sign-in
       if (account?.provider === "google") {
         const payload = {
           id_token: account.id_token ?? null,
@@ -137,7 +142,6 @@ export const authOptions: AuthOptions = {
 
         if (payload.id_token || payload.access_token) {
           try {
-            // const res = await fetch(`${API_BASE_URL}/api/test2/google-login`, {
             const res = await fetch(`${API_BASE_URL}/api/auth/customer/Oauth/login`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -145,7 +149,6 @@ export const authOptions: AuthOptions = {
             });
 
             const result = await res.json();
-            // console.log("Backend login result (google):", result);
 
             if (result?.success) {
               token.accessToken = result.data.accessToken;
@@ -154,38 +157,26 @@ export const authOptions: AuthOptions = {
               token.customerUniqueId = result.data.customerUniqueId;
               token.role = result.data.role;
               token.verifiedAt = result.data.verifiedAt;
+            } else {
+              // Passing error to be caught if necessary
+              throw new Error(result?.message || "Google backend login failed");
             }
-          } catch (err) {
+          } catch (err: any) {
             console.error("Backend login error (google):", err);
           }
-        } else {
-          console.warn("No id_token or access_token received from Google account");
         }
       }
 
-      // ✅ 2) OTP sign-in: copy data from `authorize()` to token
-      if (account?.provider === "otp" && user) {
+      // ✅ 2) OTP/Truecaller sign-in
+      if ((account?.provider === "otp" || account?.provider === "truecaller") && user) {
         token.userId = (user as any).id;
         token.accessToken = (user as any).accessToken;
         token.refreshToken = (user as any).refreshToken;
         token.customerUniqueId = (user as any).customerUniqueId;
         token.role = (user as any).role;
         token.verifiedAt = (user as any).verifiedAt;
-
-        // keep session.user.email in sync
         token.email = (user as any).email;
-      }
-
-      if (account?.provider === "truecaller" && user) {
-        token.userId = user.id;
-        token.accessToken = (user as any).accessToken;
-        token.refreshToken = (user as any).refreshToken;
-        token.customerUniqueId = (user as any).customerUniqueId;
-        token.role = (user as any).role;
-        token.verifiedAt = (user as any).verifiedAt;
-        token.email = (user as any).email ?? token.email;
-        token.name = (user as any).name ?? token.name;
-        (token as any).phoneNumber = (user as any).phoneNumber;
+        if ((user as any).phoneNumber) (token as any).phoneNumber = (user as any).phoneNumber;
       }
 
       return token;

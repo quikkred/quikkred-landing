@@ -689,7 +689,7 @@ export default function UserDashboard() {
 )}
 
                 <button
-                  onClick={() => router.push('/apply/quick')}
+                  onClick={() => router.push('/apply/quick-v2')}
                   className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg hover:shadow-lg transition-all font-medium text-sm sm:text-base"
                 >
                   <RefreshCw className="w-4 h-4" />

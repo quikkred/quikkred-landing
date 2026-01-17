@@ -25,7 +25,8 @@ export interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string, apiData?: any) => Promise<boolean>;
+  login: (email: string, password: string, apiData?: any, isRedirect?: boolean) => Promise<boolean>;
+  setUser: (userData: User | null) => void;
   logout: () => void;
   isLoading: boolean;
   isLoggingOut: boolean;
@@ -125,7 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (email: string, password: string, apiData?: any): Promise<boolean> => {
+  const login = async (email: string, password: string, apiData?: any, isRedirect: boolean = true): Promise<boolean> => {
     setIsLoading(true);
 
     try {
@@ -170,7 +171,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await fetchUserProfile(authToken, userData);
 
         // Redirect to user dashboard
-        router.push('/user');
+        if(isRedirect){
+          router.push('/user');
+        }
 
         return true;
       }
@@ -191,8 +194,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoggingOut(true);
       setUser(null);
 
-      console.log("call logout....!");
-
       // Clear all localStorage items
       localStorage.removeItem('token');
       localStorage.removeItem('authToken');
@@ -212,7 +213,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Clear cookies
       document.cookie = 'auth-token=; path=/; max-age=0';
       document.cookie = 'user-role=; path=/; max-age=0';
-      console.log("call logout login....!");
 
       // ✅ IMPORTANT: let NextAuth clear its cookies
       await signOut({ redirect: true, callbackUrl: "/login" });

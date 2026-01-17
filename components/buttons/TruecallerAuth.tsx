@@ -10,14 +10,14 @@ export default function TruecallerAuth() {
 
   const handleTruecallerLogin = async () => {
     setLoading(true);
-    const id = uuidv4(); 
+    const id = uuidv4();
     const partnerKey = process.env.NEXT_PUBLIC_TRUECALLER_PARTNER_KEY || "zsyH7238a78c4b043444a96c02b328d657515";
 
     const params = new URLSearchParams({
       type: "btmsheet",
       requestNonce: id,
       partnerKey: partnerKey,
-      partnerName: "test",
+      partnerName: process.env.NEXT_PUBLIC_TRUECALLER_APP_NAME || "test",
       lang: "en",
       privacyUrl: `${window.location.origin}/privacy-policy`,
       termsUrl: `${window.location.origin}/terms-and-conditions`,
@@ -34,20 +34,20 @@ export default function TruecallerAuth() {
       if (document.visibilityState === "visible") {
         // User is back! Trigger NextAuth sign-in
         // Note: I fixed the typo 'rquestId' to 'requestId'
-        const result = await signIn("truecaller", { 
-          requestId: id, 
+        const result = await signIn("truecaller", {
+          requestId: id,
           callbackUrl: "/user",
-          redirect: true 
+          redirect: true
         });
 
         if (result?.error) {
-          toast({ 
-            variant: "error", 
-            title: "Verification Failed", 
-            description: "We couldn't verify your account. Please try again." 
+          toast({
+            variant: "error",
+            title: "Verification Failed",
+            description: "We couldn't verify your account. Please try again."
           });
         }
-        
+
         setLoading(false);
         // Clean up the listener so it doesn't run again
         document.removeEventListener("visibilitychange", handleReturn);
@@ -65,22 +65,34 @@ export default function TruecallerAuth() {
       if (document.hasFocus()) {
         setLoading(false);
         document.removeEventListener("visibilitychange", handleReturn);
-        toast({ 
-          variant: "error", 
-          title: "App Not Detected", 
-          description: "Truecaller is not installed or not responding. Please use OTP login." 
+        toast({
+          variant: "error",
+          title: "App Not Detected",
+          description: "Truecaller is not installed or not responding. Please use OTP login."
         });
       }
     }, 2000);
   };
 
+  const TruecallerIcon = () => (
+    <img
+      src="/truecaller-logo.png"
+      alt="Truecaller"
+      className="w-5 h-5 sm:w-6 sm:h-6 rounded"
+    />
+  );
+
   return (
     <button
       onClick={handleTruecallerLogin}
       disabled={loading}
-      className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 active:scale-95 disabled:opacity-70"
+      className=" flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-6 py-2.5 
+        text-sm font-medium text-gray-700 shadow-sm transition-all 
+        hover:bg-gray-50 hover:shadow-md 
+        focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-1 
+        active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
     >
-      <div id="tc-icon" className="h-5 w-5 bg-[#0087FF] rounded-full flex items-center justify-center text-white text-[10px]">T</div>
+      <TruecallerIcon />
       <span>{loading ? "Waiting for Truecaller..." : "Continue with Truecaller"}</span>
     </button>
   );
