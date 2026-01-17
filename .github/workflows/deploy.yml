@@ -1,5 +1,5 @@
 # Quikkred Landing & Dashboard CI/CD Pipeline
-# Last updated: 2025-12-30 - Fixed auto-trigger for push events
+# Last updated: 2025-01-18 - Added scheduled production deployment at 4 AM IST
 name: Quikkred Landing & Dashboard CI/CD Pipeline
 
 on:
@@ -13,11 +13,19 @@ on:
         options:
           - staging
           - production
+      deploy_now:
+        description: "Deploy to production immediately (skip schedule)"
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    # 4:00 AM IST = 22:30 UTC (previous day)
+    - cron: '30 22 * * *'
   push:
     branches:
       - develop    # Deploy to Alpha (Hostinger KVM8)
       - staging    # Deploy to Beta (AWS ECS)
-      - main       # Deploy to Production (AWS ECS)
+      - main       # Build & Test only (Production deploys on schedule)
   pull_request:
     branches:
       - develop
@@ -193,11 +201,16 @@ jobs:
 
   # ============================================
   # DEPLOY TO PRODUCTION (AWS ECS)
-  # Triggers on: push to main
+  # Triggers on: schedule (4 AM IST) or manual workflow_dispatch with deploy_now=true
+  # Regular pushes to main only build & test, deployment happens on schedule
   # ============================================
   deploy-production:
     needs: build-and-test
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    if: |
+      github.ref == 'refs/heads/main' && (
+        github.event_name == 'schedule' ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_now == 'true')
+      )
     runs-on: ubuntu-latest
     environment: production
 
