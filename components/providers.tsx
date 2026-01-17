@@ -5,14 +5,13 @@ import { ReactNode, useState, useEffect } from "react";
 import { I18nextProvider } from "react-i18next";
 import i18n from "@/lib/i18n";
 import { LanguageProvider } from "@/lib/contexts/LanguageContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
 import { WebSocketProvider } from "@/contexts/WebSocketContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { CriticalErrorBoundary } from "@/components/error/ErrorBoundary";
 import ReduxProvider from "@/store/Provider";
-import { SessionProvider } from "next-auth/react";
-import NextTopLoader from "nextjs-toploader";
 
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -60,20 +59,13 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <CriticalErrorBoundary>
-      <SessionProvider>
-        <ReduxProvider>
-          <I18nextProvider i18n={i18n}>
-            <ThemeProvider>
-              <QueryClientProvider client={queryClient}>
-                <LanguageProvider>
+      <ReduxProvider>
+        <I18nextProvider i18n={i18n}>
+          <ThemeProvider>
+            <QueryClientProvider client={queryClient}>
+              <LanguageProvider>
+                <AuthProvider>
                   <NotificationProvider>
-                    <NextTopLoader
-                      color="#25b181"
-                      height={3}
-                      showSpinner={false}
-                      easing="ease"
-                      speed={200}
-                    />
                     {mountNonCritical ? (
                       <AnalyticsProvider>
                         <WebSocketProvider>
@@ -84,12 +76,12 @@ export function Providers({ children }: { children: ReactNode }) {
                       children
                     )}
                   </NotificationProvider>
-                </LanguageProvider>
-              </QueryClientProvider>
-            </ThemeProvider>
-          </I18nextProvider>
-        </ReduxProvider>
-      </SessionProvider>
+                </AuthProvider>
+              </LanguageProvider>
+            </QueryClientProvider>
+          </ThemeProvider>
+        </I18nextProvider>
+      </ReduxProvider>
     </CriticalErrorBoundary>
   );
 }
