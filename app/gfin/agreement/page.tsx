@@ -8,6 +8,7 @@ import {
   Calendar, IndianRupee, Search, RefreshCw
 } from "lucide-react";
 import { API_BASE_URL } from '@/lib/config';
+import getToken from "@/lib/getToken";
 
 interface CustomerData {
   fullName: string;
@@ -84,9 +85,7 @@ export default function GfinAgreementPage() {
 
     try {
       // Get authorization token from localStorage
-      const token = localStorage.getItem('accessToken') ||
-                    localStorage.getItem('token') ||
-                    localStorage.getItem('authToken');
+        const token = await getToken();
 
       if (!token) {
         setError('Authorization token not found. Please login first.');
