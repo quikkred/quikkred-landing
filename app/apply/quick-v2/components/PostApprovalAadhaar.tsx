@@ -8,11 +8,11 @@ import {
 } from 'lucide-react';
 import { QuickApplyV2FormData, AadhaarData } from '@/lib/types/quickApplyV2';
 import { API_BASE_URL } from '@/lib/config';
+import { useQuickApplyTracking, useVerificationFrictionTracking } from '@/lib/hooks/useQuickApplyTracking';
 
 // MOCK MODE - Set to false for production with real APIs
-// Set to true only for local testing without backend
 const MOCK_MODE = false;
-const MOCK_OTP = '123456'; // Only used when MOCK_MODE = true
+const MOCK_OTP = '123456';
 
 interface PostApprovalAadhaarProps {
     formData: QuickApplyV2FormData;
@@ -27,6 +27,33 @@ export default function PostApprovalAadhaar({
     onNext,
     onBack,
 }: PostApprovalAadhaarProps) {
+    // Tracking
+    const {
+        trackStepViewed,
+        trackStepCompleted,
+        trackAadhaarOTPSent,
+        trackAadhaarVerifySuccess,
+        trackAadhaarVerifyFailed,
+        trackAadhaarOTPResend,
+        trackFieldFocus,
+        trackFieldPaste,
+        trackFormError,
+        trackAPIError,
+    } = useQuickApplyTracking();
+
+    // Aadhaar verification friction tracking
+    const aadhaarFriction = useVerificationFrictionTracking('aadhaar');
+
+    // Track step viewed
+    const hasTrackedStepRef = useRef(false);
+    const otpResendCountRef = useRef(0);
+    useEffect(() => {
+        if (!hasTrackedStepRef.current) {
+            hasTrackedStepRef.current = true;
+            trackStepViewed(5, 'Aadhaar Verification');
+            aadhaarFriction.startTracking();
+        }
+    }, [trackStepViewed, aadhaarFriction]);
     const [aadhaar, setAadhaar] = useState(formData.aadhaar || '');
     const [aadhaarError, setAadhaarError] = useState('');
 
@@ -121,12 +148,20 @@ export default function PostApprovalAadhaar({
 
     const sendOTP = async () => {
         if (!validateAadhaar(aadhaar)) {
-            setAadhaarError('Please enter a valid 12-digit Aadhaar number');
+            const errorMsg = 'Please enter a valid 12-digit Aadhaar number';
+            setAadhaarError(errorMsg);
+            trackFormError('aadhaar', errorMsg, 5);
             return;
         }
 
         setSendingOtp(true);
         setAadhaarError('');
+
+        // Track OTP request (resend if already sent once)
+        if (otpResendCountRef.current > 0) {
+            trackAadhaarOTPResend(otpResendCountRef.current);
+        }
+        otpResendCountRef.current += 1;
 
         // MOCK MODE
         if (MOCK_MODE) {
@@ -136,7 +171,7 @@ export default function PostApprovalAadhaar({
             setResendTimer(30);
             setOtp(['', '', '', '', '', '']);
             setTimeout(() => otpRefs.current[0]?.focus(), 100);
-            console.log('📱 MOCK: Aadhaar OTP sent. Use:', MOCK_OTP);
+            trackAadhaarOTPSent();
             setSendingOtp(false);
             return;
         }
@@ -161,12 +196,16 @@ export default function PostApprovalAadhaar({
                 setResendTimer(30);
                 setOtp(['', '', '', '', '', '']);
                 setTimeout(() => otpRefs.current[0]?.focus(), 100);
+                trackAadhaarOTPSent();
             } else {
-                setAadhaarError(data.message || 'Failed to send OTP. Please try again.');
+                const errorMsg = data.message || 'Failed to send OTP. Please try again.';
+                setAadhaarError(errorMsg);
+                trackFormError('aadhaar', errorMsg, 5);
             }
         } catch (error) {
-            console.error('Aadhaar OTP error:', error);
-            setAadhaarError('Network error. Please check your connection and try again.');
+            const errorMsg = 'Network error. Please check your connection and try again.';
+            setAadhaarError(errorMsg);
+            trackAPIError('/api/kyc/aadhaar/send-otp', errorMsg);
         } finally {
             setSendingOtp(false);
         }
@@ -175,12 +214,17 @@ export default function PostApprovalAadhaar({
     const verifyOTP = async () => {
         const otpValue = otp.join('');
         if (otpValue.length !== 6) {
-            setOtpError('Please enter complete 6-digit OTP');
+            const errorMsg = 'Please enter complete 6-digit OTP';
+            setOtpError(errorMsg);
+            trackFormError('aadhaar_otp', errorMsg, 5);
             return;
         }
 
         setVerifyingOtp(true);
         setOtpError('');
+
+        // Record verification attempt
+        aadhaarFriction.recordAttempt();
 
         // MOCK MODE
         if (MOCK_MODE) {
@@ -208,11 +252,20 @@ export default function PostApprovalAadhaar({
                     dob: prev.dob || mockAadhaarData.dob,
                 }));
 
+                // Track success
+                trackAadhaarVerifySuccess();
+                aadhaarFriction.completeTracking(true);
+                trackStepCompleted(5, 'Aadhaar Verification', {
+                    maskedAadhaar: mockAadhaarData.maskedAadhaar,
+                });
+
                 console.log('✅ MOCK: Aadhaar verified');
                 setTimeout(() => onNext(), 1500);
             } else {
-                setOtpError('Invalid OTP. Use: ' + MOCK_OTP);
+                const errorMsg = 'Invalid OTP. Use: ' + MOCK_OTP;
+                setOtpError(errorMsg);
                 setVerifyTimer(5);
+                trackAadhaarVerifyFailed(errorMsg, aadhaarFriction.getAttempts());
             }
             setVerifyingOtp(false);
             return;
@@ -258,15 +311,27 @@ export default function PostApprovalAadhaar({
                     dob: prev.dob || aadhaarInfo.dob,
                 }));
 
+                // Track success
+                trackAadhaarVerifySuccess();
+                aadhaarFriction.completeTracking(true);
+                trackStepCompleted(5, 'Aadhaar Verification', {
+                    maskedAadhaar: aadhaarInfo.maskedAadhaar,
+                });
+
                 setTimeout(() => onNext(), 1500);
             } else {
-                setOtpError(data.message || 'Invalid OTP. Please try again.');
+                const errorMsg = data.message || 'Invalid OTP. Please try again.';
+                setOtpError(errorMsg);
                 setVerifyTimer(5);
+                trackAadhaarVerifyFailed(errorMsg, aadhaarFriction.getAttempts());
             }
         } catch (error) {
             console.error('Aadhaar verify error:', error);
-            setOtpError('Verification failed. Please try again.');
+            const errorMsg = 'Verification failed. Please try again.';
+            setOtpError(errorMsg);
             setVerifyTimer(5);
+            trackAPIError('/api/kyc/aadhaar/verify-otp', errorMsg);
+            trackAadhaarVerifyFailed(errorMsg, aadhaarFriction.getAttempts());
         } finally {
             setVerifyingOtp(false);
         }
