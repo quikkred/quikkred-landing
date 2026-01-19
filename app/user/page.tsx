@@ -1227,11 +1227,11 @@ export default function UserDashboard() {
                   <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-purple-100">
                     <div>
                       <p className="text-xs text-gray-500">UPI ID</p>
-                      <p className="text-sm font-bold text-gray-900 font-mono">satsaifinlease@rbl</p>
+                      <p className="text-sm font-bold text-gray-900 font-mono">401655461518@RATN0000315.ifsc.npci</p>
                     </div>
                     <button
                       onClick={() => {
-                        navigator.clipboard.writeText('satsaifinlease@rbl');
+                        navigator.clipboard.writeText('401655461518@RATN0000315.ifsc.npci');
                         toast({ variant: "success", title: "Copied!", description: "UPI ID copied to clipboard" });
                       }}
                       className="p-2 hover:bg-purple-100 rounded-lg transition-colors"
