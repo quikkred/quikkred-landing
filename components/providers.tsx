@@ -5,7 +5,6 @@ import { ReactNode, useState, useEffect } from "react";
 import { I18nextProvider } from "react-i18next";
 import i18n from "@/lib/i18n";
 import { LanguageProvider } from "@/lib/contexts/LanguageContext";
-import { AuthProvider } from "@/contexts/AuthContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { AnalyticsProvider } from "@/contexts/AnalyticsContext";
 import { WebSocketProvider } from "@/contexts/WebSocketContext";
@@ -13,6 +12,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { CriticalErrorBoundary } from "@/components/error/ErrorBoundary";
 import ReduxProvider from "@/store/Provider";
 import { SessionProvider } from "next-auth/react";
+import NextTopLoader from "nextjs-toploader";
 
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -66,19 +66,24 @@ export function Providers({ children }: { children: ReactNode }) {
             <ThemeProvider>
               <QueryClientProvider client={queryClient}>
                 <LanguageProvider>
-                  <AuthProvider>
-                    <NotificationProvider>
-                      {mountNonCritical ? (
-                        <AnalyticsProvider>
-                          <WebSocketProvider>
-                            {children}
-                          </WebSocketProvider>
-                        </AnalyticsProvider>
-                      ) : (
-                        children
-                      )}
-                    </NotificationProvider>
-                  </AuthProvider>
+                  <NotificationProvider>
+                    <NextTopLoader
+                      color="#25b181"
+                      height={3}
+                      showSpinner={false}
+                      easing="ease"
+                      speed={200}
+                    />
+                    {mountNonCritical ? (
+                      <AnalyticsProvider>
+                        <WebSocketProvider>
+                          {children}
+                        </WebSocketProvider>
+                      </AnalyticsProvider>
+                    ) : (
+                      children
+                    )}
+                  </NotificationProvider>
                 </LanguageProvider>
               </QueryClientProvider>
             </ThemeProvider>

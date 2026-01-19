@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { loansService } from '@/lib/api/loans.service';
 import { usersService } from '@/lib/api/users.service';
 import { API_BASE_URL } from '@/lib/config';
+import getToken from '@/lib/getToken';
 
 interface Loan {
   id: string;
@@ -300,7 +301,7 @@ export default function MyLoansPage() {
     try {
       setLoading(true);
 
-      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+      const token = await getToken();
 
       if (!token) {
         router.push('/login');
@@ -434,7 +435,7 @@ export default function MyLoansPage() {
   const fetchSavedBanks = async () => {
     setLoadingSavedBanks(true);
     try {
-      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+      const token = await getToken();
       if (!token) return;
 
       const response = await fetch(`${API_BASE_URL}/api/customer/get`, {
@@ -528,7 +529,7 @@ export default function MyLoansPage() {
     setNewLoanLoading(true);
 
     try {
-      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+      const token = await getToken();
 
       if (!token) {
         router.push('/login');
