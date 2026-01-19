@@ -11,13 +11,13 @@ export default function TruecallerAuth() {
   const handleTruecallerLogin = async () => {
     setLoading(true);
     const id = uuidv4();
-    const partnerKey = process.env.NEXT_PUBLIC_TRUECALLER_PARTNER_KEY || "zsyH7238a78c4b043444a96c02b328d657515";
+    const partnerKey = "tBoZJ5a56cdf619e24cac849d3a431e026499";
 
     const params = new URLSearchParams({
       type: "btmsheet",
       requestNonce: id,
       partnerKey: partnerKey,
-      partnerName: process.env.NEXT_PUBLIC_TRUECALLER_APP_NAME || "test",
+      partnerName: "quikkred-alpha",
       lang: "en",
       privacyUrl: `${window.location.origin}/privacy-policy`,
       termsUrl: `${window.location.origin}/terms-and-conditions`,
