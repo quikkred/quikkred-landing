@@ -12,6 +12,7 @@ import { WebSocketProvider } from "@/contexts/WebSocketContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { CriticalErrorBoundary } from "@/components/error/ErrorBoundary";
 import ReduxProvider from "@/store/Provider";
+import { SessionProvider } from "next-auth/react";
 
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -60,27 +61,29 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <CriticalErrorBoundary>
       <ReduxProvider>
-        <I18nextProvider i18n={i18n}>
-          <ThemeProvider>
-            <QueryClientProvider client={queryClient}>
-              <LanguageProvider>
-                <AuthProvider>
-                  <NotificationProvider>
-                    {mountNonCritical ? (
-                      <AnalyticsProvider>
-                        <WebSocketProvider>
-                          {children}
-                        </WebSocketProvider>
-                      </AnalyticsProvider>
-                    ) : (
-                      children
-                    )}
-                  </NotificationProvider>
-                </AuthProvider>
-              </LanguageProvider>
-            </QueryClientProvider>
-          </ThemeProvider>
-        </I18nextProvider>
+        <SessionProvider>
+          <I18nextProvider i18n={i18n}>
+            <ThemeProvider>
+              <QueryClientProvider client={queryClient}>
+                <LanguageProvider>
+                  <AuthProvider>
+                    <NotificationProvider>
+                      {mountNonCritical ? (
+                        <AnalyticsProvider>
+                          <WebSocketProvider>
+                            {children}
+                          </WebSocketProvider>
+                        </AnalyticsProvider>
+                      ) : (
+                        children
+                      )}
+                    </NotificationProvider>
+                  </AuthProvider>
+                </LanguageProvider>
+              </QueryClientProvider>
+            </ThemeProvider>
+          </I18nextProvider>
+        </SessionProvider>
       </ReduxProvider>
     </CriticalErrorBoundary>
   );

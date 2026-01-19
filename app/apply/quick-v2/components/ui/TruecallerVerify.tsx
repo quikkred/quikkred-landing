@@ -12,7 +12,7 @@ const TruecallerVerify = () => {
     const { login } = useAuth();
     const pollRef = useRef<any>(null);
 
-    // Synchronize NextAuth session with your custom AuthContext
+    // Sync NextAuth session with custom AuthContext
     useEffect(() => {
         if (session && loading) {
             login("", "", session, false);
@@ -48,23 +48,51 @@ const TruecallerVerify = () => {
             ttl: "600000",
         });
 
-        window.location.href = `truecallersdk://truesdk/web_verify?${params.toString()}`;
+        const deepLink = `truecallersdk://truesdk/web_verify?${params.toString()}`;
 
+        // 1. Attempt to trigger the App
+        window.location.href = deepLink;
+
+        // 2. The Gatekeeper: Wait 2 seconds to check if device detected the app
+        setTimeout(() => {
+            if (document.hasFocus()) {
+                // CASE A: App NOT detected (Browser still has focus)
+                setLoading(false);
+                toast({
+                    variant: "error",
+                    title: "Truecaller Not Found",
+                    description: "Please enter your mobile number manually for OTP verification."
+                });
+                
+                const phoneInput = document.getElementById("mobile-number-input");
+                if (phoneInput) {
+                    phoneInput.scrollIntoView({ behavior: 'smooth' });
+                    phoneInput.focus();
+                }
+            } else {
+                // CASE B: App DETECTED (Browser lost focus)
+                // START the Polling API only now
+                startPolling(id);
+            }
+        }, 2000);
+    };
+
+    const startPolling = (requestId: string) => {
         let attempts = 0;
         const maxAttempts = 15;
 
         pollRef.current = setInterval(async () => {
             attempts++;
-
             try {
-                const res = await fetch(`/api/truecaller?requestId=${id}`, { cache: "no-store" });
+                // Only running because app launch was successful
+                const res = await fetch(`/api/truecaller?requestId=${requestId}`, { cache: "no-store" });
                 const json = await res.json().catch(() => null);
 
                 if (json?.status === "VERIFIED") {
                     if (pollRef.current) clearInterval(pollRef.current);
 
                     const result = await signIn("truecaller", {
-                        requestId: id,
+                        requestId: requestId,
                         callbackUrl: "/apply/quick-v2",
                         redirect: false,
                     });
@@ -73,13 +101,12 @@ const TruecallerVerify = () => {
                         toast({ variant: "error", title: "Login Failed", description: result?.error });
                         setLoading(false);
                     }
-                    // Note: Success is handled by the useEffect watching [session]
                 }
 
                 if (attempts >= maxAttempts) {
                     if (pollRef.current) clearInterval(pollRef.current);
                     setLoading(false);
-                    toast({ variant: "error", title: "Timeout", description: "Verification took too long. Please try OTP." });
+                    toast({ variant: "error", title: "Session Timeout", description: "Verification took too long." });
                 }
             } catch (err) {
                 console.error("Polling error:", err);
@@ -100,7 +127,7 @@ const TruecallerVerify = () => {
             {loading ? (
                 <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-[#0066FF] border-t-transparent rounded-full animate-spin" />
-                    <span className="text-xs text-gray-500">Verifying...</span>
+                    <span className="text-xs text-gray-500">Connecting...</span>
                 </div>
             ) : (
                 <>
