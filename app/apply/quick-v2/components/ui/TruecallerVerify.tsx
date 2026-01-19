@@ -1,23 +1,44 @@
-"use client"
+"use client";
 
+import { useEffect, useRef, useState } from "react";
 import { toast } from "@/components/ui/toast";
-import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { signIn, useSession } from "next-auth/react";
 import { v4 as uuidv4 } from "uuid";
+import { useAuth } from "@/contexts/AuthContext";
 
 const TruecallerVerify = () => {
     const [loading, setLoading] = useState(false);
+    const { data: session } = useSession();
+    const { login } = useAuth();
+    const pollRef = useRef<any>(null);
+
+    // Synchronize NextAuth session with your custom AuthContext
+    useEffect(() => {
+        if (session && loading) {
+            login("", "", session, false);
+            setLoading(false); 
+        }
+    }, [session, loading, login]);
+
+    // Cleanup interval on unmount
+    useEffect(() => {
+        return () => {
+            if (pollRef.current) clearInterval(pollRef.current);
+        };
+    }, []);
 
     const handleTruecallerLogin = async () => {
+        if (loading) return;
         setLoading(true);
+
         const id = uuidv4();
-        const partnerKey = "tBoZJ5a56cdf619e24cac849d3a431e026499";
+        const partnerKey = process.env.NEXT_PUBLIC_TRUECALLER_PARTNER_KEY || "tBoZJ5a56cdf619e24cac849d3a431e026499";
 
         const params = new URLSearchParams({
             type: "btmsheet",
             requestNonce: id,
             partnerKey: partnerKey,
-            partnerName: "quikkred-alpha",
+            partnerName: process.env.NEXT_PUBLIC_TRUECALLER_APP_NAME || "quikkred-alpha",
             lang: "en",
             privacyUrl: `${window.location.origin}/privacy-policy`,
             termsUrl: `${window.location.origin}/terms-and-conditions`,
@@ -27,59 +48,47 @@ const TruecallerVerify = () => {
             ttl: "600000",
         });
 
-        const deepLink = `truecallersdk://truesdk/web_verify?${params.toString()}`;
+        window.location.href = `truecallersdk://truesdk/web_verify?${params.toString()}`;
 
-        // 1. Define what happens when the user returns to the browser
-        const handleReturn = async () => {
-            if (document.visibilityState === "visible") {
-                // User is back! Trigger NextAuth sign-in
-                // Note: I fixed the typo 'rquestId' to 'requestId'
-                const result = await signIn("truecaller", {
-                    requestId: id,
-                    callbackUrl: "/apply/quick-v2",
-                    redirect: true
-                });
+        let attempts = 0;
+        const maxAttempts = 15;
 
-                if (result?.error) {
-                    toast({
-                        variant: "error",
-                        title: "Verification Failed",
-                        description: "We couldn't verify your account. Please try again."
+        pollRef.current = setInterval(async () => {
+            attempts++;
+
+            try {
+                const res = await fetch(`/api/truecaller?requestId=${id}`, { cache: "no-store" });
+                const json = await res.json().catch(() => null);
+
+                if (json?.status === "VERIFIED") {
+                    if (pollRef.current) clearInterval(pollRef.current);
+
+                    const result = await signIn("truecaller", {
+                        requestId: id,
+                        callbackUrl: "/apply/quick-v2",
+                        redirect: false,
                     });
+
+                    if (!result?.ok) {
+                        toast({ variant: "error", title: "Login Failed", description: result?.error });
+                        setLoading(false);
+                    }
+                    // Note: Success is handled by the useEffect watching [session]
                 }
 
-                setLoading(false);
-                // Clean up the listener so it doesn't run again
-                document.removeEventListener("visibilitychange", handleReturn);
+                if (attempts >= maxAttempts) {
+                    if (pollRef.current) clearInterval(pollRef.current);
+                    setLoading(false);
+                    toast({ variant: "error", title: "Timeout", description: "Verification took too long. Please try OTP." });
+                }
+            } catch (err) {
+                console.error("Polling error:", err);
             }
-        };
-
-        // 2. Start listening for the user's return
-        document.addEventListener("visibilitychange", handleReturn);
-
-        // 3. Open Truecaller
-        window.location.href = deepLink;
-
-        // 4. Fallback: If the app doesn't open within 2 seconds (e.g., Desktop or App not installed)
-        setTimeout(() => {
-            if (document.hasFocus()) {
-                setLoading(false);
-                document.removeEventListener("visibilitychange", handleReturn);
-                toast({
-                    variant: "error",
-                    title: "App Not Detected",
-                    description: "Truecaller is not installed or not responding. Please use OTP login."
-                });
-            }
-        }, 2000);
+        }, 1500);
     };
 
     const TruecallerIcon = () => (
-        <img
-            src="/truecaller-logo.png"
-            alt="Truecaller"
-            className="w-5 h-5 sm:w-6 sm:h-6 rounded"
-        />
+        <img src="/truecaller-logo.png" alt="Truecaller" className="w-5 h-5 sm:w-6 sm:h-6 rounded" />
     );
 
     return (
@@ -89,7 +98,10 @@ const TruecallerVerify = () => {
             className="flex-1 flex items-center justify-center gap-2 py-2.5 sm:py-3 bg-white border-2 border-[#0066FF] rounded-lg font-medium text-xs sm:text-sm text-gray-800 hover:bg-[#0066FF]/5 disabled:opacity-50 transition-all active:scale-[0.98] touch-manipulation"
         >
             {loading ? (
-                <div className="w-4 h-4 border-2 border-[#0066FF] border-t-transparent rounded-full animate-spin" />
+                <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-[#0066FF] border-t-transparent rounded-full animate-spin" />
+                    <span className="text-xs text-gray-500">Verifying...</span>
+                </div>
             ) : (
                 <>
                     <TruecallerIcon />
@@ -97,7 +109,7 @@ const TruecallerVerify = () => {
                 </>
             )}
         </button>
-    )
-}
+    );
+};
 
-export default TruecallerVerify
+export default TruecallerVerify;
