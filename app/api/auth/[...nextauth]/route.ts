@@ -86,12 +86,12 @@ export const authOptions: AuthOptions = {
         const requestId = credentials?.requestId;
         if (!requestId) return null;
 
-        const maxRetries = 5;
+        const maxRetries = 10;
         const delayMs = 2000;
 
         for (let i = 0; i < maxRetries; i++) {
           try {
-            const res = await fetch(`${API_BASE_URL}/test2/truecaller/verify`, {
+            const res = await fetch(`${API_BASE_URL}/api/test2/truecaller/verify`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ requestId }),
