@@ -8,6 +8,8 @@ import { SecurityBanner } from "@/components/security-banner";
 import ConditionalLayout from "@/components/layouts/ConditionalLayout";
 import LanguageGuard from "@/components/LanguageGuard";
 import { Toaster } from "@/components/ui/toast";
+import getUserDetails from "@/lib/getUserDetails";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -77,11 +79,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const userDetails = await getUserDetails();
+
   return (
     <html lang="en" className={`${inter.variable} ${sora.variable}`} suppressHydrationWarning>
       <head>
@@ -212,14 +216,16 @@ fbq('track', 'PageView');`,
             />
           </noscript>
         )}
-        <Providers>
-          <LanguageGuard>
-            <ConditionalLayout>
-              {children}
-            </ConditionalLayout>
-          </LanguageGuard>
-          <Toaster />
-        </Providers>
+        <AuthProvider userData={userDetails}>
+          <Providers>
+            <LanguageGuard>
+              <ConditionalLayout>
+                {children}
+              </ConditionalLayout>
+            </LanguageGuard>
+            <Toaster />
+          </Providers>
+        </AuthProvider>
       </body>
     </html>
   );
