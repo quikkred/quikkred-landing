@@ -44,7 +44,6 @@ interface SupportTicket {
     remarks?: string;
     _id: string;
   }>;
-  priority: string;
   status: string;
   assignedDetails?: Array<{
     assignedTo: {
@@ -91,8 +90,7 @@ export default function SupportPage() {
   const [formData, setFormData] = useState({
     category: 'TECHNICAL_ISSUE',
     subject: '',
-    description: '',
-    priority: 'MEDIUM'
+    description: ''
   });
   const [formError, setFormError] = useState('');
   const [formLoading, setFormLoading] = useState(false);
@@ -139,8 +137,7 @@ export default function SupportPage() {
           customerId: customerId,
           category: formData.category,
           subject: formData.subject,
-          description: formData.description,
-          priority: formData.priority
+          description: formData.description
         })
       });
 
@@ -151,8 +148,7 @@ export default function SupportPage() {
         setFormData({
           category: 'TECHNICAL_ISSUE',
           subject: '',
-          description: '',
-          priority: 'MEDIUM'
+          description: ''
         });
         setShowCreateForm(false);
         // Refresh tickets
@@ -243,20 +239,6 @@ switch (category) {
     return 'text-gray-600 bg-gray-100'; // fallback
 }
 
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'HIGH':
-      case 'URGENT':
-        return 'text-red-600 bg-red-100';
-      case 'MEDIUM':
-        return 'text-[#FF9C70] bg-[#FF9C70]/10';
-      case 'LOW':
-        return 'text-[#25B181] bg-[#25B181]/10';
-      default:
-        return 'text-gray-600 bg-gray-100';
-    }
   };
 
   const getStatusColor = (status: string) => {
@@ -379,24 +361,6 @@ switch (category) {
                 <option value="COMPLAINT">Complaint</option>
                 <option value="EMAIL_INQUIRY">Email Inquiry</option>
                 <option value="OTHER">Other</option>
-              </select>
-            </div>
-
-            {/* Priority */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Priority *
-              </label>
-              <select
-                value={formData.priority}
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                required
-                className="w-full px-4 py-2 border border-[#E0E0E0] rounded-lg focus:ring-2 focus:ring-[#25B181] focus:border-[#25B181] focus:outline-none"
-              >
-                <option value="LOW">Low</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HIGH">High</option>
-                <option value="URGENT">Urgent</option>
               </select>
             </div>
 
@@ -565,7 +529,6 @@ switch (category) {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Ticket ID</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Subject</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Category</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Priority</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Created</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
@@ -593,11 +556,6 @@ switch (category) {
                     <td className="px-4 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(ticket.category)}`}>
                         {ticket.category.replace(/_/g, ' ')}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(ticket.priority)}`}>
-                        {ticket.priority}
                       </span>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
@@ -681,9 +639,6 @@ switch (category) {
                   <span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium ${getCategoryColor(selectedTicket.category)}`}>
                     {selectedTicket.category.replace(/_/g, ' ')}
                   </span>
-                  <span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium ${getPriorityColor(selectedTicket.priority)}`}>
-                    {selectedTicket.priority}
-                  </span>
                 </div>
 
                 {/* Subject */}
@@ -706,7 +661,10 @@ switch (category) {
                   <div className="space-y-3 sm:space-y-4 max-h-[300px] sm:max-h-[400px] overflow-y-auto bg-gradient-to-b from-gray-50 to-white rounded-lg p-2 sm:p-4 border border-gray-200">
                     {Array.isArray(selectedTicket.chatDetails) ? (
                       selectedTicket.chatDetails?.map((chat, index) => {
-                        const isCustomer = chat.addedByModel === 'Customer';
+                        // Check if message is from customer (case-insensitive check or by comparing IDs)
+                        const customerId = typeof selectedTicket.customerId === 'object' ? selectedTicket.customerId._id : selectedTicket.customerId;
+                        const isCustomer = chat.addedByModel?.toLowerCase() === 'customer' ||
+                                          chat.addedBy?._id === customerId;
 
                         return (
                           <div key={chat._id} className="space-y-2 sm:space-y-3">
@@ -834,76 +792,80 @@ switch (category) {
                   )}
                 </div>
 
-                {/* Reopen Ticket Form */}
-                {!showReopenForm && (
-                  <div className="mb-6">
-                    <button
-                      onClick={() => setShowReopenForm(true)}
-                      className="w-full px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 font-semibold"
-                    >
-                      <RefreshCw className="w-5 h-5" />
-                      Reopen Ticket / Add Follow-up
-                    </button>
-                  </div>
-                )}
-
-                {showReopenForm && (
-                  <div className="mb-6">
-                    <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-sm font-semibold text-orange-800 flex items-center gap-2">
-                          <AlertTriangle className="w-4 h-4" />
-                          Reopen Ticket
-                        </h4>
+                {/* Reopen Ticket Form - Only show if not closed */}
+                {selectedTicket.status?.toUpperCase() !== 'CLOSED' && selectedTicket.status?.toUpperCase() !== 'RESOLVED' && (
+                  <>
+                    {!showReopenForm && (
+                      <div className="mb-6">
                         <button
-                          onClick={() => {
-                            setShowReopenForm(false);
-                            setReopenDescription('');
-                            setReopenError('');
-                          }}
-                          className="p-1 hover:bg-orange-100 rounded transition-colors"
+                          onClick={() => setShowReopenForm(true)}
+                          className="w-full px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 font-semibold"
                         >
-                          <X className="w-4 h-4 text-orange-600" />
+                          <RefreshCw className="w-5 h-5" />
+                          Add Follow-up
                         </button>
                       </div>
-                      <p className="text-xs text-orange-700 mb-3">
-                        Not satisfied with the response? Describe why you need to reopen this ticket.
-                      </p>
-                      <form onSubmit={handleReopenTicket}>
-                        <textarea
-                          value={reopenDescription}
-                          onChange={(e) => setReopenDescription(e.target.value)}
-                          required
-                          rows={4}
-                          placeholder="E.g., Still having some issue with document upload..."
-                          className="w-full px-4 py-2 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none resize-none mb-3"
-                        />
-                        {reopenError && (
-                          <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700 flex items-center gap-2">
-                            <AlertCircle className="w-4 h-4" />
-                            {reopenError}
+                    )}
+
+                    {showReopenForm && (
+                      <div className="mb-6">
+                        <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="text-sm font-semibold text-orange-800 flex items-center gap-2">
+                              <AlertTriangle className="w-4 h-4" />
+                              Add Follow-up
+                            </h4>
+                            <button
+                              onClick={() => {
+                                setShowReopenForm(false);
+                                setReopenDescription('');
+                                setReopenError('');
+                              }}
+                              className="p-1 hover:bg-orange-100 rounded transition-colors"
+                            >
+                              <X className="w-4 h-4 text-orange-600" />
+                            </button>
                           </div>
-                        )}
-                        <button
-                          type="submit"
-                          disabled={reopenLoading}
-                          className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 font-semibold"
-                        >
-                          {reopenLoading ? (
-                            <>
-                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                              Reopening...
-                            </>
-                          ) : (
-                            <>
-                              <Send className="w-4 h-4" />
-                              Submit & Reopen Ticket
-                            </>
-                          )}
-                        </button>
-                      </form>
-                    </div>
-                  </div>
+                          <p className="text-xs text-orange-700 mb-3">
+                            Not satisfied with the response? Add more details to your ticket.
+                          </p>
+                          <form onSubmit={handleReopenTicket}>
+                            <textarea
+                              value={reopenDescription}
+                              onChange={(e) => setReopenDescription(e.target.value)}
+                              required
+                              rows={4}
+                              placeholder="E.g., Still having some issue with document upload..."
+                              className="w-full px-4 py-2 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none resize-none mb-3"
+                            />
+                            {reopenError && (
+                              <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700 flex items-center gap-2">
+                                <AlertCircle className="w-4 h-4" />
+                                {reopenError}
+                              </div>
+                            )}
+                            <button
+                              type="submit"
+                              disabled={reopenLoading}
+                              className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 font-semibold"
+                            >
+                              {reopenLoading ? (
+                                <>
+                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                  Submitting...
+                                </>
+                              ) : (
+                                <>
+                                  <Send className="w-4 h-4" />
+                                  Submit Follow-up
+                                </>
+                              )}
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {/* Assigned To */}
