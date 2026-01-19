@@ -20,7 +20,8 @@ export async function POST(req: NextRequest) {
     const profileData = await profileRes.json();
 
     // 2. FORWARD TO MAIN BACKEND (Crucial Step)
-    const backendRes = await fetch(`${API_BASE_URL}/api/test2/truecaller/callback`, {
+    // const backendRes = await fetch(`${API_BASE_URL}/api/test2/truecaller/callback`, {
+    const backendRes = await fetch(`${API_BASE_URL}/api/auth/customer/truecaller/callback`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ requestId, profile: profileData }),
