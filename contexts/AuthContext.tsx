@@ -35,41 +35,75 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+export function AuthProvider({ userData, children }: { userData: User | null; children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(userData);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
-
+  
   useEffect(() => {
-    // Check for existing session
-    const token = localStorage.getItem('token') ||
-                  localStorage.getItem('authToken') ||
-                  localStorage.getItem('accessToken');
-    const storedUserId = localStorage.getItem('userId');
-    const storedUserName = localStorage.getItem('userName');
-    const storedUserEmail = localStorage.getItem('userEmail') || localStorage.getItem('email');
-    const storedUserMobile = localStorage.getItem('userMobile');
+    if (typeof window !== "undefined") {
+      // Check for existing session
+      const token = localStorage.getItem('token') ||
+        localStorage.getItem('authToken') ||
+        localStorage.getItem('accessToken');
+      const storedUserId = localStorage.getItem('userId');
+      const storedUserName = localStorage.getItem('userName');
+      const storedUserEmail = localStorage.getItem('userEmail') || localStorage.getItem('email');
+      const storedUserMobile = localStorage.getItem('userMobile');
 
-    if (token && storedUserId) {
-      // Create user object from stored data
-      const userData: User = {
-        id: storedUserId,
-        name: storedUserName || 'User',
-        email: storedUserEmail || '',
-        mobile: storedUserMobile || undefined,
-      };
+      if (token && storedUserId) {
+        // Create user object from stored data
+        const userData: User = {
+          id: storedUserId,
+          name: storedUserName || 'User',
+          email: storedUserEmail || '',
+          mobile: storedUserMobile || undefined,
+        };
 
-      setUser(userData);
+        if (!userData) {
+          setUser(userData);
+        }
 
-      // Fetch real user profile if we have a real token (not mock)
-      if (token && !token.startsWith('mock_token_')) {
-        fetchUserProfile(token, userData);
+        // Fetch real user profile if we have a real token (not mock)
+        if (token && !token.startsWith('mock_token_')) {
+          fetchUserProfile(token, userData);
+        }
       }
-    }
 
-    setIsLoading(false);
-  }, []);
+      setIsLoading(false);
+    }
+  }, [userData]);
+
+  // useEffect(() => {
+  //   // Check for existing session
+  //   const token = localStorage.getItem('token') ||
+  //                 localStorage.getItem('authToken') ||
+  //                 localStorage.getItem('accessToken');
+  //   const storedUserId = localStorage.getItem('userId');
+  //   const storedUserName = localStorage.getItem('userName');
+  //   const storedUserEmail = localStorage.getItem('userEmail') || localStorage.getItem('email');
+  //   const storedUserMobile = localStorage.getItem('userMobile');
+
+  //   if (token && storedUserId) {
+  //     // Create user object from stored data
+  //     const userData: User = {
+  //       id: storedUserId,
+  //       name: storedUserName || 'User',
+  //       email: storedUserEmail || '',
+  //       mobile: storedUserMobile || undefined,
+  //     };
+
+  //     setUser(userData);
+
+  //     // Fetch real user profile if we have a real token (not mock)
+  //     if (token && !token.startsWith('mock_token_')) {
+  //       fetchUserProfile(token, userData);
+  //     }
+  //   }
+
+  //   setIsLoading(false);
+  // }, []);
 
   const fetchUserProfile = async (token: string, currentUser: User) => {
     console.log('🔵 Fetching user profile from API...');
@@ -130,8 +164,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
 
     try {
+
       // If API data is provided, use it for authentication
-      if (apiData && apiData.userId && (apiData.token || apiData.accessToken)) {
+      if (apiData && (apiData.user?.id || apiData.userId) && (apiData.token || apiData.accessToken)) {
         const authToken = apiData.accessToken || apiData.token;
 
         // Determine if login was with email or mobile
@@ -140,7 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Create user object from API data
         const userData: User = {
-          id: apiData.userId,
+          id: apiData.user?.id || apiData.userId,
           name: apiData.fullName || apiData.name || 'User',
           email: isEmailLogin ? email : (apiData.email || ''),
           mobile: isMobileLogin ? email : (apiData.mobile || ''),
@@ -153,6 +188,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('userEmail', userData.email);
         localStorage.setItem('userName', userData.name);
         localStorage.setItem('userId', apiData.userId);
+
         // Add login timestamp for grace period handling in api-client
         localStorage.setItem('loginTimestamp', Date.now().toString());
         if (userData.mobile) {
@@ -171,7 +207,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await fetchUserProfile(authToken, userData);
 
         // Redirect to user dashboard
-        if(isRedirect){
+        if (isRedirect) {
           router.push('/user');
         }
 
@@ -242,12 +278,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value: AuthContextType = {
     user,
-    setUser,
     login,
     logout,
     isLoading,
     isLoggingOut,
-    updateUser
+    updateUser,
+    setUser
   };
 
   return (
