@@ -31,6 +31,8 @@ interface Loan {
   customerName?: string;
   customerEmail?: string;
   customerId?: string;
+  dpd?: number;
+  nextDueDate?: string;
 }
 
 interface PaymentHistoryItem {
@@ -62,7 +64,9 @@ interface DetailedLoan {
   productName: string;
   principalAmount: number;
   processingFee?: number;
+  processingPercent?: number;
   gstOnProcessingFee?: number;
+  gstOnProcessingPercent?: number;
   totalInterest?: number;
   interestRate: number;
   tenure: number;
@@ -70,6 +74,7 @@ interface DetailedLoan {
   isSubmit: boolean;
   totalRepayment: number;
   emiAmount: number;
+  lateCharges?: number;
   numberOfEMIs: number;
   repaymentType: string;
   disbursementAmount: number;
@@ -368,7 +373,9 @@ export default function MyLoansPage() {
           createdAt: loan.createdAt,
           customerName: loan.customerId?.fullName,
           customerEmail: loan.customerId?.email,
-          customerId: loan.customerId?._id
+          customerId: loan.customerId?._id,
+          dpd: loan.dpd || 0,
+          nextDueDate: loan.nextDueDate
         }));
 
         setLoans(mappedLoans);
@@ -952,9 +959,9 @@ export default function MyLoansPage() {
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Loan Number</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Principal</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">EMI</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Total Repayment</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Interest</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Tenure</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Penalty</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
                 </tr>
@@ -976,13 +983,21 @@ export default function MyLoansPage() {
                       <div className="text-xs text-gray-500">Disbursed: {formatCurrency(loan.disbursementAmount)}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{formatCurrency(loan.emiAmount)}</div>
+                      <div className="text-sm font-medium text-gray-900">{formatCurrency(loan.totalRepayment)}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{loan.interestRate}%</div>
+                      <div className="text-sm text-gray-900">{formatCurrency(loan.principalAmount * loan.interestRate / 100)}</div>
+                      <div className="text-xs text-gray-500">{loan.interestRate}%</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{loan.tenure} {loan.tenureUnit}</div>
+                      {loan.status === 'OVERDUE' && loan.dpd && loan.dpd > 0 ? (
+                        <div>
+                          <div className="text-sm font-medium text-red-600">{formatCurrency(loan.dpd * 50)}</div>
+                          <div className="text-xs text-gray-500">{loan.dpd} days overdue</div>
+                        </div>
+                      ) : (
+                        <div className="text-sm text-gray-400">-</div>
+                      )}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(loan.status)}`}>
@@ -1641,28 +1656,56 @@ export default function MyLoansPage() {
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Interest Rate</p>
-                        <p className="font-semibold text-gray-900">{detailedLoan.interestRate}% per day</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.interestRate}%</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Tenure</p>
                         <p className="font-semibold text-gray-900">{detailedLoan.tenure} {detailedLoan.tenureUnit}</p>
                       </div>
-                   
-                     
+                      <div>
+                        <p className="text-sm text-gray-600">Total Interest</p>
+                        <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.totalInterest || 0)}</p>
+                      </div>
                       <div>
                         <p className="text-sm text-gray-600">Total Repayment</p>
-                        <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.totalRepayment)}</p>
+                        <p className="text-lg font-bold text-green-700">{formatCurrency(detailedLoan.totalRepayment)}</p>
                       </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Total Interest ({detailedLoan.interestRate*detailedLoan.tenure}%)</p>
-                        <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.totalRepayment - detailedLoan.principalAmount)}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Late Charges</p>
-                        <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.lateChargesOutstanding)}</p>
-                      </div>
+                      {detailedLoan.lateCharges && detailedLoan.lateCharges > 0 && (
+                        <div>
+                          <p className="text-sm text-gray-600">Late Charges</p>
+                          <p className="font-semibold text-red-600">{formatCurrency(detailedLoan.lateCharges)}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
+
+                  {/* Processing Fee & Deductions */}
+                  {(detailedLoan.processingFee || detailedLoan.gstOnProcessingFee) && (
+                    <div className="bg-gradient-to-br from-slate-50 to-gray-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-200">
+                      <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                        <Receipt className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
+                        <h4 className="text-base sm:text-lg font-bold text-gray-800">Processing Fee & Deductions</h4>
+                      </div>
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                        <div>
+                          <p className="text-sm text-gray-600">Processing Fee {detailedLoan.processingPercent ? `(${detailedLoan.processingPercent}%)` : ''}</p>
+                          <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.processingFee || 0)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">GST on Processing Fee {detailedLoan.gstOnProcessingPercent ? `(${detailedLoan.gstOnProcessingPercent}%)` : ''}</p>
+                          <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.gstOnProcessingFee || 0)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Total Deductions</p>
+                          <p className="font-semibold text-gray-900">{formatCurrency((detailedLoan.processingFee || 0) + (detailedLoan.gstOnProcessingFee || 0))}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Net Disbursement</p>
+                          <p className="text-lg font-bold text-purple-700">{formatCurrency(detailedLoan.disbursementAmount)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Disbursement Information */}
                   <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-purple-200">
@@ -1792,12 +1835,12 @@ export default function MyLoansPage() {
                     </div>
                   </div>
 
-                  {/* EMI Schedule */}
+                  {/* Repayment Schedule */}
                   {detailedLoan.schedule && detailedLoan.schedule.length > 0 && (
                     <div className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-200">
                       <div className="flex items-center gap-2 mb-3 sm:mb-4">
                         <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
-                        <h4 className="text-base sm:text-lg font-bold text-gray-800">EMI Schedule</h4>
+                        <h4 className="text-base sm:text-lg font-bold text-gray-800">Repayment Schedule</h4>
                       </div>
                       <div className="overflow-x-auto">
                         <table className="w-full text-xs sm:text-sm">
