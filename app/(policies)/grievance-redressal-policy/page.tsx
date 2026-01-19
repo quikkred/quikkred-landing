@@ -57,7 +57,7 @@ export default function GrievanceRedressalPolicyPage() {
               <ul className="space-y-3 text-[#2b2b2b] leading-[1.7]">
                 <li className="flex items-start gap-2">
                   <Phone className="w-5 h-5 text-[#25B181] mt-1 flex-shrink-0" />
-                  <span><strong>{grp?.levels?.level1?.helplineLabel || "Helpline No."}:</strong> {grp?.levels?.level1?.helpline || "+91-9311964796"}</span>
+                  <span><strong>{grp?.levels?.level1?.helplineLabel || "Helpline No."}:</strong> {grp?.levels?.level1?.helpline || "+91-9311913854"}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Mail className="w-5 h-5 text-[#25B181] mt-1 flex-shrink-0" />
@@ -119,7 +119,7 @@ export default function GrievanceRedressalPolicyPage() {
                   </li>
                   <li className="flex items-start gap-2">
                     <Phone className="w-5 h-5 text-[#25B181] mt-1 flex-shrink-0" />
-                    <span><strong>{grp?.levels?.level3?.contactLabel || "Contact No."}:</strong> {grp?.levels?.level3?.contact || "+91-9311964796"}</span>
+                    <span><strong>{grp?.levels?.level3?.contactLabel || "Contact No."}:</strong> {grp?.levels?.level3?.contact || "+91-9311913854"}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Mail className="w-5 h-5 text-[#25B181] mt-1 flex-shrink-0" />
