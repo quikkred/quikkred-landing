@@ -1,60 +1,59 @@
 import { API_BASE_URL } from "@/lib/config";
 import { NextRequest, NextResponse } from "next/server";
+import { tcStorage } from "@/lib/tc-storage";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+// POST: Receives data from Truecaller app
 export async function POST(req: NextRequest) {
-    try {
-        console.log("Truecaller Bridge Invoked");
-        const body = await req.json();
-        const { requestId, accessToken, endpoint } = body;
-        console.log("Request Body:", body);
+  try {
+    const { requestId, accessToken, endpoint } = await req.json();
 
-        if (!requestId || !accessToken || !endpoint) {
-            return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-        }
+    // 1. Fetch profile from Truecaller
+    const profileRes = await fetch(endpoint, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      cache: "no-store",
+    });
 
-        console.log("Fetching Truecaller Profile...");
-        // 1. Fetch Profile from Truecaller using the provided endpoint and token
-        const profileRes = await fetch(endpoint, {
-            headers: { Authorization: `Bearer ${accessToken}` },
-            cache: "no-store",
-        });
+    if (!profileRes.ok) return NextResponse.json({ error: "Truecaller fetch failed" }, { status: 401 });
+    const profileData = await profileRes.json();
 
-        console.log("Truecaller Profile Response Status:", profileRes.status);
+    // 2. FORWARD TO MAIN BACKEND (Crucial Step)
+    const backendRes = await fetch(`${API_BASE_URL}/api/test2/truecaller/callback`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ requestId, profile: profileData }),
+    });
 
-        if (!profileRes.ok) {
-            console.log("Failed to fetch Truecaller profile");
-            return NextResponse.json({ error: "Failed to fetch Truecaller profile" }, { status: 401 });
-        }
-
-        const profileData = await profileRes.json();
-
-        // 2. Forward the Profile Data to your Node.js Backend
-        // This allows your backend (alpha.quikkred.in) to register/login the user
-        const backendRes = await fetch(`${API_BASE_URL}/test2/truecaller/callback`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                requestId,
-                profile: profileData, // Send the actual user details here
-                phone: profileData?.phoneNumber,
-                source: 'nextjs_proxy'
-            }),
-        });
-
-        const backendData = await backendRes.json();
-        console.log("Backend Response Status:", backendRes.status);
-
-        if (!backendRes.ok) {
-            console.log("Backend processing failed");
-            return NextResponse.json({ error: "Backend processing failed", details: backendData }, { status: 502 });
-        }
-
-        // 3. Return the backend's response (e.g., your App's JWT) to the frontend
-        return NextResponse.json(backendData, { status: backendRes.status });
-    } catch (error: any) {
-        console.error("Truecaller Bridge Error:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    if (!backendRes.ok) {
+      console.error("Main backend failed to save. Polling will stay PENDING.");
+      return NextResponse.json({ error: "Backend sync failed" }, { status: 500 });
     }
+
+    // 3. ONLY ON BACKEND SUCCESS: Update local "waiting room"
+    tcStorage.set(requestId, {
+      status: 'VERIFIED',
+      data: profileData,
+      timestamp: Date.now()
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ error: "Internal Error" }, { status: 500 });
+  }
+}
+
+// GET: Frontend polls this to see if backendRes was successful
+export async function GET(req: NextRequest) {
+  const requestId = req.nextUrl.searchParams.get("requestId");
+  if (!requestId) return NextResponse.json({ error: "No ID" }, { status: 400 });
+
+  console.log("Polling status for requestId:", requestId);
+  const record = tcStorage.get(requestId);
+  console.log("Current record:", record);
+  if (record?.status === 'VERIFIED') {
+    return NextResponse.json({ status: "VERIFIED" });
+  }
+  return NextResponse.json({ status: "PENDING" }, { status: 404 });
 }
