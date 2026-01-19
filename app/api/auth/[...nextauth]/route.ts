@@ -150,6 +150,7 @@ export const authOptions: AuthOptions = {
             });
 
             const result = await res.json();
+            // console.log("Backend login response (google):", result);
 
             if (result?.success) {
               token.accessToken = result.data.accessToken;
