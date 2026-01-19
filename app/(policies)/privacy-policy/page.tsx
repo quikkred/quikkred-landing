@@ -223,7 +223,7 @@ export default function PrivacyPage() {
                 <p className="text-gray-600">
                   {sections?.rights?.dpo?.name || "Miss Priya"}<br />
                   {t?.policies?.common?.email || "Email"}: {sections?.rights?.dpo?.email || "dpo@quikkred.in"}<br />
-                  {t?.policies?.common?.phone || "Contact"}: {sections?.rights?.dpo?.phone || "+91-9311964796"}
+                  {t?.policies?.common?.phone || "Contact"}: {sections?.rights?.dpo?.phone || "+91-9311913854"}
                 </p>
               </div>
               <p className="text-gray-600 mt-4">
