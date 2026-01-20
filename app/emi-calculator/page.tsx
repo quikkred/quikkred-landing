@@ -163,7 +163,7 @@ export default function EMICalculatorPage() {
               Apply now and get instant approval with our AI-powered system. Money disbursed within minutes!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/apply/quick-v2">
+              <Link href="/apply/quick">
                 <button className="px-8 py-4 bg-white text-[#25B181] rounded-xl font-bold hover:shadow-lg transition-all text-sm sm:text-base">
                   Apply for Loan Now
                 </button>
