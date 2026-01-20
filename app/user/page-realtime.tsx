@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from "nextjs-toploader/app";
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   DollarSign, CreditCard, User, Bell, TrendingUp, Calendar, Clock,
@@ -110,11 +110,11 @@ function UserDashboardRealtimeContent() {
   }, [loading]);
 
   // Check authentication
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, authLoading, router]);
+  // useEffect(() => {
+  //   if (!authLoading && !user) {
+  //     router.push('/login');
+  //   }
+  // }, [user, authLoading, router]);
 
   // Track WebSocket connection
   useEffect(() => {

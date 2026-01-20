@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from "nextjs-toploader/app";
 import { API_BASE_URL } from '@/lib/config';
 import { signOut } from 'next-auth/react';
 
@@ -226,6 +226,7 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
 
   const logout = async () => {
     // Set logging out state immediately to hide UI
+    console.log("Logging out...");
     try {
       setIsLoggingOut(true);
       setUser(null);
@@ -252,6 +253,7 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
 
       // ✅ IMPORTANT: let NextAuth clear its cookies
       await signOut({ redirect: true, callbackUrl: "/login" });
+      console.log("Signed out from NextAuth");
 
       // Use setTimeout to ensure state is updated before redirect
       setTimeout(() => {
