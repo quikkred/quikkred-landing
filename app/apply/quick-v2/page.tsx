@@ -250,7 +250,7 @@ export default function QuickApplyV2Page() {
                             <span className="hidden font-bold text-[#25B181] text-base">QuikKred</span>
                         </a>
                         <a
-                            href="tel:+919599238889"
+                            href="tel:+919311913854"
                             className="text-xs sm:text-sm text-gray-500 hover:text-[#25B181] flex items-center gap-1"
                         >
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
