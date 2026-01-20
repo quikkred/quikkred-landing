@@ -1,6 +1,6 @@
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import {
   Zap,
   Banknote,

@@ -6,7 +6,13 @@ import { signIn, useSession } from "next-auth/react";
 import { v4 as uuidv4 } from "uuid";
 import { useAuth } from "@/contexts/AuthContext";
 
-const TruecallerVerify = () => {
+const TruecallerVerify = ({
+    callbackURL = "/user",
+    buttonText = "Truecaller"
+}: {
+    callbackURL?: string;
+    buttonText?: string;
+}) => {
     const [loading, setLoading] = useState(false);
     const { data: session } = useSession();
     const { login } = useAuth();
@@ -16,7 +22,7 @@ const TruecallerVerify = () => {
     useEffect(() => {
         if (session && loading) {
             login("", "", session, false);
-            setLoading(false); 
+            setLoading(false);
         }
     }, [session, loading, login]);
 
@@ -65,7 +71,7 @@ const TruecallerVerify = () => {
 
                     const result = await signIn("truecaller", {
                         requestId: id,
-                        callbackUrl: "/apply/quick-v2",
+                        callbackUrl: callbackURL,
                         redirect: false,
                     });
 
@@ -95,7 +101,7 @@ const TruecallerVerify = () => {
         <button
             onClick={handleTruecallerLogin}
             disabled={loading}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 sm:py-3 bg-white border-2 border-[#0066FF] rounded-lg font-medium text-xs sm:text-sm text-gray-800 hover:bg-[#0066FF]/5 disabled:opacity-50 transition-all active:scale-[0.98] touch-manipulation"
+            className="flex-1 flex md:hidden items-center justify-center gap-2 py-2.5 sm:py-3 bg-white border-2 border-[#0066FF] rounded-lg font-medium text-xs sm:text-sm text-gray-800 hover:bg-[#0066FF]/5 disabled:opacity-50 transition-all active:scale-[0.98] touch-manipulation"
         >
             {loading ? (
                 <div className="flex items-center gap-2">
@@ -105,7 +111,7 @@ const TruecallerVerify = () => {
             ) : (
                 <>
                     <TruecallerIcon />
-                    <span className="hidden xs:inline">Truecaller</span>
+                    <span className="hidden xs:inline">{buttonText}</span>
                 </>
             )}
         </button>
