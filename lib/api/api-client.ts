@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '@/lib/config';
 import getToken from '../getToken';
+import { signOut } from 'next-auth/react';
 
 // Core API Client with type-safe methods for all backend endpoints
 interface ApiResponse<T = any> {
@@ -90,6 +91,7 @@ class ApiClient {
             document.cookie = 'user-role=; path=/; max-age=0';
 
             // Redirect to login
+            await signOut({ redirect: true, callbackUrl: "/login" });
             window.location.href = '/login';
           }
         }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useRouter } from "nextjs-toploader/app";
 import {
   CreditCard, IndianRupee, Calendar, Clock, Plus,
   TrendingUp, Target, CheckCircle, Eye,
@@ -16,6 +16,7 @@ import { loansService } from '@/lib/api/loans.service';
 import { usersService } from '@/lib/api/users.service';
 import { API_BASE_URL } from '@/lib/config';
 import getToken from '@/lib/getToken';
+import useAxios from '@/hooks/useAxios';
 
 interface Loan {
   id: string;
@@ -211,6 +212,7 @@ interface PaginationInfo {
 
 export default function MyLoansPage() {
   const { user, isLoading } = useAuth();
+  const axios = useAxios();
   const router = useRouter();
   const [loans, setLoans] = useState<Loan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -266,19 +268,19 @@ export default function MyLoansPage() {
   } | null>(null);
 
   // Check authentication and authorization
-  useEffect(() => {
-    if (!isLoading) {
-      if (!user) {
-        router.push('/login');
-        return;
-      }
+  // useEffect(() => {
+  //   if (!isLoading) {
+  //     if (!user) {
+  //       router.push('/login');
+  //       return;
+  //     }
 
-      if (false) {
-        router.push('/login');
-        return;
-      }
-    }
-  }, [user, isLoading, router]);
+  //     if (false) {
+  //       router.push('/login');
+  //       return;
+  //     }
+  //   }
+  // }, [user, isLoading, router]);
 
   // Fetch loans data
   useEffect(() => {
@@ -301,65 +303,67 @@ export default function MyLoansPage() {
     try {
       setLoading(true);
 
-      const token = await getToken();
+      // const token = await getToken();
 
-      if (!token) {
-        router.push('/login');
-        return;
-      }
+      // if (!token) {
+      //   router.push('/login');
+      //   return;
+      // }
 
       const currentPage = page || pagination.page;
       const currentLimit = limit || pagination.limit;
 
-      const response = await fetch(
-        `${API_BASE_URL}/api/loans/get?page=${currentPage}&limit=${currentLimit}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
+      // const response = await fetch(
+      //   `${API_BASE_URL}/api/loans/get?page=${currentPage}&limit=${currentLimit}`,
+      //   {
+      //     method: 'GET',
+      //     headers: {
+      //       'Content-Type': 'application/json',
+      //       'Authorization': `Bearer ${token}`
+      //     }
+      //   }
+      // );
 
-      // Check if token expired (401 Unauthorized) - Full logout and redirect
-      if (response.status === 401) {
-        // Check if user just logged in - don't clear storage during grace period
-        const loginTimestamp = localStorage.getItem('loginTimestamp');
-        const justLoggedIn = loginTimestamp &&
-          (Date.now() - parseInt(loginTimestamp, 10)) < 10000; // 10 second grace period
+      // // Check if token expired (401 Unauthorized) - Full logout and redirect
+      // if (response.status === 401) {
+      //   // Check if user just logged in - don't clear storage during grace period
+      //   const loginTimestamp = localStorage.getItem('loginTimestamp');
+      //   const justLoggedIn = loginTimestamp &&
+      //     (Date.now() - parseInt(loginTimestamp, 10)) < 10000; // 10 second grace period
 
-        if (!justLoggedIn) {
-          // Clear all authentication tokens
-          localStorage.removeItem('token');
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          localStorage.removeItem('loginTimestamp');
+      //   if (!justLoggedIn) {
+      //     // Clear all authentication tokens
+      //     localStorage.removeItem('token');
+      //     localStorage.removeItem('authToken');
+      //     localStorage.removeItem('accessToken');
+      //     localStorage.removeItem('refreshToken');
+      //     localStorage.removeItem('loginTimestamp');
 
-          // Clear user data
-          localStorage.removeItem('userRole');
-          localStorage.removeItem('role');
-          localStorage.removeItem('userEmail');
-          localStorage.removeItem('email');
-          localStorage.removeItem('userName');
-          localStorage.removeItem('userId');
-          localStorage.removeItem('userMobile');
-          localStorage.removeItem('customerUniqueId');
+      //     // Clear user data
+      //     localStorage.removeItem('userRole');
+      //     localStorage.removeItem('role');
+      //     localStorage.removeItem('userEmail');
+      //     localStorage.removeItem('email');
+      //     localStorage.removeItem('userName');
+      //     localStorage.removeItem('userId');
+      //     localStorage.removeItem('userMobile');
+      //     localStorage.removeItem('customerUniqueId');
 
-          // Clear cookies
-          document.cookie = 'auth-token=; path=/; max-age=0';
-          document.cookie = 'user-role=; path=/; max-age=0';
+      //     // Clear cookies
+      //     document.cookie = 'auth-token=; path=/; max-age=0';
+      //     document.cookie = 'user-role=; path=/; max-age=0';
 
-          // Redirect to login
-          router.push('/login');
-          return;
-        }
-      }
+      //     // Redirect to login
+      //     router.push('/login');
+      //     return;
+      //   }
+      // }
 
-      const result = await response.json();
+      // const result = await response.json();
+      const response = await axios.get(`/api/loans/get?page=${currentPage}&limit=${currentLimit}`);
+      const result = response.data;
 
-      if (response.ok && result.success && result.data) {
+      if ((response.status === 200 || response.status === 201) && result.success && result.data) {
         const mappedLoans = result.data.map((loan: any) => ({
           id: loan._id,
           loanNumber: loan.loanNumber,
@@ -529,12 +533,12 @@ export default function MyLoansPage() {
     setNewLoanLoading(true);
 
     try {
-      const token = await getToken();
+      // const token = await getToken();
 
-      if (!token) {
-        router.push('/login');
-        return;
-      }
+      // if (!token) {
+      //   router.push('/login');
+      //   return;
+      // }
 
       const payload = {
         loanAmount: Number(newLoanForm.loanAmount),
@@ -547,16 +551,18 @@ export default function MyLoansPage() {
         }
       };
 
-      const response = await fetch(`${API_BASE_URL}/api/application/loan/new`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
-      });
+      // const response = await fetch(`${API_BASE_URL}/api/application/loan/new`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Authorization': `Bearer ${token}`
+      //   },
+      //   body: JSON.stringify(payload)
+      // });
 
-      const result = await response.json();
+      // const result = await response.json();
+      const response = await axios.post("/api/application/loan/new", payload);
+      const result = response.data;
 
       if (result.success) {
         // Store success data and show confirmation screen

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from "nextjs-toploader/app";
 import { motion } from 'framer-motion';
 import {
   DollarSign, CreditCard, User, Bell, TrendingUp, Calendar, Clock,
@@ -37,11 +37,11 @@ function UserDashboardContent() {
   }, [loading]);
 
   // Check authentication
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, authLoading, router]);
+  // useEffect(() => {
+  //   if (!authLoading && !user) {
+  //     router.push('/login');
+  //   }
+  // }, [user, authLoading, router]);
 
   // Show loading state
   if (authLoading || loading) {

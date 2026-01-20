@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from "nextjs-toploader/app";
 
 export type UserRole = 'USER' | 'CUSTOMER' | 'ADMIN' | 'SUPER_ADMIN' | 'COLLECTION_AGENT' | 'UNDERWRITER' | 'SUPPORT_AGENT' | 'FINANCE_MANAGER' | 'RISK_ANALYST';
 

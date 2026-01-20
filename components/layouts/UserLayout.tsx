@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef, memo, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import Image from "next/image";
 import {
   LayoutDashboard, CreditCard, FileText, Settings, Bell,
@@ -100,7 +101,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
           return;
         }
 
-        console.log('Fetching notifications...');
+        // console.log('Fetching notifications...');
         const response = await fetch(`${API_BASE_URL}/api/notification/getAll`, {
           method: 'GET',
           headers: {
@@ -113,7 +114,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
         clearTimeout(timeoutId);
 
         const result = await response.json();
-        console.log('Notifications API Response:', result);
+        // console.log('Notifications API Response:', result);
 
         // Handle 403 - Access denied for CUSTOMER role
         if (result.status === 403 || response.status === 403) {

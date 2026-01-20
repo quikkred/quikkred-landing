@@ -40,6 +40,8 @@ export function middleware(request: NextRequest) {
   const isProtected =
     pathname === "/user" ||
     pathname.startsWith("/user/") ||
+    pathname === "/profile" ||
+    pathname.startsWith("/profile/") ||
     pathname === "/dashboard" ||
     pathname.startsWith("/dashboard/");
 
