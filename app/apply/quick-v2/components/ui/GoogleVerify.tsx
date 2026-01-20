@@ -14,7 +14,7 @@ const GoogleVerify = () => {
         try {
             setIsLoading(true);
             trackGoogleAuthStarted();
-            await signIn("google", { callbackUrl: "/apply/quick-v2" });
+            await signIn("google", { callbackUrl: "/apply/quick" });
         } catch (error) {
             console.error("Google Sign In Error:", error);
             const errorMsg = error instanceof Error ? error.message : "Google sign-in failed";
