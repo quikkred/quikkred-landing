@@ -2,9 +2,9 @@
 
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 
-export const dynamic = 'force-dynamic';
+// export const dynamic = 'force-dynamic';
 import {
   Mail,
   Phone,
@@ -29,6 +29,9 @@ import { useToast, Toaster } from "@/components/ui/toast";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { API_BASE_URL } from '@/lib/config';
 import { getSession, signIn } from "next-auth/react";
+import GoogleVerify from "../apply/quick-v2/components/ui/GoogleVerify";
+import TruecallerVerify from "../apply/quick-v2/components/ui/TruecallerVerify";
+import useAxios from "@/hooks/useAxios";
 
 interface LoginForm {
   emailOrPhone: string;
@@ -57,6 +60,7 @@ export default function LoginPage() {
     rememberMe: false
   });
   const [mobileError, setMobileError] = useState("");
+  const axios = useAxios();
 
   // Countdown timer for resend OTP
   useEffect(() => {
@@ -114,17 +118,21 @@ export default function LoginPage() {
         ? { email: formData.emailOrPhone }
         : { mobile: formData.emailOrPhone };
 
-      const response = await fetch(`${API_BASE_URL}/api/auth/customer/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      // const response = await fetch(`${API_BASE_URL}/api/auth/customer/login`, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify(payload),
+      // });
 
-      const data = await response.json();
+      // const data = await response.json();
 
-      if (response.ok && data.success) {
+      const response = await axios.post('/api/auth/customer/login', payload);
+      const data = response.data;
+
+      // if (response.ok && data.success) {
+      if(response.status === 200 || response.status === 201) {
         setOtpSent(true);
         setResendTimer(15); // Start 15-second countdown
         toast({
@@ -153,87 +161,6 @@ export default function LoginPage() {
       setSendingOtp(false);
     }
   };
-
-  // const verifyOtp = async () => {
-  //   if (!otp || otp.length !== 6) {
-  //     setError('Please enter valid 6-digit OTP');
-  //     toast({
-  //       variant: "warning",
-  //       title: "Invalid OTP",
-  //       description: "Please enter a valid 6-digit OTP.",
-  //     });
-  //     return;
-  //   }
-
-  //   setVerifyingOtp(true);
-  //   setError(null);
-
-  //   try {
-  //     const payload =
-  //       loginMethod === 'email'
-  //         ? { email: formData.emailOrPhone, otp }
-  //         : { mobile: formData.emailOrPhone, otp };
-
-  //     const response = await fetch(`${API_BASE_URL}/api/auth/customer/verifyOtp`, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(payload),
-  //     });
-
-  //     const data = await response.json();
-
-  //     if (response.ok && data.success && data.data) {
-  //       // ✅ Extract data from response
-  //       const { userId, role, accessToken, refreshToken, email, customerUniqueId } = data.data;
-
-  //       // ✅ Save important details in localStorage
-  //       localStorage.setItem("userId", userId);
-  //       localStorage.setItem("role", role);
-  //       localStorage.setItem("accessToken", accessToken);
-  //       localStorage.setItem("refreshToken", refreshToken);
-  //       localStorage.setItem("email", email || "");
-  //       localStorage.setItem("customerUniqueId", customerUniqueId || "");
-
-  //       // ✅ Continue with your login handler
-  //       const success = await login(
-  //         formData.emailOrPhone,
-  //         otp,
-  //         data.data // API response data
-  //       );
-
-  //       if (success) {
-  //         toast({
-  //           variant: "success",
-  //           title: "Login Successful!",
-  //           description: "Welcome back! Redirecting to your dashboard...",
-  //         });
-  //       } else {
-  //         setError("Login failed. Please try again.");
-  //         toast({
-  //           variant: "error",
-  //           title: "Login Failed",
-  //           description: "Unable to log you in. Please try again.",
-  //         });
-  //       }
-  //     } else {
-  //       setError(data.message || "Invalid OTP. Please try again.");
-  //       toast({
-  //         variant: "error",
-  //         title: "Invalid OTP",
-  //         description: data.message || "The OTP you entered is incorrect. Please try again.",
-  //       });
-  //     }
-  //   } catch (err: any) {
-  //     setError(err.message || "Verification failed. Please try again.");
-  //     toast({
-  //       variant: "error",
-  //       title: "Verification Error",
-  //       description: err.message || "Verification failed. Please try again.",
-  //     });
-  //   } finally {
-  //     setVerifyingOtp(false);
-  //   }
-  // };
 
   const verifyOtp = async () => {
     if (!otp || otp.length !== 6) {
@@ -349,21 +276,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5]">
-      {/* Breadcrumbs */}
-      {/* <div className="container mx-auto px-4 pt-8">
-        <motion.nav
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center space-x-2 text-sm text-gray-700 mb-8"
-        >
-          <Link href="/" className="hover:text-[#0ea5e9] transition-colors">
-            <Home className="w-4 h-4" />
-          </Link>
-          <ArrowRight className="w-3 h-3" />
-          <span className="text-[#0ea5e9] font-medium">Login</span>
-        </motion.nav>
-      </div> */}
-
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -430,11 +342,9 @@ export default function LoginPage() {
               className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100"
             >
               {activeTab === 'login' ? (
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-3">
 
                   {/* Login Method Toggle */}
-
-
 
                   {/* <div className="flex bg-gray-50 rounded-lg p-1 border border-gray-200">
                     <button
@@ -510,6 +420,18 @@ export default function LoginPage() {
                     </button>
                   </div> */}
 
+                  {/* google auth */}
+                  <div className="grid grid-cols-2 sm:grid-cols-1 gap-2">
+                    <GoogleVerify buttonText="Continue with google" />
+                    <TruecallerVerify buttonText="Continue with truecaller" />
+                  </div>
+
+                  <div className="flex text-neutral-500 my-1 justify-center w-full gap-2 items-center">
+                    <div className="bg-neutral-400 w-full h-[1px]" />
+                    <span>or</span>
+                    <div className="bg-neutral-400 w-full h-[1px]" />
+                  </div>
+
                   {/* Email/Phone Input */}
                   <div>
                     <label className="block text-sm font-medium mb-2">
@@ -517,7 +439,7 @@ export default function LoginPage() {
                     </label>
                     <div className="relative">
                       {loginMethod === 'email' ? (
-                        <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                        <Mail className="absolute left-3 top-0 translate-y-4 w-5 h-5 text-gray-400" />
                       ) : (
                         <Phone className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                       )}

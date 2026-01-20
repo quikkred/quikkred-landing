@@ -13,6 +13,8 @@ import {
     EMPLOYMENT_TYPES, SALARY_DATES
 } from '@/lib/constants/quickApplyV2';
 import { API_BASE_URL } from '@/lib/config';
+import PanVerify from './ui/PanVerify';
+import useAxios from '@/hooks/useAxios';
 
 // MOCK MODE - Set to false for production with real APIs
 // Set to true only for local testing without backend
@@ -35,6 +37,7 @@ export default function Page2PANBank({
     const [panLoading, setPanLoading] = useState(false);
     const [panError, setPanError] = useState('');
     const [panReverifyTimer, setPanReverifyTimer] = useState(0);
+    const axios = useAxios();
 
     // Form Errors
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -105,99 +108,23 @@ export default function Page2PANBank({
         }
 
         try {
-            const token = localStorage.getItem('accessToken');
-            const response = await fetch(`${API_BASE_URL}/api/kyc/pan/verify`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({ panNumber: pan }),
-            });
+            // const token = localStorage.getItem('accessToken');
+            // const response = await fetch(`${API_BASE_URL}/api/kyc/pan/verify`, {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //         'Authorization': `Bearer ${token}`,
+            //     },
+            //     body: JSON.stringify({ panNumber: pan }),
+            // });
 
-            const data = await response.json();
+            // const data = await response.json();
+            const response = await axios.post('/api/kyc/pan/verify', { panNumber: pan });
+            const data = await response.data;
 
             if (data.success && data.data) {
                 const panData: PANData = {
                     panNumber: data.data.panNumber || pan,
-                    fullName: data.data.fullName || data.data.name || '',
-                    dateOfBirth: data.data.dateOfBirth || data.data.dob || '',
-                    gender: data.data.gender,
-                    maskedAadhaar: data.data.aadhaar || data.data.maskedAadhaar,
-                };
-
-                setFormData(prev => ({
-                    ...prev,
-                    panVerified: true,
-                    panData,
-                    fullName: panData.fullName,
-                    dob: panData.dateOfBirth,
-                }));
-
-                setPanReverifyTimer(TIMERS.REVERIFY_COOLDOWN);
-            } else {
-                setPanError(data.message || 'PAN verification failed');
-            }
-        } catch (error) {
-            setPanError('Verification failed. Please try again.');
-        } finally {
-            setPanLoading(false);
-        }
-    };
-
-    // Verify PAN
-    const handleVerifyPAN = async () => {
-        if (!isValidPAN(formData.pan)) {
-            setPanError('Invalid PAN format. Example: ABCDE1234F');
-            return;
-        }
-
-        setPanLoading(true);
-        setPanError('');
-
-        // MOCK MODE
-        if (MOCK_MODE) {
-            await new Promise(resolve => setTimeout(resolve, 1200));
-            const mockPanData: PANData = {
-                panNumber: formData.pan,
-                fullName: 'Test User',
-                dateOfBirth: '1990-05-15',
-                gender: 'Male',
-                maskedAadhaar: 'XXXX-XXXX-1234',
-            };
-
-            setFormData(prev => ({
-                ...prev,
-                panVerified: true,
-                panData: mockPanData,
-                fullName: mockPanData.fullName,
-                dob: mockPanData.dateOfBirth,
-            }));
-
-            setPanReverifyTimer(TIMERS.REVERIFY_COOLDOWN);
-            console.log('✅ MOCK: PAN verified -', formData.pan);
-            setPanLoading(false);
-            return;
-        }
-
-        try {
-            const token = localStorage.getItem('accessToken');
-            const response = await fetch(`${API_BASE_URL}/api/kyc/pan/verify`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    panNumber: formData.pan,
-                }),
-            });
-
-            const data = await response.json();
-
-            if (data.success && data.data) {
-                const panData: PANData = {
-                    panNumber: data.data.panNumber || formData.pan,
                     fullName: data.data.fullName || data.data.name || '',
                     dateOfBirth: data.data.dateOfBirth || data.data.dob || '',
                     gender: data.data.gender,
@@ -285,36 +212,58 @@ export default function Page2PANBank({
         }
 
         try {
-            const token = localStorage.getItem('accessToken');
-            const response = await fetch(`${API_BASE_URL}/api/loan/submit`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    mobile: formData.mobile,
-                    pincode: formData.pincode,
-                    city: formData.city,
-                    state: formData.state,
-                    employmentType: formData.employmentType,
-                    monthlyIncome: parseInt(formData.monthlyIncome),
-                    salaryDate: formData.salaryDate,
-                    loanAmount: formData.loanAmount,
-                    tenure: formData.tenure,
-                    tenureUnit: 'days',
-                    panCard: formData.pan,
-                    fullName: formData.fullName,
-                    dateOfBirth: formData.dob,
-                    processingFee: loanCalc.processingFee,
-                    gstOnProcessingFee: loanCalc.gstOnProcessingFee,
-                    netDisbursalAmount: loanCalc.netDisbursalAmount,
-                    totalRepayment: loanCalc.totalRepayment,
-                    ipData: formData.ipData,
-                }),
-            });
+            // const token = localStorage.getItem('accessToken');
+            // const response = await fetch(`${API_BASE_URL}/api/loan/submit`, {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //         'Authorization': `Bearer ${token}`,
+            //     },
+            //     body: JSON.stringify({
+            //         mobile: formData.mobile,
+            //         pincode: formData.pincode,
+            //         city: formData.city,
+            //         state: formData.state,
+            //         employmentType: formData.employmentType,
+            //         monthlyIncome: parseInt(formData.monthlyIncome),
+            //         salaryDate: formData.salaryDate,
+            //         loanAmount: formData.loanAmount,
+            //         tenure: formData.tenure,
+            //         tenureUnit: 'days',
+            //         panCard: formData.pan,
+            //         fullName: formData.fullName,
+            //         dateOfBirth: formData.dob,
+            //         processingFee: loanCalc.processingFee,
+            //         gstOnProcessingFee: loanCalc.gstOnProcessingFee,
+            //         netDisbursalAmount: loanCalc.netDisbursalAmount,
+            //         totalRepayment: loanCalc.totalRepayment,
+            //         ipData: formData.ipData,
+            //     }),
+            // });
 
-            const data = await response.json();
+            // const data = await response.json();
+
+            const response = await axios.post('/api/loan/submit', {
+                mobile: formData.mobile,
+                pincode: formData.pincode,
+                city: formData.city,
+                state: formData.state,
+                employmentType: formData.employmentType,
+                monthlyIncome: parseInt(formData.monthlyIncome),
+                salaryDate: formData.salaryDate,
+                loanAmount: formData.loanAmount,
+                tenure: formData.tenure,
+                tenureUnit: 'days',
+                panCard: formData.pan,
+                fullName: formData.fullName,
+                dateOfBirth: formData.dob,
+                processingFee: loanCalc.processingFee,
+                gstOnProcessingFee: loanCalc.gstOnProcessingFee,
+                netDisbursalAmount: loanCalc.netDisbursalAmount,
+                totalRepayment: loanCalc.totalRepayment,
+                ipData: formData.ipData,
+            })
+            const data = await response.data;
 
             if (data.success) {
                 if (data.data) {
@@ -364,8 +313,8 @@ export default function Page2PANBank({
                                         setErrors(prev => ({ ...prev, employmentType: '' }));
                                     }}
                                     className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-medium text-xs sm:text-sm transition-all active:scale-[0.98] touch-manipulation ${formData.employmentType === type.value
-                                            ? 'bg-[#25B181] text-white shadow-md'
-                                            : 'bg-white text-gray-700 border border-gray-300 hover:border-[#25B181]'
+                                        ? 'bg-[#25B181] text-white shadow-md'
+                                        : 'bg-white text-gray-700 border border-gray-300 hover:border-[#25B181]'
                                         }`}
                                 >
                                     {type.label}
@@ -437,84 +386,7 @@ export default function Page2PANBank({
             </div>
 
             {/* PAN Verification */}
-            <div className="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4">
-                <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-[#25B181]" />
-                    PAN Verification
-                </h3>
-
-                <div className="space-y-3">
-                    <div>
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
-                            PAN Number *
-                        </label>
-                        <div className="flex flex-col sm:flex-row gap-2">
-                            <div className="relative flex-1">
-                                <input
-                                    type="text"
-                                    value={formData.pan}
-                                    onChange={(e) => handlePANChange(e.target.value)}
-                                    placeholder="ABCDE1234F"
-                                    disabled={formData.panVerified}
-                                    maxLength={10}
-                                    className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 border rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-[#25B181] uppercase disabled:bg-gray-100 ${formData.panVerified ? 'border-green-500 bg-green-50' : 'border-gray-300'
-                                        } ${panError ? 'border-red-500' : ''}`}
-                                />
-                                {formData.panVerified && (
-                                    <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
-                                )}
-                            </div>
-
-                            {!formData.panVerified && (
-                                <button
-                                    onClick={handleVerifyPAN}
-                                    disabled={panLoading || formData.pan.length !== 10 || panReverifyTimer > 0}
-                                    className="px-4 sm:px-6 py-2.5 sm:py-3 bg-[#25B181] text-white rounded-lg text-sm sm:text-base font-medium hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap active:scale-[0.98] touch-manipulation"
-                                >
-                                    {panLoading ? 'Verifying...' : panReverifyTimer > 0 ? `Wait (${panReverifyTimer}s)` : 'Verify PAN'}
-                                </button>
-                            )}
-
-                            {formData.panVerified && (
-                                <div className="px-3 sm:px-4 py-2.5 sm:py-3 bg-green-100 border border-green-300 rounded-lg flex items-center justify-center gap-2">
-                                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
-                                    <span className="text-xs sm:text-sm font-medium text-green-700">Verified</span>
-                                </div>
-                            )}
-                        </div>
-                        {panError && (
-                            <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
-                                <AlertCircle className="w-3.5 h-3.5" />
-                                {panError}
-                            </p>
-                        )}
-                    </div>
-
-                    {/* PAN Details */}
-                    {formData.panVerified && formData.panData && (
-                        <div className="bg-green-50 rounded-lg p-3 space-y-2 border border-green-200">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div className="flex items-center gap-2.5">
-                                    <User className="w-4 h-4 text-gray-400" />
-                                    <div>
-                                        <p className="text-[10px] sm:text-xs text-gray-500">Full Name</p>
-                                        <p className="font-medium text-xs sm:text-sm text-gray-900">{formData.fullName}</p>
-                                    </div>
-                                </div>
-                                {formData.dob && (
-                                    <div className="flex items-center gap-2.5">
-                                        <Calendar className="w-4 h-4 text-gray-400" />
-                                        <div>
-                                            <p className="text-[10px] sm:text-xs text-gray-500">Date of Birth</p>
-                                            <p className="font-medium text-xs sm:text-sm text-gray-900">{formatDOB(formData.dob)}</p>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
+            <PanVerify formData={formData} setFormData={setFormData} />
 
             {/* Loan Summary */}
             <div className="bg-gradient-to-r from-[#25B181]/10 to-[#51C9AF]/10 rounded-lg sm:rounded-xl p-3 sm:p-4 space-y-1.5 sm:space-y-2">
@@ -548,8 +420,8 @@ export default function Page2PANBank({
                         onClick={onBack}
                         disabled={submitLoading || formData.panVerified}
                         className={`px-3 sm:px-4 py-3 sm:py-3.5 border rounded-lg font-medium text-sm flex items-center gap-1.5 active:scale-[0.98] touch-manipulation ${formData.panVerified
-                                ? 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50'
-                                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                            ? 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50'
+                            : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                             } disabled:opacity-50`}
                     >
                         {formData.panVerified ? (

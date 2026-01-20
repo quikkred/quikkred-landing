@@ -6,7 +6,7 @@ import {
   Bell, BellOff, AlertCircle, Info, CheckCircle,
   Clock, ArrowLeft, Loader2
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { API_BASE_URL } from '@/lib/config';
 import { useNotifications } from '@/store/hooks/useNotifications';
 

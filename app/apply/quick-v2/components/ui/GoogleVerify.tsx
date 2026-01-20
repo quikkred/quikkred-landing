@@ -3,13 +3,19 @@
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 
-const GoogleVerify = () => {
+const GoogleVerify = ({
+    callbackURL = "/user",
+    buttonText = "Google"
+}: {
+    callbackURL?: string;
+    buttonText?: string;
+}) => {
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSignIn = async () => {
         try {
             setIsLoading(true);
-            await signIn("google", { callbackUrl: "/apply/quick-v2" });
+            await signIn("google", { callbackUrl: callbackURL });
         } catch (error) {
             console.error("Google Sign In Error:", error);
             setIsLoading(false);
@@ -37,7 +43,7 @@ const GoogleVerify = () => {
             ) : (
                 <>
                     <GoogleIcon />
-                    <span className="hidden xs:inline">Google</span>
+                    <span className="hidden xs:inline">{buttonText}</span>
                 </>
             )}
         </button>

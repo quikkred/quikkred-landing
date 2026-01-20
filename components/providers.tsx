@@ -61,7 +61,7 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <CriticalErrorBoundary>
       <ReduxProvider>
-        <SessionProvider>
+        <SessionProvider refetchInterval={30} refetchOnWindowFocus>
           <I18nextProvider i18n={i18n}>
             <ThemeProvider>
               <QueryClientProvider client={queryClient}>

@@ -19,7 +19,7 @@ import {
   Eye
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { API_BASE_URL } from '@/lib/config';
 
 interface ApplicationStatus {

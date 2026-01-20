@@ -18,7 +18,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { Suspense } from "react";
 import { getSession } from "next-auth/react";
 import getToken from "@/lib/getToken";
