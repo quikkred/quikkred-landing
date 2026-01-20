@@ -47,7 +47,7 @@ const TruecallerVerify = () => {
                 // Note: I fixed the typo 'rquestId' to 'requestId'
                 const result = await signIn("truecaller", {
                     requestId: id,
-                    callbackUrl: "/apply/quick-v2",
+                    callbackUrl: "/apply/quick",
                     redirect: true
                 });
 
