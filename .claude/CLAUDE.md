@@ -90,7 +90,7 @@ PORT=3006 npm run dev  # Use 3006 if 3000 is taken by CRM
 ```
 
 ### Key Paths
-- Quick Apply V2: `/apply/quick-v2`
+- Quick Apply V2: `/apply/quick`
 - Original Quick Apply: `/apply/quick`
 - User Dashboard: `/user`
 
