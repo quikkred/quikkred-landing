@@ -6,7 +6,7 @@
     "language": "TypeScript"
   },
   "paths": {
-    "quickApplyV2": "app/apply/quick-v2",
+    "quickApplyV2": "app/apply/quick",
     "trackingHooks": "lib/hooks",
     "trackingService": "lib/tracking.ts",
     "workflows": ".github/workflows"

@@ -228,7 +228,7 @@ export default function ProductsPage() {
                         )}
                       </div>
 
-                      <Link href="/apply/quick-v2">
+                      <Link href="/apply/quick">
                         <button className="px-8 py-3 bg-gradient-to-r from-[#25B181] to-[#1F8F68] text-white rounded-full font-semibold hover:shadow-lg transition-all flex items-center gap-2">
                           {t('products.featured.applyButton')}
                           <ArrowRight className="w-5 h-5" />
@@ -381,7 +381,7 @@ export default function ProductsPage() {
                         {t('products.allProducts.learnMore')}
                       </button>
                     </Link>
-                    <Link href="/apply/quick-v2" className="flex-1">
+                    <Link href="/apply/quick" className="flex-1">
                       <button
                         className={`w-full px-4 py-2 bg-gradient-to-r ${product.color} text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2`}
                       >
@@ -522,7 +522,7 @@ export default function ProductsPage() {
 
         <p className="text-lg md:text-xl text-white/90 mb-8 text-balance">{t('products.cta.description')}</p>
 
-          <Link href="/apply/quick-v2">
+          <Link href="/apply/quick">
             <button
               className="h-12 bg-gray-900 hover:bg-gray-800 text-white px-8 rounded-lg font-semibold transition-colors w-full md:w-auto border-0 cursor-pointer"
             >

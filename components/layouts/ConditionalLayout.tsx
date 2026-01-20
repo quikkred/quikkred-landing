@@ -71,7 +71,7 @@ const PUBLIC_ROUTES = [
 ];
 
 // Routes that should NOT show header/footer (full-page experiences for all users)
-const FULL_SCREEN_ROUTES = ['/select-language', '/apply/quick-v2', '/apply/loan'];
+const FULL_SCREEN_ROUTES = ['/select-language', '/apply/quick', '/apply/loan'];
 
 // Check if current path should use public layout
 const isPublicRoute = (pathname: string): boolean => {

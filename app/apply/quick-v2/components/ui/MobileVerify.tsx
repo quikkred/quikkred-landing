@@ -110,7 +110,7 @@ const MobileVerify = () => {
         emailOrPhone: mobile,
         otp,
         loginMethod: "mobile",
-        callbackUrl: "/apply/quick-v2",
+        callbackUrl: "/apply/quick",
       });
 
       if (res?.ok) {
