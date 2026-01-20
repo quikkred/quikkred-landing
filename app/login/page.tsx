@@ -29,9 +29,9 @@ import { useToast, Toaster } from "@/components/ui/toast";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { API_BASE_URL } from '@/lib/config';
 import { getSession, signIn } from "next-auth/react";
+import useAxios from "@/hooks/useAxios";
 import GoogleVerify from "../apply/quick-v2/components/ui/GoogleVerify";
 import TruecallerVerify from "../apply/quick-v2/components/ui/TruecallerVerify";
-import useAxios from "@/hooks/useAxios";
 
 interface LoginForm {
   emailOrPhone: string;
@@ -651,7 +651,7 @@ export default function LoginPage() {
                   <p className="text-gray-700 mb-6">
                     Join thousands who have already transformed their financial journey with instant AI-powered loans.
                   </p>
-                  <Link href="/apply/quick-v2">
+                  <Link href="/apply/quick">
                     <button className="w-full bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all mb-4">
                       Start Your Application
                     </button>

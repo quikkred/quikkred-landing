@@ -72,7 +72,7 @@ const TruecallerVerify = ({
                     const result = await signIn("truecaller", {
                         requestId: id,
                         callbackUrl: callbackURL,
-                        redirect: false,
+                        redirect: true,
                     });
 
                     if (!result?.ok) {
