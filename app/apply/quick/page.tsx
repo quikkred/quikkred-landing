@@ -165,6 +165,10 @@ export default function QuickLoanApplication() {
   const [brePollingMessage, setBrePollingMessage] = useState('');
   const [bsaStatusUpdated, setBsaStatusUpdated] = useState(false);
   const [bsaStatus, setBsaStatus] = useState<string | null>(null);
+  const [processingCountdown, setProcessingCountdown] = useState(60);
+  const [upiAutopayConsent, setUpiAutopayConsent] = useState(false);
+  const [mandateLoading, setMandateLoading] = useState(false);
+  const [mandateData, setMandateData] = useState<any>(null);
 
   // User location state
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
@@ -216,6 +220,40 @@ export default function QuickLoanApplication() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [bankDropdownOpen, stateDropdownOpen]);
+
+  // Processing countdown timer - redirect to /user if timeout
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | null = null;
+
+    // Only start countdown when finfactorSuccess is true (showing processing UI)
+    if (finfactorSuccess) {
+      // Reset countdown when processing starts
+      setProcessingCountdown(60);
+
+      intervalId = setInterval(() => {
+        setProcessingCountdown((prev) => {
+          if (prev <= 1) {
+            // Countdown finished - redirect to dashboard
+            if (intervalId) clearInterval(intervalId);
+            router.push('/user');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [finfactorSuccess, router]);
+
+  // Check mandateFlag from customer data and pre-set upiAutopayConsent
+  useEffect(() => {
+    if (reduxCustomer?.data?.mandateFlag === true) {
+      setUpiAutopayConsent(true);
+    }
+  }, [reduxCustomer?.data?.mandateFlag]);
 
   // Load user data if logged in
   useEffect(() => {
@@ -592,6 +630,7 @@ export default function QuickLoanApplication() {
         const result = await response.json();
 
         if (response.ok && result.success) {
+          // API SUCCESS - follow normal flow (approve/reject/etc.)
           console.log('✅ BRE finFactor result fetched successfully:', result.data);
           toast({ variant: "success", title: "Success", description: result.message || "BRE verification completed successfully." });
 
@@ -600,14 +639,16 @@ export default function QuickLoanApplication() {
           }
           setFinfactorSuccess(false);
         } else {
+          // API ERROR - redirect to /user
           console.error('BRE finFactor failed:', result.message);
-          toast({ variant: "error", title: "Failed", description: result.message || "Verification failed. Please try again." });
-          breFinFactorCalledRef.current = false; // Allow retry on failure
+          toast({ variant: "error", title: "Processing", description: result.message || "We are processing your application. Please check back later." });
+          router.push('/user');
         }
       } catch (error) {
+        // API EXCEPTION - redirect to /user
         console.error('Error fetching BRE finFactor:', error);
-        toast({ variant: "error", title: "Error", description: "Failed to process. Please try again." });
-        breFinFactorCalledRef.current = false; // Allow retry on error
+        toast({ variant: "error", title: "Processing", description: "We are processing your application. Please check back later." });
+        router.push('/user');
       } finally {
         setConsentLoading(false);
       }
@@ -4393,6 +4434,92 @@ y += boxHeight + 4;
     }
   };
 
+  // Handle UPI Autopay checkbox click - calls mandate checkout API
+  const handleUpiAutopayClick = async (checked: boolean) => {
+    // If mandateFlag is already true, just toggle consent without API call
+    if (reduxCustomer?.data?.mandateFlag === true) {
+      setUpiAutopayConsent(checked);
+      return;
+    }
+
+    if (!checked) {
+      setUpiAutopayConsent(false);
+      return;
+    }
+
+    // Get application ID from approvalData
+    const applicationId = approvalData?.applicationId || approvalData?._id;
+    if (!applicationId) {
+      toast({
+        variant: "error",
+        title: "Error",
+        description: "Application ID not found. Please try again.",
+      });
+      return;
+    }
+
+    setMandateLoading(true);
+
+    try {
+      const token = await getToken();
+      if (!token) {
+        toast({
+          variant: "error",
+          title: "Authentication Error",
+          description: "Please login again to continue.",
+        });
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/mandate-checkout/generate-link`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          applicationId: applicationId
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // Store mandate data
+        setMandateData(result.data);
+        setUpiAutopayConsent(true);
+
+        // Open the mandate link if available
+        if (result.data?.url || result.data?.authUrl) {
+          const mandateUrl = result.data.url || result.data.authUrl;
+          window.open(mandateUrl, '_blank');
+          toast({
+            variant: "success",
+            title: "UPI Autopay",
+            description: "Please complete the authorization in the new tab.",
+          });
+        }
+      } else {
+        toast({
+          variant: "error",
+          title: "Failed",
+          description: result.message || "Failed to generate UPI Autopay link. Please try again.",
+        });
+        setUpiAutopayConsent(false);
+      }
+    } catch (error: any) {
+      console.error('Mandate checkout error:', error);
+      toast({
+        variant: "error",
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+      });
+      setUpiAutopayConsent(false);
+    } finally {
+      setMandateLoading(false);
+    }
+  };
+
   const handleNext = async () => {
     // Validate current step
     if (currentStep === 1) {
@@ -6153,17 +6280,44 @@ y += boxHeight + 4;
                       </div>
                     </div>
                   ) : finfactorSuccess ? (
-                    /* ========== FINFACTOR SUCCESS - AUTO PROCESSING UI ========== */
+                    /* ========== FINFACTOR SUCCESS - AUTO PROCESSING UI WITH COUNTDOWN ========== */
                     <div className="text-center py-8">
-                      <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+                      <div className="relative w-32 h-32 mx-auto mb-6">
+                        {/* Background circle */}
+                        <svg className="w-32 h-32 transform -rotate-90">
+                          <circle
+                            cx="64"
+                            cy="64"
+                            r="56"
+                            stroke="#E5E7EB"
+                            strokeWidth="8"
+                            fill="none"
+                          />
+                          {/* Animated progress circle */}
+                          <circle
+                            cx="64"
+                            cy="64"
+                            r="56"
+                            stroke="#3B82F6"
+                            strokeWidth="8"
+                            fill="none"
+                            strokeLinecap="round"
+                            strokeDasharray={352}
+                            strokeDashoffset={352 - (352 * processingCountdown) / 60}
+                            className="transition-all duration-1000 ease-linear"
+                          />
+                        </svg>
+                        {/* Countdown number in center */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-3xl font-bold text-blue-600">{processingCountdown}</span>
+                        </div>
                       </div>
                       <h2 className="text-2xl font-bold text-gray-900 mb-3">Processing Your Application</h2>
                       <p className="text-gray-600 mb-6 max-w-md mx-auto">
                         Please wait while we verify your bank statement and process your loan application...
                       </p>
                       <div className="bg-gray-50 rounded-lg p-4 mb-6 inline-block">
-                        <p className="text-sm text-gray-500">This may take a few moments</p>
+                        <p className="text-sm text-gray-500">Estimated time: {processingCountdown} seconds</p>
                         <p className="text-xs text-gray-400 mt-1">Please do not close this window</p>
                       </div>
                     </div>
@@ -6581,6 +6735,88 @@ y += boxHeight + 4;
               )}
             </AnimatePresence>
 
+            {/* UPI Autopay Consent - Show only on step 4 when approval data is ready */}
+            {currentStep === 4 && approvalData && approvalData.status !== 'Reject' && approvalData.status !== 'Proceed to Bank' && !finfactorSuccess && (
+              <div className="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-5">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 mt-1">
+                    {mandateLoading ? (
+                      <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <input
+                        type="checkbox"
+                        id="upiAutopayConsent"
+                        checked={upiAutopayConsent}
+                        onChange={(e) => handleUpiAutopayClick(e.target.checked)}
+                        disabled={mandateLoading || reduxCustomer?.data?.mandateFlag === true}
+                        className={`w-5 h-5 text-blue-600 border-2 border-blue-300 rounded focus:ring-blue-500 focus:ring-2 disabled:opacity-50 ${reduxCustomer?.data?.mandateFlag === true ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                      />
+                    )}
+                  </div>
+                  <label htmlFor="upiAutopayConsent" className="cursor-pointer">
+                    <div className="flex items-center gap-2 mb-2">
+                      <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                      <span className="font-semibold text-gray-900">UPI Autopay Authorization</span>
+                    </div>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      I authorize Quikkred to set up UPI Autopay for automatic EMI deductions from my registered bank account.
+                      I understand that EMI amounts will be automatically debited on the due date as per the loan repayment schedule.
+                    </p>
+                    <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <Shield className="w-3 h-3" />
+                        RBI Compliant
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        Secure Transaction
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Cancel Anytime
+                      </span>
+                    </div>
+                  </label>
+                </div>
+                {mandateLoading && (
+                  <p className="mt-3 text-xs text-blue-600 flex items-center gap-1">
+                    <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                    Generating UPI Autopay link...
+                  </p>
+                )}
+                {!upiAutopayConsent && !mandateLoading && (
+                  <p className="mt-3 text-xs text-amber-600 flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    Please accept UPI Autopay authorization to proceed with your application
+                  </p>
+                )}
+                {upiAutopayConsent && reduxCustomer?.data?.mandateFlag === true && (
+                  <p className="mt-3 text-xs text-green-600 flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    UPI Autopay already authorized. You're all set!
+                  </p>
+                )}
+                {upiAutopayConsent && reduxCustomer?.data?.mandateFlag !== true && (
+                  <p className="mt-3 text-xs text-green-600 flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    UPI Autopay authorization link generated. Complete the process in the new tab.
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Navigation Buttons - Show Next for steps 1-3, Show Submit only on step 4 when approval data is ready */}
             {(currentStep < 4 || (currentStep === 4 && approvalData && approvalData.status !== 'Reject' && approvalData.status !== 'Proceed to Bank' && !finfactorSuccess)) && (
               <div className="flex gap-4 mt-8">
@@ -6594,7 +6830,7 @@ y += boxHeight + 4;
                 )}
                 <button
                   onClick={handleNext}
-                  disabled={loading || (currentStep === 1 && !isStep1Valid())}
+                  disabled={loading || (currentStep === 1 && !isStep1Valid()) || (currentStep === 4 && !upiAutopayConsent)}
                   className="flex-1 px-6 py-3 bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white rounded-lg hover:shadow-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {loading ? (
