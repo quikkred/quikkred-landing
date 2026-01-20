@@ -74,7 +74,7 @@ export default function TruecallerAuth() {
           // 5. Trigger NextAuth sign-in
           const result = await signIn("truecaller", {
             requestId: id,
-            callbackUrl: "/apply/quick-v2",
+            callbackUrl: "/apply/quick",
             redirect: false, // Handled by useEffect above
           });
 
