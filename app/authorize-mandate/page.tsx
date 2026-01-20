@@ -32,7 +32,7 @@ function AuthorizeMandateContent() {
     const [razorpayLoaded, setRazorpayLoaded] = useState(false);
 
     const token = searchParams.get('token');
-    const loanId = searchParams.get('loan');
+    const applicationId = searchParams.get('applicationId');
 
     useEffect(() => {
         // Load Razorpay script
@@ -43,7 +43,7 @@ function AuthorizeMandateContent() {
         document.body.appendChild(script);
 
         // Fetch mandate data
-        if (token || loanId) {
+        if (token || applicationId) {
             fetchMandateData();
         } else {
             setLoading(false);
@@ -55,15 +55,16 @@ function AuthorizeMandateContent() {
                 document.body.removeChild(script);
             }
         };
-    }, [token, loanId]);
+    }, [token, applicationId]);
 
     const fetchMandateData = async () => {
         try {
             setLoading(true);
             const params = new URLSearchParams();
             if (token) params.append('token', token);
-            if (loanId) params.append('loan', loanId);
+            if (applicationId) params.append('applicationId', applicationId);
 
+            console.log(params,"parms")
             const response = await fetch(`${API_URL}/api/mandate-checkout/details?${params}`);
             const data = await response.json();
 
@@ -85,13 +86,12 @@ function AuthorizeMandateContent() {
         try {
             setProcessing(true);
             setError(null);
-
             // Create order
             const response = await fetch(`${API_URL}/api/mandate-checkout/create-order`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    loanId: mandateData.loanId,
+                    applicationId: mandateData.applicationId,
                     method: selectedMethod
                 })
             });
