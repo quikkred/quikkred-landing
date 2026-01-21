@@ -3,10 +3,12 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 import {
   CheckCircle, X, Loader2, FileText, IndianRupee,
   Calendar, User, Phone, Mail, CreditCard, Camera,
-  AlertCircle, ArrowRight, Sparkles, Shield, Zap
+  AlertCircle, ArrowRight, Sparkles, Shield, Zap,
+  Percent, Building2, Users, BadgeCheck, Landmark, Star
 } from "lucide-react";
 import { loansService } from "@/lib/api/loans.service";
 import { useAuth } from "@/contexts/AuthContext";
@@ -105,6 +107,7 @@ export default function QuickLoanApplication() {
   } = useCustomer();
 
   const [currentStep, setCurrentStep] = useState(1);
+  const [showLandingPage, setShowLandingPage] = useState(true); // LiveMint-style landing page state
   const [loading, setLoading] = useState(false);
   const [decision, setDecision] = useState<any>(null);
   const [selfieCapture, setSelfieCapture] = useState(false);
@@ -377,6 +380,8 @@ export default function QuickLoanApplication() {
               // Set the determined step
               setApiDeterminedStep(firstPendingStep);
 
+              // Skip landing page for logged-in users
+              setShowLandingPage(false);
               setUserDataLoaded(true);
             } else {
               setFormData(prev => ({
@@ -5144,52 +5149,58 @@ y += boxHeight + 4;
           onCapture={handleSelfieCapture}
         />
         <div className="max-w-3xl mx-auto">
-          {/* Close button - redirect based on login status */}
-          <div className="flex justify-end mb-4">
-            <button
-              onClick={() => {
-                if (user) {
-                  router.push('/user'); // Redirect to dashboard if logged in
-                } else {
-                  router.push('/login'); // Redirect to login if not logged in
-                }
-              }}
-              className="flex items-center bg-white gap-2 px-4 py-2 text-gray-600 hover:text-white hover:bg-[#25b181] rounded-lg transition-all shadow-sm"
-            >
-              <X className="w-5 h-5" />
-              <span className="text-sm font-medium">Close</span>
-            </button>
-          </div>
-
-          {/* Header */}
-          <div className="text-center mb-8">
-            <motion.div
-              initial={{ opacity: 0.8, y: -5 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2">Quick Loan Application</h1>
-              <p className="text-sm sm:text-base text-gray-600">Get instant approval in just 3 minutes</p>
-            </motion.div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-2 gap-2">
-              {[1, 2, 3, 4].map((step) => (
-                <div key={step} className="flex-1">
-                  <div className={`h-2 rounded-full transition-all ${step <= currentStep ? 'bg-[#25B181]' : 'bg-gray-200'
-                    }`} />
-                </div>
-              ))}
+          {/* Close button - Hide when landing page is showing */}
+          {!(showLandingPage && !user && currentStep === 1) && (
+            <div className="flex justify-end mb-4">
+              <button
+                onClick={() => {
+                  if (user) {
+                    router.push('/user'); // Redirect to dashboard if logged in
+                  } else {
+                    router.push('/login'); // Redirect to login if not logged in
+                  }
+                }}
+                className="flex items-center bg-white gap-2 px-4 py-2 text-gray-600 hover:text-white hover:bg-[#25b181] rounded-lg transition-all shadow-sm"
+              >
+                <X className="w-5 h-5" />
+                <span className="text-sm font-medium">Close</span>
+              </button>
             </div>
-            <div className="flex justify-between text-xs sm:text-sm text-gray-600">
-              <span className={`text-center ${currentStep === 1 ? 'text-[#25B181] font-semibold' : ''}`}>Basic Details</span>
-              <span className={`text-center ${currentStep === 2 ? 'text-[#25B181] font-semibold' : ''}`}>Identity</span>
-              <span className={`text-center ${currentStep === 3 ? 'text-[#25B181] font-semibold' : ''}`}>Bank Details</span>
-              <span className={`text-center ${currentStep === 4 ? 'text-[#25B181] font-semibold' : ''}`}>Approval</span>
+          )}
+
+          {/* Header - Hide when landing page is showing */}
+          {!(showLandingPage && !user && currentStep === 1) && (
+            <div className="text-center mb-8">
+              <motion.div
+                initial={{ opacity: 0.8, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2">Loan Application</h1>
+                <p className="text-sm sm:text-base text-gray-600">Get instant approval in just 3 minutes</p>
+              </motion.div>
             </div>
-          </div>
+          )}
+
+          {/* Progress Bar - Hide when landing page is showing */}
+          {!(showLandingPage && !user && currentStep === 1) && (
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-2 gap-2">
+                {[1, 2, 3, 4].map((step) => (
+                  <div key={step} className="flex-1">
+                    <div className={`h-2 rounded-full transition-all ${step <= currentStep ? 'bg-[#25B181]' : 'bg-gray-200'
+                      }`} />
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-between text-xs sm:text-sm text-gray-600">
+                <span className={`text-center ${currentStep === 1 ? 'text-[#25B181] font-semibold' : ''}`}>Basic Details</span>
+                <span className={`text-center ${currentStep === 2 ? 'text-[#25B181] font-semibold' : ''}`}>Identity</span>
+                <span className={`text-center ${currentStep === 3 ? 'text-[#25B181] font-semibold' : ''}`}>Bank Details</span>
+                <span className={`text-center ${currentStep === 4 ? 'text-[#25B181] font-semibold' : ''}`}>Approval</span>
+              </div>
+            </div>
+          )}
 
           {/* Form Card */}
           <motion.div
@@ -5201,7 +5212,7 @@ y += boxHeight + 4;
             className="bg-white rounded-2xl shadow-xl p-4 sm:p-8"
           >
             <AnimatePresence mode="wait">
-              {/* Step 1: Basic Details */}
+              {/* Step 1: Basic Details - With LiveMint-style Landing Page */}
               {currentStep === 1 && (
                 <motion.div
                   initial={{ opacity: 0.9 }}
@@ -5210,9 +5221,639 @@ y += boxHeight + 4;
                   transition={{ duration: 0.1 }}
                   className="space-y-6"
                 >
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Basic Details</h2>
+                  {/* ============================================ */}
+                  {/* LIVEMINT-STYLE LANDING PAGE - Shows first */}
+                  {/* ============================================ */}
+                  {showLandingPage && !user && (
+                    <div className="-m-4 sm:-m-8">
+                      {/* Hero Section with Trust Badge */}
+                      <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-white relative overflow-hidden rounded-t-2xl">
+                        <div className="absolute top-20 right-0 w-64 h-64 bg-orange-100/50 rounded-full blur-3xl" />
+                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-amber-100/50 rounded-full blur-2xl" />
 
-                  {/* Logged in user notice - Show instead of verification */}
+                        <div className="relative px-4 sm:px-8 pt-6 pb-8">
+                          {/* Header with Logo and Trust Badge */}
+                          <div className="flex items-center justify-between mb-6">
+                            {/* Quikkred Logo */}
+                            <div className="flex items-center">
+                              <Image
+                                src="/logo.svg"
+                                alt="Quikkred"
+                                width={140}
+                                height={40}
+                                className="h-10 w-auto"
+                                priority
+                              />
+                            </div>
+
+                            {/* Trust Badge */}
+                            <div className="inline-flex items-center gap-1.5 bg-emerald-600 text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg">
+                              <Shield className="w-3.5 h-3.5" />
+                              100% Secure
+                            </div>
+                          </div>
+
+                          {/* Hero Headline */}
+                          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+                            Get Personal Loan up to
+                          </h1>
+                          <div className="flex items-baseline gap-2 flex-wrap mb-1">
+                            <span className="text-3xl sm:text-4xl font-bold text-orange-500">₹25,000</span>
+                            <span className="text-xl sm:text-2xl font-bold text-gray-900">in</span>
+                            <span className="text-3xl sm:text-4xl font-bold text-emerald-600">5 mins!</span>
+                          </div>
+
+                          {/* Benefits Section */}
+                          <div className="mt-6">
+                            <div className="flex items-center gap-2 mb-4">
+                              <div className="flex-1 h-px bg-gray-300" />
+                              <span className="text-sm font-semibold text-gray-700">Benefits & Features</span>
+                              <div className="flex-1 h-px bg-gray-300" />
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-2">
+                              <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-center">
+                                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm border border-amber-200">
+                                  <Percent className="w-5 h-5 text-orange-500" />
+                                </div>
+                                <p className="text-xs font-semibold text-gray-900">Interest rate</p>
+                                <p className="text-[10px] text-gray-600">starting at 1%/day</p>
+                              </div>
+
+                              <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-center">
+                                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm border border-amber-200">
+                                  <Zap className="w-5 h-5 text-orange-500" />
+                                </div>
+                                <p className="text-xs font-semibold text-gray-900">100% Digital</p>
+                                <p className="text-[10px] text-gray-600">Process</p>
+                              </div>
+
+                              <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-center">
+                                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm border border-amber-200">
+                                  <Calendar className="w-5 h-5 text-orange-500" />
+                                </div>
+                                <p className="text-xs font-semibold text-gray-900">Tenure up to</p>
+                                <p className="text-[10px] text-gray-600">90 Days</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Lead Capture Form Section - All Basic Details */}
+                      <div className="bg-white px-4 sm:px-8 py-6">
+                        <h2 className="text-lg font-bold text-gray-900 mb-4">
+                          Get Money in your Bank Account Instantly
+                        </h2>
+
+                        <div className="space-y-4">
+                          {/* Full Name */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Full Name *
+                            </label>
+                            <input
+                              type="text"
+                              name="fullName"
+                              value={formData.fullName}
+                              onChange={handleChange}
+                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.fullName ? 'border-red-500' : 'border-gray-300'}`}
+                              placeholder="Enter your full name"
+                            />
+                            {fieldErrors.fullName && (
+                              <p className="text-xs text-red-500 mt-1">{fieldErrors.fullName}</p>
+                            )}
+                          </div>
+
+                          {/* Mobile & Email Row */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Mobile Number *
+                              </label>
+                              <input
+                                type="tel"
+                                name="mobile"
+                                value={formData.mobile}
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                  setFormData(prev => ({ ...prev, mobile: value }));
+                                  if (fieldErrors.mobile) setFieldErrors(prev => ({ ...prev, mobile: '' }));
+                                }}
+                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'}`}
+                                placeholder="9876543210"
+                                maxLength={10}
+                              />
+                              {fieldErrors.mobile && (
+                                <p className="text-xs text-red-500 mt-1">{fieldErrors.mobile}</p>
+                              )}
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Email Address *
+                              </label>
+                              <input
+                                type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'}`}
+                                placeholder="your@email.com"
+                              />
+                              {fieldErrors.email && (
+                                <p className="text-xs text-red-500 mt-1">{fieldErrors.email}</p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* DOB & State Row */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Date of Birth *
+                              </label>
+                              <input
+                                type="date"
+                                name="dob"
+                                value={formData.dob}
+                                onChange={handleChange}
+                                max={(() => {
+                                  const date = new Date();
+                                  date.setFullYear(date.getFullYear() - 18);
+                                  return date.toISOString().split('T')[0];
+                                })()}
+                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.dob ? 'border-red-500' : 'border-gray-300'}`}
+                              />
+                              {fieldErrors.dob && (
+                                <p className="text-xs text-red-500 mt-1">{fieldErrors.dob}</p>
+                              )}
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                State *
+                              </label>
+                              <select
+                                name="state"
+                                value={formData.state}
+                                onChange={(e) => {
+                                  const selectedState = e.target.value.toLowerCase();
+                                  setFormData(prev => ({ ...prev, state: selectedState }));
+                                  if (BLACKLISTED_STATES.includes(selectedState)) {
+                                    setFieldErrors(prev => ({
+                                      ...prev,
+                                      state: "Sorry, services not available in this state."
+                                    }));
+                                  } else {
+                                    setFieldErrors(prev => ({ ...prev, state: '' }));
+                                  }
+                                }}
+                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.state ? 'border-red-500' : 'border-gray-300'}`}
+                              >
+                                <option value="">Select State</option>
+                                {INDIAN_STATES.filter(s => s.value !== '').map((state) => (
+                                  <option key={state.value} value={state.value}>{state.label}</option>
+                                ))}
+                              </select>
+                              {fieldErrors.state && (
+                                <p className="text-xs text-red-500 mt-1">{fieldErrors.state}</p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Employment Section */}
+                          <div className="border-t border-gray-200 pt-4 mt-4">
+                            <h3 className="text-sm font-semibold text-gray-900 mb-3">Employment Details</h3>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                  Employment Type *
+                                </label>
+                                <select
+                                  name="employmentType"
+                                  value={formData.employmentType}
+                                  onChange={handleChange}
+                                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                                >
+                                  <option value="SALARIED">Salaried</option>
+                                  <option value="SELF-EMPLOYED">Self-Employed</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                  Monthly Income *
+                                </label>
+                                <input
+                                  type="text"
+                                  name="monthlyIncome"
+                                  value={formData.monthlyIncome ? parseFloat(formData.monthlyIncome.replace(/,/g, '')).toLocaleString('en-IN') : ''}
+                                  onChange={(e) => {
+                                    const value = e.target.value.replace(/,/g, '');
+                                    if (/^\d*$/.test(value)) {
+                                      handleChange({
+                                        ...e,
+                                        target: { ...e.target, name: 'monthlyIncome', value: value }
+                                      } as any);
+                                    }
+                                  }}
+                                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.monthlyIncome ? 'border-red-500' : 'border-gray-300'}`}
+                                  placeholder="₹ 50,000"
+                                />
+                                {fieldErrors.monthlyIncome && (
+                                  <p className="text-xs text-red-500 mt-1">{fieldErrors.monthlyIncome}</p>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="mt-4">
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                {formData.employmentType === "SALARIED" ? "Company Name" : "Income Source"} *
+                              </label>
+                              <input
+                                type="text"
+                                name="companyName"
+                                value={formData.companyName}
+                                onChange={handleChange}
+                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.companyName ? 'border-red-500' : 'border-gray-300'}`}
+                                placeholder={formData.employmentType === "SALARIED" ? "Your Company" : "Your Income Source"}
+                              />
+                              {fieldErrors.companyName && (
+                                <p className="text-xs text-red-500 mt-1">{fieldErrors.companyName}</p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Loan Amount */}
+                          <div className="border-t border-gray-200 pt-4 mt-4">
+                            <h3 className="text-sm font-semibold text-gray-900 mb-3">Loan Requirement</h3>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                How much loan do you need? *
+                              </label>
+                              <input
+                                type="text"
+                                name="loanAmount"
+                                value={formData.loanAmount ? parseFloat(formData.loanAmount.replace(/,/g, "")).toLocaleString("en-IN") : ""}
+                                onChange={(e) => {
+                                  const raw = e.target.value.replace(/,/g, "");
+                                  if (!/^\d*$/.test(raw)) return;
+                                  handleChange({
+                                    ...e,
+                                    target: { ...e.target, name: "loanAmount", value: raw }
+                                  } as any);
+                                }}
+                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                                  formData.loanAmount && (parseFloat(formData.loanAmount.replace(/,/g, "")) < 5000 || parseFloat(formData.loanAmount.replace(/,/g, "")) > 25000)
+                                    ? "border-red-500" : "border-gray-300"
+                                }`}
+                                placeholder="₹ 5,000 - ₹ 25,000"
+                              />
+                              {formData.loanAmount && parseFloat(formData.loanAmount.replace(/,/g, "")) < 5000 && (
+                                <p className="mt-1 text-xs text-red-500">Minimum loan amount is ₹5,000</p>
+                              )}
+                              {formData.loanAmount && parseFloat(formData.loanAmount.replace(/,/g, "")) > 25000 && (
+                                <p className="mt-1 text-xs text-red-500">Maximum loan amount is ₹25,000</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Apply Now Button */}
+                        <button
+                          onClick={() => {
+                            // Validate all required fields
+                            const errors: any = {};
+                            if (!formData.fullName) errors.fullName = 'Full name is required';
+                            if (formData.mobile.length !== 10) errors.mobile = 'Valid 10-digit mobile required';
+                            if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = 'Valid email required';
+                            if (!formData.dob) errors.dob = 'Date of birth is required';
+                            if (!formData.state) errors.state = 'State is required';
+                            if (!formData.monthlyIncome) errors.monthlyIncome = 'Monthly income is required';
+                            if (!formData.companyName) errors.companyName = 'Company name is required';
+                            if (!formData.loanAmount) errors.loanAmount = 'Loan amount is required';
+
+                            if (Object.keys(errors).length > 0) {
+                              setFieldErrors(prev => ({ ...prev, ...errors }));
+                              return;
+                            }
+                            setShowLandingPage(false);
+                          }}
+                          className="w-full mt-6 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-lg shadow-lg shadow-orange-500/30 transition-all active:scale-[0.98]"
+                        >
+                          Apply Now
+                        </button>
+
+                        {/* Consent Checkboxes */}
+                        <div className="mt-4 space-y-3">
+                          <label className="flex items-start gap-2 cursor-pointer">
+                            <div className="mt-0.5">
+                              <div className="w-5 h-5 rounded border-2 flex items-center justify-center bg-emerald-500 border-emerald-500">
+                                <CheckCircle className="w-3.5 h-3.5 text-white" />
+                              </div>
+                            </div>
+                            <p className="text-xs text-gray-600 leading-relaxed">
+                              By continuing, I agree to Credit Bureau <a href="/terms-and-conditions" className="text-blue-600 underline">Terms and Conditions</a> and authorize Quikkred and its <a href="/partners" className="text-blue-600 underline">Partners</a> to collect and store the Credit Bureau data for checking my eligibility for loan.
+                            </p>
+                          </label>
+
+                          <label className="flex items-start gap-2 cursor-pointer">
+                            <div className="mt-0.5">
+                              <div className="w-5 h-5 rounded border-2 flex items-center justify-center bg-emerald-500 border-emerald-500">
+                                <CheckCircle className="w-3.5 h-3.5 text-white" />
+                              </div>
+                            </div>
+                            <p className="text-xs text-gray-600 leading-relaxed">
+                              By continuing, I agree to the <a href="/privacy-policy" className="text-blue-600 underline">Privacy Policy</a> and <a href="/terms-and-conditions" className="text-blue-600 underline">Terms and Conditions</a> of Quikkred and its <a href="/partners" className="text-blue-600 underline">Partners</a>, and I consent to receive communications via SMS, E-mail, and WhatsApp.
+                            </p>
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* Lending Partners Section */}
+                      <div className="bg-gradient-to-b from-amber-50 to-white py-8 px-4 sm:px-8">
+                        <div className="flex items-center gap-2 mb-2 justify-center">
+                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
+                          <h3 className="text-base font-bold text-gray-900">Our Lending Partners</h3>
+                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
+                        </div>
+                        <p className="text-xs text-gray-600 text-center mb-6">Loan Solutions from Our Trusted Lenders</p>
+
+                        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center gap-4">
+                          <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <Landmark className="w-8 h-8 text-white" />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-gray-900">Satsai Finlease Pvt Ltd</h4>
+                            <p className="text-xs text-gray-600">RBI Registered NBFC</p>
+                            <p className="text-[10px] text-emerald-600 font-semibold mt-1">RBI Reg: B-14.01646</p>
+                            <p className="text-[10px] text-gray-500">CIN: U71290DL1996PTC081328</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 3 Steps Process Section */}
+                      <div className="bg-white py-8 px-4 sm:px-8">
+                        <div className="flex items-center gap-2 mb-6 justify-center">
+                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
+                          <h3 className="text-base font-bold text-gray-900">Your loan is 3 steps away</h3>
+                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="text-center">
+                            <p className="text-orange-400 font-bold text-lg mb-2">01</p>
+                            <div className="w-14 h-14 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center mx-auto mb-2 border-2 border-orange-200">
+                              <Users className="w-6 h-6 text-orange-500" />
+                            </div>
+                            <p className="text-xs font-semibold text-gray-900">Enter Basic</p>
+                            <p className="text-xs text-gray-600">Details</p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-orange-400 font-bold text-lg mb-2">02</p>
+                            <div className="w-14 h-14 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center mx-auto mb-2 border-2 border-orange-200">
+                              <IndianRupee className="w-6 h-6 text-orange-500" />
+                            </div>
+                            <p className="text-xs font-semibold text-gray-900">Choose & Apply</p>
+                            <p className="text-xs text-gray-600">Loan Offers</p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-orange-400 font-bold text-lg mb-2">03</p>
+                            <div className="w-14 h-14 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center mx-auto mb-2 border-2 border-orange-200">
+                              <Landmark className="w-6 h-6 text-orange-500" />
+                            </div>
+                            <p className="text-xs font-semibold text-gray-900">Instant Cash in</p>
+                            <p className="text-xs text-gray-600">Bank</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Eligibility Section */}
+                      <div className="bg-gray-50 py-8 px-4 sm:px-8">
+                        <div className="flex items-center gap-2 mb-6 justify-center">
+                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
+                          <h3 className="text-base font-bold text-gray-900">Personal Loan Eligibility</h3>
+                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
+                        </div>
+
+                        <div className="space-y-3">
+                          <div className="flex items-start gap-3">
+                            <span className="text-sm font-bold text-gray-900 min-w-20">Age:</span>
+                            <span className="text-sm text-gray-700">21 - 60 years</span>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <span className="text-sm font-bold text-gray-900 min-w-20">Income:</span>
+                            <span className="text-sm text-gray-700">Minimum Rs 15,000/month for salaried applicants</span>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <span className="text-sm font-bold text-gray-900 min-w-20">Resident:</span>
+                            <span className="text-sm text-gray-700">A resident of India</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Why Choose Us Section */}
+                      <div className="bg-gradient-to-b from-gray-50 to-emerald-50/30 py-8 px-4 sm:px-8">
+                        <div className="flex items-center gap-2 mb-6 justify-center">
+                          <Star className="w-4 h-4 text-orange-400" />
+                          <h3 className="text-base font-bold text-gray-900">Why Choose Us</h3>
+                          <Star className="w-4 h-4 text-orange-400" />
+                        </div>
+
+                        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                          <div className="bg-emerald-50 rounded-xl p-3 mb-4 flex items-center justify-center gap-2">
+                            <BadgeCheck className="w-5 h-5 text-emerald-600" />
+                            <span className="text-sm font-semibold text-emerald-800">Trusted by 50K+ users</span>
+                          </div>
+
+                          <div className="flex items-center justify-center gap-4 mb-4 pb-4 border-b border-gray-100">
+                            <span className="text-xl font-bold text-emerald-600">Quikkred</span>
+                          </div>
+
+                          <div className="space-y-4">
+                            <div className="flex items-start gap-3">
+                              <Star className="w-4 h-4 text-orange-400 fill-orange-400 mt-0.5" />
+                              <div>
+                                <p className="text-sm font-bold text-gray-900">Your Money, Our Expertise</p>
+                                <p className="text-xs text-gray-600">Quikkred: India&apos;s Trusted Financial Platform</p>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-3">
+                              <Star className="w-4 h-4 text-orange-400 fill-orange-400 mt-0.5" />
+                              <div>
+                                <p className="text-sm font-bold text-gray-900">100% Digital Loans</p>
+                                <p className="text-xs text-gray-600">No Paperwork, No Collateral</p>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-3">
+                              <Star className="w-4 h-4 text-orange-400 fill-orange-400 mt-0.5" />
+                              <div>
+                                <p className="text-sm font-bold text-gray-900">Best Loan Offers</p>
+                                <p className="text-xs text-gray-600">Lowest Rate, Flexible tenures</p>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-3">
+                              <Star className="w-4 h-4 text-orange-400 fill-orange-400 mt-0.5" />
+                              <div>
+                                <p className="text-sm font-bold text-gray-900">RBI Registered Partners</p>
+                                <p className="text-xs text-gray-600">Borrow securely from Reliable lenders</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Rates & Charges Section */}
+                      <div className="bg-white py-8 px-4 sm:px-8">
+                        <div className="flex items-center gap-2 mb-6 justify-center">
+                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
+                          <h3 className="text-base font-bold text-gray-900">Rates & Charges</h3>
+                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
+                        </div>
+
+                        <div className="space-y-3 mb-6">
+                          <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center">
+                              <IndianRupee className="w-6 h-6 text-orange-500" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-gray-900">Finance Amount</p>
+                              <p className="text-xs text-gray-600">₹5,000 - ₹25,000</p>
+                            </div>
+                          </div>
+
+                          <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center">
+                              <FileText className="w-6 h-6 text-orange-500" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-gray-900">Platform Fee</p>
+                              <p className="text-xs text-gray-600">10% of loan amount</p>
+                            </div>
+                          </div>
+
+                          <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center">
+                              <Percent className="w-6 h-6 text-orange-500" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-gray-900">GST on Platform Fee</p>
+                              <p className="text-xs text-gray-600">18% of platform fee</p>
+                            </div>
+                          </div>
+
+                          <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center">
+                              <Calendar className="w-6 h-6 text-orange-500" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-gray-900">Tenure</p>
+                              <p className="text-xs text-gray-600">Up to 90 days</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Interest Rates */}
+                        <div className="flex items-center gap-2 mb-4 justify-center">
+                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
+                          <h4 className="text-sm font-bold text-gray-900">Interest & Penalty</h4>
+                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
+                        </div>
+
+                        <div className="bg-emerald-50 rounded-xl p-4 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Star className="w-3 h-3 text-orange-400 fill-orange-400" />
+                              <span className="text-sm font-semibold text-gray-900">Daily Interest Rate</span>
+                            </div>
+                            <span className="text-sm text-gray-700">1% per day</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Star className="w-3 h-3 text-orange-400 fill-orange-400" />
+                              <span className="text-sm font-semibold text-gray-900">Cheque Bounce</span>
+                            </div>
+                            <span className="text-sm text-gray-700">₹500 per instance</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Star className="w-3 h-3 text-orange-400 fill-orange-400" />
+                              <span className="text-sm font-semibold text-gray-900">Late Payment</span>
+                            </div>
+                            <span className="text-sm text-gray-700">2% per month</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* APR Calculation Section */}
+                      <div className="bg-gray-50 py-8 px-4 sm:px-8">
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">Illustrative Loan Calculation</h3>
+                        <p className="text-xs text-gray-600 mb-6 leading-relaxed">
+                          The total cost includes platform fee (10%), GST (18% on platform fee). Interest is charged at 1% per day on the loan amount.
+                        </p>
+
+                        {/* Comparison Table */}
+                        <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200">
+                          <div className="bg-indigo-800 text-white p-3 grid grid-cols-3 text-xs font-semibold">
+                            <span>Variable</span>
+                            <span className="text-center">Case 1</span>
+                            <span className="text-center">Case 2</span>
+                          </div>
+
+                          {[
+                            { label: 'Loan Amount', case1: '₹10,000', case2: '₹25,000' },
+                            { label: 'Tenure', case1: '30 Days', case2: '15 Days' },
+                            { label: 'Interest Rate', case1: '1%/day', case2: '1%/day' },
+                            { label: 'Platform Fee', case1: '₹1,000', case2: '₹2,500' },
+                            { label: 'GST (18%)', case1: '₹180', case2: '₹450' },
+                            { label: 'Total Interest', case1: '₹3,000', case2: '₹3,750' },
+                            { label: 'You Receive', case1: '₹8,820', case2: '₹22,050' },
+                            { label: 'Total Repayment', case1: '₹10,000', case2: '₹25,000' },
+                          ].map((row, index) => (
+                            <div key={row.label} className={`grid grid-cols-3 text-xs p-3 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
+                              <span className="font-medium text-gray-900">{row.label}</span>
+                              <span className="text-center text-gray-700">{row.case1}</span>
+                              <span className="text-center text-gray-700">{row.case2}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Disclaimer Footer */}
+                      <div className="bg-white border-t border-gray-200 py-6 px-4 sm:px-8 rounded-b-2xl">
+                        <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                          <p className="text-xs text-gray-600 leading-relaxed">
+                            <span className="font-bold text-gray-900">Disclaimer:</span> Quikkred is a digital lending platform and is authorized to provide services on behalf of its partner NBFC - Satsai Finlease Private Limited (RBI Reg: B-14.01646 | CIN: U71290DL1996PTC081328).
+                          </p>
+                        </div>
+
+                        <div className="text-center space-y-2">
+                          <p className="text-xs text-gray-700 font-semibold">Satsai Finlease Private Limited</p>
+                          <p className="text-[10px] text-gray-500">
+                            1008, 10th floor, Vikrant Tower, Rajendra Place, New Delhi - 110005
+                          </p>
+                          <div className="flex items-center justify-center gap-4 text-[10px] text-gray-500">
+                            <a href="tel:+919311913854" className="flex items-center gap-1 hover:text-emerald-600">
+                              <Phone className="w-3 h-3" />
+                              +91 9311913854
+                            </a>
+                            <span>•</span>
+                            <a href="mailto:support@quikkred.in" className="hover:text-emerald-600">
+                              support@quikkred.in
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ============================================ */}
+                  {/* ORIGINAL FORM - Shows after landing page */}
+                  {/* ============================================ */}
+                  {(!showLandingPage || user) && (
+                    <>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-6">Basic Details</h2>
+
+                      {/* Logged in user notice - Show instead of verification */}
                   {user && userDataLoaded && (formData.emailVerified || formData.mobileVerified) ? (
                     <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
                       <div className="flex items-start gap-3">
@@ -5853,6 +6494,8 @@ y += boxHeight + 4;
                       )}
                     </div>
                   </div>
+                    </>
+                  )}
                 </motion.div>
               )}
 
