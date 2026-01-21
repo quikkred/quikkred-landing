@@ -27,7 +27,7 @@ export default function Products({
   buttonPrimaryText,
   buttonSecondaryText,
   buttonPrimaryLink = "/emi-calculator",
-  buttonSecondaryLink = "/apply/quick",
+  buttonSecondaryLink = "/apply",
   quickAccessAmount,
   timeText,
   imageSrc = "/salary-advance.jpg",
