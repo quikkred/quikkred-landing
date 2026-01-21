@@ -29,6 +29,7 @@ import {
 } from "@/lib/helpers/quickApply";
 import { API_BASE_URL } from "@/lib/config";
 import getToken from "@/lib/getToken";
+import { getSession, signIn } from "next-auth/react";
 
 // Auto-decision engine
 
@@ -3453,17 +3454,27 @@ y += boxHeight + 4;
         ? { email: formData.email, otp: formData.otp }
         : { mobile: formData.mobile, otp: formData.otp };
 
-      const response = await fetch(`${API_BASE_URL}/api/auth/customer/verifyOtp`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+      // const response = await fetch(`${API_BASE_URL}/api/auth/customer/verifyOtp`, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify(payload),
+      // });
+
+      // const data = await response.json();
+      const response = await signIn("otp", {
+        redirect: false,
+        emailOrPhone: payload?.email || payload?.mobile,
+        otp: payload.otp,
+        loginMethod: verificationMethod, // "email" | "mobile"
       });
+      
+      if (response?.ok) {
+        const data: any = await getSession();
 
-      const data = await response.json();
+        login(payload?.email || "", "", data, false);
 
-      if (response.ok && data.success) {
         if (verificationMethod === 'email') {
           setFormData(prev => ({ ...prev, emailVerified: true }));
         } else {
@@ -3472,15 +3483,15 @@ y += boxHeight + 4;
         setOtpSent(false); // Reset OTP sent state after successful verification
 
         // Store access token if provided in response
-        if (data.data?.accessToken) {
-          localStorage.setItem('accessToken', data.data.accessToken);
-          localStorage.setItem('token', data.data.accessToken);
-          localStorage.setItem('authToken', data.data.accessToken);
+        if (data?.accessToken) {
+          localStorage.setItem('accessToken', data.accessToken);
+          localStorage.setItem('token', data.accessToken);
+          localStorage.setItem('authToken', data.accessToken);
           console.log('✅ Access token stored');
         }
         // Store userId if provided
-        if (data.data?.userId) {
-          localStorage.setItem('userId', data.data.userId);
+        if (data?.userId) {
+          localStorage.setItem('userId', data.userId);
         }
 
         toast({
@@ -3490,7 +3501,7 @@ y += boxHeight + 4;
         });
 
         // Auto-fill form with customer data after successful OTP verification
-        const token = data.data?.accessToken ||
+        const token = data?.accessToken ||
           localStorage.getItem('accessToken') ||
           localStorage.getItem('token') ||
           localStorage.getItem('authToken');
@@ -3713,7 +3724,7 @@ y += boxHeight + 4;
         toast({
           variant: "error",
           title: "Verification Failed",
-          description: data.message || 'Invalid OTP. Please try again.',
+          description: response?.error || 'Invalid OTP. Please try again.',
         });
       }
     } catch (error: any) {
@@ -5415,30 +5426,29 @@ y += boxHeight + 4;
 
                               setFormData((prev) => ({ ...prev, email: value }));
 
-        // Email validation
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!regex.test(value)) {
-          setFieldErrors((prev) => ({
-            ...prev,
-            email: "Please enter a valid email address",
-          }));
-        } else {
-          setFieldErrors((prev) => ({ ...prev, email: "" }));
-        }
-      }}
-      disabled={formData.emailVerified || basicDetailsFilled}
-      className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${
-        fieldErrors.email ? "border-red-500" : "border-gray-300"
-      }`}
-      placeholder="your@email.com"
-    />
+                              // Email validation
+                              const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                              if (!regex.test(value)) {
+                                setFieldErrors((prev) => ({
+                                  ...prev,
+                                  email: "Please enter a valid email address",
+                                }));
+                              } else {
+                                setFieldErrors((prev) => ({ ...prev, email: "" }));
+                              }
+                            }}
+                            disabled={formData.emailVerified || basicDetailsFilled}
+                            className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${fieldErrors.email ? "border-red-500" : "border-gray-300"
+                              }`}
+                            placeholder="your@email.com"
+                          />
 
-    {/* Send/Resend OTP button (only if not verified) */}
-    {!formData.emailVerified && !basicDetailsFilled && (
-      <button
-        onClick={async () => {
-          const email = formData.email;
-          const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                          {/* Send/Resend OTP button (only if not verified) */}
+                          {!formData.emailVerified && !basicDetailsFilled && (
+                            <button
+                              onClick={async () => {
+                                const email = formData.email;
+                                const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
                                 // Validate email before sending OTP
                                 if (!regex.test(email)) {
@@ -5466,11 +5476,11 @@ y += boxHeight + 4;
                             </button>
                           )}
 
-    {/* If email verified show green check */}
-    {(formData.emailVerified || basicDetailsFilled) && (
-      <CheckCircle className="w-10 h-10 text-green-600" />
-    )}
-  </div>
+                          {/* If email verified show green check */}
+                          {(formData.emailVerified || basicDetailsFilled) && (
+                            <CheckCircle className="w-10 h-10 text-green-600" />
+                          )}
+                        </div>
 
                         {/* Error or helper text */}
                         {fieldErrors.email ? (
@@ -5511,245 +5521,136 @@ y += boxHeight + 4;
                     </>
                   )}
 
-                {/* Mobile Verification - Only show for non-logged in users */}
-                {!user && verificationMethod === 'mobile' && (
-                  <>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Mobile Number *
-                      </label>
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <input
-                          type="tel"
-                          name="mobile"
-                          value={formData.mobile}
-                          onChange={handleChange}
-                          onBlur={handleMobileBlur}
-                          disabled={formData.mobileVerified || basicDetailsFilled}
-                          maxLength={10}
-                          className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${
-                            fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
-                          }`}
-                          placeholder="enter mobile number"
-                        />
-                        {!formData.mobileVerified && !basicDetailsFilled && (
-                          <button
-                            onClick={sendOTP}
-                            disabled={!formData.mobile || loading || (otpSent && emailOtpTimer > 0)}
-                            className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
-                          >
-                            {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Verify"}
-                          </button>
-                        )}
-                        {(formData.mobileVerified || basicDetailsFilled) && (
-                          <CheckCircle className="w-10 h-10 text-green-600" />
-                        )}
-                      </div>
-                      {fieldErrors.mobile && (
-                        <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
-                      )}
-                    </div>
-
-                    {!formData.mobileVerified && !basicDetailsFilled && otpSent && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Enter OTP *
-                        </label>
-                        <div className="flex flex-col sm:flex-row gap-2">
-                          <input
-                            type="text"
-                            name="otp"
-                            value={formData.otp}
-                            onChange={handleChange}
-                            maxLength={6}
-                            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                            placeholder="Enter 6-digit OTP"
-                          />
-                          <button
-                            onClick={verifyOTP}
-                            disabled={formData.otp.length !== 6 || loading}
-                            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
-                          >
-                            Verify
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    disabled={basicDetailsFilled}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                      fieldErrors.fullName ? 'border-red-500' : 'border-gray-300'
-                    } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                    placeholder="Enter your full name"
-                  />
-                  {fieldErrors.fullName && (
-                    <p className="mt-1 text-xs text-red-600">{fieldErrors.fullName}</p>
-                  )}
-                </div>
-
-                {/* Show additional fields - always show both for logged-in users */}
-                {user ? (
-                  <>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Email Address *
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        disabled={formData.emailVerified || basicDetailsFilled}
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                          fieldErrors.email ? 'border-red-500' : 'border-gray-300'
-                        } ${(formData.emailVerified || basicDetailsFilled) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                        placeholder="your@email.com"
-                      />
-                      {fieldErrors.email ? (
-                        <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
-                      ) : (
-                        <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
-                      )}
-                    </div>
-                    {/* Mobile + DOB side by side for logged-in user */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Mobile Verification - Only show for non-logged in users */}
+                  {!user && verificationMethod === 'mobile' && (
+                    <>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Mobile Number *
                         </label>
-                        <input
-                          type="tel"
-                          name="mobile"
-                          value={formData.mobile}
-                          onChange={handleChange}
-                          onBlur={handleMobileBlur}
-                          disabled={formData.mobileVerified || basicDetailsFilled}
-                          maxLength={10}
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                            fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
-                          } ${(formData.mobileVerified || basicDetailsFilled) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                          placeholder="9876543210"
-                        />
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <input
+                            type="tel"
+                            name="mobile"
+                            value={formData.mobile}
+                            onChange={handleChange}
+                            onBlur={handleMobileBlur}
+                            disabled={formData.mobileVerified || basicDetailsFilled}
+                            maxLength={10}
+                            className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
+                              }`}
+                            placeholder="enter mobile number"
+                          />
+                          {!formData.mobileVerified && !basicDetailsFilled && (
+                            <button
+                              onClick={sendOTP}
+                              disabled={!formData.mobile || loading || (otpSent && emailOtpTimer > 0)}
+                              className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
+                            >
+                              {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Verify"}
+                            </button>
+                          )}
+                          {(formData.mobileVerified || basicDetailsFilled) && (
+                            <CheckCircle className="w-10 h-10 text-green-600" />
+                          )}
+                        </div>
                         {fieldErrors.mobile && (
                           <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
                         )}
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Date of Birth *
-                        </label>
-                        <input
-                          type="date"
-                          name="dob"
-                          value={formData.dob}
-                          onChange={handleChange}
-                          disabled={basicDetailsFilled}
-                          max={(() => {
-                            const date = new Date();
-                            date.setFullYear(date.getFullYear() - 18);
-                            return date.toISOString().split('T')[0];
-                          })()}
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                            fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
-                          } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                          required
-                        />
-                        {fieldErrors.dob && (
-                          <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
-                        )}
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    {verificationMethod === 'email' && (
-                      <>
-                        {/* Mobile + DOB side by side for email verification */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Mobile Number *
-                            </label>
-                            <input
-                              type="tel"
-                              name="mobile"
-                              value={formData.mobile}
-                              onChange={handleChange}
-                              onBlur={handleMobileBlur}
-                              disabled={basicDetailsFilled}
-                              maxLength={10}
-                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                                fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
-                              } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                              placeholder="9876543210"
-                            />
-                            {fieldErrors.mobile && (
-                              <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
-                            )}
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Date of Birth *
-                            </label>
-                            <input
-                              type="date"
-                              name="dob"
-                              value={formData.dob}
-                              onChange={handleChange}
-                              disabled={basicDetailsFilled}
-                              max={(() => {
-                                const date = new Date();
-                                date.setFullYear(date.getFullYear() - 18);
-                                return date.toISOString().split('T')[0];
-                              })()}
-                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                                fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
-                              } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                              required
-                            />
-                            {fieldErrors.dob && (
-                              <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
-                            )}
-                          </div>
-                        </div>
-                      </>
-                    )}
 
-                    {verificationMethod === 'mobile' && (
-                      <>
+                      {!formData.mobileVerified && !basicDetailsFilled && otpSent && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Email Address *
+                            Enter OTP *
+                          </label>
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <input
+                              type="text"
+                              name="otp"
+                              value={formData.otp}
+                              onChange={handleChange}
+                              maxLength={6}
+                              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                              placeholder="Enter 6-digit OTP"
+                            />
+                            <button
+                              onClick={verifyOTP}
+                              disabled={formData.otp.length !== 6 || loading}
+                              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
+                            >
+                              Verify
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      name="fullName"
+                      value={formData.fullName}
+                      onChange={handleChange}
+                      disabled={basicDetailsFilled}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.fullName ? 'border-red-500' : 'border-gray-300'
+                        } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                      placeholder="Enter your full name"
+                    />
+                    {fieldErrors.fullName && (
+                      <p className="mt-1 text-xs text-red-600">{fieldErrors.fullName}</p>
+                    )}
+                  </div>
+
+                  {/* Show additional fields - always show both for logged-in users */}
+                  {user ? (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Email Address *
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleChange}
+                          disabled={formData.emailVerified || basicDetailsFilled}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'
+                            } ${(formData.emailVerified || basicDetailsFilled) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                          placeholder="your@email.com"
+                        />
+                        {fieldErrors.email ? (
+                          <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+                        ) : (
+                          <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
+                        )}
+                      </div>
+                      {/* Mobile + DOB side by side for logged-in user */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Mobile Number *
                           </label>
                           <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
+                            type="tel"
+                            name="mobile"
+                            value={formData.mobile}
                             onChange={handleChange}
-                            disabled={formData.emailVerified || basicDetailsFilled}
-                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                              fieldErrors.email ? 'border-red-500' : 'border-gray-300'
-                            } ${(formData.emailVerified || basicDetailsFilled) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                            placeholder="your@email.com"
+                            onBlur={handleMobileBlur}
+                            disabled={formData.mobileVerified || basicDetailsFilled}
+                            maxLength={10}
+                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
+                              } ${(formData.mobileVerified || basicDetailsFilled) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                            placeholder="9876543210"
                           />
-                          {fieldErrors.email ? (
-                            <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
-                          ) : (
-                            <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
+                          {fieldErrors.mobile && (
+                            <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
                           )}
                         </div>
-                        {/* DOB for mobile verification */}
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
                             Date of Birth *
@@ -5765,43 +5666,142 @@ y += boxHeight + 4;
                               date.setFullYear(date.getFullYear() - 18);
                               return date.toISOString().split('T')[0];
                             })()}
-                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                              fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
-                            } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
+                              } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             required
                           />
                           {fieldErrors.dob && (
                             <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
                           )}
                         </div>
-                      </>
-                    )}
-                  </>
-                )}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {verificationMethod === 'email' && (
+                        <>
+                          {/* Mobile + DOB side by side for email verification */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Mobile Number *
+                              </label>
+                              <input
+                                type="tel"
+                                name="mobile"
+                                value={formData.mobile}
+                                onChange={handleChange}
+                                onBlur={handleMobileBlur}
+                                disabled={basicDetailsFilled}
+                                maxLength={10}
+                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
+                                  } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                placeholder="9876543210"
+                              />
+                              {fieldErrors.mobile && (
+                                <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
+                              )}
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Date of Birth *
+                              </label>
+                              <input
+                                type="date"
+                                name="dob"
+                                value={formData.dob}
+                                onChange={handleChange}
+                                disabled={basicDetailsFilled}
+                                max={(() => {
+                                  const date = new Date();
+                                  date.setFullYear(date.getFullYear() - 18);
+                                  return date.toISOString().split('T')[0];
+                                })()}
+                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
+                                  } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                required
+                              />
+                              {fieldErrors.dob && (
+                                <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
+                              )}
+                            </div>
+                          </div>
+                        </>
+                      )}
 
-                {/* State Selection with Search */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    State *
-                  </label>
-                  <div className="relative state-dropdown-container">
-                    <button
-                      type="button"
-                      onClick={() => !basicDetailsFilled && setStateDropdownOpen(!stateDropdownOpen)}
-                      disabled={basicDetailsFilled}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] text-left flex justify-between items-center ${
-                        fieldErrors.state ? 'border-red-500' : 'border-gray-300'
-                      } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
-                    >
-                      <span className={formData.state ? 'text-gray-900' : 'text-gray-500'}>
-                        {formData.state
-                          ? INDIAN_STATES.find(s => s.value === formData.state)?.label || formData.state
-                          : 'Select State'}
-                      </span>
-                      <svg className={`w-5 h-5 text-gray-400 transition-transform ${stateDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
+                      {verificationMethod === 'mobile' && (
+                        <>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Email Address *
+                            </label>
+                            <input
+                              type="email"
+                              name="email"
+                              value={formData.email}
+                              onChange={handleChange}
+                              disabled={formData.emailVerified || basicDetailsFilled}
+                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'
+                                } ${(formData.emailVerified || basicDetailsFilled) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                              placeholder="your@email.com"
+                            />
+                            {fieldErrors.email ? (
+                              <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+                            ) : (
+                              <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
+                            )}
+                          </div>
+                          {/* DOB for mobile verification */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Date of Birth *
+                            </label>
+                            <input
+                              type="date"
+                              name="dob"
+                              value={formData.dob}
+                              onChange={handleChange}
+                              disabled={basicDetailsFilled}
+                              max={(() => {
+                                const date = new Date();
+                                date.setFullYear(date.getFullYear() - 18);
+                                return date.toISOString().split('T')[0];
+                              })()}
+                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
+                                } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                              required
+                            />
+                            {fieldErrors.dob && (
+                              <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
+
+                  {/* State Selection with Search */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      State *
+                    </label>
+                    <div className="relative state-dropdown-container">
+                      <button
+                        type="button"
+                        onClick={() => !basicDetailsFilled && setStateDropdownOpen(!stateDropdownOpen)}
+                        disabled={basicDetailsFilled}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] text-left flex justify-between items-center ${fieldErrors.state ? 'border-red-500' : 'border-gray-300'
+                          } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                      >
+                        <span className={formData.state ? 'text-gray-900' : 'text-gray-500'}>
+                          {formData.state
+                            ? INDIAN_STATES.find(s => s.value === formData.state)?.label || formData.state
+                            : 'Select State'}
+                        </span>
+                        <svg className={`w-5 h-5 text-gray-400 transition-transform ${stateDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
 
                       {stateDropdownOpen && (
                         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
@@ -5964,8 +5964,8 @@ y += boxHeight + 4;
                           } as any);
                         }}
                         className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${formData.loanAmount && (parseFloat(formData.loanAmount.replace(/,/g, "")) < 5000 || parseFloat(formData.loanAmount.replace(/,/g, "")) > 25000)
-                            ? "border-red-500"
-                            : "border-gray-300"
+                          ? "border-red-500"
+                          : "border-gray-300"
                           }`}
                         placeholder="₹ 2,000 - ₹ 25,000"
                       />
@@ -6026,8 +6026,8 @@ y += boxHeight + 4;
                             onClick={verifyPAN}
                             disabled={!formData.pan || formData.pan.length !== 10 || panVerifying || panReverifyTimer > 0}
                             className={`px-6 py-3 text-white rounded-lg whitespace-nowrap ${panReverifyTimer > 0
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-[#25B181] hover:bg-[#1d8f6a] disabled:opacity-50'
+                              ? 'bg-gray-400 cursor-not-allowed'
+                              : 'bg-[#25B181] hover:bg-[#1d8f6a] disabled:opacity-50'
                               }`}
                           >
                             {panVerifying ? "Verifying..." : panReverifyTimer > 0 ? `Verify (${panReverifyTimer}s)` : "Verify"}
@@ -6121,8 +6121,8 @@ y += boxHeight + 4;
                               onClick={verifyAadhaarOTP}
                               disabled={aadhaarOtp.length !== 6 || aadhaarVerifying || aadhaarReverifyTimer > 0}
                               className={`px-6 py-3 text-white rounded-lg whitespace-nowrap ${aadhaarReverifyTimer > 0
-                                  ? 'bg-gray-400 cursor-not-allowed'
-                                  : 'bg-green-600 hover:bg-green-700 disabled:opacity-50'
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-green-600 hover:bg-green-700 disabled:opacity-50'
                                 }`}
                             >
                               {aadhaarVerifying ? "Verifying..." : aadhaarReverifyTimer > 0 ? `Verify (${aadhaarReverifyTimer}s)` : "Verify OTP"}
@@ -6550,12 +6550,12 @@ y += boxHeight + 4;
                               disabled={bankVerified}
                               maxLength={11}
                               className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] pr-12 ${fieldErrors.ifsc || ifscLookupError
-                                  ? 'border-red-500'
-                                  : ifscDetectedBank
+                                ? 'border-red-500'
+                                : ifscDetectedBank
+                                  ? 'bg-green-50 border-green-300'
+                                  : bankVerified
                                     ? 'bg-green-50 border-green-300'
-                                    : bankVerified
-                                      ? 'bg-green-50 border-green-300'
-                                      : 'border-gray-300'
+                                    : 'border-gray-300'
                                 }`}
                               placeholder="Enter IFSC (e.g., SBIN0001234)"
                               style={{ textTransform: 'uppercase' }}
@@ -6598,8 +6598,8 @@ y += boxHeight + 4;
                               readOnly={!!ifscDetectedBank}
                               disabled={bankVerified || !!ifscDetectedBank}
                               className={`w-full px-4 py-3 border rounded-lg ${ifscDetectedBank || bankVerified
-                                  ? 'bg-green-50 border-green-300 cursor-not-allowed'
-                                  : 'border-gray-300 focus:ring-2 focus:ring-[#25B181]'
+                                ? 'bg-green-50 border-green-300 cursor-not-allowed'
+                                : 'border-gray-300 focus:ring-2 focus:ring-[#25B181]'
                                 }`}
                               placeholder={ifscLookupLoading ? "Detecting bank..." : "Enter IFSC to auto-detect"}
                             />
@@ -6688,12 +6688,12 @@ y += boxHeight + 4;
                           onClick={verifyBankAccount}
                           disabled={bankVerifying || bankVerified || !formData.bankName || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc || ifscLookupLoading}
                           className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all ${bankVerified
-                              ? 'bg-green-100 text-green-700 border border-green-300 cursor-not-allowed'
-                              : bankVerifying
-                                ? 'bg-gray-300 text-gray-600 cursor-wait'
-                                : !formData.bankName || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc || ifscLookupLoading
-                                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                                  : 'bg-[#25B181] text-white hover:bg-[#1d9469]'
+                            ? 'bg-green-100 text-green-700 border border-green-300 cursor-not-allowed'
+                            : bankVerifying
+                              ? 'bg-gray-300 text-gray-600 cursor-wait'
+                              : !formData.bankName || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc || ifscLookupLoading
+                                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                : 'bg-[#25B181] text-white hover:bg-[#1d9469]'
                             }`}
                         >
                           {bankVerifying ? (

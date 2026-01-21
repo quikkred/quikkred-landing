@@ -132,7 +132,7 @@ export default function LoginPage() {
       const data = response.data;
 
       // if (response.ok && data.success) {
-      if(response.status === 200 || response.status === 201) {
+      if (response.status === 200 || response.status === 201) {
         setOtpSent(true);
         setResendTimer(15); // Start 15-second countdown
         toast({
@@ -426,10 +426,10 @@ export default function LoginPage() {
                     <TruecallerVerify buttonText="Continue with truecaller" />
                   </div>
 
-                  <div className="flex text-neutral-500 my-1 justify-center w-full gap-2 items-center">
-                    <div className="bg-neutral-400 w-full h-[1px]" />
-                    <span>or</span>
-                    <div className="bg-neutral-400 w-full h-[1px]" />
+                  <div className="my-3 flex w-full items-center gap-3 text-sm text-neutral-500">
+                    <div className="flex-1 border-t border-neutral-400" />
+                    <span className="shrink-0 leading-none">or enter email</span>
+                    <div className="flex-1 border-t border-neutral-400" />
                   </div>
 
                   {/* Email/Phone Input */}
