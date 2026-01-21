@@ -188,7 +188,7 @@ export default function LoginPage() {
       // NextAuth returns { ok, error, status, url }
       if (res?.ok) {
         const userData = await getSession();
-        console.log("user data", userData)
+        // console.log("user data", userData)
         toast({
           variant: "success",
           title: "Login Successful!",
@@ -198,7 +198,10 @@ export default function LoginPage() {
         // ✅ redirect where you want
         // router.push("/dashboard");
         if (userData) {
-          await login(userData?.user?.email || "", "", userData);
+          await login({
+            apiData: userData,
+            email: userData?.user?.email || "",
+          });
         }
         router.push("/user");
         return;
@@ -235,10 +238,9 @@ export default function LoginPage() {
       }
     } else {
       try {
-        const success = await login(
-          formData.emailOrPhone,
-          formData.password,
-        );
+        const success = await login({
+            email: formData.emailOrPhone || "",
+          });
 
         if (success) {
           toast({

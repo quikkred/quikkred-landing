@@ -146,27 +146,8 @@ export default function PostApprovalBank({
         }
 
         try {
-            // const token = localStorage.getItem('accessToken');
             const applicationId = localStorage.getItem('applicationId');
 
-            // const response = await fetch(`${API_BASE_URL}/api/loan/update-bank`, {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'Authorization': `Bearer ${token}`,
-            //     },
-            //     body: JSON.stringify({
-            //         applicationId,
-            //         bankDetails: {
-            //             bankName: formData.bankName,
-            //             ifscCode: formData.ifsc,
-            //             accountNumber: formData.accountNumber,
-            //             accountHolderName: formData.accountHolderName,
-            //         },
-            //     }),
-            // });
-
-            // const data = await response.json();
             const response = await axios.post('/api/loan/update-bank', {
                 applicationId,
                 bankDetails: {
