@@ -569,7 +569,7 @@ export default function InterestRatesPage() {
                   </li>
                   <li className="flex items-start">
                     <CheckCircle className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>GST @ 18% applicable on processing fees and other charges</span>
+                    <span>GST @ 18% applicable on  Platform fees and other charges</span>
                   </li>
                 </ul>
               </div>

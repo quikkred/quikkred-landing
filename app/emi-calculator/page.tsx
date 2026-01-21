@@ -49,7 +49,7 @@ export default function EMICalculatorPage() {
             </div>
 
             <p className="text-sm sm:text-base lg:text-xl mb-6 sm:mb-8 opacity-90 max-w-3xl">
-              Calculate your loan repayment, interest, and see exactly how much you'll receive after processing fees
+              Calculate your loan repayment, interest, and see exactly how much you'll receive after  Platform fees
             </p>
 
             {/* Features */}
