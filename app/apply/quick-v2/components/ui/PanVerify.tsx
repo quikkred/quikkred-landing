@@ -50,22 +50,6 @@ const PanVerify = ({ formData, setFormData }: PanVerifyProps) => {
         const formattedDate = `${day}-${month}-${year}`;
 
         try {
-            // const token = await getToken();
-            // const response = await fetch(`${API_BASE_URL}/api/kyc/pan/verification`, {
-            //     method: "POST",
-            //     headers: {
-            //         "Content-Type": "application/json",
-            //         Authorization: `Bearer ${token}`,
-            //     },
-            //     body: JSON.stringify({
-            //         panNumber: formData.pan,
-            //         name: formData.fullName,
-            //         dob: formattedDate // ✅ Sent as DD-MM-YYYY
-            //     }),
-            // });
-
-            // const data = await response.json();
-
             const response = await axios.post('/api/kyc/pan/verification', {
                 panNumber: formData.pan,
                 name: formData.fullName,
