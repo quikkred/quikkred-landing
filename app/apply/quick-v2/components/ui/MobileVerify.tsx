@@ -9,7 +9,7 @@ import { VALIDATION, TIMERS } from "@/lib/constants/quickApplyV2";
 
 const MobileVerify = () => {
   const { login } = useAuth();
-  
+
   // Internal state instead of props
   const [mobile, setMobile] = useState("");
   const [otpSent, setOtpSent] = useState(false);
@@ -78,9 +78,10 @@ const MobileVerify = () => {
       if (res?.ok) {
         const session = await getSession();
         if (session?.user) {
-        //   login(session.user?.email, "", session.user); 
-        // console.log("✅ Mobile verified successfully", session);
-            await login(session.user?.email || "", "", session, false);
+          await login({
+            email: session?.user?.email || "",
+            apiData: session,
+          });
         }
       } else {
         setOtpError(res?.error || "Invalid OTP");

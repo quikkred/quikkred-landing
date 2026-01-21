@@ -1,4 +1,5 @@
 // Customer Service - Centralized API service for Redux actions
+import getToken from '../getToken';
 import { apiClient, ApiResponse } from './api-client';
 import { API_BASE_URL } from '@/lib/config';
 
@@ -178,9 +179,7 @@ class CustomerService {
 
   async uploadDocument(formData: FormData): Promise<ApiResponse<CustomerDocument>> {
     // For file uploads, we need to use fetch directly without JSON content-type
-    const token = typeof window !== 'undefined'
-      ? localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('authToken')
-      : null;
+    const token = await getToken();
 
     const response = await fetch(`${API_BASE_URL}/api/document/upload`, {
       method: 'POST',

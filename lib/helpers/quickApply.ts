@@ -1,5 +1,7 @@
 // Quick Apply Helper Functions
 
+import { getSession } from "next-auth/react";
+
 /**
  * Convert ISO date string to YYYY-MM-DD format for input fields
  */
@@ -119,11 +121,10 @@ export const calculateEMI = (principal: number, rate: number, tenure: number): n
 /**
  * Get auth token from localStorage
  */
-export const getAuthToken = (): string | null => {
+export const getAuthToken = async (): Promise<string | null> => {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem('accessToken') ||
-         localStorage.getItem('token') ||
-         localStorage.getItem('authToken');
+  const session = await getSession();
+  return (session as any)?.accessToken;
 };
 
 /**
