@@ -10,7 +10,7 @@ export default async function getUserDetails(): Promise<User | null> {
   const session = await getServerSession(authOptions);
 
   if (!session) return null;
-  
+
   // 2) Build base user data from session
   const baseUser: User = {
     // @ts-ignore (add next-auth.d.ts to avoid this)
@@ -64,6 +64,18 @@ export default async function getUserDetails(): Promise<User | null> {
       kycStatus: apiData.kyc?.kycStatus || "PENDING",
       status: apiData.status,
       createdAt: apiData.createdAt,
+
+      // dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
+      pan: apiData.panCard || null,
+      aadhaar: apiData.aadhaarNumber || null,
+      employmentType: apiData.employmentType || null,
+      monthlyIncome: apiData.monthlyIncome?.toString() || null,
+      companyName: apiData.companyName || null,
+      bankName: apiData.banks?.[0]?.bankName || null,
+      accountHolderName: apiData.banks?.[0]?.accountHolderName || null,
+      accountNumber: apiData.banks?.[0]?.accountNumber || null,
+      ifsc: apiData.banks?.[0]?.ifscCode || null,
+      loanAmount: apiData.requestedLoanAmount?.toString() || null, // Loan amount from API
     };
 
     return updatedUser;
