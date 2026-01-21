@@ -221,7 +221,7 @@ export function Header() {
                 </motion.button>
               </Link>
             ) : (
-              <Link href="/apply/quick">
+              <Link href="/apply">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -353,7 +353,7 @@ export function Header() {
                   </Link>
                 ) : (
                   <Link
-                    href="/apply/quick"
+                    href="/apply"
                     onClick={() => setMobileMenuOpen(false)}
                     className="block mt-2"
                   >
