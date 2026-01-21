@@ -1,21 +1,21 @@
 import { Dispatch } from 'redux';
 import * as actionTypes from '../actionTypes/customerActionTypes';
 import { API_BASE_URL } from '@/lib/config';
+import { getSession } from 'next-auth/react';
 
 // Build API URL with /api prefix
 const API_URL = `${API_BASE_URL}/api`;
 
 // Helper to get auth token
-const getAuthToken = (): string | null => {
+const getAuthToken = async (): Promise<string | null> => {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem('accessToken') ||
-         localStorage.getItem('token') ||
-         localStorage.getItem('authToken');
+  const session = await getSession();
+  return (session as any)?.accessToken;
 };
 
 // Helper for API calls
 const apiCall: any = async (endpoint: string, options: RequestInit = {}) => {
-  const token = getAuthToken();
+  const token = await getAuthToken();
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     headers: {

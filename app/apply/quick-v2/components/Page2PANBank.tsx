@@ -108,17 +108,6 @@ export default function Page2PANBank({
         }
 
         try {
-            // const token = localStorage.getItem('accessToken');
-            // const response = await fetch(`${API_BASE_URL}/api/kyc/pan/verify`, {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'Authorization': `Bearer ${token}`,
-            //     },
-            //     body: JSON.stringify({ panNumber: pan }),
-            // });
-
-            // const data = await response.json();
             const response = await axios.post('/api/kyc/pan/verify', { panNumber: pan });
             const data = await response.data;
 
@@ -212,37 +201,6 @@ export default function Page2PANBank({
         }
 
         try {
-            // const token = localStorage.getItem('accessToken');
-            // const response = await fetch(`${API_BASE_URL}/api/loan/submit`, {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'Authorization': `Bearer ${token}`,
-            //     },
-            //     body: JSON.stringify({
-            //         mobile: formData.mobile,
-            //         pincode: formData.pincode,
-            //         city: formData.city,
-            //         state: formData.state,
-            //         employmentType: formData.employmentType,
-            //         monthlyIncome: parseInt(formData.monthlyIncome),
-            //         salaryDate: formData.salaryDate,
-            //         loanAmount: formData.loanAmount,
-            //         tenure: formData.tenure,
-            //         tenureUnit: 'days',
-            //         panCard: formData.pan,
-            //         fullName: formData.fullName,
-            //         dateOfBirth: formData.dob,
-            //         processingFee: loanCalc.processingFee,
-            //         gstOnProcessingFee: loanCalc.gstOnProcessingFee,
-            //         netDisbursalAmount: loanCalc.netDisbursalAmount,
-            //         totalRepayment: loanCalc.totalRepayment,
-            //         ipData: formData.ipData,
-            //     }),
-            // });
-
-            // const data = await response.json();
-
             const response = await axios.post('/api/loan/submit', {
                 mobile: formData.mobile,
                 pincode: formData.pincode,

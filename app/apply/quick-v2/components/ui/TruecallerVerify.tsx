@@ -21,7 +21,9 @@ const TruecallerVerify = ({
     // Synchronize NextAuth session with your custom AuthContext
     useEffect(() => {
         if (session && loading) {
-            login("", "", session, false);
+            login({
+                apiData: session
+            });
             setLoading(false);
         }
     }, [session, loading, login]);
