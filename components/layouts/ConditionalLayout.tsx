@@ -67,7 +67,8 @@ const PUBLIC_ROUTES = [
   '/emi-calculator',
   '/eligibility-check',
   '/interest-rates',
-  '/document-checklist'
+  '/document-checklist',
+  '/blogs'
 ];
 
 // Routes that should NOT show header/footer (full-page experiences for all users)

@@ -193,12 +193,7 @@ export default function SupportPage() {
     setReopenLoading(true);
 
     try {
-      const token = localStorage.getItem('accessToken');
-
-      if (!token) {
-        router.push('/login');
-        return;
-      }
+      const token = await getToken();
 
       const response = await fetch(`${API_BASE_URL}/api/supportTicket/update/${selectedTicket._id}`, {
         method: 'PATCH',
@@ -238,25 +233,6 @@ export default function SupportPage() {
     setReopenLoading(true);
 
     try {
-      // const token = localStorage.getItem('accessToken')
-
-      // if (!token) {
-      //   router.push('/login');
-      //   return;
-      // }
-
-      // const response = await fetch(`${API_BASE_URL}/api/supportTicket/update/${selectedTicket._id}`, {
-      //   method: 'PATCH',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${token}`
-      //   },
-      //   body: JSON.stringify({
-      //     description: reopenDescription.trim()
-      //   })
-      // });
-
-      // const result = await response.json();
       const response = await axios.patch(`/api/supportTicket/update/${selectedTicket._id}`, {
         description: reopenDescription.trim()
       });

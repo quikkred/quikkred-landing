@@ -18,7 +18,7 @@ export default function TruecallerAuth() {
   useEffect(() => {
     if (session && loading) {
       // Pass the session to your custom login handler
-      login("", "", session, false);
+      login({ apiData: session });
       setLoading(false);
     }
   }, [session, loading, login]);

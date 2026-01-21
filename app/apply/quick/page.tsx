@@ -18,14 +18,7 @@ import { QuickApplyFormData, FieldErrors } from "@/lib/types/quickApply";
 import { getInitialFormData, initialFieldErrors, INDIAN_STATES, BLACKLISTED_STATES } from "@/lib/constants/quickApply";
 import {
   formatDateForInput,
-  formatDateForDisplay,
-  formatDOBForAPI,
-  formatDOBFromAPI,
   toBoolean,
-  maskAadhaar,
-  getValue,
-  formatCurrency,
-  getAuthToken,
 } from "@/lib/helpers/quickApply";
 import { API_BASE_URL } from "@/lib/config";
 import getToken from "@/lib/getToken";
@@ -623,7 +616,7 @@ export default function QuickLoanApplication() {
 
       console.log('📊 finfactor=success detected, auto-calling BRE finFactor API...');
 
-      const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('authToken');
+      const token = await getToken();
       if (!token) {
         console.error('No auth token found for BRE finFactor');
         return;
@@ -3487,7 +3480,10 @@ y += boxHeight + 4;
       if (response?.ok) {
         const data: any = await getSession();
 
-        login(payload?.email || "", "", data, false);
+        login({
+          email: payload?.email || "",
+          apiData: data,
+        });
 
         if (verificationMethod === 'email') {
           setFormData(prev => ({ ...prev, emailVerified: true }));
@@ -3496,13 +3492,6 @@ y += boxHeight + 4;
         }
         setOtpSent(false); // Reset OTP sent state after successful verification
 
-        // Store access token if provided in response
-        if (data?.accessToken) {
-          localStorage.setItem('accessToken', data.accessToken);
-          localStorage.setItem('token', data.accessToken);
-          localStorage.setItem('authToken', data.accessToken);
-          console.log('✅ Access token stored');
-        }
         // Store userId if provided
         if (data?.userId) {
           localStorage.setItem('userId', data.userId);
@@ -3515,10 +3504,7 @@ y += boxHeight + 4;
         });
 
         // Auto-fill form with customer data after successful OTP verification
-        const token = data?.accessToken ||
-          localStorage.getItem('accessToken') ||
-          localStorage.getItem('token') ||
-          localStorage.getItem('authToken');
+        const token = data?.accessToken;
 
         if (token) {
           try {

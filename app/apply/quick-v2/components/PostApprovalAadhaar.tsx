@@ -144,18 +144,6 @@ export default function PostApprovalAadhaar({
         }
 
         try {
-            // const token = localStorage.getItem('accessToken');
-
-            // const response = await fetch(`${API_BASE_URL}/api/kyc/aadhaar/send-otp`, {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'Authorization': `Bearer ${token}`,
-            //     },
-            //     body: JSON.stringify({ aadhaar }),
-            // });
-
-            // const data = await response.json();
             const response = await axios.post('/api/kyc/aadhaar/send-otp', { aadhaar });
             const data = response.data;
 
@@ -223,22 +211,6 @@ export default function PostApprovalAadhaar({
         }
 
         try {
-            // const token = localStorage.getItem('accessToken');
-
-            // const response = await fetch(`${API_BASE_URL}/api/kyc/aadhaar/verify-otp`, {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'Authorization': `Bearer ${token}`,
-            //     },
-            //     body: JSON.stringify({
-            //         aadhaar,
-            //         otp: otpValue,
-            //         clientId,
-            //     }),
-            // });
-
-            // const data = await response.json();
             const response = await axios.post('/api/kyc/aadhaar/verify-otp', { aadhaar });
             const data = response.data;
 
