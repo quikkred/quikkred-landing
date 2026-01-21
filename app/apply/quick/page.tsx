@@ -205,6 +205,19 @@ export default function QuickLoanApplication() {
   // Form data state (using imported initial values)
   const [formData, setFormData] = useState(getInitialFormData());
 
+  // Autofill mobile from localStorage (from /apply page)
+  useEffect(() => {
+    const storedMobile = localStorage.getItem('applyMobile');
+    if (storedMobile) {
+      setFormData(prev => ({
+        ...prev,
+        mobile: storedMobile
+      }));
+      // Clear after reading
+      localStorage.removeItem('applyMobile');
+    }
+  }, []);
+
   // Close bank dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -272,10 +285,11 @@ export default function QuickLoanApplication() {
               console.log('✅ User profile loaded successfully');
 
               // Pre-fill form data (using imported formatDateForInput)
+              // Note: prev.mobile takes priority (from localStorage/applyMobile)
               setFormData(prev => ({
                 ...prev,
                 fullName: profileData.fullName || prev.fullName,
-                mobile: profileData.mobile || user.mobile || prev.mobile,
+                mobile: prev.mobile || profileData.mobile || user.mobile,
                 email: profileData.email || user.email || prev.email,
                 pan: profileData.panCard || prev.pan,
                 aadhaar: profileData.aadhaarNumber || prev.aadhaar,
