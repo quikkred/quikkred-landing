@@ -14,7 +14,7 @@ const getAuthToken = (): string | null => {
 };
 
 // Helper for API calls
-const apiCall = async (endpoint: string, options: RequestInit = {}) => {
+const apiCall: any = async (endpoint: string, options: RequestInit = {}) => {
   const token = getAuthToken();
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...options,

@@ -21,6 +21,16 @@ export interface User {
   kycStatus?: 'PENDING' | 'VERIFIED' | 'REJECTED';
   status?: string;
   createdAt?: string;
+  pan?: string,
+  aadhaar?: string,
+  employmentType?: string,
+  monthlyIncome?: string,
+  companyName?: string,
+  bankName?: string,
+  accountHolderName?: string,
+  accountNumber?: string,
+  ifsc?: string,
+  loanAmount?: string,
 }
 
 interface AuthContextType {
@@ -40,7 +50,7 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
-  
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       // Check for existing session
