@@ -30,6 +30,7 @@ function AuthorizeMandateContent() {
     const [mandateData, setMandateData] = useState<any>(null);
     const [selectedMethod, setSelectedMethod] = useState<'upi' | 'emandate'>('upi');
     const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+    const [orderMandateId, setOrderMandateId] = useState<string | null>(null);
 
     const token = searchParams.get('token');
     const applicationId = searchParams.get('applicationId');
@@ -64,7 +65,6 @@ function AuthorizeMandateContent() {
             if (token) params.append('token', token);
             if (applicationId) params.append('applicationId', applicationId);
 
-            console.log(params,"parms")
             const response = await fetch(`${API_URL}/api/mandate-checkout/details?${params}`);
             const data = await response.json();
 
@@ -101,11 +101,14 @@ function AuthorizeMandateContent() {
             if (!orderData.success) {
                 throw new Error(orderData.message || 'Failed to create order');
             }
+            const mandateId = orderData?.data?.mandateId;
+            setOrderMandateId(mandateId)
 
             // Razorpay Checkout options
             const options: any = {
                 key: mandateData.keyId,
                 order_id: orderData.data.orderId,
+                customer_id: orderData.data.customerId,
                 name: 'Quikkred',
                 description: `Loan Repayment Authorization - ${mandateData.loanNumber}`,
                 image: 'https://quikkred.in/logo.png',
@@ -119,7 +122,7 @@ function AuthorizeMandateContent() {
                     backdrop_color: 'rgba(0,0,0,0.7)'
                 },
                 handler: async function (response: any) {
-                    await verifyPayment(response);
+                    await verifyPayment(response, mandateId);
                 },
                 modal: {
                     ondismiss: function () {
@@ -183,8 +186,10 @@ function AuthorizeMandateContent() {
         }
     };
 
-    const verifyPayment = async (response: any) => {
+    const verifyPayment = async (response: any, mandateId: string) => {
         try {
+            console.log(mandateId, "data")
+
             const verifyResponse = await fetch(`${API_URL}/api/mandate-checkout/verify`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -192,11 +197,13 @@ function AuthorizeMandateContent() {
                     razorpay_payment_id: response.razorpay_payment_id,
                     razorpay_order_id: response.razorpay_order_id,
                     razorpay_signature: response.razorpay_signature,
+                    mandateId: mandateId,
                     method: selectedMethod
                 })
             });
 
             const data = await verifyResponse.json();
+            console.log("jbdcjdbcjhbdjh",data)
 
             if (data.success) {
                 setSuccess(true);
@@ -204,6 +211,7 @@ function AuthorizeMandateContent() {
                 setError(data.message || 'Verification failed');
             }
         } catch (err) {
+            console.log(err,"error")
             setError('Payment verification failed. Please contact support.');
         } finally {
             setProcessing(false);
