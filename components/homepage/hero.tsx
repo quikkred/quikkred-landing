@@ -282,7 +282,7 @@ export default function Hero() {
               </motion.button>
             ))}
             {/* Show more languages on sm screens */}
-            <div className="hidden sm:flex gap-1.5">
+            {/* <div className="hidden sm:flex gap-1.5">
               {availableLanguages.slice(4, 8).map((lang) => (
                 <button
                   key={lang.code}
@@ -296,7 +296,7 @@ export default function Hero() {
                   {lang.nativeName}
                 </button>
               ))}
-            </div>
+            </div> */}
             {availableLanguages.length > 4 && (
               <div className="relative" ref={languageDropdownRef}>
                 <button
