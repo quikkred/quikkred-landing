@@ -442,12 +442,12 @@ export default function PostApprovalSelfie({
             {/* Camera Modal */}
             <AnimatePresence>
                 {cameraOpen && (
-                    <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-2 sm:p-4">
+                    <div className="fixed inset-0 bg-black/90 z-50 flex items-start sm:items-center justify-center overflow-y-auto py-4 px-2 sm:p-4">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.9 }}
-                            className="bg-white rounded-xl sm:rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl"
+                            className="bg-white rounded-xl sm:rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl my-auto sm:my-0"
                         >
                             {/* Modal Header */}
                             <div className="bg-gradient-to-r from-[#25B181] to-[#51C9AF] p-3 sm:p-4 flex items-center justify-between">

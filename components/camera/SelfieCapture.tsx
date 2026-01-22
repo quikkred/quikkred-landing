@@ -227,12 +227,12 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-black/80 z-50 flex items-start sm:items-center justify-center overflow-y-auto py-4 px-2 sm:p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
-          className="bg-white rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl"
+          className="bg-white rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl my-auto sm:my-0"
         >
           {/* Header */}
           <div className="bg-gradient-to-r from-[#25B181] to-[#51C9AF] p-4 flex items-center justify-between">
@@ -262,8 +262,8 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
               </div>
             )}
 
-            {/* Camera View */}
-            <div className="relative bg-black rounded-xl overflow-hidden aspect-video mb-4">
+            {/* Camera View - Taller on mobile for better face capture */}
+            <div className="relative bg-black rounded-xl overflow-hidden aspect-[3/4] sm:aspect-[4/5] md:aspect-video mb-4">
               {!capturedImage ? (
                 <>
                   <video
@@ -277,8 +277,8 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
                   {/* Face detection overlay */}
                   {isStreaming && (
                     <div className="absolute inset-0 pointer-events-none">
-                      {/* Face frame guide */}
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-80 border-4 border-white/50 rounded-[50%] flex items-center justify-center">
+                      {/* Face frame guide - Responsive sizing */}
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-64 sm:w-56 sm:h-72 md:w-64 md:h-80 border-4 border-white/50 rounded-[50%] flex items-center justify-center">
                         <div className={`absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full ${
                           faceDetected ? 'bg-green-500' : 'bg-yellow-500'
                         } text-white text-sm font-medium whitespace-nowrap`}>
