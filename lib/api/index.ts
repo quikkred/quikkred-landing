@@ -9,6 +9,7 @@ export { aiService } from './ai.service';
 export { notificationsService } from './notifications.service';
 export { supportService } from './support.service';
 export { customerService } from './customer.service';
+export { upiAutopayService } from './upi-autopay.service';
 
 // Export all types
 export type {
@@ -98,3 +99,10 @@ export type {
   SupportTicket as CustomerSupportTicket,
   LoanStatus,
 } from './customer.service';
+
+export type {
+  AutopaySetupRequest,
+  AutopaySetupResponse,
+  AutopayStatus,
+  MandateDetails,
+} from './upi-autopay.service';
