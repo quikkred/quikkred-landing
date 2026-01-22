@@ -10,6 +10,10 @@ import LanguageGuard from "@/components/LanguageGuard";
 import { Toaster } from "@/components/ui/toast";
 import getUserDetails from "@/lib/getUserDetails";
 import { AuthProvider } from "@/contexts/AuthContext";
+import getLanguage from "@/lib/getLanguage";
+import { LanguageProvider } from "@/lib/contexts/LanguageContext";
+import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
+import { getTranslation } from "@/lib/getTranslation";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -85,9 +89,16 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const userDetails = await getUserDetails();
+  const language: string | RequestCookie = await getLanguage();
+  const initialData = await getTranslation(language as string);
 
   return (
-    <html lang="en" className={`${inter.variable} ${sora.variable}`} suppressHydrationWarning>
+    <html
+      lang={language as string}
+      dir={language === 'ur' ? 'rtl' : 'ltr'}
+      className={`${inter.variable} ${sora.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         {/* Google Tag Manager */}
         <script
@@ -130,7 +141,8 @@ fbq('track', 'PageView');`,
           </>
         )}
         {/* Language Detection Script */}
-        <script
+
+        {/* <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
@@ -163,7 +175,7 @@ fbq('track', 'PageView');`,
               })();
             `,
           }}
-        />
+        /> */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -217,12 +229,12 @@ fbq('track', 'PageView');`,
           </noscript>
         )}
         <AuthProvider userData={userDetails}>
-          <Providers>
-            <LanguageGuard>
-              <ConditionalLayout>
-                {children}
-              </ConditionalLayout>
-            </LanguageGuard>
+          <Providers language={language as string} initialData={initialData}>
+            {/* <LanguageGuard> */}
+            <ConditionalLayout isLogin={!!userDetails}>
+              {children}
+            </ConditionalLayout>
+            {/* </LanguageGuard> */}
             <Toaster />
           </Providers>
         </AuthProvider>
