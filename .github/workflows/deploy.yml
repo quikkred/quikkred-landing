@@ -97,7 +97,7 @@ jobs:
       - name: Health Check
         run: |
           sleep 15
-          response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://app-alpha.quikkred.in || echo "000")
+          response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://alpha.quikkred.in || echo "000")
           echo "Alpha health check: $response"
 
   # ============================================
@@ -160,7 +160,7 @@ jobs:
       - name: Health Check
         run: |
           sleep 15
-          response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://app-beta.quikkred.in || echo "000")
+          response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://beta.quikkred.in || echo "000")
           echo "Beta health check: $response"
 
   # ============================================
