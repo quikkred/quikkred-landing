@@ -182,10 +182,10 @@ export interface AuditLog {
 // Default settings
 export const DEFAULT_SETTINGS: SystemSettings = {
   general: {
-    companyName: 'Quikkred NBFC',
-    companyEmail: 'contact@Quikkred.com',
-    companyPhone: '+91-1234567890',
-    companyAddress: 'Mumbai, Maharashtra, India',
+    companyName: 'Quikkred (Fluxusforge Pvt. Ltd.)',
+    companyEmail: 'contact@quikkred.in',
+    companyPhone: '+91-9311913854',
+    companyAddress: '1008, 10th Floor, Vikrant Tower, Rajendra Place, New Delhi - 110005',
     timezone: 'Asia/Kolkata',
     currency: 'INR',
     dateFormat: 'DD/MM/YYYY',

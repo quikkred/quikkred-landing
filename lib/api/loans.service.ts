@@ -1,3 +1,4 @@
+import getToken from '../getToken';
 import { apiClient, ApiResponse } from './api-client';
 
 export interface LoanApplication {
@@ -165,11 +166,12 @@ async applyLoan(data: LoanApplication): Promise<ApiResponse<any>> {
   // Upload loan documents
   async uploadDocuments(loanId: string, documents: FormData): Promise<ApiResponse<any>> {
     // For file uploads, we need to handle differently
+    const token = await getToken();
     const response = await fetch(`/api/loans/${loanId}/documents`, {
       method: 'POST',
       body: documents,
       headers: {
-        'Authorization': `Bearer ${apiClient['token']}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
 

@@ -60,7 +60,7 @@ const CodeOfConduct: React.FC = () => {
         <li>
           Once a loan is approved, the borrower will receive a formal sanction
           letter listing the loan amount, tenure, interest rate, EMI,
-          processing fees (if applicable), and other applicable terms.
+           Platform fees (if applicable), and other applicable terms.
         </li>
         <li>
           The signed sanction/sanction agreement copy will be shared with the

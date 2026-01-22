@@ -12,24 +12,35 @@ import { loansService } from "@/lib/api/loans.service";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast, Toaster } from "@/components/ui/toast";
 import SelfieCapture from "@/components/camera/SelfieCapture";
+import { BANKS } from "@/lib/constants/banks";
+import { useCustomer } from "@/store/hooks/useCustomer";
+import { QuickApplyFormData, FieldErrors } from "@/lib/types/quickApply";
+import { getInitialFormData, initialFieldErrors, INDIAN_STATES, BLACKLISTED_STATES } from "@/lib/constants/quickApply";
+import {
+  formatDateForInput,
+  toBoolean,
+} from "@/lib/helpers/quickApply";
+import { API_BASE_URL } from "@/lib/config";
+import getToken from "@/lib/getToken";
+import { getSession, signIn } from "next-auth/react";
 
 // Auto-decision engine
 const autoDecisionEngine = (data: any) => {
   const { monthlyIncome, loanAmount, pan, aadhaar } = data;
 
-  // Simple rule-based decision
-  const minIncome = 25000;
-  const maxLoanToIncome = 40;
-  const maxEligibleAmount = monthlyIncome * maxLoanToIncome;
 
-  // Check basic eligibility
-  if (monthlyIncome < minIncome) {
-    return {
-      approved: false,
-      reason: "Minimum monthly income requirement not met (₹25,000)",
-      suggestedAction: "Please reapply when your monthly income is ₹25,000 or above"
-    };
-  }
+//   const minIncome = 25000;
+//   const maxLoanToIncome = 40;
+//   const maxEligibleAmount = monthlyIncome * maxLoanToIncome;
+
+
+//   if (monthlyIncome < minIncome) {
+//     return {
+//       approved: false,
+//       reason: "Minimum monthly income requirement not met (₹25,000)",
+//       suggestedAction: "Please reapply when your monthly income is ₹25,000 or above"
+//     };
+//   }
 
   if (loanAmount > maxEligibleAmount) {
     return {
@@ -114,9 +125,21 @@ export default function QuickLoanApplication() {
 
   // BRE Status States
   const [rejectionCountdown, setRejectionCountdown] = useState(10);
+  const [ptbLoading, setPtbLoading] = useState(false);
+  const [finfactorSuccess, setFinfactorSuccess] = useState(false);
+  const [consentLoading, setConsentLoading] = useState(false);
+  const [brePolling, setBrePolling] = useState(false);
+  const [brePollingMessage, setBrePollingMessage] = useState('');
+  const [bsaStatusUpdated, setBsaStatusUpdated] = useState(false);
+  const [bsaStatus, setBsaStatus] = useState<string | null>(null);
+  const [processingCountdown, setProcessingCountdown] = useState(60);
+  const [upiAutopayConsent, setUpiAutopayConsent] = useState(false);
+  const [mandateLoading, setMandateLoading] = useState(false);
+  const [mandateVerifying, setMandateVerifying] = useState(false);
+  const [mandateData, setMandateData] = useState<any>(null);
 
   // User location state
-  const [userLocation, setUserLocation] = useState<{latitude: number; longitude: number} | null>(null);
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
   // Field validation errors for Step 1 and Step 4
   const [fieldErrors, setFieldErrors] = useState({
@@ -146,69 +169,88 @@ export default function QuickLoanApplication() {
   // Data agreement checkbox for Step 2
   const [dataAgreementChecked, setDataAgreementChecked] = useState(false);
 
-  // Load hero form data FIRST (before useState)
-  const getInitialFormData = () => {
-    const initialData = {
-      // Step 1: Basic Details
-      mobile: "",
-      otp: "",
-      mobileVerified: false,
-      emailVerified: false,
-      fullName: "",
-      pan: "",
-      aadhaar: "",
-      dob: "",
-      email: "",
+  // Track if PAN is verified (to disable basic details editing when user navigates back)
+  const [basicDetailsFilled, setBasicDetailsFilled] = useState(false);
 
-      // Step 2: Employment & Bank
-      employmentType: "SALARIED",
-      monthlyIncome: "",
-      companyName: "",
-      bankName: "",
-      accountHolderName: "",
-      accountNumber: "",
-      ifsc: "",
+  // Form data state (using imported initial values)
+  const [formData, setFormData] = useState(getInitialFormData());
 
-      // Step 3: Loan & Consent
-      loanAmount: "",
-      tenure: "",
-      tenureUnit: "",
-      productId: "",
-      purpose: "",
-      reference1Name: "",
-      reference1Mobile: "",
-      reference1Relationship: "",
-      reference2Name: "",
-      reference2Mobile: "",
-      reference2Relationship: "",
-      selfie: null as File | null,
-      creditBureauConsent: false,
-      termsConsent: false,
-      eSignConsent: false
-    };
+  // Autofill mobile from localStorage (from /apply page)
+  useEffect(() => {
+    const storedMobile = localStorage.getItem('applyMobile');
+    if (storedMobile) {
+      setFormData(prev => ({
+        ...prev,
+        mobile: storedMobile
+      }));
+      // Clear after reading
+      localStorage.removeItem('applyMobile');
+    }
+  }, []);
 
-    // Try to load hero form data from localStorage
-    if (typeof window !== 'undefined') {
-      try {
-        const heroData = localStorage.getItem('heroFormData');
-        if (heroData) {
-          const data = JSON.parse(heroData);
-          console.log('💾 Loading hero data into initial state:', data);
-          initialData.fullName = data.name || initialData.fullName;
-          initialData.mobile = data.mobile || initialData.mobile;
-          initialData.loanAmount = data.amount || initialData.loanAmount;
-          initialData.email = data.email || initialData.email;
-          // Don't clear yet - will clear after component mounts
-        }
-      } catch (error) {
-        console.error('Error loading hero data:', error);
+  // Close bank dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (bankDropdownOpen && !target.closest('.bank-dropdown-container')) {
+        setBankDropdownOpen(false);
       }
+      if (stateDropdownOpen && !target.closest('.state-dropdown-container')) {
+        setStateDropdownOpen(false);
+        setStateSearchTerm('');
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [bankDropdownOpen, stateDropdownOpen]);
+
+  // Processing countdown timer - redirect to /user if timeout
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | null = null;
+
+    // Only start countdown when finfactorSuccess is true (showing processing UI)
+    if (finfactorSuccess) {
+      // Reset countdown when processing starts
+      setProcessingCountdown(60);
+
+      intervalId = setInterval(() => {
+        setProcessingCountdown((prev) => {
+          if (prev <= 1) {
+            // Countdown finished - redirect to dashboard
+            if (intervalId) clearInterval(intervalId);
+            router.push('/user');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     }
 
-    return initialData;
-  };
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [finfactorSuccess, router]);
 
-  const [formData, setFormData] = useState(getInitialFormData());
+  // Check upiAutoPayStatus from customer data and pre-set upiAutopayConsent
+  useEffect(() => {
+    if (reduxCustomer?.data?.upiAutoPayStatus === true) {
+      setUpiAutopayConsent(true);
+    }
+  }, [reduxCustomer?.data?.upiAutoPayStatus]);
+
+  // Load Razorpay script for UPI Autopay
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, []);
 
   // Load user data if logged in
   useEffect(() => {
@@ -216,9 +258,7 @@ export default function QuickLoanApplication() {
       if (user && !userDataLoaded) {
         console.log('🔵 Loading user data for logged-in user...');
         try {
-          const token = localStorage.getItem('accessToken') ||
-                        localStorage.getItem('token') ||
-                        localStorage.getItem('authToken');
+          const token = await getToken();
 
           if (token) {
             // Fetch user profile data
@@ -235,32 +275,13 @@ export default function QuickLoanApplication() {
             if (response.ok && result.success && result.data) {
               const profileData = result.data;
               console.log('✅ User profile loaded successfully');
-              console.log('📊 Profile Data:', {
-                isBasicDetailsFilled: profileData.isBasicDetailsFilled,
-                isEmploymentDetailsFilled: profileData.isEmploymentDetailsFilled,
-                isVerificationDetailsFilled: profileData.isVerificationDetailsFilled
-              });
 
-              // Convert ISO date to YYYY-MM-DD format for input field
-              const formatDateForInput = (isoDate: string) => {
-                if (!isoDate) return '';
-                try {
-                  const date = new Date(isoDate);
-                  const year = date.getFullYear();
-                  const month = String(date.getMonth() + 1).padStart(2, '0');
-                  const day = String(date.getDate()).padStart(2, '0');
-                  return `${year}-${month}-${day}`;
-                } catch (error) {
-                  console.error('Error formatting date:', error);
-                  return '';
-                }
-              };
-
-              // Pre-fill form data
+              // Pre-fill form data (using imported formatDateForInput)
+              // Note: prev.mobile takes priority (from localStorage/applyMobile)
               setFormData(prev => ({
                 ...prev,
                 fullName: profileData.fullName || prev.fullName,
-                mobile: profileData.mobile || user.mobile || prev.mobile,
+                mobile: prev.mobile || profileData.mobile || user.mobile,
                 email: profileData.email || user.email || prev.email,
                 pan: profileData.panCard || prev.pan,
                 aadhaar: profileData.aadhaarNumber || prev.aadhaar,
@@ -329,23 +350,10 @@ export default function QuickLoanApplication() {
               const isBankDetailsFilled = toBoolean(profileData.isBankDetailsFilled);
               const isSubmit = toBoolean(profileData.isSubmit);
 
-              // Debug logging for checklist
-              console.log('📋 CHECKLIST API Response:', {
-                raw: {
-                  isEmailVerified: profileData.isEmailVerified,
-                  isBasicDetailsFilled: profileData.isBasicDetailsFilled,
-                  isKycDetailsFilled: profileData.isKycDetailsFilled,
-                  isBankDetailsFilled: profileData.isBankDetailsFilled,
-                  isSubmit: profileData.isSubmit,
-                },
-                normalized: {
-                  isEmailVerified,
-                  isBasicDetailsFilled,
-                  isKycDetailsFilled,
-                  isBankDetailsFilled,
-                  isSubmit,
-                }
-              });
+              // If PAN is verified from API, disable basic details editing
+              if (toBoolean(profileData.isPanVerify)) {
+                setBasicDetailsFilled(true);
+              }
 
               // Load selfie preview from profile if available
               if (profileData.profile?.s3URL) {
@@ -521,15 +529,140 @@ export default function QuickLoanApplication() {
 
   // Rejection countdown timer - auto redirect to home after 10 seconds
   useEffect(() => {
-    if (currentStep === 4 && approvalData?.status === 'Reject' && rejectionCountdown > 0) {
-      const timer = setTimeout(() => {
-        setRejectionCountdown(prev => prev - 1);
-      }, 1000);
-      return () => clearTimeout(timer);
-    } else if (currentStep === 4 && approvalData?.status === 'Reject' && rejectionCountdown === 0) {
-      router.push('/');
+    if (currentStep === 4 && approvalData?.status === 'Reject') {
+      // Store status data in localStorage for the status page to read
+      localStorage.setItem('applicationStatusData', JSON.stringify({
+        status: 'rejected',
+        loanNumber: approvalData.applicationNumber || '',
+        reason: approvalData.reason || ''
+      }));
+      router.push('/application-status');
     }
-  }, [currentStep, approvalData?.status, rejectionCountdown, router]);
+  }, [currentStep, approvalData?.status, approvalData?.applicationNumber, approvalData?.reason, router]);
+
+  // Check for finfactor=success query param (redirect from finfudge)
+  // Also update BSA status to PROCESSED on redirect
+  useEffect(() => {
+    const finfactorParam = searchParams.get('finfactor');
+    if (finfactorParam === 'success') {
+      setFinfactorSuccess(true);
+      setCurrentStep(4); // Go to step 4 to show the consent UI
+
+      // Call PATCH API to update BSA status to PROCESSED (only once)
+
+
+      // const updateBsaStatus = async () => {
+      //   // Prevent duplicate calls
+      //   if (bsaStatusUpdated) {
+      //     console.log('BSA status already updated, skipping API call');
+      //     return;
+      //   }
+
+      //   const token = localStorage.getItem('accessToken') || localStorage.getItem('token') || localStorage.getItem('authToken');
+      //   if (!token) {
+      //     console.error('No auth token found for BSA status update');
+      //     return;
+      //   }
+
+      //   try {
+      //     setBsaStatusUpdated(true); // Mark as updated immediately to prevent race conditions
+      //     const response = await fetch('${API_BASE_URL}/api/kyc/bsa/update', {
+      //       method: 'PATCH',
+      //       headers: {
+      //         'Content-Type': 'application/json',
+      //         'Authorization': `Bearer ${token}`
+      //       },
+      //       body: JSON.stringify({ status: 'PROCESSED' })
+      //     });
+
+      //     const result = await response.json();
+      //     if (response.ok && result.success) {
+      //       console.log('BSA status updated successfully:', result.data);
+      //       // Update local bsaStatus state
+      //       setBsaStatus('PROCESSED');
+      //     } else {
+      //       console.error('Failed to update BSA status:', result.message);
+      //       // Reset flag on failure so it can be retried
+      //       setBsaStatusUpdated(false);
+      //     }
+      //   } catch (error) {
+      //     console.error('Error updating BSA status:', error);
+      //     // Reset flag on error so it can be retried
+      //     setBsaStatusUpdated(false);
+      //   }
+      // };
+
+      // updateBsaStatus();
+    }
+  }, [searchParams, bsaStatusUpdated]);
+
+  // Auto-trigger BRE finFactor API when ?finfactor=success is in URL
+  // This handles the case when user returns after finfactor process or bsaInitiated is true
+  const breFinFactorCalledRef = useRef(false);
+
+  useEffect(() => {
+    const fetchBreFinfactorResult = async () => {
+      const finfactorParam = searchParams.get('finfactor');
+
+      // Only proceed if:
+      // 1. finfactor=success is in URL
+      // 2. Not already loading
+      // 3. Not already called
+      // 4. No approvalData yet
+      if (finfactorParam !== 'success' || consentLoading || breFinFactorCalledRef.current || approvalData) {
+        return;
+      }
+
+      console.log('📊 finfactor=success detected, auto-calling BRE finFactor API...');
+
+      const token = await getToken();
+      if (!token) {
+        console.error('No auth token found for BRE finFactor');
+        return;
+      }
+
+      breFinFactorCalledRef.current = true;
+      setConsentLoading(true);
+      setCurrentStep(4); // Ensure we're on Step 4
+      setFinfactorSuccess(true); // Show loading UI
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/kyc/bre/finFactor`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          // API SUCCESS - follow normal flow (approve/reject/etc.)
+          console.log('✅ BRE finFactor result fetched successfully:', result.data);
+          toast({ variant: "success", title: "Success", description: result.message || "BRE verification completed successfully." });
+
+          if (result.data) {
+            setApprovalData(result.data);
+          }
+          setFinfactorSuccess(false);
+        } else {
+          // API ERROR - redirect to /user
+          console.error('BRE finFactor failed:', result.message);
+          toast({ variant: "error", title: "Processing", description: result.message || "We are processing your application. Please check back later." });
+          router.push('/user');
+        }
+      } catch (error) {
+        // API EXCEPTION - redirect to /user
+        console.error('Error fetching BRE finFactor:', error);
+        toast({ variant: "error", title: "Processing", description: "We are processing your application. Please check back later." });
+        router.push('/user');
+      } finally {
+        setConsentLoading(false);
+      }
+    };
+
+    fetchBreFinfactorResult();
+  }, [searchParams, consentLoading, approvalData, toast]);
 
   // Check Aadhaar verification status when verified=true query param is present
   // Only calls API after user profile data is loaded AND if isAadhaarVerify !== true
@@ -567,9 +700,7 @@ export default function QuickLoanApplication() {
       }
 
       // STEP 5: Get auth token
-      const token = localStorage.getItem('accessToken') ||
-                    localStorage.getItem('token') ||
-                    localStorage.getItem('authToken');
+      const token = await getToken();
 
       if (!token) {
         console.log('⚠️ No auth token found, cannot check Aadhaar status');
@@ -613,7 +744,7 @@ export default function QuickLoanApplication() {
           console.log('ℹ️ Aadhaar not verified:', result.message || 'Verification pending or failed');
           setAadhaarVerified(false);
           // Show info toast if verification failed/pending
-        
+
         }
       } catch (error: any) {
         // STEP 8: Handle errors (timeout, network, etc.)
@@ -688,9 +819,7 @@ export default function QuickLoanApplication() {
       }
 
       // Get auth token
-      const token = localStorage.getItem('accessToken') ||
-                    localStorage.getItem('token') ||
-                    localStorage.getItem('authToken');
+      const token = await getToken();
 
       if (!token) {
         console.log('[eSign] No auth token found, cannot check e-Sign status');
@@ -823,9 +952,7 @@ export default function QuickLoanApplication() {
         return;
       }
 
-      const token = localStorage.getItem('accessToken') ||
-                    localStorage.getItem('token') ||
-                    localStorage.getItem('authToken');
+      const token = await getToken();
 
       if (!token) {
         console.log('[Step 4] No auth token found, cannot fetch BRE data');
@@ -990,6 +1117,15 @@ export default function QuickLoanApplication() {
       const tenure = parseInt(data.tenure) || 30;
       const interestRate = parseFloat(data.interestRate) || 1;
       const totalAmount = parseFloat(data.totalAmount) || loanAmount;
+
+      function formatDate(date: Date | string): string {
+        const d = new Date(date);
+        return d.toLocaleDateString('en-IN', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        });
+      }
 
       if (!loanAmount) {
         return '<tr><td colspan="6" style="text-align: center;">N/A</td></tr>';
@@ -3136,36 +3272,36 @@ y += boxHeight + 4;
     }
 
     // Special handling for accountNumber - only allow numbers
-  if (name === 'accountNumber') {
+    if (name === 'accountNumber') {
 
-    // Block non-numeric input
-    if (value && !/^\d*$/.test(value)) {
-      return;
+      // Block non-numeric input
+      if (value && !/^\d*$/.test(value)) {
+        return;
+      }
+
+      // Length validation
+      if (value.length < 9) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          accountNumber: "Account number must be at least 9 digits"
+        }));
+      } else if (value.length > 18) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          accountNumber: "Account number cannot exceed 18 digits"
+        }));
+      } else {
+        setFieldErrors((prev) => ({ ...prev, accountNumber: "" }));
+      }
     }
 
-    // Length validation
-    if (value.length < 9) {
-      setFieldErrors((prev) => ({
-        ...prev,
-        accountNumber: "Account number must be at least 9 digits"
-      }));
-    } else if (value.length > 18) {
-      setFieldErrors((prev) => ({
-        ...prev,
-        accountNumber: "Account number cannot exceed 18 digits"
-      }));
-    } else {
-      setFieldErrors((prev) => ({ ...prev, accountNumber: "" }));
-    }
-  }
 
 
-
-  // Update form normally
-  setFormData((prev) => ({
-    ...prev,
-    [name]: value,
-  }));
+    // Update form normally
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
 
     // Special handling for aadhaar - only allow numbers
     if (name === 'aadhaar') {
@@ -3343,7 +3479,7 @@ y += boxHeight + 4;
       const payload = verificationMethod === 'email'
         ? { email: formData.email }
         : { mobile: formData.mobile };
-console.log('Sending OTP with payload:', payload);
+      console.log('Sending OTP with payload:', payload);
 
       const response = await fetch("https://beta.quikkred.in/api/auth/customer/create", {
         method: "POST",
@@ -3397,17 +3533,30 @@ console.log('Sending OTP with payload:', payload);
         ? { email: formData.email, otp: formData.otp }
         : { mobile: formData.mobile, otp: formData.otp };
 
-      const response = await fetch("https://beta.quikkred.in/api/auth/customer/verifyOtp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
+      // const response = await fetch(`${API_BASE_URL}/api/auth/customer/verifyOtp`, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify(payload),
+      // });
+
+      // const data = await response.json();
+      const response = await signIn("otp", {
+        redirect: false,
+        emailOrPhone: payload?.email || payload?.mobile,
+        otp: payload.otp,
+        loginMethod: verificationMethod, // "email" | "mobile"
       });
+      
+      if (response?.ok) {
+        const data: any = await getSession();
 
-      const data = await response.json();
+        login({
+          email: payload?.email || "",
+          apiData: data,
+        });
 
-      if (response.ok && data.success) {
         if (verificationMethod === 'email') {
           setFormData(prev => ({ ...prev, emailVerified: true }));
         } else {
@@ -3415,12 +3564,9 @@ console.log('Sending OTP with payload:', payload);
         }
         setOtpSent(false); // Reset OTP sent state after successful verification
 
-        // Store access token if provided in response
-        if (data.data?.accessToken) {
-          localStorage.setItem('accessToken', data.data.accessToken);
-          localStorage.setItem('token', data.data.accessToken);
-          localStorage.setItem('authToken', data.data.accessToken);
-          console.log('✅ Access token stored');
+        // Store userId if provided
+        if (data?.userId) {
+          localStorage.setItem('userId', data.userId);
         }
 
         toast({
@@ -3430,10 +3576,7 @@ console.log('Sending OTP with payload:', payload);
         });
 
         // Auto-fill form with customer data after successful OTP verification
-        const token = data.data?.accessToken ||
-                      localStorage.getItem('accessToken') ||
-                      localStorage.getItem('token') ||
-                      localStorage.getItem('authToken');
+        const token = data?.accessToken;
 
         if (token) {
           try {
@@ -3540,11 +3683,83 @@ console.log('Sending OTP with payload:', payload);
               }
 
               console.log('🟢 Form auto-filled with customer data');
-              toast({
-                variant: "success",
-                title: "Data Loaded!",
-                description: "Your profile information has been auto-filled. Please review and proceed.",
+
+              // ============================================
+              // CHECKLIST-BASED REDIRECT LOGIC (after OTP verification)
+              // If all onboarding steps are complete, redirect to Dashboard
+              // (using imported toBoolean)
+              // ============================================
+              const isBasicDetailsFilled = toBoolean(profileData.isBasicDetailsFilled);
+              const isKycDetailsFilled = toBoolean(profileData.isKycDetailsFilled);
+              const isBankDetailsFilled = toBoolean(profileData.isBankDetailsFilled);
+              const isSubmit = toBoolean(profileData.isSubmit);
+
+              // If PAN is verified from API, disable basic details editing
+              if (toBoolean(profileData.isPanVerify)) {
+                setBasicDetailsFilled(true);
+              }
+
+              console.log('📋 Checklist after OTP:', {
+                isBasicDetailsFilled,
+                isKycDetailsFilled,
+                isBankDetailsFilled,
+                isSubmit
               });
+
+              const allChecklistComplete = isBasicDetailsFilled && isKycDetailsFilled && isBankDetailsFilled && isSubmit;
+
+              if (allChecklistComplete) {
+                console.log('✅ All checklist items complete - redirecting to Dashboard');
+                toast({
+                  variant: "success",
+                  title: "Welcome Back!",
+                  description: "Your application is complete. Redirecting to dashboard...",
+                });
+                // Use full page reload to ensure AuthContext reinitializes with updated localStorage
+                window.location.href = '/user';
+                return;
+              }
+
+              // Determine which step to go to based on completion flags
+              let targetStep = 1;
+              if (!isBasicDetailsFilled) {
+                targetStep = 1;
+              } else if (!isKycDetailsFilled) {
+                targetStep = 2;
+              } else if (!isBankDetailsFilled) {
+                targetStep = 3;
+              } else if (!isSubmit) {
+                targetStep = 4;
+              }
+
+              console.log('📍 Redirecting to step:', targetStep);
+
+              // Check if any meaningful data was auto-filled (not just email/mobile from verification)
+              const hasAutoFilledData = !!(
+                profileData.fullName ||
+                profileData.panCard ||
+                profileData.aadhaarNumber ||
+                profileData.dateOfBirth ||
+                profileData.monthlyIncome ||
+                profileData.companyName ||
+                profileData.banks?.[0]?.accountNumber
+              );
+
+              if (targetStep > 1) {
+                setCurrentStep(targetStep);
+                toast({
+                  variant: "success",
+                  title: "Welcome Back!",
+                  description: `Your progress has been saved. Continue from Step ${targetStep}.`,
+                });
+              } else if (hasAutoFilledData) {
+                // Only show "Data Loaded!" toast if there's actual profile data auto-filled
+                toast({
+                  variant: "success",
+                  title: "Data Loaded!",
+                  description: "Your profile information has been auto-filled. Please review and proceed.",
+                });
+              }
             } else {
               console.log('⚠️ Customer API returned no data');
             }
@@ -3557,7 +3772,7 @@ console.log('Sending OTP with payload:', payload);
         toast({
           variant: "error",
           title: "Verification Failed",
-          description: data.message || 'Invalid OTP. Please try again.',
+          description: response?.error || 'Invalid OTP. Please try again.',
         });
       }
     } catch (error: any) {
@@ -3588,9 +3803,7 @@ console.log('Sending OTP with payload:', payload);
 
     setPanVerifying(true);
     try {
-      const token = localStorage.getItem('accessToken') ||
-                    localStorage.getItem('token') ||
-                    localStorage.getItem('authToken');
+      const token = await getToken();
 
       // Format DOB from YYYY-MM-DD to DD/MM/YYYY
       const formatDOBForAPI = (dateStr: string) => {
@@ -3671,9 +3884,7 @@ console.log('Sending OTP with payload:', payload);
 
     setAadhaarVerifying(true);
     try {
-      const token = localStorage.getItem('accessToken') ||
-                    localStorage.getItem('token') ||
-                    localStorage.getItem('authToken');
+      const token = await getToken();
 
       // First call verification endpoint to check redirect
       const verifyResponse = await fetch('https://beta.quikkred.in/api/kyc/aadhaar/verification', {
@@ -3746,9 +3957,7 @@ console.log('Sending OTP with payload:', payload);
 
     setAadhaarVerifying(true);
     try {
-      const token = localStorage.getItem('accessToken') ||
-                    localStorage.getItem('token') ||
-                    localStorage.getItem('authToken');
+      const token = await getToken();
 
       const response = await fetch('https://beta.quikkred.in/api/kyc/aadhaar/verify', {
         method: 'POST',
@@ -3858,9 +4067,7 @@ console.log('Sending OTP with payload:', payload);
     setBankVerifyError("");
 
     try {
-      const token = localStorage.getItem('accessToken') ||
-                    localStorage.getItem('token') ||
-                    localStorage.getItem('authToken');
+      const token = await getToken();
 
       const response = await fetch('https://beta.quikkred.in/api/kyc/bank/verification', {
         method: 'POST',
@@ -3989,7 +4196,7 @@ console.log('Sending OTP with payload:', payload);
   };
 
   // Get user's location and save to localStorage
-  const getLocation = (): Promise<{latitude: number; longitude: number} | null> => {
+  const getLocation = (): Promise<{ latitude: number; longitude: number } | null> => {
     return new Promise((resolve) => {
       // Check if location is already in localStorage
       const storedLocation = localStorage.getItem('userLocation');
@@ -4034,9 +4241,7 @@ console.log('Sending OTP with payload:', payload);
   // Save customer data to backend via loan application API
   const saveCustomerData = async (step: number) => {
     try {
-      const token = localStorage.getItem('accessToken') ||
-                    localStorage.getItem('token') ||
-                    localStorage.getItem('authToken');
+      const token = await getToken();
 
       if (!token) {
         console.warn('No token found, skipping customer data save');
@@ -4087,13 +4292,13 @@ console.log('Sending OTP with payload:', payload);
         // Step 2: KYC Details with Photo - use FormData
         const formDataToSend = new FormData();
 
- const payload = {
-  kycDetails: {
-    isKycDetailsFilled: true
-  }
-};
+        const payload = {
+          kycDetails: {
+            isKycDetailsFilled: true
+          }
+        };
 
-        
+
         // formDataToSend.append('data', JSON.stringify(kycPayload));
 
         // Add selfie photo file
@@ -4178,6 +4383,194 @@ console.log('Sending OTP with payload:', payload);
         description: error.message || "Unable to connect to server. Please check your internet connection and try again.",
       });
       return false;
+    }
+  };
+
+  // Check UPI Autopay status after Razorpay closes (success or dismiss)
+  const checkUpiAutoPayStatus = async (subscriptionId: string, token: string) => {
+    try {
+      console.log("Calling UPI AutoPay status API for subscriptionId:", subscriptionId);
+
+      const statusResponse = await fetch(`${API_BASE_URL}/api/upi/upiAutopay/status/${subscriptionId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const statusResult = await statusResponse.json();
+      console.log("UPI AutoPay Status Response:", statusResult);
+
+      // After status API call, refresh customer data to get updated upiAutoPayStatus
+      await getCustomer();
+
+      // Set checkbox based on status from API response
+      if (statusResult.success && statusResult.status === 'active') {
+        setUpiAutopayConsent(true);
+        toast({
+          variant: "success",
+          title: "UPI Autopay Authorized",
+          description: "Your UPI Autopay has been authorized successfully.",
+        });
+      } else {
+        // Status is inactive - keep checkbox unchecked
+        setUpiAutopayConsent(false);
+        toast({
+          variant: "info",
+          title: "UPI Autopay Pending",
+          description: "Please complete the UPI Autopay authorization.",
+        });
+      }
+    } catch (error) {
+      console.error("Error checking UPI AutoPay status:", error);
+      // On error, keep checkbox unchecked
+      setUpiAutopayConsent(false);
+      // Try to refresh customer data anyway
+      try {
+        await getCustomer();
+      } catch (e) {
+        console.error("Error refreshing customer data:", e);
+      }
+    }
+  };
+
+  // Handle UPI Autopay checkbox click - calls UPI autoPay create API and opens Razorpay
+  const handleUpiAutopayClick = async (checked: boolean) => {
+    // If already authorized (upiAutoPayStatus true or upiAutopayConsent true), don't allow changes
+    if (reduxCustomer?.data?.upiAutoPayStatus === true || upiAutopayConsent) {
+      return; // Don't allow uncheck once authorized
+    }
+
+    if (!checked) {
+      setUpiAutopayConsent(false);
+      return;
+    }
+
+    // Get application ID and customer ID
+    const applicationId = approvalData?.applicationId || approvalData?._id;
+    const customerId = reduxCustomer?.data?._id || reduxCustomer?.data?.id || approvalData?.customerId;
+
+    if (!applicationId) {
+      toast({
+        variant: "error",
+        title: "Error",
+        description: "Application ID not found. Please try again.",
+      });
+      return;
+    }
+
+    if (!customerId) {
+      toast({
+        variant: "error",
+        title: "Error",
+        description: "Customer ID not found. Please try again.",
+      });
+      return;
+    }
+
+    setMandateLoading(true);
+
+    try {
+      const token = await getToken();
+      if (!token) {
+        toast({
+          variant: "error",
+          title: "Authentication Error",
+          description: "Please login again to continue.",
+        });
+        setMandateLoading(false);
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/upi/autoPay/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          customerId: customerId,
+          applicationId: applicationId
+        })
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // Store mandate data
+        setMandateData(result);
+
+        // Get subscriptionId from response
+        const subscriptionId = result.subscriptionId;
+
+        if (subscriptionId) {
+          // Open Razorpay checkout with subscription
+          const options = {
+            key: "rzp_live_S4tgUkVdbPaFdo",
+            subscription_id: subscriptionId,
+            name: "Quikkred",
+            description: "UPI AutoPay Mandate Approval",
+            theme: { color: "#25B181" },
+            handler: async function (razorpayResponse: any) {
+              // Payment successful - wait 10 seconds for data to update, then call status API
+              console.log("Razorpay payment success:", razorpayResponse);
+              console.log("Waiting 10 seconds before checking status...");
+              setMandateVerifying(true);
+              await new Promise(resolve => setTimeout(resolve, 10000));
+              await checkUpiAutoPayStatus(subscriptionId, token);
+              setMandateVerifying(false);
+              setMandateLoading(false);
+            },
+            modal: {
+              ondismiss: function () {
+                // User closed the modal without completing
+                console.log("Razorpay modal dismissed");
+                setMandateLoading(false);
+                setUpiAutopayConsent(false);
+              }
+            }
+          };
+
+          const rzp = new (window as any).Razorpay(options);
+          rzp.on('payment.failed', function (razorpayResponse: any) {
+            console.error('Payment failed:', razorpayResponse.error);
+            toast({
+              variant: "error",
+              title: "Payment Failed",
+              description: razorpayResponse.error?.description || "UPI Autopay setup failed. Please try again.",
+            });
+            setMandateLoading(false);
+            setUpiAutopayConsent(false);
+          });
+          rzp.open();
+        } else {
+          toast({
+            variant: "error",
+            title: "Failed",
+            description: "Subscription ID not received. Please try again.",
+          });
+          setUpiAutopayConsent(false);
+          setMandateLoading(false);
+        }
+      } else {
+        toast({
+          variant: "error",
+          title: "Failed",
+          description: result.message || "Failed to setup UPI Autopay. Please try again.",
+        });
+        setUpiAutopayConsent(false);
+        setMandateLoading(false);
+      }
+    } catch (error: any) {
+      console.error('UPI Autopay error:', error);
+      toast({
+        variant: "error",
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+      });
+      setUpiAutopayConsent(false);
+      setMandateLoading(false);
     }
   };
 
@@ -4340,7 +4733,8 @@ console.log('Sending OTP with payload:', payload);
         toast({
           variant: "error",
           title: "Cannot Proceed",
-         
+
+
         });
         return;
       }
@@ -4412,7 +4806,7 @@ console.log('Sending OTP with payload:', payload);
           toast({
             variant: "error",
             title: "Cannot Proceed",
-           
+
           });
           return;
         }
@@ -4486,9 +4880,7 @@ console.log('Sending OTP with payload:', payload);
       setApprovalLoading(true);
 
       try {
-        const token = localStorage.getItem('accessToken') ||
-                      localStorage.getItem('token') ||
-                      localStorage.getItem('authToken');
+        const token = await getToken();
 
         // Call both APIs in parallel - save bank details and get BRE data
         const [saveSuccess, breResponse] = await Promise.all([
@@ -4584,11 +4976,8 @@ console.log('Sending OTP with payload:', payload);
       // Final step - submit application (bank details already saved in step 3)
       setLoading(true);
 
-           try {
-        const token = localStorage.getItem('accessToken') ||
-                      localStorage.getItem('token') ||
-                      localStorage.getItem('authToken');
-
+      try {
+        const token = await getToken();
         if (!token) {
           toast({
             variant: "error",
@@ -4935,102 +5324,102 @@ console.log('Sending OTP with payload:', payload);
 
   // Main application form
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5] py-8 px-4">
-      <Toaster />
+    <>
+      <div className="min-h-screen bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5] py-8 px-4">
+        <Toaster />
 
-      {/* Selfie Capture Modal */}
-      <SelfieCapture
-        isOpen={selfieCapture}
-        onClose={handleCloseSelfieModal}
-        onCapture={handleSelfieCapture}
-      />
-      <div className="max-w-3xl mx-auto">
-        {/* Close button - redirect based on login status */}
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={() => {
-              if (user) {
-                router.push('/user'); // Redirect to dashboard if logged in
-              } else {
-                router.push('/login'); // Redirect to login if not logged in
-              }
-            }}
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-white rounded-lg transition-all shadow-sm"
-          >
-            <X className="w-5 h-5" />
-            <span className="text-sm font-medium">Close</span>
-          </button>
-        </div>
+        {/* Selfie Capture Modal */}
+        <SelfieCapture
+          isOpen={selfieCapture}
+          onClose={handleCloseSelfieModal}
+          onCapture={handleSelfieCapture}
+        />
+        <div className="max-w-3xl mx-auto">
+          {/* Close button - redirect based on login status */}
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={() => {
+                if (user) {
+                  router.push('/user'); // Redirect to dashboard if logged in
+                } else {
+                  router.push('/login'); // Redirect to login if not logged in
+                }
+              }}
+              className="flex items-center bg-white gap-2 px-4 py-2 text-gray-600 hover:text-white hover:bg-[#25b181] rounded-lg transition-all shadow-sm"
+            >
+              <X className="w-5 h-5" />
+              <span className="text-sm font-medium">Close</span>
+            </button>
+          </div>
 
-        {/* Header */}
-        <div className="text-center mb-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <motion.div
+              initial={{ opacity: 0.8, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2">Quick Loan Application</h1>
+              <p className="text-sm sm:text-base text-gray-600">Get instant approval in just 3 minutes</p>
+            </motion.div>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-2 gap-2">
+              {[1, 2, 3, 4].map((step) => (
+                <div key={step} className="flex-1">
+                  <div className={`h-2 rounded-full transition-all ${step <= currentStep ? 'bg-[#25B181]' : 'bg-gray-200'
+                    }`} />
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-between text-xs sm:text-sm text-gray-600">
+              <span className={`text-center ${currentStep === 1 ? 'text-[#25B181] font-semibold' : ''}`}>Basic Details</span>
+              <span className={`text-center ${currentStep === 2 ? 'text-[#25B181] font-semibold' : ''}`}>Identity</span>
+              <span className={`text-center ${currentStep === 3 ? 'text-[#25B181] font-semibold' : ''}`}>Bank Details</span>
+              <span className={`text-center ${currentStep === 4 ? 'text-[#25B181] font-semibold' : ''}`}>Approval</span>
+            </div>
+          </div>
+
+          {/* Form Card */}
           <motion.div
-            initial={{ opacity: 0.8, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
+            key={currentStep}
+            initial={{ opacity: 0.9, x: 5 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0.9, x: -5 }}
+            transition={{ duration: 0.15 }}
+            className="bg-white rounded-2xl shadow-xl p-4 sm:p-8"
           >
-            <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2">Quick Loan Application</h1>
-            <p className="text-sm sm:text-base text-gray-600">Get instant approval in just 3 minutes</p>
-          </motion.div>
-        </div>
+            <AnimatePresence mode="wait">
+              {/* Step 1: Basic Details */}
+              {currentStep === 1 && (
+                <motion.div
+                  initial={{ opacity: 0.9 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0.9 }}
+                  transition={{ duration: 0.1 }}
+                  className="space-y-6"
+                >
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Basic Details</h2>
 
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2 gap-2">
-            {[1, 2, 3, 4].map((step) => (
-              <div key={step} className="flex-1">
-                <div className={`h-2 rounded-full transition-all ${
-                  step <= currentStep ? 'bg-[#25B181]' : 'bg-gray-200'
-                }`} />
-              </div>
-            ))}
-          </div>
-          <div className="flex justify-between text-xs sm:text-sm text-gray-600">
-            <span className={`text-center ${currentStep === 1 ? 'text-[#25B181] font-semibold' : ''}`}>Basic Details</span>
-            <span className={`text-center ${currentStep === 2 ? 'text-[#25B181] font-semibold' : ''}`}>Identity</span>
-            <span className={`text-center ${currentStep === 3 ? 'text-[#25B181] font-semibold' : ''}`}>Bank Details</span>
-            <span className={`text-center ${currentStep === 4 ? 'text-[#25B181] font-semibold' : ''}`}>Approval</span>
-          </div>
-        </div>
-
-        {/* Form Card */}
-        <motion.div
-          key={currentStep}
-          initial={{ opacity: 0.9, x: 5 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0.9, x: -5 }}
-          transition={{ duration: 0.15 }}
-          className="bg-white rounded-2xl shadow-xl p-4 sm:p-8"
-        >
-          <AnimatePresence mode="wait">
-            {/* Step 1: Basic Details */}
-            {currentStep === 1 && (
-              <motion.div
-                initial={{ opacity: 0.9 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0.9 }}
-                transition={{ duration: 0.1 }}
-                className="space-y-6"
-              >
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Basic Details</h2>
-
-                {/* Logged in user notice - Show instead of verification */}
-                {user && userDataLoaded && (formData.emailVerified || formData.mobileVerified) ? (
-                  <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
-                    <div className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <h3 className="font-semibold text-green-800">Welcome back, {formData.fullName}!</h3>
-                        <p className="text-sm text-green-700 mt-1">
-                          Your account is already verified. Your details have been pre-filled from your profile. Please review and proceed to the next step.
-                        </p>
+                  {/* Logged in user notice - Show instead of verification */}
+                  {user && userDataLoaded && (formData.emailVerified || formData.mobileVerified) ? (
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h3 className="font-semibold text-green-800">Welcome back, {formData.fullName}!</h3>
+                          <p className="text-sm text-green-700 mt-1">
+                            Your account is already verified. Your details have been pre-filled from your profile. Please review and proceed to the next step.
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ) : (
-                  <>
-                    {/* Verification Method Toggle - Only show for non-logged in users */}
-                    <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                  ) : (
+                    <>
+                      {/* Verification Method Toggle - Only show for non-logged in users */}
+                      {/* <div className="bg-gray-50 rounded-xl p-4 mb-6">
                       <label className="block text-sm font-medium text-gray-700 mb-3">
                         Choose Verification Method *
                       </label>
@@ -5068,359 +5457,253 @@ console.log('Sending OTP with payload:', payload);
                           Verify with Mobile
                         </button>
                       </div>
-                    </div>
-                  </>
-                )}
-
-                {/* Email Verification - Only show for non-logged in users */}
-                {!user && verificationMethod === 'email' && (
-                  <>
-                    <div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Email Address *
-  </label>
-
-  <div className="flex flex-col sm:flex-row gap-2">
-    <input
-      type="email"
-      name="email"
-      value={formData.email}
-      onChange={(e) => {
-        const value = e.target.value;
-
-        setFormData((prev) => ({ ...prev, email: value }));
-
-        // Email validation
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!regex.test(value)) {
-          setFieldErrors((prev) => ({
-            ...prev,
-            email: "Please enter a valid email address",
-          }));
-        } else {
-          setFieldErrors((prev) => ({ ...prev, email: "" }));
-        }
-      }}
-      disabled={formData.emailVerified}
-      className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${
-        fieldErrors.email ? "border-red-500" : "border-gray-300"
-      }`}
-      placeholder="your@email.com"
-    />
-
-    {/* Send/Resend OTP button (only if not verified) */}
-    {!formData.emailVerified && (
-      <button
-        onClick={async () => {
-          const email = formData.email;
-          const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-          // Validate email before sending OTP
-          if (!regex.test(email)) {
-            setFieldErrors((prev) => ({
-              ...prev,
-              email: "Please enter a valid email address",
-            }));
-            return;
-          }
-
-          // Clear error
-          setFieldErrors((prev) => ({ ...prev, email: "" }));
-
-          setLoading(true);
-          try {
-            await sendOTP(); // call your API
-          } finally {
-            setLoading(false);
-          }
-        }}
-        disabled={!formData.email || !!fieldErrors.email || loading || (otpSent && emailOtpTimer > 0)}
-        className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
-      >
-        {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Send OTP"}
-      </button>
-    )}
-
-    {/* If email verified show green check */}
-    {formData.emailVerified && (
-      <CheckCircle className="w-10 h-10 text-green-600" />
-    )}
-  </div>
-
-  {/* Error or helper text */}
-  {fieldErrors.email ? (
-    <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
-  ) : (
-    <p className="mt-1 text-xs text-gray-500">
-      We'll use this email for all loan communication
-    </p>
-  )}
-</div>
-
-
-                    {!formData.emailVerified && otpSent && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Enter OTP *
-                        </label>
-                        <div className="flex flex-col sm:flex-row gap-2">
-                          <input
-                            type="text"
-                            name="otp"
-                            value={formData.otp}
-                            onChange={handleChange}
-                            maxLength={6}
-                            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                            placeholder="Enter 6-digit OTP"
-                          />
-                          <button
-                            onClick={verifyOTP}
-                            disabled={formData.otp.length !== 6 || loading}
-                            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
-                          >
-                            Verify
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {/* Mobile Verification - Only show for non-logged in users */}
-                {!user && verificationMethod === 'mobile' && (
-                  <>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Mobile Number *
-                      </label>
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <input
-                          type="tel"
-                          name="mobile"
-                          value={formData.mobile}
-                          onChange={handleChange}
-                          onBlur={handleMobileBlur}
-                          disabled={formData.mobileVerified}
-                          maxLength={10}
-                          className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${
-                            fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
-                          }`}
-                          placeholder="enter mobile number"
-                        />
-                        {!formData.mobileVerified && (
-                          <button
-                            onClick={sendOTP}
-                            disabled={!formData.mobile || loading || (otpSent && emailOtpTimer > 0)}
-                            className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
-                          >
-                            {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Send OTP"}
-                          </button>
-                        )}
-                        {formData.mobileVerified && (
-                          <CheckCircle className="w-10 h-10 text-green-600" />
-                        )}
-                      </div>
-                      {fieldErrors.mobile && (
-                        <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
-                      )}
-                    </div>
-
-                    {!formData.mobileVerified && otpSent && (
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Enter OTP *
-                        </label>
-                        <div className="flex flex-col sm:flex-row gap-2">
-                          <input
-                            type="text"
-                            name="otp"
-                            value={formData.otp}
-                            onChange={handleChange}
-                            maxLength={6}
-                            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                            placeholder="Enter 6-digit OTP"
-                          />
-                          <button
-                            onClick={verifyOTP}
-                            disabled={formData.otp.length !== 6 || loading}
-                            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
-                          >
-                            Verify
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                      fieldErrors.fullName ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="Enter your full name"
-                  />
-                  {fieldErrors.fullName && (
-                    <p className="mt-1 text-xs text-red-600">{fieldErrors.fullName}</p>
+                    </div> */}
+                    </>
                   )}
-                </div>
 
-                {/* Show additional fields - always show both for logged-in users */}
-                {user ? (
-                  <>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Email Address *
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        disabled={formData.emailVerified}
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                          fieldErrors.email ? 'border-red-500' : 'border-gray-300'
-                        } ${formData.emailVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                        placeholder="your@email.com"
-                      />
-                      {fieldErrors.email ? (
-                        <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
-                      ) : (
-                        <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
-                      )}
-                    </div>
-                    {/* Mobile + DOB side by side for logged-in user */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Email Verification - Only show for non-logged in users */}
+                  {!user && verificationMethod === 'email' && (
+                    <>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Mobile Number *
+                          Email Address *
                         </label>
-                        <input
-                          type="tel"
-                          name="mobile"
-                          value={formData.mobile}
-                          onChange={handleChange}
-                          onBlur={handleMobileBlur}
-                          disabled={formData.mobileVerified}
-                          maxLength={10}
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                            fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
-                          } ${formData.mobileVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                          placeholder="9876543210"
-                        />
-                        {fieldErrors.mobile && (
-                          <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Date of Birth *
-                        </label>
-                        <input
-                          type="date"
-                          name="dob"
-                          value={formData.dob}
-                          onChange={handleChange}
-                          max={(() => {
-                            const date = new Date();
-                            date.setFullYear(date.getFullYear() - 18);
-                            return date.toISOString().split('T')[0];
-                          })()}
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                            fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
-                          }`}
-                          required
-                        />
-                        {fieldErrors.dob && (
-                          <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
-                        )}
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    {verificationMethod === 'email' && (
-                      <>
-                        {/* Mobile + DOB side by side for email verification */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Mobile Number *
-                            </label>
-                            <input
-                              type="tel"
-                              name="mobile"
-                              value={formData.mobile}
-                              onChange={handleChange}
-                              onBlur={handleMobileBlur}
-                              maxLength={10}
-                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                                fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
-                              }`}
-                              placeholder="9876543210"
-                            />
-                            {fieldErrors.mobile && (
-                              <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
-                            )}
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Date of Birth *
-                            </label>
-                            <input
-                              type="date"
-                              name="dob"
-                              value={formData.dob}
-                              onChange={handleChange}
-                              max={(() => {
-                                const date = new Date();
-                                date.setFullYear(date.getFullYear() - 18);
-                                return date.toISOString().split('T')[0];
-                              })()}
-                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                                fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
-                              }`}
-                              required
-                            />
-                            {fieldErrors.dob && (
-                              <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
-                            )}
-                          </div>
-                        </div>
-                      </>
-                    )}
 
-                    {verificationMethod === 'mobile' && (
-                      <>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Email Address *
-                          </label>
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <input
                             type="email"
                             name="email"
                             value={formData.email}
-                            onChange={handleChange}
-                            disabled={formData.emailVerified}
-                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                              fieldErrors.email ? 'border-red-500' : 'border-gray-300'
-                            } ${formData.emailVerified ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                            onChange={(e) => {
+                              const value = e.target.value;
+
+                              setFormData((prev) => ({ ...prev, email: value }));
+
+                              // Email validation
+                              const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                              if (!regex.test(value)) {
+                                setFieldErrors((prev) => ({
+                                  ...prev,
+                                  email: "Please enter a valid email address",
+                                }));
+                              } else {
+                                setFieldErrors((prev) => ({ ...prev, email: "" }));
+                              }
+                            }}
+                            disabled={formData.emailVerified || basicDetailsFilled}
+                            className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${fieldErrors.email ? "border-red-500" : "border-gray-300"
+                              }`}
                             placeholder="your@email.com"
                           />
-                          {fieldErrors.email ? (
-                            <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
-                          ) : (
-                            <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
+
+                          {/* Send/Resend OTP button (only if not verified) */}
+                          {!formData.emailVerified && !basicDetailsFilled && (
+                            <button
+                              onClick={async () => {
+                                const email = formData.email;
+                                const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                                // Validate email before sending OTP
+                                if (!regex.test(email)) {
+                                  setFieldErrors((prev) => ({
+                                    ...prev,
+                                    email: "Please enter a valid email address",
+                                  }));
+                                  return;
+                                }
+
+                                // Clear error
+                                setFieldErrors((prev) => ({ ...prev, email: "" }));
+
+                                setLoading(true);
+                                try {
+                                  await sendOTP(); // call your API
+                                } finally {
+                                  setLoading(false);
+                                }
+                              }}
+                              disabled={!formData.email || !!fieldErrors.email || loading || (otpSent && emailOtpTimer > 0)}
+                              className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
+                            >
+                              {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Verify"}
+                            </button>
+                          )}
+
+                          {/* If email verified show green check */}
+                          {(formData.emailVerified || basicDetailsFilled) && (
+                            <CheckCircle className="w-10 h-10 text-green-600" />
                           )}
                         </div>
-                        {/* DOB for mobile verification */}
+
+                        {/* Error or helper text */}
+                        {fieldErrors.email ? (
+                          <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+                        ) : (
+                          <p className="mt-1 text-xs text-gray-500">
+                            We'll use this email for all loan communication
+                          </p>
+                        )}
+                      </div>
+
+
+                      {!formData.emailVerified && otpSent && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Enter OTP *
+                          </label>
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <input
+                              type="text"
+                              name="otp"
+                              value={formData.otp}
+                              onChange={handleChange}
+                              maxLength={6}
+                              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                              placeholder="Enter 6-digit OTP"
+                            />
+                            <button
+                              onClick={verifyOTP}
+                              disabled={formData.otp.length !== 6 || loading}
+                              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
+                            >
+                              Verify
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* Mobile Verification - Only show for non-logged in users */}
+                  {!user && verificationMethod === 'mobile' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Mobile Number *
+                        </label>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <input
+                            type="tel"
+                            name="mobile"
+                            value={formData.mobile}
+                            onChange={handleChange}
+                            onBlur={handleMobileBlur}
+                            disabled={formData.mobileVerified || basicDetailsFilled}
+                            maxLength={10}
+                            className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
+                              }`}
+                            placeholder="enter mobile number"
+                          />
+                          {!formData.mobileVerified && !basicDetailsFilled && (
+                            <button
+                              onClick={sendOTP}
+                              disabled={!formData.mobile || loading || (otpSent && emailOtpTimer > 0)}
+                              className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
+                            >
+                              {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Verify"}
+                            </button>
+                          )}
+                          {(formData.mobileVerified || basicDetailsFilled) && (
+                            <CheckCircle className="w-10 h-10 text-green-600" />
+                          )}
+                        </div>
+                        {fieldErrors.mobile && (
+                          <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
+                        )}
+                      </div>
+
+                      {!formData.mobileVerified && !basicDetailsFilled && otpSent && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Enter OTP *
+                          </label>
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <input
+                              type="text"
+                              name="otp"
+                              value={formData.otp}
+                              onChange={handleChange}
+                              maxLength={6}
+                              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                              placeholder="Enter 6-digit OTP"
+                            />
+                            <button
+                              onClick={verifyOTP}
+                              disabled={formData.otp.length !== 6 || loading}
+                              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
+                            >
+                              Verify
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      name="fullName"
+                      value={formData.fullName}
+                      onChange={handleChange}
+                      disabled={basicDetailsFilled}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.fullName ? 'border-red-500' : 'border-gray-300'
+                        } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                      placeholder="Enter your full name"
+                    />
+                    {fieldErrors.fullName && (
+                      <p className="mt-1 text-xs text-red-600">{fieldErrors.fullName}</p>
+                    )}
+                  </div>
+
+                  {/* Show additional fields - always show both for logged-in users */}
+                  {user ? (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Email Address *
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleChange}
+                          disabled={formData.emailVerified || basicDetailsFilled}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'
+                            } ${(formData.emailVerified || basicDetailsFilled) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                          placeholder="your@email.com"
+                        />
+                        {fieldErrors.email ? (
+                          <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+                        ) : (
+                          <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
+                        )}
+                      </div>
+                      {/* Mobile + DOB side by side for logged-in user */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Mobile Number *
+                          </label>
+                          <input
+                            type="tel"
+                            name="mobile"
+                            value={formData.mobile}
+                            onChange={handleChange}
+                            onBlur={handleMobileBlur}
+                            disabled={formData.mobileVerified || basicDetailsFilled}
+                            maxLength={10}
+                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
+                              } ${(formData.mobileVerified || basicDetailsFilled) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                            placeholder="9876543210"
+                          />
+                          {fieldErrors.mobile && (
+                            <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
+                          )}
+                        </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
                             Date of Birth *
@@ -5430,983 +5713,1238 @@ console.log('Sending OTP with payload:', payload);
                             name="dob"
                             value={formData.dob}
                             onChange={handleChange}
+                            disabled={basicDetailsFilled}
                             max={(() => {
                               const date = new Date();
                               date.setFullYear(date.getFullYear() - 18);
                               return date.toISOString().split('T')[0];
                             })()}
-                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                              fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
-                            }`}
+                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
+                              } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                             required
                           />
                           {fieldErrors.dob && (
                             <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
                           )}
                         </div>
-                      </>
-                    )}
-                  </>
-                )}
-
-                {/* Employment Details - Added to Step 1 */}
-                <div className="border-t border-gray-200 pt-6 mt-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Employment Details</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Employment Type *
-                      </label>
-                      <select
-                        name="employmentType"
-                        value={formData.employmentType}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                      >
-                        <option value="SALARIED">SALARIED</option>
-                         <option value="SELF-EMPLOYED">SELF-EMPLOYED</option>
-                          <option value="UNEMPLOYED">UNEMPLOYED</option>
-                        <option value="STUDENT">STUDENT</option>
-                         <option value="RETIRED">RETIRED</option>
-                        <option value="OTHER">OTHER</option>
-
-                        {/* "SALARIED", "SELF-EMPLOYED", "UNEMPLOYED", "STUDENT", "RETIRED" */}
-                      </select>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Monthly Income *
-                        </label>
-                        <input
-                          type="text"
-                          name="monthlyIncome"
-                          value={
-                            formData.monthlyIncome
-                              ? parseFloat(formData.monthlyIncome.replace(/,/g, '')).toLocaleString('en-IN')
-                              : ''
-                          }
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/,/g, '');
-                            if (/^\d*$/.test(value)) {
-                              handleChange({
-                                ...e,
-                                target: {
-                                  ...e.target,
-                                  name: 'monthlyIncome',
-                                  value: value
-                                }
-                              });
-                            }
-                          }}
-                          onWheel={(e) => e.currentTarget.blur()}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                          placeholder="₹ 50,000"
-                        />
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          {formData.employmentType === "SALARIED" ? "Company Name" : "Income Source"} *
-                        </label>
-                        <input
-                          type="text"
-                          name="companyName"
-                          value={formData.companyName}
-                          onChange={handleChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                          placeholder={formData.employmentType === "SALARIED" ? "Your Company" : "Your Income Source"}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Loan Amount */}
-                <div className="border-t border-gray-200 pt-6 mt-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Loan Requirement</h3>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      How much loan do you need? *
-                    </label>
-                    <input
-                      type="text"
-                      name="loanAmount"
-                      value={
-                        formData.loanAmount
-                          ? parseFloat(formData.loanAmount.replace(/,/g, "")).toLocaleString("en-IN")
-                          : ""
-                      }
-                      onChange={(e) => {
-                        const raw = e.target.value.replace(/,/g, "");
-                        if (!/^\d*$/.test(raw)) return;
-                        handleChange({
-                          ...e,
-                          target: {
-                            ...e.target,
-                            name: "loanAmount",
-                            value: raw,
-                          },
-                        } as any);
-                      }}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                      placeholder="₹ 50,000"
-                    />
-                    <p className="mt-1 text-xs text-gray-500">Enter the approximate loan amount you require</p>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Step 2: Aadhaar & PAN Verification */}
-            {currentStep === 2 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="space-y-6"
-              >
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Identity Verification</h2>
-
-                <div className="grid grid-cols-1 gap-6">
-
-{/* PAN Verification */}
-                  <div className="bg-gray-50 rounded-xl p-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      PAN Number *
-                    </label>
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <input
-                        type="text"
-                        name="pan"
-                        value={formData.pan}
-                        onChange={(e) => {
-                          const upperValue = e.target.value.toUpperCase();
-                          handleChange({
-                            ...e,
-                            target: { ...e.target, value: upperValue, name: 'pan' }
-                          } as any);
-                          if (panVerified) setPanVerified(false);
-                          if (panError) setPanError("");
-                        }}
-                        disabled={panVerified}
-                        maxLength={10}
-                        className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 uppercase ${
-                          fieldErrors.pan || panError ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="ABCDE1234F"
-                      />
-                      {!panVerified && (
-                        <button
-                          type="button"
-                          onClick={verifyPAN}
-                          disabled={!formData.pan || formData.pan.length !== 10 || panVerifying || panReverifyTimer > 0}
-                          className={`px-6 py-3 text-white rounded-lg whitespace-nowrap ${
-                            panReverifyTimer > 0
-                              ? 'bg-gray-400 cursor-not-allowed'
-                              : 'bg-[#25B181] hover:bg-[#1d8f6a] disabled:opacity-50'
-                          }`}
-                        >
-                          {panVerifying ? "Verifying..." : panReverifyTimer > 0 ? `Verify (${panReverifyTimer}s)` : "Verify"}
-                        </button>
-                      )}
-                      {panVerified && (
-                        <div className="px-6 py-3 bg-green-100 border border-green-300 rounded-lg flex items-center gap-2 whitespace-nowrap">
-                          <CheckCircle className="w-5 h-5 text-green-600" />
-                          <span className="text-sm font-medium text-green-700">Verified</span>
-                        </div>
-                      )}
-                    </div>
-                    {(panError || fieldErrors.pan) && (
-                      <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                        <p className="text-sm text-red-700 flex items-start gap-2">
-                          <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                          <span>{panError || fieldErrors.pan}</span>
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Aadhaar Verification */}
-                  <div className="bg-gray-50 rounded-xl p-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Aadhaar Number *
-                    </label>
-
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <input
-                        type="tel"
-                        name="aadhaar"
-                        value={formData.aadhaar.replace(/(\d{4})(?=\d)/g, '$1 ')}
-                        onChange={(e) => {
-                          const rawValue = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
-                          const syntheticEvent = {
-                            target: {
-                              name: 'aadhaar',
-                              value: rawValue.slice(0, 12)
-                            }
-                          } as React.ChangeEvent<HTMLInputElement>;
-                          handleChange(syntheticEvent);
-                          if (aadhaarVerified || aadhaarOtpSent) {
-                            setAadhaarVerified(false);
-                            setAadhaarOtpSent(false);
-                            setAadhaarOtp("");
-                          }
-                          if (aadhaarError) setAadhaarError("");
-                        }}
-                        disabled={aadhaarVerified || aadhaarOtpSent}
-                        maxLength={14}
-                        className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 disabled:cursor-not-allowed tracking-widest ${
-                          fieldErrors.aadhaar || aadhaarError ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="1234 5678 9012"
-                      />
-                      {!aadhaarVerified && (
-                        <button
-                          type="button"
-                          onClick={sendAadhaarOTP}
-                          disabled={!formData.aadhaar || formData.aadhaar.length !== 12 || aadhaarVerifying || (aadhaarOtpSent && aadhaarOtpTimer > 0)}
-                          className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-                        >
-                          {aadhaarVerifying ? "Sending..." : aadhaarOtpSent ? (aadhaarOtpTimer > 0 ? `Resend (${aadhaarOtpTimer}s)` : "Resend OTP") : "Send OTP"}
-                        </button>
-                      )}
-                      {aadhaarVerified && (
-                        <div className="px-6 py-3 bg-green-100 border border-green-300 rounded-lg flex items-center gap-2 whitespace-nowrap">
-                          <CheckCircle className="w-5 h-5 text-green-600" />
-                          <span className="text-sm font-medium text-green-700">Verified</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Aadhaar OTP Input */}
-                    {aadhaarOtpSent && !aadhaarVerified && (
-                      <div className="mt-3">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Enter Aadhaar OTP *
-                        </label>
-                        <div className="flex flex-col sm:flex-row gap-2">
-                          <input
-                            type="text"
-                            value={aadhaarOtp}
-                            onChange={(e) => setAadhaarOtp(e.target.value.replace(/\D/g, ''))}
-                            maxLength={6}
-                            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                            placeholder="Enter 6-digit OTP"
-                          />
-                          <button
-                            type="button"
-                            onClick={verifyAadhaarOTP}
-                            disabled={aadhaarOtp.length !== 6 || aadhaarVerifying || aadhaarReverifyTimer > 0}
-                            className={`px-6 py-3 text-white rounded-lg whitespace-nowrap ${
-                              aadhaarReverifyTimer > 0
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-green-600 hover:bg-green-700 disabled:opacity-50'
-                            }`}
-                          >
-                            {aadhaarVerifying ? "Verifying..." : aadhaarReverifyTimer > 0 ? `Verify (${aadhaarReverifyTimer}s)` : "Verify OTP"}
-                          </button>
-                        </div>
-                        <p className="mt-2 text-xs text-gray-500">
-                          OTP sent to Aadhaar-linked mobile
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Aadhaar Error Message */}
-                    {(aadhaarError || fieldErrors.aadhaar) && (
-                      <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                        <p className="text-sm text-red-700 flex items-start gap-2">
-                          <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                          <span>{aadhaarError || fieldErrors.aadhaar}</span>
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  
-                </div>
-
-                {/* Selfie Capture - Moved to Step 2 */}
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-                  <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <Camera className="w-5 h-5" />
-                    Capture Live Selfie *
-                  </h3>
-
-                  {!selfieCaptured ? (
-                    <>
-                      <p className="text-sm text-gray-600 mb-4">
-                        Take a clear photo of your face for identity verification
-                      </p>
-                      <button
-                        type="button"
-                        onClick={captureSelfi}
-                        className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg hover:shadow-lg transition-all font-semibold flex items-center justify-center gap-2"
-                      >
-                        <Camera className="w-5 h-5" />
-                        Open Camera & Capture Selfie
-                      </button>
                     </>
                   ) : (
                     <>
-                      <div className="mb-4">
-                        <div className="relative bg-black rounded-lg overflow-hidden aspect-video">
-                          {selfiePreview && (
-                            <img
-                              src={selfiePreview}
-                              alt="Captured selfie preview"
-                              className="w-full h-full object-cover"
-                            />
-                          )}
-                          <div className={`absolute top-2 right-2 ${selfieVerified ? 'bg-green-600' : 'bg-green-500'} text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1`}>
-                            <CheckCircle className="w-4 h-4" />
-                            {selfieVerified ? 'Verified' : 'Captured'}
+                      {verificationMethod === 'email' && (
+                        <>
+                          {/* Mobile + DOB side by side for email verification */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Mobile Number *
+                              </label>
+                              <input
+                                type="tel"
+                                name="mobile"
+                                value={formData.mobile}
+                                onChange={handleChange}
+                                onBlur={handleMobileBlur}
+                                disabled={basicDetailsFilled}
+                                maxLength={10}
+                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
+                                  } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                placeholder="9876543210"
+                              />
+                              {fieldErrors.mobile && (
+                                <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
+                              )}
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Date of Birth *
+                              </label>
+                              <input
+                                type="date"
+                                name="dob"
+                                value={formData.dob}
+                                onChange={handleChange}
+                                disabled={basicDetailsFilled}
+                                max={(() => {
+                                  const date = new Date();
+                                  date.setFullYear(date.getFullYear() - 18);
+                                  return date.toISOString().split('T')[0];
+                                })()}
+                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
+                                  } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                required
+                              />
+                              {fieldErrors.dob && (
+                                <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                      {/* Only show Retake button if selfie is NOT verified */}
-                      {!selfieVerified && (
-                        <button
-                          type="button"
-                          onClick={captureSelfi}
-                          className="w-full border-2 border-blue-500 text-blue-600 py-3 rounded-lg hover:bg-blue-50 transition-all font-semibold flex items-center justify-center gap-2"
-                        >
-                          <Camera className="w-5 h-5" />
-                          Retake Selfie
-                        </button>
+                        </>
                       )}
-                      {selfieVerified && (
-                        <p className="text-center text-sm text-green-600 font-medium">
-                          Your photo has been verified successfully
-                        </p>
+
+                      {verificationMethod === 'mobile' && (
+                        <>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Email Address *
+                            </label>
+                            <input
+                              type="email"
+                              name="email"
+                              value={formData.email}
+                              onChange={handleChange}
+                              disabled={formData.emailVerified || basicDetailsFilled}
+                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'
+                                } ${(formData.emailVerified || basicDetailsFilled) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                              placeholder="your@email.com"
+                            />
+                            {fieldErrors.email ? (
+                              <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+                            ) : (
+                              <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
+                            )}
+                          </div>
+                          {/* DOB for mobile verification */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Date of Birth *
+                            </label>
+                            <input
+                              type="date"
+                              name="dob"
+                              value={formData.dob}
+                              onChange={handleChange}
+                              disabled={basicDetailsFilled}
+                              max={(() => {
+                                const date = new Date();
+                                date.setFullYear(date.getFullYear() - 18);
+                                return date.toISOString().split('T')[0];
+                              })()}
+                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
+                                } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                              required
+                            />
+                            {fieldErrors.dob && (
+                              <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
+                            )}
+                          </div>
+                        </>
                       )}
                     </>
                   )}
-                </div>
 
-              </motion.div>
-            )}
-
-            {/* Step 4: Approval */}
-            {currentStep === 4 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="space-y-6"
-              >
-                {approvalLoading ? (
-                  <div className="flex flex-col items-center justify-center py-12">
-                    <Loader2 className="w-12 h-12 animate-spin text-[#25B181] mb-4" />
-                    <p className="text-gray-600">Checking your eligibility...</p>
-                  </div>
-                ) : approvalData?.status === 'Reject' ? (
-                  /* ========== REJECTED STATUS - Minimal UI ========== */
-                  <div className="text-center py-8">
-                    {/* Rejection Icon */}
-                    <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <X className="w-12 h-12 text-red-500" />
-                    </div>
-
-                    {/* Title */}
-                    <h2 className="text-2xl font-bold text-gray-900 mb-3">Application Not Approved</h2>
-
-                    {/* Message */}
-                    <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                      We regret to inform you that your loan application could not be approved based on our eligibility criteria.
-                    </p>
-
-                    {/* Application Number */}
-                    <div className="bg-gray-50 rounded-lg p-4 mb-6 inline-block">
-                      <p className="text-sm text-gray-500">Application Number</p>
-                      <p className="font-semibold text-gray-800">{approvalData.applicationNumber || 'N/A'}</p>
-                    </div>
-
-                    {/* Countdown */}
-                    <div className="mb-6">
-                      <div className="inline-flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded-full">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span className="text-sm">
-                          Redirecting to home in <span className="font-bold">{rejectionCountdown}</span> seconds
+                  {/* State Selection with Search */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      State *
+                    </label>
+                    <div className="relative state-dropdown-container">
+                      <button
+                        type="button"
+                        onClick={() => !basicDetailsFilled && setStateDropdownOpen(!stateDropdownOpen)}
+                        disabled={basicDetailsFilled}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] text-left flex justify-between items-center ${fieldErrors.state ? 'border-red-500' : 'border-gray-300'
+                          } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                      >
+                        <span className={formData.state ? 'text-gray-900' : 'text-gray-500'}>
+                          {formData.state
+                            ? INDIAN_STATES.find(s => s.value === formData.state)?.label || formData.state
+                            : 'Select State'}
                         </span>
+                        <svg className={`w-5 h-5 text-gray-400 transition-transform ${stateDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+
+                      {stateDropdownOpen && (
+                        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+                          {/* Search Input */}
+                          <div className="p-2 border-b border-gray-200">
+                            <input
+                              type="text"
+                              placeholder="Search state..."
+                              value={stateSearchTerm}
+                              onChange={(e) => setStateSearchTerm(e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#25B181] focus:border-transparent text-sm"
+                              autoFocus
+                            />
+                          </div>
+                          {/* States List */}
+                          <div className="max-h-48 overflow-y-auto">
+                            {INDIAN_STATES
+                              .filter(state =>
+                                state.value === '' ||
+                                state.label.toLowerCase().includes(stateSearchTerm.toLowerCase())
+                              )
+                              .map((state) => (
+                                <div
+                                  key={state.value}
+                                  className={`px-4 py-2 hover:bg-[#25B181] hover:text-white cursor-pointer ${formData.state === state.value ? 'bg-[#25B181] text-white' : ''
+                                    } ${state.value === '' ? 'text-gray-500' : ''}`}
+                                  onClick={() => {
+                                    const selectedState = state.value.toLowerCase();
+                                    setFormData(prev => ({ ...prev, state: selectedState }));
+                                    setStateDropdownOpen(false);
+                                    setStateSearchTerm('');
+
+                                    // Check if state is blacklisted
+                                    if (BLACKLISTED_STATES.includes(selectedState)) {
+                                      setFieldErrors(prev => ({
+                                        ...prev,
+                                        state: "Sorry, our services are currently not available in this state/region."
+                                      }));
+                                    } else {
+                                      setFieldErrors(prev => ({ ...prev, state: '' }));
+                                    }
+                                  }}
+                                >
+                                  {state.label}
+                                </div>
+                              ))}
+                            {INDIAN_STATES.filter(state =>
+                              state.value === '' ||
+                              state.label.toLowerCase().includes(stateSearchTerm.toLowerCase())
+                            ).length === 0 && (
+                                <div className="px-4 py-3 text-gray-500 text-sm text-center">
+                                  No states found
+                                </div>
+                              )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    {fieldErrors.state && (
+                      <p className="mt-1 text-xs text-red-600">{fieldErrors.state}</p>
+                    )}
+                  </div>
+
+                  {/* Employment Details - Added to Step 1 */}
+                  <div className="border-t border-gray-200 pt-6 mt-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Employment Details</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Employment Type *
+                        </label>
+                        <select
+                          name="employmentType"
+                          value={formData.employmentType}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                        >
+                          <option value="SALARIED">SALARIED</option>
+                          <option value="SELF-EMPLOYED">SELF-EMPLOYED</option>
+                          {/* <option value="UNEMPLOYED">UNEMPLOYED</option>
+                        <option value="STUDENT">STUDENT</option>
+                         <option value="RETIRED">RETIRED</option> */}
+                          {/* "SALARIED", "SELF-EMPLOYED", "UNEMPLOYED", "STUDENT", "RETIRED" */}
+                        </select>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Monthly Income *
+                          </label>
+                          <input
+                            type="text"
+                            name="monthlyIncome"
+                            value={
+                              formData.monthlyIncome
+                                ? parseFloat(formData.monthlyIncome.replace(/,/g, '')).toLocaleString('en-IN')
+                                : ''
+                            }
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/,/g, '');
+                              if (/^\d*$/.test(value)) {
+                                handleChange({
+                                  ...e,
+                                  target: {
+                                    ...e.target,
+                                    name: 'monthlyIncome',
+                                    value: value
+                                  }
+                                });
+                              }
+                            }}
+                            onWheel={(e) => e.currentTarget.blur()}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                            placeholder="₹ 50,000"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            {formData.employmentType === "SALARIED" ? "Company Name" : "Income Source"} *
+                          </label>
+                          <input
+                            type="text"
+                            name="companyName"
+                            value={formData.companyName}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                            placeholder={formData.employmentType === "SALARIED" ? "Your Company" : "Your Income Source"}
+                          />
+                        </div>
                       </div>
                     </div>
-
-                    {/* Home Button */}
-                    <button
-                      onClick={() => router.push('/')}
-                      className="bg-gray-800 text-white px-8 py-3 rounded-xl font-semibold hover:bg-gray-900 transition-all"
-                    >
-                      Go to Home
-                    </button>
                   </div>
-                ) : approvalData ? (
-                  /* ========== APPROVED STATUS - Attractive UI ========== */
-                  <>
-                    {/* Congratulations Banner */}
-                    <div className="bg-gradient-to-r from-[#25B181] to-[#1d9e6f] rounded-2xl p-6 text-white text-center relative overflow-hidden">
-                      {/* Decorative elements */}
-                      <div className="absolute top-2 left-4">
-                        <Sparkles className="w-6 h-6 text-yellow-300 opacity-80" />
-                      </div>
-                      <div className="absolute top-4 right-6">
-                        <Sparkles className="w-4 h-4 text-yellow-200 opacity-60" />
-                      </div>
-                      <div className="absolute bottom-3 right-10">
-                        <Sparkles className="w-5 h-5 text-yellow-300 opacity-70" />
-                      </div>
 
-                      <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
-                        <CheckCircle className="w-10 h-10 text-[#25B181]" />
+                  {/* Loan Amount */}
+                  <div className="border-t border-gray-200 pt-6 mt-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Loan Requirement</h3>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        How much loan do you need? *
+                      </label>
+                      <input
+                        type="text"
+                        name="loanAmount"
+                        value={
+                          formData.loanAmount
+                            ? parseFloat(formData.loanAmount.replace(/,/g, "")).toLocaleString("en-IN")
+                            : ""
+                        }
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/,/g, "");
+                          if (!/^\d*$/.test(raw)) return;
+                          handleChange({
+                            ...e,
+                            target: {
+                              ...e.target,
+                              name: "loanAmount",
+                              value: raw,
+                            },
+                          } as any);
+                        }}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${formData.loanAmount && (parseFloat(formData.loanAmount.replace(/,/g, "")) < 5000 || parseFloat(formData.loanAmount.replace(/,/g, "")) > 25000)
+                          ? "border-red-500"
+                          : "border-gray-300"
+                          }`}
+                        placeholder="₹ 2,000 - ₹ 25,000"
+                      />
+                      {formData.loanAmount && parseFloat(formData.loanAmount.replace(/,/g, "")) < 5000 && (
+                        <p className="mt-1 text-xs text-red-500">Minimum loan amount is ₹5,000</p>
+                      )}
+                      {formData.loanAmount && parseFloat(formData.loanAmount.replace(/,/g, "")) > 25000 && (
+                        <p className="mt-1 text-xs text-red-500">Maximum loan amount is ₹25,000</p>
+                      )}
+                      {(!formData.loanAmount || (parseFloat(formData.loanAmount.replace(/,/g, "")) >= 5000 && parseFloat(formData.loanAmount.replace(/,/g, "")) <= 25000)) && (
+                        <p className="mt-1 text-xs text-gray-500">Enter the approximate loan amount you require</p>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Step 2: Aadhaar & PAN Verification */}
+              {currentStep === 2 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-6"
+                >
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Identity Verification</h2>
+
+                  <div className="grid grid-cols-1 gap-6">
+
+                    {/* PAN Verification */}
+                    <div className="bg-gray-50 rounded-xl p-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        PAN Number *
+                      </label>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <input
+                          type="text"
+                          name="pan"
+                          value={formData.pan}
+                          onChange={(e) => {
+                            const upperValue = e.target.value.toUpperCase();
+                            handleChange({
+                              ...e,
+                              target: { ...e.target, value: upperValue, name: 'pan' }
+                            } as any);
+                            if (panVerified) setPanVerified(false);
+                            if (panError) setPanError("");
+                          }}
+                          disabled={panVerified}
+                          maxLength={10}
+                          className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 uppercase ${fieldErrors.pan || panError ? 'border-red-500' : 'border-gray-300'
+                            }`}
+                          placeholder="ABCDE1234F"
+                        />
+                        {!panVerified && (
+                          <button
+                            type="button"
+                            onClick={verifyPAN}
+                            disabled={!formData.pan || formData.pan.length !== 10 || panVerifying || panReverifyTimer > 0}
+                            className={`px-6 py-3 text-white rounded-lg whitespace-nowrap ${panReverifyTimer > 0
+                              ? 'bg-gray-400 cursor-not-allowed'
+                              : 'bg-[#25B181] hover:bg-[#1d8f6a] disabled:opacity-50'
+                              }`}
+                          >
+                            {panVerifying ? "Verifying..." : panReverifyTimer > 0 ? `Verify (${panReverifyTimer}s)` : "Verify"}
+                          </button>
+                        )}
+                        {panVerified && (
+                          <div className="px-6 py-3 bg-green-100 border border-green-300 rounded-lg flex items-center gap-2 whitespace-nowrap">
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                            <span className="text-sm font-medium text-green-700">Verified</span>
+                          </div>
+                        )}
                       </div>
-                      <h2 className="text-2xl font-bold mb-1">Congratulations!</h2>
-                      <p className="text-green-100">Your loan has been approved</p>
-                      {approvalData.applicationNumber && (
-                        <p className="text-sm text-white/80 mt-2">
-                          Application No: {approvalData.applicationNumber}
-                        </p>
+                      {(panError || fieldErrors.pan) && (
+                        <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                          <p className="text-sm text-red-700 flex items-start gap-2">
+                            <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                            <span>{panError || fieldErrors.pan}</span>
+                          </p>
+                        </div>
                       )}
                     </div>
 
-                    {/* Loan Amount Highlight */}
-                    <div className="bg-gradient-to-r from-[#25B181]/10 to-emerald-50 border-2 border-[#25B181] rounded-2xl p-6 text-center">
-                      <p className="text-sm text-[#25B181] font-medium mb-1">Approved Loan Amount</p>
-                      <p className="text-4xl font-bold text-gray-900">
-                        ₹{(approvalData.loanAmount || 0).toLocaleString('en-IN')}
-                      </p>
-                    </div>
-
-                    {/* Loan Details Grid */}
+                    {/* Aadhaar Verification */}
                     <div className="bg-gray-50 rounded-xl p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                        <IndianRupee className="w-5 h-5 text-[#25B181]" />
-                        Loan Details
-                      </h3>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-white rounded-lg p-4 border border-gray-200">
-                          <p className="text-sm text-gray-500 mb-1">Tenure</p>
-                          <p className="text-xl font-bold text-gray-900">
-                            {approvalData.tenure || 0} {approvalData.tenureUnit === 'Days' ? 'Days' : 'Months'}
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Aadhaar Number *
+                      </label>
+
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <input
+                          type="tel"
+                          name="aadhaar"
+                          value={formData.aadhaar.replace(/(\d{4})(?=\d)/g, '$1 ')}
+                          onChange={(e) => {
+                            const rawValue = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
+                            const syntheticEvent = {
+                              target: {
+                                name: 'aadhaar',
+                                value: rawValue.slice(0, 12)
+                              }
+                            } as React.ChangeEvent<HTMLInputElement>;
+                            handleChange(syntheticEvent);
+                            if (aadhaarVerified || aadhaarOtpSent) {
+                              setAadhaarVerified(false);
+                              setAadhaarOtpSent(false);
+                              setAadhaarOtp("");
+                            }
+                            if (aadhaarError) setAadhaarError("");
+                          }}
+                          disabled={aadhaarVerified || aadhaarOtpSent}
+                          maxLength={14}
+                          className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 disabled:cursor-not-allowed tracking-widest ${fieldErrors.aadhaar || aadhaarError ? 'border-red-500' : 'border-gray-300'
+                            }`}
+                          placeholder="1234 5678 9012"
+                        />
+                        {!aadhaarVerified && (
+                          <button
+                            type="button"
+                            onClick={sendAadhaarOTP}
+                            disabled={!formData.aadhaar || formData.aadhaar.length !== 12 || aadhaarVerifying || (aadhaarOtpSent && aadhaarOtpTimer > 0)}
+                            className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                          >
+                            {aadhaarVerifying ? "Sending..." : aadhaarOtpSent ? (aadhaarOtpTimer > 0 ? `Resend (${aadhaarOtpTimer}s)` : "Resend OTP") : "Verify"}
+                          </button>
+                        )}
+                        {aadhaarVerified && (
+                          <div className="px-6 py-3 bg-green-100 border border-green-300 rounded-lg flex items-center gap-2 whitespace-nowrap">
+                            <CheckCircle className="w-5 h-5 text-green-600" />
+                            <span className="text-sm font-medium text-green-700">Verified</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Aadhaar OTP Input */}
+                      {aadhaarOtpSent && !aadhaarVerified && (
+                        <div className="mt-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Enter Aadhaar OTP *
+                          </label>
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <input
+                              type="text"
+                              value={aadhaarOtp}
+                              onChange={(e) => setAadhaarOtp(e.target.value.replace(/\D/g, ''))}
+                              maxLength={6}
+                              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                              placeholder="Enter 6-digit OTP"
+                            />
+                            <button
+                              type="button"
+                              onClick={verifyAadhaarOTP}
+                              disabled={aadhaarOtp.length !== 6 || aadhaarVerifying || aadhaarReverifyTimer > 0}
+                              className={`px-6 py-3 text-white rounded-lg whitespace-nowrap ${aadhaarReverifyTimer > 0
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-green-600 hover:bg-green-700 disabled:opacity-50'
+                                }`}
+                            >
+                              {aadhaarVerifying ? "Verifying..." : aadhaarReverifyTimer > 0 ? `Verify (${aadhaarReverifyTimer}s)` : "Verify OTP"}
+                            </button>
+                          </div>
+                          <p className="mt-2 text-xs text-gray-500">
+                            OTP sent to Aadhaar-linked mobile
                           </p>
                         </div>
-                        <div className="bg-white rounded-lg p-4 border border-gray-200">
-                          <p className="text-sm text-gray-500 mb-1">Interest Rate</p>
-                          <p className="text-xl font-bold text-gray-900">{approvalData.interestRate || 0}%</p>
-                        </div>
-                        <div className="bg-white rounded-lg p-4 border border-gray-200">
-                          <p className="text-sm text-gray-500 mb-1">Interest Amount</p>
-                          <p className="text-xl font-bold text-gray-900">₹{(approvalData.totalInterest || 0).toLocaleString('en-IN')}</p>
-                        </div>
-                        <div className="bg-white rounded-lg p-4 border border-gray-200">
-                          <p className="text-sm text-gray-500 mb-1">Processing Fee</p>
-                          <p className="text-xl font-bold text-gray-900">₹{(approvalData.processingFee || 0).toLocaleString('en-IN')}</p>
-                        </div>
-                        <div className="bg-white rounded-lg p-4 border border-gray-200">
-                          <p className="text-sm text-gray-500 mb-1">GST on Processing Fee</p>
-                          <p className="text-xl font-bold text-gray-900">₹{(approvalData.gstOnProcessingFee || 0).toLocaleString('en-IN')}</p>
-                        </div>
-                        <div className="bg-white rounded-lg p-4 border border-gray-200">
-                          <p className="text-sm text-gray-500 mb-1">Total Repayment</p>
-                          <p className="text-xl font-bold text-gray-900">₹{(approvalData.totalRepayment || 0).toLocaleString('en-IN')}</p>
-                        </div>
-                      </div>
+                      )}
 
-                      {/* Net Disbursal Highlight */}
-                      <div className="mt-4 bg-green-50 border-2 border-green-500 rounded-xl p-4">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <p className="text-sm text-green-600 font-medium">You Will Receive</p>
-                            <p className="text-xs text-green-500">Net Disbursal Amount</p>
-                          </div>
-                          <p className="text-2xl font-bold text-green-600">₹{(approvalData.netDisbursalAmount || 0).toLocaleString('en-IN')}</p>
+                      {/* Aadhaar Error Message */}
+                      {(aadhaarError || fieldErrors.aadhaar) && (
+                        <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                          <p className="text-sm text-red-700 flex items-start gap-2">
+                            <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                            <span>{aadhaarError || fieldErrors.aadhaar}</span>
+                          </p>
                         </div>
-                      </div>
+                      )}
                     </div>
 
-                    {/* User Details Summary */}
-                    <div className="bg-gray-50 rounded-xl p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                        <User className="w-5 h-5 text-[#25B181]" />
-                        Your Details
-                      </h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-200">
-                          <User className="w-5 h-5 text-gray-400" />
-                          <div>
-                            <p className="text-xs text-gray-500">Full Name</p>
-                            <p className="font-medium text-gray-900">{approvalData.fullName || formData.fullName}</p>
+
+                  </div>
+
+                  {/* Selfie Capture - Moved to Step 2 */}
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                    <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      <Camera className="w-5 h-5" />
+                      Capture Live Selfie *
+                    </h3>
+
+                    {!selfieCaptured ? (
+                      <>
+                        <p className="text-sm text-gray-600 mb-4">
+                          Take a clear photo of your face for identity verification
+                        </p>
+                        <button
+                          type="button"
+                          onClick={captureSelfi}
+                          className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg hover:shadow-lg transition-all font-semibold flex items-center justify-center gap-2"
+                        >
+                          <Camera className="w-5 h-5" />
+                          Open Camera & Capture Selfie
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <div className="mb-4">
+                          <div className="relative bg-black rounded-lg overflow-hidden aspect-video">
+                            {selfiePreview && (
+                              <img
+                                src={selfiePreview}
+                                alt="Captured selfie preview"
+                                className="w-full h-full object-cover"
+                              />
+                            )}
+                            <div className={`absolute top-2 right-2 ${selfieVerified ? 'bg-green-600' : 'bg-green-500'} text-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1`}>
+                              <CheckCircle className="w-4 h-4" />
+                              {selfieVerified ? 'Verified' : 'Captured'}
+                            </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-200">
-                          <Phone className="w-5 h-5 text-gray-400" />
-                          <div>
-                            <p className="text-xs text-gray-500">Mobile</p>
-                            <p className="font-medium text-gray-900">{approvalData.mobile || formData.mobile}</p>
-                          </div>
+                        {/* Only show Retake button if selfie is NOT verified */}
+                        {!selfieVerified && (
+                          <button
+                            type="button"
+                            onClick={captureSelfi}
+                            className="w-full border-2 border-blue-500 text-blue-600 py-3 rounded-lg hover:bg-blue-50 transition-all font-semibold flex items-center justify-center gap-2"
+                          >
+                            <Camera className="w-5 h-5" />
+                            Retake Selfie
+                          </button>
+                        )}
+                        {selfieVerified && (
+                          <p className="text-center text-sm text-green-600 font-medium">
+                            Your photo has been verified successfully
+                          </p>
+                        )}
+                      </>
+                    )}
+                  </div>
+
+
+
+                </motion.div>
+              )}
+
+              {/* Step 4: Approval */}
+              {currentStep === 4 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-6"
+                >
+                  {approvalLoading ? (
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <Loader2 className="w-12 h-12 animate-spin text-[#25B181] mb-4" />
+                      <p className="text-gray-600">Checking your eligibility...</p>
+                    </div>
+                  ) : approvalData?.status === 'Reject' ? (
+                    /* ========== REJECTED STATUS - Minimal UI ========== */
+                    <div className="text-center py-8">
+                      {/* Rejection Icon */}
+                      <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <X className="w-12 h-12 text-red-500" />
+                      </div>
+
+                      {/* Title */}
+                      <h2 className="text-2xl font-bold text-gray-900 mb-3">Application Not Approved</h2>
+
+                      {/* Message - Show reason from API if available */}
+                      <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                        {approvalData.reason || 'We regret to inform you that your loan application could not be approved based on our eligibility criteria.'}
+                      </p>
+
+                      {/* Application Number */}
+                      <div className="bg-gray-50 rounded-lg p-4 mb-6 inline-block">
+                        <p className="text-sm text-gray-500">Application Number</p>
+                        <p className="font-semibold text-gray-800">{approvalData.applicationNumber || 'N/A'}</p>
+                      </div>
+
+                      {/* Countdown */}
+                      <div className="mb-6">
+                        <div className="inline-flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded-full">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span className="text-sm">
+                            Redirecting to home in <span className="font-bold">{rejectionCountdown}</span> seconds
+                          </span>
                         </div>
-                        <div className="flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-200">
-                          <Mail className="w-5 h-5 text-gray-400" />
-                          <div>
-                            <p className="text-xs text-gray-500">Email</p>
-                            <p className="font-medium text-gray-900">{approvalData.email || formData.email}</p>
-                          </div>
+                      </div>
+
+                      {/* Home Button */}
+                      <button
+                        onClick={() => router.push('/')}
+                        className="bg-gray-800 text-white px-8 py-3 rounded-xl font-semibold hover:bg-gray-900 transition-all"
+                      >
+                        Go to Home
+                      </button>
+                    </div>
+                  ) : brePolling ? (
+                    /* ========== BRE POLLING - PROCESSING UI ========== */
+                    <div className="text-center py-8">
+                      <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+                      </div>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-3">Processing Your Application</h2>
+                      <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                        {brePollingMessage || 'Please wait while we verify your bank statement...'}
+                      </p>
+                      <div className="bg-gray-50 rounded-lg p-4 mb-6 inline-block">
+                        <p className="text-sm text-gray-500">This may take a few moments</p>
+                        <p className="text-xs text-gray-400 mt-1">Please do not close this window</p>
+                      </div>
+                    </div>
+                  ) : finfactorSuccess ? (
+                    /* ========== FINFACTOR SUCCESS - AUTO PROCESSING UI WITH COUNTDOWN ========== */
+                    <div className="text-center py-8">
+                      <div className="relative w-32 h-32 mx-auto mb-6">
+                        {/* Background circle */}
+                        <svg className="w-32 h-32 transform -rotate-90">
+                          <circle
+                            cx="64"
+                            cy="64"
+                            r="56"
+                            stroke="#E5E7EB"
+                            strokeWidth="8"
+                            fill="none"
+                          />
+                          {/* Animated progress circle */}
+                          <circle
+                            cx="64"
+                            cy="64"
+                            r="56"
+                            stroke="#3B82F6"
+                            strokeWidth="8"
+                            fill="none"
+                            strokeLinecap="round"
+                            strokeDasharray={352}
+                            strokeDashoffset={352 - (352 * processingCountdown) / 60}
+                            className="transition-all duration-1000 ease-linear"
+                          />
+                        </svg>
+                        {/* Countdown number in center */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-3xl font-bold text-blue-600">{processingCountdown}</span>
                         </div>
-                        <div className="flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-200">
-                          <CreditCard className="w-5 h-5 text-gray-400" />
+                      </div>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-3">Processing Your Application</h2>
+                      <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                        Please wait while we verify your bank statement and process your loan application...
+                      </p>
+                      <div className="bg-gray-50 rounded-lg p-4 mb-6 inline-block">
+                        <p className="text-sm text-gray-500">Estimated time: {processingCountdown} seconds</p>
+                        <p className="text-xs text-gray-400 mt-1">Please do not close this window</p>
+                      </div>
+                    </div>
+                  ) : approvalData?.status === 'Proceed to Bank' ? (
+                    /* ========== PROCEED TO BANK STATUS ========== */
+                    <div className="text-center py-8">
+                      <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg className="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                      </div>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-3">Proceed to Bank Verification</h2>
+                      <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                        {approvalData.reason || 'Your application requires additional bank verification to proceed.'}
+                      </p>
+                      <div className="bg-gray-50 rounded-lg p-4 mb-6 inline-block">
+                        <p className="text-sm text-gray-500">Application Number</p>
+                        <p className="font-semibold text-gray-800">{approvalData.applicationNumber || 'N/A'}</p>
+                      </div>
+                      <div className="mt-6">
+                        <button
+                          onClick={async () => {
+                            const token = await getToken();
+                            if (!token) {
+                              toast({ variant: "error", title: "Authentication Error", description: "Please login again to continue." });
+                              return;
+                            }
+                            setPtbLoading(true);
+                            try {
+                              const response = await fetch(`${API_BASE_URL}/api/kyc/finfactorConsentRequest`, {
+                                method: 'GET',
+                                headers: { 'Authorization': `Bearer ${token}` }
+                              });
+                              const result = await response.json();
+                              if (response.ok && result.success) {
+                                toast({ variant: "success", title: "Success", description: result.message || "Bank verification initiated successfully." });
+                                if (result.data?.url) {
+                                  window.location.href = result.data.url;
+                                }
+                              } else {
+                                toast({ variant: "error", title: "Failed", description: result.message || "Failed to initiate bank verification." });
+                              }
+                            } catch (error: any) {
+                              console.error('PTB API error:', error);
+                              toast({ variant: "error", title: "Network Error", description: error?.message || "Unable to connect to server. Please try again." });
+                            } finally {
+                              setPtbLoading(false);
+                            }
+                          }}
+                          disabled={ptbLoading}
+                          className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
+                        >
+                          {ptbLoading ? (<><Loader2 className="w-5 h-5 animate-spin" />Processing...</>) : (<>Proceed to Bank<ArrowRight className="w-5 h-5" /></>)}
+                        </button>
+                      </div>
+                    </div>
+                  ) : approvalData ? (
+                    /* ========== APPROVED STATUS - Show loan details before submit ========== */
+                    <>
+                      {/* Pre-submit Header */}
+                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+                        <div className="flex items-center gap-3">
+                          <CheckCircle className="w-6 h-6 text-blue-600" />
                           <div>
-                            <p className="text-xs text-gray-500">PAN</p>
-                            <p className="font-medium text-gray-900">{approvalData.pan || formData.pan}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-200">
-                          <FileText className="w-5 h-5 text-gray-400" />
-                          <div>
-                            <p className="text-xs text-gray-500">Aadhaar</p>
-                            <p className="font-medium text-gray-900">
-                              {approvalData.aadhaar || (formData.aadhaar ? `XXXX-XXXX-${formData.aadhaar.slice(-4)}` : '-')}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-200">
-                          <IndianRupee className="w-5 h-5 text-gray-400" />
-                          <div>
-                            <p className="text-xs text-gray-500">Monthly Income</p>
-                            <p className="font-medium text-gray-900">
-                              ₹{(approvalData.monthlyIncome || parseFloat(formData.monthlyIncome) || 0).toLocaleString('en-IN')}
-                            </p>
+                            <h3 className="font-semibold text-blue-800">Review Your Loan Details</h3>
+                            <p className="text-sm text-blue-600">Please review the details below and click &quot;Submit Application&quot; to proceed.</p>
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Confirm Button */}
-                    <div className="bg-gray-50 rounded-xl p-6">
-                      {dataAgreementChecked ? (
-                        <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-lg p-4">
-                          <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0" />
-                          <div>
-                            <h4 className="font-semibold text-green-800">Application Data Confirmed</h4>
-                            <p className="text-sm text-green-700 mt-1">
-                              You have reviewed and confirmed your application data. Click &quot;Next&quot; to proceed to bank details.
+                      {/* Loan Details Grid */}
+                      <div className="bg-gray-50 rounded-xl p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                          <IndianRupee className="w-5 h-5 text-[#25B181]" />
+                          Loan Details
+                          {calculatedLoanDetails && (
+                            <span className="text-xs font-normal text-gray-500 ml-2">(Based on your selected amount)</span>
+                          )}
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="bg-white rounded-lg p-4 border border-gray-200">
+                            <p className="text-sm text-gray-500 mb-1">Your Loan Amount</p>
+                            <p className="text-xl font-bold text-[#25B181]">
+                              ₹{((calculatedLoanDetails?.loanAmount || userDesiredAmount || approvalData.loanAmount) || 0).toLocaleString('en-IN')}
                             </p>
                           </div>
-                        </div>
-                      ) : eSignVerified ? (
-                        <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-lg p-4">
-                          <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <h4 className="font-semibold text-green-800">e-Sign Completed</h4>
-                            <p className="text-sm text-green-700 mt-1">
-                              Your document has been signed successfully. You can proceed with the application.
+                          <div className="bg-white rounded-lg p-4 border border-gray-200">
+                            <p className="text-sm text-gray-500 mb-1">Tenure</p>
+                            <p className="text-xl font-bold text-gray-900">
+                              {(calculatedLoanDetails?.tenure || approvalData.tenure) || 0} {(calculatedLoanDetails?.tenureUnit || approvalData.tenureUnit) === 'Days' ? 'Days' : 'Months'}
                             </p>
                           </div>
+                          <div className="bg-white rounded-lg p-4 border border-gray-200">
+                            <p className="text-sm text-gray-500 mb-1">Interest Rate</p>
+                            <p className="text-xl font-bold text-gray-900">{(calculatedLoanDetails?.interestRate || approvalData.interestRate) || 0}%</p>
+                          </div>
+                          <div className="bg-white rounded-lg p-4 border border-gray-200">
+                            <p className="text-sm text-gray-500 mb-1">Interest Amount</p>
+                            <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.totalInterest ?? approvalData.totalInterest) || 0).toLocaleString('en-IN')}</p>
+                          </div>
+                          <div className="bg-white rounded-lg p-4 border border-gray-200">
+                            <p className="text-sm text-gray-500 mb-1">Processing Fee</p>
+                            <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.processingFee ?? approvalData.processingFee) || 0).toLocaleString('en-IN')}</p>
+                          </div>
+                          <div className="bg-white rounded-lg p-4 border border-gray-200">
+                            <p className="text-sm text-gray-500 mb-1">GST on Processing Fee</p>
+                            <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.gstOnProcessingFee ?? approvalData.gstOnProcessingFee) || 0).toLocaleString('en-IN')}</p>
+                          </div>
+                          <div className="bg-white rounded-lg p-4 border border-gray-200 col-span-2">
+                            <p className="text-sm text-gray-500 mb-1">Total Repayment</p>
+                            <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.totalRepayment ?? approvalData.totalRepayment) || 0).toLocaleString('en-IN')}</p>
+                          </div>
                         </div>
-                      ) : (
-                        <div className="space-y-4">
-                          <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+
+                        {/* Net Disbursal Highlight */}
+                        <div className="mt-4 bg-green-50 border-2 border-green-500 rounded-xl p-4">
+                          <div className="flex justify-between items-center">
                             <div>
-                              <h4 className="font-semibold text-blue-800">Review Required</h4>
-                              <p className="text-sm text-blue-700 mt-1">
-                                Please review your details above and click the &quot;Confirm Details&quot; button to proceed.
+                              <p className="text-sm text-green-600 font-medium">You Will Receive</p>
+                              <p className="text-xs text-green-500">Net Disbursal Amount</p>
+                            </div>
+                            <p className="text-2xl font-bold text-green-600">₹{((calculatedLoanDetails?.netDisbursalAmount ?? approvalData.netDisbursalAmount) || 0).toLocaleString('en-IN')}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* User Details Summary */}
+                      <div className="bg-gray-50 rounded-xl p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                          <User className="w-5 h-5 text-[#25B181]" />
+                          Your Details
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-200">
+                            <User className="w-5 h-5 text-gray-400" />
+                            <div>
+                              <p className="text-xs text-gray-500">Full Name</p>
+                              <p className="font-medium text-gray-900">{approvalData.fullName || formData.fullName}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-200">
+                            <Phone className="w-5 h-5 text-gray-400" />
+                            <div>
+                              <p className="text-xs text-gray-500">Mobile</p>
+                              <p className="font-medium text-gray-900">{approvalData.mobile || formData.mobile}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-200">
+                            <Mail className="w-5 h-5 text-gray-400" />
+                            <div>
+                              <p className="text-xs text-gray-500">Email</p>
+                              <p className="font-medium text-gray-900">{approvalData.email || formData.email}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-200">
+                            <CreditCard className="w-5 h-5 text-gray-400" />
+                            <div>
+                              <p className="text-xs text-gray-500">PAN</p>
+                              <p className="font-medium text-gray-900">{approvalData.pan || formData.pan}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-200">
+                            <FileText className="w-5 h-5 text-gray-400" />
+                            <div>
+                              <p className="text-xs text-gray-500">Aadhaar</p>
+                              <p className="font-medium text-gray-900">
+                                {approvalData.aadhaar || (formData.aadhaar ? `XXXX-XXXX-${formData.aadhaar.slice(-4)}` : '-')}
                               </p>
                             </div>
                           </div>
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              // Get auth token
-                              const token = localStorage.getItem('accessToken') ||
-                                            localStorage.getItem('token') ||
-                                            localStorage.getItem('authToken');
-
-                              if (!token) {
-                                toast({
-                                  title: "Authentication Error",
-                                  description: "Please login to continue",
-                                  variant: "error"
-                                });
-                                return;
-                              }
-
-                              // Initialize e-Sign verification
-                              try {
-                                const eSignResponse = await fetch('https://beta.quikkred.in/api/kyc/eSign/initialize', {
-                                  method: 'GET',
-                                  headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${token}`
-                                  }
-                                });
-
-                                const eSignResult = await eSignResponse.json();
-
-                                if (!eSignResponse.ok || !eSignResult.success) {
-                                  toast({
-                                    title: "e-Sign Initialization Failed",
-                                    description: eSignResult.message || "Failed to initialize e-sign verification",
-                                    variant: "error"
-                                  });
-                                  return;
-                                }
-                              } catch (error) {
-                                console.error('Error initializing e-sign:', error);
-                                toast({
-                                  title: "e-Sign Error",
-                                  description: "Failed to initialize e-sign verification. Please try again.",
-                                  variant: "error"
-                                });
-                                return;
-                              }
-
-                              // Fetch customer data from API
-                              let customerData: any = {};
-
-                              try {
-                                const response = await fetch('https://beta.quikkred.in/api/customer/get', {
-                                  method: 'GET',
-                                  headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${token}`
-                                  }
-                                });
-
-                                const result = await response.json();
-
-                                if (response.ok && result.success && result.data) {
-                                  customerData = result.data;
-                                }
-                              } catch (error) {
-                                console.error('Error fetching customer data:', error);
-                              }
-
-                              // Combine API data with form data
-                              const agreementData = {
-                                fullName: formData.fullName || customerData.fullName || '',
-                                email: formData.email || customerData.email || '',
-                                mobile: formData.mobile || customerData.mobile || '',
-                                dob: formData.dob || customerData.dateOfBirth || '',
-                                pan: formData.pan || customerData.panCard || '',
-                                aadhaar: formData.aadhaar || customerData.aadhaarNumber || '',
-                                address: customerData.currentAddress?.fullAddress || aadhaarAddress?.fullAddress || '',
-                                landmark: customerData.currentAddress?.landmark || '',
-                                city: customerData.currentAddress?.city || aadhaarAddress?.city || '',
-                                state: customerData.currentAddress?.state || aadhaarAddress?.state || '',
-                                pincode: customerData.currentAddress?.pincode || aadhaarAddress?.pincode || '',
-                                employmentType: formData.employmentType || customerData.employmentType || '',
-                                monthlyIncome: formData.monthlyIncome || customerData.monthlyIncome || '',
-                                companyName: formData.companyName || customerData.companyName || '',
-                                designation: customerData.designation || '',
-                                workExperience: customerData.workExperience || '',
-                                salaryDate: customerData.salaryDate || '',
-                                bankName: formData.bankName || customerData.banks?.[0]?.bankName || '',
-                                accountNumber: formData.accountNumber || customerData.banks?.[0]?.accountNumber || '',
-                                ifscCode: formData.ifsc || customerData.banks?.[0]?.ifscCode || '',
-                                accountHolderName: formData.accountHolderName || customerData.banks?.[0]?.accountHolderName || formData.fullName || customerData.fullName || '',
-                                // Loan Details - use BRE API response (approvalData) first
-                                loanAmount: approvalData?.loanAmount || formData.loanAmount || '',
-                                tenure: approvalData?.tenure || formData.tenure || '',
-                                tenureUnit: approvalData?.tenureUnit || formData.tenureUnit || 'Days',
-                                productName: selectedProduct?.productName || '',
-                                interestRate: approvalData?.interestRate || selectedProduct?.dailyInterestRate || '',
-                                processingFee: approvalData?.processingFee || selectedProduct?.processingFee || '',
-                                totalInterest: approvalData?.totalInterest || '',
-                                gstOnProcessingFee: approvalData?.gstOnProcessingFee || '',
-                                totalAmount: approvalData?.totalRepayment || emiCalculation?.totalAmount || '',
-                                disbursementAmount: approvalData?.netDisbursalAmount || (emiCalculation ? (emiCalculation.principal - emiCalculation.totalProcessingFee) : ''),
-                                applicationNumber: approvalData?.applicationNumber || customerData.applicationNumber || '',
-                              };
-
-                              // Generate HTML and open in new tab
-                              const htmlContent = generateAgreementHTML(agreementData);
-                              const blob = new Blob([htmlContent], { type: 'text/html' });
-                              const url = URL.createObjectURL(blob);
-                              window.open(url, '_blank');
-                              localStorage.removeItem('dataAgreementApproved');
-                            }}
-                            className="w-full px-6 py-4 bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white rounded-lg hover:shadow-lg font-semibold transition-all flex items-center justify-center gap-2"
-                          >
-                            <FileText className="w-5 h-5" />
-                            Confirm Details
-                          </button>
+                          <div className="flex items-center gap-3 bg-white rounded-lg p-3 border border-gray-200">
+                            <IndianRupee className="w-5 h-5 text-gray-400" />
+                            <div>
+                              <p className="text-xs text-gray-500">Monthly Income</p>
+                              <p className="font-medium text-gray-900">
+                                ₹{(approvalData.monthlyIncome || parseFloat(formData.monthlyIncome) || 0).toLocaleString('en-IN')}
+                              </p>
+                            </div>
+                          </div>
                         </div>
+                      </div>
+
+                    </>
+                  ) : (
+                    <div className="text-center py-12">
+                      <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+                      <p className="text-gray-600">Unable to fetch approval data. Please try again.</p>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {/* Step 3: Bank Details & Consent */}
+              {currentStep === 3 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="space-y-6"
+                >
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Bank Details & Consent</h2>
+
+                  {/* Bank Details Section */}
+                  <div className="bg-gray-50 rounded-xl p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900">Bank Details</h3>
+                      {bankVerified && (
+                        <span className="flex items-center gap-1 text-green-600 text-sm font-medium">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          Verified
+                        </span>
                       )}
                     </div>
-                  </>
-                ) : (
-                  <div className="text-center py-12">
-                    <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
-                    <p className="text-gray-600">Unable to fetch approval data. Please try again.</p>
-                  </div>
-                )}
-              </motion.div>
-            )}
+                    <div className="space-y-4">
+                      {/* Row 1: IFSC Code and Bank Name */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* IFSC Code - Primary input for auto-detection */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            IFSC Code *
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              name="ifsc"
+                              value={formData.ifsc}
+                              onChange={(e) => handleIFSCChange(e.target.value)}
+                              disabled={bankVerified}
+                              maxLength={11}
+                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] pr-12 ${fieldErrors.ifsc || ifscLookupError
+                                ? 'border-red-500'
+                                : ifscDetectedBank
+                                  ? 'bg-green-50 border-green-300'
+                                  : bankVerified
+                                    ? 'bg-green-50 border-green-300'
+                                    : 'border-gray-300'
+                                }`}
+                              placeholder="Enter IFSC (e.g., SBIN0001234)"
+                              style={{ textTransform: 'uppercase' }}
+                            />
+                            {/* Loading/Success indicator inside input */}
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                              {ifscLookupLoading ? (
+                                <Loader2 className="w-5 h-5 text-[#25B181] animate-spin" />
+                              ) : ifscDetectedBank ? (
+                                <CheckCircle className="w-5 h-5 text-green-500" />
+                              ) : formData.ifsc.length === 11 && ifscLookupError ? (
+                                <AlertCircle className="w-5 h-5 text-red-500" />
+                              ) : null}
+                            </div>
+                          </div>
+                          {fieldErrors.ifsc ? (
+                            <p className="mt-1 text-xs text-red-600">{fieldErrors.ifsc}</p>
+                          ) : ifscLookupError ? (
+                            <p className="mt-1 text-xs text-red-600">{ifscLookupError}</p>
+                          ) : ifscDetectedBank && ifscBranchName ? (
+                            <p className="mt-1 text-xs text-green-600">Branch: {ifscBranchName}</p>
+                          ) : (
+                            <p className="mt-1 text-xs text-gray-500">Enter 11-character IFSC to auto-detect bank</p>
+                          )}
+                        </div>
 
-            {/* Step 3: Bank Details & Consent */}
-            {currentStep === 3 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="space-y-6"
-              >
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Bank Details & Consent</h2>
-
-                {/* Bank Details Section */}
-                <div className="bg-gray-50 rounded-xl p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Bank Details</h3>
-                    {bankVerified && (
-                      <span className="flex items-center gap-1 text-green-600 text-sm font-medium">
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        Verified
-                      </span>
-                    )}
-                  </div>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Bank Name *
-                        </label>
-                        <select
-                          name="bankName"
-                          value={formData.bankName}
-                          onChange={(e) => {
-                            handleChange(e);
-                            setBankVerified(false); // Reset verification on change
-                          }}
-                          disabled={bankVerified}
-                          className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] ${bankVerified ? 'bg-green-50 border-green-300' : ''}`}
-                        >
-                          <option value="">Select Bank</option>
-                          <option value="SBI">State Bank of India</option>
-                          <option value="HDFC">HDFC Bank</option>
-                          <option value="ICICI">ICICI Bank</option>
-                          <option value="AXIS">Axis Bank</option>
-                          <option value="PNB">Punjab National Bank</option>
-                          <option value="BOB">Bank of Baroda</option>
-                          <option value="KOTAK">Kotak Mahindra Bank</option>
-                          <option value="IDBI">IDBI Bank</option>
-                          <option value="YES">Yes Bank</option>
-                          <option value="INDUSIND">IndusInd Bank</option>
-                          <option value="BOI">Bank of India</option>
-                          <option value="CANARA">Canara Bank</option>
-                          <option value="UNION">Union Bank of India</option>
-                          <option value="OTHER">Other</option>
-                        </select>
+                        {/* Bank Name - Auto-filled from IFSC lookup */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Bank Name *
+                            {ifscDetectedBank && (
+                              <span className="ml-2 text-xs text-green-600 font-normal">(Auto-detected)</span>
+                            )}
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              name="bankName"
+                              value={formData.bankName}
+                              readOnly={!!ifscDetectedBank}
+                              disabled={bankVerified || !!ifscDetectedBank}
+                              className={`w-full px-4 py-3 border rounded-lg ${ifscDetectedBank || bankVerified
+                                ? 'bg-green-50 border-green-300 cursor-not-allowed'
+                                : 'border-gray-300 focus:ring-2 focus:ring-[#25B181]'
+                                }`}
+                              placeholder={ifscLookupLoading ? "Detecting bank..." : "Enter IFSC to auto-detect"}
+                            />
+                            {ifscDetectedBank && (
+                              <CheckCircle className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500" />
+                            )}
+                          </div>
+                          {!ifscDetectedBank && !ifscLookupLoading && formData.ifsc.length < 11 && (
+                            <p className="mt-1 text-xs text-gray-500">Bank will be auto-filled from IFSC</p>
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Account Holder Name *
-                        </label>
-                        <input
-                          type="text"
-                          name="accountHolderName"
-                          value={formData.accountHolderName}
-                          onChange={(e) => {
-                            // Only allow alphabets and spaces
-                            const value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
-                            const syntheticEvent = {
-                              target: {
-                                name: 'accountHolderName',
-                                value: value
-                              }
-                            } as React.ChangeEvent<HTMLInputElement>;
-                            handleChange(syntheticEvent);
-                            setBankVerified(false); // Reset verification on change
-                          }}
-                          disabled={bankVerified}
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                            fieldErrors.accountHolderName ? 'border-red-500' : bankVerified ? 'bg-green-50 border-green-300' : 'border-gray-300'
-                          }`}
-                          placeholder="Enter account holder name"
-                        />
-                        {fieldErrors.accountHolderName && (
-                          <p className="mt-1 text-xs text-red-600">{fieldErrors.accountHolderName}</p>
+
+                      {/* Row 2: Account Holder Name and Account Number */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Account Holder Name *
+                          </label>
+                          <input
+                            type="text"
+                            name="accountHolderName"
+                            value={formData.accountHolderName}
+                            onChange={(e) => {
+                              // Only allow alphabets and spaces
+                              const value = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                              const syntheticEvent = {
+                                target: {
+                                  name: 'accountHolderName',
+                                  value: value
+                                }
+                              } as React.ChangeEvent<HTMLInputElement>;
+                              handleChange(syntheticEvent);
+                              setBankVerified(false); // Reset verification on change
+                            }}
+                            disabled={bankVerified}
+                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.accountHolderName ? 'border-red-500' : bankVerified ? 'bg-green-50 border-green-300' : 'border-gray-300'
+                              }`}
+                            placeholder="Enter account holder name"
+                          />
+                          {fieldErrors.accountHolderName && (
+                            <p className="mt-1 text-xs text-red-600">{fieldErrors.accountHolderName}</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Account Number *
+                          </label>
+                          <input
+                            type="tel"
+                            name="accountNumber"
+                            value={formData.accountNumber}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, '').slice(0, 18);
+                              const syntheticEvent = {
+                                target: {
+                                  name: 'accountNumber',
+                                  value: value
+                                }
+                              } as React.ChangeEvent<HTMLInputElement>;
+                              handleChange(syntheticEvent);
+                              setBankVerified(false); // Reset verification on change
+                            }}
+                            disabled={bankVerified}
+                            maxLength={18}
+                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.accountNumber ? 'border-red-500' : bankVerified ? 'bg-green-50 border-green-300' : 'border-gray-300'
+                              }`}
+                            placeholder="9-18 digit account number"
+                          />
+                          {fieldErrors.accountNumber ? (
+                            <p className="mt-1 text-xs text-red-600">{fieldErrors.accountNumber}</p>
+                          ) : (
+                            <p className="mt-1 text-xs text-gray-500">Enter 9-18 digit bank account number</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Verify Bank Button */}
+                      <div className="pt-2">
+                        {bankVerifyError && (
+                          <p className="text-sm text-red-600 mb-2">{bankVerifyError}</p>
                         )}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Account Number *
-                        </label>
-                        <input
-                          type="tel"
-                          name="accountNumber"
-                          value={formData.accountNumber}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, '').slice(0, 18);
-                            const syntheticEvent = {
-                              target: {
-                                name: 'accountNumber',
-                                value: value
-                              }
-                            } as React.ChangeEvent<HTMLInputElement>;
-                            handleChange(syntheticEvent);
-                            setBankVerified(false); // Reset verification on change
-                          }}
-                          disabled={bankVerified}
-                          maxLength={18}
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                            fieldErrors.accountNumber ? 'border-red-500' : bankVerified ? 'bg-green-50 border-green-300' : 'border-gray-300'
-                          }`}
-                          placeholder="9-18 digit account number"
-                        />
-                        {fieldErrors.accountNumber ? (
-                          <p className="mt-1 text-xs text-red-600">{fieldErrors.accountNumber}</p>
-                        ) : (
-                          <p className="mt-1 text-xs text-gray-500">Enter 9-18 digit bank account number</p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          IFSC Code *
-                        </label>
-                        <input
-                          type="text"
-                          name="ifsc"
-                          value={formData.ifsc}
-                          onChange={(e) => {
-                            const value = e.target.value.toUpperCase().slice(0, 11);
-                            const syntheticEvent = {
-                              target: {
-                                name: 'ifsc',
-                                value: value
-                              }
-                            } as React.ChangeEvent<HTMLInputElement>;
-                            handleChange(syntheticEvent);
-                            setBankVerified(false); // Reset verification on change
-                          }}
-                          disabled={bankVerified}
-                          pattern="[A-Z]{4}0[A-Z0-9]{6}"
-                          maxLength={11}
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                            fieldErrors.ifsc ? 'border-red-500' : bankVerified ? 'bg-green-50 border-green-300' : 'border-gray-300'
-                          }`}
-                          placeholder="SBIN0001234"
-                          style={{ textTransform: 'uppercase' }}
-                        />
-                        {fieldErrors.ifsc ? (
-                          <p className="mt-1 text-xs text-red-600">{fieldErrors.ifsc}</p>
-                        ) : (
-                          <p className="mt-1 text-xs text-gray-500">11-character bank code (e.g., SBIN0001234)</p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Verify Bank Button */}
-                    <div className="pt-2">
-                      {bankVerifyError && (
-                        <p className="text-sm text-red-600 mb-2">{bankVerifyError}</p>
-                      )}
-                      <button
-                        type="button"
-                        onClick={verifyBankAccount}
-                        disabled={bankVerifying || bankVerified || !formData.bankName || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc}
-                        className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all ${
-                          bankVerified
+                        <button
+                          type="button"
+                          onClick={verifyBankAccount}
+                          disabled={bankVerifying || bankVerified || !formData.bankName || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc || ifscLookupLoading}
+                          className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all ${bankVerified
                             ? 'bg-green-100 text-green-700 border border-green-300 cursor-not-allowed'
                             : bankVerifying
-                            ? 'bg-gray-300 text-gray-600 cursor-wait'
-                            : !formData.bankName || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc
-                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                            : 'bg-[#25B181] text-white hover:bg-[#1d9469]'
-                        }`}
-                      >
-                        {bankVerifying ? (
-                          <span className="flex items-center gap-2">
-                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                            </svg>
-                            Verifying...
-                          </span>
-                        ) : bankVerified ? (
-                          <span className="flex items-center gap-2">
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                            Bank Verified
-                          </span>
-                        ) : (
-                          'Verify Bank Account'
-                        )}
-                      </button>
-                      <p className="mt-2 text-xs text-gray-500">
-                        Click to verify your bank account details. This helps ensure smooth loan disbursement.
-                      </p>
+                              ? 'bg-gray-300 text-gray-600 cursor-wait'
+                              : !formData.bankName || !formData.accountHolderName || !formData.accountNumber || !formData.ifsc || ifscLookupLoading
+                                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                : 'bg-[#25B181] text-white hover:bg-[#1d9469]'
+                            }`}
+                        >
+                          {bankVerifying ? (
+                            <span className="flex items-center gap-2">
+                              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                              </svg>
+                              Verifying...
+                            </span>
+                          ) : bankVerified ? (
+                            <span className="flex items-center gap-2">
+                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                              Bank Verified
+                            </span>
+                          ) : (
+                            'Verify Bank Account'
+                          )}
+                        </button>
+                        <p className="mt-2 text-xs text-gray-500">
+                          Click to verify your bank account details. This helps ensure smooth loan disbursement.
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <div className="flex items-start gap-3">
-                    <Shield className="w-5 h-5 text-green-600 mt-0.5" />
-                    <div className="text-sm text-green-800">
-                      <p className="font-semibold mb-1">Your data is secure</p>
-                      <p>256-bit encryption • RBI guidelines compliant • No hidden charges</p>
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <Shield className="w-5 h-5 text-green-600 mt-0.5" />
+                      <div className="text-sm text-green-800">
+                        <p className="font-semibold mb-1">Your data is secure</p>
+                        <p>256-bit encryption • RBI guidelines compliant • No hidden charges</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Navigation Buttons - Hide when status is Reject */}
-          {!(currentStep === 4 && approvalData?.status === 'Reject') && (
-            <div className="flex gap-4 mt-8">
-              {currentStep > 1 && (
-                <button
-                  onClick={handlePrevious}
-                  className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold"
-                >
-                  Previous
-                </button>
+                </motion.div>
               )}
-              <button
-                onClick={handleNext}
-                disabled={loading || (currentStep === 1 && !isStep1Valid())}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white rounded-lg hover:shadow-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Processing...
-                  </>
+            </AnimatePresence>
+
+            {/* UPI Autopay Consent - Show only on step 4 when approval data is ready */}
+            {currentStep === 4 && approvalData && approvalData.status !== 'Reject' && approvalData.status !== 'Proceed to Bank' && !finfactorSuccess && (
+              <div className={`mt-6 rounded-xl p-5 ${(reduxCustomer?.data?.upiAutoPayStatus === true || upiAutopayConsent) ? 'bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200' : 'bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200'}`}>
+                {/* Success UI when UPI Autopay is authorized */}
+                {(reduxCustomer?.data?.upiAutoPayStatus === true || upiAutopayConsent) ? (
+                  <div className="flex items-center gap-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                        <CheckCircle className="w-7 h-7 text-green-600" />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-semibold text-green-800 text-lg">UPI Autopay Authorized</span>
+                        <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <p className="text-sm text-green-700">
+                        Your UPI Autopay has been set up successfully. EMI will be automatically debited on the due date.
+                      </p>
+                      <div className="mt-2 flex items-center gap-4 text-xs text-green-600">
+                        <span className="flex items-center gap-1">
+                          <Shield className="w-3 h-3" />
+                          RBI Compliant
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          Secure & Active
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 ) : (
                   <>
-                    {currentStep === 4 ? "Submit Application" : "Next"}
-                    {currentStep < 4 && <ArrowRight className="w-5 h-5" />}
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 mt-1">
+                        {mandateLoading ? (
+                          <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <input
+                            type="checkbox"
+                            id="upiAutopayConsent"
+                            checked={upiAutopayConsent}
+                            onChange={(e) => handleUpiAutopayClick(e.target.checked)}
+                            disabled={mandateLoading}
+                            className="w-5 h-5 text-blue-600 border-2 border-blue-300 rounded focus:ring-blue-500 focus:ring-2 disabled:opacity-50 cursor-pointer"
+                          />
+                        )}
+                      </div>
+                      <label htmlFor="upiAutopayConsent" className="cursor-pointer">
+                        <div className="flex items-center gap-2 mb-2">
+                          <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                          </svg>
+                          <span className="font-semibold text-gray-900">UPI Autopay Authorization</span>
+                        </div>
+                        <p className="text-sm text-gray-600 leading-relaxed">
+                          I authorize Quikkred to set up UPI Autopay for automatic EMI deductions from my registered bank account.
+                          I understand that EMI amounts will be automatically debited on the due date as per the loan repayment schedule.
+                        </p>
+                        <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
+                          <span className="flex items-center gap-1">
+                            <Shield className="w-3 h-3" />
+                            RBI Compliant
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                            Secure Transaction
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Cancel Anytime
+                          </span>
+                        </div>
+                      </label>
+                    </div>
+                    {mandateLoading && !mandateVerifying && (
+                      <p className="mt-3 text-xs text-blue-600 flex items-center gap-1">
+                        <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                        Setting up UPI Autopay...
+                      </p>
+                    )}
+                    {mandateVerifying && (
+                      <p className="mt-3 text-xs text-green-600 flex items-center gap-1">
+                        <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
+                        Verifying UPI Autopay status, please wait...
+                      </p>
+                    )}
+                    {!upiAutopayConsent && !mandateLoading && (
+                      <p className="mt-3 text-xs text-amber-600 flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        Please click to authorize UPI Autopay to proceed with your application
+                      </p>
+                    )}
                   </>
                 )}
-              </button>
-            </div>
-          )}
-        </motion.div>
+              </div>
+            )}
 
-        {/* Trust Indicators */}
-        <div className="mt-8 flex items-center justify-center gap-8 text-sm text-gray-600">
-          <div className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-yellow-500" />
-            <span>Instant Approval</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-green-500" />
-            <span>100% Secure</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-blue-500" />
-            <span>No Hidden Charges</span>
+            {/* Navigation Buttons - Show Next for steps 1-3, Show Submit only on step 4 when approval data is ready */}
+            {(currentStep < 4 || (currentStep === 4 && approvalData && approvalData.status !== 'Reject' && approvalData.status !== 'Proceed to Bank' && !finfactorSuccess)) && (
+              <div className="flex gap-4 mt-8">
+                {currentStep > 1 && currentStep < 4 && (
+                  <button
+                    onClick={handlePrevious}
+                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold"
+                  >
+                    Previous
+                  </button>
+                )}
+                <button
+                  onClick={handleNext}
+                  disabled={loading || (currentStep === 1 && !isStep1Valid()) || (currentStep === 4 && !upiAutopayConsent)}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white rounded-lg hover:shadow-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      {currentStep === 4 ? "Submit Application" : "Next"}
+                      {currentStep < 4 && <ArrowRight className="w-5 h-5" />}
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </motion.div>
+
+          {/* Trust Indicators */}
+          <div className="mt-8 flex items-center justify-center gap-8 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <Zap className="w-4 h-4 text-yellow-500" />
+              <span>Instant Approval</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4 text-green-500" />
+              <span>100% Secure</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-blue-500" />
+              <span>No Hidden Charges</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

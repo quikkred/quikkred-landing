@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useRouter } from "nextjs-toploader/app";
 import {
   FileText, Search, Calendar, IndianRupee,
   Clock, CheckCircle, AlertCircle, Eye, RefreshCw,
@@ -181,11 +181,11 @@ export default function MyApplicationsPage() {
   });
 
   // Check authentication
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, isLoading, router]);
+  // useEffect(() => {
+  //   if (!isLoading && !user) {
+  //     router.push('/login');
+  //   }
+  // }, [user, isLoading, router]);
 
   // Fetch applications
   useEffect(() => {
@@ -206,37 +206,11 @@ export default function MyApplicationsPage() {
       const currentPage = page || pagination.currentPage;
       const currentLimit = limit || pagination.limit;
 
-      const response = await fetch(
-        `https://beta.quikkred.in/api/application/loan/get?page=${currentPage}&limit=${currentLimit}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
+    const result = await reduxFetchApplications(currentPage, currentLimit);
 
-      const result = await response.json();
-
-      if (response.ok && result.success && result.data) {
-        setApplications(result.data);
-
-        // Update pagination info
-        if (result.pagination) {
-          setPagination({
-            totalRecords: result.pagination.totalRecords || 0,
-            totalPages: result.pagination.totalPages || 1,
-            currentPage: result.pagination.currentPage || 1,
-            limit: result.pagination.limit || 10
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching applications:', error);
-    } finally {
-      setLoading(false);
-    }
+    // if (result?.requiresAuth) {
+    //   router.push('/login');
+    // }
   };
 
   // Pagination handlers
