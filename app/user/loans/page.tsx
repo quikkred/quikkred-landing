@@ -9,11 +9,13 @@ import {
   EyeOff, Download, Search,
   FileText, AlertCircle, Wallet,
   RefreshCw, BarChart3, X,
-  ChevronLeft, ChevronRight, Building, User, Receipt
+  ChevronLeft, ChevronRight, Building, User, Receipt,
+  RotateCcw, Zap
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { loansService } from '@/lib/api/loans.service';
 import { usersService } from '@/lib/api/users.service';
+import { upiAutopayService } from '@/lib/api/upi-autopay.service';
 import { API_BASE_URL } from '@/lib/config';
 
 interface Loan {
@@ -228,7 +230,42 @@ export default function MyLoansPage() {
 
   // New Loan Application Modal State
   const [isNewLoanModalOpen, setIsNewLoanModalOpen] = useState(false);
+  const [isReapplyModalOpen, setIsReapplyModalOpen] = useState(false);
+  const [isUpiAutopayModalOpen, setIsUpiAutopayModalOpen] = useState(false);
+  const [selectedLoanForReapply, setSelectedLoanForReapply] = useState<Loan | null>(null);
+  const [selectedLoanForAutopay, setSelectedLoanForAutopay] = useState<Loan | null>(null);
+  const [reapplyLoading, setReapplyLoading] = useState(false);
+  const [autopayLoading, setAutopayLoading] = useState(false);
   const [newLoanLoading, setNewLoanLoading] = useState(false);
+
+  // Reapply State
+  const [reapplyEligibility, setReapplyEligibility] = useState<{
+    eligible: boolean;
+    maxAmount?: number;
+    minAmount?: number;
+    reason?: string;
+  } | null>(null);
+  const [reapplyForm, setReapplyForm] = useState({
+    loanAmount: '',
+    tenure: '30',
+    purpose: ''
+  });
+  const [reapplyError, setReapplyError] = useState<string | null>(null);
+  const [reapplySuccess, setReapplySuccess] = useState<string | null>(null);
+
+  // UPI Autopay State
+  const [autopayForm, setAutopayForm] = useState({
+    amount: '',
+    frequency: 'monthly' as 'daily' | 'weekly' | 'monthly' | 'as_presented',
+    vpa: ''
+  });
+  const [autopayError, setAutopayError] = useState<string | null>(null);
+  const [autopaySuccess, setAutopaySuccess] = useState<string | null>(null);
+  const [autopayResult, setAutopayResult] = useState<{
+    subscriptionId: string;
+    shortUrl: string;
+    status: string;
+  } | null>(null);
   const [newLoanError, setNewLoanError] = useState<string | null>(null);
   const [newLoanSuccess, setNewLoanSuccess] = useState<string | null>(null);
   const [newLoanForm, setNewLoanForm] = useState({
@@ -586,6 +623,169 @@ export default function MyLoansPage() {
       ifscCode: '',
       accountHolderName: ''
     });
+  };
+
+  // ============ REAPPLY HANDLERS ============
+  const handleOpenReapplyModal = async (loan: Loan) => {
+    setSelectedLoanForReapply(loan);
+    setReapplyError(null);
+    setReapplySuccess(null);
+    setReapplyLoading(true);
+    setIsReapplyModalOpen(true);
+
+    try {
+      const response = await loansService.checkReapplyEligibility(loan.customerId);
+      if (response.success && response.data) {
+        setReapplyEligibility({
+          eligible: response.data.eligible ?? true,
+          maxAmount: response.data.maxAmount ?? 500000,
+          minAmount: response.data.minAmount ?? 10000,
+          reason: response.data.reason
+        });
+        if (response.data.maxAmount) {
+          setReapplyForm(prev => ({ ...prev, loanAmount: String(response.data.maxAmount / 2) }));
+        }
+      } else {
+        setReapplyEligibility({ eligible: true, maxAmount: 500000, minAmount: 10000 });
+      }
+    } catch (error: any) {
+      console.error('Error checking reapply eligibility:', error);
+      setReapplyEligibility({ eligible: true, maxAmount: 500000, minAmount: 10000 });
+    } finally {
+      setReapplyLoading(false);
+    }
+  };
+
+  const handleSubmitReapplication = async () => {
+    if (!selectedLoanForReapply?.customerId) {
+      setReapplyError('Customer information not found');
+      return;
+    }
+
+    const amount = Number(reapplyForm.loanAmount);
+    if (!amount || amount < 10000) {
+      setReapplyError('Please enter a valid loan amount (minimum Rs. 10,000)');
+      return;
+    }
+    if (amount > 500000) {
+      setReapplyError('Maximum loan amount is Rs. 5,00,000');
+      return;
+    }
+
+    setReapplyLoading(true);
+    setReapplyError(null);
+
+    try {
+      const response = await loansService.submitReapplication({
+        customerId: selectedLoanForReapply.customerId,
+        loanAmount: amount,
+        tenure: Number(reapplyForm.tenure),
+        purpose: reapplyForm.purpose || 'Repeat Loan',
+        notes: 'Reapplication from customer dashboard'
+      });
+
+      if (response.success) {
+        setReapplySuccess('Your reapplication has been submitted successfully! We will process it shortly.');
+        setTimeout(() => {
+          resetReapplyModal();
+          fetchLoans();
+        }, 3000);
+      } else {
+        setReapplyError(response.message || 'Failed to submit reapplication');
+      }
+    } catch (error: any) {
+      console.error('Error submitting reapplication:', error);
+      setReapplyError(error.message || 'An error occurred while submitting your reapplication');
+    } finally {
+      setReapplyLoading(false);
+    }
+  };
+
+  const resetReapplyModal = () => {
+    setIsReapplyModalOpen(false);
+    setSelectedLoanForReapply(null);
+    setReapplyEligibility(null);
+    setReapplyError(null);
+    setReapplySuccess(null);
+    setReapplyForm({ loanAmount: '', tenure: '30', purpose: '' });
+  };
+
+  // ============ UPI AUTOPAY HANDLERS ============
+  const handleOpenAutopayModal = (loan: Loan) => {
+    setSelectedLoanForAutopay(loan);
+    setAutopayError(null);
+    setAutopaySuccess(null);
+    setAutopayResult(null);
+    // Pre-fill with EMI amount
+    setAutopayForm({
+      amount: String(loan.emiAmount || loan.totalRepayment || ''),
+      frequency: 'monthly',
+      vpa: ''
+    });
+    setIsUpiAutopayModalOpen(true);
+  };
+
+  const handleSetupAutopay = async () => {
+    if (!selectedLoanForAutopay) {
+      setAutopayError('Loan information not found');
+      return;
+    }
+
+    const amount = Number(autopayForm.amount);
+    if (!amount || amount < 100) {
+      setAutopayError('Please enter a valid amount (minimum Rs. 100)');
+      return;
+    }
+
+    setAutopayLoading(true);
+    setAutopayError(null);
+
+    try {
+      const response = await upiAutopayService.setupAutopay({
+        customerId: selectedLoanForAutopay.customerId || '',
+        loanId: selectedLoanForAutopay.id,
+        amount: amount,
+        frequency: autopayForm.frequency,
+        vpa: autopayForm.vpa || undefined
+      });
+
+      if (response.success && response.data) {
+        setAutopayResult({
+          subscriptionId: response.data.subscriptionId,
+          shortUrl: response.data.shortUrl,
+          status: response.data.status
+        });
+        setAutopaySuccess('UPI Autopay setup initiated! Please complete the authorization.');
+      } else {
+        setAutopayError(response.message || 'Failed to setup autopay');
+      }
+    } catch (error: any) {
+      console.error('Error setting up autopay:', error);
+      setAutopayError(error.message || 'An error occurred while setting up autopay');
+    } finally {
+      setAutopayLoading(false);
+    }
+  };
+
+  const resetAutopayModal = () => {
+    setIsUpiAutopayModalOpen(false);
+    setSelectedLoanForAutopay(null);
+    setAutopayError(null);
+    setAutopaySuccess(null);
+    setAutopayResult(null);
+    setAutopayForm({ amount: '', frequency: 'monthly', vpa: '' });
+  };
+
+  // Check if loan is eligible for reapply (CLOSED status)
+  const isEligibleForReapply = (loan: Loan) => {
+    const status = loan.status.toUpperCase();
+    return status === 'CLOSED' || status === 'COMPLETED';
+  };
+
+  // Check if loan is eligible for autopay (ACTIVE status)
+  const isEligibleForAutopay = (loan: Loan) => {
+    const status = loan.status.toUpperCase();
+    return status === 'ACTIVE';
   };
 
   const formatCurrency = (amount: number | undefined | null) => {
@@ -989,14 +1189,38 @@ export default function MyLoansPage() {
                         {loan.status}
                       </span>
                     </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-center">
-                      <button
-                        onClick={() => handleViewDetails(loan)}
-                        className="inline-flex items-center px-3 py-1.5 bg-[#4A66FF] text-white text-xs font-medium rounded-lg hover:bg-[#4A66FF]/90 transition-colors"
-                      >
-                        <Eye className="w-3.5 h-3.5 mr-1" />
-                        View Details
-                      </button>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-2 flex-wrap">
+                        <button
+                          onClick={() => handleViewDetails(loan)}
+                          className="inline-flex items-center px-3 py-1.5 bg-[#4A66FF] text-white text-xs font-medium rounded-lg hover:bg-[#4A66FF]/90 transition-colors"
+                        >
+                          <Eye className="w-3.5 h-3.5 mr-1" />
+                          View
+                        </button>
+                        {/* Reapply Button - Only for CLOSED loans */}
+                        {isEligibleForReapply(loan) && (
+                          <button
+                            onClick={() => handleOpenReapplyModal(loan)}
+                            className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-[#25B181] to-[#1F8F68] text-white text-xs font-medium rounded-lg hover:shadow-lg transition-all"
+                            title="Apply for a new loan"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5 mr-1" />
+                            Reapply
+                          </button>
+                        )}
+                        {/* UPI Autopay Button - Only for ACTIVE loans */}
+                        {isEligibleForAutopay(loan) && (
+                          <button
+                            onClick={() => handleOpenAutopayModal(loan)}
+                            className="inline-flex items-center px-3 py-1.5 bg-purple-600 text-white text-xs font-medium rounded-lg hover:bg-purple-700 transition-colors"
+                            title="Setup UPI Autopay"
+                          >
+                            <Zap className="w-3.5 h-3.5 mr-1" />
+                            Autopay
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -1941,6 +2165,332 @@ export default function MyLoansPage() {
                     Pay EMI
                   </button>
                 )} */}
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      )}
+
+      {/* Reapply Modal */}
+      {isReapplyModalOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+            <div
+              className="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity"
+              onClick={resetReapplyModal}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative inline-block align-bottom bg-white rounded-xl sm:rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-full max-w-[calc(100vw-2rem)] sm:max-w-md"
+            >
+              {/* Header */}
+              <div className="bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] px-4 sm:px-6 py-4 sm:py-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                      <RotateCcw className="w-5 h-5" />
+                      Apply for New Loan
+                    </h3>
+                    <p className="text-xs sm:text-sm text-white/80">
+                      {selectedLoanForReapply ? `Previous: ${selectedLoanForReapply.loanNumber}` : 'Reapplication'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={resetReapplyModal}
+                    className="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  >
+                    <X className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="px-4 sm:px-6 py-4 sm:py-6">
+                {reapplyLoading && !reapplyEligibility ? (
+                  <div className="flex items-center justify-center py-8">
+                    <RefreshCw className="w-8 h-8 text-[#25B181] animate-spin" />
+                    <span className="ml-3 text-gray-600">Checking eligibility...</span>
+                  </div>
+                ) : reapplySuccess ? (
+                  <div className="text-center py-4">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CheckCircle className="w-8 h-8 text-green-600" />
+                    </div>
+                    <h4 className="text-lg font-semibold text-gray-800 mb-2">Success!</h4>
+                    <p className="text-sm text-gray-600">{reapplySuccess}</p>
+                  </div>
+                ) : reapplyEligibility && !reapplyEligibility.eligible ? (
+                  <div className="text-center py-4">
+                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <AlertCircle className="w-8 h-8 text-red-600" />
+                    </div>
+                    <h4 className="text-lg font-semibold text-gray-800 mb-2">Not Eligible</h4>
+                    <p className="text-sm text-gray-600">{reapplyEligibility.reason || 'You are not eligible for reapplication at this time.'}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {reapplyError && (
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                        <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-red-700">{reapplyError}</p>
+                      </div>
+                    )}
+
+                    {/* Loan Amount */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Loan Amount <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type="number"
+                          min={reapplyEligibility?.minAmount || 10000}
+                          max={reapplyEligibility?.maxAmount || 500000}
+                          value={reapplyForm.loanAmount}
+                          onChange={(e) => setReapplyForm({ ...reapplyForm, loanAmount: e.target.value })}
+                          className="w-full pl-12 pr-4 py-3 bg-[#FAFAFA] border-2 border-[#E0E0E0] rounded-xl focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-lg font-semibold"
+                          placeholder="Enter amount"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Min: {formatCurrency(reapplyEligibility?.minAmount || 10000)} | Max: {formatCurrency(reapplyEligibility?.maxAmount || 500000)}
+                      </p>
+                    </div>
+
+                    {/* Tenure */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tenure (Days) <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={reapplyForm.tenure}
+                        onChange={(e) => setReapplyForm({ ...reapplyForm, tenure: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#FAFAFA] border-2 border-[#E0E0E0] rounded-xl focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none"
+                      >
+                        <option value="7">7 Days</option>
+                        <option value="15">15 Days</option>
+                        <option value="30">30 Days</option>
+                        <option value="60">60 Days</option>
+                        <option value="90">90 Days</option>
+                      </select>
+                    </div>
+
+                    {/* Purpose */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Purpose (Optional)</label>
+                      <input
+                        type="text"
+                        value={reapplyForm.purpose}
+                        onChange={(e) => setReapplyForm({ ...reapplyForm, purpose: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#FAFAFA] border-2 border-[#E0E0E0] rounded-xl focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none"
+                        placeholder="e.g., Business expansion, Personal needs"
+                      />
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        type="button"
+                        onClick={resetReapplyModal}
+                        className="flex-1 px-4 py-3 bg-white border border-[#E0E0E0] text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSubmitReapplication}
+                        disabled={reapplyLoading}
+                        className="flex-1 px-4 py-3 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg hover:shadow-lg transition-all font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {reapplyLoading ? (
+                          <>
+                            <RefreshCw className="w-4 h-4 animate-spin" />
+                            Submitting...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="w-4 h-4" />
+                            Submit Application
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      )}
+
+      {/* UPI Autopay Modal */}
+      {isUpiAutopayModalOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+            <div
+              className="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity"
+              onClick={resetAutopayModal}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative inline-block align-bottom bg-white rounded-xl sm:rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-full max-w-[calc(100vw-2rem)] sm:max-w-md"
+            >
+              {/* Header */}
+              <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-4 sm:px-6 py-4 sm:py-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                      <Zap className="w-5 h-5" />
+                      Setup UPI Autopay
+                    </h3>
+                    <p className="text-xs sm:text-sm text-white/80">
+                      {selectedLoanForAutopay ? `Loan: ${selectedLoanForAutopay.loanNumber}` : 'Automatic EMI payments'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={resetAutopayModal}
+                    className="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  >
+                    <X className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="px-4 sm:px-6 py-4 sm:py-6">
+                {autopaySuccess && autopayResult ? (
+                  <div className="text-center py-4">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CheckCircle className="w-8 h-8 text-green-600" />
+                    </div>
+                    <h4 className="text-lg font-semibold text-gray-800 mb-2">Autopay Setup Initiated!</h4>
+                    <p className="text-sm text-gray-600 mb-4">{autopaySuccess}</p>
+
+                    {autopayResult.shortUrl && (
+                      <a
+                        href={autopayResult.shortUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all font-medium"
+                      >
+                        <Zap className="w-4 h-4 mr-2" />
+                        Complete Authorization
+                      </a>
+                    )}
+
+                    <button
+                      onClick={resetAutopayModal}
+                      className="block w-full mt-4 px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors text-sm"
+                    >
+                      Close
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {autopayError && (
+                      <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                        <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                        <p className="text-sm text-red-700">{autopayError}</p>
+                      </div>
+                    )}
+
+                    {/* Info Card */}
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                      <h4 className="text-sm font-semibold text-purple-800 mb-2">What is UPI Autopay?</h4>
+                      <p className="text-xs text-purple-700">
+                        UPI Autopay allows automatic deduction of your EMI from your bank account on the due date.
+                        You will receive a notification before each debit.
+                      </p>
+                    </div>
+
+                    {/* Amount */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Amount per Debit <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type="number"
+                          min="100"
+                          value={autopayForm.amount}
+                          onChange={(e) => setAutopayForm({ ...autopayForm, amount: e.target.value })}
+                          className="w-full pl-12 pr-4 py-3 bg-[#FAFAFA] border-2 border-[#E0E0E0] rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none text-lg font-semibold"
+                          placeholder="Enter amount"
+                        />
+                      </div>
+                      {selectedLoanForAutopay && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          EMI Amount: {formatCurrency(selectedLoanForAutopay.emiAmount || selectedLoanForAutopay.totalRepayment)}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Frequency */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Debit Frequency <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={autopayForm.frequency}
+                        onChange={(e) => setAutopayForm({ ...autopayForm, frequency: e.target.value as any })}
+                        className="w-full px-4 py-3 bg-[#FAFAFA] border-2 border-[#E0E0E0] rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
+                      >
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="as_presented">As Presented</option>
+                      </select>
+                    </div>
+
+                    {/* VPA (Optional) */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">UPI ID (Optional)</label>
+                      <input
+                        type="text"
+                        value={autopayForm.vpa}
+                        onChange={(e) => setAutopayForm({ ...autopayForm, vpa: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#FAFAFA] border-2 border-[#E0E0E0] rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 focus:outline-none"
+                        placeholder="e.g., yourname@upi"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Leave blank to choose UPI app during authorization
+                      </p>
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        type="button"
+                        onClick={resetAutopayModal}
+                        className="flex-1 px-4 py-3 bg-white border border-[#E0E0E0] text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSetupAutopay}
+                        disabled={autopayLoading}
+                        className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {autopayLoading ? (
+                          <>
+                            <RefreshCw className="w-4 h-4 animate-spin" />
+                            Setting up...
+                          </>
+                        ) : (
+                          <>
+                            <Zap className="w-4 h-4" />
+                            Setup Autopay
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>
