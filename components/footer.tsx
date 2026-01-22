@@ -10,6 +10,7 @@ import {
   ArrowRight, ExternalLink, Download, ChevronRight, CreditCard, CheckCircle, X
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { API_BASE_URL } from '@/lib/config';
 
 const socialLinks = [
   { icon: Facebook, href: "https://facebook.com/Quikkred", label: "Facebook" },
@@ -51,7 +52,7 @@ export function Footer() {
     try {
       console.log('Subscribing with email:', email);
 
-      const response = await fetch('https://beta.quikkred.in/api/subscribe/create', {
+      const response = await fetch(`${API_BASE_URL}/api/subscribe/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -85,7 +86,7 @@ export function Footer() {
     company: [
       { name: t.footer.quickLinks.items.about, href: "/about-us" },
       { name: t.footer.quickLinks.items.ourStory, href: "/about-us/our-story" },
-      { name: t.footer.quickLinks.items.leadershipTeam, href: "/about-us/leadership-team" },
+      // { name: t.footer.quickLinks.items.leadershipTeam, href: "/about-us/leadership-team" },
       { name: t.footer.quickLinks.items.careers, href: "/careers" },
       // { name: t.footer.quickLinks.items.pressMedia, href: "/about-us/press" },
       // { name: t.footer.quickLinks.items.awardsRecognition, href: "/about-us/awards" },
@@ -93,10 +94,10 @@ export function Footer() {
       // { name: t.footer.quickLinks.items.testimonials, href: "/testimonials" },
     ],
     resources: [
-      { name: t.navigation.emiCalculator, href: "/resources/emi-calculator" },
-      { name: t.footer.resources.items.eligibilityCheck, href: "/resources/eligibility-check" },
-      { name: t.footer.resources.items.interestRates, href: "/resources/interest-rates" },
-      { name: t.footer.resources.items.documentChecklist, href: "/resources/document-checklist" },
+      { name: t.navigation.emiCalculator, href: "/emi-calculator" },
+      { name: t.footer.resources.items.eligibilityCheck, href: "/eligibility-check" },
+      { name: t.footer.resources.items.interestRates, href: "/interest-rates" },
+      { name: t.footer.resources.items.documentChecklist, href: "/document-checklist" },
       // { name: t.footer.resources.items.howToApply, href: "/resources/how-to-apply" },
       // { name: t.navigation.faqs, href: "/resources/faqs" },
       // { name: t.navigation.blog, href: "/blog" },
@@ -126,7 +127,6 @@ export function Footer() {
       { name: t.footer.policyLinks.items.creditPolicy, href: "/credit-policy" },
       { name: t.footer.policyLinks.items.lendingPolicy, href: "/lending-policy" },
       { name: t.footer.policyLinks.items.settlementWriteoffPolicy, href: "/settlement-writeoff-policy" },
-      { name: t.footer.policyLinks.items.investmentPolicy, href: "/investment-policy" },
     ],
   };
 
@@ -387,12 +387,12 @@ export function Footer() {
             <p className="text-slate-400 mb-2 text-xs sm:text-sm">
               {t.footer.copyright}
             </p>
-            {/* <p className="text-xs text-slate-500 break-words">
-              CIN: U65929MH2024PTC123456 | NBFC Registration: B.05.12345 | GSTIN: 27AABCL1234N1Z5
+            <p className="text-xs text-slate-500 mb-2">
+              <span className="font-medium text-slate-400">Quikkred</span> is a brand owned by <span className="font-medium text-slate-400">FluxusForge Private Limited</span>
             </p>
-            <p className="text-xs text-gray-500 mt-2">
-              {t.footer.disclaimer}
-            </p> */}
+            <p className="text-xs text-slate-500">
+              Lending Partner: <span className="font-medium text-slate-400">Satsai Finlease Private Limited</span> (RBI Registered NBFC)
+            </p>
           </div>
 
           {/* Mobile App Download */}

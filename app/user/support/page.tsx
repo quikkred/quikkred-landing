@@ -103,54 +103,9 @@ export default function SupportPage() {
   }, []);
 
   const fetchTickets = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('accessToken') ||
-                    localStorage.getItem('authToken') ||
-                    localStorage.getItem('token');
-
-      if (!token) {
-        router.push('/login');
-        return;
-      }
-
-      const response = await fetch('https://beta.quikkred.in/api/supportTicket/getAll', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      // Check if token expired (401 Unauthorized) - Full logout and redirect
-      if (response.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('role');
-        localStorage.removeItem('userEmail');
-        localStorage.removeItem('email');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('userId');
-        localStorage.removeItem('userMobile');
-        localStorage.removeItem('customerUniqueId');
-        document.cookie = 'auth-token=; path=/; max-age=0';
-        document.cookie = 'user-role=; path=/; max-age=0';
-        router.push('/login');
-        return;
-      }
-
-      const result = await response.json();
-
-      if (response.ok && result.success && result.data) {
-        setTickets(result.data);
-      }
-    } catch (error) {
-      console.error('Error fetching tickets:', error);
-    } finally {
-      setLoading(false);
+    const result = await reduxFetchTickets();
+    if (result?.requiresAuth) {
+      router.push('/login');
     }
   };
 
@@ -240,7 +195,7 @@ export default function SupportPage() {
     try {
       const token = await getToken();
 
-      const response = await fetch(`https://beta.quikkred.in/api/supportTicket/update/${selectedTicket._id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/supportTicket/update/${selectedTicket._id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

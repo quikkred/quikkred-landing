@@ -22,6 +22,9 @@ interface Address {
   city?: string;
   state?: string;
   pincode?: string;
+  fullAddress?: string;
+  landmark?: string;
+  yearsAtAddress?: number;
   coordinates?: {
     coordinates: number[];
     type: string;
@@ -33,7 +36,9 @@ interface Bank {
   accountNumber: string;
   ifscCode: string;
   accountHolderName: string;
-  accountType: string;
+  accountType?: string;
+  pennyDropStatus?: string;
+  pennyDropDate?: string;
   _id: string;
 }
 
@@ -43,8 +48,16 @@ interface Reference {
   relationship: string;
   _id: string;
 }
+interface Profile {
+  _id: string;
+  documentType: string;
+  s3URL: string;
+  status: 'VERIFIED' | 'PENDING' | 'REJECTED';
+}
+
 
 interface ProfileData {
+  isKycDetailsFilled: boolean;
   _id: string;
   customerUniqueId: string;
   role: string;
@@ -102,11 +115,21 @@ interface ProfileData {
   emergencyContactName?: string;
   emergencyContactPhone?: string;
   emergencyContactRelation?: string;
+  profile?: Profile;
 }
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const router = useRouter();
+
+  // Redux state for profile
+  const {
+    profileData: reduxProfileData,
+    loading: profileLoading,
+    error: profileError,
+    fetchProfile: reduxFetchProfile,
+  } = useProfile();
+
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("personal");
   const [error, setError] = useState<string | null>(null);
@@ -122,44 +145,40 @@ export default function ProfilePage() {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
+  // Update local state from Redux
+  useEffect(() => {
+    if (reduxProfileData) {
+      setProfileData(reduxProfileData);
+      setEditedData(reduxProfileData);
+      setImageLoadError(false);
+    }
+  }, [reduxProfileData]);
+
+  useEffect(() => {
+    setIsLoading(profileLoading);
+  }, [profileLoading]);
+
+  useEffect(() => {
+    if (profileError) {
+      setError(profileError);
+    }
+  }, [profileError]);
+
   useEffect(() => {
     fetchProfile();
   }, []);
 
+  // Fetch profile using Redux
   const fetchProfile = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
+    const result = await reduxFetchProfile();
 
     // if (result?.requiresAuth) {
     //   router.push('/login');
     //   return;
     // }
 
-      console.log('🔵 Fetching profile from API...');
-      const response = await fetch('https://beta.quikkred.in/api/customer/get', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const result = await response.json();
-      console.log('🟢 Profile API Response:', result);
-
-      if (response.ok && result.success && result.data) {
-        setProfileData(result.data);
-        setEditedData(result.data);
-        setImageLoadError(false); // Reset image error state on new profile load
-      } else {
-        setError(result.message || 'Failed to load profile data');
-      }
-    } catch (err: any) {
-      console.error("❌ Failed to fetch profile:", err);
-      setError(err.message || "Failed to load profile data");
-    } finally {
-      setIsLoading(false);
+    if (result?.success) {
+      console.log('🟢 Profile data loaded successfully');
     }
   };
 
@@ -222,7 +241,7 @@ export default function ProfilePage() {
       };
 
       console.log('🔵 Updating profile...', payload);
-      const response = await fetch('https://beta.quikkred.in/api/customer/profile', {
+      const response = await fetch(`${API_BASE_URL}/api/customer/profile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -329,12 +348,15 @@ export default function ProfilePage() {
     switch (kycStatus?.toUpperCase()) {
       case 'VERIFIED':
       case 'COMPLETED':
+      case 'SUCCESS':
         return 'bg-green-100 text-green-800';
       case 'PENDING':
         return 'bg-yellow-100 text-yellow-800';
       case 'REJECTED':
+      case 'FAILED':
         return 'bg-red-100 text-red-800';
       case 'IN_PROGRESS':
+      case 'PROCESSING':
         return 'bg-blue-100 text-blue-800';
       default:
         return 'bg-yellow-100 text-yellow-800'; // Default to pending
@@ -403,7 +425,7 @@ export default function ProfilePage() {
       formData.append('profileImage', selectedImage);
 
       console.log('🔵 Uploading profile image...');
-      const response = await fetch('https://beta.quikkred.in/api/customer/profile/update', {
+      const response = await fetch(`${API_BASE_URL}/api/customer/profile/update`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`
