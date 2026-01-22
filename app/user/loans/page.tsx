@@ -44,6 +44,7 @@ interface PaymentHistoryItem {
   paymentDate: string;
   amount: number;
   paymentMode: string;
+  payinNumber: string;
   transactionId: string;
   utrNumber: string;
   receiptNumber: string;
@@ -441,7 +442,7 @@ export default function MyLoansPage() {
       const token = await getToken();
       if (!token) return;
 
-      const response = await fetch('https://beta.quikkred.in/api/customer/get', {
+      const response = await fetch(`${API_BASE_URL}/api/customer/get`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -704,13 +705,13 @@ export default function MyLoansPage() {
               <span className="hidden sm:inline">Refresh</span>
             </button>
             {/* Apply New button */}
-            <button
+            {/* <button
               onClick={() => setIsNewLoanModalOpen(true)}
               className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
             >
               <Plus className="w-4 h-4" />
               <span>Apply New</span>
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
@@ -1612,27 +1613,30 @@ export default function MyLoansPage() {
                 <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
                   {/* Customer & Product Info */}
                   <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-blue-200">
-                    <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                    <div className="flex items-center gap-1 mb-3 sm:mb-4">
                       <User className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                       <h4 className="text-base sm:text-lg font-bold text-gray-800">Customer & Product Information</h4>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-4 lg:grid-cols-4 gap-1 sm:gap-1">
                       <div>
                         <p className="text-sm text-gray-600">Customer Name</p>
-                        <p className="font-semibold text-gray-900">{detailedLoan.customerId.fullName}</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.customerId.fullName .toLowerCase()
+    .replace(/\b\w/g, char => char.toUpperCase())}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Customer Email</p>
                         <p className="font-semibold text-gray-900">{detailedLoan.customerId.email}</p>
                       </div>
-                      <div>
+                      {/* <div>
                         <p className="text-sm text-gray-600">Product Name</p>
                         <p className="font-semibold text-gray-900">{detailedLoan.productName}</p>
-                      </div>
+                      </div> */}
+                      {detailedLoan.branch && (
                       <div>
                         <p className="text-sm text-gray-600">Branch</p>
                         <p className="font-semibold text-gray-900">{detailedLoan.branch.replace(/_/g, ' ')}</p>
                       </div>
+                      )}
                       <div>
                         <p className="text-sm text-gray-600">Status</p>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(detailedLoan.status)}`}>
@@ -1755,26 +1759,41 @@ export default function MyLoansPage() {
                         <p className="text-sm text-gray-600">Interest Outstanding</p>
                         <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.interestOutstanding)}</p>
                       </div>
-                      <div>
+
+                       <div>
+                        <p className="text-sm text-gray-600">Late Charges Outstanding</p>
+                        <p className="text-lg font-bold text-red-600">{formatCurrency(detailedLoan.lateChargesOutstanding)}</p>
+                      </div>
+                                            <div>
                         <p className="text-sm text-gray-600">Total Outstanding</p>
                         <p className="text-lg font-bold text-red-600">{formatCurrency(detailedLoan.totalOutstanding)}</p>
                       </div>
-                      <div>
-                        <p className="text-sm text-gray-600">DPD (Days Past Due)</p>
-                        <p className="font-semibold text-gray-900">{detailedLoan.dpd} days</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">DPD Bucket</p>
-                        <p className="font-semibold text-gray-900">{detailedLoan.dpdBucket}</p>
-                      </div>
-                      <div>
+{detailedLoan?.dpd > 1 && (
+  <>
+    <div>
+      <p className="text-sm text-gray-600">DPD (Days Past Due)</p>
+      <p className="font-semibold text-gray-900">
+        {detailedLoan.dpd} days
+      </p>
+    </div>
+
+    <div>
+      <p className="text-sm text-gray-600">DPD Bucket</p>
+      <p className="font-semibold text-gray-900">
+        {detailedLoan.dpdBucket}
+      </p>
+    </div>
+  </>
+)}
+
+                      {/* <div>
                         <p className="text-sm text-gray-600">First Due Date</p>
                         <p className="font-semibold text-gray-900">{new Date(detailedLoan.firstDueDate).toLocaleDateString()}</p>
-                      </div>
-                      <div>
+                      </div> */}
+                      {/* <div>
                         <p className="text-sm text-gray-600">Next Due Date</p>
                         <p className="font-semibold text-gray-900">{detailedLoan.nextDueDate ? new Date(detailedLoan.nextDueDate).toLocaleDateString() : 'N/A'}</p>
-                      </div>
+                      </div> */}
                       <div>
                         <p className="text-sm text-gray-600">Maturity Date</p>
                         <p className="font-semibold text-gray-900">{new Date(detailedLoan.maturityDate).toLocaleDateString()}</p>
@@ -1795,30 +1814,31 @@ export default function MyLoansPage() {
                       <h4 className="text-base sm:text-lg font-bold text-gray-800">Payment Behavior</h4>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-                      <div className="text-center">
+                      {/* <div className="text-center">
                         <p className="text-xs sm:text-sm text-gray-600 mb-1">EMIs Paid</p>
                         <div className="text-xl sm:text-2xl font-bold text-green-600">{detailedLoan.paymentBehavior.totalEMIsPaid}</div>
-                      </div>
-                      <div className="text-center">
+                      </div> */}
+                      {/* <div className="text-center">
                         <p className="text-xs sm:text-sm text-gray-600 mb-1">EMIs Missed</p>
                         <div className="text-xl sm:text-2xl font-bold text-red-600">{detailedLoan.paymentBehavior.totalEMIsMissed}</div>
-                      </div>
+                      </div> */}
                       <div className="text-center">
                         <p className="text-xs sm:text-sm text-gray-600 mb-1">On-Time Payments</p>
                         <div className="text-xl sm:text-2xl font-bold text-green-600">{detailedLoan.paymentBehavior.onTimePayments}</div>
                       </div>
-                      <div className="text-center">
+                      {/* <div className="text-center">
                         <p className="text-xs sm:text-sm text-gray-600 mb-1">Late Payments</p>
                         <div className="text-xl sm:text-2xl font-bold text-orange-600">{detailedLoan.paymentBehavior.latePayments}</div>
+                      </div> */}
+                        <div className="text-center">
+                        <p className="text-xs sm:text-sm text-gray-600 mb-1">Partial Payments</p>
+                        <div className="text-xl sm:text-2xl font-bold text-blue-600">{detailedLoan.paymentBehavior.partialPaymentCount}</div>
                       </div>
                       <div className="text-center">
                         <p className="text-xs sm:text-sm text-gray-600 mb-1">Bounce Count</p>
                         <div className="text-xl sm:text-2xl font-bold text-red-600">{detailedLoan.paymentBehavior.bounceCount}</div>
                       </div>
-                      <div className="text-center">
-                        <p className="text-xs sm:text-sm text-gray-600 mb-1">Partial Payments</p>
-                        <div className="text-xl sm:text-2xl font-bold text-blue-600">{detailedLoan.paymentBehavior.partialPaymentCount}</div>
-                      </div>
+                    
                     </div>
                   </div>
 
@@ -1835,9 +1855,11 @@ export default function MyLoansPage() {
                             <tr>
                               <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Installment</th>
                               <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Due Date</th>
-                              <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">EMI Amount</th>
-                              <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Principal</th>
-                              <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Interest</th>
+                                <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Principal</th>
+                                <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Interest</th>
+                              <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Total Repayment</th>
+                            
+                              
                               <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Paid Amount</th>
                               <th className="px-3 py-2 text-center text-xs font-semibold text-gray-700">Status</th>
                               <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Balance</th>
@@ -1848,9 +1870,11 @@ export default function MyLoansPage() {
                               <tr key={installment._id} className="hover:bg-slate-50">
                                 <td className="px-3 py-2 font-medium text-gray-900">{installment.installmentNo}</td>
                                 <td className="px-3 py-2 text-gray-900">{new Date(installment.dueDate).toLocaleDateString()}</td>
+                                 <td className="px-3 py-2 text-right text-gray-900">{formatCurrency(installment.principal)}</td>
+                                  <td className="px-3 py-2 text-right text-gray-900">{formatCurrency(installment.interest)}</td>
                                 <td className="px-3 py-2 text-right font-semibold text-gray-900">{formatCurrency(installment.emiAmount)}</td>
-                                <td className="px-3 py-2 text-right text-gray-900">{formatCurrency(installment.principal)}</td>
-                                <td className="px-3 py-2 text-right text-gray-900">{formatCurrency(installment.interest)}</td>
+                               
+                               
                                 <td className="px-3 py-2 text-right font-semibold text-green-600">{formatCurrency(installment.paidAmount)}</td>
                                 <td className="px-3 py-2 text-center">
                                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -1893,7 +1917,7 @@ export default function MyLoansPage() {
                           <tbody className="divide-y divide-indigo-100">
                             {detailedLoan.paymentHistory.map((payment) => (
                               <tr key={payment._id} className="hover:bg-indigo-50/50">
-                                <td className="px-3 py-2 font-medium text-gray-900">{payment.paymentNumber}</td>
+                                <td className="px-3 py-2 font-medium text-gray-900">{payment.payinNumber}</td>
                                 <td className="px-3 py-2 text-gray-900">{new Date(payment.paymentDate).toLocaleString()}</td>
                                 <td className="px-3 py-2 text-right font-semibold text-green-600">{formatCurrency(payment.amount)}</td>
                                 <td className="px-3 py-2 text-gray-900">{payment.paymentMode}</td>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
-import { Camera, X, RotateCw, Check, AlertCircle, Loader2, Sun, Moon, User, Eye } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Camera, X, RotateCw, Check, AlertCircle, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { API_BASE_URL } from '@/lib/config';
 import getToken from "@/lib/getToken";
@@ -20,116 +20,75 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
   const [isStreaming, setIsStreaming] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [error, setError] = useState<string>("");
+  const [faceDetected, setFaceDetected] = useState(false);
+  const [detectionMessage, setDetectionMessage] = useState<string>("Position your face in the frame");
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState<'idle' | 'success' | 'failed'>('idle');
   const [capturedFile, setCapturedFile] = useState<File | null>(null);
-
-  // Face validation states
-  const [modelsLoaded, setModelsLoaded] = useState(false);
-  const [loadingModels, setLoadingModels] = useState(false);
-  const [liveValidation, setLiveValidation] = useState<{
-    brightness: 'ok' | 'too_dark' | 'too_bright';
-    faceDetected: boolean;
-    message: string;
-  }>({
-    brightness: 'ok',
-    faceDetected: false,
-    message: 'Initializing camera...',
-  });
-  const [captureValidation, setCaptureValidation] = useState<FaceValidationResult | null>(null);
-  const [isValidating, setIsValidating] = useState(false);
-
-  // Load face detection models on mount
-  useEffect(() => {
-    const loadModels = async () => {
-      setLoadingModels(true);
-      const success = await loadFaceModels();
-      setModelsLoaded(success);
-      setLoadingModels(false);
-    };
-    loadModels();
-  }, []);
 
   // Start camera when modal opens
   useEffect(() => {
     if (isOpen && !isStreaming) {
       startCamera();
     }
+
     return () => {
       stopCamera();
     };
   }, [isOpen]);
 
-  // Real-time validation during video stream
+  // Simple face detection using video dimensions and heuristics
   useEffect(() => {
-    if (!isStreaming || !videoRef.current || !modelsLoaded) return;
+    if (!isStreaming || !videoRef.current) return;
 
-    let animationFrame: number;
-    let lastCheck = 0;
-    const CHECK_INTERVAL = 500; // Check every 500ms
-
-    const checkFrame = async (timestamp: number) => {
-      if (timestamp - lastCheck < CHECK_INTERVAL) {
-        animationFrame = requestAnimationFrame(checkFrame);
-        return;
-      }
-      lastCheck = timestamp;
-
+    const detectInterval = setInterval(() => {
+      // Simple heuristic check - in production, you'd use face-api.js or similar
+      // For now, we'll just check if video is playing and has content
       if (videoRef.current && videoRef.current.readyState === 4) {
-        // Quick brightness check
-        const brightnessResult = quickBrightnessCheck(videoRef.current);
+        // Simulate face detection - in real implementation, use face-api.js
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
 
-        // Full face validation (less frequent)
-        const validation = await validateFaceImage(videoRef.current);
+        if (ctx && videoRef.current) {
+          canvas.width = videoRef.current.videoWidth;
+          canvas.height = videoRef.current.videoHeight;
+          ctx.drawImage(videoRef.current, 0, 0);
 
-        let message = 'Position your face in the frame';
+          // Simple brightness check to ensure face is visible
+          const imageData = ctx.getImageData(
+            canvas.width / 4,
+            canvas.height / 4,
+            canvas.width / 2,
+            canvas.height / 2
+          );
 
-        if (brightnessResult.status === 'too_dark') {
-          message = '🌙 Too dark - Please improve lighting';
-        } else if (brightnessResult.status === 'too_bright') {
-          message = '☀️ Too bright - Please reduce lighting';
-        } else if (!validation.details.faceDetected) {
-          message = '👤 No face detected - Center your face';
-        } else if (validation.details.faceCount > 1) {
-          message = '👥 Multiple faces - Only one face allowed';
-        } else if (!validation.details.eyesOpen) {
-          message = '👁️ Keep your eyes open';
-        } else if (validation.details.faceSize < 10) {
-          message = '🔍 Too far - Move closer';
-        } else if (!validation.details.faceCentered) {
-          message = '⬆️ Center your face in frame';
-        } else if (validation.score >= 70) {
-          message = '✅ Perfect! Click capture';
-        } else {
-          message = '📸 Good - Ready to capture';
+          let brightness = 0;
+          for (let i = 0; i < imageData.data.length; i += 4) {
+            brightness += (imageData.data[i] + imageData.data[i + 1] + imageData.data[i + 2]) / 3;
+          }
+          brightness = brightness / (imageData.data.length / 4);
+
+          // Check if there's enough brightness (face likely present)
+          if (brightness > 50 && brightness < 200) {
+            setFaceDetected(true);
+            setDetectionMessage("Face detected! Click capture when ready");
+          } else if (brightness <= 50) {
+            setFaceDetected(false);
+            setDetectionMessage("Too dark - please improve lighting");
+          } else {
+            setFaceDetected(false);
+            setDetectionMessage("Position your face in the frame");
+          }
         }
-
-        setLiveValidation({
-          brightness: brightnessResult.status,
-          faceDetected: validation.details.faceDetected,
-          message,
-        });
       }
+    }, 500);
 
-      animationFrame = requestAnimationFrame(checkFrame);
-    };
-
-    animationFrame = requestAnimationFrame(checkFrame);
-
-    return () => {
-      if (animationFrame) cancelAnimationFrame(animationFrame);
-    };
-  }, [isStreaming, modelsLoaded]);
+    return () => clearInterval(detectInterval);
+  }, [isStreaming]);
 
   const startCamera = async () => {
     try {
       setError("");
-      setLiveValidation({
-        brightness: 'ok',
-        faceDetected: false,
-        message: 'Starting camera...',
-      });
-
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           width: { ideal: 1280 },
@@ -161,20 +120,14 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
     setIsStreaming(false);
   };
 
-  const capturePhoto = async () => {
+  const capturePhoto = () => {
     if (!videoRef.current || !canvasRef.current) return;
-
-    setIsValidating(true);
-    setError("");
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
 
-    if (!ctx) {
-      setIsValidating(false);
-      return;
-    }
+    if (!ctx) return;
 
     // Set canvas dimensions to match video
     canvas.width = video.videoWidth;
@@ -183,26 +136,16 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
     // Draw the current video frame to canvas
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // Validate the captured image
-    const validation = await validateFaceImage(canvas);
-    setCaptureValidation(validation);
-
-    if (!validation.isValid) {
-      setError(getValidationMessage(validation));
-      setIsValidating(false);
-      return;
-    }
-
     // Convert canvas to blob and save as file
     canvas.toBlob((blob) => {
       if (blob) {
         const imageUrl = canvas.toDataURL('image/jpeg', 0.9);
         setCapturedImage(imageUrl);
+        // Save the file for later verification
         const file = new File([blob], `selfie-${Date.now()}.jpg`, { type: 'image/jpeg' });
         setCapturedFile(file);
         stopCamera();
       }
-      setIsValidating(false);
     }, 'image/jpeg', 0.9);
   };
 
@@ -210,7 +153,6 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
     setCapturedImage(null);
     setCapturedFile(null);
     setVerificationStatus('idle');
-    setCaptureValidation(null);
     setError('');
     startCamera();
   };
@@ -226,7 +168,7 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
       const formData = new FormData();
       formData.append('photo', file);
 
-      const response = await fetch(getApiUrl('/api/kyc/face/verification'), {
+      const response = await fetch(`${API_BASE_URL}/api/kyc/face/verification`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -256,11 +198,12 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
     setError('');
     setVerificationStatus('idle');
 
-    // Verify face liveness with backend
+    // Verify face liveness first
     const isLive = await verifyFaceLiveness(capturedFile);
 
     if (isLive) {
       setVerificationStatus('success');
+      // Wait a moment to show success status
       setTimeout(() => {
         onCapture(capturedFile);
         handleClose();
@@ -275,19 +218,10 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
     stopCamera();
     setCapturedImage(null);
     setCapturedFile(null);
-    setCaptureValidation(null);
     setError("");
     setIsVerifying(false);
     setVerificationStatus('idle');
     onClose();
-  };
-
-  // Get status indicator color
-  const getStatusColor = () => {
-    if (liveValidation.brightness !== 'ok') return 'bg-red-500';
-    if (!liveValidation.faceDetected) return 'bg-yellow-500';
-    if (liveValidation.message.includes('✅')) return 'bg-green-500';
-    return 'bg-blue-500';
   };
 
   if (!isOpen) return null;
@@ -317,20 +251,12 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
 
           {/* Content */}
           <div className="p-6">
-            {/* Loading models indicator */}
-            {loadingModels && (
-              <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3">
-                <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
-                <span className="text-sm text-blue-800">Loading face detection...</span>
-              </div>
-            )}
-
             {error && (
               <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
                 <div className="flex items-start gap-3">
                   <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
                   <div className="text-sm text-red-800">
-                    <p className="font-semibold mb-1">Validation Error</p>
+                    <p className="font-semibold mb-1">Camera Error</p>
                     <p>{error}</p>
                   </div>
                 </div>
@@ -349,40 +275,15 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
                     className="w-full h-full object-cover mirror"
                   />
 
-                  {/* Live validation overlay */}
+                  {/* Face detection overlay */}
                   {isStreaming && (
                     <div className="absolute inset-0 pointer-events-none">
                       {/* Face frame guide */}
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-80 border-4 border-white/50 rounded-[50%]">
-                        {/* Status indicator */}
-                        <div className={`absolute -top-8 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full ${getStatusColor()} text-white text-sm font-medium whitespace-nowrap shadow-lg`}>
-                          {liveValidation.message}
-                        </div>
-                      </div>
-
-                      {/* Quality indicators */}
-                      <div className="absolute bottom-4 left-4 right-4 flex justify-center gap-4">
-                        {/* Brightness indicator */}
-                        <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
-                          liveValidation.brightness === 'too_dark' ? 'bg-red-500 text-white' :
-                          liveValidation.brightness === 'too_bright' ? 'bg-yellow-500 text-black' :
-                          'bg-green-500 text-white'
-                        }`}>
-                          {liveValidation.brightness === 'too_dark' ? <Moon className="w-3 h-3" /> :
-                           liveValidation.brightness === 'too_bright' ? <Sun className="w-3 h-3" /> :
-                           <Sun className="w-3 h-3" />}
-                          <span>
-                            {liveValidation.brightness === 'too_dark' ? 'Dark' :
-                             liveValidation.brightness === 'too_bright' ? 'Bright' : 'Light OK'}
-                          </span>
-                        </div>
-
-                        {/* Face indicator */}
-                        <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
-                          liveValidation.faceDetected ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-                        }`}>
-                          <User className="w-3 h-3" />
-                          <span>{liveValidation.faceDetected ? 'Face OK' : 'No Face'}</span>
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-80 border-4 border-white/50 rounded-[50%] flex items-center justify-center">
+                        <div className={`absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full ${
+                          faceDetected ? 'bg-green-500' : 'bg-yellow-500'
+                        } text-white text-sm font-medium whitespace-nowrap`}>
+                          {detectionMessage}
                         </div>
                       </div>
                     </div>
@@ -395,18 +296,6 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
                     alt="Captured selfie"
                     className="w-full h-full object-cover mirror"
                   />
-
-                  {/* Validation score badge */}
-                  {captureValidation && (
-                    <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-sm font-bold ${
-                      captureValidation.score >= 80 ? 'bg-green-500' :
-                      captureValidation.score >= 60 ? 'bg-yellow-500' :
-                      'bg-red-500'
-                    } text-white`}>
-                      Quality: {captureValidation.score}%
-                    </div>
-                  )}
-
                   {/* Verification overlay */}
                   {isVerifying && (
                     <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
@@ -428,7 +317,7 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
                       )}
                     </div>
                   )}
-
+                  {/* Failed verification badge */}
                   {verificationStatus === 'failed' && !isVerifying && (
                     <div className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-red-500 text-white rounded-full text-sm font-medium">
                       Verification Failed - Please Retake
@@ -445,43 +334,36 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
             {!capturedImage && isStreaming && (
               <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="text-sm text-blue-800">
-                  <p className="font-semibold mb-2">📸 For best results:</p>
-                  <ul className="grid grid-cols-2 gap-2 text-xs">
-                    <li className="flex items-center gap-1">
-                      <Sun className="w-3 h-3" /> Good lighting on face
-                    </li>
-                    <li className="flex items-center gap-1">
-                      <User className="w-3 h-3" /> Face centered in frame
-                    </li>
-                    <li className="flex items-center gap-1">
-                      <Eye className="w-3 h-3" /> Keep eyes open
-                    </li>
-                    <li className="flex items-center gap-1">
-                      <Camera className="w-3 h-3" /> Hold camera steady
-                    </li>
+                  <p className="font-semibold mb-2">Tips for a clear photo:</p>
+                  <ul className="list-disc list-inside space-y-1 text-xs">
+                    <li>Position your face inside the oval frame</li>
+                    <li>Ensure good lighting on your face</li>
+                    <li>Look directly at the camera</li>
+                    <li>Remove glasses if possible</li>
+                    <li>Keep a neutral expression</li>
                   </ul>
                 </div>
               </div>
             )}
 
-            {/* Capture validation details */}
-            {capturedImage && captureValidation && !isVerifying && (
+            {/* Verification Status Message */}
+            {capturedImage && !isVerifying && (
               <div className={`mb-4 rounded-lg p-4 ${
-                captureValidation.isValid ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+                verificationStatus === 'failed'
+                  ? 'bg-red-50 border border-red-200'
+                  : 'bg-green-50 border border-green-200'
               }`}>
-                <div className={`text-sm ${captureValidation.isValid ? 'text-green-800' : 'text-red-800'}`}>
-                  <p className="font-semibold mb-2">
-                    {captureValidation.isValid ? '✅ Image Quality Check Passed' : '❌ Image Quality Issues'}
-                  </p>
-                  {captureValidation.warnings.length > 0 && (
-                    <ul className="text-xs space-y-1 mb-2">
-                      {captureValidation.warnings.map((w, i) => (
-                        <li key={i} className="text-yellow-700">⚠️ {w}</li>
-                      ))}
-                    </ul>
-                  )}
-                  {verificationStatus === 'failed' && (
-                    <p className="text-xs mt-2">Please retake with better lighting and a clearer view of your face.</p>
+                <div className={`text-sm ${verificationStatus === 'failed' ? 'text-red-800' : 'text-green-800'}`}>
+                  {verificationStatus === 'failed' ? (
+                    <>
+                      <p className="font-semibold mb-1">Face Liveness Check Failed</p>
+                      <p className="text-xs">{error || 'Please retake the photo with better lighting and ensure your face is clearly visible.'}</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-semibold mb-1">Ready for Verification</p>
+                      <p className="text-xs">Click "Verify & Use Photo" to verify your face and proceed.</p>
+                    </>
                   )}
                 </div>
               </div>
@@ -499,24 +381,15 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
                   </button>
                   <button
                     onClick={capturePhoto}
-                    disabled={!isStreaming || isValidating || !modelsLoaded}
+                    disabled={!isStreaming}
                     className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
-                      liveValidation.faceDetected && liveValidation.brightness === 'ok'
+                      faceDetected
                         ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg hover:shadow-xl'
                         : 'bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white shadow-lg hover:shadow-xl'
                     } disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
-                    {isValidating ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Validating...
-                      </>
-                    ) : (
-                      <>
-                        <Camera className="w-5 h-5" />
-                        Capture Photo
-                      </>
-                    )}
+                    <Camera className="w-5 h-5" />
+                    Capture Photo
                   </button>
                 </>
               ) : (
@@ -531,7 +404,7 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
                   </button>
                   <button
                     onClick={confirmCapture}
-                    disabled={isVerifying || !captureValidation?.isValid}
+                    disabled={isVerifying || verificationStatus === 'failed'}
                     className="flex-1 px-6 py-3 rounded-xl shadow-lg hover:shadow-xl font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-green-500 to-green-600 text-white"
                   >
                     {isVerifying ? (

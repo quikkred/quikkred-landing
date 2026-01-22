@@ -63,7 +63,7 @@ export default function LoansGrid() {
               whileInView={{ opacity: 1, y: 0, rotate: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.15, duration: 0.6 }}
-              whileHover={{ y: -12, scale: 1.03, rotate: 1 }}
+              whileHover={{ y: -8, scale: 1.02 }}
               className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-2xl transition-all"
             >
               <div

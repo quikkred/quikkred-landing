@@ -37,67 +37,25 @@ export default function DocumentsPage() {
   } = useDocuments();
 
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [uploadingDocs, setUploadingDocs] = useState<{ [key: string]: boolean }>({});
   const [deleteConfirm, setDeleteConfirm] = useState<{ show: boolean; doc: Document | null }>({
     show: false,
     doc: null
   });
 
-  // Fetch documents
+  // Update local documents when Redux state changes
+  useEffect(() => {
+    if (reduxDocs && reduxDocs.length > 0) {
+      const flatDocs = flattenDocuments(reduxDocs);
+      setDocuments(flatDocs);
+    }
+  }, [reduxDocs]);
+
+  // Fetch documents using Redux
   const fetchDocuments = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
-
-      if (!token) {
-        setError('Authentication required');
-        setLoading(false);
-        return;
-      }
-
-      const response = await fetch('https://beta.quikkred.in/api/document/get', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      // Check if token expired (401 Unauthorized) - Full logout and redirect
-      if (response.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('role');
-        localStorage.removeItem('userEmail');
-        localStorage.removeItem('email');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('userId');
-        localStorage.removeItem('userMobile');
-        localStorage.removeItem('customerUniqueId');
-        document.cookie = 'auth-token=; path=/; max-age=0';
-        document.cookie = 'user-role=; path=/; max-age=0';
-        router.push('/login');
-        return;
-      }
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        const flatDocs = flattenDocuments(data.documents || []);
-        setDocuments(flatDocs);
-        setError(null);
-      } else {
-        setError(data.message || 'Failed to fetch documents');
-      }
-    } catch (err) {
-      setError('Failed to load documents');
-    } finally {
-      setLoading(false);
+    const result = await reduxFetchDocuments();
+    if (result?.requiresAuth) {
+      router.push('/login');
     }
   };
 
@@ -440,7 +398,7 @@ export default function DocumentsPage() {
       const formData = new FormData();
       formData.append(docType, file);
 
-      const response = await fetch('https://beta.quikkred.in/api/document/upload', {
+      const response = await fetch(`${API_BASE_URL}/api/document/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

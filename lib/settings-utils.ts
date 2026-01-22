@@ -246,7 +246,7 @@ export const DEFAULT_SETTINGS: SystemSettings = {
     emailProvider: {
       provider: 'sendgrid',
       apiKey: '',
-      fromEmail: 'noreply@Quikkred.com'
+      fromEmail: 'noreply@quikkred.in'
     },
     creditBureau: {
       enabled: false,
@@ -275,7 +275,7 @@ export const DEFAULT_SETTINGS: SystemSettings = {
     regulatoryReporting: {
       enabled: true,
       frequency: 'monthly',
-      recipients: ['compliance@Quikkred.com']
+      recipients: ['compliance@quikkred.in']
     }
   },
   features: {
