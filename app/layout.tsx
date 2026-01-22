@@ -2,16 +2,11 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Sora } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
-import { SecurityBanner } from "@/components/security-banner";
 import ConditionalLayout from "@/components/layouts/ConditionalLayout";
-import LanguageGuard from "@/components/LanguageGuard";
 import { Toaster } from "@/components/ui/toast";
 import getUserDetails from "@/lib/getUserDetails";
 import { AuthProvider } from "@/contexts/AuthContext";
 import getLanguage from "@/lib/getLanguage";
-import { LanguageProvider } from "@/lib/contexts/LanguageContext";
 import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { getTranslation } from "@/lib/getTranslation";
 
@@ -231,7 +226,7 @@ fbq('track', 'PageView');`,
         <AuthProvider userData={userDetails}>
           <Providers language={language as string} initialData={initialData}>
             {/* <LanguageGuard> */}
-            <ConditionalLayout isLogin={!!userDetails}>
+            <ConditionalLayout>
               {children}
             </ConditionalLayout>
             {/* </LanguageGuard> */}
