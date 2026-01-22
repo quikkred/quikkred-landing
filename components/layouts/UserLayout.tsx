@@ -648,11 +648,11 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                     </div>
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#25B181] to-[#51C9AF] flex items-center justify-center text-white font-bold text-sm shadow-md">
-                      {userData.name.split(' ').map(n => n[0]).join('')}
+                      {userData.name.split(' ').map(n => n[0]?.toUpperCase()).join('')}
                     </div>
                   )}
                   <div className="text-left hidden md:block">
-                    <p className="text-sm font-medium text-gray-800">{userData.name.split(' ')[0]}</p>
+                    <p className="text-sm font-medium text-gray-800">{userData.name.split(' ')[0]?.charAt(0).toUpperCase() + userData.name.split(' ')[0]?.slice(1).toLowerCase()}</p>
                     {/* <p className="text-xs text-gray-500">ID: {userData.customerId}</p> */}
                   </div>
                   <ChevronDown className="w-4 h-4 text-gray-600 hidden sm:block" />

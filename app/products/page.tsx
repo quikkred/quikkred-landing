@@ -27,6 +27,8 @@ import {
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import Products from "@/components/Product/Products";
+import { API_BASE_URL } from '@/lib/config';
+import { useProducts } from '@/store/hooks/useProducts';
 
 // Icon mapping based on product name
 const getProductIcon = (productName: string) => {
@@ -77,34 +79,32 @@ interface LoanProduct {
 
 export default function ProductsPage() {
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
-  const [apiProducts, setApiProducts] = useState<LoanProduct[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation();
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch("https://beta.quikkred.in/api/loanProduct/getAll");
-        const data = await response.json();
-        if (data.success) {
-          // Filter only active products
-          const activeProducts = data.data.filter(
-            (product: LoanProduct) => product.isActive && product.status === "ACTIVE"
-          );
-          setApiProducts(activeProducts);
-        } else {
-          setError("Failed to fetch products");
-        }
-      } catch (err) {
-        setError("Failed to fetch products");
-        console.error("Error fetching products:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Redux state for products
+  const {
+    products: reduxProducts,
+    loading,
+    error,
+    fetchProducts: reduxFetchProducts,
+  } = useProducts();
 
-    fetchProducts();
+  const [apiProducts, setApiProducts] = useState<LoanProduct[]>([]);
+
+  // Update local state when Redux products change
+  useEffect(() => {
+    if (reduxProducts && reduxProducts.length > 0) {
+      // Filter only active products
+      const activeProducts = reduxProducts.filter(
+        (product: LoanProduct) => product.isActive && product.status === "ACTIVE"
+      );
+      setApiProducts(activeProducts);
+    }
+  }, [reduxProducts]);
+
+  // Fetch products on mount using Redux
+  useEffect(() => {
+    reduxFetchProducts();
   }, []);
 
   const loanProducts = apiProducts.map((product) => {

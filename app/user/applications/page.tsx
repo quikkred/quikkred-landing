@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { loansService } from '@/lib/api/loans.service';
+import { API_BASE_URL } from '@/lib/config';
+import { useApplications } from '@/store/hooks/useApplications';
 
 interface Application {
   _id: string;
@@ -77,6 +79,8 @@ interface DetailedApplication {
   
   isSubmit: boolean;
   requestedLoanAmount: number;
+  approvedLoanAmount?: number;
+  breApprovedLoanAmount: number;
   tenure: number;
   tenureUnit: number;
   interestRate: number;
@@ -99,10 +103,11 @@ interface DetailedApplication {
       s3Key: string;
       s3URL: string;
       status: string;
+      uploadedAt: string;
     };
     documentType: string;
     documentName: string;
-    uploadedAt: string;
+  
   }>;
   internalNotes: Array<{
     note: string;
@@ -165,8 +170,16 @@ interface PaginationInfo {
 export default function MyApplicationsPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  // Redux state for applications
+  const {
+    applications,
+    pagination: reduxPagination,
+    loading,
+    error,
+    fetchApplications: reduxFetchApplications,
+  } = useApplications();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'processing' | 'approved' | 'rejected'>('all');
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
@@ -180,6 +193,13 @@ export default function MyApplicationsPage() {
     limit: 10
   });
 
+  // Update local pagination from Redux state
+  useEffect(() => {
+    if (reduxPagination) {
+      setPagination(reduxPagination);
+    }
+  }, [reduxPagination]);
+
   // Check authentication
   // useEffect(() => {
   //   if (!isLoading && !user) {
@@ -187,24 +207,14 @@ export default function MyApplicationsPage() {
   //   }
   // }, [user, isLoading, router]);
 
-  // Fetch applications
+  // Fetch applications using Redux
   useEffect(() => {
     fetchApplications();
   }, [pagination.currentPage, pagination.limit]);
 
   const fetchApplications = async (page?: number, limit?: number) => {
-    try {
-      setLoading(true);
-
-      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
-
-      if (!token) {
-        router.push('/login');
-        return;
-      }
-
-      const currentPage = page || pagination.currentPage;
-      const currentLimit = limit || pagination.limit;
+    const currentPage = page || pagination.currentPage;
+    const currentLimit = limit || pagination.limit;
 
     const result = await reduxFetchApplications(currentPage, currentLimit);
 
@@ -430,13 +440,13 @@ export default function MyApplicationsPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-[#FAFAFA] border-b border-[#E0E0E0]">
-                <tr>
+               <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Application No.</th>
                   {/* <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Customer</th> */}
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">EMI Amount</th>
+                  <th className="px-2 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Total Repayment</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Tenure</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Priority</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Status</th>
+                  <th className="px-8 py-2 text-left text-xs font-semibold text-gray-700 uppercase">Status</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Actions</th>
                 </tr>
               </thead>
@@ -637,7 +647,8 @@ export default function MyApplicationsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <div>
                         <p className="text-sm text-gray-600">Full Name</p>
-                        <p className="font-semibold text-gray-900">{detailedApplication.customerId.fullName}</p>
+                        <p className="font-semibold text-gray-900">{detailedApplication.customerId.fullName .toLowerCase()
+    .replace(/\b\w/g, char => char.toUpperCase())}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Email</p>
@@ -673,31 +684,27 @@ export default function MyApplicationsPage() {
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                       <div>
-                        <p className="text-sm text-gray-600">Loan Amount</p>
-                        <p className="text-lg font-bold text-green-700">₹{(detailedApplication.requestedLoanAmount || 0).toLocaleString()}</p>
+                        <p className="text-sm text-gray-600">Requested Loan Amount</p>
+                        <p className="text-lg font-bold text-blue-700">₹{(detailedApplication.requestedLoanAmount || 0).toLocaleString()}</p>
+                      </div>
+                        <div>
+                        <p className="text-sm text-gray-600">Approved Loan Amount</p>
+                        <p className="text-lg font-bold text-green-700">₹{(detailedApplication.approvedLoanAmount || 0).toLocaleString()}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Tenure</p>
                         <p className="font-semibold text-gray-900">{detailedApplication.tenure || '-'}{" "}{detailedApplication.tenureUnit || ''}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">EMI Amount</p>
-                        <p className="text-lg font-bold text-blue-700">₹{(detailedApplication.emiAmount || 0).toLocaleString()}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Purpose</p>
-                        <p className="font-semibold text-gray-900">{detailedApplication.purpose || '-'}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Interest Rate (p.d%)</p>
+                        <p className="text-sm text-gray-600">Interest Rate (per day)</p>
                         <p className="font-semibold text-gray-900">{detailedApplication.interestRate || 0}%</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">Processing Fee({detailedApplication.productId?.processingFee || 0}%)</p>
+                        <p className="text-sm text-gray-600">Processing Fee</p>
                         <p className="font-semibold text-gray-900">₹{(detailedApplication.processingFee || 0).toLocaleString()}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">GST on Fee({detailedApplication.productId?.gst || 0}%)</p>
+                        <p className="text-sm text-gray-600">GST on Processing Fee</p>
                         <p className="font-semibold text-gray-900">₹{(detailedApplication.gstOnProcessingFee || 0).toLocaleString()}</p>
                       </div>
 <div>
@@ -750,9 +757,15 @@ export default function MyApplicationsPage() {
                           <div key={idx} className="bg-white rounded-lg p-4 border border-amber-100">
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
-                                <p className="font-semibold text-gray-800">{doc.documentType.replace(/_/g, ' ')}</p>
+                              <p className="font-semibold text-gray-800">
+  {doc.documentType
+    .replace(/_/g, ' ')
+    .toLowerCase()
+    .replace(/^./, str => str.toUpperCase())}
+</p>
+
                                 <p className="text-xs text-gray-500 mt-1">
-                                  Uploaded: {new Date(doc.uploadedAt).toLocaleDateString()}
+                                  Uploaded: {new Date(doc.documentId.uploadedAt).toLocaleDateString()}
                                 </p>
                                 <span className={`inline-block mt-2 px-2 py-1 rounded-full text-xs font-medium ${
                                   doc.documentId.status === 'VERIFIED' ? 'text-green-600 bg-green-100' :

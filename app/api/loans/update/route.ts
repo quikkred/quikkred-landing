@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { API_BASE_URL } from '@/lib/config';
 
 export async function PUT(request: NextRequest) {
   try {
@@ -16,7 +17,7 @@ export async function PUT(request: NextRequest) {
     const authHeader = request.headers.get('Authorization');
 
     // Forward the update request to the backend API
-    const response = await fetch(`https://beta.quikkred.in/api/application/loan/update/${applicationId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/application/loan/update/${applicationId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

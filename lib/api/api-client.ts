@@ -13,7 +13,6 @@ interface ApiResponse<T = any> {
 class ApiClient {
   private baseURL: string;
   private externalBaseURL: string;
-  private token: string | null = null;
 
   constructor() {
     // In Next.js, we use relative URLs for API routes
@@ -51,8 +50,8 @@ class ApiClient {
       ...(options.headers as Record<string, string>),
     };
 
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
 
     try {
@@ -61,28 +60,36 @@ class ApiClient {
         headers,
       });
 
-      // Handle token expiration (401 Unauthorized) - Full logout and redirect
+      // Handle token expiration (401 Unauthorized)
       if (response.status === 401) {
         if (typeof window !== 'undefined') {
-          // Clear all authentication tokens
-          localStorage.removeItem('token');
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
+          // Check if we're on login page or just logged in - don't clear storage
+          const isLoginPage = window.location.pathname === '/login';
+          const loginTimestamp = localStorage.getItem('loginTimestamp');
+          const justLoggedIn = loginTimestamp &&
+            (Date.now() - parseInt(loginTimestamp, 10)) < 10000; // 10 second grace period
 
-          // Clear user data
-          localStorage.removeItem('userRole');
-          localStorage.removeItem('role');
-          localStorage.removeItem('userEmail');
-          localStorage.removeItem('email');
-          localStorage.removeItem('userName');
-          localStorage.removeItem('userId');
-          localStorage.removeItem('userMobile');
-          localStorage.removeItem('customerUniqueId');
+          if (!isLoginPage && !justLoggedIn) {
+            // Clear all authentication tokens
+            localStorage.removeItem('token');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('loginTimestamp');
 
-          // Clear cookies
-          document.cookie = 'auth-token=; path=/; max-age=0';
-          document.cookie = 'user-role=; path=/; max-age=0';
+            // Clear user data
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('role');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('email');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('userMobile');
+            localStorage.removeItem('customerUniqueId');
+
+            // Clear cookies
+            document.cookie = 'auth-token=; path=/; max-age=0';
+            document.cookie = 'user-role=; path=/; max-age=0';
 
             // Redirect to login
             await signOut({ redirect: true, callbackUrl: "/login" });
@@ -106,16 +113,18 @@ class ApiClient {
   }
 
   setToken(token: string) {
-    this.token = token;
     if (typeof window !== 'undefined') {
       localStorage.setItem('authToken', token);
+      localStorage.setItem('accessToken', token);
+      localStorage.setItem('token', token);
     }
   }
 
   clearToken() {
-    this.token = null;
     if (typeof window !== 'undefined') {
       localStorage.removeItem('authToken');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('token');
     }
   }
 
