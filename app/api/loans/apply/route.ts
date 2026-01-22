@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { API_BASE_URL } from '@/lib/config';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
     // Forward the loan application to the backend API
-    const response = await fetch('https://beta.quikkred.in/api/application/loan/create', {
+    const response = await fetch(`${API_BASE_URL}/api/application/loan/create`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

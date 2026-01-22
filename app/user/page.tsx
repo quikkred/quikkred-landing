@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from "nextjs-toploader/app";
 import {
@@ -60,8 +60,9 @@ interface DashboardData {
   oldApplicationNumber: string | null;
   oldApplicationDate: string | null;
   isBasicDetailsFilled: boolean;
-  isEmploymentDetailsFilled: boolean;
-  isVerificationDetailsFilled: boolean;
+  isKycDetailsFilled: boolean;
+  isBankDetailsFilled: boolean;
+  isSubmit: boolean;
   activeLoan: boolean;
   loans: LoanSummary[];
 }
@@ -119,6 +120,43 @@ export default function UserDashboard() {
   const [selectedLoanNumber, setSelectedLoanNumber] = useState<string>('');
   const [activeLoanDetails, setActiveLoanDetails] = useState<ActiveLoanDetails | null>(null);
   const [loadingLoanDetails, setLoadingLoanDetails] = useState(false);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+  const isProcessingRef = useRef(false);
+
+  // Update local state from Redux
+  useEffect(() => {
+    if (dashboardData) {
+      setData(dashboardData);
+    }
+  }, [dashboardData]);
+
+  useEffect(() => {
+    if (reduxActiveLoan) {
+      setActiveLoanDetails(reduxActiveLoan);
+    }
+  }, [reduxActiveLoan]);
+
+  useEffect(() => {
+    setLoading(dashboardLoading);
+  }, [dashboardLoading]);
+
+  useEffect(() => {
+    setLoadingLoanDetails(activeLoanLoading);
+  }, [activeLoanLoading]);
+
+  // Load Razorpay script
+  useEffect(() => {
+    if (window.Razorpay) {
+      setRazorpayLoaded(true);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => setRazorpayLoaded(true);
+    document.body.appendChild(script);
+  }, []);
 
   // Set default amount to remaining amount when loan details are loaded
   useEffect(() => {
@@ -128,13 +166,11 @@ export default function UserDashboard() {
     }
   }, [activeLoanDetails]);
 
-  // Fetch active loan details when selected loan changes
+  // Fetch active loan details using Redux
   const fetchActiveLoanDetails = async (loanNumber: string) => {
     if (!loanNumber) return;
 
-    try {
-      setLoadingLoanDetails(true);
-      setCustomAmount(''); // Reset custom amount
+    setCustomAmount(''); // Reset custom amount
 
     const result = await reduxFetchActiveLoan(loanNumber);
 
@@ -143,24 +179,14 @@ export default function UserDashboard() {
     //   return;
     // }
 
-      const result = await response.json();
-
-      if (response.ok && result.success && result.data) {
-        setActiveLoanDetails(result.data);
-        console.log('✅ Active loan details loaded successfully');
-      } else {
-        throw new Error(result.message || 'Failed to fetch loan details');
-      }
-
-    } catch (error) {
-      console.error('Error fetching active loan details:', error);
+    if (result?.success) {
+      console.log('✅ Active loan details loaded successfully');
+    } else if (result?.error) {
       toast({
         variant: "error",
         title: "Error Loading Loan",
         description: "Unable to fetch loan details. Please try again."
       });
-    } finally {
-      setLoadingLoanDetails(false);
     }
   };
 
@@ -184,62 +210,18 @@ export default function UserDashboard() {
     fetchUserData();
   }, []);
 
+  // Fetch user data using Redux
   const fetchUserData = async () => {
     const result = await reduxFetchDashboard();
 
-      const response = await fetch('https://beta.quikkred.in/api/customer/dashboard', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      // Check if token expired (401 Unauthorized) - Full logout and redirect
-      if (response.status === 401) {
-        // Clear all authentication tokens
-        localStorage.removeItem('token');
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-
-        // Clear user data
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('role');
-        localStorage.removeItem('userEmail');
-        localStorage.removeItem('email');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('userId');
-        localStorage.removeItem('userMobile');
-        localStorage.removeItem('customerUniqueId');
-
-        // Clear cookies
-        document.cookie = 'auth-token=; path=/; max-age=0';
-        document.cookie = 'user-role=; path=/; max-age=0';
-
-        // Redirect to login
-        router.push('/login');
-        return;
-      }
-
-      const result = await response.json();
-
-      if (response.ok && result.success && result.data) {
-        setData(result.data);
-        console.log('✅ Dashboard data loaded successfully');
-      } else {
-        throw new Error(result.message || 'Failed to fetch dashboard data');
-      }
-
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+    if (result?.success) {
+      console.log('✅ Dashboard data loaded successfully');
+    } else if (result?.error) {
       toast({
         variant: "error",
         title: "Error Loading Data",
         description: "Unable to fetch your dashboard data. Please try again."
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -268,9 +250,10 @@ export default function UserDashboard() {
     if (!data) return 0;
     let completed = 0;
     if (data.isBasicDetailsFilled) completed++;
-    if (data.isEmploymentDetailsFilled) completed++;
-    if (data.isVerificationDetailsFilled) completed++;
-    return Math.round((completed / 3) * 100);
+    if (data.isKycDetailsFilled) completed++;
+    if (data.isBankDetailsFilled) completed++;
+    if (data.isSubmit) completed++;
+    return Math.round((completed / 4) * 100);
   };
 
   const calculateTotalPayment = () => {
@@ -487,30 +470,57 @@ export default function UserDashboard() {
             });
           }
 
-        // Refresh dashboard data and active loan details after successful payment
-        await fetchUserData();
-        if (selectedLoanNumber) {
-          await fetchActiveLoanDetails(selectedLoanNumber);
-        }
+          // Refresh dashboard data and active loan details after successful payment
+          await fetchUserData();
+          if (selectedLoanNumber) {
+            await fetchActiveLoanDetails(selectedLoanNumber);
+          }
 
-        // Reset form - Clear amount so it recalculates from new remaining balance
-        setSelectedEmiCount(1);
-        setCustomAmount('');
+          // Reset form
+          setSelectedEmiCount(1);
+          setCustomAmount('');
+          setProcessingPayment(false);
+          isProcessingRef.current = false;
+        },
+        modal: {
+          ondismiss: () => {
+            console.log("Payment cancelled");
+            toast({
+              variant: "default",
+              title: "Payment Cancelled",
+              description: "You cancelled the payment process."
+            });
+            setProcessingPayment(false);
+            isProcessingRef.current = false;
+          },
+        },
+        theme: { color: "#10B4A3" },
+      };
 
-      } else {
-        console.log('❌ Payment failed', result);
-        throw new Error(result.message || 'Payment failed');
-      }
+      const rzp = new window.Razorpay(options);
+
+      rzp.on("payment.failed", (response: any) => {
+        console.log("Payment Failed:", response.error);
+        toast({
+          variant: "error",
+          title: "Payment Failed",
+          description: response.error.description || "Payment failed. Please try again."
+        });
+        setProcessingPayment(false);
+        isProcessingRef.current = false;
+      });
+
+      rzp.open();
 
     } catch (error: any) {
-      console.error('Payment error:', error);
+      console.error('Payment initiation error:', error);
       toast({
         variant: "error",
-        title: "Payment Failed",
-        description: error.message || "Unable to process payment. Please try again."
+        title: "Payment Error",
+        description: error.message || "Failed to initiate payment. Please try again."
       });
-    } finally {
       setProcessingPayment(false);
+      isProcessingRef.current = false;
     }
   };
 
@@ -584,7 +594,7 @@ export default function UserDashboard() {
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-[#0A0A0A] flex items-center gap-2 sm:gap-3">
                 <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-[#FF9800]" />
-                <span className="break-words">Welcome back, {user?.name?.split(' ')[0]}!</span>
+                <span className="break-words">Welcome back, {user?.name?.split(' ')[0]?.charAt(0).toUpperCase() + (user?.name?.split(' ')[0]?.slice(1).toLowerCase() || '')}!</span>
               </h1>
               <p className="text-[#737373] mt-1 text-sm sm:text-base">Complete your profile to apply for loans</p>
             </div>
@@ -636,7 +646,7 @@ export default function UserDashboard() {
         </motion.div>
 
         {/* Old Application Info - Show only if oldApplication is true */}
-        {data?.oldApplication && data?.oldApplicationNumber && (
+        {data?.oldApplication && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1014,15 +1024,15 @@ export default function UserDashboard() {
               : 'bg-gray-50 border-gray-200'
               }`}>
               <div className="flex items-center gap-2 sm:gap-3">
-                {data?.isEmploymentDetailsFilled ? (
+                {data?.isKycDetailsFilled ? (
                   <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-green-600" />
                 ) : (
                   <Clock className="w-6 h-6 sm:w-7 sm:h-7 text-gray-400" />
                 )}
                 <div>
-                  <p className="font-semibold text-gray-900 text-sm sm:text-base">Employment Details</p>
+                  <p className="font-semibold text-gray-900 text-sm sm:text-base">KYC Details</p>
                   <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                    {data?.isEmploymentDetailsFilled ? 'Completed ✓' : 'Pending'}
+                    {data?.isKycDetailsFilled ? 'Completed ✓' : 'Pending'}
                   </p>
                 </div>
               </div>
@@ -1033,13 +1043,13 @@ export default function UserDashboard() {
               : 'bg-gray-50 border-gray-200'
               }`}>
               <div className="flex items-center gap-2 sm:gap-3">
-                {data?.isVerificationDetailsFilled ? (
+                {data?.isBankDetailsFilled ? (
                   <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-green-600" />
                 ) : (
                   <Clock className="w-6 h-6 sm:w-7 sm:h-7 text-gray-400" />
                 )}
                 <div>
-                  <p className="font-semibold text-gray-900 text-sm sm:text-base">Verification</p>
+                  <p className="font-semibold text-gray-900 text-sm sm:text-base">Bank Details</p>
                   <p className="text-xs sm:text-sm text-gray-600 mt-1">
                     {data?.isBankDetailsFilled ? 'Completed ✓' : 'Pending'}
                   </p>

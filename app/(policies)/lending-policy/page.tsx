@@ -59,7 +59,7 @@ export default function LendingPolicyPage() {
 
               <h3 className="text-xl font-semibold mb-3 text-[#2b2b2b]">Background</h3>
               <p className="text-[#2b2b2b] leading-[1.7] mb-4">
-                We, Satsai Finance Private Limited, an RBI registered NBFC committed to providing personal loans to employed professionals. We easily meet your unique financial needs by incorporating innovation into the credit availing process, giving you instant access to funds directly.
+                We, Satsai Finlease Private Limited, an RBI registered NBFC committed to providing personal loans to employed professionals. We easily meet your unique financial needs by incorporating innovation into the credit availing process, giving you instant access to funds directly.
               </p>
               <p className="text-[#2b2b2b] leading-[1.7] mb-4">
                 We offer loans at affordable interest rates due to a minimal risk profile. At Quikkred, we take pride in offering the lowest interest rates to our borrowers, ensuring they are not unnecessarily burdened by high interest rates.
@@ -501,7 +501,7 @@ export default function LendingPolicyPage() {
                   Board Approval
                 </h3>
                 <p className="text-[#2b2b2b] leading-[1.7]">
-                  <strong>Approved by:</strong> Board of Directors, Satsai Finance Private Limited
+                  <strong>Approved by:</strong> Board of Directors, Satsai Finlease Private Limited
                 </p>
               </div>
             </div>

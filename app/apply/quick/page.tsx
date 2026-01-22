@@ -25,8 +25,10 @@ import getToken from "@/lib/getToken";
 import { getSession, signIn } from "next-auth/react";
 
 // Auto-decision engine
-const autoDecisionEngine = (data: any) => {
-  const { monthlyIncome, loanAmount, pan, aadhaar } = data;
+
+
+// const autoDecisionEngine = (data: any) => {
+//   const { monthlyIncome, loanAmount, pan, aadhaar } = data;
 
 
 //   const minIncome = 25000;
@@ -42,32 +44,34 @@ const autoDecisionEngine = (data: any) => {
 //     };
 //   }
 
-  if (loanAmount > maxEligibleAmount) {
-    return {
-      approved: false,
-      reason: `Requested amount exceeds maximum eligible amount (₹${maxEligibleAmount.toLocaleString()})`,
-      suggestedAction: `Maximum loan amount you can apply for: ₹${maxEligibleAmount.toLocaleString()}`
-    };
-  }
+//   if (loanAmount > maxEligibleAmount) {
+//     return {
+//       approved: false,
+//       reason: `Requested amount exceeds maximum eligible amount (₹${maxEligibleAmount.toLocaleString()})`,
+//       suggestedAction: `Maximum loan amount you can apply for: ₹${maxEligibleAmount.toLocaleString()}`
+//     };
+//   }
 
-  if (!pan || !aadhaar) {
-    return {
-      approved: false,
-      reason: "PAN and Aadhaar details are mandatory",
-      suggestedAction: "Please provide valid PAN and Aadhaar numbers"
-    };
-  }
+//   if (!pan || !aadhaar) {
+//     return {
+//       approved: false,
+//       reason: "PAN and Aadhaar details are mandatory",
+//       suggestedAction: "Please provide valid PAN and Aadhaar numbers"
+//     };
+//   }
 
-  // Approved!
-  return {
-    approved: true,
-    approvedAmount: loanAmount,
-    interestRate: 12.5,
-    tenure: data.tenure || 12,
-    emi: Math.round((loanAmount * (12.5/100/12) * Math.pow(1 + 12.5/100/12, 12)) / (Math.pow(1 + 12.5/100/12, 12) - 1)),
-    processingFee: Math.round(loanAmount * 0.02)
-  };
-};
+//   // Approved!
+//   return {
+//     approved: true,
+//     approvedAmount: loanAmount,
+//     interestRate: 12.5,
+//     tenure: data.tenure || 12,
+//     emi: Math.round((loanAmount * (12.5/100/12) * Math.pow(1 + 12.5/100/12, 12)) / (Math.pow(1 + 12.5/100/12, 12) - 1)),
+//     processingFee: Math.round(loanAmount * 0.02)
+//   };
+// };
+
+
 export default function QuickLoanApplication() {
   // Generate unique document number for this session (stable across re-renders)
   const documentNumber = useMemo(() => `DOC${new Date().getFullYear()}${Date.now()}`, []);
@@ -75,6 +79,25 @@ export default function QuickLoanApplication() {
   const searchParams = useSearchParams();
   const { login, user, isLoading } = useAuth();
   const { toast } = useToast();
+
+  // Redux hooks for GET APIs
+  const {
+    customer: reduxCustomer,
+    customerLoading: reduxCustomerLoading,
+    getCustomer,
+    aadhaarStatus: reduxAadhaarStatus,
+    getAadhaarStatus,
+    eSignStatus: reduxESignStatus,
+    getESignStatus,
+    breData: reduxBreData,
+    breLoading: reduxBreLoading,
+    initBRE,
+    finfactorData: reduxFinfactorData,
+    finfactorLoading: reduxFinfactorLoading,
+    getFinfactor,
+    initESign,
+  } = useCustomer();
+
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [decision, setDecision] = useState<any>(null);
@@ -123,6 +146,10 @@ export default function QuickLoanApplication() {
   const [approvalData, setApprovalData] = useState<any>(null);
   const [approvalLoading, setApprovalLoading] = useState(false);
 
+  // User's desired loan amount (can be less than or equal to approved amount)
+  const [userDesiredAmount, setUserDesiredAmount] = useState<number | null>(null);
+  const [calculatedLoanDetails, setCalculatedLoanDetails] = useState<any>(null);
+
   // BRE Status States
   const [rejectionCountdown, setRejectionCountdown] = useState(10);
   const [ptbLoading, setPtbLoading] = useState(false);
@@ -141,27 +168,25 @@ export default function QuickLoanApplication() {
   // User location state
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
-  // Field validation errors for Step 1 and Step 4
-  const [fieldErrors, setFieldErrors] = useState({
-    email: "",
-    mobile: "",
-    fullName: "",
-    dob: "",
-    aadhaar: "",
-    pan: "",
-    accountHolderName: "",
-    accountNumber: "",
-    ifsc: "",
-    reference1Name: "",
-    reference1Mobile: "",
-    reference2Name: "",
-    reference2Mobile: ""
-  });
+  // Field validation errors (using imported initial values)
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>(initialFieldErrors);
 
   // Bank verification state
   const [bankVerifying, setBankVerifying] = useState(false);
   const [bankVerified, setBankVerified] = useState(false);
   const [bankVerifyError, setBankVerifyError] = useState("");
+  const [bankDropdownOpen, setBankDropdownOpen] = useState(false);
+
+  // IFSC auto-detection state
+  const [ifscLookupLoading, setIfscLookupLoading] = useState(false);
+  const [ifscLookupError, setIfscLookupError] = useState("");
+  const [ifscDetectedBank, setIfscDetectedBank] = useState<string | null>(null);
+  const [ifscBranchName, setIfscBranchName] = useState<string | null>(null);
+  const ifscLookupTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // State dropdown state
+  const [stateDropdownOpen, setStateDropdownOpen] = useState(false);
+  const [stateSearchTerm, setStateSearchTerm] = useState('');
 
   // Consent validation error
   const [consentError, setConsentError] = useState(false);
@@ -261,18 +286,10 @@ export default function QuickLoanApplication() {
           const token = await getToken();
 
           if (token) {
-            // Fetch user profile data
-            const response = await fetch('https://beta.quikkred.in/api/customer/get', {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              }
-            });
+            // Fetch user profile data using Redux
+            const result = await getCustomer();
 
-            const result = await response.json();
-
-            if (response.ok && result.success && result.data) {
+            if (result.success && result.data) {
               const profileData = result.data;
               console.log('✅ User profile loaded successfully');
 
@@ -286,6 +303,7 @@ export default function QuickLoanApplication() {
                 pan: profileData.panCard || prev.pan,
                 aadhaar: profileData.aadhaarNumber || prev.aadhaar,
                 dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
+                state: profileData.state ? profileData.state.toLowerCase() : prev.state,
                 employmentType: profileData.employmentType || prev.employmentType,
                 monthlyIncome: profileData.monthlyIncome?.toString() || prev.monthlyIncome,
                 companyName: profileData.companyName || prev.companyName,
@@ -298,22 +316,7 @@ export default function QuickLoanApplication() {
                 emailVerified: profileData.isEmailVerified || false // Only true if email is actually verified
               }));
 
-              // Log loan amount for debugging
-              if (profileData.requestedLoanAmount) {
-                console.log('✅ Loan amount loaded from API:', profileData.requestedLoanAmount);
-              }
-
-              // Set verification flags from API
-              // Helper function to safely convert any value to boolean
-              // Handles: true, "true", "TRUE", 1, "1", false, "false", undefined, null
-              const toBoolean = (value: unknown): boolean => {
-                if (typeof value === 'boolean') return value;
-                if (typeof value === 'string') return value.toLowerCase() === 'true';
-                if (typeof value === 'number') return value === 1;
-                return false;
-              };
-
-              // Check verification statuses (using toBoolean for string safety)
+              // Check verification statuses (using imported toBoolean)
               if (toBoolean(profileData.isPanVerify)) {
                 setPanVerified(true);
                 console.log('✅ PAN already verified');
@@ -328,6 +331,12 @@ export default function QuickLoanApplication() {
                 console.log('✅ Bank already verified (penny drop)');
               }
 
+              // Set detected bank if IFSC and bank name are pre-filled
+              if (profileData.banks?.[0]?.ifscCode && profileData.banks?.[0]?.bankName) {
+                setIfscDetectedBank(profileData.banks[0].bankName);
+                console.log('✅ Bank name pre-filled from profile:', profileData.banks[0].bankName);
+              }
+
               // Check eSign status from profile
               if (profileData.eSign?.status) {
                 setUserESignStatus(profileData.eSign.status);
@@ -336,6 +345,40 @@ export default function QuickLoanApplication() {
                   setESignVerified(true);
                   console.log('✅ eSign already completed');
                 }
+              }
+
+              // Check BSA status from profile
+
+              // if (profileData.bsaStatus) {
+              //   setBsaStatus(profileData.bsaStatus);
+              //   console.log('📊 BSA status from profile:', profileData.bsaStatus);
+
+              //   // If BSA is PROCESSED and ?finfactor=success is not in URL, redirect to add it
+              //   if (profileData.bsaStatus === 'PROCESSED') {
+              //     const currentUrl = new URL(window.location.href);
+              //     const finfactorParam = currentUrl.searchParams.get('finfactor');
+              //     if (finfactorParam !== 'success') {
+              //       console.log('📊 BSA is PROCESSED, redirecting with ?finfactor=success');
+              //       currentUrl.searchParams.set('finfactor', 'success');
+              //       router.replace(currentUrl.pathname + currentUrl.search);
+              //       return; // Exit early as we're redirecting
+              //     }
+              //   }
+              // }
+
+              // Check if bsaInitiated is true - redirect to finfactor success flow
+              if (toBoolean(profileData.bsaInitiated)) {
+                console.log('📊 bsaInitiated is true, redirecting to finfactor success flow');
+                const currentUrl = new URL(window.location.href);
+                const finfactorParam = currentUrl.searchParams.get('finfactor');
+                if (finfactorParam !== 'success') {
+                  currentUrl.searchParams.set('finfactor', 'success');
+                  router.replace(currentUrl.pathname + currentUrl.search);
+                  return; // Exit early as we're redirecting
+                }
+                // If already has ?finfactor=success, set states for the UI
+                setFinfactorSuccess(true);
+                setCurrentStep(4);
               }
 
               // ============================================
@@ -359,12 +402,10 @@ export default function QuickLoanApplication() {
               if (profileData.profile?.s3URL) {
                 setSelfiePreview(profileData.profile.s3URL);
                 setSelfieCaptured(true);
-                console.log('✅ Selfie loaded from profile:', profileData.profile.s3URL);
 
                 // Check if selfie/profile is verified - disable retake if verified
                 if (profileData.profile?.status === 'VERIFIED') {
                   setSelfieVerified(true);
-                  console.log('✅ Selfie already verified - retake disabled');
                 }
               }
 
@@ -372,7 +413,6 @@ export default function QuickLoanApplication() {
               const allChecklistComplete = isBasicDetailsFilled && isKycDetailsFilled && isBankDetailsFilled && isSubmit;
 
               if (allChecklistComplete) {
-                console.log('✅ All checklist items complete - redirecting to Dashboard');
                 router.push('/user');
                 return;
               }
@@ -383,27 +423,17 @@ export default function QuickLoanApplication() {
 
               if (!isBasicDetailsFilled) {
                 // Step 1 not complete - check email verification requirement
-                if (!isEmailVerified) {
-                  console.log('📍 Step 1: Basic Details not filled, email not verified');
-                } else {
-                  console.log('📍 Step 1: Basic Details not filled (email verified)');
-                }
                 firstPendingStep = 1;
               } else if (!isKycDetailsFilled) {
                 // Step 1 COMPLETE - go to Step 2 (don't force back to Step 1)
                 firstPendingStep = 2;
-                console.log('📍 First pending: Step 2 (KYC/Identity) - Step 1 already complete');
               } else if (!isBankDetailsFilled) {
                 // Step 1 & 2 COMPLETE - go to Step 3
                 firstPendingStep = 3;
-                console.log('📍 First pending: Step 3 (Bank Details) - Steps 1-2 already complete');
               } else if (!isSubmit) {
                 // Step 1, 2 & 3 COMPLETE - go to Step 4
                 firstPendingStep = 4;
-                console.log('📍 First pending: Step 4 (Approval/Submit) - Steps 1-3 already complete');
               }
-
-              console.log('🎯 Navigating to step:', firstPendingStep);
 
               // Set the determined step
               setApiDeterminedStep(firstPendingStep);
@@ -444,7 +474,6 @@ export default function QuickLoanApplication() {
   useEffect(() => {
     // Clear the localStorage after reading (already loaded in initial state)
     if (localStorage.getItem('heroFormData')) {
-      console.log('🗑️ Clearing hero form data from localStorage');
       localStorage.removeItem('heroFormData');
     }
   }, []);
@@ -452,7 +481,6 @@ export default function QuickLoanApplication() {
   // Get user location when they land on the apply page (after clicking "Apply Now")
   useEffect(() => {
     const requestLocation = async () => {
-      console.log('📍 Requesting user location on page load...');
       await getLocation();
     };
     requestLocation();
@@ -461,7 +489,6 @@ export default function QuickLoanApplication() {
   // Apply API-determined step after data is loaded
   useEffect(() => {
     if (apiDeterminedStep !== null && apiDeterminedStep !== currentStep) {
-      console.log(`🎯 Applying API-determined step: ${apiDeterminedStep}`);
       setCurrentStep(apiDeterminedStep);
       toast({
         variant: "success",
@@ -471,27 +498,16 @@ export default function QuickLoanApplication() {
     }
   }, [apiDeterminedStep]);
 
-  // Auto-redirect to dashboard or login after successful submission
+  // Auto-redirect to application-status page after successful submission
   useEffect(() => {
     if (decision && decision.approved) {
-      setRedirectCountdown(5); // Reset countdown
-      const timer = setInterval(() => {
-        setRedirectCountdown((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            // Redirect based on login status
-            if (user) {
-              router.push('/user');
-            } else {
-              router.push('/user');
-            }
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer);
+      // Store status data in localStorage for the status page to read
+      localStorage.setItem('applicationStatusData', JSON.stringify({
+        status: 'approved',
+        loanNumber: decision.loanNumber || '',
+        amount: decision.approvedAmount?.toString() || ''
+      }));
+      router.push('/application-status');
     }
   }, [decision, router]);
 
@@ -527,7 +543,7 @@ export default function QuickLoanApplication() {
     }
   }, [aadhaarReverifyTimer]);
 
-  // Rejection countdown timer - auto redirect to home after 10 seconds
+  // Rejection - immediately redirect to application-status page
   useEffect(() => {
     if (currentStep === 4 && approvalData?.status === 'Reject') {
       // Store status data in localStorage for the status page to read
@@ -713,25 +729,11 @@ export default function QuickLoanApplication() {
       setAadhaarStatusLoading(true);
 
       try {
-        // Create AbortController for timeout handling (15 seconds)
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-        const response = await fetch('https://beta.quikkred.in/api/kyc/aadhaar/status', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        const result = await response.json();
+        // Using Redux for aadhaar/status API
+        const result = await getAadhaarStatus();
 
         // STEP 7: Handle API response
-        if (response.ok && result.success && result.data?.isAadhaarVerify === true) {
+        if (result.success && result.data?.isAadhaarVerify === true) {
           console.log('✅ Aadhaar verified successfully from status API');
           console.log('📝 Backend has updated isAadhaarVerify = true in database');
           setAadhaarVerified(true);
@@ -832,25 +834,11 @@ export default function QuickLoanApplication() {
       setESignStatusLoading(true);
 
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-        const response = await fetch('https://beta.quikkred.in/api/kyc/eSign/document', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        const result = await response.json();
+        // Using Redux for eSign/document API
+        const result = await getESignStatus();
 
         // Check if e-Sign document is already signed
-        if (response.ok && result.success && result.message === "E-sign document is already signed and saved") {
-          console.log('[eSign] e-Sign document verified successfully (status = SUCCESS)');
+        if (result.success && result.message === "E-sign document fetched successfully") {
           setESignVerified(true);
           setUserESignStatus('SUCCESS');
           toast({
@@ -861,12 +849,15 @@ export default function QuickLoanApplication() {
         } else {
           console.log('[eSign] e-Sign not completed:', result.message || 'Document not signed');
           setESignVerified(false);
-          // Show info message if e-Sign is pending
-          toast({
-            variant: "warning",
-            title: "e-Sign Pending",
-            description: "Please complete e-Sign verification.",
-          });
+        }
+
+        // Call customer/get API once after eSign/document API using Redux
+        try {
+          console.log('[eSign] Calling customer/get API to refresh user data...');
+          await getCustomer();
+          console.log('[eSign] customer/get API called successfully');
+        } catch (customerError) {
+          console.error('[eSign] Error calling customer/get API:', customerError);
         }
       } catch (error: any) {
         if (error.name === 'AbortError') {
@@ -940,6 +931,13 @@ export default function QuickLoanApplication() {
         return;
       }
 
+      // Skip if finfactor=success is in URL (will call /api/kyc/bre/finFactor instead)
+      const finfactorParam = searchParams.get('finfactor');
+      if (finfactorParam === 'success') {
+        console.log('[Step 4] finfactor=success detected, skipping bre/initialize (will call bre/finFactor)');
+        return;
+      }
+
       // Skip if already called in this session
       if (breApiCalledRef.current) {
         console.log('[Step 4] BRE API already called, skipping');
@@ -965,17 +963,10 @@ export default function QuickLoanApplication() {
       setApprovalLoading(true);
 
       try {
-        const response = await fetch('https://beta.quikkred.in/api/kyc/bre/initialize', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        // Using Redux for bre/initialize API
+        const result = await initBRE();
 
-        const result = await response.json();
-
-        if (response.ok && result.success && result.data) {
+        if (result.success && result.data) {
           console.log('[Step 4] BRE data fetched successfully');
           // Store BRE response data only (don't include formData to avoid dependency)
           setApprovalData(result.data);
@@ -1002,7 +993,8 @@ export default function QuickLoanApplication() {
     };
 
     fetchBREData();
-  }, [currentStep, approvalData, toast]);
+  }, [currentStep, approvalData, toast, searchParams]);
+
 
   // Load form data from localStorage on mount
   useEffect(() => {
@@ -1023,52 +1015,6 @@ export default function QuickLoanApplication() {
     }
   }, [user]);
 
-  // Fetch loan products
-
-
-
-  // useEffect(() => {
-  //   const fetchLoanProducts = async () => {
-  //     const token =   localStorage.getItem('accessToken') ||
-  //                     localStorage.getItem('token') ||
-  //                     localStorage.getItem('authToken');
-  //     setLoadingProducts(true);
-  //     try {
-  //       const response = await fetch('https://beta.quikkred.in/api/loanProduct/allLoanProductsNameOnly', {
-  //         method: 'GET',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //           'Authorization': `Bearer ${token}`
-  //         },
-  //       });
-
-  //       const result = await response.json();
-
-  //       if (response.ok && result.success && result.data) {
-  //         setLoanProducts(result.data);
-  //         console.log('✅ Loan products loaded:', result.data);
-  //       } else {
-  //         console.error('Failed to fetch loan products:', result.message);
-  //         toast({
-  //           title: "Error",
-  //           description: "Failed to load loan products. Please refresh the page.",
-  //           variant: "error"
-  //         });
-  //       }
-  //     } catch (error) {
-  //       console.error('Error fetching loan products:', error);
-  //       toast({
-  //         title: "Error",
-  //         description: "Failed to load loan products. Please refresh the page.",
-  //         variant: "error"
-  //       });
-  //     } finally {
-  //       setLoadingProducts(false);
-  //     }
-  //   };
-
-  //   fetchLoanProducts();
-  // }, []);
 
   // Calculate EMI when loan amount, tenure, tenure unit, or product changes
   useEffect(() => {
@@ -1095,11 +1041,6 @@ export default function QuickLoanApplication() {
       } catch (e) {
         return 'N/A';
       }
-    };
-
-    const formatCurrency = (value: any) => {
-      if (!value || value === 'N/A' || isNaN(value)) return 'N/A';
-      return Number(value).toLocaleString('en-IN');
     };
 
     const maskAadhaar = (aadhaar: string) => {
@@ -1139,11 +1080,10 @@ export default function QuickLoanApplication() {
         return `
           <tr>
             <td>1</td>
-            <td>N/A</td>
+            <td>${formatDate(dueDate)}</td>
             <td>&#8377;${(loanAmount)}</td>
             <td>&#8377;${(Math.round(interest))}</td>
             <td>&#8377;${(Math.round(totalAmount))}</td>
-            <td>N/A</td>
           </tr>
         `;
       }
@@ -1176,7 +1116,7 @@ export default function QuickLoanApplication() {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=900, initial-scale=1.0">
     <title>Loan Agreement - Quikkred</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -1303,8 +1243,8 @@ export default function QuickLoanApplication() {
         .notice ul { margin: 0; padding-left: 12px; color: #78350f; }
         .notice li { margin: 3px 0; line-height: 1.3; }
         .signature-section { margin-top: 15px; padding-top: 12px; border-top: 1px solid #2d3748; }
-        .signature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px; }
-        .signature-box { text-align: center; }
+ .signature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px; align-items: stretch; }
+        .signature-box { text-align: center; height: 100%; }
         .esign-box {
             border: 1px dashed #25B181;
             padding: 12px 10px;
@@ -1312,12 +1252,17 @@ export default function QuickLoanApplication() {
             background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
             border-radius: 10px;
             min-height: 100px;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         .esign-box:hover { border-style: solid; }
         .esign-box .icon { font-size: 20px; margin-bottom: 5px; }
         .esign-box .text { font-size: 9px; color: #25B181; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
         .esign-box .subtext { font-size: 7px; color: #718096; margin-top: 2px; }
-        .esign-box .details { margin-top: 8px; font-size: 7px; color: #4a5568; line-height: 1.4; }
+        .esign-box .details { margin-top: auto; font-size: 7px; color: #4a5568; line-height: 1.4; }
         .lender-box { border-color: #2d3748; background: white; }
         .lender-box .text { color: #2d3748; }
         .declaration {
@@ -1422,16 +1367,7 @@ export default function QuickLoanApplication() {
             box-shadow: 0 10px 30px rgba(37, 177, 129, 0.45);
         }
         .approve-btn:active { transform: translateY(-1px); }
-        @media (max-width: 768px) {
-            body { padding: 15px; }
-            .page { padding: 25px 20px; border-radius: 12px; }
-            .header { flex-direction: column; gap: 20px; }
-            .doc-info { text-align: left; }
-            .info-grid { grid-template-columns: 1fr; }
-            .loan-grid { grid-template-columns: 1fr 1fr; }
-            .signature-grid { grid-template-columns: 1fr; gap: 25px; }
-            .title h2 { padding: 12px 25px; font-size: 16px; }
-        }
+
         @page {
             size: A4;
             margin: 10mm 15mm;
@@ -1693,12 +1629,15 @@ export default function QuickLoanApplication() {
             padding: 0 10px !important;
             vertical-align: top !important;
         }
-        body.pdf-mode .esign-box {
+body.pdf-mode .esign-box {
             padding: 15px;
             min-height: 140px;
             background: #f0fdf4 !important;
             box-shadow: none !important;
             border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
         body.pdf-mode .esign-box:hover {
             border-style: dashed !important;
@@ -1792,10 +1731,7 @@ export default function QuickLoanApplication() {
             <div class="info-grid">
                 <div class="info-row"><span class="info-label">Employment Type</span><span class="info-value">${getValue(data.employmentType)}</span></div>
                 <div class="info-row"><span class="info-label">Company / Business Name</span><span class="info-value">${getValue(data.companyName)}</span></div>
-                <div class="info-row"><span class="info-label">Designation</span><span class="info-value">${getValue(data.designation)}</span></div>
                 <div class="info-row"><span class="info-label">Monthly Income</span><span class="info-value">&#8377;${(data.monthlyIncome)}</span></div>
-                <div class="info-row"><span class="info-label">Salary Credit Date</span><span class="info-value">${getValue(data.salaryDate) !== 'N/A' ? data.salaryDate : '1st'} of every month</span></div>
-                <div class="info-row"><span class="info-label">Work Experience</span><span class="info-value">${getValue(data.workExperience)} years</span></div>
             </div>
         </div>
 
@@ -1806,7 +1742,7 @@ export default function QuickLoanApplication() {
                     <div class="loan-item"><div class="amount">&#8377;${(data.loanAmount)}</div><div class="label">Principal Amount</div></div>
                     <div class="loan-item"><div class="amount">${getValue(data.interestRate) !== 'N/A' ? data.interestRate : '1.0'}%</div><div class="label">Interest Rate (Daily)</div></div>
                     <div class="loan-item"><div class="amount">${getValue(data.tenure)} ${getValue(data.tenureUnit) !== 'N/A' ? data.tenureUnit : 'days'}</div><div class="label">Loan Tenure</div></div>
-                    <div class="loan-item"><div class="amount">&#8377;${(data.processingFee)}</div><div class="label">Processing Fee</div></div>
+                    <div class="loan-item"><div class="amount">&#8377;${(data.processingFee)} + &#8377;${(data.gstOnProcessingFee)} GST (18%)</div><div class="label">Processing Fee</div></div>
                     <div class="loan-item highlight"><div class="amount">&#8377;${(data.disbursementAmount)}</div><div class="label">Disbursement Amount</div></div>
                     <div class="loan-item highlight"><div class="amount">&#8377;
 ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
@@ -1828,7 +1764,13 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
             <div class="section-title">Repayment Schedule</div>
             <table class="schedule-table">
                 <thead>
-                    <tr><th>Instalment</th><th>Due Date</th><th>Principal</th><th>Interest</th><th>Total EMI</th><th>Payment Mode</th></tr>
+                    <tr>
+                       <th>Instalment</th>
+                       <th>Due Date</th>
+                       <th>Principal</th>
+                       <th>Interest</th>
+                       <th>Total Repayment</th>
+                    </tr>
                 </thead>
                 <tbody>${generateRepaymentSchedule()}</tbody>
             </table>
@@ -1855,7 +1797,7 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
                     <li><strong>Loan Purpose:</strong> This loan is granted for personal/business use as declared by the Borrower.</li>
                     <li><strong>Disbursement:</strong> Upon successful verification, the loan amount will be disbursed within 24-48 hours.</li>
                     <li><strong>Repayment:</strong> The Borrower agrees to repay the loan as per the repayment schedule via eNACH/eMandate.</li>
-                    <li><strong>Interest & Charges:</strong> The applicable interest rate is ${getValue(data.interestRate) !== 'N/A' ? data.interestRate : '1.0'}% Daily (36.5% APR). Processing fee of ${getValue(data.processingFee) !== 'N/A' ? data.processingFee : '2'}% + 18% GST.</li>
+                    <li><strong>Interest & Charges:</strong> The applicable interest rate is ${getValue(data.interestRate) !== 'N/A' ? data.interestRate : '1.0'}% Daily (36.5% APR). Processing fee of ${getValue(data.processingFee) !== 'N/A' ? data.processingFee : '2%'} + 18% GST.</li>
                     <li><strong>Late Payment:</strong> Late fee of &#8377;
  500 and penal interest of 2% per day will apply on overdue amounts.</li>
                     <li><strong>Default & Recovery:</strong> Default may result in credit bureau reporting and legal action.</li>
@@ -1878,10 +1820,9 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
             <div class="signature-grid">
                 <div class="signature-box">
                     <div class="esign-box">
-                        <div class="icon">✍️</div>
-                        <div class="text">Borrower's eSign</div>
-                        <div class="subtext">Aadhaar-based Digital Signature</div>
-                        <div class="details">
+
+                     
+<div class="details">
                             <div><strong>Name:</strong> ${getValue(data.fullName)}</div>
                             <div><strong>Aadhaar:</strong> XXXX-XXXX-${maskAadhaar(data.aadhaar)}</div>
                             <div><strong>Date:</strong> ${currentDate}</div>
@@ -1927,7 +1868,6 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
         <div class="approve-section" id="approve-section">
             <p style="font-size: 14px; color: #333; margin-bottom: 20px;">By clicking "I Agree & Approve", you confirm that you have read and understood all terms and conditions.</p>
             <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                <button class="test-btn" id="test-btn" onclick="testGeneratePDF()" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; border: none; padding: 14px 35px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3); transition: all 0.3s ease;">Download PDF</button>
                 <button class="approve-btn" id="approve-btn" onclick="approveAgreement()">I Agree & Approve</button>
             </div>
             <p style="font-size: 11px; color: #666; margin-top: 15px;">Download PDF button saves a copy locally. Approve button downloads PDF, uploads to server and proceeds.</p>
@@ -1943,6 +1883,10 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
     </div>
 
     <script>
+// 🔹 Variables injected from React component (single source of truth)
+        const documentNumber = '${documentNumber}';
+        const apiBaseUrl = '${API_BASE_URL}';
+
         // ========== PRINT-BASED PDF DOWNLOAD ==========
         function testGeneratePDF() {
             const btn = document.getElementById('test-btn');
@@ -2391,6 +2335,9 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
             background: #f0fff4;
             border-radius: 6px;
             min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .esign-box .icon {
@@ -3011,8 +2958,8 @@ y += boxHeight + 4;
         }
 
         // 🔹 Generate document number
-        const currentYear = new Date().getFullYear();
-        const documentNumber = 'DOC' + currentYear + Date.now();
+        // const currentYear = new Date().getFullYear();
+        // const documentNumber = 'DOC' + currentYear + Date.now();
 
         // 🔹 Hide approve section temporarily for PDF capture
         const approveSection = document.getElementById('approve-section');
@@ -3066,20 +3013,12 @@ y += boxHeight + 4;
         if (approveSection) approveSection.style.display = 'block';
 
         // 🔹 Download PDF locally for user's copy
-        const downloadUrl = URL.createObjectURL(pdfBlob);
-        const downloadLink = document.createElement('a');
-        downloadLink.href = downloadUrl;
-        downloadLink.download = 'Quikkred-Loan-Agreement-' + documentNumber + '.pdf';
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-        URL.revokeObjectURL(downloadUrl);
-
+     
         // 🔹 Upload PDF to API
         const formData = new FormData();
         formData.append('eSignDoc', pdfBlob, 'loan-agreement.pdf');
 
-        const response = await fetch('https://beta.quikkred.in/api/kyc/eSign/upload?documentNumber=' + documentNumber, {
+        const response = await fetch(apiBaseUrl + '/api/kyc/eSign/upload?documentNumber=' + documentNumber, {
             method: 'POST',
             headers: {
                 'Authorization': 'Bearer ' + token
@@ -3228,6 +3167,10 @@ y += boxHeight + 4;
     const dayDiff = today.getDate() - dob.getDate();
     const actualAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
     if (actualAge < 18) return false;
+
+    // State validation (must be selected and not blacklisted)
+    if (!formData.state) return false;
+    if (BLACKLISTED_STATES.includes(formData.state.toLowerCase())) return false;
 
     // Employment Type validation
     if (!formData.employmentType) return false;
@@ -3481,7 +3424,7 @@ y += boxHeight + 4;
         : { mobile: formData.mobile };
       console.log('Sending OTP with payload:', payload);
 
-      const response = await fetch("https://beta.quikkred.in/api/auth/customer/create", {
+      const response = await fetch(`${API_BASE_URL}/api/auth/customer/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -3581,36 +3524,37 @@ y += boxHeight + 4;
         if (token) {
           try {
             console.log('🔵 Fetching customer data after OTP verification...');
-            const customerResponse = await fetch('https://beta.quikkred.in/api/customer/get', {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              }
-            });
+            // Using Redux for customer/get API
+            const customerResult = await getCustomer();
 
-            const customerResult = await customerResponse.json();
-
-            if (customerResponse.ok && customerResult.success && customerResult.data) {
+            if (customerResult.success && customerResult.data) {
               const profileData = customerResult.data;
               console.log('✅ Customer data fetched successfully');
 
-              // Convert ISO date to YYYY-MM-DD format for input field
-              const formatDateForInput = (isoDate: string) => {
-                if (!isoDate) return '';
-                try {
-                  const date = new Date(isoDate);
-                  const year = date.getFullYear();
-                  const month = String(date.getMonth() + 1).padStart(2, '0');
-                  const day = String(date.getDate()).padStart(2, '0');
-                  return `${year}-${month}-${day}`;
-                } catch (error) {
-                  console.error('Error formatting date:', error);
-                  return '';
-                }
-              };
+              // Store user info in localStorage for AuthContext
+              console.log('📝 Storing user info in localStorage:', {
+                fullName: profileData.fullName,
+                email: profileData.email,
+                mobile: profileData.mobile,
+                _id: profileData._id
+              });
+              if (profileData.fullName) {
+                localStorage.setItem('userName', profileData.fullName);
+                console.log('✅ userName stored:', profileData.fullName);
+              } else {
+                console.warn('⚠️ fullName is empty, not storing userName');
+              }
+              if (profileData.email) {
+                localStorage.setItem('userEmail', profileData.email);
+              }
+              if (profileData.mobile) {
+                localStorage.setItem('userMobile', profileData.mobile);
+              }
+              if (profileData._id) {
+                localStorage.setItem('userId', profileData._id);
+              }
 
-              // Auto-fill form data from customer API response
+              // Auto-fill form data (using imported formatDateForInput)
               setFormData(prev => ({
                 ...prev,
                 fullName: profileData.fullName || prev.fullName,
@@ -3619,6 +3563,7 @@ y += boxHeight + 4;
                 pan: profileData.panCard || prev.pan,
                 aadhaar: profileData.aadhaarNumber || prev.aadhaar,
                 dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
+                state: profileData.state ? profileData.state.toLowerCase() : prev.state,
                 employmentType: profileData.employmentType || prev.employmentType,
                 monthlyIncome: profileData.monthlyIncome?.toString() || prev.monthlyIncome,
                 companyName: profileData.companyName || prev.companyName,
@@ -3626,12 +3571,19 @@ y += boxHeight + 4;
                 accountHolderName: profileData.banks?.[0]?.accountHolderName || prev.accountHolderName,
                 accountNumber: profileData.banks?.[0]?.accountNumber || prev.accountNumber,
                 ifsc: profileData.banks?.[0]?.ifscCode || prev.ifsc,
+                loanAmount: profileData.requestedLoanAmount?.toString() || prev.loanAmount,
               }));
 
               // Set bank verified flag if bank has been verified via penny drop
               if (profileData.banks?.[0]?.pennyDropStatus === 'VERIFIED') {
                 setBankVerified(true);
                 console.log('✅ Bank already verified (penny drop)');
+              }
+
+              // Set detected bank if IFSC and bank name are pre-filled
+              if (profileData.banks?.[0]?.ifscCode && profileData.banks?.[0]?.bankName) {
+                setIfscDetectedBank(profileData.banks[0].bankName);
+                console.log('✅ Bank name pre-filled from profile:', profileData.banks[0].bankName);
               }
 
               // Set verification flags from API if available
@@ -3654,6 +3606,21 @@ y += boxHeight + 4;
                 if (profileData.profile?.status === 'VERIFIED') {
                   setSelfieVerified(true);
                   console.log('✅ Selfie already verified - retake disabled');
+                }
+              }
+
+              // Check eSign status from profile
+              // Handle both formats: eSign: true (boolean) or eSign: { status: 'SUCCESS' } (object)
+              if (profileData.eSign === true) {
+                setUserESignStatus('SUCCESS');
+                setESignVerified(true);
+                console.log('✅ eSign already completed (boolean: true)');
+              } else if (profileData.eSign?.status) {
+                setUserESignStatus(profileData.eSign.status);
+                console.log('📝 eSign status from profile:', profileData.eSign.status);
+                if (profileData.eSign.status === 'SUCCESS') {
+                  setESignVerified(true);
+                  console.log('✅ eSign already completed (status: SUCCESS)');
                 }
               }
 
@@ -3815,7 +3782,7 @@ y += boxHeight + 4;
         return dateStr;
       };
 
-      const response = await fetch('https://beta.quikkred.in/api/kyc/pan/verification', {
+      const response = await fetch(`${API_BASE_URL}/api/kyc/pan/verification`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3887,7 +3854,7 @@ y += boxHeight + 4;
       const token = await getToken();
 
       // First call verification endpoint to check redirect
-      const verifyResponse = await fetch('https://beta.quikkred.in/api/kyc/aadhaar/verification', {
+      const verifyResponse = await fetch(`${API_BASE_URL}/api/kyc/aadhaar/verification`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3959,7 +3926,7 @@ y += boxHeight + 4;
     try {
       const token = await getToken();
 
-      const response = await fetch('https://beta.quikkred.in/api/kyc/aadhaar/verify', {
+      const response = await fetch(`${API_BASE_URL}/api/kyc/aadhaar/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -4030,6 +3997,112 @@ y += boxHeight + 4;
     }
   };
 
+  // IFSC Lookup using Razorpay API
+  const lookupIFSC = async (ifscCode: string) => {
+    if (!ifscCode || ifscCode.length !== 11) {
+      return;
+    }
+
+    // Validate IFSC format
+    const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+    if (!ifscRegex.test(ifscCode)) {
+      setIfscLookupError("Invalid IFSC format");
+      setIfscDetectedBank(null);
+      setIfscBranchName(null);
+      return;
+    }
+
+    setIfscLookupLoading(true);
+    setIfscLookupError("");
+
+    try {
+      const response = await fetch(`https://ifsc.razorpay.com/${ifscCode}`);
+
+      if (response.ok) {
+        const data = await response.json();
+        const bankName = data.BANK || "";
+        const branchName = data.BRANCH || "";
+
+        setIfscDetectedBank(bankName);
+        setIfscBranchName(branchName);
+        setIfscLookupError("");
+
+        // Auto-fill the bank name
+        setFormData(prev => ({
+          ...prev,
+          bankName: bankName,
+          customBankName: ""
+        }));
+
+        // Clear any existing field error for ifsc
+        setFieldErrors(prev => ({ ...prev, ifsc: "" }));
+
+        toast({
+          variant: "success",
+          title: "Bank Detected",
+          description: `${bankName}${branchName ? ` - ${branchName}` : ""}`,
+        });
+      } else if (response.status === 404) {
+        setIfscLookupError("Invalid IFSC code. Please check and try again.");
+        setIfscDetectedBank(null);
+        setIfscBranchName(null);
+        setFormData(prev => ({ ...prev, bankName: "", customBankName: "" }));
+      } else {
+        setIfscLookupError("Unable to verify IFSC. Please try again.");
+        setIfscDetectedBank(null);
+        setIfscBranchName(null);
+      }
+    } catch (error) {
+      console.error("IFSC lookup error:", error);
+      setIfscLookupError("Network error. Please check your connection.");
+      setIfscDetectedBank(null);
+      setIfscBranchName(null);
+    } finally {
+      setIfscLookupLoading(false);
+    }
+  };
+
+  // Debounced IFSC lookup handler
+  const handleIFSCChange = (value: string) => {
+    const upperValue = value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 11);
+
+    setFormData(prev => ({ ...prev, ifsc: upperValue }));
+    setBankVerified(false);
+
+    // Clear previous timeout
+    if (ifscLookupTimeoutRef.current) {
+      clearTimeout(ifscLookupTimeoutRef.current);
+    }
+
+    // Reset states when IFSC changes
+    if (upperValue.length < 11) {
+      setIfscDetectedBank(null);
+      setIfscBranchName(null);
+      setIfscLookupError("");
+      // Clear bank name when IFSC is incomplete
+      if (ifscDetectedBank) {
+        setFormData(prev => ({ ...prev, bankName: "", customBankName: "" }));
+      }
+    }
+
+    // Validate format as user types
+    if (upperValue.length === 11) {
+      const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+      if (!ifscRegex.test(upperValue)) {
+        setFieldErrors(prev => ({ ...prev, ifsc: "Invalid IFSC code format (e.g., SBIN0001234)" }));
+        return;
+      }
+      setFieldErrors(prev => ({ ...prev, ifsc: "" }));
+
+      // Debounce the API call
+      ifscLookupTimeoutRef.current = setTimeout(() => {
+        lookupIFSC(upperValue);
+      }, 300);
+    } else if (upperValue.length > 0) {
+      setFieldErrors(prev => ({ ...prev, ifsc: "" }));
+    }
+  };
+
   // Verify Bank Account
   const verifyBankAccount = async () => {
     // Validate required fields
@@ -4069,7 +4142,7 @@ y += boxHeight + 4;
     try {
       const token = await getToken();
 
-      const response = await fetch('https://beta.quikkred.in/api/kyc/bank/verification', {
+      const response = await fetch(`${API_BASE_URL}/api/kyc/bank/verification`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -4079,7 +4152,7 @@ y += boxHeight + 4;
           accountNumber: formData.accountNumber,
           ifscCode: formData.ifsc,
           accountHolderName: formData.accountHolderName,
-          bankName: formData.bankName
+          bankName: formData.bankName === 'OTHER' ? formData.customBankName : formData.bankName
         }),
       });
 
@@ -4273,6 +4346,7 @@ y += boxHeight + 4;
             mobile: mobileToSave,
             email: emailToSave,
             dateOfBirth: formData.dob,
+            state: formData.state,
             employmentType: formData.employmentType,
             companyName: formData.companyName,
             monthlyIncome: parseFloat(formData.monthlyIncome),
@@ -4307,7 +4381,7 @@ y += boxHeight + 4;
         //   console.log('✅ Adding selfie photo to Step 2:', formData.selfie.name);
         // }
 
-        const response = await fetch(`https://beta.quikkred.in/api/application/loan/create`, {
+        const response = await fetch(`${API_BASE_URL}/api/application/loan/create`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -4345,7 +4419,7 @@ y += boxHeight + 4;
         };
       }
 
-      const response = await fetch(`https://beta.quikkred.in/api/application/loan/create`, {
+      const response = await fetch(`${API_BASE_URL}/api/application/loan/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -4584,6 +4658,7 @@ y += boxHeight + 4;
         mobile: "",
         fullName: "",
         dob: "",
+        state: "",
         aadhaar: "",
         pan: "",
         accountHolderName: "",
@@ -4666,6 +4741,15 @@ y += boxHeight + 4;
           errors.dob = "You must be at least 18 years old";
           hasError = true;
         }
+      }
+
+      // State validation
+      if (!formData.state) {
+        errors.state = "Please select your state";
+        hasError = true;
+      } else if (BLACKLISTED_STATES.includes(formData.state.toLowerCase())) {
+        errors.state = "Sorry, our services are currently not available in this state/region.";
+        hasError = true;
       }
 
       // Update field errors
@@ -4824,12 +4908,12 @@ y += boxHeight + 4;
     if (currentStep === 3) {
       // Step 3: Bank Details Validation & BRE API Call
 
-      // Bank Name validation
+      // Bank Name validation (auto-detected from IFSC)
       if (!formData.bankName) {
         toast({
           variant: "warning",
           title: "Bank Name Required",
-          description: "Please select your bank name.",
+          description: "Please enter a valid IFSC code to auto-detect your bank.",
         });
         return;
       }
@@ -4882,16 +4966,10 @@ y += boxHeight + 4;
       try {
         const token = await getToken();
 
-        // Call both APIs in parallel - save bank details and get BRE data
+        // Call both APIs in parallel - save bank details and get BRE data using Redux
         const [saveSuccess, breResponse] = await Promise.all([
           saveCustomerData(3), // Save bank details
-          fetch('https://beta.quikkred.in/api/kyc/bre/initialize', {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            }
-          }).then(res => res.json()).catch(err => {
+          initBRE().catch((err: any) => {
             console.error('BRE API error:', err);
             return null;
           })
@@ -4946,33 +5024,6 @@ y += boxHeight + 4;
 
     if (currentStep === 4) {
       // Step 4: Approval - Final submission
-      // If eSign is already verified (SUCCESS), skip all validations and submit directly
-      if (!eSignVerified) {
-        // Only validate if eSign is NOT verified
-        if (!dataAgreementChecked) {
-          toast({
-            variant: "warning",
-            title: "Confirmation Required",
-            description: "Please click 'Confirm Details' button to review and confirm your application data.",
-          });
-          return;
-        }
-
-        // Consent validation
-        if (!formData.creditBureauConsent || !formData.termsConsent) {
-          setConsentError(true);
-          toast({
-            variant: "warning",
-            title: "Consent Required",
-            description: "Please accept the required consents to proceed.",
-          });
-          return;
-        }
-
-        // Clear consent error if validation passes
-        setConsentError(false);
-      }
-
       // Final step - submit application (bank details already saved in step 3)
       setLoading(true);
 
@@ -4988,13 +5039,12 @@ y += boxHeight + 4;
           return;
         }
 
-        // Step 4 Final Submit - just submit the application
-        const principal = parseFloat(formData.loanAmount);
+        // Step 4 Final Submit - submit the application with user's selected loan amount
         const payload = {
-          isSubmit: true
+          isSubmit: true,
         };
 
-        const response = await fetch(`https://beta.quikkred.in/api/application/loan/create`, {
+        const response = await fetch(`${API_BASE_URL}/api/application/loan/create`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -5024,9 +5074,16 @@ y += boxHeight + 4;
             description: "Your loan application has been submitted successfully.",
           });
 
-          // Redirect to dashboard
+          // Store data for application-status page
+          localStorage.setItem('applicationStatusData', JSON.stringify({
+            status: 'approved',
+            loanNumber: result.data?.applicationNumber || result.data?.loanNumber || approvalData?.applicationNumber || '',
+            amount: calculatedLoanDetails?.loanAmount || userDesiredAmount || approvalData?.loanAmount || ''
+          }));
+
+          // Redirect to congratulations page
           setLoading(false);
-          router.push('/user');
+          router.push('/application-status');
           return;
         } else {
           // API returned error - show error and stay on step 4
@@ -5068,7 +5125,7 @@ y += boxHeight + 4;
     await new Promise(resolve => setTimeout(resolve, 2000));
     setLoading(false);
 
-    // Redirect to dashboard
+    // Redirect to application-status page
     toast({
       variant: "success",
       title: "Loan Approved & Disbursed!",
@@ -5076,7 +5133,12 @@ y += boxHeight + 4;
     });
 
     setTimeout(() => {
-      router.push("/user");
+      const params = new URLSearchParams({
+        status: 'approved',
+        ...(approvalData?.applicationNumber && { loanNumber: approvalData.applicationNumber }),
+        ...(approvalData?.loanAmount && { amount: approvalData.loanAmount.toString() })
+      });
+      router.push(`/application-status?${params.toString()}`);
     }, 1500);
   };
 
@@ -5279,10 +5341,12 @@ y += boxHeight + 4;
                     aadhaar: "",
                     dob: "",
                     email: "",
+                    state: "",
                     employmentType: "SALARIED",
                     monthlyIncome: "",
                     companyName: "",
                     bankName: "",
+                    customBankName: "",
                     accountHolderName: "",
                     accountNumber: "",
                     ifsc: "",
