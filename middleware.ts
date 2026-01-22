@@ -16,16 +16,16 @@ export function middleware(request: NextRequest) {
   // -------------------------
   // 1) Language cookie logic
   // -------------------------
-  const languageSelected = request.cookies.get("languageSelected");
+  // const languageSelected = request.cookies.get("languageSelected");
 
-  if (!languageSelected) {
-    const res = NextResponse.next();
-    res.cookies.set("languageSelected", "true", {
-      path: "/",
-      maxAge: 31536000,
-    });
-    return res;
-  }
+  // if (!languageSelected) {
+  //   const res = NextResponse.next();
+  //   res.cookies.set("languageSelected", "true", {
+  //     path: "/",
+  //     maxAge: 31536000,
+  //   });
+  //   return res;
+  // }
 
   // -------------------------
   // 2) Auth redirects
