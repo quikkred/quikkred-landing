@@ -1,0 +1,80 @@
+{
+  "title": "KYC/AML Policy",
+  "subtitle": "Know Your Customer and Anti-Money Laundering",
+  "introduction": "QuikkRed is committed to preventing money laundering and terrorist financing. This policy outlines our approach to customer due diligence and compliance with applicable KYC and AML regulations.",
+  "kycRequirements": {
+    "title": "KYC Requirements",
+    "description": "All customers must provide the following documents for identity and address verification:",
+    "identity": {
+      "title": "Identity Proof (any one)",
+      "items": [
+        "Aadhaar Card",
+        "PAN Card",
+        "Passport",
+        "Voter ID",
+        "Driving License"
+      ]
+    },
+    "address": {
+      "title": "Address Proof (any one)",
+      "items": [
+        "Aadhaar Card",
+        "Utility Bill (not older than 3 months)",
+        "Bank Statement (not older than 3 months)",
+        "Rent Agreement",
+        "Passport"
+      ]
+    },
+    "additional": {
+      "title": "Additional Documents",
+      "items": [
+        "Passport-size photograph",
+        "Bank account details",
+        "Income proof (salary slips/ITR)"
+      ]
+    }
+  },
+  "verification": {
+    "title": "Verification Process",
+    "description": "Our verification process includes:",
+    "items": [
+      "Digital verification through official databases",
+      "Video KYC for remote onboarding",
+      "Physical verification when required",
+      "Periodic re-verification of customer information"
+    ]
+  },
+  "amlMeasures": {
+    "title": "AML Measures",
+    "description": "We implement the following measures to prevent money laundering:",
+    "items": [
+      "Transaction monitoring and suspicious activity reporting",
+      "Customer risk profiling",
+      "Enhanced due diligence for high-risk customers",
+      "Regular staff training on AML procedures",
+      "Maintenance of transaction records as per regulatory requirements"
+    ]
+  },
+  "reporting": {
+    "title": "Reporting Obligations",
+    "description": "We comply with all reporting requirements under the Prevention of Money Laundering Act (PMLA) and report suspicious transactions to the Financial Intelligence Unit (FIU-IND)."
+  },
+  "customerObligations": {
+    "title": "Customer Obligations",
+    "items": [
+      "Provide accurate and complete information",
+      "Update KYC documents when they change or expire",
+      "Cooperate with verification requests",
+      "Report any unauthorized transactions immediately"
+    ]
+  },
+  "principalOfficer": {
+    "title": "Principal Officer",
+    "description": "For any queries related to KYC/AML compliance, please contact:",
+    "name": "Mr. Rahul Sharma",
+    "designation": "Principal Officer - AML Compliance",
+    "email": "compliance@quikkred.in",
+    "phone": "+91-9311913854"
+  },
+  "footerNote": "This policy is subject to change based on regulatory updates and is reviewed annually."
+}

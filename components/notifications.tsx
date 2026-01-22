@@ -8,6 +8,7 @@ import {
   CreditCard, User, DollarSign, FileText, Shield,
   Clock, Star, Zap
 } from "lucide-react";
+import getToken from "@/lib/getToken";
 
 interface Notification {
   id: string;
@@ -353,6 +354,7 @@ export function Notifications({ userId, userRole = 'CUSTOMER', className = '' }:
 
   const markAsRead = async (notificationId: string) => {
     try {
+      const token = await getToken();
       setNotifications(prev => prev.map(n =>
         n.id === notificationId ? { ...n, isRead: true } : n
       ));
@@ -367,7 +369,7 @@ export function Notifications({ userId, userRole = 'CUSTOMER', className = '' }:
         await fetch(`/api/notifications/${notificationId}/read`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${token}`
           }
         });
       }
@@ -378,6 +380,7 @@ export function Notifications({ userId, userRole = 'CUSTOMER', className = '' }:
 
   const markAllAsRead = async () => {
     try {
+      const token = await getToken();
       setLoading(true);
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
 
@@ -389,7 +392,7 @@ export function Notifications({ userId, userRole = 'CUSTOMER', className = '' }:
         await fetch('/api/notifications/mark-all-read', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${token}`
           }
         });
       }
@@ -402,6 +405,7 @@ export function Notifications({ userId, userRole = 'CUSTOMER', className = '' }:
 
   const deleteNotification = async (notificationId: string) => {
     try {
+      const token = await getToken();
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
 
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -413,7 +417,7 @@ export function Notifications({ userId, userRole = 'CUSTOMER', className = '' }:
         await fetch(`/api/notifications/${notificationId}`, {
           method: 'DELETE',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${token}`
           }
         });
       }
@@ -424,6 +428,7 @@ export function Notifications({ userId, userRole = 'CUSTOMER', className = '' }:
 
   const clearAllNotifications = async () => {
     try {
+      const token = await getToken();
       setLoading(true);
       setNotifications([]);
 
@@ -435,7 +440,7 @@ export function Notifications({ userId, userRole = 'CUSTOMER', className = '' }:
         await fetch('/api/notifications/clear-all', {
           method: 'DELETE',
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${token}`
           }
         });
       }

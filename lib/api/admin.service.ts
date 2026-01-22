@@ -1,3 +1,4 @@
+import getToken from '../getToken';
 import { apiClient, ApiResponse } from './api-client';
 
 export interface DashboardMetrics {
@@ -218,6 +219,10 @@ class AdminService {
   }
 
   async downloadReport(reportId: string): Promise<Blob> {
+    // const token = localStorage.getItem('authToken') ||
+    //               localStorage.getItem('accessToken') ||
+    //               localStorage.getItem('token');.
+    const token = await getToken();
     const response = await fetch(`/api/admin/reports/${reportId}/download`, {
       headers: {
         'Authorization': `Bearer ${apiClient['token']}`,

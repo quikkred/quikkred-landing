@@ -3,14 +3,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Camera, X, RotateCw, Check, AlertCircle, Loader2, Sun, Moon, User, Eye } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getApiUrl } from "@/lib/config";
-import {
-  loadFaceModels,
-  validateFaceImage,
-  quickBrightnessCheck,
-  getValidationMessage,
-  FaceValidationResult,
-} from "@/lib/faceValidation";
+import { API_BASE_URL } from '@/lib/config';
+import getToken from "@/lib/getToken";
 
 interface SelfieCaptureProps {
   isOpen: boolean;
@@ -223,7 +217,7 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
 
   const verifyFaceLiveness = async (file: File): Promise<boolean> => {
     try {
-      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+      const token = await getToken();
       if (!token) {
         setError('Authentication required. Please login again.');
         return false;
