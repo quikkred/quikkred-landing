@@ -20,14 +20,13 @@ const UserLayout = dynamic(() => import("./UserLayout"), {
 });
 
 interface ConditionalLayoutProps {
-  isLogin: boolean;
   children: React.ReactNode;
 }
 
 // Only keep the exceptions here
 const FULL_SCREEN_ROUTES = ['/select-language', '/apply/quick', '/apply/loan'];
 
-const ConditionalLayout = ({ isLogin = false, children }: ConditionalLayoutProps) => {
+const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
   const pathname = usePathname();
 
   // Logic flags
@@ -40,7 +39,7 @@ const ConditionalLayout = ({ isLogin = false, children }: ConditionalLayoutProps
   }
 
   // 3. Handle Dashboard Layout
-  if (isLogin && isDashboardRoute) {
+  if (isDashboardRoute) {
     return <UserLayout>{children}</UserLayout>;
   }
 
