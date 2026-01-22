@@ -18,12 +18,15 @@ body {
   .safe-area-top {
     padding-top: env(safe-area-inset-top, 0);
   }
+
   .safe-area-bottom {
     padding-bottom: env(safe-area-inset-bottom, 0);
   }
+
   .safe-area-left {
     padding-left: env(safe-area-inset-left, 0);
   }
+
   .safe-area-right {
     padding-right: env(safe-area-inset-right, 0);
   }
@@ -59,6 +62,7 @@ body {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -373,14 +377,18 @@ body {
 }
 
 /* Dynamic Input Styles */
-input, textarea, select {
+input,
+textarea,
+select {
   background: rgb(var(--bg-primary));
   border: 1px solid rgb(var(--border-default));
   color: rgb(var(--text-primary));
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
-input:focus, textarea:focus, select:focus {
+input:focus,
+textarea:focus,
+select:focus {
   background: rgb(var(--bg-primary));
   border-color: rgb(var(--primary-500));
   outline: none;
@@ -427,10 +435,13 @@ input:focus, textarea:focus, select:focus {
 
 /* Glow Animation */
 @keyframes glow-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
     box-shadow: 0 0 30px rgba(var(--primary-500), 0.3);
   }
+
   50% {
     opacity: 0.9;
     box-shadow: 0 0 50px rgba(var(--secondary-500), 0.4);
@@ -448,11 +459,21 @@ input:focus, textarea:focus, select:focus {
   transition-timing-function: ease-in-out;
 }
 
-.bg-blue-50 { background-color: rgb(var(--primary-50)) !important; }
-.bg-blue-500, .bg-blue-600 { background-color: rgb(var(--primary-500)) !important; }
-.bg-blue-700 { background-color: rgb(var(--primary-700)) !important; }
+.bg-blue-50 {
+  background-color: rgb(var(--primary-50)) !important;
+}
 
-.hover\:bg-blue-600:hover, .hover\:bg-blue-700:hover {
+.bg-blue-500,
+.bg-blue-600 {
+  background-color: rgb(var(--primary-500)) !important;
+}
+
+.bg-blue-700 {
+  background-color: rgb(var(--primary-700)) !important;
+}
+
+.hover\:bg-blue-600:hover,
+.hover\:bg-blue-700:hover {
   background-color: rgb(var(--primary-600)) !important;
 }
 
@@ -460,18 +481,27 @@ input:focus, textarea:focus, select:focus {
   color: rgb(var(--primary-300)) !important;
 }
 
-.border-blue-500 { border-color: rgb(var(--primary-500)) !important; }
+.border-blue-500 {
+  border-color: rgb(var(--primary-500)) !important;
+}
 
 /* Green/Emerald -> Success/Secondary */
-.text-green-400, .text-green-600, .text-emerald-400, .text-emerald-600 {
+.text-green-400,
+.text-green-600,
+.text-emerald-400,
+.text-emerald-600 {
   color: rgb(var(--success)) !important;
 }
 
-.bg-green-50, .bg-emerald-50 {
+.bg-green-50,
+.bg-emerald-50 {
   background-color: rgb(var(--secondary-50)) !important;
 }
 
-.bg-green-500, .bg-green-600, .bg-emerald-500, .bg-emerald-600 {
+.bg-green-500,
+.bg-green-600,
+.bg-emerald-500,
+.bg-emerald-600 {
   background-color: rgb(var(--success)) !important;
 }
 
@@ -480,7 +510,9 @@ input:focus, textarea:focus, select:focus {
 }
 
 /* Red -> Error */
-.text-red-400, .text-red-500, .text-red-600 {
+.text-red-400,
+.text-red-500,
+.text-red-600 {
   color: rgb(var(--error)) !important;
 }
 
@@ -488,7 +520,8 @@ input:focus, textarea:focus, select:focus {
   background-color: rgba(var(--error), 0.1) !important;
 }
 
-.bg-red-500, .bg-red-600 {
+.bg-red-500,
+.bg-red-600 {
   background-color: rgb(var(--error)) !important;
 }
 
@@ -497,28 +530,36 @@ input:focus, textarea:focus, select:focus {
 }
 
 /* Yellow/Amber -> Warning/Accent */
-.text-yellow-400, .text-yellow-600, .text-amber-400, .text-amber-600 {
+.text-yellow-400,
+.text-yellow-600,
+.text-amber-400,
+.text-amber-600 {
   color: rgb(var(--warning)) !important;
 }
 
-.bg-yellow-50, .bg-amber-50 {
+.bg-yellow-50,
+.bg-amber-50 {
   background-color: rgb(var(--accent-50)) !important;
 }
 
-.bg-yellow-500, .bg-amber-500 {
+.bg-yellow-500,
+.bg-amber-500 {
   background-color: rgb(var(--warning)) !important;
 }
 
-.hover\:bg-yellow-100:hover, .hover\:bg-amber-100:hover {
+.hover\:bg-yellow-100:hover,
+.hover\:bg-amber-100:hover {
   background-color: rgb(var(--accent-100)) !important;
 }
 
 /* Purple -> Accent */
-.text-purple-400, .text-purple-600 {
+.text-purple-400,
+.text-purple-600 {
   color: rgb(var(--accent-500)) !important;
 }
 
-.bg-purple-500, .bg-purple-600 {
+.bg-purple-500,
+.bg-purple-600 {
   background-color: rgb(var(--accent-500)) !important;
 }
 
@@ -527,23 +568,29 @@ input:focus, textarea:focus, select:focus {
 }
 
 /* Opacity backgrounds (for badges, alerts, etc.) */
-.bg-blue-500\/10, .bg-blue-500\/20 {
+.bg-blue-500\/10,
+.bg-blue-500\/20 {
   background-color: rgba(var(--primary-500), 0.15) !important;
 }
 
-.bg-green-500\/10, .bg-green-500\/20, .bg-emerald-500\/10 {
+.bg-green-500\/10,
+.bg-green-500\/20,
+.bg-emerald-500\/10 {
   background-color: rgba(var(--success), 0.15) !important;
 }
 
-.bg-red-500\/10, .bg-red-500\/20 {
+.bg-red-500\/10,
+.bg-red-500\/20 {
   background-color: rgba(var(--error), 0.15) !important;
 }
 
-.bg-yellow-500\/10, .bg-yellow-500\/20 {
+.bg-yellow-500\/10,
+.bg-yellow-500\/20 {
   background-color: rgba(var(--warning), 0.15) !important;
 }
 
-.bg-purple-500\/10, .bg-purple-500\/20 {
+.bg-purple-500\/10,
+.bg-purple-500\/20 {
   background-color: rgba(var(--accent-500), 0.15) !important;
 }
 
@@ -610,6 +657,7 @@ footer {
 }
 
 @media (min-width: 640px) {
+
   section,
   .section-container,
   header,
@@ -620,6 +668,7 @@ footer {
 }
 
 @media (min-width: 1024px) {
+
   section,
   .section-container,
   header,
@@ -630,6 +679,7 @@ footer {
 }
 
 @media (min-width: 1280px) {
+
   section,
   .section-container,
   header,
@@ -640,6 +690,7 @@ footer {
 }
 
 @media (min-width: 1536px) {
+
   section,
   .section-container,
   header,
@@ -647,4 +698,18 @@ footer {
     padding-left: 4rem;
     padding-right: 4rem;
   }
+}
+
+/* scroll hide */
+/* hide scrollbar but keep scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  /* IE/Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+  /* Chrome/Safari */
 }
