@@ -1,3 +1,7 @@
+import { API_BASE_URL } from '@/lib/config';
+import getToken from '../getToken';
+import { signOut } from 'next-auth/react';
+
 // Core API Client with type-safe methods for all backend endpoints
 interface ApiResponse<T = any> {
   success: boolean;
@@ -14,14 +18,19 @@ class ApiClient {
   constructor() {
     // In Next.js, we use relative URLs for API routes
     this.baseURL = '';
-    // External API URL
-    this.externalBaseURL = 'https://beta.quikkred.in';
-    // 'https://77q1g1gk-5050.inc1.devtunnels.m's;
-    // http://93.127.167.88:505
-    if (typeof window !== 'undefined') {
-      this.token = localStorage.getItem('authToken') || localStorage.getItem('token');
-    }
+    // External API URL from environment config
+    this.externalBaseURL = API_BASE_URL;
   }
+
+  // Get fresh token from localStorage before each request
+  // getToken(): string | null {
+  //   if (typeof window !== 'undefined') {
+  //     return localStorage.getItem('authToken') ||
+  //            localStorage.getItem('accessToken') ||
+  //            localStorage.getItem('token');
+  //   }
+  //   return null;
+  // }
 
   private async request<T>(
     endpoint: string,
@@ -31,6 +40,11 @@ class ApiClient {
     const url = useExternalAPI
       ? `${this.externalBaseURL}${endpoint}`
       : `${this.baseURL}${endpoint}`;
+
+    // Get fresh token for each request
+    // const token = this.getToken();
+    const token = await getToken();
+    console.log("call token api...")
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -70,8 +84,10 @@ class ApiClient {
           document.cookie = 'auth-token=; path=/; max-age=0';
           document.cookie = 'user-role=; path=/; max-age=0';
 
-          // Redirect to login
-          window.location.href = '/login';
+            // Redirect to login
+            await signOut({ redirect: true, callbackUrl: "/login" });
+            window.location.href = '/login';
+          }
         }
         throw new Error('Session expired. Please login again.');
       }

@@ -642,7 +642,9 @@
     "contact": {
       "title": "Contact Us",
       "address": "1008, 10th floor, Vikrant tower, Rajendra Place, New Delhi, Delhi, Pin Code 110005",
-      "email": "support@quikkred.com",
+      "email": "support@quikkred.in",
+      "phone": "+91-9311913854",
+      "whatsapp": "+91-9311913848",
       "hours": "Mon-Sat: 9 AM - 6 PM"
     },
     "social": {
@@ -1086,7 +1088,28 @@
         "title": "Trusted by",
         "titleHighlight": "Thousands",
         "subtitle": "Real stories from real customers who transformed their lives with Quikkred",
-        "loanAmount": "Loan Amount"
+        "loanAmount": "Loan Amount",
+        "shareStory": "Share Your Story",
+        "filters": {
+          "all": "All",
+          "text": "Text",
+          "video": "Video"
+        },
+        "stats": {
+          "customers": "Happy Customers",
+          "rating": "Average Rating",
+          "disbursed": "Loans Disbursed",
+          "satisfaction": "Satisfaction Rate"
+        },
+        "loginRequired": {
+          "title": "Login to Share Your Story",
+          "subtitle": "Share your experience and help others make informed decisions",
+          "button": "Login Now"
+        },
+        "success": {
+          "title": "Thank You!",
+          "message": "Your review has been submitted successfully. It will be visible after approval."
+        }
       },
       "cta": {
         "title": "Ready to Transform Your Financial Future?",

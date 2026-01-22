@@ -17,7 +17,7 @@ import StepsSection from "@/components/homepage/steps-section";
 import FeaturesSection from "@/components/homepage/features-section";
 import LoansGrid from "@/components/homepage/loans-grid";
 import LoanCalculatorAll from "@/components/homepage/loan-calculator";
-import Testimonials from "@/components/homepage/Testimonials";
+import TestimonialsSection from "@/components/homepage/TestimonialsSection";
 import { FinancialCTA } from "@/components/homepage/financial-cta";
 import SalaryAdvance from "@/components/SalaryAdvance";
 
@@ -198,7 +198,7 @@ export default function Home() {
         <LoansGrid/>
 
         {/* Testimonials Section */}
-        {/* <Testimonials/> */}
+        <TestimonialsSection/>
 
           {/* FAQ Section - Full Screen */}
         <section className="min-h-[calc(100vh-80px)] flex items-center py-12 sm:py-16 lg:py-20 bg-white">

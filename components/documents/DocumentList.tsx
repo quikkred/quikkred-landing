@@ -9,6 +9,8 @@ import {
   FolderOpen, Grid, List
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { API_BASE_URL } from '@/lib/config';
+import getToken from '@/lib/getToken';
 
 interface Document {
   id: string;
@@ -68,7 +70,7 @@ export function DocumentList({
       setLoading(true);
 
       // Get auth token
-      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const token = await getToken();
       if (!token) {
         setLoading(false);
         return;

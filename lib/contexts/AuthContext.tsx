@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from "nextjs-toploader/app";
 import { authService } from '@/lib/api';
 
 interface User {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useRouter } from "nextjs-toploader/app";
 import {
   DollarSign, CreditCard, User, Bell, Settings,
   TrendingUp, Calendar, Clock, Download, Plus,
@@ -17,6 +17,18 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/toast';
+import { API_BASE_URL } from '@/lib/config';
+import { useDashboard } from '@/store/hooks/useDashboard';
+import { useLoans } from '@/store/hooks/useLoans';
+import { signOut } from 'next-auth/react';
+import getToken from '@/lib/getToken';
+import useAxios from '@/hooks/useAxios';
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 interface LoanSummary {
   productName: string;
@@ -81,6 +93,23 @@ export default function UserDashboard() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const axios = useAxios();
+
+  // Redux state for dashboard
+  const {
+    dashboardData,
+    loading: dashboardLoading,
+    error: dashboardError,
+    fetchDashboard: reduxFetchDashboard,
+  } = useDashboard();
+
+  // Redux state for active loan
+  const {
+    activeLoan: reduxActiveLoan,
+    activeLoanLoading,
+    fetchActiveLoan: reduxFetchActiveLoan,
+  } = useLoans();
+
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedEmiCount, setSelectedEmiCount] = useState<number>(1);
@@ -107,49 +136,12 @@ export default function UserDashboard() {
       setLoadingLoanDetails(true);
       setCustomAmount(''); // Reset custom amount
 
-      const token = localStorage.getItem('authToken') ||
-                    localStorage.getItem('token') ||
-                    localStorage.getItem('accessToken');
+    const result = await reduxFetchActiveLoan(loanNumber);
 
-      if (!token) {
-        console.error('No auth token found');
-        return;
-      }
-
-      const response = await fetch(`https://beta.quikkred.in/api/loans/active/${loanNumber}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      // Check if token expired (401 Unauthorized) - Full logout and redirect
-      if (response.status === 401) {
-        // Clear all authentication tokens
-        localStorage.removeItem('token');
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-
-        // Clear user data
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('role');
-        localStorage.removeItem('userEmail');
-        localStorage.removeItem('email');
-        localStorage.removeItem('userName');
-        localStorage.removeItem('userId');
-        localStorage.removeItem('userMobile');
-        localStorage.removeItem('customerUniqueId');
-
-        // Clear cookies
-        document.cookie = 'auth-token=; path=/; max-age=0';
-        document.cookie = 'user-role=; path=/; max-age=0';
-
-        // Redirect to login
-        router.push('/login');
-        return;
-      }
+    // if (result?.requiresAuth) {
+    //   router.push('/login');
+    //   return;
+    // }
 
       const result = await response.json();
 
@@ -188,41 +180,12 @@ export default function UserDashboard() {
     }
   }, [selectedLoanNumber]);
 
-  // useEffect(() => {
-  //   if (!isLoading) {
-  //     if (!user) {
-  //       console.log('No user found, redirecting to login');
-  //       router.push('/login');
-  //       return;
-  //     }
-
-  //     if (user.role !== 'USER' && user.role !== 'CUSTOMER') {
-  //       console.log('User not authorized for user dashboard:', user.role);
-  //       router.push('/login');
-  //       return;
-  //     }
-
-  //     console.log('User authorized for user dashboard:', user.role);
-  //   }
-  // }, [user, isLoading, router]);
-
   useEffect(() => {
     fetchUserData();
   }, []);
 
   const fetchUserData = async () => {
-    try {
-      setLoading(true);
-
-      const token = localStorage.getItem('authToken') ||
-                    localStorage.getItem('token') ||
-                    localStorage.getItem('accessToken');
-
-      if (!token) {
-        console.error('No auth token found');
-        router.push('/login');
-        return;
-      }
+    const result = await reduxFetchDashboard();
 
       const response = await fetch('https://beta.quikkred.in/api/customer/dashboard', {
         method: 'GET',
@@ -383,19 +346,17 @@ export default function UserDashboard() {
         return;
       }
 
-      const token = localStorage.getItem('authToken') ||
-                    localStorage.getItem('token') ||
-                    localStorage.getItem('accessToken');
+      // const token = await getToken();
 
-      if (!token) {
-        toast({
-          variant: "error",
-          title: "Authentication Error",
-          description: "Please login again to continue."
-        });
-        router.push('/login');
-        return;
-      }
+      // if (!token) {
+      //   toast({
+      //     variant: "error",
+      //     title: "Authentication Error",
+      //     description: "Please login again to continue."
+      //   });
+      //   router.push('/login');
+      //   return;
+      // }
 
       // Show processing toast
       toast({
@@ -404,39 +365,127 @@ export default function UserDashboard() {
         description: `Processing payment of ₹${totalAmount.toLocaleString()}...`
       });
 
-      const response = await fetch('https://beta.quikkred.in/api/emi/customerEmiPayment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          paymentAmount: totalAmount,
-          loanId: activeLoanDetails._id
-        })
+      // const payinResponse = await fetch(`${API_BASE_URL}/api/emi/customerEmiPayment`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Authorization': `Bearer ${token}`
+      //   },
+      //   body: JSON.stringify({
+      //     paymentAmount: totalAmount,
+      //     loanId: activeLoanDetails._id
+      //   })
+      // });
+
+      // Check if token expired (401 Unauthorized)
+      // if (payinResponse.status === 401) {
+      //   localStorage.removeItem('token');
+      //   localStorage.removeItem('authToken');
+      //   localStorage.removeItem('accessToken');
+      //   localStorage.removeItem('refreshToken');
+      //   document.cookie = 'auth-token=; path=/; max-age=0';
+      //   document.cookie = 'user-role=; path=/; max-age=0';
+      //   router.push('/login');
+      //   setProcessingPayment(false);
+      //   isProcessingRef.current = false;
+      //   return;
+      // }
+
+      // const payinResult = await payinResponse.json();
+
+      // if (!payinResponse.ok || !payinResult.success) {
+      //   throw new Error(payinResult.message || 'Failed to initiate payment');
+      // }
+
+      const payinResponse = await axios.post("/api/emi/customerEmiPayment", {
+        paymentAmount: totalAmount,
+        loanId: activeLoanDetails._id
       });
+      const payinResult = payinResponse.data;
 
-      const result: PaymentResponse = await response.json();
+      // Step 2: Get order_id (transactionId) and amount from response
+      // transactionId is the Razorpay order_id (starts with "order_")
+      const orderId = payinResult.data?.transactionId;
+      const paymentAmount = payinResult.data?.paymentAmount || totalAmount;
+      const amountInPaise = paymentAmount * 100; // Convert to paise
 
-      if (response.ok && result.success) {
-        // Show success toast with payment details
-        toast({
-          variant: "success",
-          title: "Payment Successful!",
-          description: (
-            <div className="space-y-1">
-              <p className="font-semibold">{result.message}</p>
-              <div className="text-xs mt-2 space-y-1">
-            
-                <p>Transaction ID: {result.data.transactionId}</p>
-                <p>Amount Paid: ₹{result.data.paymentAmount.toLocaleString()}</p>
-                {/* <p>EMIs Paid: {result.data.emisPaid}</p>
-                <p>Remaining EMIs: {result.data.remainingEMIs}</p>
-                <p>Current Balance: ₹{result.data.customerBalance.toLocaleString()}</p> */}
-              </div>
-            </div>
-          )
-        });
+      if (!orderId) {
+        console.error('Order ID (transactionId) not found in response:', payinResult.data);
+        throw new Error('Order ID not received from server');
+      }
+
+      console.log('Payin initiated successfully, Order ID:', orderId, 'Amount:', amountInPaise, 'paise');
+
+      // Step 3: Open Razorpay checkout with order details from API response
+      const options = {
+        key: "rzp_test_RudM9P8MHGIuf2",
+        amount: amountInPaise,
+        currency: "INR",
+        order_id: orderId,
+        name: "Payday Loan",
+        description: "EMI / Fee Payment",
+        prefill: {
+          name: user?.name || "",
+          email: user?.email || "",
+          contact: user?.mobile || "",
+        },
+        handler: async (response: any) => {
+          // Payment completed - Razorpay returns payment details
+          console.log("Payment completed:", response);
+
+          // Step 4: Call verify API
+          try {
+            // const verifyResponse = await fetch(`${API_BASE_URL}/api/disbursement/verify`, {
+            //   method: 'POST',
+            //   headers: {
+            //     'Content-Type': 'application/json'
+            //   },
+            //   body: JSON.stringify({
+            //     razorpay_payment_id: response.razorpay_payment_id,
+            //     razorpay_order_id: response.razorpay_order_id,
+            //     razorpay_signature: response.razorpay_signature
+            //   })
+            // });
+
+            // const verifyResult = await verifyResponse.json();
+
+            const verifyResponse = await axios.post("/api/disbursement/verify", {
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature
+            });
+
+            const verifyResult = verifyResponse.data;
+
+            if (verifyResult.success) {
+              toast({
+                variant: "success",
+                title: "Payment Verified Successfully!",
+                description: (
+                  <div className="space-y-1">
+                    <p className="font-semibold">Your payment was verified!</p>
+                    <div className="text-xs mt-2 space-y-1">
+                      <p>Payment ID: {verifyResult.data?.paymentId || response.razorpay_payment_id}</p>
+                      <p>Amount: ₹{((verifyResult.data?.amount || amountInPaise) / 100).toFixed(2)}</p>
+                    </div>
+                  </div>
+                )
+              });
+            } else {
+              toast({
+                variant: "error",
+                title: "Payment Verification Failed",
+                description: verifyResult.message || "Please contact support."
+              });
+            }
+          } catch (verifyError: any) {
+            console.error('Verification error:', verifyError);
+            toast({
+              variant: "error",
+              title: "Verification Error",
+              description: verifyError.message || "Payment verification failed."
+            });
+          }
 
         // Refresh dashboard data and active loan details after successful payment
         await fetchUserData();
@@ -600,18 +649,30 @@ export default function UserDashboard() {
               </div>
               <div className="flex-1 w-full">
                 <h3 className="text-base sm:text-lg font-semibold text-amber-900 mb-2 sm:mb-3">Previous Application Found</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
-                  <div>
-                    <p className="text-sm text-amber-700 mb-1">Application Number</p>
-                    <p className="text-base font-semibold text-amber-900">{data.oldApplicationNumber}</p>
+                {(data?.oldApplicationNumber || data?.oldApplicationDate) && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
+                    {data?.oldApplicationNumber && (
+                      <div>
+                        <p className="text-sm text-amber-700 mb-1">Application Number</p>
+                        <p className="text-base font-semibold text-amber-900">
+                          {data.oldApplicationNumber}
+                        </p>
+                      </div>
+                    )}
+
+                    {data?.oldApplicationDate && (
+                      <div>
+                        <p className="text-sm text-amber-700 mb-1">Application Date</p>
+                        <p className="text-base font-semibold text-amber-900">
+                          {formatDate(data.oldApplicationDate)}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <p className="text-sm text-amber-700 mb-1">Application Date</p>
-                    <p className="text-base font-semibold text-amber-900">{formatDate(data.oldApplicationDate)}</p>
-                  </div>
-                </div>
+                )}
+
                 <button
-                  onClick={() => router.push('/apply/quick')}
+                  onClick={() => router.push('/apply')}
                   className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg hover:shadow-lg transition-all font-medium text-sm sm:text-base"
                 >
                   <RefreshCw className="w-4 h-4" />
@@ -653,7 +714,7 @@ export default function UserDashboard() {
           </motion.div>
         )}
 
-            {/* Active Loan Section */}
+        {/* Active Loan Section */}
         {data?.activeLoan && data?.loans?.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -709,66 +770,66 @@ export default function UserDashboard() {
             {!loadingLoanDetails && activeLoanDetails && (
               <>
 
-            {/* Payment Progress Overview */}
-            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-4 sm:p-6 border border-purple-200 mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm sm:text-base font-semibold text-purple-900 flex items-center gap-2">
-                  <Activity className="w-4 h-4" />
-                  Loan Payment Progress
-                </h3>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-purple-900">{getPaymentProgress()}%</p>
-                  <p className="text-xs text-purple-700">Completed</p>
+                {/* Payment Progress Overview */}
+                <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-4 sm:p-6 border border-purple-200 mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm sm:text-base font-semibold text-purple-900 flex items-center gap-2">
+                      <Activity className="w-4 h-4" />
+                      Loan Payment Progress
+                    </h3>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-purple-900">{getPaymentProgress()}%</p>
+                      <p className="text-xs text-purple-700">Completed</p>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="w-full bg-purple-200 rounded-full h-3 mb-4">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${getPaymentProgress()}%` }}
+                      transition={{ duration: 1, delay: 0.4 }}
+                      className="h-3 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600"
+                    />
+                  </div>
+
+                  {/* Payment Stats Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+                    <div className="text-center p-2 sm:p-3 bg-white/50 rounded-lg">
+                      <p className="text-xs text-purple-700 mb-1">Total Loan</p>
+                      <p className="text-base sm:text-lg font-bold text-purple-900">₹{getTotalLoanAmount().toLocaleString()}</p>
+                    </div>
+                    <div className="text-center p-2 sm:p-3 bg-green-50 rounded-lg border border-green-200">
+                      <p className="text-xs text-green-700 mb-1">Amount Paid</p>
+                      <p className="text-base sm:text-lg font-bold text-green-900">₹{getPaidAmount().toLocaleString()}</p>
+                    </div>
+                    <div className="text-center p-2 sm:p-3 bg-orange-50 rounded-lg border border-orange-200">
+                      <p className="text-xs text-orange-700 mb-1">Remaining</p>
+                      <p className="text-base sm:text-lg font-bold text-orange-900">₹{getRemainingAmount().toLocaleString()}</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-
-              {/* Progress Bar */}
-              <div className="w-full bg-purple-200 rounded-full h-3 mb-4">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${getPaymentProgress()}%` }}
-                  transition={{ duration: 1, delay: 0.4 }}
-                  className="h-3 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600"
-                />
-              </div>
-
-              {/* Payment Stats Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
-                <div className="text-center p-2 sm:p-3 bg-white/50 rounded-lg">
-                  <p className="text-xs text-purple-700 mb-1">Total Loan</p>
-                  <p className="text-base sm:text-lg font-bold text-purple-900">₹{getTotalLoanAmount().toLocaleString()}</p>
-                </div>
-                <div className="text-center p-2 sm:p-3 bg-green-50 rounded-lg border border-green-200">
-                  <p className="text-xs text-green-700 mb-1">Amount Paid</p>
-                  <p className="text-base sm:text-lg font-bold text-green-900">₹{getPaidAmount().toLocaleString()}</p>
-                </div>
-                <div className="text-center p-2 sm:p-3 bg-orange-50 rounded-lg border border-orange-200">
-                  <p className="text-xs text-orange-700 mb-1">Remaining</p>
-                  <p className="text-base sm:text-lg font-bold text-orange-900">₹{getRemainingAmount().toLocaleString()}</p>
-                </div>
-              </div>
-            </div>
 
 
-            {/* Loan Details Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                <p className="text-xs sm:text-sm text-blue-700 mb-1 flex items-center gap-1">
-                  <FileText className="w-3 h-3" />
-                  Loan Number
-                </p>
-                <p className="text-sm sm:text-base font-semibold text-blue-900 break-all">{activeLoanDetails.loanNumber}</p>
-              </div>
+                {/* Loan Details Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                  <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                    <p className="text-xs sm:text-sm text-blue-700 mb-1 flex items-center gap-1">
+                      <FileText className="w-3 h-3" />
+                      Loan Number
+                    </p>
+                    <p className="text-sm sm:text-base font-semibold text-blue-900 break-all">{activeLoanDetails.loanNumber}</p>
+                  </div>
 
-              <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
-                <p className="text-xs sm:text-sm text-green-700 mb-1 flex items-center gap-1">
-                  <IndianRupee className="w-3 h-3" />
-                  Total Loan Amount
-                </p>
-                <p className="text-sm sm:text-base font-semibold text-green-900">₹{activeLoanDetails.emiAmount.toLocaleString()}</p>
-              </div>
+                  <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                    <p className="text-xs sm:text-sm text-green-700 mb-1 flex items-center gap-1">
+                      <IndianRupee className="w-3 h-3" />
+                      Total Loan Amount
+                    </p>
+                    <p className="text-sm sm:text-base font-semibold text-green-900">₹{activeLoanDetails.emiAmount.toLocaleString()}</p>
+                  </div>
 
-              {/* <div className="p-4 bg-gradient-to-br from-purple-50 to-violet-50 rounded-lg border border-purple-200">
+                  {/* <div className="p-4 bg-gradient-to-br from-purple-50 to-violet-50 rounded-lg border border-purple-200">
                 <p className="text-xs sm:text-sm text-purple-700 mb-1 flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   Current Installment
@@ -776,15 +837,15 @@ export default function UserDashboard() {
                 <p className="text-sm sm:text-base font-semibold text-purple-900">#{getCurrentInstallment()}</p>
               </div> */}
 
-              <div className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg border border-orange-200">
-                <p className="text-xs sm:text-sm text-orange-700 mb-1 flex items-center gap-1">
-                  <Calendar className="w-3 h-3" />
-                  Next Due Date
-                </p>
-                <p className="text-sm sm:text-base font-semibold text-orange-900">{formatDateTime(activeLoanDetails.nextDueDate)}</p>
-              </div>
+                  <div className="p-4 bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg border border-orange-200">
+                    <p className="text-xs sm:text-sm text-orange-700 mb-1 flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      Due Date
+                    </p>
+                    <p className="text-sm sm:text-base font-semibold text-orange-900">{formatDateTime(activeLoanDetails.nextDueDate)}</p>
+                  </div>
 
-              {/* <div className="p-4 bg-gradient-to-br from-teal-50 to-cyan-50 rounded-lg border border-teal-200">
+                  {/* <div className="p-4 bg-gradient-to-br from-teal-50 to-cyan-50 rounded-lg border border-teal-200">
                 <p className="text-xs sm:text-sm text-teal-700 mb-1 flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
                   Maturity Date
@@ -792,8 +853,8 @@ export default function UserDashboard() {
                 <p className="text-sm sm:text-base font-semibold text-teal-900">{formatDateTime(activeLoanDetails.maturityDate)}</p>
               </div> */}
 
-                   {/* Remaining After Payment */}
-                    {/* <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-3 border border-orange-200">
+                  {/* Remaining After Payment */}
+                  {/* <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg p-3 border border-orange-200">
                       <p className="text-xs text-orange-700 mb-1">Remaining After</p>
                       <div className="flex items-center gap-1">
                         <IndianRupee className="w-4 h-4 text-orange-700" />
@@ -803,116 +864,115 @@ export default function UserDashboard() {
                       </div>
                     </div> */}
 
-              {activeLoanDetails.overdueCount > 0 && (
-                <div className="p-4 bg-gradient-to-br from-red-50 to-rose-50 rounded-lg border border-red-200">
-                  <p className="text-xs sm:text-sm text-red-700 mb-1 flex items-center gap-1">
-                    <AlertTriangle className="w-3 h-3" />
-                    Overdue Count
-                  </p>
-                  <p className="text-sm sm:text-base font-semibold text-red-900">{activeLoanDetails.overdueCount} EMI(s)</p>
-                  <p className="text-xs text-red-600 mt-1">Payment attempts failed</p>
-                </div>
-              )}
-            </div>
-
-            {/* Payment Section - Show only if there is remaining amount */}
-            {getRemainingAmount() > 0 && (
-              <div className="border-t border-gray-200 pt-4 sm:pt-6">
-                <h3 className="text-base sm:text-lg font-semibold text-[#0A0A0A] mb-4 flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-[#10B4A3]" />
-                  Pay Installment
-                </h3>
-
-                {activeLoanDetails.overdueCount > 0 && (
-                  <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-lg p-4 mb-4 border border-red-200">
-                    <div className="flex items-start gap-2 mb-2">
-                      <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm font-semibold text-red-900">Payment Failed Alert</p>
-                        <p className="text-xs text-red-700 mt-1">
-                          {activeLoanDetails.overdueCount} payment attempt{activeLoanDetails.overdueCount > 1 ? 's' : ''} failed.
-                          You have ₹{getRemainingAmount().toLocaleString()} remaining to pay. Please complete payment to avoid penalties.
-                        </p>
-                      </div>
+                  {activeLoanDetails.overdueCount > 0 && (
+                    <div className="p-4 bg-gradient-to-br from-red-50 to-rose-50 rounded-lg border border-red-200">
+                      <p className="text-xs sm:text-sm text-red-700 mb-1 flex items-center gap-1">
+                        <AlertTriangle className="w-3 h-3" />
+                        Overdue Count
+                      </p>
+                      <p className="text-sm sm:text-base font-semibold text-red-900">{activeLoanDetails.overdueCount} EMI(s)</p>
+                      <p className="text-xs text-red-600 mt-1">Payment attempts failed</p>
                     </div>
-                  </div>
-                )}
-
-                {activeLoanDetails.overdueCount === 0 && (
-                  <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-4 mb-4 border border-blue-200">
-                    <div className="flex items-start gap-2 mb-2">
-                      <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm font-semibold text-blue-900">Pay Your Installment</p>
-                        <p className="text-xs text-blue-700 mt-1">
-                          You have ₹{getRemainingAmount().toLocaleString()} remaining to complete your loan (Installment #{getCurrentInstallment()}).
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="space-y-4">
-                  {/* Payment Amount Input */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Enter Payment Amount
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
-                      <input
-                        type="number"
-                        value={customAmount}
-                        onChange={(e) => setCustomAmount(e.target.value)}
-                        placeholder={getRemainingAmount().toLocaleString()}
-                        min="1"
-                        max={getRemainingAmount()}
-                        className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10B4A3] focus:border-transparent outline-none transition-all"
-                      />
-                    </div>
-                    <p className="text-xs text-gray-600 mt-1">
-                      You can reduce the amount to pay partially
-                    </p>
-                  </div>
-
-                  {/* Payment Summary Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                 
-
-                 
-
-               
-                  </div>
-                </div>
-
-                {/* Pay Button */}
-                <button
-                  onClick={handlePayment}
-                  disabled={processingPayment}
-                  className={`w-full mt-4 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-[#10B4A3] to-[#0E9A8B] text-white rounded-lg hover:shadow-lg transition-all font-semibold text-base sm:text-lg ${
-                    processingPayment ? 'opacity-70 cursor-not-allowed' : ''
-                  }`}
-                >
-                  {processingPayment ? (
-                    <>
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                      />
-                      <span>Processing Payment...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="w-5 h-5" />
-                      Pay ₹{calculateTotalPayment().toLocaleString()}
-                      <ChevronRight className="w-5 h-5" />
-                    </>
                   )}
-                </button>
-              </div>
-            )}
-            </>
+                </div>
+
+                {/* Payment Section - Show only if there is remaining amount */}
+                {getRemainingAmount() > 0 && (
+                  <div className="border-t border-gray-200 pt-4 sm:pt-6">
+                    <h3 className="text-base sm:text-lg font-semibold text-[#0A0A0A] mb-4 flex items-center gap-2">
+                      <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-[#10B4A3]" />
+                      Pay Installment
+                    </h3>
+
+                    {activeLoanDetails.overdueCount > 0 && (
+                      <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-lg p-4 mb-4 border border-red-200">
+                        <div className="flex items-start gap-2 mb-2">
+                          <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-semibold text-red-900">Payment Failed Alert</p>
+                            <p className="text-xs text-red-700 mt-1">
+                              {activeLoanDetails.overdueCount} payment attempt{activeLoanDetails.overdueCount > 1 ? 's' : ''} failed.
+                              You have ₹{getRemainingAmount().toLocaleString()} remaining to pay. Please complete payment to avoid penalties.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeLoanDetails.overdueCount === 0 && (
+                      <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-4 mb-4 border border-blue-200">
+                        <div className="flex items-start gap-2 mb-2">
+                          <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-semibold text-blue-900">Pay Your Installment</p>
+                            <p className="text-xs text-blue-700 mt-1">
+                              You have ₹{getRemainingAmount().toLocaleString()} remaining to complete your loan (Installment #{getCurrentInstallment()}).
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="space-y-4">
+                      {/* Payment Amount Input */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Enter Payment Amount
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
+                          <input
+                            type="number"
+                            value={customAmount}
+                            onChange={(e) => setCustomAmount(e.target.value)}
+                            placeholder={getRemainingAmount().toLocaleString()}
+                            min="1"
+                            max={getRemainingAmount()}
+                            className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#10B4A3] focus:border-transparent outline-none transition-all"
+                          />
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">
+                          You can reduce the amount to pay partially
+                        </p>
+                      </div>
+
+                      {/* Payment Summary Grid */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+
+
+
+
+                      </div>
+                    </div>
+
+                    {/* Pay Button */}
+                    <button
+                      onClick={handlePayment}
+                      disabled={processingPayment || !razorpayLoaded}
+                      className={`w-full mt-4 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-[#10B4A3] to-[#0E9A8B] text-white rounded-lg hover:shadow-lg transition-all font-semibold text-base sm:text-lg ${processingPayment || !razorpayLoaded ? 'opacity-70 cursor-not-allowed' : ''
+                        }`}
+                    >
+                      {processingPayment ? (
+                        <>
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                          />
+                          <span>Processing Payment...</span>
+                        </>
+                      ) : (
+                        <>
+                          <CreditCard className="w-5 h-5" />
+                          Pay ₹{calculateTotalPayment().toLocaleString()}
+                          <ChevronRight className="w-5 h-5" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </motion.div>
         )}
@@ -929,12 +989,11 @@ export default function UserDashboard() {
             Application Status
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            <div className={`p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 transition-all ${
-              data?.isBasicDetailsFilled
-                ? 'bg-green-50 border-green-300 shadow-sm'
-                : 'bg-gray-50 border-gray-200'
-            }`}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className={`p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 transition-all ${data?.isBasicDetailsFilled
+              ? 'bg-green-50 border-green-300 shadow-sm'
+              : 'bg-gray-50 border-gray-200'
+              }`}>
               <div className="flex items-center gap-2 sm:gap-3">
                 {data?.isBasicDetailsFilled ? (
                   <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-green-600" />
@@ -950,11 +1009,10 @@ export default function UserDashboard() {
               </div>
             </div>
 
-            <div className={`p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 transition-all ${
-              data?.isEmploymentDetailsFilled
-                ? 'bg-green-50 border-green-300 shadow-sm'
-                : 'bg-gray-50 border-gray-200'
-            }`}>
+            <div className={`p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 transition-all ${data?.isKycDetailsFilled
+              ? 'bg-green-50 border-green-300 shadow-sm'
+              : 'bg-gray-50 border-gray-200'
+              }`}>
               <div className="flex items-center gap-2 sm:gap-3">
                 {data?.isEmploymentDetailsFilled ? (
                   <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-green-600" />
@@ -970,11 +1028,10 @@ export default function UserDashboard() {
               </div>
             </div>
 
-            <div className={`p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 transition-all ${
-              data?.isVerificationDetailsFilled
-                ? 'bg-green-50 border-green-300 shadow-sm'
-                : 'bg-gray-50 border-gray-200'
-            }`}>
+            <div className={`p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 transition-all ${data?.isBankDetailsFilled
+              ? 'bg-green-50 border-green-300 shadow-sm'
+              : 'bg-gray-50 border-gray-200'
+              }`}>
               <div className="flex items-center gap-2 sm:gap-3">
                 {data?.isVerificationDetailsFilled ? (
                   <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-green-600" />
@@ -984,7 +1041,26 @@ export default function UserDashboard() {
                 <div>
                   <p className="font-semibold text-gray-900 text-sm sm:text-base">Verification</p>
                   <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                    {data?.isVerificationDetailsFilled ? 'Completed ✓' : 'Pending'}
+                    {data?.isBankDetailsFilled ? 'Completed ✓' : 'Pending'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className={`p-4 sm:p-6 rounded-lg sm:rounded-xl border-2 transition-all ${data?.isSubmit
+              ? 'bg-green-50 border-green-300 shadow-sm'
+              : 'bg-gray-50 border-gray-200'
+              }`}>
+              <div className="flex items-center gap-2 sm:gap-3">
+                {data?.isSubmit ? (
+                  <CheckCircle className="w-6 h-6 sm:w-7 sm:h-7 text-green-600" />
+                ) : (
+                  <Clock className="w-6 h-6 sm:w-7 sm:h-7 text-gray-400" />
+                )}
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm sm:text-base">Final Submission</p>
+                  <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                    {data?.isSubmit ? 'Completed ✓' : 'Pending'}
                   </p>
                 </div>
               </div>

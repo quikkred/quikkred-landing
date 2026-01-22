@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from "nextjs-toploader/app";
 
 export type UserRole = 'USER' | 'CUSTOMER' | 'ADMIN' | 'SUPER_ADMIN' | 'COLLECTION_AGENT' | 'UNDERWRITER' | 'SUPPORT_AGENT' | 'FINANCE_MANAGER' | 'RISK_ANALYST';
 
@@ -170,7 +170,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUserProfile = async (token: string, currentUser: User) => {
     console.log('🔵 Fetching user profile from API...');
     try {
-      const response = await fetch('https://alpha.quikkred.in/api/customer/get', {
+      const response = await fetch('https://beta.quikkred.in/api/customer/get', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
