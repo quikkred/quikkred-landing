@@ -59,8 +59,8 @@ const contactCards = [
     icon: Phone,
     title: "Call Us",
     description: "Speak directly with our support team",
-    contact: "+91 9599238889",
-    link: "tel:+919599238889"
+    contact: "+91 9311913854",
+    link: "tel:+919311913854"
   },
   {
     icon: Mail,

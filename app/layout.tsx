@@ -2,12 +2,13 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Sora } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
-import { SecurityBanner } from "@/components/security-banner";
 import ConditionalLayout from "@/components/layouts/ConditionalLayout";
-import LanguageGuard from "@/components/LanguageGuard";
 import { Toaster } from "@/components/ui/toast";
+import getUserDetails from "@/lib/getUserDetails";
+import { AuthProvider } from "@/contexts/AuthContext";
+import getLanguage from "@/lib/getLanguage";
+import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
+import { getTranslation } from "@/lib/getTranslation";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -77,13 +78,22 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const userDetails = await getUserDetails();
+  const language: string | RequestCookie = await getLanguage();
+  const initialData = await getTranslation(language as string);
+
   return (
-    <html lang="en" className={`${inter.variable} ${sora.variable}`} suppressHydrationWarning>
+    <html
+      lang={language as string}
+      dir={language === 'ur' ? 'rtl' : 'ltr'}
+      className={`${inter.variable} ${sora.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         {/* Google Tag Manager */}
         <script
@@ -107,7 +117,8 @@ gtag('config', 'AW-17796230994');`,
           }}
         />
         {/* Language Detection Script */}
-        <script
+
+        {/* <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
@@ -140,7 +151,7 @@ gtag('config', 'AW-17796230994');`,
               })();
             `,
           }}
-        />
+        /> */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -186,14 +197,28 @@ gtag('config', 'AW-17796230994');`,
             style={{ display: 'none', visibility: 'hidden' }}
           />
         </noscript>
-        <Providers>
-          <LanguageGuard>
+        {/* Meta Pixel (noscript) - Beta & Production only */}
+        {process.env.NEXT_PUBLIC_API_URL !== 'https://beta.quikkred.in' && (
+          <noscript>
+            <img
+              height="1"
+              width="1"
+              style={{ display: 'none' }}
+              src="https://www.facebook.com/tr?id=763439572919909&ev=PageView&noscript=1"
+              alt=""
+            />
+          </noscript>
+        )}
+        <AuthProvider userData={userDetails}>
+          <Providers language={language as string} initialData={initialData}>
+            {/* <LanguageGuard> */}
             <ConditionalLayout>
               {children}
             </ConditionalLayout>
-          </LanguageGuard>
-          <Toaster />
-        </Providers>
+            {/* </LanguageGuard> */}
+            <Toaster />
+          </Providers>
+        </AuthProvider>
       </body>
     </html>
   );

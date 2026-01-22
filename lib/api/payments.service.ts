@@ -1,3 +1,4 @@
+import getToken from '../getToken';
 import { apiClient, ApiResponse } from './api-client';
 
 export interface PaymentInitiation {
@@ -189,9 +190,10 @@ class PaymentsService {
 
   // Get payment receipt
   async getPaymentReceipt(transactionId: string): Promise<Blob> {
+    const token = await getToken();
     const response = await fetch(`/api/payments/receipt/${transactionId}`, {
       headers: {
-        'Authorization': `Bearer ${apiClient['token']}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
     return response.blob();

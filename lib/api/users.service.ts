@@ -1,3 +1,4 @@
+import getToken from '../getToken';
 import { apiClient, ApiResponse } from './api-client';
 
 export interface UserProfile {
@@ -98,11 +99,12 @@ class UsersService {
     const formData = new FormData();
     formData.append('image', image);
 
+    const token = await getToken();
     const response = await fetch('/api/users/profile-image', {
       method: 'POST',
       body: formData,
       headers: {
-        'Authorization': `Bearer ${apiClient['token']}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
 
@@ -125,11 +127,12 @@ class UsersService {
     formData.append('document', file);
     formData.append('documentType', documentType);
 
+    const token = await getToken();
     const response = await fetch('/api/users/kyc/upload', {
       method: 'POST',
       body: formData,
       headers: {
-        'Authorization': `Bearer ${apiClient['token']}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
 
@@ -190,11 +193,12 @@ class UsersService {
     formData.append('document', file);
     formData.append('documentType', documentType);
 
+    const token = await getToken();
     const response = await fetch('/api/users/documents/upload', {
       method: 'POST',
       body: formData,
       headers: {
-        'Authorization': `Bearer ${apiClient['token']}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
 

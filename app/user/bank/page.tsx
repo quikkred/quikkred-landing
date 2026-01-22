@@ -1,13 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from "nextjs-toploader/app";
 import { motion } from 'framer-motion';
 import {
   Wallet, Building2, CreditCard, CheckCircle, XCircle,
   AlertCircle, Copy, Eye, EyeOff, Loader2, RefreshCw,
   Shield, TrendingUp, Calendar, Edit, X
 } from 'lucide-react';
+import { API_BASE_URL } from '@/lib/config';
+import { useBanks } from '@/store/hooks/useBanks';
+import getToken from '@/lib/getToken';
 
 interface BankAccount {
   _id: string;
@@ -167,7 +170,7 @@ export default function BankAccountsPage() {
       setIsSubmitting(true);
       setError(null);
 
-      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const token = await getToken();
       if (!token) {
         setError('Authentication required');
         return;

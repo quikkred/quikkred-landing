@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef, memo, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import Image from "next/image";
 import {
   LayoutDashboard, CreditCard, FileText, Settings, Bell,
@@ -12,6 +13,8 @@ import {
   Sparkles, Plus, Send, Shield, UserCheck, Eye, X
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { API_BASE_URL } from '@/lib/config';
+import getToken from "@/lib/getToken";
 
 interface UserLayoutProps {
   children: React.ReactNode;
@@ -63,6 +66,12 @@ const UserLayout = ({ children }: UserLayoutProps) => {
       href: "/user/applications",
       color: "text-purple-400"
     },
+    // {
+    //   title: "Write Review",
+    //   icon: Star,
+    //   href: "/user/review",
+    //   color: "text-yellow-400"
+    // },
     {
       title: "Support",
       icon: HelpCircle,
@@ -91,15 +100,15 @@ const UserLayout = ({ children }: UserLayoutProps) => {
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
       try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+        const token = await getToken();
         if (!token) {
           console.log('No auth token found for notifications');
           clearTimeout(timeoutId);
           return;
         }
 
-        console.log('Fetching notifications...');
-        const response = await fetch('https://beta.quikkred.in/api/notification/getAll', {
+        // console.log('Fetching notifications...');
+        const response = await fetch(`${API_BASE_URL}/api/notification/getAll`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -111,7 +120,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
         clearTimeout(timeoutId);
 
         const result = await response.json();
-        console.log('Notifications API Response:', result);
+        // console.log('Notifications API Response:', result);
 
         // Handle 403 - Access denied for CUSTOMER role
         if (result.status === 403 || response.status === 403) {
@@ -300,20 +309,18 @@ const UserLayout = ({ children }: UserLayoutProps) => {
             <button
               key={item.title}
               onClick={() => handleNavigation(item.href)}
-              className={`w-full flex items-center ${sidebarOpen ? 'gap-3 justify-start' : 'justify-center'} p-3 rounded-lg transition-colors duration-150 cursor-pointer ${
-                pathname === item.href
+              className={`w-full flex items-center ${sidebarOpen ? 'gap-3 justify-start' : 'justify-center'} p-3 rounded-lg transition-colors duration-150 cursor-pointer ${pathname === item.href
                   ? 'bg-gradient-to-r from-[#10B4A3] to-[#0E9D8F] text-white shadow-md'
                   : 'hover:bg-[#FAFAFA] text-[#0A0A0A]'
-              }`}
+                }`}
             >
-              <item.icon className={`w-5 h-5 ${
-                pathname === item.href ? 'text-white' : 'text-[#4084FF]'
-              }`} />
+              <item.icon className={`w-5 h-5 ${pathname === item.href ? 'text-white' : 'text-[#4084FF]'
+                }`} />
               {sidebarOpen && (
-                <span className={`font-medium ${
-                  pathname === item.href ? 'text-white' : 'text-[#0A0A0A]'
-                }`}>
-                  {item.title}
+                <span className={`font-medium ${pathname === item.href ? 'text-white' : 'text-[#0A0A0A]'
+                  }`}>
+                  {item.title.toLowerCase()
+                    .replace(/\b\w/g, char => char.toUpperCase())}
                 </span>
               )}
             </button>
@@ -402,19 +409,17 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                     handleNavigation(item.href);
                     setMobileSidebarOpen(false);
                   }}
-                  className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors duration-150 cursor-pointer ${
-                    pathname === item.href
+                  className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors duration-150 cursor-pointer ${pathname === item.href
                       ? 'bg-gradient-to-r from-[#10B4A3] to-[#0E9D8F] text-white shadow-md'
                       : 'hover:bg-[#FAFAFA] text-[#0A0A0A]'
-                  }`}
+                    }`}
                 >
-                  <item.icon className={`w-5 h-5 ${
-                    pathname === item.href ? 'text-white' : 'text-[#4084FF]'
-                  }`} />
-                  <span className={`font-medium ${
-                    pathname === item.href ? 'text-white' : 'text-[#0A0A0A]'
-                  }`}>
-                    {item.title}
+                  <item.icon className={`w-5 h-5 ${pathname === item.href ? 'text-white' : 'text-[#4084FF]'
+                    }`} />
+                  <span className={`font-medium ${pathname === item.href ? 'text-white' : 'text-[#0A0A0A]'
+                    }`}>
+                    {item.title.toLowerCase()
+                      .replace(/\b\w/g, char => char.toUpperCase())}
                   </span>
                 </button>
               ))}
@@ -510,105 +515,102 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                       >
                         {/* Notification Header */}
                         <div className="p-3 sm:p-4 border-b border-[#E0E0E0]">
-                        <div className="flex items-center justify-between">
-                          <h3 className="font-semibold text-gray-800">Recent Notifications</h3>
-                          {notifications.length > 0 && (
-                            <span className="text-xs text-gray-500">
-                              {notifications.length > 2 ? '2 recent' : `${notifications.length} new`}
-                            </span>
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-semibold text-gray-800">Recent Notifications</h3>
+                            {notifications.length > 0 && (
+                              <span className="text-xs text-gray-500">
+                                {notifications.length > 2 ? '2 recent' : `${notifications.length} new`}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Notifications List */}
+                        <div className="flex-1 overflow-y-auto">
+                          {notifications.length === 0 ? (
+                            <div className="p-6 sm:p-8 text-center">
+                              <Bell className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mx-auto mb-3" />
+                              <p className="text-sm text-gray-600">No notifications</p>
+                              <p className="text-xs text-gray-500 mt-1">You're all caught up!</p>
+                            </div>
+                          ) : (
+                            <div className="divide-y divide-[#E0E0E0]">
+                              {notifications.slice(0, 2).map((notification) => (
+                                <motion.div
+                                  key={notification._id}
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  className="p-3 sm:p-4 hover:bg-[#FAFAFA] transition-colors cursor-pointer"
+                                  onClick={() => setNotificationDropdownOpen(false)}
+                                >
+                                  <div className="flex items-start gap-2 sm:gap-3">
+                                    {/* Icon based on type */}
+                                    <div className={`p-2 rounded-lg ${notification.type === 'INFO' ? 'bg-blue-500/10' :
+                                        notification.type === 'SUCCESS' ? 'bg-[#3AC6A0]/10' :
+                                          notification.type === 'WARNING' ? 'bg-yellow-500/10' :
+                                            'bg-red-500/10'
+                                      }`}>
+                                      <Bell className={`w-4 h-4 ${notification.type === 'INFO' ? 'text-blue-600' :
+                                          notification.type === 'SUCCESS' ? 'text-[#3AC6A0]' :
+                                            notification.type === 'WARNING' ? 'text-yellow-600' :
+                                              'text-red-600'
+                                        }`} />
+                                    </div>
+
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-start justify-between gap-2">
+                                        <h4 className="text-sm font-semibold text-gray-800 line-clamp-1">
+                                          {notification.title}
+                                        </h4>
+                                        {notification.priority === 'HIGH' && (
+                                          <span className="px-2 py-0.5 bg-red-500/10 text-red-600 text-xs rounded-full font-medium whitespace-nowrap">
+                                            Urgent
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                                        {notification.message}
+                                      </p>
+                                      <div className="flex items-center gap-3 mt-2">
+                                        <span className="text-xs text-gray-500">
+                                          {new Date(notification.createdAt).toLocaleDateString('en-IN', {
+                                            month: 'short',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                          })}
+                                        </span>
+                                        <span className={`text-xs px-2 py-0.5 rounded-full ${notification.status === 'SENT' ? 'bg-[#3AC6A0]/10 text-[#3AC6A0]' :
+                                            notification.status === 'PENDING' ? 'bg-yellow-500/10 text-yellow-600' :
+                                              'bg-gray-100 text-gray-600'
+                                          }`}>
+                                          {notification.status}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              ))}
+                            </div>
                           )}
                         </div>
-                      </div>
 
-                      {/* Notifications List */}
-                      <div className="flex-1 overflow-y-auto">
-                        {notifications.length === 0 ? (
-                          <div className="p-6 sm:p-8 text-center">
-                            <Bell className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mx-auto mb-3" />
-                            <p className="text-sm text-gray-600">No notifications</p>
-                            <p className="text-xs text-gray-500 mt-1">You're all caught up!</p>
-                          </div>
-                        ) : (
-                          <div className="divide-y divide-[#E0E0E0]">
-                            {notifications.slice(0, 2).map((notification) => (
-                              <motion.div
-                                key={notification._id}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                className="p-3 sm:p-4 hover:bg-[#FAFAFA] transition-colors cursor-pointer"
-                                onClick={() => setNotificationDropdownOpen(false)}
-                              >
-                                <div className="flex items-start gap-2 sm:gap-3">
-                                  {/* Icon based on type */}
-                                  <div className={`p-2 rounded-lg ${
-                                    notification.type === 'INFO' ? 'bg-blue-500/10' :
-                                    notification.type === 'SUCCESS' ? 'bg-[#3AC6A0]/10' :
-                                    notification.type === 'WARNING' ? 'bg-yellow-500/10' :
-                                    'bg-red-500/10'
-                                  }`}>
-                                    <Bell className={`w-4 h-4 ${
-                                      notification.type === 'INFO' ? 'text-blue-600' :
-                                      notification.type === 'SUCCESS' ? 'text-[#3AC6A0]' :
-                                      notification.type === 'WARNING' ? 'text-yellow-600' :
-                                      'text-red-600'
-                                    }`} />
-                                  </div>
-
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex items-start justify-between gap-2">
-                                      <h4 className="text-sm font-semibold text-gray-800 line-clamp-1">
-                                        {notification.title}
-                                      </h4>
-                                      {notification.priority === 'HIGH' && (
-                                        <span className="px-2 py-0.5 bg-red-500/10 text-red-600 text-xs rounded-full font-medium whitespace-nowrap">
-                                          Urgent
-                                        </span>
-                                      )}
-                                    </div>
-                                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                                      {notification.message}
-                                    </p>
-                                    <div className="flex items-center gap-3 mt-2">
-                                      <span className="text-xs text-gray-500">
-                                        {new Date(notification.createdAt).toLocaleDateString('en-IN', {
-                                          month: 'short',
-                                          day: 'numeric',
-                                          hour: '2-digit',
-                                          minute: '2-digit'
-                                        })}
-                                      </span>
-                                      <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                        notification.status === 'SENT' ? 'bg-[#3AC6A0]/10 text-[#3AC6A0]' :
-                                        notification.status === 'PENDING' ? 'bg-yellow-500/10 text-yellow-600' :
-                                        'bg-gray-100 text-gray-600'
-                                      }`}>
-                                        {notification.status}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </motion.div>
-                            ))}
+                        {/* Notification Footer */}
+                        {notifications.length > 0 && (
+                          <div className="p-3 border-t border-[#E0E0E0]">
+                            <button
+                              onClick={() => {
+                                setNotificationDropdownOpen(false);
+                                router.push('/user/notifications');
+                              }}
+                              className="w-full text-center text-sm text-[#4A66FF] hover:text-[#3B52CC] font-medium transition-colors cursor-pointer"
+                            >
+                              {notifications.length > 2
+                                ? `View All ${notifications.length} Notifications`
+                                : 'View All Notifications'}
+                            </button>
                           </div>
                         )}
-                      </div>
-
-                      {/* Notification Footer */}
-                      {notifications.length > 0 && (
-                        <div className="p-3 border-t border-[#E0E0E0]">
-                          <button
-                            onClick={() => {
-                              setNotificationDropdownOpen(false);
-                              router.push('/user/notifications');
-                            }}
-                            className="w-full text-center text-sm text-[#4A66FF] hover:text-[#3B52CC] font-medium transition-colors cursor-pointer"
-                          >
-                            {notifications.length > 2
-                              ? `View All ${notifications.length} Notifications`
-                              : 'View All Notifications'}
-                          </button>
-                        </div>
-                      )}
                       </motion.div>
                     </>
                   )}
@@ -665,7 +667,8 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                       className="absolute right-0 top-full mt-2 w-[calc(100vw-24px)] sm:w-64 max-w-[256px] bg-white rounded-xl shadow-xl border border-[#E0E0E0] p-2 z-50"
                     >
                       <div className="p-3 border-b border-[#E0E0E0]">
-                        <p className="font-medium text-gray-800">{userData.name}</p>
+                        <p className="font-medium text-gray-800">{userData.name.toLowerCase()
+                          .replace(/\b\w/g, char => char.toUpperCase())}</p>
                         <p className="text-sm text-gray-600">{userData.email}</p>
 
                         {/* <div className="flex items-center gap-2 mt-2">

@@ -1,0 +1,64 @@
+{
+  "title": "IT Security Policy",
+  "subtitle": "Protecting Your Digital Assets",
+  "introduction": "QuikkRed is committed to maintaining the highest standards of information security to protect customer data and ensure the integrity of our digital lending platform.",
+  "dataProtection": {
+    "title": "Data Protection Measures",
+    "description": "We implement industry-leading security measures to protect your personal and financial information.",
+    "items": [
+      "256-bit SSL encryption for all data transmissions",
+      "Multi-factor authentication for user accounts",
+      "Regular security audits and penetration testing",
+      "Data encryption at rest and in transit",
+      "Secure data centers with 24/7 monitoring"
+    ]
+  },
+  "accessControl": {
+    "title": "Access Control",
+    "description": "Strict access controls ensure that only authorized personnel can access sensitive information.",
+    "items": [
+      "Role-based access control (RBAC)",
+      "Principle of least privilege",
+      "Regular access reviews and audit trails",
+      "Biometric authentication for critical systems"
+    ]
+  },
+  "incidentResponse": {
+    "title": "Incident Response",
+    "description": "We have a comprehensive incident response plan to quickly address any security breaches.",
+    "items": [
+      "24/7 security monitoring and alerting",
+      "Immediate incident containment procedures",
+      "Customer notification within 72 hours of a breach",
+      "Regular incident response drills and updates"
+    ]
+  },
+  "compliance": {
+    "title": "Regulatory Compliance",
+    "description": "Our IT security practices comply with all relevant regulations and standards.",
+    "items": [
+      "RBI Guidelines on IT Security",
+      "Information Technology Act, 2000",
+      "Personal Data Protection regulations",
+      "ISO 27001 standards"
+    ]
+  },
+  "customerResponsibilities": {
+    "title": "Customer Responsibilities",
+    "description": "Help us keep your account secure by following these best practices:",
+    "items": [
+      "Never share your login credentials",
+      "Use strong, unique passwords",
+      "Enable two-factor authentication",
+      "Report suspicious activities immediately",
+      "Keep your contact information updated"
+    ]
+  },
+  "reportingIncidents": {
+    "title": "Reporting Security Incidents",
+    "description": "If you notice any suspicious activity or security concerns, please report immediately to:",
+    "email": "security@quikkred.in",
+    "phone": "+91-9311913854"
+  },
+  "footerNote": "This policy is reviewed and updated annually to ensure continued effectiveness."
+}

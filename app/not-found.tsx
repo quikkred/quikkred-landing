@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { Home, ArrowLeft, Search, HelpCircle, Phone } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 
