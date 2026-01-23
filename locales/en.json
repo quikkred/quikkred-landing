@@ -1154,6 +1154,7 @@
       "Travel": "Travel",
       "Wedding": "Wedding"
     },
+    "disbursedAmount":"Amount You'll Receive",
     "loanAmount": "Loan Amount",
     "tenure": "Loan Tenure",
     "tenureDays": "days",
