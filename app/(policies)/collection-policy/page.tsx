@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Phone, Mail, Clock, Shield, Users, AlertTriangle, UserCheck } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import PoliciesLayout from "@/components/layouts/PoliciesLayout";
 
 export default function CollectionPolicyPage() {
   const { t } = useLanguage();
@@ -30,31 +31,10 @@ export default function CollectionPolicyPage() {
       </section>
 
       {/* Content */}
-      <section className="py-16 font-sans">
-        <div className="container mx-auto px-4 max-w-4xl">
-          {/* Back Link */}
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-[#25B181] hover:text-[#1a936f] font-medium mb-8 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {t?.common?.back || "Back to Home"}
-          </Link>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="prose prose-lg max-w-none"
-            style={{ lineHeight: '1.7' }}
-          >
-            {/* Effective Date */}
-            <div className="mb-10 bg-gray-50 rounded-lg p-6">
-              <p className="text-[#2b2b2b] leading-[1.7]">
-                <span className="font-semibold">{t?.policies?.common?.effectiveDate || "Effective Date"}:</span> {cp?.effectiveDate || "January 1, 2026"}
-              </p>
-            </div>
-
+      <PoliciesLayout
+        effectiveDateText={t?.policies?.common?.effectiveDate || "Effective Date"}
+        effectiveDate={cp?.effectiveDate}
+      >
             {/* Section 1: Objective and Principles */}
             <div className="mb-10">
               <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
@@ -182,10 +162,7 @@ export default function CollectionPolicyPage() {
             <p className="text-center text-gray-500 text-sm">
               {cp?.footerNote || "This policy is subject to periodic review and updates in accordance with regulatory requirements."}
             </p>
-
-          </motion.div>
-        </div>
-      </section>
+      </PoliciesLayout>
     </div>
   );
 }
