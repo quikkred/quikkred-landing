@@ -92,7 +92,15 @@
         "tenDigits": "Mobile number must be exactly 10 digits",
         "validStart": "Mobile number must start with 6, 7, 8, or 9",
         "nameNoNumbers": "Name cannot contain numbers",
-        "nameRequired": "Name is required"
+        "nameRequired": "Name is required",
+        "nameAlphabetsOnly": "Name can only contain alphabets",
+        "nameMinLength": "Name must be at least 3 characters",
+        "amountNumbersOnly": "Amount can only contain numbers",
+        "amountMin": "Minimum loan amount is ₹5,000",
+        "amountMax": "Maximum loan amount is ₹1,00,000",
+        "amountRequired": "Loan amount is required",
+        "invalidEmail": "Please enter a valid email address",
+        "emailRequired": "Email is required"
       },
       "step1": {
         "question": "Enter your Mobile number?",
