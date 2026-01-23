@@ -40,13 +40,13 @@ const TruecallerVerify = ({
         setLoading(true);
 
         const id = uuidv4();
-        const partnerKey = "tBoZJ5a56cdf619e24cac849d3a431e026499";
+        const partnerKey = process.env.NEXT_PUBLIC_TRUECALLER_PARTNER_KEY || "jKals7364aeff7733491a900303975143e31b";
 
         const params = new URLSearchParams({
             type: "btmsheet",
             requestNonce: id,
             partnerKey: partnerKey,
-            partnerName: "quikkred-alpha",
+            partnerName: process.env.NEXT_PUBLIC_TRUECALLER_APP_NAME || "quikkred",
             lang: "en",
             privacyUrl: `${window.location.origin}/privacy-policy`,
             termsUrl: `${window.location.origin}/terms-and-conditions`,
