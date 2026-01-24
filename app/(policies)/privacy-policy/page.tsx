@@ -1,5 +1,6 @@
 'use client';
 
+import { JSX } from "react";
 import { motion } from "framer-motion";
 import {
   Lock, Shield, Database, UserCheck, Bell, Globe,
