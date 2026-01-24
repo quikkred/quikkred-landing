@@ -776,10 +776,23 @@ export default function MyLoansPage() {
     setAutopayForm({ amount: '', frequency: 'monthly', vpa: '' });
   };
 
-  // Check if loan is eligible for reapply (CLOSED status)
+  // Check if loan is eligible for reapply (only show on last loan if it's CLOSED)
   const isEligibleForReapply = (loan: Loan) => {
-    const status = loan.status.toUpperCase();
-    return status === 'CLOSED' || status === 'COMPLETED';
+    // If no loans, not eligible
+    if (!loans || loans.length === 0) return false;
+
+    // Find the most recent loan by createdAt date
+    const sortedLoans = [...loans].sort((a, b) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+    const lastLoan = sortedLoans[0];
+
+    // Only show reapply button on the last loan AND only if its status is CLOSED/COMPLETED
+    const isLastLoan = loan.id === lastLoan.id;
+    const status = lastLoan.status.toUpperCase();
+    const isLastLoanClosed = status === 'CLOSED' || status === 'COMPLETED';
+
+    return isLastLoan && isLastLoanClosed;
   };
 
   // Check if loan is eligible for autopay (ACTIVE status)
