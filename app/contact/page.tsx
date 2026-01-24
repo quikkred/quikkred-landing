@@ -107,7 +107,8 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    // <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="py-12 flex flex-col justify-center items-center gap-8 w-full">
       {/* Breadcrumbs */}
       {/* <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <motion.nav
@@ -337,8 +338,13 @@ export default function ContactPage() {
           </div>
         </motion.div>
       </section> */}
-<ContactForm/>
 
+      <div className="w-auto flex flex-col gap-2 justify-center items-center">
+        <h1 className="text-3xl lg:text-4xl font-semibold">Get in <span className="text-[var(--brand-green)]">Touch</span></h1>
+        <p>We{"'"}re here to help you</p>
+      </div>
+
+      <ContactForm />
     </div>
   );
 }

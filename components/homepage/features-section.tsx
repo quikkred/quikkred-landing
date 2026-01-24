@@ -12,7 +12,7 @@ export default function FeaturesSection() {
   }))
 
   return (
-    <section className="min-h-[calc(100vh-80px)] flex items-center bg-white py-12 sm:py-16 md:py-24 px-4 overflow-hidden">
+    <section className="min-h-[calc(100vh-80px)] flex items-center bg-white py-8 sm:py-10 lg:py-12 px-4 overflow-hidden">
       <div className="max-w-7xl mx-auto w-full">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
