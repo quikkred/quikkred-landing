@@ -155,9 +155,9 @@ export default function Products({
       {/* Coming Soon Popup - Rendered via Portal to body */}
       {mounted && showComingSoon && createPortal(<ComingSoonPopup />, document.body)}
 
-      <div className="w-full bg-white py-12 px-6 md:px-16 flex flex-col md:flex-row items-center justify-between gap-10">
+      <div className="w-full bg-white pt-4 md:px-16 flex flex-col md:flex-row items-center justify-between gap-5 md:gap-10">
         {/* Left Section */}
-        <div className="md:w-1/2 space-y-6">
+        <div className="w-full md:w-1/2 space-y-4 md:space-y-6">
           {/* Title */}
           <h1 className="text-4xl md:text-5xl font-bold leading-snug">
             {title}{" "}
@@ -165,23 +165,23 @@ export default function Products({
           </h1>
 
           {/* Subtitle (optional) */}
-          {subtitle && <p className="text-gray-600 text-lg">{subtitle}</p>}
+          {subtitle && <p className="text-gray-600">{subtitle}</p>}
 
           {/* Buttons (only render if at least one exists) */}
           {(buttonPrimaryText || buttonSecondaryText) && (
-            <div className="flex flex-wrap gap-4 pt-2">
+            <div className="w-full md:w-auto flex flex-wrap gap-4 pt-2">
               {buttonPrimaryText && (
                 <button
                   onClick={() => setShowComingSoon(true)}
-                  className={`${primaryBg} ${primaryBgHover} text-white font-semibold px-6 py-3 rounded-md transition`}
+                  className={`${primaryBg} ${primaryBgHover} text-white font-semibold w-full md:w-auto px-6 py-3 rounded-md transition`}
                 >
                   {buttonPrimaryText}
                 </button>
               )}
               {buttonSecondaryText && (
-                <Link href={buttonSecondaryLink}>
+                <Link href={buttonSecondaryLink} className="w-full md:w-auto">
                   <button
-                    className={`${borderPrimary} ${primary} border font-semibold px-6 py-3 rounded-md ${bgHover} transition`}
+                    className={`${borderPrimary} ${primary} border font-semibold w-full md:w-auto px-6 py-3 rounded-md ${bgHover} transition`}
                   >
                     {buttonSecondaryText}
                   </button>

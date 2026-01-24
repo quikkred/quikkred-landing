@@ -12,7 +12,7 @@ export default function PartnersPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative bg-white py-16 sm:py-20 lg:py-24 overflow-hidden">
+      <section className="relative bg-white py-8 sm:py-10 lg:py-12 overflow-hidden">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left Content */}
@@ -25,7 +25,7 @@ export default function PartnersPage() {
                 Partner With{" "}
                 <span className="text-[#25B181]">QuikkRed</span>
               </h1>
-              <p className="text-gray-600 text-lg sm:text-xl leading-relaxed mb-8 max-w-xl">
+              <p className="text-gray-600 text-lg leading-relaxed mb-8 max-w-xl">
                 We are revolutionizing financial services, and we believe in growing together. Whether you want to earn, empower, invest, or integrate, there's a partnership path for you.
               </p>
               <Link href="#partnership-paths">
@@ -64,7 +64,7 @@ export default function PartnersPage() {
       </section>
 
       {/* Choose Your Partnership Path Section */}
-      <section id="partnership-paths" className="bg-gray-50 py-16 sm:py-20 lg:py-24">
+      <section id="partnership-paths" className="bg-gray-50 py-8 sm:py-10 lg:py-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -146,7 +146,7 @@ export default function PartnersPage() {
       </section>
 
       {/* Why Partner With Us Section */}
-      <section className="bg-white py-16 sm:py-20 lg:py-24">
+      <section className="bg-white py-8 sm:py-10 lg:py-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -240,7 +240,7 @@ export default function PartnersPage() {
       </section>
 
       {/* Call to Action Section */}
-      <section className="flex items-center justify-center bg-[#f6f6f6] py-16 sm:py-20 md:py-24 overflow-hidden">
+      <section className="flex items-center justify-center bg-[#f6f6f6] py-8 sm:py-10 lg:py-12 overflow-hidden">
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 50 }}
           whileInView={{ opacity: 1, scale: 1, y: 0 }}
