@@ -1,9 +1,58 @@
 'use client';
 
 import { motion } from "framer-motion";
-import { Lock, Shield, Eye, Database, UserCheck, Bell, Globe, AlertCircle, RefreshCw, Scale } from "lucide-react";
+import {
+  Lock, Shield, Database, UserCheck, Bell, Globe,
+  AlertCircle, RefreshCw, Scale, Eye, Smartphone,
+  FileText, Share2, Megaphone, Trash2, Users, Server, Baby, Edit3, CheckCircle
+} from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import PoliciesLayout from "@/components/layouts/PoliciesLayout";
+
+// Function to highlight company names and CIN numbers
+const highlightText = (text: string) => {
+  if (!text) return text;
+
+  // Patterns to highlight
+  const patterns = [
+    { regex: /(Fluxusforge Private Limited)/gi, className: "font-semibold text-[#25B181]" },
+    { regex: /(Satsai Finlease Private Limited)/gi, className: "font-semibold text-[#4A66FF]" },
+    { regex: /(CIN:\s*U\d+[A-Z]+\d+[A-Z]+\d+)/gi, className: "font-semibold bg-yellow-100 px-1 rounded" },
+  ];
+
+  let result: (string | JSX.Element)[] = [text];
+
+  patterns.forEach(({ regex, className }) => {
+    result = result.flatMap((part, partIndex) => {
+      if (typeof part !== 'string') return part;
+
+      const parts: (string | JSX.Element)[] = [];
+      let lastIndex = 0;
+      let match;
+
+      const regexCopy = new RegExp(regex.source, regex.flags);
+      while ((match = regexCopy.exec(part)) !== null) {
+        if (match.index > lastIndex) {
+          parts.push(part.slice(lastIndex, match.index));
+        }
+        parts.push(
+          <span key={`${partIndex}-${match.index}`} className={className}>
+            {match[0]}
+          </span>
+        );
+        lastIndex = match.index + match[0].length;
+      }
+
+      if (lastIndex < part.length) {
+        parts.push(part.slice(lastIndex));
+      }
+
+      return parts.length > 0 ? parts : [part];
+    });
+  });
+
+  return result;
+};
 
 export default function PrivacyPage() {
   const { t } = useLanguage();
@@ -26,7 +75,6 @@ export default function PrivacyPage() {
               {p?.title || "Privacy Policy"}
             </h1>
             <p className="text-xl">{p?.subtitle || "Your privacy is our priority"}</p>
-            {/* <p className="text-sm mt-2 opacity-90">{t?.policies?.common?.effectiveDate || "Effective Date"}: {p?.effectiveDate || "18-02-2025"}</p> */}
           </motion.div>
         </div>
       </section>
@@ -36,239 +84,518 @@ export default function PrivacyPage() {
         effectiveDateText={t?.policies?.common?.effectiveDate || "Effective Date"}
         effectiveDate={p?.effectiveDate}
       >
-        {/* 1. Introduction */}
-        <div className="mb-8">
+        {/* 1. Introduction - What/Who is Quikkred */}
+        <div className="mb-10">
           <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
             <Shield className="w-6 h-6 text-[#25B181]" />
-            {sections?.introduction?.title || "1. Introduction"}
+            {sections?.introduction?.title || "What/Who is Quikkred and How Does Quikkred Privacy Policy Work?"}
           </h2>
-          <p className="text-gray-600 mb-4">
-            {sections?.introduction?.content || "Quikkred, a brand of Fluxusforge Private Limited, operates as a Lending Service Provider (LSP), in partnership with Satsai Finlease Private Limited (an RBI-registered NBFC) for loan disbursement."}
-          </p>
+
+          {Array.isArray(sections?.introduction?.content) ? (
+            sections.introduction.content.map((para: string, index: number) => (
+              <p key={index} className="text-gray-600 mb-4">{highlightText(para)}</p>
+            ))
+          ) : (
+            <p className="text-gray-600 mb-4">{highlightText(sections?.introduction?.content)}</p>
+          )}
+
+          {sections?.introduction?.partnerInfo && (
+            <div className="bg-gradient-to-r from-[#25B181]/10 to-[#4A66FF]/10 border-l-4 border-[#25B181] rounded-lg p-5 mt-6 shadow-sm">
+              <h3 className="font-bold text-lg mb-3 text-[#25B181]">Partner NBFC Details</h3>
+              <div className="space-y-2">
+                <p className="text-gray-800 font-semibold text-base">{sections.introduction.partnerInfo.name}</p>
+                <div className="grid sm:grid-cols-2 gap-3 text-sm">
+                  <div className="bg-white/60 rounded-md p-2">
+                    <span className="text-gray-500 block text-xs">Website</span>
+                    <span className="text-gray-700 font-medium">{sections.introduction.partnerInfo.website}</span>
+                  </div>
+                  <div className="bg-white/60 rounded-md p-2">
+                    <span className="text-gray-500 block text-xs">CIN</span>
+                    <span className="text-gray-800 font-semibold bg-yellow-100 px-1 rounded">{sections.introduction.partnerInfo.cin}</span>
+                  </div>
+                </div>
+                <div className="bg-white/60 rounded-md p-2 text-sm">
+                  <span className="text-gray-500 block text-xs">Registered Office</span>
+                  <span className="text-gray-700 font-medium">{sections.introduction.partnerInfo.registeredOffice}</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* 2. Data We Collect */}
-        <div className="mb-8">
+        {/* 2. Personal Information */}
+        <div className="mb-10">
           <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
             <Database className="w-6 h-6 text-[#4A66FF]" />
-            {sections?.dataCollection?.title || "2. Data We Collect"}
+            {sections?.personalInfo?.title || "What is Personal Information and What Types of Personal Information Do We Collect About You?"}
           </h2>
-          <p className="text-gray-600 mb-4">
-            {sections?.dataCollection?.intro || "We collect only the minimum necessary data to provide lending services and comply with regulatory mandates:"}
-          </p>
 
-          <div className="space-y-4 text-gray-600">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="font-semibold mb-2">{sections?.dataCollection?.items?.identification?.title || "Identification Data"}</h3>
-              <p>{sections?.dataCollection?.items?.identification?.content || "Full name, address, contact details, email, date of birth, Aadhaar, PAN."}</p>
-            </div>
+          <p className="text-gray-600 mb-4">{sections?.personalInfo?.definition}</p>
+          <p className="text-gray-600 mb-4">{sections?.personalInfo?.sensitiveDefinition}</p>
+          <p className="text-gray-600 mb-4">{sections?.personalInfo?.intro}</p>
 
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="font-semibold mb-2">{sections?.dataCollection?.items?.financial?.title || "Financial Data"}</h3>
-              <p>{sections?.dataCollection?.items?.financial?.content || "Bank account details, transactional history, income information strictly required for eligibility and processing."}</p>
-            </div>
-
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="font-semibold mb-2">{sections?.dataCollection?.items?.device?.title || "Device & Usage Data"}</h3>
-              <p>{sections?.dataCollection?.items?.device?.content || "Device model, OS version, device identifiers (advertising ID, IP address), app crash logs, anonymized usage statistics."}</p>
-            </div>
-
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="font-semibold mb-2">{sections?.dataCollection?.items?.loan?.title || "Loan Application Data"}</h3>
-              <p>{sections?.dataCollection?.items?.loan?.content || "Application status, KYC progress, correspondence, documented digital consents."}</p>
-            </div>
-
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="font-semibold mb-2">{sections?.dataCollection?.items?.thirdParty?.title || "Third-Party Data"}</h3>
-              <p>{sections?.dataCollection?.items?.thirdParty?.content || "Collected only from authorized service providers"} <a href="https://quikkred.in/partners" className="text-[#25B181] hover:underline">https://quikkred.in/partners</a>.</p>
-            </div>
-          </div>
-
-          <div className="bg-amber-50 border-l-4 border-amber-400 p-4 mt-4">
-            <p className="text-gray-700">
-              <strong>Note:</strong> {sections?.dataCollection?.note || "We do not collect or store biometric data (fingerprints, facial recognition) in any form on any necessary retention."}
-            </p>
-          </div>
-
-          <p className="text-gray-600 mt-4">
-            {sections?.dataCollection?.communication || "Unless expressly opted out by you, we may use channels such as email, SMS, RCS, Whatsapp, instant messaging apps and call to disseminate promotional or service-related communications."}
-          </p>
-        </div>
-
-        {/* 3. Purpose of Use */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            <Eye className="w-6 h-6 text-[#25B181]" />
-            {sections?.purpose?.title || "3. Purpose of Use"}
-          </h2>
-          <p className="text-gray-600 mb-4">
-            {sections?.purpose?.intro || "We use your information only to:"}
-          </p>
-          <ul className="space-y-2 text-gray-600">
-            {(sections?.purpose?.items || [
-              "Complete KYC, assess loan eligibility, approval and disbursal via our NBFC partner.",
-              "Meet regulatory and RBI digital lending requirements.",
-              "Prevent fraud and protect the app's security.",
-              "Provide customer support and improve services through anonymized analytics."
-            ]).map((item: string, index: number) => (
-              <li key={index} className="flex items-start gap-2">
-                <span className="text-[#25B181]">&#10003;</span>
-                <span>{item}</span>
-              </li>
+          <h3 className="text-lg font-semibold mb-3">Categories of Personal Information:</h3>
+          <div className="space-y-3">
+            {sections?.personalInfo?.categories && Object.entries(sections.personalInfo.categories).map(([key, item]: [string, any]) => (
+              <div key={key} className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-semibold mb-1">{item.title}</h4>
+                <p className="text-gray-600 text-sm">{item.content}</p>
+              </div>
             ))}
-          </ul>
+          </div>
+
+          {sections?.personalInfo?.smsNote && (
+            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mt-4">
+              <p className="text-gray-700 text-sm">{sections.personalInfo.smsNote}</p>
+            </div>
+          )}
+
+          {sections?.personalInfo?.phoneDataNote && (
+            <p className="text-gray-600 mt-4 text-sm">{sections.personalInfo.phoneDataNote}</p>
+          )}
+
+          {sections?.personalInfo?.specialCategories && (
+            <p className="text-gray-600 mt-4">{sections.personalInfo.specialCategories}</p>
+          )}
+
+          {sections?.personalInfo?.thirdPartyNote && (
+            <div className="bg-amber-50 border-l-4 border-amber-400 p-4 mt-4">
+              <p className="text-gray-700 text-sm">{sections.personalInfo.thirdPartyNote}</p>
+            </div>
+          )}
         </div>
 
-        {/* 4. Data Sharing & Third Parties */}
-        <div className="mb-8">
+        {/* 3. How Do We Collect */}
+        <div className="mb-10">
           <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            <UserCheck className="w-6 h-6 text-[#4A66FF]" />
-            {sections?.dataSharing?.title || "4. Data Sharing & Third Parties"}
+            <FileText className="w-6 h-6 text-[#25B181]" />
+            {sections?.collection?.title || "How Do We Collect Your Personal Information?"}
           </h2>
-          <p className="text-gray-600 mb-4">
-            {sections?.dataSharing?.intro || "We share data only with:"}
-          </p>
-          <div className="space-y-3 text-gray-600">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="font-semibold mb-1">{sections?.dataSharing?.items?.nbfc?.title || "NBFC Lending Partner(s)"}</h3>
-              <p className="text-sm">{sections?.dataSharing?.items?.nbfc?.content || "For loan processing and disbursement."}</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="font-semibold mb-1">{sections?.dataSharing?.items?.regulatory?.title || "Regulatory Authorities"}</h3>
-              <p className="text-sm">{sections?.dataSharing?.items?.regulatory?.content || "Where required by law."}</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="font-semibold mb-1">{sections?.dataSharing?.items?.technical?.title || "Verified Technical Service Providers"}</h3>
-              <p className="text-sm">{sections?.dataSharing?.items?.technical?.content || "Under contractual data protection obligations."}</p>
-            </div>
+
+          <p className="text-gray-600 mb-4">{sections?.collection?.intro}</p>
+
+          {/* Direct Collection */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-3">{sections?.collection?.directCollection?.title}</h3>
+            <p className="text-gray-600 mb-3">{sections?.collection?.directCollection?.intro}</p>
+            <ul className="space-y-2 text-gray-600">
+              {sections?.collection?.directCollection?.items?.map((item: string, index: number) => (
+                <li key={index} className="flex items-start gap-2">
+                  <span className="text-[#25B181] mt-1">&#8226;</span>
+                  <span className="text-sm">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Third Party Collection */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3">{sections?.collection?.thirdPartyCollection?.title}</h3>
+            <p className="text-gray-600 mb-3">{sections?.collection?.thirdPartyCollection?.intro}</p>
+            <ul className="space-y-2 text-gray-600">
+              {sections?.collection?.thirdPartyCollection?.items?.map((item: string, index: number) => (
+                <li key={index} className="flex items-start gap-2">
+                  <span className="text-[#25B181] mt-1">&#8226;</span>
+                  <span className="text-sm">{item}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
 
-        {/* 5. Consent, Control & Withdrawal */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            <Bell className="w-6 h-6 text-[#FF9C70]" />
-            {sections?.consent?.title || "5. Consent, Control & Withdrawal"}
-          </h2>
-          <ul className="space-y-3 text-gray-600">
-            {(sections?.consent?.items || [
-              "We obtain explicit consent prior to processing personal data.",
-              "You may withdraw consent at any time via the app settings or by contacting support.",
-              "Upon withdrawal, data deletion or restriction requests will be processed in compliance with RBI and legal requirements."
-            ]).map((item: string, index: number) => (
-              <li key={index} className="flex items-start gap-2">
-                <span className="text-[#25B181] mt-1">&#8226;</span>
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* 6. Data Security & Retention */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            <Lock className="w-6 h-6 text-[#25B181]" />
-            {sections?.security?.title || "6. Data Security & Retention"}
-          </h2>
-          <ul className="space-y-3 text-gray-600">
-            {(sections?.security?.items || [
-              "Your data is stored securely in India using AES-256 encryption and industry-standard access controls.",
-              "We retain personal data only as long as your account is active or as legally required.",
-              "Once retention periods expire, we securely delete or anonymize data.",
-              "We do not transfer or store data outside India."
-            ]).map((item: string, index: number) => (
-              <li key={index} className="flex items-start gap-2">
-                <span className="text-[#25B181] mt-1">&#8226;</span>
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* 7. Your Rights */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            <Globe className="w-6 h-6 text-[#4A66FF]" />
-            {sections?.rights?.title || "7. Your Rights"}
-          </h2>
-          <p className="text-gray-600 mb-4">
-            {sections?.rights?.intro || "Under applicable laws, you have rights to:"}
-          </p>
-          <div className="grid md:grid-cols-2 gap-4 mb-4">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="font-semibold mb-1">{sections?.rights?.items?.access?.title || "Access"}</h3>
-              <p className="text-sm">{sections?.rights?.items?.access?.content || "Access your personal data"}</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="font-semibold mb-1">{sections?.rights?.items?.rectify?.title || "Rectify"}</h3>
-              <p className="text-sm">{sections?.rights?.items?.rectify?.content || "Correct inaccurate information"}</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="font-semibold mb-1">{sections?.rights?.items?.erase?.title || "Erase"}</h3>
-              <p className="text-sm">{sections?.rights?.items?.erase?.content || "Request deletion of your data"}</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="font-semibold mb-1">{sections?.rights?.items?.port?.title || "Port"}</h3>
-              <p className="text-sm">{sections?.rights?.items?.port?.content || "Receive your data in portable format"}</p>
-            </div>
-          </div>
-          <p className="text-gray-600 mb-4">
-            {sections?.rights?.withdraw || "Withdraw consent or restrict processing. Lodge complaints with Quikkred's Data Protection Officer:"}
-          </p>
-          <div className="bg-gradient-to-br from-[#25B181]/10 to-[#4A66FF]/10 rounded-lg p-6">
-            <p className="font-semibold mb-2">{sections?.rights?.dpo?.title || "Data Protection Officer"}</p>
-            <p className="text-gray-600">
-              {sections?.rights?.dpo?.name || "Miss Priya"}<br />
-              {t?.policies?.common?.email || "Email"}: {sections?.rights?.dpo?.email || "dpo@quikkred.in"}<br />
-              {t?.policies?.common?.phone || "Contact"}: {sections?.rights?.dpo?.phone || "+91-9311913854"}
-            </p>
-          </div>
-          <p className="text-gray-600 mt-4">
-            {sections?.rights?.grievanceTime || "We commit to addressing grievances within 30 days."}
-          </p>
-        </div>
-
-        {/* 8. Children's Privacy */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            <AlertCircle className="w-6 h-6 text-[#FF9C70]" />
-            {sections?.children?.title || "8. Children's Privacy"}
-          </h2>
-          <p className="text-gray-600">
-            {sections?.children?.content || "Our services are not intended for users under 18. We do not deliberately collect data from minors."}
-          </p>
-        </div>
-
-        {/* 9. Policy Updates */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-            <RefreshCw className="w-6 h-6 text-[#25B181]" />
-            {sections?.updates?.title || "9. Policy Updates"}
-          </h2>
-          <p className="text-gray-600">
-            {sections?.updates?.content || "We will notify users of changes via the app and support page. Continued usage implies acceptance."}
-          </p>
-        </div>
-
-        {/* 10. Regulatory Compliance */}
-        <div className="mb-8">
+        {/* 4. Lawful Grounds */}
+        <div className="mb-10">
           <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
             <Scale className="w-6 h-6 text-[#4A66FF]" />
-            {sections?.compliance?.title || "10. Regulatory Compliance"}
+            {sections?.lawfulGrounds?.title || "What Are the Lawful Grounds That We Rely on to Process Your Sensitive Personal Information?"}
           </h2>
-          <p className="text-gray-600 mb-4">
-            {sections?.compliance?.content || "Quikkred acts only as LSP, with loans issued by RBI-regulated Satsai Finlease Private Limited (NBFC)."}
-          </p>
-          <div className="bg-green-50 border-l-4 border-green-400 p-4">
-            <p className="text-gray-700">
-              {sections?.compliance?.note || "Our policies ensure full compliance with RBI Digital Lending Directions 2025 and the DPDP Act 2023."}
-            </p>
+
+          {Array.isArray(sections?.lawfulGrounds?.content) ? (
+            sections.lawfulGrounds.content.map((para: string, index: number) => (
+              <p key={index} className="text-gray-600 mb-4">{para}</p>
+            ))
+          ) : (
+            <p className="text-gray-600 mb-4">{sections?.lawfulGrounds?.content}</p>
+          )}
+        </div>
+
+        {/* 5. App Permissions */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <Smartphone className="w-6 h-6 text-[#25B181]" />
+            {sections?.appPermissions?.title || "App Permissions and Data Collection"}
+          </h2>
+
+          <p className="text-gray-600 mb-4">{sections?.appPermissions?.intro}</p>
+
+          {/* SMS Permissions */}
+          {sections?.appPermissions?.permissions?.sms && (
+            <div className="bg-gray-50 rounded-lg p-4 mb-4">
+              <h3 className="font-semibold mb-2">{sections.appPermissions.permissions.sms.title}</h3>
+              <p className="text-gray-600 text-sm mb-2">{sections.appPermissions.permissions.sms.content}</p>
+              {sections.appPermissions.permissions.sms.note && (
+                <p className="text-gray-500 text-sm italic">{sections.appPermissions.permissions.sms.note}</p>
+              )}
+            </div>
+          )}
+
+          {/* Apps Permissions */}
+          {sections?.appPermissions?.permissions?.apps && (
+            <div className="bg-gray-50 rounded-lg p-4 mb-4">
+              <h3 className="font-semibold mb-2">{sections.appPermissions.permissions.apps.title}</h3>
+              <p className="text-gray-600 text-sm mb-3">{sections.appPermissions.permissions.apps.content}</p>
+
+              {sections.appPermissions.permissions.apps.usedFor && (
+                <div className="mb-3">
+                  <p className="text-sm font-medium mb-1">This data is used strictly for:</p>
+                  <ul className="space-y-1">
+                    {sections.appPermissions.permissions.apps.usedFor.map((item: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2 text-sm text-gray-600">
+                        <span className="text-[#25B181]">&#10003;</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {sections.appPermissions.permissions.apps.safeguards && (
+                <div>
+                  <p className="text-sm font-medium mb-1">Important safeguards:</p>
+                  <ul className="space-y-1">
+                    {sections.appPermissions.permissions.apps.safeguards.map((item: string, index: number) => (
+                      <li key={index} className="flex items-start gap-2 text-sm text-gray-600">
+                        <span className="text-[#25B181]">&#8226;</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Location Permissions */}
+          {sections?.appPermissions?.permissions?.location && (
+            <div className="bg-gray-50 rounded-lg p-4 mb-4">
+              <h3 className="font-semibold mb-2">{sections.appPermissions.permissions.location.title}</h3>
+              <p className="text-gray-600 text-sm mb-2">{sections.appPermissions.permissions.location.content}</p>
+
+              {sections.appPermissions.permissions.location.usedFor && (
+                <ul className="space-y-1 mb-2">
+                  {sections.appPermissions.permissions.location.usedFor.map((item: string, index: number) => (
+                    <li key={index} className="flex items-start gap-2 text-sm text-gray-600">
+                      <span className="text-[#25B181]">&#10003;</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {sections.appPermissions.permissions.location.note && (
+                <p className="text-gray-500 text-sm italic">{sections.appPermissions.permissions.location.note}</p>
+              )}
+            </div>
+          )}
+
+          {/* Device Permissions */}
+          {sections?.appPermissions?.permissions?.device && (
+            <div className="bg-gray-50 rounded-lg p-4 mb-4">
+              <h3 className="font-semibold mb-2">{sections.appPermissions.permissions.device.title}</h3>
+              <p className="text-gray-600 text-sm mb-2">{sections.appPermissions.permissions.device.content}</p>
+
+              {sections.appPermissions.permissions.device.collectedData && (
+                <ul className="space-y-1 mb-2">
+                  {sections.appPermissions.permissions.device.collectedData.map((item: string, index: number) => (
+                    <li key={index} className="flex items-start gap-2 text-sm text-gray-600">
+                      <span className="text-[#25B181]">&#8226;</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {sections.appPermissions.permissions.device.note && (
+                <p className="text-gray-500 text-sm italic">{sections.appPermissions.permissions.device.note}</p>
+              )}
+            </div>
+          )}
+
+          {/* Phone State Permissions */}
+          {sections?.appPermissions?.permissions?.phoneState && (
+            <div className="bg-gray-50 rounded-lg p-4 mb-4">
+              <h3 className="font-semibold mb-2">{sections.appPermissions.permissions.phoneState.title}</h3>
+              <p className="text-gray-600 text-sm mb-2">{sections.appPermissions.permissions.phoneState.content}</p>
+
+              {sections.appPermissions.permissions.phoneState.usedFor && (
+                <ul className="space-y-1 mb-2">
+                  {sections.appPermissions.permissions.phoneState.usedFor.map((item: string, index: number) => (
+                    <li key={index} className="flex items-start gap-2 text-sm text-gray-600">
+                      <span className="text-[#25B181]">&#10003;</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {sections.appPermissions.permissions.phoneState.note && (
+                <p className="text-gray-500 text-sm italic">{sections.appPermissions.permissions.phoneState.note}</p>
+              )}
+            </div>
+          )}
+
+          {/* Camera Permissions */}
+          {sections?.appPermissions?.permissions?.camera && (
+            <div className="bg-gray-50 rounded-lg p-4 mb-4">
+              <h3 className="font-semibold mb-2">{sections.appPermissions.permissions.camera.title}</h3>
+              <p className="text-gray-600 text-sm mb-2">{sections.appPermissions.permissions.camera.content}</p>
+              {sections.appPermissions.permissions.camera.usage && (
+                <p className="text-gray-600 text-sm mb-2">{sections.appPermissions.permissions.camera.usage}</p>
+              )}
+              {sections.appPermissions.permissions.camera.note && (
+                <p className="text-gray-500 text-sm italic">{sections.appPermissions.permissions.camera.note}</p>
+              )}
+            </div>
+          )}
+
+          {sections?.appPermissions?.hostingNote && (
+            <div className="bg-green-50 border-l-4 border-green-400 p-4 mt-4">
+              <p className="text-gray-700 text-sm">{sections.appPermissions.hostingNote}</p>
+            </div>
+          )}
+
+          {sections?.appPermissions?.consentNote && (
+            <p className="text-gray-600 mt-4 text-sm">{sections.appPermissions.consentNote}</p>
+          )}
+        </div>
+
+        {/* 6. Purposes for Processing */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <Eye className="w-6 h-6 text-[#4A66FF]" />
+            {sections?.purposes?.title || "Purposes for Processing Your Personal Information"}
+          </h2>
+
+          <p className="text-gray-600 mb-4">{sections?.purposes?.intro}</p>
+
+          <div className="space-y-4">
+            {sections?.purposes?.items && Object.entries(sections.purposes.items).map(([key, item]: [string, any]) => (
+              <div key={key} className="bg-gray-50 rounded-lg p-4">
+                <h3 className="font-semibold mb-2">{item.title}</h3>
+                <p className="text-gray-600 text-sm">{item.content}</p>
+              </div>
+            ))}
           </div>
+        </div>
+
+        {/* 7. Disclosure */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <Share2 className="w-6 h-6 text-[#25B181]" />
+            {sections?.disclosure?.title || "When and to Whom Do We Disclose Your Personal Information?"}
+          </h2>
+
+          <p className="text-gray-600 mb-4">{sections?.disclosure?.intro}</p>
+
+          <div className="space-y-3 mb-6">
+            {sections?.disclosure?.scenarios && Object.entries(sections.disclosure.scenarios).map(([key, item]: [string, any]) => (
+              <div key={key} className="bg-gray-50 rounded-lg p-4">
+                <h3 className="font-semibold mb-1">{item.title}</h3>
+                <p className="text-gray-600 text-sm">{item.content}</p>
+              </div>
+            ))}
+          </div>
+
+          {sections?.disclosure?.externalThirdParties && (
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold mb-3">{sections.disclosure.externalThirdParties.title}</h3>
+              <p className="text-gray-600 mb-3">{sections.disclosure.externalThirdParties.intro}</p>
+              <ul className="space-y-2">
+                {sections.disclosure.externalThirdParties.items?.map((item: string, index: number) => (
+                  <li key={index} className="flex items-start gap-2 text-gray-600">
+                    <span className="text-[#25B181] mt-1">&#8226;</span>
+                    <span className="text-sm">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {sections?.disclosure?.contactNote && (
+            <p className="text-gray-600 text-sm">{sections.disclosure.contactNote}</p>
+          )}
+        </div>
+
+        {/* 8. Marketing */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <Megaphone className="w-6 h-6 text-[#4A66FF]" />
+            {sections?.marketing?.title || "Marketing"}
+          </h2>
+
+          {Array.isArray(sections?.marketing?.content) ? (
+            sections.marketing.content.map((para: string, index: number) => (
+              <p key={index} className="text-gray-600 mb-4">{para}</p>
+            ))
+          ) : (
+            <p className="text-gray-600 mb-4">{sections?.marketing?.content}</p>
+          )}
+        </div>
+
+        {/* 9. Data Retention and Deletion */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <Trash2 className="w-6 h-6 text-[#25B181]" />
+            {sections?.retention?.title || "Data Retention and Deletion"}
+          </h2>
+
+          {Array.isArray(sections?.retention?.content) ? (
+            sections.retention.content.map((para: string, index: number) => (
+              <p key={index} className="text-gray-600 mb-4">{para}</p>
+            ))
+          ) : (
+            <p className="text-gray-600 mb-4">{sections?.retention?.content}</p>
+          )}
+
+          {sections?.retention?.grievanceOfficer && (
+            <div className="bg-gradient-to-br from-[#25B181]/10 to-[#4A66FF]/10 rounded-lg p-6 my-6">
+              <p className="font-semibold mb-2">{sections.retention.grievanceOfficer.title}</p>
+              <p className="text-gray-600">
+                {sections.retention.grievanceOfficer.name}<br />
+                Mobile: {sections.retention.grievanceOfficer.mobile}<br />
+                Email: {sections.retention.grievanceOfficer.email}
+              </p>
+            </div>
+          )}
+
+          {sections?.retention?.deletionSteps && (
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h3 className="font-semibold mb-3">{sections.retention.deletionSteps.title}</h3>
+              <ol className="space-y-2">
+                {sections.retention.deletionSteps.steps?.map((step: string, index: number) => (
+                  <li key={index} className="flex items-start gap-2 text-gray-600">
+                    <span className="bg-[#25B181] text-white rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0">{index + 1}</span>
+                    <span className="text-sm">{step}</span>
+                  </li>
+                ))}
+              </ol>
+              {sections.retention.deletionSteps.moreInfo && (
+                <p className="text-gray-600 text-sm mt-3">{sections.retention.deletionSteps.moreInfo}</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* 10. Your Individual Rights */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <Users className="w-6 h-6 text-[#4A66FF]" />
+            {sections?.rights?.title || "Your Individual Rights"}
+          </h2>
+
+          <p className="text-gray-600 mb-4">{sections?.rights?.intro}</p>
+
+          <div className="grid md:grid-cols-2 gap-4 mb-4">
+            {sections?.rights?.items && Object.entries(sections.rights.items).map(([key, item]: [string, any]) => (
+              <div key={key} className="bg-gray-50 rounded-lg p-4">
+                <h3 className="font-semibold mb-1">{item.title}</h3>
+                <p className="text-gray-600 text-sm">{item.content}</p>
+              </div>
+            ))}
+          </div>
+
+          {sections?.rights?.exerciseNote && (
+            <p className="text-gray-600 mb-4 text-sm">{sections.rights.exerciseNote}</p>
+          )}
+
+          {sections?.rights?.deletionNote && (
+            <p className="text-gray-600 mb-4 text-sm">{sections.rights.deletionNote}</p>
+          )}
+
+          {sections?.rights?.deletionRequest && (
+            <p className="text-gray-600 mb-4 text-sm">{sections.rights.deletionRequest}</p>
+          )}
+
+          {sections?.rights?.withdrawConsent && (
+            <p className="text-gray-600 text-sm">{sections.rights.withdrawConsent}</p>
+          )}
+        </div>
+
+        {/* 11. Sharing and Transfer */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <Share2 className="w-6 h-6 text-[#25B181]" />
+            {sections?.sharing?.title || "Sharing and Transfer of Information"}
+          </h2>
+
+          {Array.isArray(sections?.sharing?.content) ? (
+            sections.sharing.content.map((para: string, index: number) => (
+              <p key={index} className="text-gray-600 mb-4">{para}</p>
+            ))
+          ) : (
+            <p className="text-gray-600 mb-4">{sections?.sharing?.content}</p>
+          )}
+
+          {sections?.sharing?.thirdPartiesLink && (
+            <p className="text-gray-600 text-sm">{sections.sharing.thirdPartiesLink}</p>
+          )}
+        </div>
+
+        {/* 12. Security */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <Server className="w-6 h-6 text-[#4A66FF]" />
+            {sections?.security?.title || "Security: How We Protect and Store Personal Information"}
+          </h2>
+
+          {Array.isArray(sections?.security?.content) ? (
+            sections.security.content.map((para: string, index: number) => (
+              <p key={index} className="text-gray-600 mb-4">{para}</p>
+            ))
+          ) : (
+            <p className="text-gray-600 mb-4">{sections?.security?.content}</p>
+          )}
+        </div>
+
+        {/* 13. Minors */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <Baby className="w-6 h-6 text-[#25B181]" />
+            {sections?.minors?.title || "Minors"}
+          </h2>
+
+          <p className="text-gray-600">{sections?.minors?.content}</p>
+        </div>
+
+        {/* 14. Changes */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <Edit3 className="w-6 h-6 text-[#4A66FF]" />
+            {sections?.changes?.title || "Changes to the Quikkred Privacy Statement and Your Duty to Inform Us of Changes"}
+          </h2>
+
+          {Array.isArray(sections?.changes?.content) ? (
+            sections.changes.content.map((para: string, index: number) => (
+              <p key={index} className="text-gray-600 mb-4">{para}</p>
+            ))
+          ) : (
+            <p className="text-gray-600 mb-4">{sections?.changes?.content}</p>
+          )}
+        </div>
+
+        {/* 15. Consent */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <CheckCircle className="w-6 h-6 text-[#25B181]" />
+            {sections?.consent?.title || "Consent"}
+          </h2>
+
+          <p className="text-gray-600">{sections?.consent?.content}</p>
         </div>
 
         {/* Last Updated */}
         <div className="text-center text-gray-500 text-sm mt-8 pt-8 border-t">
-          <p>{t?.policies?.common?.lastUpdated || "Last Updated"}: {p?.lastUpdatedDate || "18th February 2025"}</p>
+          <p>{t?.policies?.common?.lastUpdated || "Last Updated"}: {p?.lastUpdatedDate || "March 17, 2025"}</p>
         </div>
       </PoliciesLayout>
     </div>
