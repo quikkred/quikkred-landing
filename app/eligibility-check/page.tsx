@@ -188,7 +188,7 @@ export default function EligibilityCheckPage() {
   const handleCheckEligibility = () => {
     // Validate all required fields
     if (!formData.age || !formData.monthlyIncome || !formData.workExperience ||
-        !formData.creditScore || !formData.loanAmount) {
+      !formData.creditScore || !formData.loanAmount) {
       return;
     }
     if (formData.existingLoans === "yes" && !formData.existingEMI) {
@@ -221,7 +221,7 @@ export default function EligibilityCheckPage() {
 
   const isFormValid = () => {
     if (!formData.age || !formData.monthlyIncome || !formData.workExperience ||
-        !formData.creditScore || !formData.loanAmount) {
+      !formData.creditScore || !formData.loanAmount) {
       return false;
     }
     if (formData.existingLoans === "yes" && !formData.existingEMI) {
@@ -233,7 +233,7 @@ export default function EligibilityCheckPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white py-12 sm:py-16 lg:py-20">
+      <section className="relative bg-gradient-to-br from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white py-8 sm:py-10 lg:py-12">
         <div className="absolute inset-0 bg-black/20" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
           <motion.div
@@ -288,21 +288,24 @@ export default function EligibilityCheckPage() {
       </section>
 
       {/* Form Section */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 -mt-8">
+      <section className="container mx-auto px-4 sm:px-6 py-8 sm:py-10 lg:py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
           <div className="max-w-5xl mx-auto">
-            <div className="bg-white rounded-3xl p-8 shadow-2xl relative z-10">
-              <h2 className="text-3xl font-bold mb-8 text-center">Enter Your Details</h2>
+            <div className="bg-white rounded-3xl flex flex-col justify-center items-center gap-2 p-8 shadow-2xl relative z-10">
+              <div className="flex flex-col justify-center w-auto items-center gap-1 mb-4">
+                <h2 className="text-3xl font-bold text-center">Enter Your Details</h2>
+                <div className="bg-[var(--brand-green)] w-1/2 h-1" />
+              </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="w-full grid md:grid-cols-2 gap-6">
                 {/* Personal Information */}
-                <div className="space-y-6">
-                  <h3 className="text-lg font-semibold text-[#4A66FF] flex items-center gap-2">
-                    <Users className="w-5 h-5" />
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-[var(--brand-green)] flex items-center gap-2">
+                    <Users className="w-5 h-5 text-[var(--brand-blue)]" />
                     Personal Information
                   </h3>
 
@@ -316,7 +319,7 @@ export default function EligibilityCheckPage() {
                       max="70"
                       value={formData.age}
                       onChange={(e) => updateFormData("age", e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--royal-blue)] focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-transparent"
                       placeholder="Enter your age"
                     />
                   </div>
@@ -329,7 +332,7 @@ export default function EligibilityCheckPage() {
                       type="number"
                       value={formData.monthlyIncome}
                       onChange={(e) => updateFormData("monthlyIncome", e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--royal-blue)] focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-transparent"
                       placeholder="e.g., 50000"
                     />
                   </div>
@@ -341,7 +344,7 @@ export default function EligibilityCheckPage() {
                     <select
                       value={formData.employmentType}
                       onChange={(e) => updateFormData("employmentType", e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--royal-blue)] focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-transparent"
                     >
                       <option value="salaried">Salaried</option>
                       <option value="self-employed">Self-Employed</option>
@@ -359,16 +362,16 @@ export default function EligibilityCheckPage() {
                       max="40"
                       value={formData.workExperience}
                       onChange={(e) => updateFormData("workExperience", e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--royal-blue)] focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-transparent"
                       placeholder="e.g., 5"
                     />
                   </div>
                 </div>
 
                 {/* Financial Information */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-[#25B181] flex items-center gap-2">
-                    <CreditCard className="w-5 h-5" />
+                    <CreditCard className="w-5 h-5 text-[var(--brand-blue)]" />
                     Financial Information
                   </h3>
 
@@ -382,7 +385,7 @@ export default function EligibilityCheckPage() {
                       max="900"
                       value={formData.creditScore}
                       onChange={(e) => updateFormData("creditScore", e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--royal-blue)] focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-transparent"
                       placeholder="e.g., 750"
                     />
                     <p className="text-sm text-gray-500 mt-1">
@@ -398,22 +401,20 @@ export default function EligibilityCheckPage() {
                       <button
                         type="button"
                         onClick={() => updateFormData("existingLoans", "no")}
-                        className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
-                          formData.existingLoans === "no"
-                            ? 'bg-[#4A66FF] text-blue shadow-lg scale-105'
+                        className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${formData.existingLoans === "no"
+                            ? 'bg-[#4A66FF] text-white shadow-lg scale-105'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200:bg-gray-600'
-                        }`}
+                          }`}
                       >
                         No
                       </button>
                       <button
                         type="button"
                         onClick={() => updateFormData("existingLoans", "yes")}
-                        className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${
-                          formData.existingLoans === "yes"
+                        className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all ${formData.existingLoans === "yes"
                             ? 'bg-[#4A66FF] text-white shadow-lg scale-105'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200:bg-gray-600'
-                        }`}
+                          }`}
                       >
                         Yes
                       </button>
@@ -434,7 +435,7 @@ export default function EligibilityCheckPage() {
                           type="number"
                           value={formData.existingEMI}
                           onChange={(e) => updateFormData("existingEMI", e.target.value)}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--royal-blue)] focus:border-transparent"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-transparent"
                           placeholder="e.g., 15000"
                         />
                       </motion.div>
@@ -449,7 +450,7 @@ export default function EligibilityCheckPage() {
                       type="number"
                       value={formData.loanAmount}
                       onChange={(e) => updateFormData("loanAmount", e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--royal-blue)] focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-transparent"
                       placeholder="e.g., 200000"
                     />
                   </div>
@@ -461,7 +462,7 @@ export default function EligibilityCheckPage() {
                     <select
                       value={formData.purpose}
                       onChange={(e) => updateFormData("purpose", e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--royal-blue)] focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-transparent"
                     >
                       <option value="personal">Personal Use</option>
                       <option value="medical">Medical Emergency</option>
@@ -481,7 +482,7 @@ export default function EligibilityCheckPage() {
                 <div className="flex items-start gap-3">
                   <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                   <p className="text-sm text-blue-800">
-                    This check is <strong>100% free</strong> and <strong>doesn't affect your credit score</strong>.
+                    This check is <b>100% free</b> and <b>doesn't affect your credit score</b>.
                     We'll provide instant personalized results based on your profile.
                   </p>
                 </div>
@@ -513,11 +514,10 @@ export default function EligibilityCheckPage() {
             className="max-w-5xl mx-auto"
           >
             {/* Result Header */}
-            <div className={`rounded-2xl p-8 mb-8 text-white ${
-              result?.isEligible
+            <div className={`rounded-2xl p-8 mb-8 text-white ${result?.isEligible
                 ? 'bg-gradient-to-r from-green-500 to-emerald-600'
                 : 'bg-gradient-to-r from-orange-500 to-red-600'
-            }`}>
+              }`}>
               <div className="flex items-center justify-center mb-4">
                 {result?.isEligible ? (
                   <CheckCircle className="w-16 h-16" />
@@ -639,7 +639,7 @@ export default function EligibilityCheckPage() {
               {result?.isEligible ? (
                 <>
                   <Link href="/apply/quick" className="flex-1">
-                    <button className="w-full px-8 py-4 bg-[#4A66FF] text-white rounded-lg font-semibold hover:bg-[var(--royal-blue-dark)] transition-colors">
+                    <button className="w-full px-8 py-4 bg-[#4A66FF] text-white rounded-lg font-semibold hover:bg-[var(--brand-blue-dark)] transition-colors">
                       Apply for Loan Now
                     </button>
                   </Link>
@@ -652,7 +652,7 @@ export default function EligibilityCheckPage() {
               ) : (
                 <>
                   <Link href="/resources/faqs" className="flex-1">
-                    <button className="w-full px-8 py-4 bg-[#4A66FF] text-white rounded-lg font-semibold hover:bg-[var(--royal-blue-dark)] transition-colors">
+                    <button className="w-full px-8 py-4 bg-[#4A66FF] text-white rounded-lg font-semibold hover:bg-[var(--brand-blue-dark)] transition-colors">
                       Learn More
                     </button>
                   </Link>

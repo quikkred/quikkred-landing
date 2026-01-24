@@ -304,7 +304,7 @@ export default function InterestRatesPage() {
         </div>
       </section>
 
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 -mt-8">
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12">
 
         {/* Rate Highlight Banner */}
         <motion.div
@@ -315,20 +315,20 @@ export default function InterestRatesPage() {
         >
           <div className="bg-gradient-to-r from-[#25B181] to-[#51C9AF] rounded-2xl p-8">
             <div className="grid md:grid-cols-3 gap-6 text-center">
-              <div>
+              <div className="text-white">
                 <TrendingDown className="w-10 h-10 mx-auto mb-3" />
-                <div className="text-3xl font-bold mb-1">8.99%</div>
-                <div className="text-sm opacity-90">Starting Rate p.d.</div>
+                <h3 className="text-3xl font-bold mb-1">8.99%</h3>
+                <p className="text-sm opacity-90">Starting Rate p.d.</p>
               </div>
-              <div>
+              <div className="text-white">
                 <Clock className="w-10 h-10 mx-auto mb-3" />
-                <div className="text-3xl font-bold mb-1">30 Sec</div>
-                <div className="text-sm opacity-90">Approval Time</div>
+                <h3 className="text-3xl font-bold mb-1">30 Sec</h3>
+                <p className="text-sm opacity-90">Approval Time</p>
               </div>
-              <div>
+              <div className="text-white">
                 <DollarSign className="w-10 h-10 mx-auto mb-3" />
-                <div className="text-3xl font-bold mb-1">₹50L</div>
-                <div className="text-sm opacity-90">Max Loan Amount</div>
+                <h3 className="text-3xl font-bold mb-1">₹50L</h3>
+                <p className="text-sm opacity-90">Max Loan Amount</p>
               </div>
             </div>
           </div>
@@ -349,7 +349,7 @@ export default function InterestRatesPage() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--royal-blue)] focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-transparent"
                 placeholder="Search loan products..."
               />
             </div>
@@ -378,7 +378,7 @@ export default function InterestRatesPage() {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-[var(--royal-blue)] focus:border-transparent"
+                  className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-transparent"
                 >
                   <option value="rate">Sort by Rate</option>
                   <option value="amount">Sort by Amount</option>
@@ -480,7 +480,7 @@ export default function InterestRatesPage() {
                     {/* CTA Buttons */}
                     <div className="flex gap-3">
                       <Link href="/apply/quick" className="flex-1">
-                        <button className="w-full px-4 py-2 bg-[#4A66FF] text-white rounded-lg text-sm font-semibold hover:bg-[var(--royal-blue-dark)] transition-colors">
+                        <button className="w-full px-4 py-2 bg-[#4A66FF] text-white rounded-lg text-sm font-semibold hover:bg-[var(--brand-green)] transition-colors duration-300">
                           Apply Now
                         </button>
                       </Link>
@@ -584,7 +584,7 @@ export default function InterestRatesPage() {
           transition={{ delay: 0.7 }}
           className="max-w-4xl mx-auto"
         >
-          <div className="bg-gradient-to-r from-[#25B181] to-[#51C9AF] rounded-2xl p-8 text-center">
+          <div className="bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white rounded-2xl p-8 text-center">
             <Target className="w-12 h-12 mx-auto mb-4" />
             <h2 className="text-2xl font-bold mb-4">Ready to Get the Best Rate?</h2>
             <p className="text-xl mb-6 opacity-90">
@@ -592,12 +592,12 @@ export default function InterestRatesPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/eligibility-check">
-                <button className="px-8 py-3 bg-white text-[#4A66FF] rounded-lg font-semibold hover:shadow-lg transition-all">
+                <button className="px-8 py-3 bg-white text-[#4A66FF] hover:bg-[#4A66FF] hover:text-white hover:border-[#4A66FF] duration-300 border-2 border-white border-solid rounded-lg font-semibold hover:shadow-lg transition-all">
                   Check Eligibility
                 </button>
               </Link>
               <Link href="/apply/quick">
-                <button className="px-8 py-3 bg-transparent border-2 border-white  rounded-lg font-semibold hover:bg-white hover:text-[#4A66FF] transition-all">
+                <button className="px-8 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-[#4A66FF] duration-300 transition-all">
                   Apply Now
                 </button>
               </Link>

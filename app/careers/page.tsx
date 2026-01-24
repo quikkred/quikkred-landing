@@ -175,7 +175,7 @@ export default function CareersPage() {
       </section>
 
       {/* Values Section */}
-      <section className="py-20">
+      <section className="py-8 sm:py-10 lg:py-12">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ y: 20, opacity: 0 }}
@@ -217,7 +217,7 @@ export default function CareersPage() {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-20 bg-white">
+      <section className="py-8 sm:py-10 lg:py-12 bg-white">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ y: 20, opacity: 0 }}
@@ -261,7 +261,7 @@ export default function CareersPage() {
       </section>
 
       {/* Job Openings Section */}
-      <section id="openings" className="py-20">
+      <section id="openings" className="py-8 sm:py-10 lg:py-12">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ y: 20, opacity: 0 }}
@@ -351,7 +351,7 @@ export default function CareersPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-slate-800">
+      <section className="py-8 sm:py-10 lg:py-12 bg-slate-800">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ y: 20, opacity: 0 }}

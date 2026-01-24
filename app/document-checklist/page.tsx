@@ -220,8 +220,8 @@ export default function DocumentsPage() {
 
   const filteredDocuments = documents.filter(doc => {
     const matchesSearch = doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         doc.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         doc.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+      doc.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doc.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory = selectedCategory === "all" || doc.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -233,10 +233,9 @@ export default function DocumentsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-
+    <div className="bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header Section */}
-      <section className="relative bg-gradient-to-br from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white py-12 sm:py-16 lg:py-20">
+      <section className="relative bg-gradient-to-br from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white py-8 sm:py-10 lg:py-12">
         <div className="absolute inset-0 bg-black/10" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
           <motion.div
@@ -329,7 +328,7 @@ export default function DocumentsPage() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--royal-blue)] focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-transparent"
                 placeholder="Search documents by name, type, or keywords..."
               />
             </div>
@@ -343,11 +342,10 @@ export default function DocumentsPage() {
                   <button
                     key={category.id}
                     onClick={() => setSelectedCategory(category.id)}
-                    className={`flex items-center px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                      selectedCategory === category.id
+                    className={`flex items-center px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === category.id
                         ? 'bg-[#4A66FF] text-white'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200:bg-gray-600'
-                    }`}
+                      }`}
                   >
                     <Icon className={`w-4 h-4 mr-2 ${selectedCategory === category.id ? 'text-white' : category.color}`} />
                     {category.name}
@@ -447,7 +445,7 @@ export default function DocumentsPage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleDownload(doc.id, doc.title)}
-                          className="flex-1 flex items-center justify-center px-4 py-2 bg-[#4A66FF] text-white rounded-lg hover:bg-[var(--royal-blue-dark)] transition-colors text-sm font-semibold"
+                          className="flex-1 flex items-center justify-center px-4 py-2 bg-[#4A66FF] text-white rounded-lg hover:bg-[var(--brand-green)] transition-colors text-sm font-semibold"
                         >
                           <Download className="w-4 h-4 mr-2" />
                           Download
@@ -495,7 +493,7 @@ export default function DocumentsPage() {
           transition={{ delay: 0.6 }}
           className="mt-16 max-w-4xl mx-auto"
         >
-          <div className="bg-gradient-to-r from-[#25B181] to-[#51C9AF] rounded-2xl p-8  text-center">
+          <div className="bg-gradient-to-r from-[#25B181] to-[#51C9AF] rounded-2xl p-8 text-white text-center">
             <Upload className="w-12 h-12 mx-auto mb-4" />
             <h2 className="text-2xl font-bold mb-4">Need to Upload Documents?</h2>
             <p className="text-xl mb-6 opacity-90">
@@ -503,7 +501,7 @@ export default function DocumentsPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/user/documents">
-                <button className="px-8 py-3 bg-white text-[#4A66FF] rounded-lg font-semibold hover:shadow-lg transition-all">
+                <button className="px-8 py-3 bg-white text-[#4A66FF] border-2 border-solid border-white rounded-lg font-semibold hover:shadow-lg hover:text-white hover:bg-[#4A66FF] hover:border-[#4A66FF] transition-all">
                   Go to Document Upload
                 </button>
               </Link>
