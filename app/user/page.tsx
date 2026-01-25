@@ -109,6 +109,16 @@ interface PaymentProof {
   createdAt: string;
 }
 
+interface ReapplyEligibility {
+  isEligible: boolean;
+  maxLoanAmount: number;
+  previousLoanNumber?: string;
+  previousLoanClosedAt?: string;
+  approvedAt?: string;
+  expiresAt?: string;
+  isExpired?: boolean;
+}
+
 export default function UserDashboard() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
@@ -135,6 +145,7 @@ export default function UserDashboard() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [customAmount, setCustomAmount] = useState<string>('');
+  const [paymentType, setPaymentType] = useState<'FULL_CLOSURE' | 'PART_PAYMENT'>('FULL_CLOSURE');
   const [selectedLoanNumber, setSelectedLoanNumber] = useState<string>('');
   const [activeLoanDetails, setActiveLoanDetails] = useState<ActiveLoanDetails | null>(null);
   const [loadingLoanDetails, setLoadingLoanDetails] = useState(false);
@@ -168,6 +179,10 @@ export default function UserDashboard() {
   } | null>(null);
   const [loadingEmandate, setLoadingEmandate] = useState(false);
   const [authorizingEmandate, setAuthorizingEmandate] = useState(false);
+
+  // Reapply Eligibility States
+  const [reapplyEligibility, setReapplyEligibility] = useState<ReapplyEligibility | null>(null);
+  const [loadingReapply, setLoadingReapply] = useState(false);
 
   // Update local state from Redux
   useEffect(() => {
@@ -204,13 +219,16 @@ export default function UserDashboard() {
     document.body.appendChild(script);
   }, []);
 
-  // Set default amount to remaining amount when loan details are loaded
+  // Set default amount to remaining amount when loan details are loaded (for full closure)
   useEffect(() => {
-    if (activeLoanDetails && !customAmount) {
+    if (activeLoanDetails) {
       const remaining = getTotalLoanAmount() - (activeLoanDetails.paidAmount || 0);
-      setCustomAmount(remaining.toString());
+      // Only set for full closure, or if no amount is set yet
+      if (paymentType === 'FULL_CLOSURE' || !customAmount) {
+        setCustomAmount(remaining.toString());
+      }
     }
-  }, [activeLoanDetails]);
+  }, [activeLoanDetails, paymentType]);
 
   // Fetch active loan details using Redux
   const fetchActiveLoanDetails = async (loanNumber: string) => {
@@ -356,6 +374,34 @@ export default function UserDashboard() {
   const getCurrentInstallment = () => {
     if (!activeLoanDetails) return 0;
     return activeLoanDetails.installment || 1;
+  };
+
+  // Get outstanding breakdown for display
+  const getOutstandingBreakdown = () => {
+    if (!activeLoanDetails) return { principal: 0, interest: 0, lateCharges: 0, total: 0 };
+
+    const total = getRemainingAmount();
+    const lateCharges = activeLoanDetails.lateCharges || 0;
+    // For payday loans: remaining = principal + interest
+    // Estimate: if total includes late charges, subtract them
+    const principalAndInterest = total - lateCharges;
+
+    return {
+      principal: principalAndInterest > 0 ? principalAndInterest : total,
+      interest: 0, // Backend should provide this breakdown
+      lateCharges: lateCharges,
+      total: total
+    };
+  };
+
+  // Handle payment type change
+  const handlePaymentTypeChange = (type: 'FULL_CLOSURE' | 'PART_PAYMENT') => {
+    setPaymentType(type);
+    if (type === 'FULL_CLOSURE') {
+      setCustomAmount(getRemainingAmount().toString());
+    } else {
+      setCustomAmount(''); // Clear for part payment input
+    }
   };
 
   const handlePayment = async () => {
@@ -761,6 +807,37 @@ export default function UserDashboard() {
     }
   }, [data?.customerId]);
 
+  // Fetch Reapply Eligibility
+  const fetchReapplyEligibility = async () => {
+    if (!data?.customerId) return;
+
+    setLoadingReapply(true);
+    try {
+      const token = await getToken();
+      if (!token) return;
+
+      const response = await fetch(`${API_BASE_URL}/api/reapply/eligibility/${data.customerId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      const result = await response.json();
+      if (result.success && result.data?.isEligible) {
+        setReapplyEligibility(result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching reapply eligibility:', error);
+    } finally {
+      setLoadingReapply(false);
+    }
+  };
+
+  // Fetch Reapply Eligibility when no active loan
+  useEffect(() => {
+    if (data?.customerId && !data?.activeLoan) {
+      fetchReapplyEligibility();
+    }
+  }, [data?.customerId, data?.activeLoan]);
+
   // Authorize E-Mandate with Razorpay Checkout
   const handleAuthorizeEmandate = async () => {
     if (!emandateData?.subscriptionId || !emandateData?.keyId || !razorpayLoaded) {
@@ -1143,6 +1220,86 @@ export default function UserDashboard() {
           </motion.div>
         )}
 
+        {/* Quick Reapply Card - Show when eligible and no active loan */}
+        {reapplyEligibility?.isEligible && !data?.activeLoan && !reapplyEligibility?.isExpired && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-gradient-to-br from-teal-50 via-emerald-50 to-green-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border-2 border-teal-300 mb-4 sm:mb-6 relative overflow-hidden"
+          >
+            {/* Background decoration */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-teal-200/30 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-emerald-200/30 to-transparent rounded-full translate-y-1/2 -translate-x-1/2" />
+
+            <div className="relative">
+              <div className="flex items-start gap-3 sm:gap-4 mb-4">
+                <div className="p-2 sm:p-3 bg-gradient-to-br from-teal-500 to-emerald-500 rounded-lg sm:rounded-xl shadow-lg">
+                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-base sm:text-lg font-bold text-teal-900">
+                      You're Eligible for a New Loan!
+                    </h3>
+                    <span className="px-2 py-0.5 bg-teal-100 text-teal-800 text-xs font-medium rounded-full border border-teal-300">
+                      Pre-Approved
+                    </span>
+                  </div>
+                  <p className="text-sm text-teal-700">
+                    Based on your excellent repayment history, you qualify for up to
+                  </p>
+                </div>
+              </div>
+
+              {/* Max Loan Amount */}
+              <div className="bg-white/70 rounded-xl p-4 mb-4 border border-teal-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-teal-600 mb-1">Maximum Loan Amount</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-teal-900">
+                      ₹{(reapplyEligibility.maxLoanAmount || 100000).toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    {reapplyEligibility.previousLoanNumber && (
+                      <div>
+                        <p className="text-xs text-teal-600 mb-1">Previous Loan</p>
+                        <p className="text-sm font-semibold text-teal-800">
+                          {reapplyEligibility.previousLoanNumber}
+                        </p>
+                        {reapplyEligibility.previousLoanClosedAt && (
+                          <p className="text-xs text-teal-600">
+                            Closed on {new Date(reapplyEligibility.previousLoanClosedAt).toLocaleDateString('en-IN')}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Apply Button */}
+              <button
+                onClick={() => router.push('/user/loans')}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-xl hover:shadow-lg hover:shadow-teal-500/25 transition-all font-semibold text-sm sm:text-base"
+              >
+                <Plus className="w-5 h-5" />
+                <span>Quick Apply Now</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+
+              {/* Approval Expiry Notice */}
+              {reapplyEligibility.expiresAt && (
+                <p className="text-xs text-teal-600 mt-3 flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  Offer valid until {new Date(reapplyEligibility.expiresAt).toLocaleDateString('en-IN')}
+                </p>
+              )}
+            </div>
+          </motion.div>
+        )}
+
             {/* Active Loan Section */}
         {data?.activeLoan && data?.loans?.length > 0 && (
           <motion.div
@@ -1347,17 +1504,171 @@ export default function UserDashboard() {
                   Pay Your Loan
                 </h3>
 
-                {/* Amount to Pay - Prominent Display */}
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 sm:p-6 mb-4 border-2 border-green-300">
-                  <div className="text-center">
-                    <p className="text-sm text-green-700 mb-1">Amount to Pay</p>
-                    <p className="text-3xl sm:text-4xl font-bold text-green-800">
-                      ₹{getRemainingAmount().toLocaleString()}
-                    </p>
-                    <p className="text-xs text-green-600 mt-2">
-                      Due Date: {formatDate(activeLoanDetails.nextDueDate)}
-                    </p>
+                {/* Outstanding Breakdown */}
+                <div className="bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl p-4 sm:p-6 mb-4 border border-slate-200">
+                  <h4 className="text-sm font-semibold text-slate-800 mb-3 flex items-center gap-2">
+                    <Calculator className="w-4 h-4" />
+                    Outstanding Breakdown
+                  </h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="text-center p-3 bg-white rounded-lg border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-1">Principal + Interest</p>
+                      <p className="text-base font-bold text-slate-900">₹{getOutstandingBreakdown().principal.toLocaleString()}</p>
+                    </div>
+                    <div className="text-center p-3 bg-white rounded-lg border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-1">Late Charges</p>
+                      <p className="text-base font-bold text-red-600">₹{getOutstandingBreakdown().lateCharges.toLocaleString()}</p>
+                    </div>
+                    <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200 col-span-2 sm:col-span-2">
+                      <p className="text-xs text-green-700 mb-1">Total Outstanding</p>
+                      <p className="text-xl font-bold text-green-800">₹{getRemainingAmount().toLocaleString()}</p>
+                    </div>
                   </div>
+                  <p className="text-xs text-slate-500 mt-3 text-center">
+                    Due Date: {formatDate(activeLoanDetails.nextDueDate)}
+                  </p>
+                </div>
+
+                {/* Payment Type Toggle */}
+                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 sm:p-6 mb-4 border-2 border-indigo-200">
+                  <h4 className="text-sm font-semibold text-indigo-800 mb-4 flex items-center gap-2">
+                    <Target className="w-4 h-4" />
+                    Choose Payment Type
+                  </h4>
+
+                  {/* Toggle Buttons */}
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <button
+                      onClick={() => handlePaymentTypeChange('FULL_CLOSURE')}
+                      className={`p-4 rounded-xl border-2 transition-all ${
+                        paymentType === 'FULL_CLOSURE'
+                          ? 'bg-gradient-to-br from-green-500 to-emerald-600 border-green-600 text-white shadow-lg'
+                          : 'bg-white border-gray-200 text-gray-700 hover:border-green-300 hover:bg-green-50'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center gap-2">
+                        <CheckCircle className={`w-6 h-6 ${paymentType === 'FULL_CLOSURE' ? 'text-white' : 'text-green-600'}`} />
+                        <span className="font-semibold text-sm">Full Closure</span>
+                        <span className={`text-xs ${paymentType === 'FULL_CLOSURE' ? 'text-green-100' : 'text-gray-500'}`}>
+                          Pay entire balance
+                        </span>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => handlePaymentTypeChange('PART_PAYMENT')}
+                      className={`p-4 rounded-xl border-2 transition-all ${
+                        paymentType === 'PART_PAYMENT'
+                          ? 'bg-gradient-to-br from-blue-500 to-indigo-600 border-blue-600 text-white shadow-lg'
+                          : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50'
+                      }`}
+                    >
+                      <div className="flex flex-col items-center gap-2">
+                        <Percent className={`w-6 h-6 ${paymentType === 'PART_PAYMENT' ? 'text-white' : 'text-blue-600'}`} />
+                        <span className="font-semibold text-sm">Part Payment</span>
+                        <span className={`text-xs ${paymentType === 'PART_PAYMENT' ? 'text-blue-100' : 'text-gray-500'}`}>
+                          Pay custom amount
+                        </span>
+                      </div>
+                    </button>
+                  </div>
+
+                  {/* Custom Amount Input (for Part Payment) */}
+                  {paymentType === 'PART_PAYMENT' && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mb-4"
+                    >
+                      <label className="block text-sm font-medium text-indigo-800 mb-2">
+                        Enter Payment Amount
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">₹</span>
+                        <input
+                          type="number"
+                          value={customAmount}
+                          onChange={(e) => setCustomAmount(e.target.value)}
+                          placeholder="Enter amount"
+                          min="1"
+                          max={getRemainingAmount()}
+                          className="w-full pl-10 pr-4 py-3 text-lg font-semibold border-2 border-indigo-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900"
+                        />
+                      </div>
+                      <div className="flex justify-between mt-2 text-xs text-indigo-600">
+                        <span>Min: ₹100</span>
+                        <span>Max: ₹{getRemainingAmount().toLocaleString()}</span>
+                      </div>
+                      {/* Quick amount buttons */}
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {[1000, 2000, 5000, 10000].filter(amt => amt <= getRemainingAmount()).map((amount) => (
+                          <button
+                            key={amount}
+                            onClick={() => setCustomAmount(amount.toString())}
+                            className="px-3 py-1.5 bg-white border border-indigo-200 rounded-lg text-sm font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+                          >
+                            ₹{amount.toLocaleString()}
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Full Closure Amount Display */}
+                  {paymentType === 'FULL_CLOSURE' && (
+                    <div className="bg-white rounded-xl p-4 border border-green-200 mb-4">
+                      <div className="text-center">
+                        <p className="text-sm text-green-700 mb-1">Full Closure Amount</p>
+                        <p className="text-3xl font-bold text-green-800">₹{getRemainingAmount().toLocaleString()}</p>
+                        <p className="text-xs text-green-600 mt-1">Clears your entire loan</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Payment Summary */}
+                  <div className="bg-white rounded-xl p-4 border border-indigo-200 mb-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Payment Amount:</span>
+                      <span className="text-xl font-bold text-indigo-900">
+                        ₹{paymentType === 'FULL_CLOSURE'
+                          ? getRemainingAmount().toLocaleString()
+                          : (parseFloat(customAmount) || 0).toLocaleString()}
+                      </span>
+                    </div>
+                    {paymentType === 'PART_PAYMENT' && customAmount && parseFloat(customAmount) > 0 && (
+                      <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
+                        <span className="text-xs text-gray-500">Balance after payment:</span>
+                        <span className="text-sm font-semibold text-orange-600">
+                          ₹{(getRemainingAmount() - parseFloat(customAmount)).toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Pay Now Button */}
+                  <button
+                    onClick={handlePayment}
+                    disabled={processingPayment || !razorpayLoaded || (paymentType === 'PART_PAYMENT' && (!customAmount || parseFloat(customAmount) <= 0))}
+                    className="w-full py-4 bg-gradient-to-r from-[#10B4A3] to-emerald-600 text-white rounded-xl font-bold text-lg hover:from-[#0EA594] hover:to-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg hover:shadow-xl"
+                  >
+                    {processingPayment ? (
+                      <>
+                        <RefreshCw className="w-5 h-5 animate-spin" />
+                        <span>Processing Payment...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-5 h-5" />
+                        <span>Pay Now</span>
+                        <ArrowUpRight className="w-5 h-5" />
+                      </>
+                    )}
+                  </button>
+
+                  <p className="text-xs text-center text-indigo-600 mt-3">
+                    Secure payment powered by Razorpay
+                  </p>
                 </div>
 
                 {activeLoanDetails.overdueCount > 0 && (
