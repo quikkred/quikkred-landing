@@ -44,7 +44,6 @@ interface SupportTicket {
     remarks?: string;
     _id: string;
   }>;
-  priority: string;
   status: string;
   assignedDetails?: Array<{
     assignedTo: {
@@ -91,8 +90,7 @@ export default function SupportPage() {
   const [formData, setFormData] = useState({
     category: 'TECHNICAL_ISSUE',
     subject: '',
-    description: '',
-    priority: 'MEDIUM'
+    description: ''
   });
   const [formError, setFormError] = useState('');
   const [formLoading, setFormLoading] = useState(false);
@@ -139,8 +137,7 @@ export default function SupportPage() {
           customerId: customerId,
           category: formData.category,
           subject: formData.subject,
-          description: formData.description,
-          priority: formData.priority
+          description: formData.description
         })
       });
 
@@ -151,8 +148,7 @@ export default function SupportPage() {
         setFormData({
           category: 'TECHNICAL_ISSUE',
           subject: '',
-          description: '',
-          priority: 'MEDIUM'
+          description: ''
         });
         setShowCreateForm(false);
         // Refresh tickets
@@ -167,19 +163,27 @@ export default function SupportPage() {
     }
   };
 
-  const handleReopenTicket = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedTicket || !reopenDescription.trim()) {
-      setReopenError('Please provide a description for reopening this ticket');
-      return;
-    }
+  // Check if ticket allows reply (OPEN or REOPENED)
+  const canReplyToTicket = (status: string) => {
+    const upperStatus = status?.toUpperCase();
+    return upperStatus === 'OPEN' || upperStatus === 'REOPENED' || upperStatus === 'IN_PROGRESS' || upperStatus === 'PENDING';
+  };
+
+  // Check if ticket is closed
+  const isTicketClosed = (status: string) => {
+    const upperStatus = status?.toUpperCase();
+    return upperStatus === 'CLOSED' || upperStatus === 'RESOLVED';
+  };
+
+  // Reopen ticket - just update status to REOPENED
+  const handleReopenTicket = async () => {
+    if (!selectedTicket) return;
 
     setReopenError('');
     setReopenLoading(true);
 
     try {
-      const token = localStorage.getItem('accessToken')
-      console.log('accessToken', token);
+      const token = localStorage.getItem('accessToken');
 
       if (!token) {
         router.push('/login');
@@ -192,9 +196,52 @@ export default function SupportPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          description: reopenDescription.trim()
-        })
+        body: JSON.stringify({ status: 'REOPENED' })
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // Update selected ticket with new data
+        setSelectedTicket(result.data);
+        // Refresh tickets list
+        fetchTickets();
+      } else {
+        setReopenError(result.message || 'Failed to reopen ticket');
+      }
+    } catch (error: any) {
+      setReopenError(error.message || 'Something went wrong. Please try again.');
+    } finally {
+      setReopenLoading(false);
+    }
+  };
+
+  // Send reply to ticket
+  const handleSendReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedTicket || !reopenDescription.trim()) {
+      setReopenError('Please enter a message');
+      return;
+    }
+
+    setReopenError('');
+    setReopenLoading(true);
+
+    try {
+      const token = localStorage.getItem('accessToken');
+
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/supportTicket/update/${selectedTicket._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ description: reopenDescription.trim() })
       });
 
       const result = await response.json();
@@ -208,10 +255,10 @@ export default function SupportPage() {
         // Refresh tickets list
         fetchTickets();
       } else {
-        setReopenError(result.message || 'Failed to reopen ticket');
+        setReopenError(result.message || 'Failed to send reply');
       }
     } catch (error: any) {
-      setReopenError(error.message || 'Failed to reopen ticket');
+      setReopenError(error.message || 'Something went wrong. Please try again.');
     } finally {
       setReopenLoading(false);
     }
@@ -245,25 +292,13 @@ switch (category) {
 
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'HIGH':
-      case 'URGENT':
-        return 'text-red-600 bg-red-100';
-      case 'MEDIUM':
-        return 'text-[#FF9C70] bg-[#FF9C70]/10';
-      case 'LOW':
-        return 'text-[#25B181] bg-[#25B181]/10';
-      default:
-        return 'text-gray-600 bg-gray-100';
-    }
-  };
-
   const getStatusColor = (status: string) => {
     switch (status?.toUpperCase()) {
       case 'OPEN':
       case 'IN_PROGRESS':
         return 'text-[#4A66FF] bg-[#4A66FF]/10';
+      case 'REOPENED':
+        return 'text-orange-600 bg-orange-100';
       case 'RESOLVED':
       case 'CLOSED':
         return 'text-[#25B181] bg-[#25B181]/10';
@@ -278,7 +313,7 @@ switch (category) {
   const filteredTickets = tickets.filter(ticket => {
     const statusLower = ticket.status?.toLowerCase() || '';
     const matchesStatus = filterStatus === 'all' ||
-      (filterStatus === 'open' && (statusLower === 'open' || statusLower === 'in_progress' || statusLower === 'pending')) ||
+      (filterStatus === 'open' && (statusLower === 'open' || statusLower === 'in_progress' || statusLower === 'pending' || statusLower === 'reopened')) ||
       (filterStatus === 'closed' && (statusLower === 'closed' || statusLower === 'resolved'));
 
     const matchesSearch =
@@ -377,27 +412,8 @@ switch (category) {
                 <option value="DOCUMENT_UPLOAD">Document Upload</option>
                 <option value="ACCOUNT_ACCESS">Account Access</option>
                 <option value="COMPLAINT">Complaint</option>
+                <option value="EMAIL_INQUIRY">Email Inquiry</option>
                 <option value="OTHER">Other</option>
-                <option value="BILLING">Billing</option>
-
-              </select>
-            </div>
-
-            {/* Priority */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Priority *
-              </label>
-              <select
-                value={formData.priority}
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                required
-                className="w-full px-4 py-2 border border-[#E0E0E0] rounded-lg focus:ring-2 focus:ring-[#25B181] focus:border-[#25B181] focus:outline-none"
-              >
-                <option value="LOW">Low</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HIGH">High</option>
-                <option value="URGENT">Urgent</option>
               </select>
             </div>
 
@@ -512,7 +528,7 @@ switch (category) {
             >
               Open ({tickets.filter(t => {
                 const s = t.status?.toLowerCase() || '';
-                return s === 'open' || s === 'in_progress' || s === 'pending';
+                return s === 'open' || s === 'in_progress' || s === 'pending' || s === 'reopened';
               }).length})
             </button>
             <button
@@ -566,7 +582,6 @@ switch (category) {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Ticket ID</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Subject</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Category</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Priority</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Created</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
@@ -594,11 +609,6 @@ switch (category) {
                     <td className="px-4 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(ticket.category)}`}>
                         {ticket.category.replace(/_/g, ' ')}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(ticket.priority)}`}>
-                        {ticket.priority}
                       </span>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
@@ -682,9 +692,6 @@ switch (category) {
                   <span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium ${getCategoryColor(selectedTicket.category)}`}>
                     {selectedTicket.category.replace(/_/g, ' ')}
                   </span>
-                  <span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium ${getPriorityColor(selectedTicket.priority)}`}>
-                    {selectedTicket.priority}
-                  </span>
                 </div>
 
                 {/* Subject */}
@@ -707,7 +714,10 @@ switch (category) {
                   <div className="space-y-3 sm:space-y-4 max-h-[300px] sm:max-h-[400px] overflow-y-auto bg-gradient-to-b from-gray-50 to-white rounded-lg p-2 sm:p-4 border border-gray-200">
                     {Array.isArray(selectedTicket.chatDetails) ? (
                       selectedTicket.chatDetails?.map((chat, index) => {
-                        const isCustomer = chat.addedByModel === 'Customer';
+                        // Check if message is from customer (case-insensitive check or by comparing IDs)
+                        const customerId = typeof selectedTicket.customerId === 'object' ? selectedTicket.customerId._id : selectedTicket.customerId;
+                        const isCustomer = chat.addedByModel?.toLowerCase() === 'customer' ||
+                                          chat.addedBy?._id === customerId;
 
                         return (
                           <div key={chat._id} className="space-y-2 sm:space-y-3">
@@ -835,75 +845,124 @@ switch (category) {
                   )}
                 </div>
 
-                {/* Reopen Ticket Form */}
-                {!showReopenForm && (
-                  <div className="mb-6">
-                    <button
-                      onClick={() => setShowReopenForm(true)}
-                      className="w-full px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 font-semibold"
-                    >
-                      <RefreshCw className="w-5 h-5" />
-                      Reopen Ticket / Add Follow-up
-                    </button>
-                  </div>
-                )}
-
-                {showReopenForm && (
-                  <div className="mb-6">
-                    <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-sm font-semibold text-orange-800 flex items-center gap-2">
-                          <AlertTriangle className="w-4 h-4" />
-                          Reopen Ticket
-                        </h4>
+                {/* Reply Section - Show for OPEN/REOPENED tickets */}
+                {canReplyToTicket(selectedTicket.status) && (
+                  <>
+                    {!showReopenForm && (
+                      <div className="mb-6">
                         <button
-                          onClick={() => {
-                            setShowReopenForm(false);
-                            setReopenDescription('');
-                            setReopenError('');
-                          }}
-                          className="p-1 hover:bg-orange-100 rounded transition-colors"
+                          onClick={() => setShowReopenForm(true)}
+                          className="w-full px-4 py-3 bg-gradient-to-r from-[#4A66FF] to-[#6C63FF] text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 font-semibold"
                         >
-                          <X className="w-4 h-4 text-orange-600" />
+                          <Send className="w-5 h-5" />
+                          Reply to Ticket
                         </button>
                       </div>
-                      <p className="text-xs text-orange-700 mb-3">
-                        Not satisfied with the response? Describe why you need to reopen this ticket.
-                      </p>
-                      <form onSubmit={handleReopenTicket}>
-                        <textarea
-                          value={reopenDescription}
-                          onChange={(e) => setReopenDescription(e.target.value)}
-                          required
-                          rows={4}
-                          placeholder="E.g., Still having some issue with document upload..."
-                          className="w-full px-4 py-2 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 focus:outline-none resize-none mb-3"
-                        />
-                        {reopenError && (
-                          <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700 flex items-center gap-2">
-                            <AlertCircle className="w-4 h-4" />
-                            {reopenError}
+                    )}
+
+                    {showReopenForm && (
+                      <div className="mb-6">
+                        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="text-sm font-semibold text-blue-800 flex items-center gap-2">
+                              <MessageSquare className="w-4 h-4" />
+                              Send Reply
+                            </h4>
+                            <button
+                              onClick={() => {
+                                setShowReopenForm(false);
+                                setReopenDescription('');
+                                setReopenError('');
+                              }}
+                              className="p-1 hover:bg-blue-100 rounded transition-colors"
+                            >
+                              <X className="w-4 h-4 text-blue-600" />
+                            </button>
                           </div>
-                        )}
-                        <button
-                          type="submit"
-                          disabled={reopenLoading}
-                          className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 font-semibold"
-                        >
-                          {reopenLoading ? (
-                            <>
-                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                              Reopening...
-                            </>
-                          ) : (
-                            <>
-                              <Send className="w-4 h-4" />
-                              Submit & Reopen Ticket
-                            </>
-                          )}
-                        </button>
-                      </form>
+                          <p className="text-xs text-blue-700 mb-3">
+                            Add more details or ask follow-up questions about your ticket.
+                          </p>
+                          <form onSubmit={handleSendReply}>
+                            <textarea
+                              value={reopenDescription}
+                              onChange={(e) => setReopenDescription(e.target.value)}
+                              required
+                              rows={4}
+                              placeholder="Type your message here..."
+                              className="w-full px-4 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none resize-none mb-3"
+                            />
+                            {reopenError && (
+                              <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700 flex items-center gap-2">
+                                <AlertCircle className="w-4 h-4" />
+                                {reopenError}
+                              </div>
+                            )}
+                            <button
+                              type="submit"
+                              disabled={reopenLoading}
+                              className="w-full px-4 py-2 bg-[#4A66FF] text-white rounded-lg hover:bg-[#4A66FF]/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 font-semibold"
+                            >
+                              {reopenLoading ? (
+                                <>
+                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                  Sending...
+                                </>
+                              ) : (
+                                <>
+                                  <Send className="w-4 h-4" />
+                                  Send Reply
+                                </>
+                              )}
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Closed Ticket Section - Show "Reopen Ticket" button */}
+                {isTicketClosed(selectedTicket.status) && (
+                  <div className="mb-6">
+                    {/* Closed Message */}
+                    <div className="bg-gray-100 border border-gray-300 rounded-lg p-4 mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                          <CheckCircle className="w-5 h-5 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-800">This ticket is closed</p>
+                          <p className="text-sm text-gray-600">Click &quot;Reopen Ticket&quot; if you need further assistance.</p>
+                        </div>
+                      </div>
                     </div>
+
+                    {/* Error Message */}
+                    {reopenError && (
+                      <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700 flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4" />
+                        {reopenError}
+                      </div>
+                    )}
+
+                    {/* Reopen Button - Direct action, no form */}
+                    <button
+                      onClick={handleReopenTicket}
+                      disabled={reopenLoading}
+                      className="w-full px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 font-semibold disabled:opacity-50"
+                    >
+                      {reopenLoading ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Reopening...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="w-5 h-5" />
+                          Reopen Ticket
+                        </>
+                      )}
+                    </button>
                   </div>
                 )}
 
