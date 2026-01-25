@@ -739,7 +739,7 @@ export default function UserDashboard() {
       const token = await getToken();
       if (!token) return;
 
-      const response = await fetch(`${API_BASE_URL}/api/upi-autopay/emandate/checkout/${data.customerId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/upi/emandate/checkout/${data.customerId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
