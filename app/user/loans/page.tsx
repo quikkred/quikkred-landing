@@ -813,6 +813,37 @@ export default function MyLoansPage() {
     return `₹${amount.toLocaleString()}`;
   };
 
+  // Loan Calculator Preview - Calculates fees and breakdown
+  const calculateLoanBreakdown = (amount: number, tenure: number) => {
+    if (!amount || amount <= 0) return null;
+
+    const platformFeeRate = 0.10; // 10%
+    const gstRate = 0.18; // 18% on platform fee
+    const dailyInterestRate = 0.01; // 1% per day
+
+    const platformFee = Math.round(amount * platformFeeRate);
+    const gstOnFee = Math.round(platformFee * gstRate);
+    const totalDeductions = platformFee + gstOnFee;
+    const netDisbursal = amount - totalDeductions;
+    const interest = Math.round(amount * dailyInterestRate * tenure);
+    const totalRepayment = amount + interest;
+
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + tenure);
+
+    return {
+      loanAmount: amount,
+      platformFee,
+      gstOnFee,
+      totalDeductions,
+      netDisbursal,
+      interest,
+      totalRepayment,
+      tenure,
+      dueDate: dueDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+    };
+  };
+
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
       case 'ACTIVE':
@@ -2301,6 +2332,58 @@ export default function MyLoansPage() {
                         placeholder="e.g., Business expansion, Personal needs"
                       />
                     </div>
+
+                    {/* Loan Calculator Preview */}
+                    {reapplyForm.loanAmount && Number(reapplyForm.loanAmount) >= 10000 && (
+                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
+                        <h4 className="text-sm font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                          <BarChart3 className="w-4 h-4" />
+                          Loan Breakdown Preview
+                        </h4>
+                        {(() => {
+                          const breakdown = calculateLoanBreakdown(
+                            Number(reapplyForm.loanAmount),
+                            Number(reapplyForm.tenure)
+                          );
+                          if (!breakdown) return null;
+
+                          return (
+                            <div className="space-y-2">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Loan Amount:</span>
+                                <span className="font-medium text-gray-900">{formatCurrency(breakdown.loanAmount)}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Platform Fee (10%):</span>
+                                <span className="font-medium text-red-600">- {formatCurrency(breakdown.platformFee)}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">GST on Fee (18%):</span>
+                                <span className="font-medium text-red-600">- {formatCurrency(breakdown.gstOnFee)}</span>
+                              </div>
+                              <div className="border-t border-blue-200 my-2" />
+                              <div className="flex justify-between text-sm">
+                                <span className="text-green-700 font-medium">You Receive:</span>
+                                <span className="font-bold text-green-700">{formatCurrency(breakdown.netDisbursal)}</span>
+                              </div>
+                              <div className="border-t border-blue-200 my-2" />
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Interest (1%/day × {breakdown.tenure} days):</span>
+                                <span className="font-medium text-orange-600">{formatCurrency(breakdown.interest)}</span>
+                              </div>
+                              <div className="flex justify-between text-sm bg-blue-100/50 rounded-lg p-2 -mx-1">
+                                <span className="text-blue-900 font-semibold">Total to Repay:</span>
+                                <span className="font-bold text-blue-900">{formatCurrency(breakdown.totalRepayment)}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Due Date:</span>
+                                <span className="font-medium text-gray-900">{breakdown.dueDate}</span>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    )}
 
                     {/* Submit Button */}
                     <div className="flex gap-3 pt-4">
