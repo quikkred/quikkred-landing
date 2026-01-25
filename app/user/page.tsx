@@ -154,6 +154,21 @@ export default function UserDashboard() {
   const [loadingProofs, setLoadingProofs] = useState(false);
   const proofFileInputRef = useRef<HTMLInputElement>(null);
 
+  // E-Mandate States
+  const [emandateData, setEmandateData] = useState<{
+    hasEMandate: boolean;
+    isAuthorized: boolean;
+    subscriptionId?: string;
+    subscriptionStatus?: string;
+    keyId?: string;
+    applicationNumber?: string;
+    amount?: number;
+    dueDate?: string;
+    message?: string;
+  } | null>(null);
+  const [loadingEmandate, setLoadingEmandate] = useState(false);
+  const [authorizingEmandate, setAuthorizingEmandate] = useState(false);
+
   // Update local state from Redux
   useEffect(() => {
     if (dashboardData) {
@@ -715,6 +730,110 @@ export default function UserDashboard() {
     }
   };
 
+  // Fetch E-Mandate details
+  const fetchEmandateDetails = async () => {
+    if (!data?.customerId) return;
+
+    setLoadingEmandate(true);
+    try {
+      const token = await getToken();
+      if (!token) return;
+
+      const response = await fetch(`${API_BASE_URL}/api/upi-autopay/emandate/checkout/${data.customerId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setEmandateData(result);
+      }
+    } catch (error) {
+      console.error('Error fetching E-Mandate details:', error);
+    } finally {
+      setLoadingEmandate(false);
+    }
+  };
+
+  // Fetch E-Mandate when dashboard data is available
+  useEffect(() => {
+    if (data?.customerId) {
+      fetchEmandateDetails();
+    }
+  }, [data?.customerId]);
+
+  // Authorize E-Mandate with Razorpay Checkout
+  const handleAuthorizeEmandate = async () => {
+    if (!emandateData?.subscriptionId || !emandateData?.keyId || !razorpayLoaded) {
+      toast({
+        variant: "error",
+        title: "Error",
+        description: "E-Mandate details not available. Please refresh and try again."
+      });
+      return;
+    }
+
+    setAuthorizingEmandate(true);
+
+    try {
+      const options = {
+        key: emandateData.keyId,
+        subscription_id: emandateData.subscriptionId,
+        name: "Quikkred",
+        description: "E-Mandate Authorization for Loan Repayment",
+        prefill: {
+          name: user?.name || "",
+          email: user?.email || "",
+          contact: user?.mobile || "",
+        },
+        handler: async (response: any) => {
+          console.log("E-Mandate Authorization Success:", response);
+          toast({
+            variant: "success",
+            title: "E-Mandate Authorized!",
+            description: "Your E-Mandate has been successfully authorized. Your loan will be disbursed shortly."
+          });
+          // Refresh E-Mandate status
+          await fetchEmandateDetails();
+          setAuthorizingEmandate(false);
+        },
+        modal: {
+          ondismiss: () => {
+            console.log("E-Mandate authorization cancelled");
+            toast({
+              variant: "default",
+              title: "Authorization Cancelled",
+              description: "You cancelled the E-Mandate authorization process."
+            });
+            setAuthorizingEmandate(false);
+          },
+        },
+        theme: { color: "#10B4A3" },
+      };
+
+      const rzp = new window.Razorpay(options);
+
+      rzp.on("payment.failed", (response: any) => {
+        console.log("E-Mandate Authorization Failed:", response.error);
+        toast({
+          variant: "error",
+          title: "Authorization Failed",
+          description: response.error.description || "E-Mandate authorization failed. Please try again."
+        });
+        setAuthorizingEmandate(false);
+      });
+
+      rzp.open();
+    } catch (error: any) {
+      console.error('E-Mandate authorization error:', error);
+      toast({
+        variant: "error",
+        title: "Error",
+        description: error.message || "Failed to open authorization. Please try again."
+      });
+      setAuthorizingEmandate(false);
+    }
+  };
+
   const getProofStatusIcon = (status: string) => {
     switch (status) {
       case 'VERIFIED': return <CheckCircle2 className="w-4 h-4" />;
@@ -904,6 +1023,122 @@ export default function UserDashboard() {
                 transition={{ duration: 1, delay: 0.3 }}
                 className="h-2 sm:h-3 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600"
               />
+            </div>
+          </motion.div>
+        )}
+
+        {/* E-Mandate Section - Show only if E-Mandate exists and not authorized */}
+        {emandateData?.hasEMandate && !emandateData?.isAuthorized && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border-2 border-purple-300 mb-4 sm:mb-6"
+          >
+            <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4">
+              <div className="p-2 sm:p-3 bg-purple-500/20 rounded-lg sm:rounded-xl">
+                <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+              </div>
+              <div className="flex-1 w-full">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-base sm:text-lg font-semibold text-purple-900">
+                    E-Mandate Authorization Required
+                  </h3>
+                  <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full border border-yellow-300">
+                    Pending
+                  </span>
+                </div>
+                <p className="text-sm text-purple-700 mb-4">
+                  Your loan has been approved! Please authorize the E-Mandate to enable automatic loan repayment.
+                  Once authorized, your loan amount will be disbursed to your bank account.
+                </p>
+
+                {/* E-Mandate Details */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
+                  {emandateData.applicationNumber && (
+                    <div>
+                      <p className="text-sm text-purple-700 mb-1">Application Number</p>
+                      <p className="text-base font-semibold text-purple-900">
+                        {emandateData.applicationNumber}
+                      </p>
+                    </div>
+                  )}
+                  {emandateData.amount && (
+                    <div>
+                      <p className="text-sm text-purple-700 mb-1">Repayment Amount</p>
+                      <p className="text-base font-bold text-purple-900">
+                        ₹{emandateData.amount.toLocaleString()}
+                      </p>
+                    </div>
+                  )}
+                  {emandateData.dueDate && (
+                    <div>
+                      <p className="text-sm text-purple-700 mb-1">Due Date</p>
+                      <p className="text-base font-semibold text-purple-900">
+                        {formatDate(emandateData.dueDate)}
+                      </p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm text-purple-700 mb-1">E-Mandate Status</p>
+                    <p className="text-base font-semibold text-yellow-700">
+                      {emandateData.subscriptionStatus?.toUpperCase() || 'PENDING'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Authorization Button */}
+                <button
+                  onClick={handleAuthorizeEmandate}
+                  disabled={authorizingEmandate || !razorpayLoaded}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-lg hover:shadow-lg transition-all font-medium text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {authorizingEmandate ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Processing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Shield className="w-4 h-4" />
+                      <span>Authorize E-Mandate Now</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+
+                {/* Help Text */}
+                <p className="text-xs text-purple-600 mt-3">
+                  You will be redirected to your bank's UPI app to authorize the mandate. This is a one-time authorization.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* E-Mandate Authorized Success - Show briefly when authorized */}
+        {emandateData?.hasEMandate && emandateData?.isAuthorized && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border-2 border-green-300 mb-4 sm:mb-6"
+          >
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="p-2 sm:p-3 bg-green-500/20 rounded-lg sm:rounded-xl">
+                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-base sm:text-lg font-semibold text-green-900 mb-1">
+                  E-Mandate Authorized ✓
+                </h3>
+                <p className="text-sm text-green-700">
+                  Your E-Mandate has been successfully authorized. Your loan will be disbursed shortly.
+                </p>
+              </div>
+              <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full border border-green-300">
+                Active
+              </span>
             </div>
           </motion.div>
         )}
