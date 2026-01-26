@@ -636,21 +636,28 @@ export default function MyLoansPage() {
     try {
       const response = await loansService.checkReapplyEligibility(loan.customerId);
       if (response.success && response.data) {
+        // Map backend field names to frontend (backend uses isEligible, maxLoanAmount, minLoanAmount)
+        const isEligible = response.data.isEligible ?? response.data.eligible ?? false;
+        const maxAmount = response.data.maxLoanAmount ?? response.data.maxAmount ?? 500000;
+        const minAmount = response.data.minLoanAmount ?? response.data.minAmount ?? 10000;
+
         setReapplyEligibility({
-          eligible: response.data.eligible ?? true,
-          maxAmount: response.data.maxAmount ?? 500000,
-          minAmount: response.data.minAmount ?? 10000,
-          reason: response.data.reason
+          eligible: isEligible,
+          maxAmount: maxAmount,
+          minAmount: minAmount,
+          reason: response.data.reason || response.data.message
         });
-        if (response.data.maxAmount) {
-          setReapplyForm(prev => ({ ...prev, loanAmount: String(response.data.maxAmount / 2) }));
+        if (maxAmount && isEligible) {
+          setReapplyForm(prev => ({ ...prev, loanAmount: String(Math.round(maxAmount / 2)) }));
         }
       } else {
-        setReapplyEligibility({ eligible: true, maxAmount: 500000, minAmount: 10000 });
+        // If API fails, don't assume eligibility - default to not eligible
+        setReapplyEligibility({ eligible: false, maxAmount: 0, minAmount: 0, reason: 'Unable to check eligibility' });
       }
     } catch (error: any) {
       console.error('Error checking reapply eligibility:', error);
-      setReapplyEligibility({ eligible: true, maxAmount: 500000, minAmount: 10000 });
+      // On error, don't assume eligibility
+      setReapplyEligibility({ eligible: false, maxAmount: 0, minAmount: 0, reason: 'Unable to check eligibility. Please try again.' });
     } finally {
       setReapplyLoading(false);
     }
