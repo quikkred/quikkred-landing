@@ -235,7 +235,7 @@ export default function InterestRatesPage() {
 
   const filteredProducts = loanProducts.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchTerm.toLowerCase());
+      product.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -311,10 +311,10 @@ export default function InterestRatesPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="max-w-5xl mx-auto mb-12"
+          className="max-w-5xl mx-auto mb-8 sm:mb-12"
         >
           <div className="bg-gradient-to-r from-[#25B181] to-[#51C9AF] rounded-2xl p-8">
-            <div className="grid md:grid-cols-3 gap-6 text-center">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6 text-center">
               <div className="text-white">
                 <TrendingDown className="w-10 h-10 mx-auto mb-3" />
                 <h3 className="text-3xl font-bold mb-1">8.99%</h3>
@@ -339,7 +339,7 @@ export default function InterestRatesPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="max-w-5xl mx-auto mb-12"
+          className="max-w-5xl mx-auto mb-8 sm:mb-12"
         >
           <div className="bg-white rounded-2xl p-6 shadow-lucky">
             {/* Search Bar */}
@@ -355,30 +355,42 @@ export default function InterestRatesPage() {
             </div>
 
             {/* Filters and Sort */}
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex items-center gap-2 flex-1">
-                <Filter className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                {categories.map((category) => (
-                  <button
-                    key={category.id}
-                    onClick={() => setSelectedCategory(category.id)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                      selectedCategory === category.id
-                        ? 'bg-[#4A66FF] text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200:bg-gray-600'
-                    }`}
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full">
+              {/* Category Scroll Container */}
+              <div className="relative flex items-center gap-2 flex-1 w-full overflow-hidden">
+                <div className="flex-shrink-0">
+                  <Filter className="w-4 h-4 text-gray-500" />
+                </div>
+
+                {/* Scrollable Area with Fade Mask */}
+                <div className="relative flex-1 overflow-hidden">
+                  <div
+                    className="flex items-center gap-2 overflow-x-auto scrollbar-hide scroll-smooth py-1"
+                    style={{ maskImage: 'linear-gradient(to right, white 85%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, white 85%, transparent 100%)' }}
                   >
-                    {category.name}
-                  </button>
-                ))}
+                    {categories.map((category) => (
+                      <button
+                        key={category.id}
+                        onClick={() => setSelectedCategory(category.id)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all active:scale-95 ${selectedCategory === category.id
+                            ? 'bg-[#4A66FF] text-white shadow-sm'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                      >
+                        {category.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              {/* Sort Dropdown */}
+              <div className="flex items-center gap-2 shrink-0">
                 <ArrowUpDown className="w-4 h-4 text-gray-500" />
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-transparent"
+                  className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-[#4A66FF] focus:outline-none transition-shadow cursor-pointer"
                 >
                   <option value="rate">Sort by Rate</option>
                   <option value="amount">Sort by Amount</option>
@@ -393,7 +405,7 @@ export default function InterestRatesPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="max-w-6xl mx-auto mb-16"
+          className="max-w-6xl mx-auto mb-8 sm:mb-16"
         >
           <h2 className="text-2xl font-bold mb-6">Available Loan Products</h2>
           <div className="grid md:grid-cols-2 gap-6">
@@ -502,7 +514,7 @@ export default function InterestRatesPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="max-w-6xl mx-auto mb-16"
+          className="max-w-6xl mx-auto mb-8 sm:mb-16"
         >
           <h2 className="text-2xl font-bold mb-6">Factors Affecting Your Interest Rate</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -522,13 +534,12 @@ export default function InterestRatesPage() {
                     </div>
                     <div>
                       <h3 className="font-bold mb-1">{factor.factor}</h3>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        factor.impact === "High Impact"
-                          ? "bg-red-100 text-red-700"
-                          : factor.impact === "Medium Impact"
+                      <span className={`text-xs px-2 py-1 rounded-full ${factor.impact === "High Impact"
+                        ? "bg-red-100 text-red-700"
+                        : factor.impact === "Medium Impact"
                           ? "bg-orange-100 text-orange-700"
                           : "bg-green-100 text-green-700"
-                      }`}>
+                        }`}>
                         {factor.impact}
                       </span>
                     </div>
@@ -547,7 +558,7 @@ export default function InterestRatesPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
-          className="max-w-5xl mx-auto mb-16"
+          className="max-w-5xl mx-auto mb-8 sm:mb-16"
         >
           <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-6">
             <div className="flex items-start">
@@ -587,17 +598,17 @@ export default function InterestRatesPage() {
           <div className="bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white rounded-2xl p-8 text-center">
             <Target className="w-12 h-12 mx-auto mb-4" />
             <h2 className="text-2xl font-bold mb-4">Ready to Get the Best Rate?</h2>
-            <p className="text-xl mb-6 opacity-90">
+            <p className="text-sm sm:text-xl mb-6 opacity-90">
               Check your eligibility and discover your personalized interest rate
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="w-full flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/eligibility-check">
-                <button className="px-8 py-3 bg-white text-[#4A66FF] hover:bg-[#4A66FF] hover:text-white hover:border-[#4A66FF] duration-300 border-2 border-white border-solid rounded-lg font-semibold hover:shadow-lg transition-all">
+                <button className="px-8 py-3 bg-white text-[#4A66FF] hover:bg-[#4A66FF] hover:text-white hover:border-[#4A66FF] duration-300 border-2 border-white border-solid rounded-lg font-semibold hover:shadow-lg transition-all w-full">
                   Check Eligibility
                 </button>
               </Link>
               <Link href="/apply/quick">
-                <button className="px-8 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-[#4A66FF] duration-300 transition-all">
+                <button className="px-8 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-[#4A66FF] duration-300 transition-all w-full">
                   Apply Now
                 </button>
               </Link>

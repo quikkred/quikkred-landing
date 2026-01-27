@@ -295,7 +295,7 @@ export default function EligibilityCheckPage() {
           transition={{ delay: 0.2 }}
         >
           <div className="max-w-5xl mx-auto">
-            <div className="bg-white rounded-3xl flex flex-col justify-center items-center gap-2 p-8 shadow-2xl relative z-10">
+            <div className="bg-white rounded-3xl flex flex-col justify-center items-center gap-2 p-6 sm:p-8 shadow-2xl relative z-10">
               <div className="flex flex-col justify-center w-auto items-center gap-1 mb-4">
                 <h2 className="text-3xl font-bold text-center">Enter Your Details</h2>
                 <div className="bg-[var(--brand-green)] w-1/2 h-1" />
@@ -494,7 +494,7 @@ export default function EligibilityCheckPage() {
                 disabled={!isFormValid()}
                 whileHover={isFormValid() ? { scale: 1.02 } : {}}
                 whileTap={isFormValid() ? { scale: 0.98 } : {}}
-                className="w-full mt-8 px-8 py-4 bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white rounded-xl font-bold text-lg hover:shadow-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full mt-8 px-8 py-4 bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white rounded-xl font-bold text-sm sm:text-lg hover:shadow-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 <Sparkles className="w-6 h-6" />
                 Check My Eligibility Now

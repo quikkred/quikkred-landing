@@ -131,8 +131,8 @@ export default function CareersPage() {
   return (
     <main className="min-h-screen bg-slate-50">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-[#006837] via-[#1976D2] to-[#006837] pt-32 pb-20">
-        <div className="container mx-auto px-4">
+      <section className="bg-gradient-to-br from-[#006837] via-[#1976D2] to-[#006837] py-8 sm:py-20">
+        <div className="container mx-auto px-0 sm:px-4">
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -142,18 +142,18 @@ export default function CareersPage() {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 backdrop-blur-sm rounded-full mb-6 border border-white/20"
+              className="inline-flex items-center gap-2 text-sm sm:text-base px-6 py-2 sm:py-3 bg-white/10 backdrop-blur-sm rounded-full mb-6 border border-white/20"
             >
-              <Briefcase className="w-5 h-5 text-white" />
+              <Briefcase className="w-[18px] h-[18px] sm:w-5 sm:h-5 text-white" />
               <span className="text-white font-medium">Join Our Team</span>
             </motion.div>
 
-            <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6">
               Build the Future of
               <span className="block mt-2">Financial Inclusion</span>
             </h1>
 
-            <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+            <p className="text-sm sm:text-xl text-white/90 mb-8 max-w-2xl mx-auto">
               Join Quikkred and help millions access financial services.
               Work with cutting-edge technology and make a real impact.
             </p>
@@ -164,10 +164,10 @@ export default function CareersPage() {
             >
               <a
                 href="#openings"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-white text-[#0ea5e9] rounded-full font-semibold hover:shadow-glow transition-all"
+                className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-white text-[#0ea5e9] rounded-full font-semibold hover:shadow-glow transition-all text-sm sm:text-base"
               >
                 View Open Positions
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-[18px] h-[18px] sm:w-5 sm:h-5" />
               </a>
             </motion.div>
           </motion.div>
@@ -176,17 +176,17 @@ export default function CareersPage() {
 
       {/* Values Section */}
       <section className="py-8 sm:py-10 lg:py-12">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-0 sm:px-4">
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             whileInView={{ y: 0, opacity: 1 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-8 sm:mb-12"
           >
             <h2 className="text-4xl font-bold text-slate-800 mb-4">
               Our Values
             </h2>
-            <p className="text-xl text-slate-600">
+            <p className="text-sm sm:text-xl text-slate-600">
               The principles that guide everything we do
             </p>
           </motion.div>
@@ -207,7 +207,7 @@ export default function CareersPage() {
                 <h3 className="text-xl font-semibold text-slate-800 mb-2">
                   {value.title}
                 </h3>
-                <p className="text-slate-600">
+                <p className="text-slate-600 text-sm sm:text-base">
                   {value.description}
                 </p>
               </motion.div>
@@ -218,17 +218,17 @@ export default function CareersPage() {
 
       {/* Benefits Section */}
       <section className="py-8 sm:py-10 lg:py-12 bg-white">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-0 sm:px-4">
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             whileInView={{ y: 0, opacity: 1 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-8 sm:mb-12"
           >
             <h2 className="text-4xl font-bold text-slate-800 mb-4">
               Why Join Quikkred?
             </h2>
-            <p className="text-xl text-slate-600">
+            <p className="text-sm sm:text-xl text-slate-600">
               Perks and benefits that make a difference
             </p>
           </motion.div>
@@ -250,7 +250,7 @@ export default function CareersPage() {
                   <h3 className="text-xl font-semibold text-slate-800 mb-2">
                     {benefit.title}
                   </h3>
-                  <p className="text-slate-600">
+                  <p className="text-slate-600 text-sm sm:text-base">
                     {benefit.description}
                   </p>
                 </div>
@@ -262,17 +262,17 @@ export default function CareersPage() {
 
       {/* Job Openings Section */}
       <section id="openings" className="py-8 sm:py-10 lg:py-12">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-0 sm:px-4">
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             whileInView={{ y: 0, opacity: 1 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-8 sm:mb-12"
           >
             <h2 className="text-4xl font-bold text-slate-800 mb-4">
               Open Positions
             </h2>
-            <p className="text-xl text-slate-600">
+            <p className="text-sm sm:text-xl text-slate-600">
               Find your perfect role and grow with us
             </p>
           </motion.div>
@@ -285,11 +285,11 @@ export default function CareersPage() {
                 whileInView={{ y: 0, opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.05 }}
-                className="bg-white p-6 rounded-2xl shadow-soft hover:shadow-glow transition-all border border-slate-200"
+                className="bg-white p-4 sm:p-6 rounded-2xl shadow-soft hover:shadow-glow transition-all border border-slate-200"
               >
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                   <div className="flex-1">
-                    <div className="flex items-start gap-4 mb-3">
+                    <div className="flex flex-col sm:flex-row items-start gap-4 mb-3">
                       <div className="w-12 h-12 gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
                         <Briefcase className="w-6 h-6 text-white" />
                       </div>
@@ -297,13 +297,13 @@ export default function CareersPage() {
                         <h3 className="text-xl font-semibold text-slate-800 mb-1">
                           {job.title}
                         </h3>
-                        <p className="text-slate-600">
+                        <p className="text-slate-600 text-sm sm:text-base">
                           {job.description}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-4 text-sm text-slate-600 mb-3 ml-16">
+                    <div className="flex flex-wrap gap-4 text-sm text-slate-600 mb-3 sm:ml-16">
                       <span className="flex items-center gap-1">
                         <Users className="w-4 h-4" />
                         {job.department}
@@ -322,7 +322,7 @@ export default function CareersPage() {
                       </span>
                     </div>
 
-                    <div className="flex flex-wrap gap-2 ml-16">
+                    <div className="flex flex-wrap gap-2 sm:ml-16">
                       {job.skills.map(skill => (
                         <span
                           key={skill}
@@ -338,7 +338,7 @@ export default function CareersPage() {
                     href={`mailto:careers@Quikkred.com?subject=Application for ${job.title}`}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="inline-flex items-center gap-2 px-6 py-3 gradient-primary text-white rounded-xl font-semibold hover:shadow-glow transition-all whitespace-nowrap"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 gradient-primary text-white rounded-xl font-semibold hover:shadow-glow transition-all whitespace-nowrap"
                   >
                     Apply Now
                     <ChevronRight className="w-5 h-5" />
@@ -363,7 +363,7 @@ export default function CareersPage() {
             <h2 className="text-4xl font-bold text-white mb-4">
               Don't See the Right Role?
             </h2>
-            <p className="text-xl text-slate-300 mb-8">
+            <p className="text-sm sm:text-xl text-slate-300 mb-8">
               We're always looking for talented individuals. Send us your resume
               and we'll keep you in mind for future opportunities.
             </p>
@@ -371,10 +371,10 @@ export default function CareersPage() {
               href="mailto:careers@Quikkred.com"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="inline-flex items-center gap-2 px-8 py-4 bg-white text-slate-800 rounded-full font-semibold hover:shadow-glow transition-all"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-white text-slate-800 rounded-full font-semibold hover:shadow-glow transition-all text-sm sm:text-base"
             >
               Send Your Resume
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-[18px] h-[18px] sm:w-5 sm:h-5" />
             </motion.a>
           </motion.div>
         </div>
