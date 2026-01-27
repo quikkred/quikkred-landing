@@ -18,8 +18,8 @@ const PoliciesLayout = ({
 
   return (
     <>
-      <section className="py-16 font-sans">
-        <div className="container mx-auto px-4">
+      <section className="py-8 sm:py-16 font-sans">
+        <div className="container mx-auto px-0 sm:px-4">
           {/* Back Link */}
           <Link
             href="/"
