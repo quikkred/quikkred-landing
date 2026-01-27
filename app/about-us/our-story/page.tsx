@@ -28,26 +28,26 @@ export default function OurStoryPage() {
 
       {/* Story Content */}
       <section className="py-8 sm:py-10 lg:py-12">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-0 sm:px-4">
           <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-3xl font-bold text-slate-900 mb-6">How It All Began</h2>
-              <p className="text-slate-600 mb-4">
+              <h2 className="text-3xl font-bold text-slate-900 mb-3 sm:mb-6">How It All Began</h2>
+              <p className="text-slate-600 mb-4 text-sm sm:text-base">
                 Quikkred was founded with a simple yet powerful mission: to make credit accessible
                 to every Indian. We recognized that millions of hardworking individuals were being
                 underserved by traditional financial institutions due to lack of credit history or
                 documentation.
               </p>
-              <p className="text-slate-600 mb-4">
+              <p className="text-slate-600 mb-4 text-sm sm:text-base">
                 Our founders, with decades of experience in fintech and banking, came together to
                 build a platform that leverages technology to assess creditworthiness beyond
                 traditional metrics.
               </p>
-              <p className="text-slate-600">
+              <p className="text-slate-600 text-sm sm:text-base">
                 Today, we&apos;re proud to be a trusted digital lending platform, partnered with
                 Satsai Finlease Private Limited (an RBI-registered NBFC), serving customers across
                 all 28 states of India, helping them achieve their financial goals with quick,
@@ -105,9 +105,9 @@ export default function OurStoryPage() {
 
       {/* Values Section */}
       <section className="py-8 sm:py-10 lg:py-12 bg-slate-50">
-        <div className="container mx-auto px-4">
-          <h3 className="text-2xl font-bold text-center text-slate-900 mb-12">Our Core Values</h3>
-          <div className="grid md:grid-cols-3 gap-8">
+        <div className="container mx-auto px-0 sm:px-4">
+          <h3 className="text-2xl font-bold text-center text-slate-900 mb-8 sm:mb-12">Our Core Values</h3>
+          <div className="grid md:grid-cols-3 gap-4 sm:gap-8">
             {[
               { icon: Heart, title: "Customer First", desc: "Every decision starts with customers" },
               { icon: Target, title: "Mission Driven", desc: "Financial inclusion for all Indians" },

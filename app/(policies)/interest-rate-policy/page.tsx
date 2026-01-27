@@ -32,7 +32,7 @@ export default function InterestRatePolicyPage() {
       {/* Content */}
       <PoliciesLayout>
         {/* Document Details */}
-        <div className="mb-10 bg-gray-50 rounded-lg p-6">
+        <div className="mb-10 bg-gray-50 rounded-lg sm:p-6">
           <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
             <FileText className="w-6 h-6 text-[#25B181]" />
             {irp?.documentDetails?.title || "Document Details"}
@@ -88,8 +88,10 @@ export default function InterestRatePolicyPage() {
 
         {/* 3. Role of Board */}
         <div className="mb-10">
-          <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-            <Users className="w-6 h-6 text-[#25B181]" />
+          <h2 className="text-2xl font-semibold mb-4 flex items-center gap-3 sm:gap-2">
+            <div className="w-auto">
+              <Users className="w-6 h-6 text-[#25B181]" />
+            </div>
             {irp?.sections?.boardRole?.title || "3. Role of Board of Directors"}
           </h2>
           <p className="text-[#2b2b2b] leading-[1.7]">
@@ -100,7 +102,9 @@ export default function InterestRatePolicyPage() {
         {/* 4. Determination of Interest Rates */}
         <div className="mb-10">
           <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-            <Calculator className="w-6 h-6 text-[#25B181]" />
+            <div className="w-auto">
+              <Calculator className="w-6 h-6 text-[#25B181]" />
+            </div>
             {irp?.sections?.determination?.title || "4. Determination of Interest Rates on Loans and Credit Facility"}
           </h2>
           {(irp?.sections?.determination?.intro || [
