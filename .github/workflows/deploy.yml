@@ -125,6 +125,11 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Use beta environment config
+        run: |
+          cp .env.beta .env.production
+          echo "✅ Using .env.beta for beta build"
+
       - name: Build, tag, and push image to ECR
         id: build-image
         env:
