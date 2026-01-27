@@ -312,7 +312,7 @@ export default function QuickLoanApplication() {
                 accountNumber: profileData.banks?.[0]?.accountNumber || prev.accountNumber,
                 ifsc: profileData.banks?.[0]?.ifscCode || prev.ifsc,
                 loanAmount: profileData.requestedLoanAmount?.toString() || prev.loanAmount, // Loan amount from API
-                mobileVerified: profileData.isMobileVerified || true, // True if logged in with mobile
+                mobileVerified: toBoolean(profileData.isMobileVerified) && !!profileData.mobile, // Only true if mobile is verified AND exists
                 emailVerified: profileData.isEmailVerified || false // Only true if email is actually verified
               }));
 
@@ -393,8 +393,9 @@ export default function QuickLoanApplication() {
               const isBankDetailsFilled = toBoolean(profileData.isBankDetailsFilled);
               const isSubmit = toBoolean(profileData.isSubmit);
 
-              // If PAN is verified from API, disable basic details editing
-              if (toBoolean(profileData.isPanVerify)) {
+              // If PAN is verified from API AND mobile is already filled, disable basic details editing
+              // This prevents disabling fields when user hasn't entered mobile yet
+              if (toBoolean(profileData.isPanVerify) && profileData.mobile) {
                 setBasicDetailsFilled(true);
               }
 
@@ -445,8 +446,8 @@ export default function QuickLoanApplication() {
                 fullName: prev.fullName, // Keep existing or empty
                 mobile: user.mobile || prev.mobile,
                 email: user.email || prev.email,
-                mobileVerified: !!user.mobile, // Only if mobile exists
-                emailVerified: false // Email not verified if API fails
+                mobileVerified: prev.mobileVerified, // Keep previous state, don't assume verified
+                emailVerified: prev.emailVerified // Keep previous state
               }));
               setUserDataLoaded(true);
             }
@@ -457,8 +458,8 @@ export default function QuickLoanApplication() {
             fullName: prev.fullName, // Keep existing or empty
             mobile: user.mobile || prev.mobile,
             email: user.email || prev.email,
-            mobileVerified: !!user.mobile, // Only if mobile exists
-            emailVerified: false // Email not verified if API fails
+            mobileVerified: prev.mobileVerified, // Keep previous state, don't assume verified
+            emailVerified: prev.emailVerified // Keep previous state
           }));
           setUserDataLoaded(true);
         }
@@ -3661,8 +3662,9 @@ y += boxHeight + 4;
               const isBankDetailsFilled = toBoolean(profileData.isBankDetailsFilled);
               const isSubmit = toBoolean(profileData.isSubmit);
 
-              // If PAN is verified from API, disable basic details editing
-              if (toBoolean(profileData.isPanVerify)) {
+              // If PAN is verified from API AND mobile is already filled, disable basic details editing
+              // This prevents disabling fields when user hasn't entered mobile yet
+              if (toBoolean(profileData.isPanVerify) && profileData.mobile) {
                 setBasicDetailsFilled(true);
               }
 
@@ -5424,7 +5426,7 @@ y += boxHeight + 4;
               transition={{ duration: 0.2 }}
             >
               <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2">Quick Loan Application</h1>
-              <p className="text-sm sm:text-base text-gray-600">Get instant approval in just 3 minutes</p>
+              <p className="text-sm sm:text-base text-gray-600">Get instant approval in just 10 minutes</p>
             </motion.div>
           </div>
 
@@ -5522,7 +5524,7 @@ y += boxHeight + 4;
                         </button>
                       </div>
                     </div> */}
-                    </>
+                      </>
                   )}
 
                   {/* Email Verification - Only show for non-logged in users */}
