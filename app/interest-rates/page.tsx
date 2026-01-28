@@ -68,129 +68,87 @@ export default function InterestRatesPage() {
   const loanProducts: LoanProduct[] = [
     {
       id: "1",
-      name: "Personal Loan - Premium",
+      name: "Payday Loan",
       category: "personal",
-      minRate: 8.99,
-      maxRate: 12.99,
-      minAmount: 100000,
-      maxAmount: 5000000,
-      minTenure: 12,
-      maxTenure: 60,
-      processingFee: "2% (Min ₹1,000)",
+      minRate: 1,
+      maxRate: 1,
+      minAmount: 10000,
+      maxAmount: 500000,
+      minTenure: 7,
+      maxTenure: 90,
+      processingFee: "Platform Fee 10% + GST 18%",
       icon: Award,
-      description: "Best rates for customers with excellent credit profiles",
+      description: "Quick cash before your payday with transparent fees",
       features: [
+        "30-second AI approval",
+        "Money in 30 minutes",
         "No collateral required",
-        "Flexible repayment options",
-        "Quick approval in 30 seconds",
-        "Part-prepayment allowed"
+        "No prepayment penalty"
       ],
-      idealFor: "Salaried professionals with CIBIL score 750+"
+      idealFor: "Salaried professionals aged 21-60 years"
     },
     {
       id: "2",
-      name: "Personal Loan - Standard",
+      name: "Salary Advance",
       category: "personal",
-      minRate: 12.99,
-      maxRate: 18.99,
-      minAmount: 50000,
-      maxAmount: 3000000,
-      minTenure: 12,
-      maxTenure: 48,
-      processingFee: "2% (Min ₹1,000)",
+      minRate: 1,
+      maxRate: 1,
+      minAmount: 10000,
+      maxAmount: 200000,
+      minTenure: 7,
+      maxTenure: 30,
+      processingFee: "Platform Fee 10% + GST 18%",
       icon: Users,
-      description: "Competitive rates for all eligible customers",
+      description: "Get advance on your salary instantly",
       features: [
-        "Simple documentation",
-        "Instant approval",
-        "No hidden charges",
-        "Digital process"
+        "Instant approval for salaried",
+        "Same-day disbursal",
+        "Repay on next payday",
+        "100% digital process"
       ],
-      idealFor: "Salaried/Self-employed with CIBIL score 650+"
+      idealFor: "Salaried employees with regular income"
     },
     {
       id: "3",
-      name: "Emergency Loan",
+      name: "Emergency Fund",
       category: "emergency",
-      minRate: 15.99,
-      maxRate: 21.99,
+      minRate: 1,
+      maxRate: 1,
       minAmount: 10000,
-      maxAmount: 500000,
-      minTenure: 6,
-      maxTenure: 24,
-      processingFee: "1.5% (Min ₹500)",
+      maxAmount: 200000,
+      minTenure: 7,
+      maxTenure: 90,
+      processingFee: "Platform Fee 10% + GST 18%",
       icon: AlertCircle,
-      description: "Quick funds for urgent financial needs",
+      description: "24/7 support for urgent financial needs",
       features: [
+        "Round the clock availability",
         "Instant disbursal",
         "Minimal documentation",
-        "24/7 availability",
-        "No usage restrictions"
+        "Medical emergencies covered"
       ],
       idealFor: "Anyone with urgent cash requirements"
     },
     {
       id: "4",
-      name: "Business Loan - SME",
-      category: "business",
-      minRate: 11.99,
-      maxRate: 16.99,
-      minAmount: 200000,
-      maxAmount: 10000000,
-      minTenure: 12,
-      maxTenure: 60,
-      processingFee: "2.5% (Min ₹2,000)",
-      icon: Briefcase,
-      description: "Fuel your business growth with competitive rates",
-      features: [
-        "Working capital support",
-        "Equipment financing",
-        "Business expansion loans",
-        "Flexible repayment"
-      ],
-      idealFor: "Established businesses with 2+ years of operation"
-    },
-    {
-      id: "5",
-      name: "Salary Advance",
+      name: "Festival Advance",
       category: "special",
-      minRate: 9.99,
-      maxRate: 14.99,
+      minRate: 1,
+      maxRate: 1,
       minAmount: 10000,
-      maxAmount: 200000,
-      minTenure: 3,
-      maxTenure: 12,
-      processingFee: "1% (Min ₹300)",
-      icon: DollarSign,
-      description: "Get advance on your salary at attractive rates",
+      maxAmount: 100000,
+      minTenure: 15,
+      maxTenure: 60,
+      processingFee: "Platform Fee 10% + GST 18%",
+      icon: Target,
+      description: "Celebrate every festival without financial worry",
       features: [
-        "Instant approval",
-        "Same-day disbursal",
-        "Repay on salary date",
+        "Quick approval",
+        "Flexible repayment",
+        "All festivals covered",
         "No prepayment charges"
       ],
-      idealFor: "Salaried employees of partner companies"
-    },
-    {
-      id: "6",
-      name: "Festival Special Loan",
-      category: "special",
-      minRate: 10.49,
-      maxRate: 15.49,
-      minAmount: 25000,
-      maxAmount: 1000000,
-      minTenure: 6,
-      maxTenure: 36,
-      processingFee: "1.5% (Min ₹750)",
-      icon: Target,
-      description: "Limited period special rates for festive season",
-      features: [
-        "Special discount rates",
-        "Zero processing fee waiver available",
-        "Quick approval",
-        "Flexible tenure"
-      ],
-      idealFor: "All eligible customers during festive periods"
+      idealFor: "Everyone during festival season"
     }
   ];
 
@@ -282,14 +240,14 @@ export default function InterestRatesPage() {
             </div>
 
             <p className="text-sm sm:text-base lg:text-xl mb-6 sm:mb-8 opacity-90 max-w-3xl">
-              Transparent pricing with competitive rates starting from 8.99% per annum
+              Transparent pricing: 1% per day interest + 10% platform fee + 18% GST
             </p>
 
             {/* Features */}
             <div className="flex flex-wrap gap-4 sm:gap-6 text-sm sm:text-base">
               <div className="flex items-center gap-2">
                 <TrendingDown className="w-5 h-5" />
-                <span>From 8.99% p.d.</span>
+                <span>1% Per Day Interest</span>
               </div>
               <div className="flex items-center gap-2">
                 <Shield className="w-5 h-5" />
@@ -297,7 +255,7 @@ export default function InterestRatesPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Award className="w-5 h-5" />
-                <span>Best Rates</span>
+                <span>RBI Registered</span>
               </div>
             </div>
           </motion.div>
@@ -314,11 +272,16 @@ export default function InterestRatesPage() {
           className="max-w-5xl mx-auto mb-12"
         >
           <div className="bg-gradient-to-r from-[#25B181] to-[#51C9AF] rounded-2xl p-8">
-            <div className="grid md:grid-cols-3 gap-6 text-center">
+            <div className="grid md:grid-cols-4 gap-6 text-center">
               <div>
                 <TrendingDown className="w-10 h-10 mx-auto mb-3" />
-                <div className="text-3xl font-bold mb-1">8.99%</div>
-                <div className="text-sm opacity-90">Starting Rate p.d.</div>
+                <div className="text-3xl font-bold mb-1">1%</div>
+                <div className="text-sm opacity-90">Flat Interest</div>
+              </div>
+              <div>
+                <DollarSign className="w-10 h-10 mx-auto mb-3" />
+                <div className="text-3xl font-bold mb-1">10%</div>
+                <div className="text-sm opacity-90">Platform Fee</div>
               </div>
               <div>
                 <Clock className="w-10 h-10 mx-auto mb-3" />
@@ -327,7 +290,7 @@ export default function InterestRatesPage() {
               </div>
               <div>
                 <DollarSign className="w-10 h-10 mx-auto mb-3" />
-                <div className="text-3xl font-bold mb-1">₹50L</div>
+                <div className="text-3xl font-bold mb-1">₹5L</div>
                 <div className="text-sm opacity-90">Max Loan Amount</div>
               </div>
             </div>

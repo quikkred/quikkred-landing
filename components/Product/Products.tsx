@@ -82,12 +82,17 @@ export default function Products({
           onClick={() => setShowComingSoon(false)}
           style={{
             position: 'absolute',
-            top: '16px',
-            right: '16px',
+            top: '12px',
+            right: '12px',
             background: 'none',
             border: 'none',
             cursor: 'pointer',
-            color: '#9ca3af'
+            color: '#9ca3af',
+            minWidth: '44px',
+            minHeight: '44px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}
         >
           <X className="w-5 h-5" />
@@ -134,13 +139,15 @@ export default function Products({
           <Link href={buttonSecondaryLink} onClick={() => setShowComingSoon(false)}>
             <button style={{
               width: '100%',
-              padding: '12px 24px',
+              padding: '14px 24px',
+              minHeight: '48px',
               background: 'linear-gradient(to right, #25B181, #1F8F68)',
               color: 'white',
               borderRadius: '8px',
               fontWeight: '600',
               border: 'none',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              fontSize: '16px'
             }}>
               Apply for Loan Instead
             </button>
@@ -155,25 +162,25 @@ export default function Products({
       {/* Coming Soon Popup - Rendered via Portal to body */}
       {mounted && showComingSoon && createPortal(<ComingSoonPopup />, document.body)}
 
-      <div className="w-full bg-white py-12 px-6 md:px-16 flex flex-col md:flex-row items-center justify-between gap-10">
+      <div className="w-full bg-white py-6 sm:py-8 md:py-12 px-4 sm:px-6 md:px-16 flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8 md:gap-10">
         {/* Left Section */}
-        <div className="md:w-1/2 space-y-6">
+        <div className="md:w-1/2 space-y-4 sm:space-y-5 md:space-y-6">
           {/* Title */}
-          <h1 className="text-4xl md:text-5xl font-bold leading-snug">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-snug">
             {title}{" "}
             {highlightWord && <span className={primary}>{highlightWord}</span>}{" "}
           </h1>
 
           {/* Subtitle (optional) */}
-          {subtitle && <p className="text-gray-600 text-lg">{subtitle}</p>}
+          {subtitle && <p className="text-gray-600 text-base sm:text-lg">{subtitle}</p>}
 
           {/* Buttons (only render if at least one exists) */}
           {(buttonPrimaryText || buttonSecondaryText) && (
-            <div className="flex flex-wrap gap-4 pt-2">
+            <div className="flex flex-wrap gap-3 sm:gap-4 pt-2">
               {buttonPrimaryText && (
                 <button
                   onClick={() => setShowComingSoon(true)}
-                  className={`${primaryBg} ${primaryBgHover} text-white font-semibold px-6 py-3 rounded-md transition`}
+                  className={`${primaryBg} ${primaryBgHover} text-white font-semibold px-4 sm:px-6 py-3 min-h-[44px] rounded-md transition text-sm sm:text-base`}
                 >
                   {buttonPrimaryText}
                 </button>
@@ -181,7 +188,7 @@ export default function Products({
               {buttonSecondaryText && (
                 <Link href={buttonSecondaryLink}>
                   <button
-                    className={`${borderPrimary} ${primary} border font-semibold px-6 py-3 rounded-md ${bgHover} transition`}
+                    className={`${borderPrimary} ${primary} border font-semibold px-4 sm:px-6 py-3 min-h-[44px] rounded-md ${bgHover} transition text-sm sm:text-base`}
                   >
                     {buttonSecondaryText}
                   </button>
@@ -192,9 +199,9 @@ export default function Products({
 
           {/* Features (optional) */}
           {features && features.length > 0 && (
-            <div className="flex flex-wrap gap-6 text-gray-600 text-sm pt-4">
+            <div className="flex flex-wrap gap-3 sm:gap-4 md:gap-6 text-gray-600 text-xs sm:text-sm pt-3 sm:pt-4">
               {features.map((item, idx) => (
-                <div key={idx} className="flex items-center gap-2">
+                <div key={idx} className="flex items-center gap-1.5 sm:gap-2">
                   <span className={primary}>✓</span> {item}
                 </div>
               ))}
@@ -203,8 +210,8 @@ export default function Products({
         </div>
 
         {/* Right Section */}
-        <div className="md:w-1/2 flex justify-center">
-          <div className="relative rounded-2xl overflow-hidden w-full max-w-[420px] md:max-w-[460px]">
+        <div className="md:w-1/2 flex justify-center w-full">
+          <div className="relative rounded-xl sm:rounded-2xl overflow-hidden w-full max-w-[320px] sm:max-w-[380px] md:max-w-[460px]">
             <Image
               src={imageSrc}
               alt="product-main"

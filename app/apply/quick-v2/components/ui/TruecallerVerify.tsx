@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "@/components/ui/toast";
 import { signIn, useSession } from "next-auth/react";
 import { v4 as uuidv4 } from "uuid";
+import { useQuickApplyTracking } from "@/lib/hooks/useQuickApplyTracking";
 import { useAuth } from "@/contexts/AuthContext";
 
 const TruecallerVerify = ({
@@ -14,6 +15,14 @@ const TruecallerVerify = ({
     buttonText?: string;
 }) => {
     const [loading, setLoading] = useState(false);
+
+    // Tracking
+    const {
+        trackTruecallerStarted,
+        trackTruecallerSuccess,
+        trackTruecallerFailed,
+        trackAPIError,
+    } = useQuickApplyTracking();
     const { data: session } = useSession();
     const { login } = useAuth();
     const pollRef = useRef<any>(null);
@@ -38,6 +47,7 @@ const TruecallerVerify = ({
     const handleTruecallerLogin = async () => {
         if (loading) return;
         setLoading(true);
+        trackTruecallerStarted();
 
         const id = uuidv4();
         const partnerKey = process.env.NEXT_PUBLIC_TRUECALLER_PARTNER_KEY || "jKals7364aeff7733491a900303975143e31b";
@@ -77,20 +87,42 @@ const TruecallerVerify = ({
                         redirect: true,
                     });
 
-                    if (!result?.ok) {
-                        toast({ variant: "error", title: "Login Failed", description: result?.error });
-                        setLoading(false);
-                    }
-                    // Note: Success is handled by the useEffect watching [session]
+                if (result?.error) {
+                    trackTruecallerFailed(result.error);
+                    toast({
+                        variant: "error",
+                        title: "Verification Failed",
+                        description: "We couldn't verify your account. Please try again."
+                    });
+                } else {
+                    // Mobile will be available in session after redirect
+                    trackTruecallerSuccess('truecaller_verified');
                 }
 
-                if (attempts >= maxAttempts) {
-                    if (pollRef.current) clearInterval(pollRef.current);
-                    setLoading(false);
-                    toast({ variant: "error", title: "Timeout", description: "Verification took too long. Please try OTP." });
-                }
-            } catch (err) {
-                console.error("Polling error:", err);
+                setLoading(false);
+                // Clean up the listener so it doesn't run again
+                document.removeEventListener("visibilitychange", handleReturn);
+            }
+        };
+
+        // 2. Start listening for the user's return
+        document.addEventListener("visibilitychange", handleReturn);
+
+        // 3. Open Truecaller
+        window.location.href = deepLink;
+
+        // 4. Fallback: If the app doesn't open within 2 seconds (e.g., Desktop or App not installed)
+        setTimeout(() => {
+            if (document.hasFocus()) {
+                setLoading(false);
+                document.removeEventListener("visibilitychange", handleReturn);
+                const errorMsg = "Truecaller app not detected";
+                trackTruecallerFailed(errorMsg);
+                toast({
+                    variant: "error",
+                    title: "App Not Detected",
+                    description: "Truecaller is not installed or not responding. Please use OTP login."
+                });
             }
         }, 1500);
     };

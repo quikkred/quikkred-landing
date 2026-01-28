@@ -15,10 +15,10 @@ import { FinancialFeatureSection } from "@/components/financial-feature-section"
 import ContactForm from "@/components/Contact-form";
 
 const stats = [
-  { label: "Years of Excellence", value: "Since 2026", icon: Clock },
-  { label: "RBI-Registered Partner", value: "", icon: Shield },
+  { label: "Years of Excellence", value: "Since 2018", icon: Clock },
+  { label: "RBI-Registered NBFC", value: "B-14.01646", icon: Shield },
   { label: "Pan India Presence", value: "28 States", icon: Globe },
-  { label: "Customer Satisfaction", value: "%", icon: Star },
+  { label: "Customer Satisfaction", value: "98%", icon: Star },
 ];
 
 const values = [
