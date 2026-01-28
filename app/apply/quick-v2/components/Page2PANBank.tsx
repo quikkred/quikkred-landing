@@ -16,6 +16,7 @@ import { API_BASE_URL } from '@/lib/config';
 import { useQuickApplyTracking, useVerificationFrictionTracking } from '@/lib/hooks/useQuickApplyTracking';
 import PanVerify from './ui/PanVerify';
 import useAxios from '@/hooks/useAxios';
+import getToken from '@/lib/getToken';
 
 // MOCK MODE - Set to false for production with real APIs
 const MOCK_MODE = false;
@@ -234,7 +235,7 @@ export default function Page2PANBank({
         }
 
         try {
-            const token = localStorage.getItem('accessToken');
+            const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/kyc/pan/verify`, {
                 method: 'POST',
                 headers: {

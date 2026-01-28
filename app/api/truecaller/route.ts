@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
 
     if (!profileRes.ok) return NextResponse.json({ error: "Truecaller fetch failed" }, { status: 401 });
     const profileData = await profileRes.json();
+    console.log("profile data", profileData)
 
     // 2. FORWARD TO MAIN BACKEND (Crucial Step)
     // const backendRes = await fetch(`${API_BASE_URL}/api/test2/truecaller/callback`, {
