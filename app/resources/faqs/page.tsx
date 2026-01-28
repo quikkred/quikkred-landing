@@ -233,7 +233,7 @@ export default function FAQsPage() {
         </div>
       </section>
 
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 -mt-8">
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
 
         {/* Search and Filters */}
         <motion.div
@@ -250,7 +250,7 @@ export default function FAQsPage() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--royal-blue)] focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-transparent"
                 placeholder="Search for questions, keywords, or topics..."
               />
             </div>
@@ -284,7 +284,7 @@ export default function FAQsPage() {
           transition={{ delay: 0.3 }}
           className="max-w-6xl mx-auto mb-12"
         >
-          <div className="flex overflow-x-auto pb-2 mb-8">
+          <div className="flex overflow-x-auto scrollbar-hide pb-2 mb-8">
             <div className="flex space-x-2 min-w-max">
               {categories.map((category) => {
                 const Icon = category.icon;
@@ -455,7 +455,7 @@ export default function FAQsPage() {
           transition={{ delay: 0.6 }}
           className="mt-16 max-w-4xl mx-auto"
         >
-          <div className="bg-gradient-to-r from-[#25B181] to-[#51C9AF] rounded-2xl p-8  text-center">
+          <div className="bg-gradient-to-r from-[#25B181] to-[#51C9AF] rounded-2xl text-white p-8  text-center">
             <MessageCircle className="w-12 h-12 mx-auto mb-4" />
             <h2 className="text-2xl font-bold mb-4">Still Have Questions?</h2>
             <p className="text-xl mb-6 opacity-90">
@@ -463,7 +463,7 @@ export default function FAQsPage() {
             </p>
             <div className="grid md:grid-cols-3 gap-4">
               <Link href="/contact">
-                <button className="w-full bg-white text-[#4A66FF] py-3 px-6 rounded-lg font-semibold hover:shadow-lg transition-all">
+                <button className="w-full bg-white text-[#4A66FF] border-2 border-solid border-white hover:border-[#4A66FF] hover:text-white hover:bg-[#4A66FF] py-3 px-6 rounded-lg font-semibold hover:shadow-lg transition-all">
                   Contact Us
                 </button>
               </Link>
@@ -492,8 +492,8 @@ export default function FAQsPage() {
         >
           <h2 className="text-2xl font-bold text-center mb-8">Additional Resources</h2>
           <div className="grid md:grid-cols-3 gap-6">
-            <Link href="/emi-calculator">
-              <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-shadow cursor-pointer">
+            <Link href="/emi-calculator" className="h-full">
+              <div className="bg-white rounded-2xl p-6 h-full shadow-sm hover:shadow-lg transition-shadow cursor-pointer">
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
                   <Clock className="w-6 h-6 text-blue-600" />
                 </div>
@@ -504,8 +504,8 @@ export default function FAQsPage() {
               </div>
             </Link>
 
-            <Link href="/track-application">
-              <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-shadow cursor-pointer">
+            <Link href="/track-application" className="h-full">
+              <div className="bg-white rounded-2xl p-6 h-full shadow-sm hover:shadow-lg transition-shadow cursor-pointer">
                 <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
                   <Search className="w-6 h-6 text-green-600" />
                 </div>
@@ -516,8 +516,8 @@ export default function FAQsPage() {
               </div>
             </Link>
 
-            <Link href="/apply/quick">
-              <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-shadow cursor-pointer">
+            <Link href="/apply/quick" className="h-full">
+              <div className="bg-white rounded-2xl p-6 h-full shadow-sm hover:shadow-lg transition-shadow cursor-pointer">
                 <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
                   <Bookmark className="w-6 h-6 text-purple-600" />
                 </div>

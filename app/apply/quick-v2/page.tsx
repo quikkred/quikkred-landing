@@ -16,52 +16,16 @@ import ApprovalProcessing from './components/ApprovalProcessing';
 import PostApprovalBank from './components/PostApprovalBank';
 import PostApprovalAadhaar from './components/PostApprovalAadhaar';
 import PostApprovalSelfie from './components/PostApprovalSelfie';
-
-// Compact Step Indicator Component
-function StepIndicator({ currentStep }: { currentStep: number }) {
-    const steps = [
-        { id: 1, label: 'Details' },
-        { id: 2, label: 'Verify' },
-        { id: 3, label: 'Approval' },
-    ];
-
-    return (
-        <div className="flex items-center justify-center gap-1 sm:gap-2 mb-4 sm:mb-6 px-2">
-            {steps.map((step, index) => (
-                <div key={step.id} className="flex items-center">
-                    <div className="flex items-center gap-1.5">
-                        <div
-                            className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${currentStep >= step.id
-                                    ? 'bg-[#25B181] text-white'
-                                    : 'bg-gray-200 text-gray-500'
-                                }`}
-                        >
-                            {currentStep > step.id ? '✓' : step.id}
-                        </div>
-                        <span
-                            className={`text-xs sm:text-sm font-medium ${currentStep >= step.id ? 'text-[#25B181]' : 'text-gray-400'
-                                }`}
-                        >
-                            {step.label}
-                        </span>
-                    </div>
-                    {index < steps.length - 1 && (
-                        <div
-                            className={`w-6 sm:w-12 h-0.5 mx-1.5 sm:mx-2 rounded-full ${currentStep > step.id ? 'bg-[#25B181]' : 'bg-gray-200'
-                                }`}
-                        />
-                    )}
-                </div>
-            ))}
-        </div>
-    );
-}
+import { useAuth } from '@/contexts/AuthContext';
+import StepIndicator from './components/ui/StepIndicator';
 
 // Main Page Component
 export default function QuickApplyV2Page() {
     // Stage Management
     const [stage, setStage] = useState<ApplicationStage>('IP_CHECK');
     const [currentStep, setCurrentStep] = useState(0);
+    const { user } = useAuth();
+    console.log("user", user);
 
     // Form Data
     const [formData, setFormData] = useState<QuickApplyV2FormData>(getInitialFormData);
@@ -74,6 +38,30 @@ export default function QuickApplyV2Page() {
 
     // Approval Data
     const [approvalDetails, setApprovalDetails] = useState<ApprovalDetails | null>(null);
+
+    const formatDOB = (isoDate?: string) => isoDate ? isoDate.split("T")[0] : "";
+
+    useEffect(() => {
+        if (user) {
+            console.log("initial", user);
+            setFormData((prev) => ({
+                ...prev,
+                firstName: user?.firstName || "",
+                lastName: user?.lastName || "",
+                fullName: user?.fullName || "",
+                email: user?.email || "",
+                emailVerified: user?.isEmailVerified || false,
+                mobile: user?.mobile || "",
+                mobileVerified: user?.isMobileVerified || false,
+                pan: user?.pan || "",
+                aadhaar: user?.aadhaar || "",
+                dob: formatDOB(user?.dateOfBirth) || "",
+                panVerified: user?.isPanVerify || false,
+                monthlyIncome: user?.monthlyIncome || "",
+                employmentType: (user?.employmentType as "SALARIED" | "SELF-EMPLOYED") || "SALARIED"
+            }))
+        }
+    }, [user]);
 
     // Initialize tracking and check IP on mount
     useEffect(() => {

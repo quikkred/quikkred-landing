@@ -113,7 +113,7 @@ export default function FinancialLiteracyPage() {
   const calculators = [
     { name: "EMI Calculator", href: "/emi-calculator", icon: Calculator, color: "#1976D2" },
     { name: "Loan Eligibility", href: "/eligibility-check", icon: Target, color: "#006837" },
-    { name: "Interest Rates", href: "/intrest-rate", icon: TrendingUp, color: "#F9A825" }
+    { name: "Interest Rates", href: "/interest-rates", icon: TrendingUp, color: "#F9A825" }
   ];
 
   return (
@@ -145,7 +145,7 @@ export default function FinancialLiteracyPage() {
               <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
                 <BookOpen className="w-8 h-8 text-white" />
               </div>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl lg:text-6xl font-bold font-sora">
+              <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold font-sora">
                 Financial Literacy
               </h1>
             </div>
@@ -173,7 +173,7 @@ export default function FinancialLiteracyPage() {
         </div>
       </section>
 
-      <section className="container mx-auto px-4 py-12 -mt-8">
+      <section className="container mx-auto px-4 py-12">
         {/* Quick Tips */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
