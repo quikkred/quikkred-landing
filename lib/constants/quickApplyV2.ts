@@ -153,6 +153,8 @@ export const SERVICEABLE_STATES = [
 export const getInitialFormData = (): QuickApplyV2FormData => ({
     // Pre-Apply
     ipData: null,
+    firstName:"",
+    lastName:"",
 
     // Page 1
     mobile: '',
