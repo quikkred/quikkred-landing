@@ -10,6 +10,8 @@ export interface User {
   name: string;
   email: string;
   mobile?: string;
+  firstName?: string;
+  lastName?: string;
   fullName?: string;
   dateOfBirth?: string;
   address?: string;
@@ -18,6 +20,8 @@ export interface User {
   pincode?: string;
   isEmailVerified?: boolean;
   isMobileVerified?: boolean;
+  isPanVerify?: boolean;
+  isAadhaarVerify?: boolean;
   kycStatus?: 'PENDING' | 'VERIFIED' | 'REJECTED';
   status?: string;
   createdAt?: string;

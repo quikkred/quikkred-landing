@@ -10,6 +10,9 @@ import TruecallerVerify from './ui/TruecallerVerify';
 import GoogleVerify from './ui/GoogleVerify';
 import { useAuth } from '@/contexts/AuthContext';
 import MobileVerify from './ui/MobileVerify';
+import BasicDetails from './ui/BasicDetails';
+import { AxiosError } from 'axios';
+import useAxios from '@/hooks/useAxios';
 
 // MOCK MODE - Set to false for production with real APIs
 // const MOCK_MODE = false;
@@ -25,6 +28,7 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
     // OTP States
     const [otpTimer, setOtpTimer] = useState(0);
     const { user } = useAuth();
+    const axios = useAxios();
 
     // The logic now correctly handles verification status from the AuthContext
     const isVerified = useMemo(() => user?.isEmailVerified || user?.isMobileVerified, [user]);
@@ -42,6 +46,31 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
     const canProceed = isVerified &&
         formData.loanAmount >= LOAN_CONFIG.MIN_AMOUNT &&
         formData.loanAmount <= LOAN_CONFIG.MAX_AMOUNT;
+
+    const handleContinue = async () => {
+        // console.log(formData);
+        const nameParts = formData.fullName.trim().split(/\s+/);
+        const firstName = nameParts[0] || "";
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+
+        const payload = {
+            firstName,
+            lastName,
+            dateOfBirth: formData.dob,
+            email: formData.email,
+            mobile: formData.mobile,
+        }
+
+        console.log(payload)
+
+        try {
+            // const response = await axios.post("/api/application/loan/create");
+        } catch (error: unknown) {
+            if(error instanceof AxiosError){
+                console.log(error?.response?.data);
+            }
+        }
+    }
 
     return (
         <motion.div
@@ -98,6 +127,12 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
                     <MobileVerify />
                 </>
             )}
+
+            {
+                isVerified && (
+                    <BasicDetails formData={formData} setFormData={setFormData} />
+                )
+            }
 
             {/* Loan Amount - Keep Original Design */}
             <div className="bg-gradient-to-r from-[#25B181]/10 to-[#51C9AF]/10 rounded-xl p-3 sm:p-4">
@@ -167,7 +202,7 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
 
             {/* Continue Button */}
             <button
-                onClick={onNext}
+                onClick={handleContinue}
                 disabled={!canProceed}
                 className="w-full py-3.5 sm:py-4 bg-gradient-to-r disabled:cursor-not-allowed from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-xl font-bold text-base sm:text-lg shadow-lg shadow-[#25B181]/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
             >
