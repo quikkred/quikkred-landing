@@ -10,6 +10,9 @@ import TruecallerVerify from './ui/TruecallerVerify';
 import GoogleVerify from './ui/GoogleVerify';
 import { useAuth } from '@/contexts/AuthContext';
 import MobileVerify from './ui/MobileVerify';
+import BasicDetails from './ui/BasicDetails';
+import { AxiosError } from 'axios';
+import useAxios from '@/hooks/useAxios';
 import { useQuickApplyTracking } from '@/lib/hooks/useQuickApplyTracking';
 
 interface Page1Props {
@@ -22,6 +25,7 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
     // OTP States
     const [otpTimer, setOtpTimer] = useState(0);
     const { user } = useAuth();
+    const axios = useAxios();
 
     // Tracking
     const {
@@ -62,6 +66,31 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
         formData.loanAmount >= LOAN_CONFIG.MIN_AMOUNT &&
         formData.loanAmount <= LOAN_CONFIG.MAX_AMOUNT;
 
+    const handleContinue = async () => {
+        // console.log(formData);
+        const nameParts = formData.fullName.trim().split(/\s+/);
+        const firstName = nameParts[0] || "";
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+
+        const payload = {
+            firstName,
+            lastName,
+            dateOfBirth: formData.dob,
+            email: formData.email,
+            mobile: formData.mobile,
+        }
+
+        console.log(payload)
+
+        try {
+            // const response = await axios.post("/api/application/loan/create");
+        } catch (error: unknown) {
+            if(error instanceof AxiosError){
+                console.log(error?.response?.data);
+            }
+        }
+    }
+
     // Handle loan amount change with tracking
     const handleLoanAmountChange = (newAmount: number) => {
         const oldAmount = prevLoanAmountRef.current;
@@ -83,19 +112,19 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
     };
 
     // Handle continue with tracking
-    const handleContinue = () => {
-        // Track loan selection finalized
-        trackLoanSelection(formData.loanAmount, formData.tenure, loanCalc.netDisbursalAmount);
+    // const handleContinue = () => {
+    //     // Track loan selection finalized
+    //     trackLoanSelection(formData.loanAmount, formData.tenure, loanCalc.netDisbursalAmount);
 
-        // Track step completed
-        trackStepCompleted(1, 'Basic Details', {
-            loanAmount: formData.loanAmount,
-            tenure: formData.tenure,
-            verificationMethod: user?.isMobileVerified ? 'mobile' : 'email',
-        });
+    //     // Track step completed
+    //     trackStepCompleted(1, 'Basic Details', {
+    //         loanAmount: formData.loanAmount,
+    //         tenure: formData.tenure,
+    //         verificationMethod: user?.isMobileVerified ? 'mobile' : 'email',
+    //     });
 
-        onNext();
-    };
+    //     onNext();
+    // };
 
     return (
         <motion.div
@@ -152,6 +181,12 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
                     <MobileVerify />
                 </>
             )}
+
+            {
+                isVerified && (
+                    <BasicDetails formData={formData} setFormData={setFormData} />
+                )
+            }
 
             {/* Loan Amount - Keep Original Design */}
             <div className="bg-gradient-to-r from-[#25B181]/10 to-[#51C9AF]/10 rounded-xl p-3 sm:p-4">
