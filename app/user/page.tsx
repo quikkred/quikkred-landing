@@ -602,7 +602,7 @@ export default function UserDashboard() {
 
     setLoadingProofs(true);
     try {
-      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+      const token = await getToken();
       if (!token) return;
 
       const response = await fetch(`${API_BASE_URL}/api/payment-proof/my-submissions?loanId=${activeLoanDetails._id}`, {
@@ -643,11 +643,7 @@ export default function UserDashboard() {
 
     setSubmittingProof(true);
     try {
-      const token = localStorage.getItem('authToken') || localStorage.getItem('token');
-      if (!token) {
-        router.push('/login');
-        return;
-      }
+      const token = await getToken();
 
       const formData = new FormData();
       formData.append('loanId', activeLoanDetails._id);
