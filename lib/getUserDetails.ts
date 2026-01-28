@@ -48,8 +48,12 @@ export default async function getUserDetails(): Promise<User | null> {
     const apiData = result.data;
     const fullName = apiData.fullName || baseUser.name;
 
+    // console.log("pan card", apiData)
+
     const updatedUser: User = {
       ...baseUser,
+      firstName: apiData.firstName || "",
+      lastName: apiData.lastName || "",
       name: fullName,
       fullName,
       email: apiData.email || baseUser.email,
@@ -59,11 +63,15 @@ export default async function getUserDetails(): Promise<User | null> {
       city: apiData.currentAddress?.city,
       state: apiData.currentAddress?.state,
       pincode: apiData.currentAddress?.pincode,
-      isEmailVerified: apiData.isEmailVerified,
-      isMobileVerified: apiData.isMobileVerified,
       kycStatus: apiData.kyc?.kycStatus || "PENDING",
       status: apiData.status,
       createdAt: apiData.createdAt,
+
+      // verified
+      isEmailVerified: apiData.isEmailVerified || false,
+      isMobileVerified: apiData.isMobileVerified || false,
+      isPanVerify: apiData.isPanVerify || false,
+      isAadhaarVerify: apiData.isAadhaarVerify || false,
 
       // dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
       pan: apiData.panCard || null,

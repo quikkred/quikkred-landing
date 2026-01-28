@@ -15,6 +15,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { API_BASE_URL } from '@/lib/config';
 import getToken from "@/lib/getToken";
+import Link from "next/link";
 
 interface UserLayoutProps {
   children: React.ReactNode;
@@ -253,19 +254,21 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                   animate={{ opacity: 1 }}
                   className="flex items-center justify-center w-full py-4"
                 >
-                  <Image
-                    src="/logo.svg"
-                    alt="Quikkred Logo"
-                    width={160}
-                    height={80}
-                    priority
-                    quality={100}
-                    className="h-auto max-w-[260px]"
-                    style={{
-                      objectFit: 'contain',
-                      imageRendering: '-webkit-optimize-contrast',
-                    }}
-                  />
+                  <Link href="/" className="w-auto">
+                    <Image
+                      src="/logo.svg"
+                      alt="Quikkred Logo"
+                      width={160}
+                      height={80}
+                      priority
+                      quality={100}
+                      className="h-auto max-w-[260px]"
+                      style={{
+                        objectFit: 'contain',
+                        imageRendering: '-webkit-optimize-contrast',
+                      }}
+                    />
+                  </Link>
                 </motion.div>
                 <motion.button
                   whileHover={{ scale: 1.1 }}
@@ -279,14 +282,15 @@ const UserLayout = ({ children }: UserLayoutProps) => {
             ) : (
               <>
                 <div className="rounded-xl flex items-center justify-center">
-                  <Image
-                    src="/i.svg"
-                    alt="Quikkred Logo"
-                    width={54}
-                    height={54}
-                    className="object-contain"
-                  />
-
+                  <Link href={"/"} className="w-auto">
+                    <Image
+                      src="/i.svg"
+                      alt="Quikkred Logo"
+                      width={54}
+                      height={54}
+                      className="object-contain"
+                    />
+                  </Link>
                 </div>
                 <motion.button
                   whileHover={{ scale: 1.1 }}
@@ -310,8 +314,8 @@ const UserLayout = ({ children }: UserLayoutProps) => {
               key={item.title}
               onClick={() => handleNavigation(item.href)}
               className={`w-full flex items-center ${sidebarOpen ? 'gap-3 justify-start' : 'justify-center'} p-3 rounded-lg transition-colors duration-150 cursor-pointer ${pathname === item.href
-                  ? 'bg-gradient-to-r from-[#10B4A3] to-[#0E9D8F] text-white shadow-md'
-                  : 'hover:bg-[#FAFAFA] text-[#0A0A0A]'
+                ? 'bg-gradient-to-r from-[#10B4A3] to-[#0E9D8F] text-white shadow-md'
+                : 'hover:bg-[#FAFAFA] text-[#0A0A0A]'
                 }`}
             >
               <item.icon className={`w-5 h-5 ${pathname === item.href ? 'text-white' : 'text-[#4084FF]'
@@ -410,8 +414,8 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                     setMobileSidebarOpen(false);
                   }}
                   className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors duration-150 cursor-pointer ${pathname === item.href
-                      ? 'bg-gradient-to-r from-[#10B4A3] to-[#0E9D8F] text-white shadow-md'
-                      : 'hover:bg-[#FAFAFA] text-[#0A0A0A]'
+                    ? 'bg-gradient-to-r from-[#10B4A3] to-[#0E9D8F] text-white shadow-md'
+                    : 'hover:bg-[#FAFAFA] text-[#0A0A0A]'
                     }`}
                 >
                   <item.icon className={`w-5 h-5 ${pathname === item.href ? 'text-white' : 'text-[#4084FF]'
@@ -546,14 +550,14 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                                   <div className="flex items-start gap-2 sm:gap-3">
                                     {/* Icon based on type */}
                                     <div className={`p-2 rounded-lg ${notification.type === 'INFO' ? 'bg-blue-500/10' :
-                                        notification.type === 'SUCCESS' ? 'bg-[#3AC6A0]/10' :
-                                          notification.type === 'WARNING' ? 'bg-yellow-500/10' :
-                                            'bg-red-500/10'
+                                      notification.type === 'SUCCESS' ? 'bg-[#3AC6A0]/10' :
+                                        notification.type === 'WARNING' ? 'bg-yellow-500/10' :
+                                          'bg-red-500/10'
                                       }`}>
                                       <Bell className={`w-4 h-4 ${notification.type === 'INFO' ? 'text-blue-600' :
-                                          notification.type === 'SUCCESS' ? 'text-[#3AC6A0]' :
-                                            notification.type === 'WARNING' ? 'text-yellow-600' :
-                                              'text-red-600'
+                                        notification.type === 'SUCCESS' ? 'text-[#3AC6A0]' :
+                                          notification.type === 'WARNING' ? 'text-yellow-600' :
+                                            'text-red-600'
                                         }`} />
                                     </div>
 
@@ -581,8 +585,8 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                                           })}
                                         </span>
                                         <span className={`text-xs px-2 py-0.5 rounded-full ${notification.status === 'SENT' ? 'bg-[#3AC6A0]/10 text-[#3AC6A0]' :
-                                            notification.status === 'PENDING' ? 'bg-yellow-500/10 text-yellow-600' :
-                                              'bg-gray-100 text-gray-600'
+                                          notification.status === 'PENDING' ? 'bg-yellow-500/10 text-yellow-600' :
+                                            'bg-gray-100 text-gray-600'
                                           }`}>
                                           {notification.status}
                                         </span>

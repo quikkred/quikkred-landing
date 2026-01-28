@@ -192,7 +192,7 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
   return (
     <div >
       {/* Form Section */}
-      <div className="w-full md:container md:mx-auto px-0 md:px-4 pb-12 lg:pb-16">
+      <div className="w-full md:container md:mx-auto px-0 md:px-4">
         <div className="max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-0 overflow-hidden">
             {/* Left Side - Image */}
@@ -230,7 +230,7 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
             </div>
 
             {/* Right Side - Form */}
-            <div className="p-4 sm:p-6 md:p-10 lg:p-12">
+            <div className="sm:px-6 md:px-10 lg:px-12">
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">
