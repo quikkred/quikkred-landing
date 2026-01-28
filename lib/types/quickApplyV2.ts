@@ -28,6 +28,8 @@ export interface QuickApplyV2FormData {
     pan: string;
     panVerified: boolean;
     panData: PANData | null;
+    firstName: string;
+    lastName: string;
     fullName: string; // From PAN
     dob: string; // From PAN
     ifsc: string;
