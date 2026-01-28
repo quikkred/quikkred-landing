@@ -186,7 +186,7 @@ export default function Products({
                 </button>
               )}
               {buttonSecondaryText && (
-                <Link href={buttonSecondaryLink}>
+                <Link href={buttonSecondaryLink} className="w-full md:w-auto">
                   <button
                     className={`${borderPrimary} ${primary} border font-semibold px-4 sm:px-6 py-3 min-h-[44px] rounded-md ${bgHover} transition text-sm sm:text-base`}
                   >
