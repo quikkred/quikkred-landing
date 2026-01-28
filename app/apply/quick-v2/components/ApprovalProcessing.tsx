@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
     Loader2, CheckCircle, XCircle, Clock,
@@ -9,10 +9,10 @@ import {
 import { QuickApplyV2FormData, BREDecision, ApprovalDetails } from '@/lib/types/quickApplyV2';
 import { formatCurrency, formatDate, calculateLoanDetails, TIMERS } from '@/lib/constants/quickApplyV2';
 import { API_BASE_URL } from '@/lib/config';
+import { useQuickApplyTracking } from '@/lib/hooks/useQuickApplyTracking';
 import getToken from '@/lib/getToken';
 
 // MOCK MODE - Set to false for production with real APIs
-// Set to true only for local testing without backend
 const MOCK_MODE = false;
 
 interface ApprovalProps {
@@ -44,18 +44,36 @@ export default function ApprovalProcessing({
     const [redirectCountdown, setRedirectCountdown] = useState(10);
     const [pollCount, setPollCount] = useState(0);
 
+    // Tracking
+    const {
+        trackStepViewed,
+        trackBREProcessingStarted,
+        trackBREStepCompleted,
+        trackBREApproved,
+        trackBRERejected,
+        trackAPIError,
+    } = useQuickApplyTracking();
+
+    // Track BRE processing start
+    const hasTrackedRef = useRef(false);
+    useEffect(() => {
+        if (!hasTrackedRef.current) {
+            hasTrackedRef.current = true;
+            trackStepViewed(3, 'BRE Processing');
+            trackBREProcessingStarted();
+        }
+    }, [trackStepViewed, trackBREProcessingStarted]);
+
     // Polling for BRE status
     useEffect(() => {
         // MOCK MODE - Skip API polling and simulate processing
         if (MOCK_MODE) {
-            console.log('✅ MOCK: Simulating BRE processing');
             simulateProcessing();
             return;
         }
 
         const applicationId = localStorage.getItem('applicationId');
         if (!applicationId) {
-            // Simulate processing if no application ID
             simulateProcessing();
             return;
         }
@@ -80,29 +98,23 @@ export default function ApprovalProcessing({
                     } else if (data.status === 'REJECTED') {
                         handleRejection(data.data?.reason || 'Application not approved');
                     } else if (data.status === 'PROCESSING') {
-                        // Update steps based on progress
                         updateSteps(data.data?.step || pollCount);
                         setPollCount(prev => prev + 1);
                     }
                 }
             } catch (error) {
-                console.error('BRE poll error:', error);
+                trackAPIError('/api/loan/status', 'BRE poll error');
             }
         };
 
-        // Poll every 3 seconds, max 20 times (60 seconds)
         const pollInterval = setInterval(() => {
             if (pollCount < 20 && status === 'processing') {
                 pollBREStatus();
             } else if (pollCount >= 20) {
-                // Timeout - simulate approval for demo
                 simulateApproval();
                 clearInterval(pollInterval);
             }
         }, TIMERS.BRE_POLL_INTERVAL);
-
-        // Initial poll
-        // pollBREStatus();
 
         return () => clearInterval(pollInterval);
     }, [pollCount, status]);
@@ -110,6 +122,7 @@ export default function ApprovalProcessing({
     // Simulate processing for demo
     const simulateProcessing = () => {
         const stepTimings = [1000, 3000, 5000, 7000];
+        const stepNames = ['pan', 'credit', 'income', 'decision'];
 
         stepTimings.forEach((timing, index) => {
             setTimeout(() => {
@@ -117,6 +130,11 @@ export default function ApprovalProcessing({
                     ...step,
                     status: i < index + 1 ? 'done' : i === index + 1 ? 'loading' : 'pending',
                 })));
+
+                // Track BRE step completion
+                if (index > 0) {
+                    trackBREStepCompleted(stepNames[index - 1]);
+                }
 
                 if (index === stepTimings.length - 1) {
                     setTimeout(() => simulateApproval(), 2000);
@@ -140,7 +158,7 @@ export default function ApprovalProcessing({
         const details: ApprovalDetails = {
             loanAmount: formData.loanAmount,
             approvedAmount: formData.loanAmount,
-            interestRate: 1, // 1% per day
+            interestRate: 1,
             tenure: formData.tenure,
             processingFee: loanCalc.processingFee,
             gstOnProcessingFee: loanCalc.gstOnProcessingFee,
@@ -170,6 +188,13 @@ export default function ApprovalProcessing({
             dueDate: loanCalc.dueDate,
         };
 
+        // Track BRE approval
+        trackBREApproved({
+            approvedAmount: approvalData.approvedAmount,
+            netDisbursalAmount: approvalData.netDisbursalAmount,
+            tenure: approvalData.tenure,
+        });
+
         setApprovalDetails(approvalData);
         setStatus('approved');
         setSteps(prev => prev.map(s => ({ ...s, status: 'done' })));
@@ -177,6 +202,9 @@ export default function ApprovalProcessing({
 
     // Handle rejection
     const handleRejection = (reason: string) => {
+        // Track BRE rejection
+        trackBRERejected(reason);
+
         setRejectionReason(reason);
         setStatus('rejected');
         setSteps(prev => prev.map((s, i) =>

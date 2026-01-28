@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { QuickApplyV2FormData } from '@/lib/types/quickApplyV2';
 import { API_BASE_URL } from '@/lib/config';
+import { useQuickApplyTracking, useVerificationFrictionTracking } from '@/lib/hooks/useQuickApplyTracking';
 import getToken from '@/lib/getToken';
 
 // MOCK MODE - Set to false for production with real APIs
@@ -27,6 +28,29 @@ export default function PostApprovalSelfie({
     onNext,
     onBack,
 }: PostApprovalSelfieProps) {
+    // Tracking
+    const {
+        trackStepViewed,
+        trackStepCompleted,
+        trackSelfieCaptureStarted,
+        trackSelfieCaptureSuccess,
+        trackSelfieCaptureFailed,
+        trackFormError,
+        trackAPIError,
+    } = useQuickApplyTracking();
+
+    // Selfie verification friction tracking
+    const selfieFriction = useVerificationFrictionTracking('esign'); // Using 'esign' as a proxy for selfie
+
+    // Track step viewed on mount
+    const hasTrackedStepRef = useRef(false);
+    useEffect(() => {
+        if (!hasTrackedStepRef.current) {
+            hasTrackedStepRef.current = true;
+            trackStepViewed(6, 'Selfie Verification');
+            selfieFriction.startTracking();
+        }
+    }, [trackStepViewed, selfieFriction]);
     const [cameraOpen, setCameraOpen] = useState(false);
     const [isStreaming, setIsStreaming] = useState(false);
     const [capturedImage, setCapturedImage] = useState<string | null>(formData.selfieData?.preview || null);
@@ -174,12 +198,16 @@ export default function PostApprovalSelfie({
 
     const verifyAndSubmit = async () => {
         if (!capturedFile && !MOCK_MODE) {
-            setVerificationError('Please capture a selfie first');
+            const errorMsg = 'Please capture a selfie first';
+            setVerificationError(errorMsg);
+            trackFormError('selfie', errorMsg, 6);
             return;
         }
 
         setIsVerifying(true);
         setVerificationError('');
+        trackSelfieCaptureStarted();
+        selfieFriction.recordAttempt();
 
         // MOCK MODE
         if (MOCK_MODE) {
@@ -194,6 +222,11 @@ export default function PostApprovalSelfie({
                     verified: true,
                 },
             }));
+
+            // Track success
+            trackSelfieCaptureSuccess();
+            selfieFriction.completeTracking(true);
+            trackStepCompleted(6, 'Selfie Verification');
 
             console.log('✅ MOCK: Selfie verified');
             setTimeout(() => {
@@ -232,16 +265,26 @@ export default function PostApprovalSelfie({
                     },
                 }));
 
+                // Track success
+                trackSelfieCaptureSuccess();
+                selfieFriction.completeTracking(true);
+                trackStepCompleted(6, 'Selfie Verification');
+
                 setTimeout(() => {
                     setCameraOpen(false);
                     onNext();
                 }, 1000);
             } else {
-                setVerificationError(data.message || 'Face liveness verification failed. Please try again with better lighting.');
+                const errorMsg = data.message || 'Face liveness verification failed. Please try again with better lighting.';
+                setVerificationError(errorMsg);
+                trackSelfieCaptureFailed(errorMsg, selfieFriction.getAttempts());
             }
         } catch (error) {
             console.error('Selfie verification error:', error);
-            setVerificationError('Verification failed. Please try again.');
+            const errorMsg = 'Verification failed. Please try again.';
+            setVerificationError(errorMsg);
+            trackAPIError('/api/kyc/face/verification', errorMsg);
+            trackSelfieCaptureFailed(errorMsg, selfieFriction.getAttempts());
         } finally {
             setIsVerifying(false);
         }
@@ -400,12 +443,12 @@ export default function PostApprovalSelfie({
             {/* Camera Modal */}
             <AnimatePresence>
                 {cameraOpen && (
-                    <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-2 sm:p-4">
+                    <div className="fixed inset-0 bg-black/90 z-50 flex items-start sm:items-center justify-center overflow-y-auto py-4 px-2 sm:p-4">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.9 }}
-                            className="bg-white rounded-xl sm:rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl"
+                            className="bg-white rounded-xl sm:rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl my-auto sm:my-0"
                         >
                             {/* Modal Header */}
                             <div className="bg-gradient-to-r from-[#25B181] to-[#51C9AF] p-3 sm:p-4 flex items-center justify-between">

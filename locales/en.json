@@ -377,81 +377,81 @@
     },
     "types": {
       "personal": {
-        "name": "Personal Loan",
+        "name": "Payday Loan",
         "description": "Quick cash for all your personal needs",
         "amount": "₹10,000 - ₹5,00,000",
-        "tenure": "3 - 24 months",
-        "rate": "Starting from 1.5% per month",
+        "tenure": "7 - 90 days",
+        "rate": "1% per day + 10% platform fee + GST",
         "features": [
-          "30-second approval",
-          "Flexible repayment options",
+          "30-second AI approval",
+          "Flexible tenure: 7, 15, 30, 60, 90 days",
           "Minimal documentation",
-          "100% paperless process"
+          "Money in 30 minutes"
         ]
       },
       "salary": {
         "name": "Salary Advance",
-        "description": "Get advance up to 2x your monthly salary",
-        "amount": "₹5,000 - ₹2,00,000",
-        "tenure": "1 - 3 months",
-        "rate": "Starting from 1.5% per month",
+        "description": "Get advance before your payday arrives",
+        "amount": "₹10,000 - ₹2,00,000",
+        "tenure": "7 - 30 days",
+        "rate": "1% per day + 10% platform fee + GST",
         "features": [
           "Instant approval for salaried",
-          "Auto-deduction from salary",
+          "Repay on next payday",
           "No collateral required",
-          "500+ partner companies"
+          "Same-day disbursal"
         ]
       },
       "emergency": {
         "name": "Emergency Fund",
-        "description": "24-hour support for medical and urgent needs",
+        "description": "24/7 support for urgent needs",
         "amount": "₹10,000 - ₹2,00,000",
-        "tenure": "3 - 12 months",
-        "rate": "Starting from 1.2% per month",
+        "tenure": "7 - 90 days",
+        "rate": "1% per day + 10% platform fee + GST",
         "features": [
-          "24-hour approval",
-          "Direct hospital payment",
-          "Compassionate support",
-          "No questions asked"
+          "24/7 approval",
+          "Instant disbursal",
+          "No questions asked",
+          "Medical emergencies covered"
         ]
       },
       "festival": {
         "name": "Festival Advance",
-        "description": "Celebrate every festival without financial worry",
-        "amount": "₹5,000 - ₹1,00,000",
-        "tenure": "1 - 6 months",
-        "rate": "Starting from 1.2% per month",
+        "description": "Celebrate every festival without worry",
+        "amount": "₹10,000 - ₹1,00,000",
+        "tenure": "15 - 60 days",
+        "rate": "1% per day + 10% platform fee + GST",
         "features": [
-          "Special festival rates",
-          "Quick disbursal",
+          "Quick approval",
           "Flexible repayment",
-          "All festivals covered"
+          "All festivals covered",
+          "No prepayment penalty"
         ]
       },
       "medical": {
         "name": "Medical Loan",
-        "description": "Healthcare financing for planned treatments",
-        "amount": "₹25,000 - ₹10,00,000",
-        "tenure": "6 - 48 months",
-        "rate": "Starting from 1.0% per month",
+        "description": "Healthcare financing when you need it",
+        "amount": "₹10,000 - ₹5,00,000",
+        "tenure": "30 - 90 days",
+        "rate": "1% per day + 10% platform fee + GST",
         "features": [
-          "Lowest interest rates",
-          "Hospital tie-ups",
-          "Insurance coordination",
-          "Cashless facility"
+          "Fast approval",
+          "Hospital tie-ups available",
+          "Compassionate support",
+          "Flexible repayment"
         ]
       },
       "travel": {
-        "name": "Travel Now Pay Later",
-        "description": "Book your dream vacation today",
-        "amount": "₹25,000 - ₹3,00,000",
-        "tenure": "3 - 12 months",
-        "rate": "Starting from 1.3% per month",
+        "name": "Travel Advance",
+        "description": "Travel now, pay later",
+        "amount": "₹10,000 - ₹3,00,000",
+        "tenure": "30 - 90 days",
+        "rate": "1% per day + 10% platform fee + GST",
         "features": [
-          "Instant booking credit",
-          "Travel insurance included",
-          "Partner discounts",
-          "Zero down payment"
+          "Instant approval",
+          "Book your trip today",
+          "Flexible tenure",
+          "No prepayment charges"
         ]
       }
     },
@@ -561,7 +561,7 @@
   "footer": {
     "about": {
       "title": "About Quikkred",
-      "description": "Your trusted partner for instant personal loans with minimal documentation and quick approval."
+      "description": "India's most trusted AI-powered digital lending platform. Get payday loans from ₹10,000 to ₹5,00,000 with transparent fees: 10% platform fee, 18% GST, and 1% per day interest."
     },
     "quickLinks": {
       "title": "Quick Links",
@@ -669,8 +669,8 @@
       "comingSoon": "Coming Soon!",
       "comingSoonMessage": "Our mobile app will be available soon. Stay tuned!"
     },
-    "copyright": "© 2026 Quikkred. All rights reserved.",
-    "disclaimer": "Quikkred is a digital lending platform powered by Satsai Finlease Pvt. Ltd., an RBI registered NBFC"
+    "copyright": "© 2018-2026 Quikkred. All rights reserved.",
+    "disclaimer": "Quikkred is a digital lending platform powered by Satsai Finlease Private Limited, an RBI registered NBFC (Registration No: B-14.01646). Loan Amount: ₹10,000 to ₹5,00,000. Platform Fee: 10% + 18% GST. Interest: 1% per day. Tenure: 7-90 days."
   },
   "contact": {
     "title": "Get in Touch",
@@ -945,29 +945,28 @@
       "subtitle": "Find answers to common questions about our loan products and process",
       "faqs": [
         {
-    "question": "What is an NBFC loan?",
-    "answer":
-      "An NBFC loan is a financial product offered by a Non-Banking Financial Company that provides credit for personal, business, or vehicle needs without requiring a traditional bank."
+    "question": "What is the loan amount range at Quikkred?",
+    "answer": "Quikkred offers payday loans from ₹10,000 to ₹5,00,000. The exact amount depends on your income, credit profile, and our AI assessment."
   },
   {
-    "question": "How is an NBFC loan different from a bank loan?",
-    "answer":
-      "NBFCs offer faster processing, flexible eligibility, and simpler documentation compared to banks. However, interest rates may be slightly higher."
+    "question": "What are the fees and interest rates?",
+    "answer": "Interest rate is 1% per day on the loan amount. Platform fee is 10% of loan amount with 18% GST on platform fee. Example: For ₹50,000 loan - Platform Fee ₹5,000 + GST ₹900 + Interest ₹500 = ₹6,400 deducted. You receive ₹43,600 and repay ₹50,000."
   },
   {
-    "question": "What are the eligibility criteria for an NBFC loan?",
-    "answer":
-      "Eligibility typically includes age, stable income, valid ID/address proof, and a minimum credit score. Criteria may vary depending on the NBFC and loan type."
+    "question": "How quickly can I get approved?",
+    "answer": "With our AI-powered system, loan approval takes just 30 seconds! Once approved, money is disbursed to your bank account within 30 minutes during banking hours."
   },
   {
-    "question": "How long does it take to get an NBFC loan approved?",
-    "answer":
-      "Most NBFCs provide quick approval—often within a few hours to 48 hours—depending on document verification."
+    "question": "What are the eligibility criteria?",
+    "answer": "You must be an Indian citizen aged 21-60 years, have minimum monthly income of ₹15,000, be employed (salaried or self-employed), and have a valid bank account with PAN and Aadhaar."
   },
   {
-    "question": "Is it safe to take a loan from an NBFC?",
-    "answer":
-      "Yes, as long as the NBFC is registered with the RBI. Always verify the company’s registration status and review the loan terms."
+    "question": "What loan tenures are available?",
+    "answer": "We offer flexible tenures of 7, 15, 30, 60, or 90 days. You can repay anytime without prepayment penalty."
+  },
+  {
+    "question": "Is Quikkred RBI registered?",
+    "answer": "Yes, Quikkred is powered by Satsai Finlease Private Limited, an RBI registered NBFC (Registration: B-14.01646). Your data is protected with bank-level security."
   }
       ]
     },
@@ -1025,24 +1024,24 @@
     },
     "loanProducts": {
       "personal": {
-        "name": "Personal Loan",
-        "description": "For all your personal needs",
-        "rate": "10.5% p.d. onwards"
+        "name": "Payday Loan",
+        "description": "Quick cash before your payday",
+        "rate": "1% per day + 10% platform fee"
       },
       "business": {
-        "name": "Business Loan",
-        "description": "Grow your business faster",
-        "rate": "12% p.d. onwards"
+        "name": "Salary Advance",
+        "description": "Get advance on your salary",
+        "rate": "1% per day + 10% platform fee"
       },
       "emergency": {
-        "name": "Emergency Loan",
+        "name": "Emergency Fund",
         "description": "Instant cash for urgencies",
-        "rate": "15% p.d. onwards"
+        "rate": "1% per day + 10% platform fee"
       },
       "education": {
-        "name": "Education Loan",
-        "description": "Invest in your future",
-        "rate": "9% p.d. onwards"
+        "name": "Festival Advance",
+        "description": "Celebrate without worries",
+        "rate": "1% per day + 10% platform fee"
       }
     },
     "steps": {
@@ -1151,42 +1150,44 @@
     "funFact": "Fun Fact: 404 errors got their name from room 404 at CERN where the first web server was located!"
   },
   "calculator": {
-    "title": "Loan Calculator",
-    "subtitle": "Calculate Your Total Repayment Amount",
+    "title": "Payday Loan Calculator",
+    "subtitle": "Calculate Your Loan Amount & Fees",
     "loanPurpose": "Select Loan Purpose",
     "purposes": {
       "Personal": "Personal",
       "Medical": "Medical",
-      "Education": "Education",
-      "Business": "Business",
-      "Travel": "Travel",
-      "Wedding": "Wedding"
+      "Emergency": "Emergency",
+      "Salary": "Salary Advance",
+      "Festival": "Festival",
+      "Other": "Other"
     },
     "loanAmount": "Loan Amount",
     "tenure": "Loan Tenure",
     "tenureDays": "days",
-    "dailyInterestRate": "Daily Interest Rate",
-    "perDay": "per day",
-    "interestRate": "Interest Rate (per month)",
+    "dailyInterestRate": "Interest Rate",
+    "perDay": "flat",
+    "interestRate": "Interest Rate (flat)",
     "months": "months",
     "month": "month",
-    "processingFee": "Processing Fee",
-    "principalAmount": "Principal Amount",
-    "interest": "Interest",
-    "totalInterest": "Total Interest",
+    "processingFee": "Platform Fee",
+    "platformFee": "Platform Fee (10%)",
+    "gst": "GST (18% on Platform Fee)",
+    "interest": "Interest (1% per day)",
+    "principalAmount": "Loan Amount",
+    "totalInterest": "Total Charges",
     "totalRepayment": "Total Repayment",
     "disbursedAmount": "Amount You'll Receive",
-    "totalPayable": "Total Payable",
-    "monthlyEMI": "Your Monthly EMI",
+    "totalPayable": "Amount to Repay",
+    "monthlyEMI": "Repayment Amount",
     "for": "for",
     "applyButton": "Apply for This Loan",
     "applyNowFor": "Apply Now for",
     "trustMessages": {
-      "noHiddenCharges": "No hidden charges",
-      "flexibleRepayment": "Flexible repayment options",
-      "instantDisbursal": "Instant disbursal on approval"
+      "noHiddenCharges": "Transparent fees - Platform Fee 10% + GST 18% + Interest 1%",
+      "flexibleRepayment": "Flexible tenure: 7, 15, 30, 60, 90 days",
+      "instantDisbursal": "Instant disbursal within 30 minutes"
     },
-    "footer": "Get Instant Approval • Money in Bank Within Minutes"
+    "footer": "Get Instant Approval • Money in Bank Within 30 Minutes"
   },
   "newsletter": {
     "title": "Stay Updated with Quikkred",

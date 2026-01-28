@@ -262,6 +262,7 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
 
   const value: AuthContextType = {
     user,
+    setUser,
     login,
     logout,
     isLoading,

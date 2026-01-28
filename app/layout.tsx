@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import ConditionalLayout from "@/components/layouts/ConditionalLayout";
 import { Toaster } from "@/components/ui/toast";
+import LiveSupportChat from "@/components/support-chat/LiveSupportChat";
 import getUserDetails from "@/lib/getUserDetails";
 import { AuthProvider } from "@/contexts/AuthContext";
 import getLanguage from "@/lib/getLanguage";
@@ -117,7 +118,7 @@ gtag('config', 'AW-17796230994');`,
           }}
         />
         {/* Meta Pixel Code - Beta & Production only */}
-        {process.env.NEXT_PUBLIC_API_URL !== 'https://alpha.quikkred.in' && (
+        {process.env.NEXT_PUBLIC_API_URL !== 'https://api.quikkred.in' && (
           <>
             <script
               dangerouslySetInnerHTML={{
@@ -212,7 +213,7 @@ fbq('track', 'PageView');`,
           />
         </noscript>
         {/* Meta Pixel (noscript) - Beta & Production only */}
-        {process.env.NEXT_PUBLIC_API_URL !== 'https://alpha.quikkred.in' && (
+        {process.env.NEXT_PUBLIC_API_URL !== 'https://api.quikkred.in' && (
           <noscript>
             <img
               height="1"
@@ -231,6 +232,7 @@ fbq('track', 'PageView');`,
             </ConditionalLayout>
             {/* </LanguageGuard> */}
             <Toaster />
+          <LiveSupportChat />
           </Providers>
         </AuthProvider>
       </body>
