@@ -135,7 +135,7 @@ export default function CollectPartnerPage() {
     // In production, this would be a link to the actual APK download
     // For now, we'll show a message
     setTimeout(() => {
-      window.open('/downloads/quikkred-collect-v1.1.0.apk', '_blank');
+      window.open('/downloads/quikkred-collect-v1.2.0.apk', '_blank');
     }, 500);
   };
 
