@@ -1,14 +1,30 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Phone, AlertCircle, CheckCircle } from "lucide-react";
 import { signIn, getSession } from "next-auth/react";
 import { useAuth } from "@/contexts/AuthContext";
 import { API_BASE_URL } from "@/lib/config";
 import { VALIDATION, TIMERS } from "@/lib/constants/quickApplyV2";
+import { useQuickApplyTracking, useVerificationFrictionTracking } from "@/lib/hooks/useQuickApplyTracking";
 
 const MobileVerify = () => {
   const { login } = useAuth();
+
+  // Tracking
+  const {
+    trackOTPRequested,
+    trackOTPResend,
+    trackOTPVerified,
+    trackOTPFailed,
+    trackFormError,
+    trackAPIError,
+  } = useQuickApplyTracking();
+
+  // Mobile verification friction tracking
+  const mobileFriction = useVerificationFrictionTracking('aadhaar'); // Using 'aadhaar' as proxy for mobile OTP
+  const otpResendCountRef = useRef(0);
+  const hasFrictionStarted = useRef(false);
 
   // Internal state instead of props
   const [mobile, setMobile] = useState("");
@@ -28,12 +44,26 @@ const MobileVerify = () => {
 
   const sendOTP = async () => {
     if (!VALIDATION.MOBILE.test(mobile)) {
-      setOtpError("Enter valid 10-digit mobile");
+      const errorMsg = "Enter valid 10-digit mobile";
+      setOtpError(errorMsg);
+      trackFormError('mobile', errorMsg, 1);
       return;
     }
 
     setOtpLoading(true);
     setOtpError("");
+
+    // Start friction tracking on first OTP send
+    if (!hasFrictionStarted.current) {
+      hasFrictionStarted.current = true;
+      mobileFriction.startTracking();
+    }
+
+    // Track OTP resend
+    if (otpResendCountRef.current > 0) {
+      trackOTPResend(otpResendCountRef.current);
+    }
+    otpResendCountRef.current += 1;
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/customer/create`, {
@@ -47,11 +77,16 @@ const MobileVerify = () => {
       if (data.success) {
         setOtpSent(true);
         setOtpTimer(TIMERS.OTP_RESEND || 30);
+        trackOTPRequested(mobile);
       } else {
-        setOtpError(data.message || "Failed to send OTP");
+        const errorMsg = data.message || "Failed to send OTP";
+        setOtpError(errorMsg);
+        trackFormError('mobile_otp', errorMsg, 1);
       }
     } catch (error) {
-      setOtpError("Network error. Please try again.");
+      const errorMsg = "Network error. Please try again.";
+      setOtpError(errorMsg);
+      trackAPIError('/api/auth/customer/create', errorMsg);
     } finally {
       setOtpLoading(false);
     }
@@ -59,12 +94,15 @@ const MobileVerify = () => {
 
   const verifyOTP = async () => {
     if (!otp || otp.length !== 6) {
-      setOtpError("Please enter valid 6-digit OTP");
+      const errorMsg = "Please enter valid 6-digit OTP";
+      setOtpError(errorMsg);
+      trackFormError('mobile_otp', errorMsg, 1);
       return;
     }
 
     setOtpVerifying(true);
     setOtpError("");
+    mobileFriction.recordAttempt();
 
     try {
       const res = await signIn("otp", {
@@ -78,16 +116,24 @@ const MobileVerify = () => {
       if (res?.ok) {
         const session = await getSession();
         if (session?.user) {
-          await login({
+          // Track success
+          trackOTPVerified(mobile);
+          mobileFriction.completeTracking(true);
+            await login({
             email: session?.user?.email || "",
             apiData: session,
           });
         }
       } else {
-        setOtpError(res?.error || "Invalid OTP");
+        const errorMsg = res?.error || "Invalid OTP";
+        setOtpError(errorMsg);
+        trackOTPFailed(errorMsg, mobileFriction.getAttempts());
       }
     } catch (error) {
-      setOtpError("Verification failed.");
+      const errorMsg = "Verification failed.";
+      setOtpError(errorMsg);
+      trackAPIError('next-auth/otp', errorMsg);
+      trackOTPFailed(errorMsg, mobileFriction.getAttempts());
     } finally {
       setOtpVerifying(false);
     }
