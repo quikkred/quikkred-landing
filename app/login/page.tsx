@@ -603,7 +603,7 @@ export default function LoginPage() {
                     </button>
 
                     {/* Apply Now Button */}
-                    <Link href="/apply" className="block">
+                    <Link href="/apply/quick" className="block">
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}

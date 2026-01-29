@@ -3,7 +3,7 @@ import LayoutInterface from "@/interfaces/layoutInterface";
 
 const SITE_NAME = "Quikkred";
 const SITE_URL = "https://quikkred.in";
-const PAGE_URL = `${SITE_URL}/apply`;
+const PAGE_URL = `${SITE_URL}/apply/quick`;
 const OG_IMAGE = `${SITE_URL}/Aboutus_hero_image.jpg`;
 
 export const metadata: Metadata = {
