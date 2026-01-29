@@ -64,6 +64,21 @@ const policyTranslationLoaders: Record<string, Record<string, () => Promise<any>
   interestRate: { en: () => import('@/locales/policies/interest-rate/en.json').then(m => m.default) },
   itSecurity: { en: () => import('@/locales/policies/it-security/en.json').then(m => m.default) },
   kycAml: { en: () => import('@/locales/policies/kyc-aml/en.json').then(m => m.default) },
+  privacy: {
+    en: () => import('@/locales/policies/privacy-policy/en.json').then(m => m.default),
+    hi: () => import('@/locales/policies/privacy-policy/hi.json').then(m => m.default),
+    bn: () => import('@/locales/policies/privacy-policy/bn.json').then(m => m.default),
+    ta: () => import('@/locales/policies/privacy-policy/ta.json').then(m => m.default),
+    te: () => import('@/locales/policies/privacy-policy/te.json').then(m => m.default),
+    mr: () => import('@/locales/policies/privacy-policy/mr.json').then(m => m.default),
+    gu: () => import('@/locales/policies/privacy-policy/gu.json').then(m => m.default),
+    kn: () => import('@/locales/policies/privacy-policy/kn.json').then(m => m.default),
+    ml: () => import('@/locales/policies/privacy-policy/ml.json').then(m => m.default),
+    pa: () => import('@/locales/policies/privacy-policy/pa.json').then(m => m.default),
+    or: () => import('@/locales/policies/privacy-policy/or.json').then(m => m.default),
+    as: () => import('@/locales/policies/privacy-policy/as.json').then(m => m.default),
+    ur: () => import('@/locales/policies/privacy-policy/ur.json').then(m => m.default),
+  },
 };
 
 // --- HELPERS ---
@@ -124,6 +139,7 @@ export async function getTranslation(langCode: string): Promise<TranslationData>
       interestRate: mergedPolicyTranslations.interestRate || {},
       itSecurity: mergedPolicyTranslations.itSecurity || {},
       kycAml: mergedPolicyTranslations.kycAml || {},
+      privacy: mergedPolicyTranslations.privacy || {},
     }
   };
 

@@ -347,7 +347,7 @@ export default function TestimonialsSection() {
   });
 
   return (
-    <section className="py-8 sm:py-12 lg:py-16 xl:py-20 bg-[#FAFAFA] overflow-hidden">
+    <section className="py-8 sm:py-10 lg:py-12 bg-[#FAFAFA] overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div

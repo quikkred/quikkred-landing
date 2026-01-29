@@ -91,12 +91,12 @@ export default function ContactPage() {
           <div className="space-y-3">
             <button
               onClick={() => setSubmitted(false)}
-              className="w-full bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white py-3 px-6 rounded-lg font-semibold hover:shadow-lg transition-all"
+              className="w-full bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white py-3.5 px-6 min-h-[48px] rounded-lg font-semibold hover:shadow-lg transition-all text-sm sm:text-base"
             >
               Send Another Message
             </button>
             <Link href="/">
-              <button className="w-full bg-white border-2 border-[#4A66FF] text-[#4A66FF] py-3 px-6 rounded-lg font-semibold hover:bg-gray-50 transition-all">
+              <button className="w-full bg-white border-2 border-[#4A66FF] text-[#4A66FF] py-3.5 px-6 min-h-[48px] rounded-lg font-semibold hover:bg-gray-50 transition-all text-sm sm:text-base">
                 Back to Home
               </button>
             </Link>
@@ -107,7 +107,8 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    // <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="py-12 flex flex-col justify-center items-center gap-8 w-full">
       {/* Breadcrumbs */}
       {/* <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <motion.nav
@@ -337,8 +338,13 @@ export default function ContactPage() {
           </div>
         </motion.div>
       </section> */}
-<ContactForm/>
 
+      <div className="w-auto flex flex-col gap-2 justify-center items-center">
+        <h1 className="text-3xl lg:text-4xl font-semibold">Get in <span className="text-[var(--brand-green)]">Touch</span></h1>
+        <p>We{"'"}re here to help you</p>
+      </div>
+
+      <ContactForm />
     </div>
   );
 }

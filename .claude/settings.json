@@ -1,0 +1,47 @@
+{
+  "project": {
+    "name": "Quikkred Landing",
+    "type": "nextjs",
+    "framework": "Next.js 16.0.8",
+    "language": "TypeScript"
+  },
+  "paths": {
+    "quickApplyV2": "app/apply/quick",
+    "trackingHooks": "lib/hooks",
+    "trackingService": "lib/tracking.ts",
+    "workflows": ".github/workflows"
+  },
+  "ports": {
+    "default": 3000,
+    "alternative": 3006,
+    "note": "Use 3006 if CRM is running on 3000"
+  },
+  "deployment": {
+    "alpha": {
+      "branch": "develop",
+      "url": "https://alpha.quikkred.in",
+      "server": "Hostinger KVM8"
+    },
+    "beta": {
+      "branch": "staging",
+      "url": "https://beta.quikkred.in",
+      "server": "AWS ECS"
+    },
+    "production": {
+      "branch": "main",
+      "url": "https://quikkred.in",
+      "server": "AWS ECS",
+      "scheduledDeploy": "4:00 AM IST (currently disabled)"
+    }
+  },
+  "pendingIssues": [
+    {
+      "issue": "Mobile OTP not working",
+      "status": "blocking",
+      "impact": "Production deployment disabled",
+      "targetFix": "Monday"
+    }
+  ],
+  "lastUpdated": "2025-01-17",
+  "sessionNotes": "Tracking integration complete. Deployment scheduled for Monday after OTP fix."
+}

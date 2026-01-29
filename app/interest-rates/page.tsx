@@ -68,129 +68,87 @@ export default function InterestRatesPage() {
   const loanProducts: LoanProduct[] = [
     {
       id: "1",
-      name: "Personal Loan - Premium",
+      name: "Payday Loan",
       category: "personal",
-      minRate: 8.99,
-      maxRate: 12.99,
-      minAmount: 100000,
-      maxAmount: 5000000,
-      minTenure: 12,
-      maxTenure: 60,
-      processingFee: "2% (Min ₹1,000)",
+      minRate: 1,
+      maxRate: 1,
+      minAmount: 10000,
+      maxAmount: 500000,
+      minTenure: 7,
+      maxTenure: 90,
+      processingFee: "Platform Fee 10% + GST 18%",
       icon: Award,
-      description: "Best rates for customers with excellent credit profiles",
+      description: "Quick cash before your payday with transparent fees",
       features: [
+        "30-second AI approval",
+        "Money in 30 minutes",
         "No collateral required",
-        "Flexible repayment options",
-        "Quick approval in 30 seconds",
-        "Part-prepayment allowed"
+        "No prepayment penalty"
       ],
-      idealFor: "Salaried professionals with CIBIL score 750+"
+      idealFor: "Salaried professionals aged 21-60 years"
     },
     {
       id: "2",
-      name: "Personal Loan - Standard",
+      name: "Salary Advance",
       category: "personal",
-      minRate: 12.99,
-      maxRate: 18.99,
-      minAmount: 50000,
-      maxAmount: 3000000,
-      minTenure: 12,
-      maxTenure: 48,
-      processingFee: "2% (Min ₹1,000)",
+      minRate: 1,
+      maxRate: 1,
+      minAmount: 10000,
+      maxAmount: 200000,
+      minTenure: 7,
+      maxTenure: 30,
+      processingFee: "Platform Fee 10% + GST 18%",
       icon: Users,
-      description: "Competitive rates for all eligible customers",
+      description: "Get advance on your salary instantly",
       features: [
-        "Simple documentation",
-        "Instant approval",
-        "No hidden charges",
-        "Digital process"
+        "Instant approval for salaried",
+        "Same-day disbursal",
+        "Repay on next payday",
+        "100% digital process"
       ],
-      idealFor: "Salaried/Self-employed with CIBIL score 650+"
+      idealFor: "Salaried employees with regular income"
     },
     {
       id: "3",
-      name: "Emergency Loan",
+      name: "Emergency Fund",
       category: "emergency",
-      minRate: 15.99,
-      maxRate: 21.99,
+      minRate: 1,
+      maxRate: 1,
       minAmount: 10000,
-      maxAmount: 500000,
-      minTenure: 6,
-      maxTenure: 24,
-      processingFee: "1.5% (Min ₹500)",
+      maxAmount: 200000,
+      minTenure: 7,
+      maxTenure: 90,
+      processingFee: "Platform Fee 10% + GST 18%",
       icon: AlertCircle,
-      description: "Quick funds for urgent financial needs",
+      description: "24/7 support for urgent financial needs",
       features: [
+        "Round the clock availability",
         "Instant disbursal",
         "Minimal documentation",
-        "24/7 availability",
-        "No usage restrictions"
+        "Medical emergencies covered"
       ],
       idealFor: "Anyone with urgent cash requirements"
     },
     {
       id: "4",
-      name: "Business Loan - SME",
-      category: "business",
-      minRate: 11.99,
-      maxRate: 16.99,
-      minAmount: 200000,
-      maxAmount: 10000000,
-      minTenure: 12,
-      maxTenure: 60,
-      processingFee: "2.5% (Min ₹2,000)",
-      icon: Briefcase,
-      description: "Fuel your business growth with competitive rates",
-      features: [
-        "Working capital support",
-        "Equipment financing",
-        "Business expansion loans",
-        "Flexible repayment"
-      ],
-      idealFor: "Established businesses with 2+ years of operation"
-    },
-    {
-      id: "5",
-      name: "Salary Advance",
+      name: "Festival Advance",
       category: "special",
-      minRate: 9.99,
-      maxRate: 14.99,
+      minRate: 1,
+      maxRate: 1,
       minAmount: 10000,
-      maxAmount: 200000,
-      minTenure: 3,
-      maxTenure: 12,
-      processingFee: "1% (Min ₹300)",
-      icon: DollarSign,
-      description: "Get advance on your salary at attractive rates",
+      maxAmount: 100000,
+      minTenure: 15,
+      maxTenure: 60,
+      processingFee: "Platform Fee 10% + GST 18%",
+      icon: Target,
+      description: "Celebrate every festival without financial worry",
       features: [
-        "Instant approval",
-        "Same-day disbursal",
-        "Repay on salary date",
+        "Quick approval",
+        "Flexible repayment",
+        "All festivals covered",
         "No prepayment charges"
       ],
-      idealFor: "Salaried employees of partner companies"
-    },
-    {
-      id: "6",
-      name: "Festival Special Loan",
-      category: "special",
-      minRate: 10.49,
-      maxRate: 15.49,
-      minAmount: 25000,
-      maxAmount: 1000000,
-      minTenure: 6,
-      maxTenure: 36,
-      processingFee: "1.5% (Min ₹750)",
-      icon: Target,
-      description: "Limited period special rates for festive season",
-      features: [
-        "Special discount rates",
-        "Zero processing fee waiver available",
-        "Quick approval",
-        "Flexible tenure"
-      ],
-      idealFor: "All eligible customers during festive periods"
+      idealFor: "Everyone during festival season"
     }
   ];
 
@@ -235,7 +193,7 @@ export default function InterestRatesPage() {
 
   const filteredProducts = loanProducts.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchTerm.toLowerCase());
+      product.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -282,14 +240,14 @@ export default function InterestRatesPage() {
             </div>
 
             <p className="text-sm sm:text-base lg:text-xl mb-6 sm:mb-8 opacity-90 max-w-3xl">
-              Transparent pricing with competitive rates starting from 8.99% per annum
+              Transparent pricing: 1% per day interest + 10% platform fee + 18% GST
             </p>
 
             {/* Features */}
             <div className="flex flex-wrap gap-4 sm:gap-6 text-sm sm:text-base">
               <div className="flex items-center gap-2">
                 <TrendingDown className="w-5 h-5" />
-                <span>From 8.99% p.d.</span>
+                <span>1% Per Day Interest</span>
               </div>
               <div className="flex items-center gap-2">
                 <Shield className="w-5 h-5" />
@@ -297,37 +255,42 @@ export default function InterestRatesPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Award className="w-5 h-5" />
-                <span>Best Rates</span>
+                <span>RBI Registered</span>
               </div>
             </div>
           </motion.div>
         </div>
       </section>
 
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 -mt-8">
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12">
 
         {/* Rate Highlight Banner */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="max-w-5xl mx-auto mb-12"
+          className="max-w-5xl mx-auto mb-8 sm:mb-12"
         >
           <div className="bg-gradient-to-r from-[#25B181] to-[#51C9AF] rounded-2xl p-8">
-            <div className="grid md:grid-cols-3 gap-6 text-center">
+            <div className="grid md:grid-cols-4 gap-6 text-center">
               <div>
                 <TrendingDown className="w-10 h-10 mx-auto mb-3" />
-                <div className="text-3xl font-bold mb-1">8.99%</div>
-                <div className="text-sm opacity-90">Starting Rate p.d.</div>
-              </div>
-              <div>
-                <Clock className="w-10 h-10 mx-auto mb-3" />
-                <div className="text-3xl font-bold mb-1">30 Sec</div>
-                <div className="text-sm opacity-90">Approval Time</div>
+                <div className="text-3xl font-bold mb-1">1%</div>
+                <div className="text-sm opacity-90">Flat Interest</div>
               </div>
               <div>
                 <DollarSign className="w-10 h-10 mx-auto mb-3" />
-                <div className="text-3xl font-bold mb-1">₹50L</div>
+                <div className="text-3xl font-bold mb-1">10%</div>
+                <div className="text-sm opacity-90">Platform Fee</div>
+              </div>
+              <div className="text-white">
+                <Clock className="w-10 h-10 mx-auto mb-3" />
+                <h3 className="text-3xl font-bold mb-1">30 Sec</h3>
+                <p className="text-sm opacity-90">Approval Time</p>
+              </div>
+              <div className="text-white">
+                <DollarSign className="w-10 h-10 mx-auto mb-3" />
+                <div className="text-3xl font-bold mb-1">₹5L</div>
                 <div className="text-sm opacity-90">Max Loan Amount</div>
               </div>
             </div>
@@ -339,7 +302,7 @@ export default function InterestRatesPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="max-w-5xl mx-auto mb-12"
+          className="max-w-5xl mx-auto mb-8 sm:mb-12"
         >
           <div className="bg-white rounded-2xl p-6 shadow-lucky">
             {/* Search Bar */}
@@ -349,36 +312,48 @@ export default function InterestRatesPage() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--royal-blue)] focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--brand-blue)] focus:border-transparent"
                 placeholder="Search loan products..."
               />
             </div>
 
             {/* Filters and Sort */}
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex items-center gap-2 flex-1">
-                <Filter className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                {categories.map((category) => (
-                  <button
-                    key={category.id}
-                    onClick={() => setSelectedCategory(category.id)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                      selectedCategory === category.id
-                        ? 'bg-[#4A66FF] text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200:bg-gray-600'
-                    }`}
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full">
+              {/* Category Scroll Container */}
+              <div className="relative flex items-center gap-2 flex-1 w-full overflow-hidden">
+                <div className="flex-shrink-0">
+                  <Filter className="w-4 h-4 text-gray-500" />
+                </div>
+
+                {/* Scrollable Area with Fade Mask */}
+                <div className="relative flex-1 overflow-hidden">
+                  <div
+                    className="flex items-center gap-2 overflow-x-auto scrollbar-hide scroll-smooth py-1"
+                    style={{ maskImage: 'linear-gradient(to right, white 85%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, white 85%, transparent 100%)' }}
                   >
-                    {category.name}
-                  </button>
-                ))}
+                    {categories.map((category) => (
+                      <button
+                        key={category.id}
+                        onClick={() => setSelectedCategory(category.id)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all active:scale-95 ${selectedCategory === category.id
+                            ? 'bg-[#4A66FF] text-white shadow-sm'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                      >
+                        {category.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              {/* Sort Dropdown */}
+              <div className="flex items-center gap-2 shrink-0">
                 <ArrowUpDown className="w-4 h-4 text-gray-500" />
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-[var(--royal-blue)] focus:border-transparent"
+                  className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-[#4A66FF] focus:outline-none transition-shadow cursor-pointer"
                 >
                   <option value="rate">Sort by Rate</option>
                   <option value="amount">Sort by Amount</option>
@@ -393,7 +368,7 @@ export default function InterestRatesPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="max-w-6xl mx-auto mb-16"
+          className="max-w-6xl mx-auto mb-8 sm:mb-16"
         >
           <h2 className="text-2xl font-bold mb-6">Available Loan Products</h2>
           <div className="grid md:grid-cols-2 gap-6">
@@ -480,7 +455,7 @@ export default function InterestRatesPage() {
                     {/* CTA Buttons */}
                     <div className="flex gap-3">
                       <Link href="/apply/quick" className="flex-1">
-                        <button className="w-full px-4 py-2 bg-[#4A66FF] text-white rounded-lg text-sm font-semibold hover:bg-[var(--royal-blue-dark)] transition-colors">
+                        <button className="w-full px-4 py-2 bg-[#4A66FF] text-white rounded-lg text-sm font-semibold hover:bg-[var(--brand-green)] transition-colors duration-300">
                           Apply Now
                         </button>
                       </Link>
@@ -502,7 +477,7 @@ export default function InterestRatesPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="max-w-6xl mx-auto mb-16"
+          className="max-w-6xl mx-auto mb-8 sm:mb-16"
         >
           <h2 className="text-2xl font-bold mb-6">Factors Affecting Your Interest Rate</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -522,13 +497,12 @@ export default function InterestRatesPage() {
                     </div>
                     <div>
                       <h3 className="font-bold mb-1">{factor.factor}</h3>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        factor.impact === "High Impact"
-                          ? "bg-red-100 text-red-700"
-                          : factor.impact === "Medium Impact"
+                      <span className={`text-xs px-2 py-1 rounded-full ${factor.impact === "High Impact"
+                        ? "bg-red-100 text-red-700"
+                        : factor.impact === "Medium Impact"
                           ? "bg-orange-100 text-orange-700"
                           : "bg-green-100 text-green-700"
-                      }`}>
+                        }`}>
                         {factor.impact}
                       </span>
                     </div>
@@ -547,7 +521,7 @@ export default function InterestRatesPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
-          className="max-w-5xl mx-auto mb-16"
+          className="max-w-5xl mx-auto mb-8 sm:mb-16"
         >
           <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-6">
             <div className="flex items-start">
@@ -584,20 +558,20 @@ export default function InterestRatesPage() {
           transition={{ delay: 0.7 }}
           className="max-w-4xl mx-auto"
         >
-          <div className="bg-gradient-to-r from-[#25B181] to-[#51C9AF] rounded-2xl p-8 text-center">
+          <div className="bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white rounded-2xl p-8 text-center">
             <Target className="w-12 h-12 mx-auto mb-4" />
             <h2 className="text-2xl font-bold mb-4">Ready to Get the Best Rate?</h2>
-            <p className="text-xl mb-6 opacity-90">
+            <p className="text-sm sm:text-xl mb-6 opacity-90">
               Check your eligibility and discover your personalized interest rate
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="w-full flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/eligibility-check">
-                <button className="px-8 py-3 bg-white text-[#4A66FF] rounded-lg font-semibold hover:shadow-lg transition-all">
+                <button className="px-8 py-3 bg-white text-[#4A66FF] hover:bg-[#4A66FF] hover:text-white hover:border-[#4A66FF] duration-300 border-2 border-white border-solid rounded-lg font-semibold hover:shadow-lg transition-all w-full">
                   Check Eligibility
                 </button>
               </Link>
               <Link href="/apply/quick">
-                <button className="px-8 py-3 bg-transparent border-2 border-white  rounded-lg font-semibold hover:bg-white hover:text-[#4A66FF] transition-all">
+                <button className="px-8 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-[#4A66FF] duration-300 transition-all w-full">
                   Apply Now
                 </button>
               </Link>
