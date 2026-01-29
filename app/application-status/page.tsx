@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   CheckCircle,
   XCircle,
@@ -15,13 +15,23 @@ import {
   Download,
   Calendar,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Search
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "nextjs-toploader/app";
 import { Suspense } from "react";
 import { getSession } from "next-auth/react";
 import getToken from "@/lib/getToken";
+
+// Declare global types for tracking
+declare global {
+  interface Window {
+    fbq?: (...args: any[]) => void;
+    gtag?: (...args: any[]) => void;
+    dataLayer?: any[];
+  }
+}
 
 interface ApplicationStatusData {
   status: string;
@@ -30,10 +40,53 @@ interface ApplicationStatusData {
   reason?: string;
 }
 
+// Fire tracking events for GTM + Facebook Pixel
+function fireTrackingEvents(status: string, loanNumber?: string, amount?: string) {
+  // GTM dataLayer event
+  if (typeof window !== 'undefined' && window.dataLayer) {
+    window.dataLayer.push({
+      event: 'application_status_viewed',
+      application_status: status,
+      loan_number: loanNumber || '',
+      loan_amount: amount || '',
+    });
+  }
+
+  // Google Ads conversion tracking
+  if (typeof window !== 'undefined' && window.gtag) {
+    if (status.toLowerCase() === 'approved') {
+      window.gtag('event', 'conversion', {
+        send_to: 'AW-17796230994/application_approved',
+        value: amount ? Number(amount) : 0,
+        currency: 'INR',
+      });
+    }
+  }
+
+  // Facebook Pixel events
+  if (typeof window !== 'undefined' && window.fbq) {
+    if (status.toLowerCase() === 'approved') {
+      window.fbq('track', 'Lead', {
+        content_name: 'Loan Approved',
+        loan_number: loanNumber || '',
+        value: amount ? Number(amount) : 0,
+        currency: 'INR',
+      });
+    } else {
+      window.fbq('trackCustom', 'ApplicationDeclined', {
+        content_name: 'Loan Declined',
+        loan_number: loanNumber || '',
+      });
+    }
+  }
+}
+
 function ApplicationStatusContent() {
   const router = useRouter();
   const [statusData, setStatusData] = useState<ApplicationStatusData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [noData, setNoData] = useState(false);
+  const trackedRef = useRef(false);
 
   useEffect(() => {
     // Read data from localStorage
@@ -41,41 +94,107 @@ function ApplicationStatusContent() {
     if (storedData) {
       try {
         const data = JSON.parse(storedData);
-        setStatusData({
+        const parsed: ApplicationStatusData = {
           status: data.status || "approved",
           loanNumber: data.loanNumber || "",
           amount: data.amount || "",
           reason: data.reason || ""
-        });
+        };
+        setStatusData(parsed);
         // Clear localStorage after reading
         localStorage.removeItem('applicationStatusData');
-        setIsLoading(false);
       } catch (error) {
         console.error('Error parsing application status data:', error);
-        redirectBasedOnAuth();
+        setNoData(true);
       }
     } else {
-      // No data found - redirect based on auth status
-      redirectBasedOnAuth();
+      // No data found - show empty state (don't redirect immediately)
+      setNoData(true);
     }
+    setIsLoading(false);
+  }, []);
 
-    async function redirectBasedOnAuth() {
-      const token = await getToken();
-      if (token) {
-        // User is logged in - redirect to dashboard
-        router.replace('/user');
-      } else {
-        // User is not logged in - redirect to homepage
-        router.replace('/');
+  // Fire tracking events after statusData is set and page has rendered
+  useEffect(() => {
+    if (statusData && !trackedRef.current) {
+      trackedRef.current = true;
+      fireTrackingEvents(statusData.status, statusData.loanNumber, statusData.amount);
+    }
+  }, [statusData]);
+
+  // Fire page view tracking even when no data (so GTM/Pixel can detect the page)
+  useEffect(() => {
+    if (noData) {
+      if (typeof window !== 'undefined' && window.dataLayer) {
+        window.dataLayer.push({
+          event: 'application_status_page_view',
+          has_data: false,
+        });
       }
     }
-  }, [router]);
+  }, [noData]);
 
-  // Show loading while checking for data
-  if (isLoading || !statusData) {
+  // Show loading spinner
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-[#25B181] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // No application data - show proper page instead of redirecting
+  if (noData || !statusData) {
+    return (
+      <div className="min-h-screen bg-[#FAFAFA]">
+        {/* Breadcrumbs */}
+        <div className="container mx-auto px-4 pt-8">
+          <motion.nav
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center space-x-2 text-sm text-gray-600 mb-8"
+          >
+            <Link href="/" className="hover:text-[#4A66FF] transition-colors">
+              <Home className="w-4 h-4" />
+            </Link>
+            <ArrowRight className="w-3 h-3" />
+            <span className="text-[#4A66FF] font-medium">Application Status</span>
+          </motion.nav>
+        </div>
+
+        <section className="container mx-auto px-4 py-8 lg:py-16">
+          <div className="max-w-lg mx-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white rounded-2xl p-8 sm:p-12 border border-[#E0E0E0] shadow-sm text-center"
+            >
+              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Search className="w-10 h-10 text-gray-400" />
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
+                No Application Found
+              </h1>
+              <p className="text-gray-600 mb-8">
+                We couldn&apos;t find any recent application status. This could happen if you&apos;ve already viewed it or accessed this page directly.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link href="/apply/quick">
+                  <button className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[#25B181] to-[#1F8F68] text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center">
+                    <FileText className="w-5 h-5 mr-2" />
+                    Apply for Loan
+                  </button>
+                </Link>
+                <Link href="/">
+                  <button className="w-full sm:w-auto px-6 py-3 bg-white border-2 border-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all flex items-center justify-center">
+                    <Home className="w-5 h-5 mr-2" />
+                    Go Home
+                  </button>
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        </section>
       </div>
     );
   }
@@ -185,7 +304,7 @@ function ApplicationStatusContent() {
                 </h2>
 
                 <div className="space-y-4 text-left">
-                
+
 
                   <div className="flex items-start p-4 bg-[#FAFAFA] rounded-lg">
                     <div className="w-8 h-8 bg-[#25B181] text-white rounded-full flex items-center justify-center text-sm font-bold mr-4 flex-shrink-0">
@@ -257,7 +376,7 @@ function ApplicationStatusContent() {
                 transition={{ delay: 0.4 }}
                 className="text-xl lg:text-2xl text-gray-700 mb-8"
               >
-                We're sorry, your loan application could not be approved at this time
+                We&apos;re sorry, your loan application could not be approved at this time
               </motion.p>
 
               {/* Rejection Details Card */}
@@ -357,43 +476,9 @@ function ApplicationStatusContent() {
                     Back to Home
                   </button>
                 </Link>
-                {/* <Link href="/contact">
-                  <button className="w-full sm:w-auto px-8 py-3 bg-white border-2 border-[#4A66FF] text-[#4A66FF] rounded-lg font-semibold hover:bg-[#4A66FF] hover:text-white transition-all flex items-center justify-center">
-                    <Phone className="w-5 h-5 mr-2" />
-                    Contact Support
-                  </button>
-                </Link> */}
               </motion.div>
             </motion.div>
           )}
-
-          {/* Contact Support Section */}
-
-          {/* <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="mt-12 bg-gradient-to-r from-[#4A66FF] to-[#25B181] rounded-2xl p-8 text-white text-center"
-          >
-            <h3 className="text-xl font-bold mb-4">Need Help?</h3>
-            <p className="mb-6 opacity-90">Our support team is available to assist you with any questions</p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href="tel:+919876543210"
-                className="px-6 py-3 bg-white text-[#4A66FF] rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center"
-              >
-                <Phone className="w-5 h-5 mr-2" />
-                Call Support
-              </a>
-              <a
-                href="mailto:support@quikkred.com"
-                className="px-6 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-[#4A66FF] transition-all flex items-center justify-center"
-              >
-                <Mail className="w-5 h-5 mr-2" />
-                Email Us
-              </a>
-            </div>
-          </motion.div> */}
         </div>
       </section>
     </div>

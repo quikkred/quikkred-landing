@@ -212,6 +212,27 @@ async applyLoan(data: LoanApplication): Promise<ApiResponse<any>> {
   async initiateDisbursement(loanId: string, bankAccountId: string): Promise<ApiResponse<any>> {
     return apiClient.post(`/api/loans/${loanId}/disburse`, { bankAccountId });
   }
+
+  // ============ REAPPLY METHODS ============
+
+  // Check reapply eligibility for a customer
+  async checkReapplyEligibility(customerId?: string): Promise<ApiResponse<any>> {
+    const endpoint = customerId
+      ? `/api/reapply/eligibility/${customerId}`
+      : '/api/reapply/eligibility';
+    return apiClient.get(endpoint, true);
+  }
+
+  // Submit reapplication for a loan
+  async submitReapplication(data: {
+    customerId: string;
+    loanAmount: number;
+    tenure: number;
+    purpose?: string;
+    notes?: string;
+  }): Promise<ApiResponse<any>> {
+    return apiClient.post('/api/reapply/apply', data, true);
+  }
 }
 
 export const loansService = new LoansService();

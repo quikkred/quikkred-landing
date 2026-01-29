@@ -55,6 +55,13 @@ export default function SupportPage() {
   const [message, setMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // AI Chat state
+  const [aiChatMessages, setAIChatMessages] = useState<Message[]>([]);
+  const [aiChatStarted, setAIChatStarted] = useState(false);
+  const [isAITyping, setIsAITyping] = useState(false);
+  const [aiMessage, setAIMessage] = useState("");
+  const aiChatEndRef = useRef<HTMLDivElement>(null);
+
   const [newTicket, setNewTicket] = useState({
     subject: "",
     category: "general",
@@ -84,6 +91,10 @@ export default function SupportPage() {
   useEffect(() => {
     scrollToBottom();
   }, [selectedTicket?.messages]);
+
+  useEffect(() => {
+    aiChatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [aiChatMessages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -285,6 +296,95 @@ export default function SupportPage() {
       console.error("Failed to rate FAQ:", error);
     }
   };
+
+  // AI Chat Functions
+  const startAIChat = () => {
+    setAIChatStarted(true);
+    // Add welcome message
+    const welcomeMessage: Message = {
+      id: "welcome",
+      sender: "bot",
+      senderName: "Quikkred AI",
+      message: "नमस्ते! 🙏 Welcome to Quikkred Support! I'm your AI assistant, here to help you 24/7.\n\nI can help you with:\n• Loan information & eligibility\n• Application status tracking\n• EMI calculations\n• Payment issues\n• KYC verification\n• Creating support tickets\n\nHow can I assist you today? (आप हिंदी में भी पूछ सकते हैं)",
+      timestamp: new Date().toISOString()
+    };
+    setAIChatMessages([welcomeMessage]);
+  };
+
+  const handleAIChatSend = async () => {
+    if (!aiMessage.trim()) return;
+
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      sender: "user",
+      message: aiMessage.trim(),
+      timestamp: new Date().toISOString()
+    };
+
+    setAIChatMessages(prev => [...prev, userMsg]);
+    const currentMessage = aiMessage;
+    setAIMessage("");
+    setIsAITyping(true);
+
+    try {
+      // Convert messages to conversation history format
+      const conversationHistory = aiChatMessages
+        .filter(m => m.id !== "welcome")
+        .map(m => ({
+          role: m.sender === "user" ? "user" as const : "assistant" as const,
+          content: m.message
+        }));
+
+      const response = await supportService.sendAIChatMessage(currentMessage, conversationHistory);
+
+      if (response.success && response.data) {
+        const aiResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          sender: "bot",
+          senderName: "Quikkred AI",
+          message: response.data.response,
+          timestamp: new Date().toISOString()
+        };
+        setAIChatMessages(prev => [...prev, aiResponse]);
+
+        // If a ticket was created, show additional info
+        if (response.data.ticketCreated && response.data.ticketNumber) {
+          const ticketMsg: Message = {
+            id: (Date.now() + 2).toString(),
+            sender: "bot",
+            senderName: "System",
+            message: `✅ Support ticket created: **${response.data.ticketNumber}**\nOur team will respond within 24 hours.`,
+            timestamp: new Date().toISOString()
+          };
+          setTimeout(() => {
+            setAIChatMessages(prev => [...prev, ticketMsg]);
+          }, 500);
+        }
+      } else {
+        throw new Error("Failed to get AI response");
+      }
+    } catch (error) {
+      console.error("AI Chat error:", error);
+      const errorMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        sender: "bot",
+        senderName: "System",
+        message: "I apologize, but I'm having trouble processing your request. Please try again or contact us at support@quikkred.com",
+        timestamp: new Date().toISOString()
+      };
+      setAIChatMessages(prev => [...prev, errorMsg]);
+    } finally {
+      setIsAITyping(false);
+    }
+  };
+
+  const quickQuestions = [
+    "How do I apply for a loan?",
+    "What documents are required?",
+    "मुझे EMI कैसे calculate करें?",
+    "Check my application status",
+    "Interest rates क्या हैं?"
+  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -594,13 +694,186 @@ export default function SupportPage() {
 
               {/* Live Chat Tab */}
               {activeTab === "live-chat" && (
-                <div className="text-center py-12">
-                  <Bot className="w-20 h-20 text-[#4A66FF] mx-auto mb-6" />
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">AI Assistant</h2>
-                  <p className="text-gray-600 mb-6">Get instant help from our AI-powered assistant</p>
-                  <button className="px-6 py-3 bg-[#4A66FF] text-white rounded-lg hover:bg-[#4A66FF]/90">
-                    Start Chat
-                  </button>
+                <div>
+                  {!aiChatStarted ? (
+                    // Start Chat Screen
+                    <div className="text-center py-12">
+                      <div className="relative inline-block mb-6">
+                        <Bot className="w-20 h-20 text-[#4A66FF]" />
+                        <span className="absolute bottom-0 right-0 w-6 h-6 bg-[#25B181] rounded-full flex items-center justify-center">
+                          <CheckCircle className="w-4 h-4 text-white" />
+                        </span>
+                      </div>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-2">Quikkred AI Assistant</h2>
+                      <p className="text-gray-600 mb-2">Get instant help 24/7 in Hindi, English & more</p>
+                      <p className="text-sm text-gray-500 mb-6">हिंदी • English • मराठी • తెలుగు • தமிழ்</p>
+
+                      <button
+                        onClick={startAIChat}
+                        className="px-8 py-4 bg-gradient-to-r from-[#4A66FF] to-[#6B7FFF] text-white rounded-xl hover:shadow-lg transition-all duration-300 font-semibold text-lg"
+                      >
+                        <span className="flex items-center gap-2">
+                          <MessageSquare className="w-5 h-5" />
+                          Start AI Chat
+                        </span>
+                      </button>
+
+                      <div className="mt-8 grid md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                        <div className="bg-gray-50 rounded-lg p-4 text-left">
+                          <Clock className="w-6 h-6 text-[#4A66FF] mb-2" />
+                          <h4 className="font-semibold text-gray-900">Instant Response</h4>
+                          <p className="text-sm text-gray-600">Get answers in seconds</p>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-4 text-left">
+                          <HelpCircle className="w-6 h-6 text-[#25B181] mb-2" />
+                          <h4 className="font-semibold text-gray-900">Knows Everything</h4>
+                          <p className="text-sm text-gray-600">Loans, EMI, policies & more</p>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-4 text-left">
+                          <FileText className="w-6 h-6 text-[#FF9C70] mb-2" />
+                          <h4 className="font-semibold text-gray-900">Create Tickets</h4>
+                          <p className="text-sm text-gray-600">Escalate to human agents</p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    // Active Chat Screen
+                    <div className="flex flex-col h-[600px]">
+                      {/* Chat Header */}
+                      <div className="flex items-center justify-between border-b border-gray-200 pb-4 mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="relative">
+                            <div className="w-10 h-10 bg-gradient-to-r from-[#4A66FF] to-[#6B7FFF] rounded-full flex items-center justify-center">
+                              <Bot className="w-6 h-6 text-white" />
+                            </div>
+                            <span className="absolute bottom-0 right-0 w-3 h-3 bg-[#25B181] rounded-full border-2 border-white" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-900">Quikkred AI Assistant</h3>
+                            <p className="text-xs text-[#25B181]">● Online - Powered by AI</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setAIChatStarted(false);
+                            setAIChatMessages([]);
+                          }}
+                          className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+
+                      {/* Messages Area */}
+                      <div className="flex-1 overflow-y-auto space-y-4 mb-4 px-2">
+                        {aiChatMessages.map((msg) => (
+                          <motion.div
+                            key={msg.id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+                          >
+                            <div className={`flex items-start gap-2 max-w-[80%] ${msg.sender === "user" ? "flex-row-reverse" : ""}`}>
+                              {msg.sender !== "user" && (
+                                <div className="w-8 h-8 bg-gradient-to-r from-[#4A66FF] to-[#6B7FFF] rounded-full flex items-center justify-center flex-shrink-0">
+                                  <Bot className="w-5 h-5 text-white" />
+                                </div>
+                              )}
+                              <div className={`${
+                                msg.sender === "user"
+                                  ? "bg-[#4A66FF] text-white rounded-l-xl rounded-br-xl"
+                                  : "bg-gray-100 text-gray-900 rounded-r-xl rounded-bl-xl"
+                              } p-3 shadow-sm`}>
+                                {msg.sender !== "user" && msg.senderName && (
+                                  <p className="text-xs font-medium mb-1 opacity-75">{msg.senderName}</p>
+                                )}
+                                <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
+                                <p className={`text-xs mt-1 ${msg.sender === "user" ? "text-white/70" : "text-gray-500"}`}>
+                                  {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                              </div>
+                              {msg.sender === "user" && (
+                                <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+                                  <User className="w-5 h-5 text-gray-600" />
+                                </div>
+                              )}
+                            </div>
+                          </motion.div>
+                        ))}
+
+                        {/* Typing Indicator */}
+                        {isAITyping && (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="flex items-start gap-2"
+                          >
+                            <div className="w-8 h-8 bg-gradient-to-r from-[#4A66FF] to-[#6B7FFF] rounded-full flex items-center justify-center">
+                              <Bot className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="bg-gray-100 rounded-xl p-3">
+                              <div className="flex gap-1">
+                                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                        <div ref={aiChatEndRef} />
+                      </div>
+
+                      {/* Quick Questions */}
+                      {aiChatMessages.length <= 1 && (
+                        <div className="mb-4">
+                          <p className="text-xs text-gray-500 mb-2">Quick questions:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {quickQuestions.map((q, i) => (
+                              <button
+                                key={i}
+                                onClick={() => {
+                                  setAIMessage(q);
+                                  setTimeout(() => handleAIChatSend(), 100);
+                                }}
+                                className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full transition-colors"
+                              >
+                                {q}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Message Input */}
+                      <div className="border-t border-gray-200 pt-4">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={aiMessage}
+                            onChange={(e) => setAIMessage(e.target.value)}
+                            onKeyPress={(e) => e.key === "Enter" && !isAITyping && handleAIChatSend()}
+                            placeholder="Type your message... (Hindi/English)"
+                            className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#4A66FF] focus:border-[#4A66FF] transition-all"
+                            disabled={isAITyping}
+                          />
+                          <button
+                            onClick={handleAIChatSend}
+                            disabled={!aiMessage.trim() || isAITyping}
+                            className="p-3 bg-[#4A66FF] text-white rounded-xl hover:bg-[#4A66FF]/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                          >
+                            {isAITyping ? (
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                              <Send className="w-5 h-5" />
+                            )}
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-2 text-center">
+                          Powered by Quikkred AI • Available 24/7
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
