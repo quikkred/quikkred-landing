@@ -2,12 +2,9 @@
 
 import { motion } from "framer-motion";
 import { CreditCard, FileText, Target, Shield, AlertCircle, BookOpen, Scale, RefreshCw, Building, Clock, TrendingUp, Home, Users, Percent, UserCheck, ClipboardList, DollarSign, Activity, Layers, PieChart, Droplets, BarChart3, Gauge, Umbrella, FileCheck, Calendar } from "lucide-react";
-import { useLanguage } from "@/lib/contexts/LanguageContext";
 import PoliciesLayout from "@/components/layouts/PoliciesLayout";
 
 export default function CreditPolicyPage() {
-  const { t } = useLanguage();
-
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
