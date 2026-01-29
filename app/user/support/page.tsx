@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useRouter } from "nextjs-toploader/app";
 import {
   MessageSquare, Plus, RefreshCw, Send, AlertCircle,
   CheckCircle, Clock, X, Eye, Filter, Search,
@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { API_BASE_URL } from '@/lib/config';
 import { useSupport } from '@/store/hooks/useSupport';
 import getToken from '@/lib/getToken';
+import useAxios from '@/hooks/useAxios';
 
 interface SupportTicket {
   _id: string;
@@ -44,6 +45,7 @@ interface SupportTicket {
     remarks?: string;
     _id: string;
   }>;
+  priority: string;
   status: string;
   assignedDetails?: Array<{
     assignedTo: {
@@ -67,6 +69,7 @@ interface SupportTicket {
 export default function SupportPage() {
   const { user } = useAuth();
   const router = useRouter();
+  const axios = useAxios();
 
   // Redux state for support tickets
   const {
@@ -113,13 +116,14 @@ export default function SupportPage() {
     setFormLoading(true);
 
     try {
-      const token = await getToken();
-      const customerId = localStorage.getItem('userId');
+      // const token = await getToken();
+      // const customerId = localStorage.getItem('userId');
+      const customerId = user?.id;
 
-      if (!token) {
-        router.push('/login');
-        return;
-      }
+      // if (!token) {
+      //   router.push('/login');
+      //   return;
+      // }
 
       if (!customerId) {
         setFormError('User ID not found. Please login again.');
@@ -127,23 +131,30 @@ export default function SupportPage() {
         return;
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/supportTicket/create`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          customerId: customerId,
-          category: formData.category,
-          subject: formData.subject,
-          description: formData.description
-        })
+      // const response = await fetch(`${API_BASE_URL}/api/supportTicket/create`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Authorization': `Bearer ${token}`
+      //   },
+      //   body: JSON.stringify({
+      //     customerId: customerId,
+      //     category: formData.category,
+      //     subject: formData.subject,
+      //     description: formData.description
+      //   })
+      // });
+
+      // const result = await response.json();
+      const response = await axios.post("/api/supportTicket/create", {
+        customerId: customerId,
+        category: formData.category,
+        subject: formData.subject,
+        description: formData.description
       });
+      const result = response.data;
 
-      const result = await response.json();
-
-      if (response.ok && result.success) {
+      if ((response.status === 200 || response.status === 201) && result.success) {
         // Reset form
         setFormData({
           category: 'TECHNICAL_ISSUE',
@@ -183,12 +194,7 @@ export default function SupportPage() {
     setReopenLoading(true);
 
     try {
-      const token = localStorage.getItem('accessToken');
-
-      if (!token) {
-        router.push('/login');
-        return;
-      }
+      const token = await getToken();
 
       const response = await fetch(`${API_BASE_URL}/api/supportTicket/update/${selectedTicket._id}`, {
         method: 'PATCH',
@@ -228,25 +234,12 @@ export default function SupportPage() {
     setReopenLoading(true);
 
     try {
-      const token = localStorage.getItem('accessToken');
-
-      if (!token) {
-        router.push('/login');
-        return;
-      }
-
-      const response = await fetch(`${API_BASE_URL}/api/supportTicket/update/${selectedTicket._id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ description: reopenDescription.trim() })
+      const response = await axios.patch(`/api/supportTicket/update/${selectedTicket._id}`, {
+        description: reopenDescription.trim()
       });
+      const result = response.data;
 
-      const result = await response.json();
-
-      if (response.ok && result.success) {
+      if ((response.status === 200 || response.status === 201) && result.success) {
         // Update selected ticket with new data
         setSelectedTicket(result.data);
         // Reset form
@@ -265,30 +258,30 @@ export default function SupportPage() {
   };
 
   const getCategoryColor = (category: string) => {
-switch (category) {
-  case 'LOAN_INQUIRY':
-    return 'text-[#6C63FF] bg-[#6C63FF]/10'; // soft purple-blue
-  case 'PAYMENT_ISSUE':
-    return 'text-[#FF6B6B] bg-[#FF6B6B]/10'; // coral red
-  case 'GENERAL_INQUIRY':
-    return 'text-[#25B181] bg-[#25B181]/10'; // green
-  case 'TECHNICAL_ISSUE':
-    return 'text-[#4A66FF] bg-[#4A66FF]/10'; // blue
-  case 'KYC_VERIFICATION':
-    return 'text-[#FFC107] bg-[#FFC107]/10'; // yellow-gold
-  case 'DOCUMENT_UPLOAD':
-    return 'text-[#00B8D9] bg-[#00B8D9]/10'; // cyan
-  case 'ACCOUNT_ACCESS':
-    return 'text-[#8E44AD] bg-[#8E44AD]/10'; // violet
-  case 'COMPLAINT':
-    return 'text-red-600 bg-red-100'; // red tone
-  case 'OTHER':
-    return 'text-gray-500 bg-gray-100'; // neutral gray
-  case 'BILLING':
-    return 'text-[#FF9C70] bg-[#FF9C70]/10'; // orange-peach
-  default:
-    return 'text-gray-600 bg-gray-100'; // fallback
-}
+    switch (category) {
+      case 'LOAN_INQUIRY':
+        return 'text-[#6C63FF] bg-[#6C63FF]/10'; // soft purple-blue
+      case 'PAYMENT_ISSUE':
+        return 'text-[#FF6B6B] bg-[#FF6B6B]/10'; // coral red
+      case 'GENERAL_INQUIRY':
+        return 'text-[#25B181] bg-[#25B181]/10'; // green
+      case 'TECHNICAL_ISSUE':
+        return 'text-[#4A66FF] bg-[#4A66FF]/10'; // blue
+      case 'KYC_VERIFICATION':
+        return 'text-[#FFC107] bg-[#FFC107]/10'; // yellow-gold
+      case 'DOCUMENT_UPLOAD':
+        return 'text-[#00B8D9] bg-[#00B8D9]/10'; // cyan
+      case 'ACCOUNT_ACCESS':
+        return 'text-[#8E44AD] bg-[#8E44AD]/10'; // violet
+      case 'COMPLAINT':
+        return 'text-red-600 bg-red-100'; // red tone
+      case 'OTHER':
+        return 'text-gray-500 bg-gray-100'; // neutral gray
+      case 'BILLING':
+        return 'text-[#FF9C70] bg-[#FF9C70]/10'; // orange-peach
+      default:
+        return 'text-gray-600 bg-gray-100'; // fallback
+    }
 
   };
 
@@ -404,7 +397,7 @@ switch (category) {
                 required
                 className="w-full px-4 py-2 border border-[#E0E0E0] rounded-lg focus:ring-2 focus:ring-[#25B181] focus:border-[#25B181] focus:outline-none"
               >
-               <option value="LOAN_INQUIRY">Loan Inquiry</option>
+                <option value="LOAN_INQUIRY">Loan Inquiry</option>
                 <option value="PAYMENT_ISSUE">Payment Issue</option>
                 <option value="GENERAL_INQUIRY">General Inquiry</option>
                 <option value="TECHNICAL_ISSUE">Technical Issue</option>
@@ -510,21 +503,19 @@ switch (category) {
           <div className="flex gap-2 overflow-x-auto pb-1">
             <button
               onClick={() => setFilterStatus('all')}
-              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${
-                filterStatus === 'all'
+              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${filterStatus === 'all'
                   ? 'bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white'
                   : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
-              }`}
+                }`}
             >
               All ({tickets.length})
             </button>
             <button
               onClick={() => setFilterStatus('open')}
-              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${
-                filterStatus === 'open'
+              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${filterStatus === 'open'
                   ? 'bg-[#4A66FF] text-white'
                   : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
-              }`}
+                }`}
             >
               Open ({tickets.filter(t => {
                 const s = t.status?.toLowerCase() || '';
@@ -533,11 +524,10 @@ switch (category) {
             </button>
             <button
               onClick={() => setFilterStatus('closed')}
-              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${
-                filterStatus === 'closed'
+              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${filterStatus === 'closed'
                   ? 'bg-[#25B181] text-white'
                   : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
-              }`}
+                }`}
             >
               Closed ({tickets.filter(t => {
                 const s = t.status?.toLowerCase() || '';
@@ -717,7 +707,7 @@ switch (category) {
                         // Check if message is from customer (case-insensitive check or by comparing IDs)
                         const customerId = typeof selectedTicket.customerId === 'object' ? selectedTicket.customerId._id : selectedTicket.customerId;
                         const isCustomer = chat.addedByModel?.toLowerCase() === 'customer' ||
-                                          chat.addedBy?._id === customerId;
+                          chat.addedBy?._id === customerId;
 
                         return (
                           <div key={chat._id} className="space-y-2 sm:space-y-3">
@@ -725,30 +715,27 @@ switch (category) {
                             <div className={`flex ${isCustomer ? 'justify-start' : 'justify-end'}`}>
                               <div className={`flex ${isCustomer ? 'flex-row' : 'flex-row-reverse'} items-end gap-1.5 sm:gap-2 max-w-[90%] sm:max-w-[80%]`}>
                                 {/* Avatar */}
-                                <div className={`flex-shrink-0 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-bold shadow-md ${
-                                  isCustomer
+                                <div className={`flex-shrink-0 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-bold shadow-md ${isCustomer
                                     ? 'bg-gradient-to-br from-blue-500 to-blue-600'
                                     : 'bg-gradient-to-br from-[#25B181] to-[#1F8F68]'
-                                }`}>
+                                  }`}>
                                   {isCustomer ? 'You' : (chat.addedBy?.fullName?.charAt(0).toUpperCase() || 'S')}
                                 </div>
 
                                 {/* Message Bubble */}
                                 <div className={`flex flex-col ${isCustomer ? 'items-start' : 'items-end'}`}>
                                   {/* Sender Label */}
-                                  <div className={`flex items-center gap-1 sm:gap-2 mb-0.5 sm:mb-1 px-1 sm:px-2 text-[10px] sm:text-xs font-semibold ${
-                                    isCustomer ? 'text-blue-600' : 'text-[#25B181]'
-                                  }`}>
+                                  <div className={`flex items-center gap-1 sm:gap-2 mb-0.5 sm:mb-1 px-1 sm:px-2 text-[10px] sm:text-xs font-semibold ${isCustomer ? 'text-blue-600' : 'text-[#25B181]'
+                                    }`}>
                                     <span className="truncate max-w-[150px] sm:max-w-none">
                                       {isCustomer ? 'Your Query' : `${chat.addedBy?.fullName || chat.assignedTo?.fullName || 'Support'}`}
                                     </span>
                                   </div>
 
-                                  <div className={`rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 shadow-md ${
-                                    isCustomer
+                                  <div className={`rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 shadow-md ${isCustomer
                                       ? 'bg-white border-2 border-blue-200 rounded-bl-none'
                                       : 'bg-gradient-to-br from-[#25B181] to-[#1F8F68] text-white rounded-br-none'
-                                  }`}>
+                                    }`}>
                                     <p className={`text-xs sm:text-sm leading-relaxed ${isCustomer ? 'text-gray-800' : 'text-white'}`}>
                                       {chat.message}
                                     </p>

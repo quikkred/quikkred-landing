@@ -105,11 +105,11 @@ export function BlockedScreen({ type, message, state, onRetry }: BlockedScreenPr
                 <div className="mt-6 pt-6 border-t border-gray-100">
                     <p className="text-sm text-gray-500 mb-2">Need help?</p>
                     <a
-                        href="tel:+919599238889"
+                        href="tel:+919311913854"
                         className="inline-flex items-center gap-2 text-[#25B181] font-medium hover:underline"
                     >
                         <Phone className="w-4 h-4" />
-                        +91 9599238889
+                        +91 9311913854
                     </a>
                 </div>
 

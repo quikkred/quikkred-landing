@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { API_BASE_URL } from '@/lib/config';
 import getToken from "@/lib/getToken";
+import useAxios from "@/hooks/useAxios";
 
 interface CustomerData {
   fullName: string;
@@ -47,6 +48,7 @@ export default function GfinAgreementPage() {
   const [error, setError] = useState<string | null>(null);
   const [showAgreement, setShowAgreement] = useState(false);
   const [agreementApproved, setAgreementApproved] = useState(false);
+  const axios = useAxios();
 
   // Helper functions
   const getValue = (value: any) => {
@@ -85,25 +87,27 @@ export default function GfinAgreementPage() {
 
     try {
       // Get authorization token from localStorage
-        const token = await getToken();
+      //   const token = await getToken();
 
-      if (!token) {
-        setError('Authorization token not found. Please login first.');
-        setLoading(false);
-        return;
-      }
+      // if (!token) {
+      //   setError('Authorization token not found. Please login first.');
+      //   setLoading(false);
+      //   return;
+      // }
 
-      const response = await fetch(`${API_BASE_URL}/api/customer/get`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      // const response = await fetch(`${API_BASE_URL}/api/customer/get`, {
+      //   method: 'GET',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Authorization': `Bearer ${token}`
+      //   }
+      // });
 
-      const result = await response.json();
+      // const result = await response.json();
+      const response = await axios.get("/api/customer/get");
+      const result = response.data;
 
-      if (response.ok && result.success && result.data) {
+      if ((response.status === 200 || response.status === 201) && result.success && result.data) {
         setCustomerData(result.data);
         setShowAgreement(true);
         console.log('Customer data fetched successfully:', result.data);

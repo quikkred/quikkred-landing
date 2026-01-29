@@ -119,7 +119,10 @@ const MobileVerify = () => {
           // Track success
           trackOTPVerified(mobile);
           mobileFriction.completeTracking(true);
-          await login(session.user?.email || "", "", session, false);
+            await login({
+            email: session?.user?.email || "",
+            apiData: session,
+          });
         }
       } else {
         const errorMsg = res?.error || "Invalid OTP";

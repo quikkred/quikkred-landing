@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useRouter } from "nextjs-toploader/app";
 import {
   CreditCard, IndianRupee, Calendar, Clock, Plus,
   TrendingUp, Target, CheckCircle, Eye,
@@ -17,6 +17,8 @@ import { loansService } from '@/lib/api/loans.service';
 import { usersService } from '@/lib/api/users.service';
 import { upiAutopayService } from '@/lib/api/upi-autopay.service';
 import { API_BASE_URL } from '@/lib/config';
+import getToken from '@/lib/getToken';
+import useAxios from '@/hooks/useAxios';
 
 interface Loan {
   id: string;
@@ -33,6 +35,8 @@ interface Loan {
   customerName?: string;
   customerEmail?: string;
   customerId?: string;
+  dpd?: number;
+  nextDueDate?: string;
 }
 
 interface PaymentHistoryItem {
@@ -64,7 +68,9 @@ interface DetailedLoan {
   productName: string;
   principalAmount: number;
   processingFee?: number;
+  processingPercent?: number;
   gstOnProcessingFee?: number;
+  gstOnProcessingPercent?: number;
   totalInterest?: number;
   interestRate: number;
   tenure: number;
@@ -72,6 +78,7 @@ interface DetailedLoan {
   isSubmit: boolean;
   totalRepayment: number;
   emiAmount: number;
+  lateCharges?: number;
   numberOfEMIs: number;
   repaymentType: string;
   disbursementAmount: number;
@@ -207,6 +214,7 @@ interface PaginationInfo {
 
 export default function MyLoansPage() {
   const { user, isLoading } = useAuth();
+  const axios = useAxios();
   const router = useRouter();
   const [loans, setLoans] = useState<Loan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -297,19 +305,19 @@ export default function MyLoansPage() {
   } | null>(null);
 
   // Check authentication and authorization
-  useEffect(() => {
-    if (!isLoading) {
-      if (!user) {
-        router.push('/login');
-        return;
-      }
+  // useEffect(() => {
+  //   if (!isLoading) {
+  //     if (!user) {
+  //       router.push('/login');
+  //       return;
+  //     }
 
-      if (false) {
-        router.push('/login');
-        return;
-      }
-    }
-  }, [user, isLoading, router]);
+  //     if (false) {
+  //       router.push('/login');
+  //       return;
+  //     }
+  //   }
+  // }, [user, isLoading, router]);
 
   // Fetch loans data
   useEffect(() => {
@@ -332,65 +340,67 @@ export default function MyLoansPage() {
     try {
       setLoading(true);
 
-      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+      // const token = await getToken();
 
-      if (!token) {
-        router.push('/login');
-        return;
-      }
+      // if (!token) {
+      //   router.push('/login');
+      //   return;
+      // }
 
       const currentPage = page || pagination.page;
       const currentLimit = limit || pagination.limit;
 
-      const response = await fetch(
-        `${API_BASE_URL}/api/loans/get?page=${currentPage}&limit=${currentLimit}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
+      // const response = await fetch(
+      //   `${API_BASE_URL}/api/loans/get?page=${currentPage}&limit=${currentLimit}`,
+      //   {
+      //     method: 'GET',
+      //     headers: {
+      //       'Content-Type': 'application/json',
+      //       'Authorization': `Bearer ${token}`
+      //     }
+      //   }
+      // );
 
-      // Check if token expired (401 Unauthorized) - Full logout and redirect
-      if (response.status === 401) {
-        // Check if user just logged in - don't clear storage during grace period
-        const loginTimestamp = localStorage.getItem('loginTimestamp');
-        const justLoggedIn = loginTimestamp &&
-          (Date.now() - parseInt(loginTimestamp, 10)) < 10000; // 10 second grace period
+      // // Check if token expired (401 Unauthorized) - Full logout and redirect
+      // if (response.status === 401) {
+      //   // Check if user just logged in - don't clear storage during grace period
+      //   const loginTimestamp = localStorage.getItem('loginTimestamp');
+      //   const justLoggedIn = loginTimestamp &&
+      //     (Date.now() - parseInt(loginTimestamp, 10)) < 10000; // 10 second grace period
 
-        if (!justLoggedIn) {
-          // Clear all authentication tokens
-          localStorage.removeItem('token');
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          localStorage.removeItem('loginTimestamp');
+      //   if (!justLoggedIn) {
+      //     // Clear all authentication tokens
+      //     localStorage.removeItem('token');
+      //     localStorage.removeItem('authToken');
+      //     localStorage.removeItem('accessToken');
+      //     localStorage.removeItem('refreshToken');
+      //     localStorage.removeItem('loginTimestamp');
 
-          // Clear user data
-          localStorage.removeItem('userRole');
-          localStorage.removeItem('role');
-          localStorage.removeItem('userEmail');
-          localStorage.removeItem('email');
-          localStorage.removeItem('userName');
-          localStorage.removeItem('userId');
-          localStorage.removeItem('userMobile');
-          localStorage.removeItem('customerUniqueId');
+      //     // Clear user data
+      //     localStorage.removeItem('userRole');
+      //     localStorage.removeItem('role');
+      //     localStorage.removeItem('userEmail');
+      //     localStorage.removeItem('email');
+      //     localStorage.removeItem('userName');
+      //     localStorage.removeItem('userId');
+      //     localStorage.removeItem('userMobile');
+      //     localStorage.removeItem('customerUniqueId');
 
-          // Clear cookies
-          document.cookie = 'auth-token=; path=/; max-age=0';
-          document.cookie = 'user-role=; path=/; max-age=0';
+      //     // Clear cookies
+      //     document.cookie = 'auth-token=; path=/; max-age=0';
+      //     document.cookie = 'user-role=; path=/; max-age=0';
 
-          // Redirect to login
-          router.push('/login');
-          return;
-        }
-      }
+      //     // Redirect to login
+      //     router.push('/login');
+      //     return;
+      //   }
+      // }
 
-      const result = await response.json();
+      // const result = await response.json();
+      const response = await axios.get(`/api/loans/get?page=${currentPage}&limit=${currentLimit}`);
+      const result = response.data;
 
-      if (response.ok && result.success && result.data) {
+      if ((response.status === 200 || response.status === 201) && result.success && result.data) {
         const mappedLoans = result.data.map((loan: any) => ({
           id: loan._id,
           loanNumber: loan.loanNumber,
@@ -405,7 +415,9 @@ export default function MyLoansPage() {
           createdAt: loan.createdAt,
           customerName: loan.customerId?.fullName,
           customerEmail: loan.customerId?.email,
-          customerId: loan.customerId?._id
+          customerId: loan.customerId?._id,
+          dpd: loan.dpd || 0,
+          nextDueDate: loan.nextDueDate
         }));
 
         setLoans(mappedLoans);
@@ -464,7 +476,7 @@ export default function MyLoansPage() {
   const fetchSavedBanks = async () => {
     setLoadingSavedBanks(true);
     try {
-      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+      const token = await getToken();
       if (!token) return;
 
       const response = await fetch(`${API_BASE_URL}/api/customer/get`, {
@@ -558,12 +570,12 @@ export default function MyLoansPage() {
     setNewLoanLoading(true);
 
     try {
-      const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
+      // const token = await getToken();
 
-      if (!token) {
-        router.push('/login');
-        return;
-      }
+      // if (!token) {
+      //   router.push('/login');
+      //   return;
+      // }
 
       const payload = {
         loanAmount: Number(newLoanForm.loanAmount),
@@ -576,16 +588,18 @@ export default function MyLoansPage() {
         }
       };
 
-      const response = await fetch(`${API_BASE_URL}/api/application/loan/new`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
-      });
+      // const response = await fetch(`${API_BASE_URL}/api/application/loan/new`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Authorization': `Bearer ${token}`
+      //   },
+      //   body: JSON.stringify(payload)
+      // });
 
-      const result = await response.json();
+      // const result = await response.json();
+      const response = await axios.post("/api/application/loan/new", payload);
+      const result = response.data;
 
       if (result.success) {
         // Store success data and show confirmation screen
@@ -1203,9 +1217,9 @@ export default function MyLoansPage() {
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Loan Number</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Principal</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">EMI</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Total Repayment</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Interest</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Tenure</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Penalty</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
                 </tr>
@@ -1227,13 +1241,21 @@ export default function MyLoansPage() {
                       <div className="text-xs text-gray-500">Disbursed: {formatCurrency(loan.disbursementAmount)}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{formatCurrency(loan.emiAmount)}</div>
+                      <div className="text-sm font-medium text-gray-900">{formatCurrency(loan.totalRepayment)}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{loan.interestRate}%</div>
+                      <div className="text-sm text-gray-900">{formatCurrency(loan.principalAmount * loan.interestRate / 100)}</div>
+                      <div className="text-xs text-gray-500">{loan.interestRate}%</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{loan.tenure} {loan.tenureUnit}</div>
+                      {loan.status === 'OVERDUE' && loan.dpd && loan.dpd > 0 ? (
+                        <div>
+                          <div className="text-sm font-medium text-red-600">{formatCurrency(loan.dpd * 50)}</div>
+                          <div className="text-xs text-gray-500">{loan.dpd} days overdue</div>
+                        </div>
+                      ) : (
+                        <div className="text-sm text-gray-400">-</div>
+                      )}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(loan.status)}`}>
@@ -1916,28 +1938,56 @@ export default function MyLoansPage() {
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Interest Rate</p>
-                        <p className="font-semibold text-gray-900">{detailedLoan.interestRate}% per day</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.interestRate}%</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Tenure</p>
                         <p className="font-semibold text-gray-900">{detailedLoan.tenure} {detailedLoan.tenureUnit}</p>
                       </div>
-                   
-                     
+                      <div>
+                        <p className="text-sm text-gray-600">Total Interest</p>
+                        <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.totalInterest || 0)}</p>
+                      </div>
                       <div>
                         <p className="text-sm text-gray-600">Total Repayment</p>
-                        <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.totalRepayment)}</p>
+                        <p className="text-lg font-bold text-green-700">{formatCurrency(detailedLoan.totalRepayment)}</p>
                       </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Total Interest ({detailedLoan.interestRate*detailedLoan.tenure}%)</p>
-                        <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.totalRepayment - detailedLoan.principalAmount)}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Late Charges</p>
-                        <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.lateChargesOutstanding)}</p>
-                      </div>
+                      {detailedLoan.lateCharges && detailedLoan.lateCharges > 0 && (
+                        <div>
+                          <p className="text-sm text-gray-600">Late Charges</p>
+                          <p className="font-semibold text-red-600">{formatCurrency(detailedLoan.lateCharges)}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
+
+                  {/* Processing Fee & Deductions */}
+                  {(detailedLoan.processingFee || detailedLoan.gstOnProcessingFee) && (
+                    <div className="bg-gradient-to-br from-slate-50 to-gray-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-200">
+                      <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                        <Receipt className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
+                        <h4 className="text-base sm:text-lg font-bold text-gray-800">Processing Fee & Deductions</h4>
+                      </div>
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                        <div>
+                          <p className="text-sm text-gray-600">Processing Fee {detailedLoan.processingPercent ? `(${detailedLoan.processingPercent}%)` : ''}</p>
+                          <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.processingFee || 0)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">GST on Processing Fee {detailedLoan.gstOnProcessingPercent ? `(${detailedLoan.gstOnProcessingPercent}%)` : ''}</p>
+                          <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.gstOnProcessingFee || 0)}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Total Deductions</p>
+                          <p className="font-semibold text-gray-900">{formatCurrency((detailedLoan.processingFee || 0) + (detailedLoan.gstOnProcessingFee || 0))}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Net Disbursement</p>
+                          <p className="text-lg font-bold text-purple-700">{formatCurrency(detailedLoan.disbursementAmount)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Disbursement Information */}
                   <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-purple-200">
@@ -2069,12 +2119,12 @@ export default function MyLoansPage() {
                   </div>
                   )}
 
-                  {/* EMI Schedule */}
+                  {/* Repayment Schedule */}
                   {detailedLoan?.schedule && detailedLoan?.schedule.length > 0 && (
                     <div className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-200">
                       <div className="flex items-center gap-2 mb-3 sm:mb-4">
                         <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
-                        <h4 className="text-base sm:text-lg font-bold text-gray-800">EMI Schedule</h4>
+                        <h4 className="text-base sm:text-lg font-bold text-gray-800">Repayment Schedule</h4>
                       </div>
                       <div className="overflow-x-auto">
                         <table className="w-full text-xs sm:text-sm">

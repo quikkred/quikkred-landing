@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import {
   User, Mail, Phone, Calendar, MapPin, Building,
   Edit2, Save, X, Camera, Shield, CheckCircle,
@@ -172,10 +172,10 @@ export default function ProfilePage() {
   const fetchProfile = async () => {
     const result = await reduxFetchProfile();
 
-    if (result?.requiresAuth) {
-      router.push('/login');
-      return;
-    }
+    // if (result?.requiresAuth) {
+    //   router.push('/login');
+    //   return;
+    // }
 
     if (result?.success) {
       console.log('🟢 Profile data loaded successfully');
