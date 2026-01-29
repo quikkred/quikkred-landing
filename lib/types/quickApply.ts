@@ -49,6 +49,10 @@ export interface FieldErrors {
   state: string;
   aadhaar: string;
   pan: string;
+  employmentType: string;
+  monthlyIncome: string;
+  companyName: string;
+  loanAmount: string;
   accountHolderName: string;
   accountNumber: string;
   ifsc: string;

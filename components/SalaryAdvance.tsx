@@ -13,8 +13,9 @@ interface SalaryAdvanceProps {
   quickAccessAmount?: string;
   timeText?: string;
   imageSrc?: string;
+  imageAlt?: string; // Added for accessibility
   features?: string[];
-  primaryColor?: string; // Tailwind color name e.g. "teal"
+  primaryColor?: "emerald" | "teal" | "blue"; // Defined specific colors
   reverse?: boolean;
 }
 
@@ -30,17 +31,41 @@ export default function SalaryAdvance({
   quickAccessAmount,
   timeText,
   imageSrc = "/salary-advance.jpg",
+  imageAlt,
   features,
   primaryColor = "teal",
-  reverse= false,
+  reverse = false,
 }: SalaryAdvanceProps) {
-  const primary = `text-${primaryColor}-600`;
-  const primaryBg = `bg-${primaryColor}-600`;
-  const primaryBgHover = `hover:bg-${primaryColor}-700`;
-  const borderPrimary = `border-${primaryColor}-600`;
-  const bgHover = `hover:bg-${primaryColor}-50`;
+  
+  // LOOKUP MAP: This ensures Tailwind "sees" the full class names during build
+  const colorMap = {
+    emerald: {
+      text: "text-emerald-600",
+      bg: "bg-emerald-600",
+      hoverBg: "hover:bg-emerald-700",
+      border: "border-emerald-600",
+      lightHover: "hover:bg-emerald-50",
+    },
+    teal: {
+      text: "text-teal-600",
+      bg: "bg-teal-600",
+      hoverBg: "hover:bg-teal-700",
+      border: "border-teal-600",
+      lightHover: "hover:bg-teal-50",
+    },
+    blue: {
+      text: "text-blue-600",
+      bg: "bg-blue-600",
+      hoverBg: "hover:bg-blue-700",
+      border: "border-blue-600",
+      lightHover: "hover:bg-blue-50",
+    },
+  };
+
+  const selectedColor = colorMap[primaryColor] || colorMap.teal;
 
   const scrollToSection = (sectionId: string) => {
+    if (typeof window === "undefined") return;
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -48,29 +73,22 @@ export default function SalaryAdvance({
   };
 
   return (
-    <div
-  className={`w-full bg-white py-12 px-6 md:px-16 flex flex-col items-center justify-between gap-10
-    ${reverse ? "md:flex-row-reverse" : "md:flex-row"}`}
->
+    <div className={`w-full bg-white sm:px-6 md:px-16 flex flex-col items-center justify-between gap-10 ${reverse ? "md:flex-row-reverse" : "md:flex-row"}`}>
+      
       {/* Left Section */}
-      <div className="md:w-1/2 space-y-6">
-        {/* Title */}
+      <div className="w-full md:w-1/2 space-y-4 sm:space-y-6">
         <h1 className="text-4xl md:text-5xl font-bold leading-snug">
-          {title}{" "}
-          {highlightWord && <span className={primary}>{highlightWord}</span>}{" "}
-          {title1}{" "}
+          {title} {highlightWord && <span className={selectedColor.text}>{highlightWord}</span>} {title1}
         </h1>
 
-        {/* Subtitle (optional) */}
-        {subtitle && <p className="text-gray-600 text-lg">{subtitle}</p>}
+        {subtitle && <p className="text-gray-600 text-sm sm:text-base leading-relaxed">{subtitle}</p>}
 
-        {/* Buttons (only render if at least one exists) */}
         {(buttonPrimaryText || buttonSecondaryText) && (
-          <div className="flex flex-wrap gap-4 pt-2">
+          <div className="flex flex-wrap gap-4 w-full sm:w-auto pt-2">
             {buttonPrimaryText && (
               <button
                 onClick={() => buttonPrimaryScrollTo && scrollToSection(buttonPrimaryScrollTo)}
-                className={`${primaryBg} ${primaryBgHover} text-white font-semibold px-6 py-3 rounded-md transition`}
+                className={`${selectedColor.bg} ${selectedColor.hoverBg} text-white font-semibold px-6 py-3 rounded-md transition-all shadow-sm w-full sm:w-auto`}
               >
                 {buttonPrimaryText}
               </button>
@@ -78,7 +96,7 @@ export default function SalaryAdvance({
             {buttonSecondaryText && (
               <button
                 onClick={() => buttonSecondaryScrollTo && scrollToSection(buttonSecondaryScrollTo)}
-                className={`${borderPrimary} ${primary} border font-semibold px-6 py-3 rounded-md ${bgHover} transition`}
+                className={`${selectedColor.border} ${selectedColor.text} border font-semibold px-6 py-3 rounded-md ${selectedColor.lightHover} transition-all w-full sm:w-auto`}
               >
                 {buttonSecondaryText}
               </button>
@@ -86,12 +104,11 @@ export default function SalaryAdvance({
           </div>
         )}
 
-        {/* Features (optional) */}
         {features && features.length > 0 && (
-          <div className="flex flex-wrap gap-6 text-gray-600 text-sm pt-4">
+          <div className="flex flex-wrap gap-x-6 gap-y-3 text-gray-600 text-sm pt-4">
             {features.map((item, idx) => (
               <div key={idx} className="flex items-center gap-2">
-                <span className={primary}>✓</span> {item}
+                <span className={`${selectedColor.text} font-bold`}>✓</span> {item}
               </div>
             ))}
           </div>
@@ -100,32 +117,28 @@ export default function SalaryAdvance({
 
       {/* Right Section */}
       <div className="md:w-1/2 flex justify-center">
-        <div className="relative rounded-2xl overflow-hidden shadow-md w-full max-w-[420px] md:max-w-[460px]">
+        <div className="relative rounded-2xl overflow-hidden shadow-lg w-full max-w-[420px] md:max-w-[460px]">
           <Image
             src={imageSrc}
-            alt="Salary Advance"
+            alt={imageAlt || title || "Section Image"}
             width={460}
             height={320}
-            className="object-cover w-full h-auto"
+            className="object-cover w-full h-auto transition-transform duration-500 hover:scale-105"
+            priority // Suggest adding this if it's a Hero section
           />
 
-          {/* Overlay Card (optional if quickAccessAmount or timeText provided) */}
           {(quickAccessAmount || timeText) && (
-            <div className="absolute bottom-3 left-3 right-3 bg-white rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.08)] px-4 py-2.5 flex justify-between items-center">
+            <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg px-4 py-3 flex justify-between items-center">
               {quickAccessAmount && (
                 <div>
-                  <p className="text-gray-600 text-sm">Quick Access to</p>
-                  <p className={`${primary} font-semibold text-lg`}>
-                    {quickAccessAmount}
-                  </p>
+                  <p className="text-gray-500 text-xs uppercase tracking-wider">Quick Access</p>
+                  <p className={`${selectedColor.text} font-bold text-lg`}>{quickAccessAmount}</p>
                 </div>
               )}
               {timeText && (
                 <div className="text-right">
-                  <p className="text-gray-600 text-sm">In as little as</p>
-                  <p className="font-semibold text-gray-900 text-base">
-                    {timeText}
-                  </p>
+                  <p className="text-gray-500 text-xs uppercase tracking-wider">Timeline</p>
+                  <p className="font-bold text-gray-900 text-base">{timeText}</p>
                 </div>
               )}
             </div>

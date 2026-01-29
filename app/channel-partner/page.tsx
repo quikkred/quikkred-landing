@@ -105,7 +105,7 @@ export default function ChannelPartnersPage() {
             className="text-center max-w-4xl mx-auto"
           >
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold font-sora leading-tight mb-6">
-              Become a QuikKred Channel Partner
+              Become a Quikkred Channel Partner
             </h1>
             <p className="text-lg sm:text-xl lg:text-2xl text-white/90 leading-relaxed max-w-3xl mx-auto">
               Earn attractive commissions by helping your network get the financial help they need.
@@ -249,7 +249,7 @@ export default function ChannelPartnersPage() {
       </section>
 
       {/* Contact / Questions Section */}
-      <section className="container mx-auto px-4 py-12 sm:py-16">
+      <section className="container mx-auto px-0 sm:px-4 sm:py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -257,7 +257,7 @@ export default function ChannelPartnersPage() {
           transition={{ duration: 0.6 }}
           className="max-w-4xl mx-auto"
         >
-          <div className="bg-gradient-to-r from-[#4A66FF] to-[#6D90FF] rounded-2xl sm:rounded-3xl p-8 sm:p-12 text-white text-center relative overflow-hidden">
+          <div className="bg-gradient-to-r from-[#4A66FF] to-[#6D90FF] sm:rounded-3xl p-8 sm:p-12 text-white text-center relative overflow-hidden">
             {/* Decorative elements */}
             <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
@@ -292,7 +292,7 @@ export default function ChannelPartnersPage() {
       </section>
 
       {/* Bottom Spacing */}
-      <div className="h-8 sm:h-12" />
+      {/* <div className="h-8 sm:h-12" /> */}
     </div>
   );
 }
