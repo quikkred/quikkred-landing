@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/toast';
+import { reviewService } from '@/lib/api/review.service';
 
 export default function ReviewPage() {
   const { user, isLoading } = useAuth();
@@ -65,15 +66,30 @@ export default function ReviewPage() {
     setIsSubmitting(true);
 
     try {
-      // TODO: Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const parsedAmount = parseInt(loanAmount.replace(/,/g, ''), 10) || 0;
 
-      setIsSubmitted(true);
-      toast({
-        variant: "success",
-        title: "Review Submitted!",
-        description: "Thank you for sharing your experience with us."
+      const response = await reviewService.createReview({
+        rating,
+        loanType: loanType || 'Personal Loan',
+        loanAmount: parsedAmount,
+        description: reviewType === 'text' ? reviewText : '',
+        link: reviewType === 'video' ? videoUrl : undefined,
       });
+
+      if (response.success) {
+        setIsSubmitted(true);
+        toast({
+          variant: "success",
+          title: "Review Submitted!",
+          description: response.message || "Thank you for sharing your experience with us."
+        });
+      } else {
+        toast({
+          variant: "error",
+          title: "Submission Failed",
+          description: response.message || "Unable to submit your review. Please try again."
+        });
+      }
     } catch (error) {
       toast({
         variant: "error",
@@ -249,11 +265,12 @@ export default function ReviewPage() {
                 className="w-full px-4 py-3 border border-[#E0E0E0] rounded-lg focus:ring-2 focus:ring-[#25B181] focus:border-[#25B181] focus:outline-none bg-white"
               >
                 <option value="">Select loan type</option>
-                <option value="personal">Personal Loan</option>
-                <option value="business">Business Loan</option>
-                <option value="emergency">Emergency Loan</option>
-                <option value="medical">Medical Loan</option>
-                <option value="salary">Salary Advance</option>
+                <option value="Personal Loan">Personal Loan</option>
+                <option value="Business Loan">Business Loan</option>
+                <option value="Emergency Loan">Emergency Loan</option>
+                <option value="Medical Loan">Medical Loan</option>
+                <option value="Salary Advance">Salary Advance</option>
+                <option value="Home Loan">Home Loan</option>
               </select>
             </div>
             <div>
