@@ -17,6 +17,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Use beta env for staging builds (overwrite .env.production with .env.beta)
+RUN if [ -f .env.beta ]; then cp .env.beta .env.production; fi
+
 # Accept build argument for API URL
 ARG NEXT_PUBLIC_API_URL=https://api.quikkred.in
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
