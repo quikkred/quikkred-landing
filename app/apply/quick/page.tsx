@@ -3479,37 +3479,26 @@ export default function QuickLoanApplication() {
                         </div>
                       </div>
 
-                      {/* Lead Capture Form Section - All Basic Details */}
+                      {/* Lead Capture Form Section - Mobile Number Only */}
                       <div className="bg-white px-4 sm:px-8 py-6">
-                        <h2 className="text-lg font-bold text-gray-900 mb-4">
+                        <h2 className="text-lg font-bold text-gray-900 mb-2">
                           Get Money in your Bank Account Instantly
                         </h2>
+                        <p className="text-sm text-gray-600 mb-6">
+                          Enter your mobile number to check your loan eligibility
+                        </p>
 
                         <div className="space-y-4">
-                          {/* Full Name */}
+                          {/* Mobile Number Input */}
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Full Name *
+                              Mobile Number *
                             </label>
-                            <input
-                              type="text"
-                              name="fullName"
-                              value={formData.fullName}
-                              onChange={handleChange}
-                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.fullName ? 'border-red-500' : 'border-gray-300'}`}
-                              placeholder="Enter your full name"
-                            />
-                            {fieldErrors.fullName && (
-                              <p className="text-xs text-red-500 mt-1">{fieldErrors.fullName}</p>
-                            )}
-                          </div>
-
-                          {/* Mobile & Email Row */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Mobile Number *
-                              </label>
+                            <div className="relative">
+                              <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1 text-gray-500">
+                                <span className="text-base font-medium">+91</span>
+                                <div className="w-px h-5 bg-gray-300 ml-1" />
+                              </div>
                               <input
                                 type="tel"
                                 name="mobile"
@@ -3519,207 +3508,31 @@ export default function QuickLoanApplication() {
                                   setFormData(prev => ({ ...prev, mobile: value }));
                                   if (fieldErrors.mobile) setFieldErrors(prev => ({ ...prev, mobile: '' }));
                                 }}
-                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'}`}
+                                className={`w-full pl-20 pr-4 py-4 text-lg border-2 rounded-xl focus:ring-2 focus:ring-[#25B181] focus:border-[#25B181] ${fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'}`}
                                 placeholder="9876543210"
                                 maxLength={10}
+                                autoFocus
                               />
-                              {fieldErrors.mobile && (
-                                <p className="text-xs text-red-500 mt-1">{fieldErrors.mobile}</p>
-                              )}
                             </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Email Address *
-                              </label>
-                              <input
-                                type="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'}`}
-                                placeholder="your@email.com"
-                              />
-                              {fieldErrors.email && (
-                                <p className="text-xs text-red-500 mt-1">{fieldErrors.email}</p>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* DOB & State Row */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Date of Birth *
-                              </label>
-                              <input
-                                type="date"
-                                name="dob"
-                                value={formData.dob}
-                                onChange={handleChange}
-                                max={(() => {
-                                  const date = new Date();
-                                  date.setFullYear(date.getFullYear() - 18);
-                                  return date.toISOString().split('T')[0];
-                                })()}
-                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.dob ? 'border-red-500' : 'border-gray-300'}`}
-                              />
-                              {fieldErrors.dob && (
-                                <p className="text-xs text-red-500 mt-1">{fieldErrors.dob}</p>
-                              )}
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                State *
-                              </label>
-                              <select
-                                name="state"
-                                value={formData.state}
-                                onChange={(e) => {
-                                  const selectedState = e.target.value.toLowerCase();
-                                  setFormData(prev => ({ ...prev, state: selectedState }));
-                                  if (BLACKLISTED_STATES.includes(selectedState)) {
-                                    setFieldErrors(prev => ({
-                                      ...prev,
-                                      state: "Sorry, services not available in this state."
-                                    }));
-                                  } else {
-                                    setFieldErrors(prev => ({ ...prev, state: '' }));
-                                  }
-                                }}
-                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.state ? 'border-red-500' : 'border-gray-300'}`}
-                              >
-                                <option value="">Select State</option>
-                                {INDIAN_STATES.filter(s => s.value !== '').map((state) => (
-                                  <option key={state.value} value={state.value}>{state.label}</option>
-                                ))}
-                              </select>
-                              {fieldErrors.state && (
-                                <p className="text-xs text-red-500 mt-1">{fieldErrors.state}</p>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Employment Section */}
-                          <div className="border-t border-gray-200 pt-4 mt-4">
-                            <h3 className="text-sm font-semibold text-gray-900 mb-3">Employment Details</h3>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                  Employment Type *
-                                </label>
-                                <select
-                                  name="employmentType"
-                                  value={formData.employmentType}
-                                  onChange={handleChange}
-                                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                                >
-                                  <option value="SALARIED">Salaried</option>
-                                  <option value="SELF-EMPLOYED">Self-Employed</option>
-                                </select>
-                              </div>
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                  Monthly Income *
-                                </label>
-                                <input
-                                  type="text"
-                                  name="monthlyIncome"
-                                  value={formData.monthlyIncome ? parseFloat(formData.monthlyIncome.replace(/,/g, '')).toLocaleString('en-IN') : ''}
-                                  onChange={(e) => {
-                                    const value = e.target.value.replace(/,/g, '');
-                                    if (/^\d*$/.test(value)) {
-                                      handleChange({
-                                        ...e,
-                                        target: { ...e.target, name: 'monthlyIncome', value: value }
-                                      } as any);
-                                    }
-                                  }}
-                                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.monthlyIncome ? 'border-red-500' : 'border-gray-300'}`}
-                                  placeholder="₹ 50,000"
-                                />
-                                {fieldErrors.monthlyIncome && (
-                                  <p className="text-xs text-red-500 mt-1">{fieldErrors.monthlyIncome}</p>
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="mt-4">
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                {formData.employmentType === "SALARIED" ? "Company Name" : "Income Source"} *
-                              </label>
-                              <input
-                                type="text"
-                                name="companyName"
-                                value={formData.companyName}
-                                onChange={handleChange}
-                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.companyName ? 'border-red-500' : 'border-gray-300'}`}
-                                placeholder={formData.employmentType === "SALARIED" ? "Your Company" : "Your Income Source"}
-                              />
-                              {fieldErrors.companyName && (
-                                <p className="text-xs text-red-500 mt-1">{fieldErrors.companyName}</p>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Loan Amount */}
-                          <div className="border-t border-gray-200 pt-4 mt-4">
-                            <h3 className="text-sm font-semibold text-gray-900 mb-3">Loan Requirement</h3>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                How much loan do you need? *
-                              </label>
-                              <input
-                                type="text"
-                                name="loanAmount"
-                                value={formData.loanAmount ? parseFloat(formData.loanAmount.replace(/,/g, "")).toLocaleString("en-IN") : ""}
-                                onChange={(e) => {
-                                  const raw = e.target.value.replace(/,/g, "");
-                                  if (!/^\d*$/.test(raw)) return;
-                                  handleChange({
-                                    ...e,
-                                    target: { ...e.target, name: "loanAmount", value: raw }
-                                  } as any);
-                                }}
-                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
-                                  formData.loanAmount && (parseFloat(formData.loanAmount.replace(/,/g, "")) < 5000 || parseFloat(formData.loanAmount.replace(/,/g, "")) > 25000)
-                                    ? "border-red-500" : "border-gray-300"
-                                }`}
-                                placeholder="₹ 5,000 - ₹ 25,000"
-                              />
-                              {formData.loanAmount && parseFloat(formData.loanAmount.replace(/,/g, "")) < 5000 && (
-                                <p className="mt-1 text-xs text-red-500">Minimum loan amount is ₹5,000</p>
-                              )}
-                              {formData.loanAmount && parseFloat(formData.loanAmount.replace(/,/g, "")) > 25000 && (
-                                <p className="mt-1 text-xs text-red-500">Maximum loan amount is ₹25,000</p>
-                              )}
-                            </div>
+                            {fieldErrors.mobile && (
+                              <p className="text-xs text-red-500 mt-1">{fieldErrors.mobile}</p>
+                            )}
                           </div>
                         </div>
 
                         {/* Apply Now Button */}
                         <button
                           onClick={() => {
-                            // Validate all required fields
-                            const errors: any = {};
-                            if (!formData.fullName) errors.fullName = 'Full name is required';
-                            if (formData.mobile.length !== 10) errors.mobile = 'Valid 10-digit mobile required';
-                            if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = 'Valid email required';
-                            if (!formData.dob) errors.dob = 'Date of birth is required';
-                            if (!formData.state) errors.state = 'State is required';
-                            if (!formData.monthlyIncome) errors.monthlyIncome = 'Monthly income is required';
-                            if (!formData.companyName) errors.companyName = 'Company name is required';
-                            if (!formData.loanAmount) errors.loanAmount = 'Loan amount is required';
-
-                            if (Object.keys(errors).length > 0) {
-                              setFieldErrors(prev => ({ ...prev, ...errors }));
+                            // Validate mobile number only
+                            if (formData.mobile.length !== 10) {
+                              setFieldErrors(prev => ({ ...prev, mobile: 'Please enter a valid 10-digit mobile number' }));
                               return;
                             }
                             setShowLandingPage(false);
                           }}
                           className="w-full mt-6 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-lg shadow-lg shadow-orange-500/30 transition-all active:scale-[0.98]"
                         >
-                          Apply Now
+                          Get Started
                         </button>
 
                         {/* Consent Checkboxes */}
