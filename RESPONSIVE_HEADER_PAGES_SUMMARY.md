@@ -119,7 +119,7 @@ mb-6 sm:mb-8                       // Smaller margins
 ```tsx
 // Full width on mobile, auto on desktop
 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-  <Link href="/apply" className="w-full sm:w-auto">
+  <Link href="/apply/quick" className="w-full sm:w-auto">
     <button className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4">
 ```
 
