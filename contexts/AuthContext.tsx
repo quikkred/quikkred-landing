@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from "nextjs-toploader/app";
 import { API_BASE_URL } from '@/lib/config';
 import { signOut } from 'next-auth/react';
 
@@ -10,6 +10,8 @@ export interface User {
   name: string;
   email: string;
   mobile?: string;
+  firstName?: string;
+  lastName?: string;
   fullName?: string;
   dateOfBirth?: string;
   address?: string;
@@ -18,14 +20,28 @@ export interface User {
   pincode?: string;
   isEmailVerified?: boolean;
   isMobileVerified?: boolean;
+  isPanVerify?: boolean;
+  isAadhaarVerify?: boolean;
   kycStatus?: 'PENDING' | 'VERIFIED' | 'REJECTED';
   status?: string;
   createdAt?: string;
+  pan?: string,
+  aadhaar?: string,
+  employmentType?: string,
+  monthlyIncome?: string,
+  companyName?: string,
+  bankName?: string,
+  accountHolderName?: string,
+  accountNumber?: string,
+  ifsc?: string,
+  loanAmount?: string,
 }
+
+interface LoginProps { apiData?: any; email?: string; }
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string, apiData?: any, isRedirect?: boolean) => Promise<boolean>;
+  login: ({ apiData, email }: LoginProps) => Promise<boolean>;
   setUser: (userData: User | null) => void;
   logout: () => void;
   isLoading: boolean;
@@ -35,44 +51,44 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+export function AuthProvider({ userData, children }: { userData: User | null; children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(userData);
+  const [isLoading, setIsLoading] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    // Check for existing session
-    const token = localStorage.getItem('token') ||
-                  localStorage.getItem('authToken') ||
-                  localStorage.getItem('accessToken');
-    const storedUserId = localStorage.getItem('userId');
-    const storedUserName = localStorage.getItem('userName');
-    const storedUserEmail = localStorage.getItem('userEmail') || localStorage.getItem('email');
-    const storedUserMobile = localStorage.getItem('userMobile');
+  // useEffect(() => {
+  //   // Check for existing session
+  //   const token = localStorage.getItem('token') ||
+  //                 localStorage.getItem('authToken') ||
+  //                 localStorage.getItem('accessToken');
+  //   const storedUserId = localStorage.getItem('userId');
+  //   const storedUserName = localStorage.getItem('userName');
+  //   const storedUserEmail = localStorage.getItem('userEmail') || localStorage.getItem('email');
+  //   const storedUserMobile = localStorage.getItem('userMobile');
 
-    if (token && storedUserId) {
-      // Create user object from stored data
-      const userData: User = {
-        id: storedUserId,
-        name: storedUserName || 'User',
-        email: storedUserEmail || '',
-        mobile: storedUserMobile || undefined,
-      };
+  //   if (token && storedUserId) {
+  //     // Create user object from stored data
+  //     const userData: User = {
+  //       id: storedUserId,
+  //       name: storedUserName || 'User',
+  //       email: storedUserEmail || '',
+  //       mobile: storedUserMobile || undefined,
+  //     };
 
-      setUser(userData);
+  //     setUser(userData);
 
-      // Fetch real user profile if we have a real token (not mock)
-      if (token && !token.startsWith('mock_token_')) {
-        fetchUserProfile(token, userData);
-      }
-    }
+  //     // Fetch real user profile if we have a real token (not mock)
+  //     if (token && !token.startsWith('mock_token_')) {
+  //       fetchUserProfile(token, userData);
+  //     }
+  //   }
 
-    setIsLoading(false);
-  }, []);
+  //   setIsLoading(false);
+  // }, []);
 
   const fetchUserProfile = async (token: string, currentUser: User) => {
-    console.log('🔵 Fetching user profile from API...');
+    // console.log('🔵 Fetching user profile from API...');
     try {
       const response = await fetch(`${API_BASE_URL}/api/customer/get`, {
         method: 'GET',
@@ -83,7 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       const result = await response.json();
-      console.log('🟢 Profile API Response:', result.success ? 'Success' : 'Failed');
+      // console.log('🟢 Profile API Response:', result.success ? 'Success' : 'Failed');
 
       if (response.ok && result.success && result.data) {
         const apiData = result.data;
@@ -110,28 +126,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           kycStatus: apiData.kyc?.kycStatus || 'PENDING',
           status: apiData.status,
           createdAt: apiData.createdAt,
+          pan: apiData.panCard || null,
+          aadhaar: apiData.aadhaarNumber || null,
+          employmentType: apiData.employmentType || null,
+          monthlyIncome: apiData.monthlyIncome?.toString() || null,
+          companyName: apiData.companyName || null,
+          bankName: apiData.banks?.[0]?.bankName || null,
+          accountHolderName: apiData.banks?.[0]?.accountHolderName || null,
+          accountNumber: apiData.banks?.[0]?.accountNumber || null,
+          ifsc: apiData.banks?.[0]?.ifscCode || null,
+          loanAmount: apiData.requestedLoanAmount?.toString() || null, // Loan amount from API 
         };
 
         setUser(updatedUser);
 
         // Update localStorage with real profile data
-        localStorage.setItem('userName', fullName);
-        localStorage.setItem('userEmail', apiData.email || currentUser.email);
-        if (apiData.mobile) {
-          localStorage.setItem('userMobile', apiData.mobile);
-        }
+        // localStorage.setItem('userName', fullName);
+        // localStorage.setItem('userEmail', apiData.email || currentUser.email);
+        // if (apiData.mobile) {
+        //   localStorage.setItem('userMobile', apiData.mobile);
+        // }
       }
     } catch (error) {
       console.error('❌ Error fetching user profile:', error);
     }
   };
 
-  const login = async (email: string, password: string, apiData?: any, isRedirect: boolean = true): Promise<boolean> => {
+  const login = async ({ apiData, email = "" }: LoginProps): Promise<boolean> => {
     setIsLoading(true);
 
     try {
       // If API data is provided, use it for authentication
-      if (apiData && apiData.userId && (apiData.token || apiData.accessToken)) {
+      if (apiData && (apiData.user?.id || apiData.userId) && (apiData.token || apiData.accessToken)) {
         const authToken = apiData.accessToken || apiData.token;
 
         // Determine if login was with email or mobile
@@ -140,40 +166,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Create user object from API data
         const userData: User = {
-          id: apiData.userId,
+          id: apiData.user?.id || apiData.userId,
           name: apiData.fullName || apiData.name || 'User',
           email: isEmailLogin ? email : (apiData.email || ''),
           mobile: isMobileLogin ? email : (apiData.mobile || ''),
         };
 
         // Store session in localStorage
-        localStorage.setItem('token', authToken);
-        localStorage.setItem('authToken', authToken);
-        localStorage.setItem('accessToken', authToken);
-        localStorage.setItem('userEmail', userData.email);
-        localStorage.setItem('userName', userData.name);
-        localStorage.setItem('userId', apiData.userId);
-        // Add login timestamp for grace period handling in api-client
-        localStorage.setItem('loginTimestamp', Date.now().toString());
-        if (userData.mobile) {
-          localStorage.setItem('userMobile', userData.mobile);
-        }
-        if (apiData.role) {
-          localStorage.setItem('role', apiData.role);
-        }
+        // localStorage.setItem('token', authToken);
+        // localStorage.setItem('authToken', authToken);
+        // localStorage.setItem('accessToken', authToken);
+        // localStorage.setItem('userEmail', userData.email);
+        // localStorage.setItem('userName', userData.name);
+        // localStorage.setItem('userId', apiData.userId);
 
-        // Set cookies for middleware to access
-        document.cookie = `auth-token=${authToken}; path=/; max-age=2592000`;
+        // // Add login timestamp for grace period handling in api-client
+        // localStorage.setItem('loginTimestamp', Date.now().toString());
+        // if (userData.mobile) {
+        //   localStorage.setItem('userMobile', userData.mobile);
+        // }
+        // if (apiData.role) {
+        //   localStorage.setItem('role', apiData.role);
+        // }
 
-        setUser(userData);
+        // // Set cookies for middleware to access
+        // document.cookie = `auth-token=${authToken}; path=/; max-age=2592000`;
+
+        // setUser(userData);
 
         // Fetch real user profile and wait for it
         await fetchUserProfile(authToken, userData);
-
-        // Redirect to user dashboard
-        if(isRedirect){
-          router.push('/user');
-        }
 
         return true;
       }
@@ -190,6 +212,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     // Set logging out state immediately to hide UI
+    console.log("Logging out...");
     try {
       setIsLoggingOut(true);
       setUser(null);
@@ -216,6 +239,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // ✅ IMPORTANT: let NextAuth clear its cookies
       await signOut({ redirect: true, callbackUrl: "/login" });
+      console.log("Signed out from NextAuth");
 
       // Use setTimeout to ensure state is updated before redirect
       setTimeout(() => {
@@ -247,7 +271,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     logout,
     isLoading,
     isLoggingOut,
-    updateUser
+    updateUser,
   };
 
   return (

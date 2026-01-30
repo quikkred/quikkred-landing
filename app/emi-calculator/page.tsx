@@ -17,7 +17,7 @@ export default function EMICalculatorPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
 
       {/* Header Section */}
-      <section className="relative bg-gradient-to-br from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white py-12 sm:py-16 lg:py-20">
+      <section className="relative bg-gradient-to-br from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white py-8 sm:py-10 lg:py-12">
         <div className="absolute inset-0 bg-black/10" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
           <motion.div
@@ -49,7 +49,7 @@ export default function EMICalculatorPage() {
             </div>
 
             <p className="text-sm sm:text-base lg:text-xl mb-6 sm:mb-8 opacity-90 max-w-3xl">
-              Calculate your loan repayment, interest, and see exactly how much you'll receive after processing fees
+              Calculate your loan repayment, interest, and see exactly how much you'll receive after  Platform fees
             </p>
 
             {/* Features */}
@@ -72,8 +72,8 @@ export default function EMICalculatorPage() {
       </section>
 
       {/* Calculator Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-[#F6F6F6]">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-8 sm:py-10 lg:py-12 bg-[#F6F6F6]">
+        <div className="container mx-auto sm:px-6 lg:px-8">
           <div className="max-w-2xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -87,13 +87,13 @@ export default function EMICalculatorPage() {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-12 sm:py-16 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
+      <section className="py-8 sm:py-10 lg:py-12 bg-white">
+        <div className="container mx-auto sm:px-6 lg:px-8 max-w-5xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-10"
+            className="text-center mb-5 sm:mb-10"
           >
             <span className="inline-block px-4 py-2 bg-[#D3F1EB] text-[#25B181] rounded-full text-xs sm:text-sm font-semibold mb-3">
               How It Works
@@ -149,7 +149,7 @@ export default function EMICalculatorPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 sm:py-16 bg-gradient-to-r from-[#25B181] to-[#51C9AF]">
+      <section className="py-8 sm:py-10 lg:py-12 bg-gradient-to-r from-[#25B181] to-[#51C9AF]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -159,17 +159,17 @@ export default function EMICalculatorPage() {
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4">
               Ready to Get Your Loan?
             </h2>
-            <p className="text-white/90 text-sm sm:text-base lg:text-lg mb-8 max-w-2xl mx-auto">
+            <p className="text-white/90 mb-4 sm:mb-8 max-w-2xl mx-auto">
               Apply now and get instant approval with our AI-powered system. Money disbursed within minutes!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/apply/quick">
-                <button className="px-8 py-4 bg-white text-[#25B181] rounded-xl font-bold hover:shadow-lg transition-all text-sm sm:text-base">
+              <Link href="/apply/quick" className="w-full sm:w-auto">
+                <button className="px-8 py-3 w-full bg-white text-[#25B181] border-2 border-white rounded-xl font-bold hover:shadow-lg transition-all text-sm sm:text-base">
                   Apply for Loan Now
                 </button>
               </Link>
-              <Link href="/about-us">
-                <button className="px-8 py-4 bg-transparent border-2 border-white text-white rounded-xl font-bold hover:bg-white hover:text-[#25B181] transition-all text-sm sm:text-base">
+              <Link href="/about-us" className="w-full sm:w-auto">
+                <button className="px-8 py-3 w-full bg-transparent border-2 border-white text-white rounded-xl font-bold hover:bg-white hover:text-[#25B181] transition-all text-sm sm:text-base">
                   Learn More
                 </button>
               </Link>

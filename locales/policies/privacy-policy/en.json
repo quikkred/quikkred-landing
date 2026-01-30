@@ -1,128 +1,339 @@
 {
   "title": "Privacy Policy",
   "subtitle": "Your privacy is our priority",
-  "effectiveDate": "18-02-2025",
-  "lastUpdatedDate": "18th February 2025",
+  "effectiveDate": "17-03-2025",
+  "lastUpdatedDate": "March 17, 2025",
   "sections": {
     "introduction": {
-      "title": "1. Introduction",
-      "content": "Quikkred, a brand of Fluxusforge Private Limited, operates as a Lending Service Provider (LSP), in partnership with Satsai Finlease Private Limited (an RBI-registered NBFC) for loan disbursement."
+      "title": "What/Who is Quikkred and How Does Quikkred Privacy Policy Work?",
+      "content": [
+        "Fluxusforge Private Limited (we, our, us, Quikkred) (CIN: U71290DL1996PTC081328), is a company incorporated under the Companies Act, 2013, having its registered office at Shop No. 9, Plot 51, Block C, Mahendru Enclave, Delhi 110033. Quikkred operates primarily in the financial products and services sector, utilizing technology platforms such as Websites, Apps, and Platforms (defined below), along with providing data processing services to customers and businesses. We collaborate with our Partner Lender Satsai Finlease Private Limited, a Non-Banking Financial Company (NBFC) registered with the Reserve Bank of India (RBI), (CIN: U71290DL1996PTC081328) to deliver financial products and services.",
+        "Quikkred acts as a Lending Service Provider (LSP) facilitating loan products from our Partner NBFC, Satsai Finlease Private Limited. Satsai remains the regulated entity (RE) and data controller for all financial and lending activities.",
+        "The purpose of this privacy policy (Quikkred Privacy Policy) is to inform you about how Quikkred collects, stores, uses, discloses, transfers, and processes your Personal Information, including Sensitive Personal Information (defined below). This occurs when: (a) you use our Websites, software applications, mobile applications, or our partners platforms (Platforms), or (b) you access products or services directly through our Websites, Apps, or Platforms. This policy also outlines the measures we take to safeguard your Personal Information. The term Websites encompasses all pages, sub-domains, or associated content within each Website.",
+        "By accessing the Websites, Apps, Platforms, and/or using products or services provided by Quikkred, either directly or indirectly, you acknowledge that you have read, understood, and agreed to be bound by this Quikkred Privacy Policy.",
+        "While accessing the Websites, Apps, Platforms, and/or using our products or services now or in the future, you may need to give specific and prior consent for us to collect, use, store, disclose, or process your Personal Information, including Sensitive Personal Information.",
+        "You also acknowledge and agree that any consent you previously provided on our Websites, Apps, Platforms, or during use of our services applies to your Personal Information and Sensitive Personal Information submitted to us, directly or indirectly, in the past.",
+        "We strongly recommend that you revisit this page periodically to review the latest version of this Quikkred Privacy Policy, as it may be updated by us from time to time."
+      ],
+      "partnerInfo": {
+        "name": "Satsai Finlease Private Limited",
+        "website": "https://satsaifinlease.com",
+        "cin": "U71290DL1996PTC081328",
+        "registeredOffice": "Shop No. 9, Plot 51, Block C, Mahendru Enclave, Delhi 110033"
+      }
     },
-    "dataCollection": {
-      "title": "2. Data We Collect",
-      "intro": "We collect only the minimum necessary data to provide lending services and comply with regulatory mandates:",
-      "items": {
-        "identification": {
-          "title": "Identification Data",
-          "content": "Full name, address, contact details, email, date of birth, Aadhaar, PAN."
+    "personalInfo": {
+      "title": "What is Personal Information and What Types of Personal Information Do We Collect About You?",
+      "definition": "Personal information refers to any data that pertains to an individual and can directly or indirectly identify that person, either on its own or in conjunction with other information we have or may have access to.",
+      "sensitiveDefinition": "Sensitive Personal Information includes any personal details relating to financial data such as bank accounts, financial history, credit history, credit or debit card details, passwords, biometric data, sexual orientation, physical, physiological, and mental health conditions, as well as medical records and history. Information that is freely available or accessible in the public domain is not considered Sensitive Personal Information.",
+      "intro": "Depending on your role (e.g., merchant, customer, borrower, consumer, supplier, or business partner) and how you engage with us (e.g., through Websites, Platforms, Apps, telephone, IVR, API, email, online, or offline), we may collect, use, receive, store, analyze, combine, transfer, or otherwise process various categories of your Personal Information, including Sensitive Personal Information.",
+      "categories": {
+        "identity": {
+          "title": "Identity and Account Login Information",
+          "content": "Includes full name(s), title, age, user ID, gender, and date of birth."
         },
-        "financial": {
-          "title": "Financial Data",
-          "content": "Bank account details, transactional history, income information strictly required for eligibility and processing."
+        "contact": {
+          "title": "Contact Information",
+          "content": "Personal details such as bank account numbers, e-NACH, NEFT, IMPS, and UPI ID details, credit or debit card information (including card number, type, expiry date, and cardholder name), financial history, credit history, salary, and income details."
+        },
+        "identification": {
+          "title": "Identification Information",
+          "content": "KYC documents, proofs of identity and address, photograph, PAN (Permanent Account Number), GST Number, etc."
+        },
+        "payment": {
+          "title": "Payment Information (Transactional Information)",
+          "content": "Details like payment gateway ID, issuing bank name, merchant details, product or service identifiers, payment mode, transaction date, currency, amount, transaction status, and additional information provided directly or indirectly by you, banks, merchants, service providers, or business partners."
+        },
+        "usage": {
+          "title": "Usage and Technical Information",
+          "content": "IP addresses, device/browser type, versions/configurations, operating systems, device brand/model, time zone settings, geo-location data, content accessed, unique identifiers associated with your device(s), pages visited on Websites, Apps, or Platforms, visit times/dates, and navigation paths."
+        },
+        "credit": {
+          "title": "Credit and Lending Information",
+          "content": "Credit-related details, income information (e.g., employment contract, salary details, employer name, income tax returns, bank statements, income statements, balance sheets, cash flow statements), credit scores or reliability scores provided by financial institutions, credit information companies, account aggregators, or similar third parties as permitted by applicable Indian laws, including our partners, service providers, and group entities."
+        },
+        "marketing": {
+          "title": "Marketing and Communications Information",
+          "content": "Customer service communications, behavioral data (e.g., cookie-based data), details about promotions, surveys, promotional campaigns, and records of your subscription preferences or withdrawals from receiving marketing materials."
         },
         "device": {
-          "title": "Device & Usage Data",
-          "content": "Device model, OS version, device identifiers (advertising ID, IP address), app crash logs, anonymized usage statistics."
-        },
-        "loan": {
-          "title": "Loan Application Data",
-          "content": "Application status, KYC progress, correspondence, documented digital consents."
-        },
-        "thirdParty": {
-          "title": "Third-Party Data",
-          "content": "Collected only from authorized service providers"
+          "title": "Device/Phone Data",
+          "content": "SMS data, camera usage, microphone usage, location data, media/files, or other device facilities (including mobile phones) used for onboarding/KYC purposes related to loan or credit applications, with necessary permissions obtained."
         }
       },
-      "note": "We do not collect or store biometric data (fingerprints, facial recognition) in any form on any necessary retention.",
-      "communication": "Unless expressly opted out by you, we may use channels such as email, SMS, RCS, Whatsapp, instant messaging apps and call to disseminate promotional or service-related communications."
+      "smsNote": "In Quikkred we collect, monitor, and securely transmit to our servers only SMS data related to financial transactions, such as bank messages typically sent from 5- or 6-digit senders. This information may be securely transmitted to our Partner NBFC (Satsai Finlease Private Limited) and authorized service providers, only for the purposes described below. This data helps us identify your linked bank accounts, cash flow patterns, transaction descriptions, and amounts. We use this information solely for credit risk assessment, enabling faster loan disbursal, detecting fraudulent activity, and enhancing data security. We do not access personal or non-financial SMS messages.",
+      "phoneDataNote": "We may also enable Partner Lenders to access Phone Data from your mobile device for the purposes of onboarding, credit risk assessments, and related activities in connection with your loan or credit facility application. Quikkred collects such Phone Data as a one-time activity, limiting the collection to the duration necessary to complete your loan application on our Websites, Apps, and Platform. While we facilitate the collection of Phone Data from you, Quikkred does not have access to or store this data for any purposes; any storage will be managed by the Partner Lenders alone.",
+      "specialCategories": "As a matter of principle, we do not collect certain special categories of Personal Information, such as details about your race or ethnicity, religious or philosophical beliefs, sexual orientation, political opinions, trade union membership, health information, or any genetic and biometric data. However, we may collect certain Sensitive Personal Information necessary to provide our services or products to you, such as financial information including bank account numbers, credit or debit card details, and your Credit and Lending Information. In such instances, we ensure that this Sensitive Personal Information is used, processed, stored, and/or disclosed in accordance with the Quikkred Privacy Statement and in compliance with applicable laws of India.",
+      "thirdPartyNote": "If the Websites, Apps, or Platforms include links to third-party websites, plug-ins, and applications (including cookies, tracking technologies, and widgets by third-party advertisers), you should understand that by clicking on those links or enabling those connections, you may allow third parties to collect or share data about you. Quikkred does not oversee these third-party websites, plug-ins, and applications and is not responsible for their processing or use of your Personal Information or Sensitive Personal Information. Any information collected by a third party in this manner is subject to that third party's own data collection, use, and disclosure policies, and you should familiarize yourself with those policies."
     },
-    "purpose": {
-      "title": "3. Purpose of Use",
-      "intro": "We use your information only to:",
-      "items": [
-        "Complete KYC, assess loan eligibility, approval and disbursal via our NBFC partner.",
-        "Meet regulatory and RBI digital lending requirements.",
-        "Prevent fraud and protect the app's security.",
-        "Provide customer support and improve services through anonymized analytics."
+    "collection": {
+      "title": "How Do We Collect Your Personal Information?",
+      "intro": "The methods by which we collect your Personal Information (including Sensitive Personal Information) vary based on different scenarios:",
+      "directCollection": {
+        "title": "Direct Collection from You",
+        "intro": "We gather Personal Information directly from you through various interactions on our Websites, Apps, Platforms, or during any product or service offerings. Examples include:",
+        "items": [
+          "Providing your Contact Information for communication about our services and products.",
+          "Entering into a contract or verifying your identity through email, phone, or electronic means.",
+          "Submitting your Personal Information on our Apps, Websites, Platforms, or checkout pages to register for our services, take out a credit facility, or complete a transaction.",
+          "Applying for our products or services, either directly or through our business partners such as third-party websites, merchants, resellers, or other credit providers.",
+          "Registering with us directly to avail of any products or services, including initiating an account-based relationship.",
+          "Providing Identity and Account Log-In Information, Contact Information, Financial Information, Identification Information, and/or Payment Information on our App, Website, or payment pages to register for or complete a transaction.",
+          "Participating in a competition, promotion, or survey, or consenting to receive marketing materials.",
+          "Sending support requests for our products or services through one or more of our support desks.",
+          "Accessing, using, and/or browsing our Websites, Apps, or Platforms.",
+          "Granting one-time access to Phone Data and other sources via cookies or other means."
+        ]
+      },
+      "thirdPartyCollection": {
+        "title": "Collection from Third Parties or Publicly Available Sources",
+        "intro": "We also collect Personal Information through third parties, business partners, independent service providers, group entities, or from publicly available sources as permitted by applicable Indian laws. Examples include:",
+        "items": [
+          "Receiving information from merchants, marketplaces, resellers, banks, payment partners, payment aggregators, payment systems, payment service providers, credit information companies, and financial institutions. For example, a financial institution might share your information to check eligibility for our services.",
+          "Obtaining information from group entities or independent third parties for activities such as internal analysis or credit checks, and from Partner Lenders or other third parties during service provision.",
+          "Gathering Phone Data for operational reasons, such as referrals.",
+          "Collecting data from social platforms and networks when you grant permission, either directly or through cookies. For example, based on your social media settings, if you connect your social media account to a Quikkred product or do not disable cookies, certain information from your social media account may be shared with us.",
+          "Acquiring information from financial institutions and fraud prevention agencies for fraud and risk assessments. Before providing services, goods, or finances, we may conduct checks to prevent fraud and money laundering and verify your identity, requiring us to collect information from our business partners and independent service providers, including technology providers under contract.",
+          "Receiving credit information from companies like TransUnion, CIBIL Limited to share with Partner Lenders and their service providers.",
+          "Engaging third-party service providers or technology providers who assist with our business operations by collecting data from publicly available sources under contract.",
+          "Obtaining information from third parties such as merchants or e-commerce platforms that have a contract with you or have obtained your consent or other legal means under applicable Indian laws to share your information.",
+          "Collecting data from publicly available sources in compliance with applicable Indian laws."
+        ]
+      }
+    },
+    "lawfulGrounds": {
+      "title": "What Are the Lawful Grounds That We Rely on to Process Your Sensitive Personal Information?",
+      "content": [
+        "We process Sensitive Personal Information only with your explicit consent, as outlined below. By this Quikkred Privacy Statement, we seek your consent and provide notice regarding the collection, processing (including use and storage), disclosure, or sharing of your Sensitive Personal Information for one or more purposes detailed herein. When specific consent is required by applicable Indian laws, we will obtain such consent from you as necessary.",
+        "For information obtained from third parties or group entities, we rely on the consent these parties have obtained on their respective platforms on our behalf.",
+        "You may choose not to share certain information with us; however, this may limit our ability to provide some or all features and functionalities of our Websites, Apps, and Platforms. Consequently, this may affect our ability to process your Personal Information (including Sensitive Personal Information) and could result in the unavailability or discontinuation of services that require such information, at our discretion."
       ]
     },
-    "dataSharing": {
-      "title": "4. Data Sharing & Third Parties",
-      "intro": "We share data only with:",
+    "appPermissions": {
+      "title": "App Permissions and Data Collection",
+      "intro": "Our mobile application requires certain permissions to function effectively and provide you with our services. Below are the specific permissions we request and how the collected data is used:",
+      "permissions": {
+        "sms": {
+          "title": "SMS Permissions",
+          "content": "We may read the headers of all SMS to check the type of sender. We only read the indicative SMS content from 6-digit alpha numerical number for verification purposes. Pertinent information such as sender names, SMS content, received timestamps are periodically collected for the purpose of provision of financial and allied services and the data is transmitted to third parties. This information may be securely transmitted to our Partner NBFC (Satsai Finlease Private Limited) and authorized service providers, only for the purposes described below.",
+          "note": "It is important to note that we do not read or analyze personal or OTP messages, except OTP messages sent by us, which are linked to our purpose of use during lifetime of the app installed. This data may be used to verify financial statistics such as income, spending patterns which help us in the credit evaluation and may help us in facilitating higher limits, faster approval rates and for fraud detection & prevention."
+        },
+        "apps": {
+          "title": "Apps Permissions",
+          "content": "With your explicit consent, our app may collect metadata about installed and system applications on your device. This information is securely processed through our trusted technology partners, which provide device-intelligence services to our Partner NBFC, Satsai Finlease Private Limited.",
+          "usedFor": [
+            "Detecting potential fraud (e.g., presence of VPNs, gambling, or other high-risk apps)",
+            "Supporting identity verification and credit risk assessment",
+            "Helping the NBFC offer faster credit approvals and more suitable credit limits"
+          ],
+          "safeguards": [
+            "Only app metadata (name, package, version, install/update time, installer source) is collected.",
+            "No personal app usage data, messages, files, or content are accessed.",
+            "The data is not shared or sold for advertising or marketing.",
+            "Data is stored and processed only in India, in compliance with RBI Digital Lending Directions 2025 and the Digital Personal Data Protection Act, 2023."
+          ]
+        },
+        "location": {
+          "title": "Location Permissions",
+          "content": "With your explicit consent, our app may request one-time access to your device location. This is used strictly to:",
+          "usedFor": [
+            "Determine serviceability of your loan application",
+            "Reduce risk associated with loan processing",
+            "Provide pre-approved or customized loan offers",
+            "Support address verification, better credit risk assessment, and Know Your Customer (KYC) compliance"
+          ],
+          "note": "We do not continuously track your location. Location access is temporary and limited to the purposes stated above."
+        },
+        "device": {
+          "title": "Device Permissions",
+          "content": "With your consent, our app may collect limited device-related information to enhance security and prevent fraud. This may include:",
+          "collectedData": [
+            "Device model",
+            "Operating system version",
+            "Available RAM and storage"
+          ],
+          "note": "We do not collect permanently identifiable device identifiers (such as IMEI, serial number, or MAC address), in full compliance with Google Play policies, RBI Digital Lending Directions 2025, and the Digital Personal Data Protection Act, 2023."
+        },
+        "phoneState": {
+          "title": "Phone State Permissions",
+          "content": "Our app may request Phone State permission only with your explicit consent. This is strictly for:",
+          "usedFor": [
+            "Verifying that the device has an active SIM and valid network connection at the time of onboarding and disbursement",
+            "Ensuring the transaction is carried out by the rightful customer and preventing spoofing/fraud"
+          ],
+          "note": "We do not use this permission for call logs, contacts, or any unrelated purposes. All access is carried out in line with RBI Digital Lending Framework and applicable Indian privacy laws."
+        },
+        "camera": {
+          "title": "Camera Permissions",
+          "content": "Camera access is required for completing eKYC. This allows you to scan or capture identification details and documents digitally, making the process faster and reducing manual errors.",
+          "usage": "The captured data is used to complete your eKYC verification, validate your identity, and confirm loan eligibility as per regulatory standards.",
+          "note": "We do not collect or store biometric data."
+        }
+      },
+      "hostingNote": "Quikkred App is hosted in India and We ensure that every data or information that we collect from you is stored in servers located in India and the same is compliance with all the statutory/regulatory obligations.",
+      "consentNote": "We display just-in-time consent screens for permissions like SMS, location, phone state, and app list in accordance with Google Play policy."
+    },
+    "purposes": {
+      "title": "Purposes for Processing Your Personal Information",
+      "intro": "We process your Personal Information, including Sensitive Personal Information, for the following purposes:",
       "items": {
-        "nbfc": {
-          "title": "NBFC Lending Partner(s)",
-          "content": "For loan processing and disbursement."
+        "verification": {
+          "title": "Verification and Authentication",
+          "content": "We use your Personal Information to verify, authenticate, and authorize your use of our products or services. This includes creating login credentials, establishing account-based relationships, conducting KYC evaluations, and performing risk assessments. Depending on your role (merchant, consumer, borrower, service provider, or business partner) and your chosen services or products, we may require Identification Information, Identity and Account Log-In Information, Contact Information, and Financial Information. This is necessary for both Quikkred and our Partner Lenders to assess your application and fulfill legal obligations under Indian laws."
         },
-        "regulatory": {
-          "title": "Regulatory Authorities",
-          "content": "Where required by law."
+        "transaction": {
+          "title": "Transaction Processing",
+          "content": "To provide products or services, we may need to collect specific Personal Information, which varies based on the product offered by Quikkred or our Partner Lender. Credit and repayment transactions may require you to provide Personal Information directly through our Websites, Apps, or Platforms, especially when using a credit facility for purchases or payments."
         },
-        "technical": {
-          "title": "Verified Technical Service Providers",
-          "content": "Under contractual data protection obligations."
+        "service": {
+          "title": "Service Provision",
+          "content": "We process your Personal Information to deliver the products or services offered by us, our group companies, or business partners. This includes improving your experience on our Platforms, Websites, Apps, and merchant platforms. If other entities offer products or services on these platforms, we also process your Personal Information accordingly."
+        },
+        "risk": {
+          "title": "Internal Risk Assessments and Analysis",
+          "content": "We may process your Personal Information for risk assessments, KYC checks, service improvements, fraud reduction, and risk model development."
+        },
+        "legal": {
+          "title": "Business Protection and Legal Compliance",
+          "content": "We process your Personal Information to comply with applicable laws, regulations, standards, and codes. This includes authenticating your account access, protecting against identity theft and fraud, and fulfilling reporting obligations. We may collect and use information for anti-fraud systems and retain it for future reference. Additionally, we consult and report your information to financial or risk assessment centers as required by law or contracts, and verify your identity to ensure compliance with payment scheme rules and KYC norms."
+        },
+        "relationship": {
+          "title": "Relationship Management",
+          "content": "If you contact us or provide your Contact Information, we process your Personal Information to inform you about our products or services, notify you of service interruptions, request feedback for improvement, and communicate effectively with you. We also provide service assistance, problem solutions, and notifications related to the services or products you use."
+        },
+        "marketing": {
+          "title": "Marketing",
+          "content": "We use your Personal Information to market our products and services, including those of our business partners, independent service providers, and group entities. This includes informing you about events, offers, sponsorships, marketing programs, and campaigns. We also analyze your usage trends and preferences to develop and market new products, services, features, and functions based on this analysis."
+        },
+        "research": {
+          "title": "Research and Development",
+          "content": "We use your Personal Information for research to gain market insights and develop technologies, products, and services. This may involve machine learning and artificial intelligence techniques. We analyze visitor usage of our Websites, Apps, Platform, products, or services to improve and personalize our merchant and customer relationships. We also provide statistical insights and reports to our business partners or third parties based on the information we receive."
         }
       }
     },
-    "consent": {
-      "title": "5. Consent, Control & Withdrawal",
-      "items": [
-        "We obtain explicit consent prior to processing personal data.",
-        "You may withdraw consent at any time via the app settings or by contacting support.",
-        "Upon withdrawal, data deletion or restriction requests will be processed in compliance with RBI and legal requirements."
-      ]
-    },
-    "security": {
-      "title": "6. Data Security & Retention",
-      "items": [
-        "Your data is stored securely in India using AES-256 encryption and industry-standard access controls.",
-        "We retain personal data only as long as your account is active or as legally required.",
-        "Once retention periods expire, we securely delete or anonymize data.",
-        "We do not transfer or store data outside India."
-      ]
-    },
-    "rights": {
-      "title": "7. Your Rights",
-      "intro": "Under applicable laws, you have rights to:",
-      "items": {
-        "access": {
-          "title": "Access",
-          "content": "Access your personal data"
+    "disclosure": {
+      "title": "When and to Whom Do We Disclose Your Personal Information?",
+      "intro": "We may share your Personal Information, including Sensitive Personal Information, in the following scenarios:",
+      "scenarios": {
+        "support": {
+          "title": "Support and Technical Services",
+          "content": "We share information with business partners, third parties, and service providers to receive and provide support and technical services."
         },
-        "rectify": {
-          "title": "Rectify",
-          "content": "Correct inaccurate information"
+        "research": {
+          "title": "Research and Analytics",
+          "content": "We disclose information to contribute to research, data analytics, and studies aimed at improving our products and services."
         },
-        "erase": {
-          "title": "Erase",
-          "content": "Request deletion of your data"
+        "products": {
+          "title": "Product and Service Offerings",
+          "content": "We share your information to offer you products and services, including combined offerings from our partners."
         },
-        "port": {
-          "title": "Port",
-          "content": "Receive your data in portable format"
+        "phoneData": {
+          "title": "Phone Data Sharing with Partner Lenders",
+          "content": "We share Phone Data with Partner Lenders to assess your eligibility for loans or credit facilities. Partner Lenders use this data for credit risk assessments and related activities connected to your application. We advise you to review the privacy policies of Partner Lenders to understand their data processing practices."
+        },
+        "creditInfo": {
+          "title": "Credit Information Sharing",
+          "content": "Partner Lenders may share your credit information, documents from credit information companies, and KYC details with their affiliates, group companies, Quikkred, and its agents or service providers. This is done for evaluating applications, conducting credit assessments, onboarding, due diligence, and monitoring creditworthiness. Again, reviewing Partner Lenders' privacy policies is encouraged."
         }
       },
-      "withdraw": "Withdraw consent or restrict processing. Lodge complaints with Quikkred's Data Protection Officer:",
-      "dpo": {
-        "title": "Data Protection Officer",
-        "name": "Miss Priya",
-        "email": "dpo@quikkred.in",
-        "phone": "+91-9311964796"
+      "externalThirdParties": {
+        "title": "External Third Parties",
+        "intro": "We may share your information with:",
+        "items": [
+          "Other Third Parties and Financial Institutions: To enable these entities to market and offer their products and services to you, and to understand your interests, habits, and usage patterns for certain programs, services, advertisements, and promotions.",
+          "Merchants: According to our service agreements, either directly or through third parties like payment aggregators or referral partners.",
+          "CKYC (Central KYC Registry): As required by Indian law.",
+          "Authorized Financial Institutions and Banking Partners: With whom we collaborate to create and offer products and services.",
+          "Third-Party Service Providers or Vendors: Who assist us with business operations, including KYC processes, eligibility checks, and data storage as required by Partner Lenders.",
+          "Mergers and Acquisitions: Companies we plan to merge with or entities that we may acquire or be acquired by, ensuring they adhere to this Privacy Statement.",
+          "Legal and Regulatory Requirements: When required by law enforcement, government officials, fraud detection agencies, financial institutions, or other third parties, under applicable laws such as subpoenas, court orders, or regulatory queries.",
+          "International Entities: With whom we partner for the development or offering of products and services, subject to the requirements of this Privacy Statement and applicable laws."
+        ]
       },
-      "grievanceTime": "We commit to addressing grievances within 30 days."
+      "contactNote": "For further details about service providers or third parties with whom your data will be shared, please contact us at: 9311913854."
     },
-    "children": {
-      "title": "8. Children's Privacy",
-      "content": "Our services are not intended for users under 18. We do not deliberately collect data from minors."
+    "marketing": {
+      "title": "Marketing",
+      "content": [
+        "Regarding the products and services we offer or those provided by third parties with whom we share your Personal Information and Sensitive Personal Information according to this Quikkred Privacy Statement, you may receive marketing communications from Quikkred or other business partners or third parties. These communications may come via messages, email, or other digital modes on Platforms, Websites, Apps, or social media platforms if you have shared your Personal Information or Sensitive Personal Information with us. We may use these communications to market our products and services, as well as those offered by third parties.",
+        "These marketing activities will comply with applicable laws. We have contracts with our merchants, service providers, banks, and other third parties for these marketing activities. You have the right to opt-out of receiving such marketing communications by clicking the opt-out link (if available), unsubscribing through the provided link, or writing to us at help@quikkred.in.",
+        "Quikkred may also use Marketing and Communications Information to enhance and tailor the content of our ads, promotions, and advertising to better suit your interests."
+      ]
     },
-    "updates": {
-      "title": "9. Policy Updates",
-      "content": "We will notify users of changes via the app and support page. Continued usage implies acceptance."
+    "retention": {
+      "title": "Data Retention and Deletion",
+      "content": [
+        "Quikkred shall not retain personal information longer than is necessary to fulfil the purposes for which it was collected and as permitted by applicable law. However, the Lending partners will retain your personal information as needed during the tenure of loan and even after termination of account to comply with our legal and regulatory obligations, resolve disputes, conclude any activities related to the cancellation of an account, investigate, or prevent fraud and other inappropriate activity, enforce our agreements, and for other business reasons.",
+        "Your data may also be retained temporarily in backup systems to ensure disaster recovery, system restoration, or legal hold purposes, although access will be restricted, and deletion will be scheduled in accordance with our internal retention protocols.",
+        "By continuing to use our services, you agree to this data retention policy. You may contact our Grievance Officer at any time to exercise your right to access, correct, or request deletion of your personal data."
+      ],
+      "grievanceOfficer": {
+        "title": "Grievance Redressal Officer",
+        "name": "Miss Priya",
+        "mobile": "+91-9311913854",
+        "email": "dpo@quikkred.in"
+      },
+      "deletionSteps": {
+        "title": "How to Submit a Deletion Request",
+        "steps": [
+          "Send an email to help@quikkred.in",
+          "Use the email address that is valid or registered with the Quikkred app",
+          "Include the subject line: Quikkred Account Deletion Request",
+          "Include all necessary details in your email for verification"
+        ],
+        "moreInfo": "For more information on this, please visit https://quikkred.in/account-deletion."
+      }
     },
-    "compliance": {
-      "title": "10. Regulatory Compliance",
-      "content": "Quikkred acts only as LSP, with loans issued by RBI-regulated Satsai Finlease Private Limited (NBFC).",
-      "note": "Our policies ensure full compliance with RBI Digital Lending Directions 2025 and the DPDP Act 2023."
+    "rights": {
+      "title": "Your Individual Rights",
+      "intro": "We are committed to enabling you to exercise your privacy rights under applicable laws and our internal policies. Quikkred aims to provide reasonable assistance with requests related to the processing of your Personal Information, the amendment of your Personal Information, and the withdrawal of consent for processing your Sensitive Personal Information. In accordance with applicable laws and our policies, you can exercise the following rights:",
+      "items": {
+        "review": {
+          "title": "Review, Correct, or Rectify",
+          "content": "You can request that we review, correct, or change any inaccurate Personal Information (including Sensitive Personal Information) we process about you within the timeframe specified by applicable laws."
+        },
+        "access": {
+          "title": "Right to Access",
+          "content": "You may request a record of your Personal Information (including Sensitive Personal Information) that we are processing, upon verification of your identity."
+        }
+      },
+      "exerciseNote": "To exercise any of the above rights, please submit a request at help@quikkred.in. Note that these rights are limited in certain situations, such as when we are legally obligated to process or retain your Personal Information (including Sensitive Personal Information). This may also impact our ability to process your Personal Information, potentially leading to the discontinuation of services or products that require this information, at our sole discretion.",
+      "deletionNote": "Please note that you do not have an unqualified right to delete your Personal Information (including Sensitive Personal Information) under applicable laws. If you wish to delete your Personal Information, you will need to cease using the loan or credit facility immediately and settle all outstanding dues related to the loan or credit facility provided by Quikkred or its Partner Lenders. In such cases, Quikkred and/or the Partner Lenders will no longer be able to continue providing the loan or credit facility to you.",
+      "deletionRequest": "If you wish to delete your Personal Information (including Sensitive Personal Information) stored by Quikkred and/or its Partner Lenders, you may be required to clear all outstanding dues related to the relevant products and services. You can request this through Quikkred and/or the Partner Lender by submitting a request at help@quikkred.in. Be aware that the right to request data deletion is limited in some cases. If Quikkred and/or its Partner Lenders are legally required to process or retain your Personal Information for a specific period, they may continue to retain and process the information. A data deletion request may impact Quikkred and/or its Partner Lenders' ability to process your Personal Information, potentially leading to the discontinuation of services or products that require this information.",
+      "withdrawConsent": "If you wish to revoke or withdraw your consent to collect, store, use, process, or share any Personal Information (including Sensitive Personal Information), please inform Quikkred by writing to help@quikkred.in and immediately cease using the loan or credit facility. You must also settle all outstanding dues related to the loan or credit facility provided by Quikkred and/or its Partner Lenders. In such cases, Quikkred and/or its Partner Lenders will no longer be able to provide the loan or credit facility to you."
+    },
+    "sharing": {
+      "title": "Sharing and Transfer of Information",
+      "content": [
+        "Quikkred may share information with individuals and body corporate in the course of normal business operations, and the customer has subscribed for, and any activity related to these services such as a collection of the fee. We share your information only with regulated partners and third parties under strict confidentiality agreements.",
+        "It may become necessary for Quikkred to disclose the customer personal information to its Lending partner or agents in the course of normal business operations for the above-referred purpose. Your personal data is shared only with: Regulated lending partners (Banks/NBFCs), Credit Information Companies (e.g., CIBIL, Experian), Third-party service providers (e.g., e-KYC, e-sign, payment gateways, alternate data providers), and Government/regulatory bodies as mandated by law (e.g., RBI, tax authorities, law enforcement).",
+        "However, these parties would be required to use the information obtained from Quikkred for such purposes exclusively and protect the personal information, including but not restricted to, Sensitive Personal and Financial Information under a strict code of confidentiality.",
+        "We will not voluntarily disclose your personal information to any non-connected third party but in certain circumstances, we may do so if we are required by court order, by Government Authorities, by law enforcement authorities, by statutory authorities or by other legal processes or where it becomes necessary to do so to protect the rights or property of the site and/or its group companies/affiliates, etc. We may also disclose your information to a third party as part of a merger, cooperation towards delivering services or transfer, or any restructuring.",
+        "We will only use your personal information data for the purposes for which we collect it unless we reasonably consider that we need to use it for another reason and that reason is compatible with the original purpose."
+      ],
+      "thirdPartiesLink": "The list of third parties collecting Information through the App is available on our website (https://quikkred.in/thirdparties), which will be updated from time to time, for your reference."
+    },
+    "security": {
+      "title": "Security: How We Protect and Store Personal Information",
+      "content": [
+        "We prioritize the security of your Personal Information and Sensitive Personal Information. To this end, we implement a range of physical, technical, managerial, and operational measures designed to protect the integrity and security of the information we collect and maintain, as required by applicable laws. All Personal Information and Sensitive Personal Information are stored on servers located in India.",
+        "Quikkred routinely reviews its policies on the collection, storage, and processing of your Personal Information (including Sensitive Personal Information). This includes implementing physical security measures to prevent unauthorized access, alteration, loss, or fraudulent activity. We have procedures in place to address any breaches of Personal Information and will notify you, along with any relevant regulators or authorities, if required by law."
+      ]
+    },
+    "minors": {
+      "title": "Minors",
+      "content": "Quikkred does not intentionally collect, use, or disclose Personal Information of minors, according to the minimum age equivalent in the relevant jurisdiction, without prior consent from a parent or guardian. Our services are not designed to attract minors. If we discover that we have inadvertently collected Personal Information (including Sensitive Personal Information) from a minor without verifiable parental consent, we will take reasonable steps to delete that information in accordance with applicable Indian laws as soon as possible."
+    },
+    "changes": {
+      "title": "Changes to the Quikkred Privacy Statement and Your Duty to Inform Us of Changes",
+      "content": [
+        "The Quikkred Privacy Statement may be updated or amended over time. The most current version of this Privacy Policy will be published on our Website, App, or Platform, as applicable. We encourage you to periodically review this page to stay informed about any changes. Any significant updates will be communicated via our Website, App, or Platform. By continuing to use our services after any amendments, you accept the revised Privacy Statement. If you disagree with the terms of the updated Privacy Statement, you should stop using our services and notify us.",
+        "It is crucial that the Personal Information and Sensitive Personal Information we have about you is accurate and up to date. Please inform us of any changes to your Personal Information and/or Sensitive Personal Information."
+      ]
+    },
+    "consent": {
+      "title": "Consent",
+      "content": "By submitting your data to Quikkred, you consent to the collection, use, storage, disclosure, and processing of your Personal Information (including Sensitive Personal Information) as described in this Privacy Policy. If you do not agree with these terms, please do not use our services."
     }
   }
 }

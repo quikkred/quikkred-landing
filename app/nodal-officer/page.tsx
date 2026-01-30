@@ -100,8 +100,8 @@ export default function NodalOfficerPage() {
                 <Phone className="w-6 h-6 text-[#25B181] flex-shrink-0" />
                 <div>
                   <h3 className="font-bold mb-1">Phone Number</h3>
-                  <a href="tel:+919311964796" className="text-[#25B181] hover:underline">
-                    +91-9311964796
+                  <a href="tel:+919311913854" className="text-[#25B181] hover:underline">
+                    +91-9311913854
                   </a>
                 </div>
               </div>
@@ -199,7 +199,7 @@ export default function NodalOfficerPage() {
                 </p>
                 <p className="flex items-center gap-2">
                   <Phone className="w-4 h-4" />
-                  <span>+91-9311964796</span>
+                  <span>+91-9311913854</span>
                 </p>
               </div>
             </div>

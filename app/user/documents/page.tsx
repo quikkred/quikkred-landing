@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from "nextjs-toploader/app";
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Upload, FileText, Download, Share2, Trash2, CheckCircle,
@@ -11,6 +11,8 @@ import { toast, Toaster } from '@/components/ui/toast';
 import { API_BASE_URL } from '@/lib/config';
 import { useDocuments } from '@/store/hooks/useDocuments';
 import getToken from '@/lib/getToken';
+import { useAuth } from '@/contexts/AuthContext';
+import useAxios from '@/hooks/useAxios';
 
 interface Document {
   id: string;
@@ -23,6 +25,8 @@ interface Document {
 
 export default function DocumentsPage() {
   const router = useRouter();
+  const { user } = useAuth();
+  const axios = useAxios();
 
   // Redux state for documents
   const {
@@ -300,33 +304,39 @@ export default function DocumentsPage() {
     setDeleteConfirm({ show: false, doc: null });
 
     try {
-      const token = await getToken();
-      const userId = localStorage.getItem('userId');
+      // const token = await getToken();
+      // const userId = localStorage.getItem('userId');
 
-      if (!token || !userId) {
-        toast({
-          title: 'Authentication Required',
-          description: 'Please log in to delete documents',
-          variant: 'warning'
-        });
-        return;
-      }
+      // if (!token || !userId) {
+      //   toast({
+      //     title: 'Authentication Required',
+      //     description: 'Please log in to delete documents',
+      //     variant: 'warning'
+      //   });
+      //   return;
+      // }
 
-      const response = await fetch(`${API_BASE_URL}/api/document/delete`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          userId: userId,
-          docType: doc.type
-        })
+      // const response = await fetch(`${API_BASE_URL}/api/document/delete`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Authorization': `Bearer ${token}`,
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify({
+      //     userId: userId,
+      //     docType: doc.type
+      //   })
+      // });
+      // const result = await response.json();
+
+      const userId = user?.id || null;
+      const response = await axios.post("/api/document/delete", {
+        userId,
+        docType: doc.type,
       });
+      const result = response.data;
 
-      const result = await response.json();
-
-      if (response.ok && result.success) {
+      if ((response.status === 200 || response.status === 201) && result.success) {
         // Remove document from local state
         setDocuments(docs => docs.filter(d => d.id !== doc.id));
         toast({

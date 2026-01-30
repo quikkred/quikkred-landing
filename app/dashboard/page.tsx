@@ -1,6 +1,6 @@
 'use client';
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from "nextjs-toploader/app";
 import { useAuth } from '@/contexts/AuthContext';
 
 export const dynamic = 'force-dynamic';
