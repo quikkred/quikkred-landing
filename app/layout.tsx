@@ -107,12 +107,10 @@ gtag('config', 'G-JT6CHHWW78');
 gtag('config', 'AW-17796230994');`,
           }}
         />
-        {/* Meta Pixel Code - Beta & Production only */}
-        {process.env.NEXT_PUBLIC_API_URL !== 'https://alpha.quikkred.in' && (
-          <>
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `!function(f,b,e,v,n,t,s)
+        {/* Meta Pixel Code */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `!function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};
 if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
@@ -120,12 +118,11 @@ n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '763439572919909');
+fbq('init', '2940321649486833');${process.env.NEXT_PUBLIC_API_URL !== 'https://alpha.quikkred.in' ? `
+fbq('init', '763439572919909');` : ''}
 fbq('track', 'PageView');`,
-              }}
-            />
-          </>
-        )}
+          }}
+        />
         {/* Language Detection Script */}
         <script
           dangerouslySetInnerHTML={{
@@ -199,6 +196,16 @@ fbq('track', 'PageView');`,
             height="0"
             width="0"
             style={{ display: 'none', visibility: 'hidden' }}
+          />
+        </noscript>
+        {/* Meta Pixel (noscript) - All environments */}
+        <noscript>
+          <img
+            height="1"
+            width="1"
+            style={{ display: 'none' }}
+            src="https://www.facebook.com/tr?id=2940321649486833&ev=PageView&noscript=1"
+            alt=""
           />
         </noscript>
         {/* Meta Pixel (noscript) - Beta & Production only */}
