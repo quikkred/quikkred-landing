@@ -115,7 +115,7 @@ export default function InvestorRelationsPage() {
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold font-sora leading-tight mb-6">
               Investor Relations
             </h1>
-            <p className="text-lg sm:text-xl lg:text-2xl text-white/90 leading-relaxed max-w-3xl mx-auto">
+            <p className="text-sm sm:text-xl lg:text-2xl text-white/90 leading-relaxed max-w-3xl mx-auto">
               Building India's most innovative and transparent NBFC platform with strong fundamentals and sustainable growth.
             </p>
           </motion.div>
@@ -123,8 +123,8 @@ export default function InvestorRelationsPage() {
       </section>
 
       {/* Key Metrics Section */}
-      <section className="py-16 sm:py-20 lg:py-24">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-8 sm:py-10 lg:py-12">
+        <div className="container mx-auto sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -133,17 +133,17 @@ export default function InvestorRelationsPage() {
             className="max-w-5xl mx-auto"
           >
             {/* Section Header */}
-            <div className="text-center mb-12 sm:mb-16">
+            <div className="text-center mb-5 sm:mb-16">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 font-sora mb-4">
                 Key Metrics
               </h2>
-              <p className="text-gray-500 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
+              <p className="text-gray-500 text-sm sm:text-lg max-w-2xl mx-auto leading-relaxed">
                 Real-time performance indicators showcasing our financial strength and market position.
               </p>
             </div>
 
             {/* Metrics Grid */}
-            <div className="bg-white rounded-2xl p-12 text-center border border-[#EDEDED]">
+            <div className="bg-white rounded-2xl p-6 sm:p-12 text-center border border-[#EDEDED]">
               <div className="text-xl font-semibold text-gray-400 mb-2">
                 Financial Metrics
               </div>
@@ -156,8 +156,8 @@ export default function InvestorRelationsPage() {
       </section>
 
       {/* Investment Highlights Section */}
-      <section className="bg-[#F6F6F6] py-16 sm:py-20 lg:py-24">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-[#F6F6F6] py-8 sm:py-10 lg:py-12">
+        <div className="container mx-auto sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -166,11 +166,11 @@ export default function InvestorRelationsPage() {
             className="max-w-6xl mx-auto"
           >
             {/* Section Header */}
-            <div className="text-center mb-12 sm:mb-16">
+            <div className="text-center mb-5 sm:mb-16">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 font-sora mb-4">
                 Investment Highlights
               </h2>
-              <p className="text-gray-500 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
+              <p className="text-gray-500 text-sm sm:text-lg max-w-2xl mx-auto leading-relaxed">
                 Discover what makes QuikKred a compelling investment opportunity in India's fintech landscape.
               </p>
             </div>
@@ -205,7 +205,7 @@ export default function InvestorRelationsPage() {
         </div>
       </section>
 
-      <section className="container mx-auto px-4 py-12">
+      {/* <section className="container mx-auto px-4 py-12"> */}
 
         {/* Financial Performance Chart */}
         {/* <motion.div
@@ -318,11 +318,11 @@ export default function InvestorRelationsPage() {
           </div>
         </motion.div> */}
 
-      </section>
+      {/* </section> */}
 
       {/* CTA Section */}
-      <section className="py-16 sm:py-20 lg:py-24">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="px-0 sm:px-auto py-0 sm:py-10 lg:py-12">
+        <div className="container mx-auto sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -330,19 +330,19 @@ export default function InvestorRelationsPage() {
             transition={{ duration: 0.6 }}
             className="max-w-5xl mx-auto"
           >
-            <div className="bg-gradient-to-b from-[#6FAEFF] to-[#2E4F8E] rounded-3xl px-6 sm:px-12 lg:px-16 py-16 sm:py-20 lg:py-24 text-center shadow-xl">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white font-sora mb-6 leading-tight">
+            <div className="bg-gradient-to-b from-[#6FAEFF] to-[#2E4F8E] sm:rounded-3xl px-6 sm:px-12 lg:px-16 py-8 sm:py-10 lg:py-12 text-center shadow-xl">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white font-sora mb-6 leading-tight">
                 Ready to Enhance Your Employee Benefits?
               </h2>
-              <p className="text-white/90 text-base sm:text-lg lg:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+              <p className="text-white/90 text-sm sm:text-lg lg:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
                 Schedule a demo to see how QuikKred can transform your employee financial wellness program.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="/contact">
-                  <button className="w-full sm:w-auto px-8 py-4 bg-[#1B1F3B] text-white font-semibold rounded-xl shadow-lg hover:scale-105 hover:shadow-xl transition-all">
+                <Link href="/contact">
+                  <button className="w-full sm:w-auto px-8 py-4 bg-[#1B1F3B] border-2 border-solid border-[#1B1F3B] text-white font-semibold rounded-xl shadow-lg hover:scale-105 hover:shadow-xl transition-all">
                     Schedule a Demo
                   </button>
-                </a>
+                </Link>
                 <a href="mailto:investors@quikkred.com">
                   <button className="w-full sm:w-auto px-8 py-4 bg-transparent border-2 border-white text-white font-semibold rounded-xl hover:bg-white/10 hover:scale-105 transition-all">
                     Email Us

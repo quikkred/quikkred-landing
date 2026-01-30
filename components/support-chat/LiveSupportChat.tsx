@@ -19,6 +19,7 @@ import {
   User, Loader2, ChevronDown
 } from 'lucide-react';
 import { API_BASE_URL } from '@/lib/config';
+import getToken from '@/lib/getToken';
 
 interface SupportAgent {
   id: string;
@@ -203,9 +204,7 @@ export default function LiveSupportChat({
   // Get AI response (appears as human agent)
   const getAIResponse = useCallback(async (userMessage: string) => {
     try {
-      const token = localStorage.getItem('accessToken') ||
-                    localStorage.getItem('authToken') ||
-                    localStorage.getItem('token');
+      const token = await getToken();
       const customerId = localStorage.getItem('userId');
 
       const response = await fetch(`${API_BASE_URL}/api/ai/chat`, {

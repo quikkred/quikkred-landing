@@ -5,6 +5,7 @@ import io, { Socket } from 'socket.io-client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { WS_EVENTS, WSMessage, DEFAULT_WS_OPTIONS } from '@/lib/websocket-client';
+import { useSession } from 'next-auth/react';
 
 
 interface WebSocketContextType {
@@ -36,6 +37,7 @@ interface WebSocketProviderProps {
 
 export function WebSocketProvider({ children, url }: WebSocketProviderProps) {
   const { user } = useAuth();
+  const { data } = useSession();
   const { addNotification } = useNotifications();
   const [socket, setSocket] = useState<Socket | null>(null);
   const [connected, setConnected] = useState(false);
@@ -82,7 +84,7 @@ export function WebSocketProvider({ children, url }: WebSocketProviderProps) {
       newSocket.emit(WS_EVENTS.AUTH, {
         userId: user.id,
         role: 'USER',
-        token: localStorage.getItem('token') // If using JWT
+        token: (data as any)?.accessToken || localStorage.getItem('token') // If using JWT
       });
 
       // Start latency monitoring

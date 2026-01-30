@@ -4,7 +4,13 @@ import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useQuickApplyTracking } from "@/lib/hooks/useQuickApplyTracking";
 
-const GoogleVerify = () => {
+const GoogleVerify = ({
+    callbackURL = "/user",
+    buttonText = "Google"
+}: {
+    callbackURL?: string;
+    buttonText?: string;
+}) => {
     const [isLoading, setIsLoading] = useState(false);
 
     // Tracking
@@ -14,7 +20,7 @@ const GoogleVerify = () => {
         try {
             setIsLoading(true);
             trackGoogleAuthStarted();
-            await signIn("google", { callbackUrl: "/apply/quick" });
+            await signIn("google", { callbackUrl: callbackURL });
         } catch (error) {
             console.error("Google Sign In Error:", error);
             const errorMsg = error instanceof Error ? error.message : "Google sign-in failed";
@@ -45,7 +51,7 @@ const GoogleVerify = () => {
             ) : (
                 <>
                     <GoogleIcon />
-                    <span className="hidden xs:inline">Google</span>
+                    <span className="hidden xs:inline">{buttonText}</span>
                 </>
             )}
         </button>

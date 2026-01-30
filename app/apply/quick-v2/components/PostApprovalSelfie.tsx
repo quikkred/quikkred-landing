@@ -9,6 +9,7 @@ import {
 import { QuickApplyV2FormData } from '@/lib/types/quickApplyV2';
 import { API_BASE_URL } from '@/lib/config';
 import { useQuickApplyTracking, useVerificationFrictionTracking } from '@/lib/hooks/useQuickApplyTracking';
+import getToken from '@/lib/getToken';
 
 // MOCK MODE - Set to false for production with real APIs
 // Set to true only for local testing without backend
@@ -237,7 +238,7 @@ export default function PostApprovalSelfie({
         }
 
         try {
-            const token = localStorage.getItem('accessToken');
+            const token = await getToken();
 
             const formDataUpload = new FormData();
             formDataUpload.append('photo', capturedFile!);

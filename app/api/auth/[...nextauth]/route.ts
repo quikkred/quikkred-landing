@@ -86,12 +86,13 @@ export const authOptions: AuthOptions = {
         const requestId = credentials?.requestId;
         if (!requestId) return null;
 
-        const maxRetries = 5;
+        const maxRetries = 10;
         const delayMs = 2000;
 
         for (let i = 0; i < maxRetries; i++) {
           try {
-            const res = await fetch(`${API_BASE_URL}/test2/truecaller/verify`, {
+            // const res = await fetch(`${API_BASE_URL}/api/test2/truecaller/verify`, {
+            const res = await fetch(`${API_BASE_URL}/api/auth/customer/truecaller/verify`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ requestId }),
@@ -129,7 +130,15 @@ export const authOptions: AuthOptions = {
     }),
   ],
 
-  session: { strategy: "jwt" },
+  session: {
+    strategy: "jwt",
+    // maxAge: 30, // seconds
+    // updateAge: 0,
+  },
+
+  // jwt: {
+  //   maxAge: 30,
+  // },
 
   callbacks: {
     async jwt({ token, account, user }) {
@@ -149,6 +158,7 @@ export const authOptions: AuthOptions = {
             });
 
             const result = await res.json();
+            // console.log("Backend login response (google):", result);
 
             if (result?.success) {
               token.accessToken = result.data.accessToken;

@@ -10,6 +10,7 @@ import { QuickApplyV2FormData, BREDecision, ApprovalDetails } from '@/lib/types/
 import { formatCurrency, formatDate, calculateLoanDetails, TIMERS } from '@/lib/constants/quickApplyV2';
 import { API_BASE_URL } from '@/lib/config';
 import { useQuickApplyTracking } from '@/lib/hooks/useQuickApplyTracking';
+import getToken from '@/lib/getToken';
 
 // MOCK MODE - Set to false for production with real APIs
 const MOCK_MODE = false;
@@ -79,7 +80,7 @@ export default function ApprovalProcessing({
 
         const pollBREStatus = async () => {
             try {
-                const token = localStorage.getItem('accessToken');
+                const token = await getToken();
                 const response = await fetch(
                     `${API_BASE_URL}/api/loan/status/${applicationId}`,
                     {
