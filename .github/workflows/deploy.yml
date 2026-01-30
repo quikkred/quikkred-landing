@@ -1,5 +1,5 @@
 # Quikkred Landing & Dashboard CI/CD Pipeline
-# Last updated: 2025-01-18 - Added scheduled production deployment at 4 AM IST
+# Last updated: 2026-01-26 - Deploy on push to main + scheduled at 12 AM IST
 name: Quikkred Landing & Dashboard CI/CD Pipeline
 
 on:
@@ -18,15 +18,14 @@ on:
         required: false
         default: false
         type: boolean
-  # DISABLED - Mobile OTP issue, will enable on Monday
-  # schedule:
-  #   # 4:00 AM IST = 22:30 UTC (previous day)
-  #   - cron: '30 22 * * *'
+  schedule:
+    # 12:00 AM IST = 18:30 UTC (previous day)
+    - cron: '30 18 * * *'
   push:
     branches:
       - develop    # Deploy to Alpha (Hostinger KVM8)
       - staging    # Deploy to Beta (AWS ECS)
-      - main       # Build & Test only (Production deploys on schedule)
+      - main       # Deploy to Production (AWS ECS)
   pull_request:
     branches:
       - develop
@@ -64,7 +63,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          NEXT_PUBLIC_API_URL: ${{ github.ref == 'refs/heads/main' && 'https://api.quikkred.in' || github.ref == 'refs/heads/staging' && 'https://beta.quikkred.in' || 'https://alpha.quikkred.in' }}
+          NEXT_PUBLIC_API_URL: ${{ github.ref == 'refs/heads/main' && 'https://api.quikkred.in' || github.ref == 'refs/heads/staging' && 'https://beta.quikkred.in' || github.ref == 'refs/heads/develop' && 'https://api.quikkred.in' }}
 
   # ============================================
   # DEPLOY TO ALPHA (Hostinger KVM8)
@@ -97,7 +96,7 @@ jobs:
 
             npm ci
 
-            NEXT_PUBLIC_API_URL=https://alpha.quikkred.in npm run build
+            NEXT_PUBLIC_API_URL=https://api.quikkred.in npm run build
 
             pm2 delete quikkred-landing 2>/dev/null || true
             PORT=3002 pm2 start npm --name "quikkred-landing" -- start
@@ -108,7 +107,7 @@ jobs:
       - name: Health Check
         run: |
           sleep 15
-          response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://alpha.quikkred.in || echo "000")
+          response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://api.quikkred.in || echo "000")
           echo "Alpha health check: $response"
 
   # ============================================
@@ -207,13 +206,13 @@ jobs:
 
   # ============================================
   # DEPLOY TO PRODUCTION (AWS ECS)
-  # Triggers on: schedule (4 AM IST) or manual workflow_dispatch with deploy_now=true
-  # Regular pushes to main only build & test, deployment happens on schedule
+  # Triggers on: push to main, schedule (12 AM IST), or manual workflow_dispatch
   # ============================================
   deploy-production:
     needs: build-and-test
     if: |
       github.ref == 'refs/heads/main' && (
+        github.event_name == 'push' ||
         github.event_name == 'schedule' ||
         (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_now == 'true')
       )
