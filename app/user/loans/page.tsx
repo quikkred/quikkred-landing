@@ -2323,8 +2323,6 @@ export default function MyLoansPage() {
                         <option value="7">7 Days</option>
                         <option value="15">15 Days</option>
                         <option value="30">30 Days</option>
-                        <option value="60">60 Days</option>
-                        <option value="90">90 Days</option>
                       </select>
                     </div>
 
