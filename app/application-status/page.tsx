@@ -19,10 +19,7 @@ import {
   Search
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "nextjs-toploader/app";
 import { Suspense } from "react";
-import { getSession } from "next-auth/react";
-import getToken from "@/lib/getToken";
 
 // Declare global types for tracking
 declare global {
@@ -82,7 +79,6 @@ function fireTrackingEvents(status: string, loanNumber?: string, amount?: string
 }
 
 function ApplicationStatusContent() {
-  const router = useRouter();
   const [statusData, setStatusData] = useState<ApplicationStatusData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [noData, setNoData] = useState(false);
