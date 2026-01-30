@@ -3,10 +3,12 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 import {
   CheckCircle, X, Loader2, FileText, IndianRupee,
   Calendar, User, Phone, Mail, CreditCard, Camera,
-  AlertCircle, ArrowRight, Sparkles, Shield, Zap
+  AlertCircle, ArrowRight, Sparkles, Shield, Zap,
+  Percent, Building2, Users, BadgeCheck, Landmark, Star
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast, Toaster } from "@/components/ui/toast";
@@ -48,13 +50,14 @@ export default function QuickLoanApplication() {
   } = useCustomer();
 
   const [currentStep, setCurrentStep] = useState(1);
+  const [showLandingPage, setShowLandingPage] = useState(true); // LiveMint-style landing page state
   const [loading, setLoading] = useState(false);
   const [decision, setDecision] = useState<any>(null);
   const [selfieCapture, setSelfieCapture] = useState(false);
   const [selfieCaptured, setSelfieCaptured] = useState(false);
   const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
   const [selfieVerified, setSelfieVerified] = useState(false); // Profile photo verification status
-  const [verificationMethod, setVerificationMethod] = useState<'mobile' | 'email'>('email'); // Email is default
+  const [verificationMethod, setVerificationMethod] = useState<'mobile' | 'email'>('email');
   const [userDataLoaded, setUserDataLoaded] = useState(false);
   const [panVerifying, setPanVerifying] = useState(false);
   const [aadhaarVerifying, setAadhaarVerifying] = useState(false);
@@ -388,6 +391,8 @@ export default function QuickLoanApplication() {
               // Set the determined step
               setApiDeterminedStep(firstPendingStep);
 
+              // Skip landing page for logged-in users
+              setShowLandingPage(false);
               setUserDataLoaded(true);
             } else {
               setFormData(prev => ({
@@ -1338,8 +1343,9 @@ export default function QuickLoanApplication() {
   const sendOTP = async () => {
     setLoading(true);
     try {
-      // Email-only OTP verification
-      const payload = { email: formData.email };
+      const payload = verificationMethod === 'email'
+        ? { email: formData.email }
+        : { mobile: formData.mobile };
       console.log('Sending OTP with payload:', payload);
 
       const response = await fetch(`${API_BASE_URL}/api/auth/customer/create`, {
@@ -1355,11 +1361,10 @@ export default function QuickLoanApplication() {
       if (response.ok && data.success) {
         setOtpSent(true);
         setEmailOtpTimer(30); // Start 30 second countdown
-
         toast({
           variant: "success",
-          title: "Email OTP Sent! 📧",
-          description: "Please check your email inbox for the OTP.",
+          title: "OTP Sent Successfully!",
+          description: `A one-time password has been sent to your ${verificationMethod}. Please check and enter it below.`,
         });
       } else {
         toast({
@@ -1391,8 +1396,9 @@ export default function QuickLoanApplication() {
 
     setLoading(true);
     try {
-      // Email-only OTP verification
-      const payload = { email: formData.email, otp: formData.otp };
+      const payload = verificationMethod === 'email'
+        ? { email: formData.email, otp: formData.otp }
+        : { mobile: formData.mobile, otp: formData.otp };
 
       // const response = await fetch(`${API_BASE_URL}/api/auth/customer/verifyOtp`, {
       //   method: "POST",
@@ -2572,7 +2578,7 @@ export default function QuickLoanApplication() {
     if (currentStep === 1) {
       // Always validate and save Step 1 data (even if user navigated back to edit)
       // Clear previous errors
-      const errors: FieldErrors = {
+      const errors = {
         email: "",
         mobile: "",
         fullName: "",
@@ -3322,52 +3328,58 @@ export default function QuickLoanApplication() {
           onCapture={handleSelfieCapture}
         />
         <div className="max-w-3xl mx-auto">
-          {/* Close button - redirect based on login status */}
-          <div className="flex justify-end mb-4">
-            <button
-              onClick={() => {
-                if (user) {
-                  router.push('/user'); // Redirect to dashboard if logged in
-                } else {
-                  router.push('/login'); // Redirect to login if not logged in
-                }
-              }}
-              className="flex items-center bg-white gap-2 px-4 py-2 text-gray-600 hover:text-white hover:bg-[#25b181] rounded-lg transition-all shadow-sm"
-            >
-              <X className="w-5 h-5" />
-              <span className="text-sm font-medium">Close</span>
-            </button>
-          </div>
-
-          {/* Header */}
-          <div className="text-center mb-8">
-            <motion.div
-              initial={{ opacity: 0.8, y: -5 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2">Quick Loan Application</h1>
-              <p className="text-sm sm:text-base text-gray-600">Get instant approval in just 3 minutes</p>
-            </motion.div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-2 gap-2">
-              {[1, 2, 3, 4].map((step) => (
-                <div key={step} className="flex-1">
-                  <div className={`h-2 rounded-full transition-all ${step <= currentStep ? 'bg-[#25B181]' : 'bg-gray-200'
-                    }`} />
-                </div>
-              ))}
+          {/* Close button - Hide when landing page is showing */}
+          {!(showLandingPage && !user && currentStep === 1) && (
+            <div className="flex justify-end mb-4">
+              <button
+                onClick={() => {
+                  if (user) {
+                    router.push('/user'); // Redirect to dashboard if logged in
+                  } else {
+                    router.push('/login'); // Redirect to login if not logged in
+                  }
+                }}
+                className="flex items-center bg-white gap-2 px-4 py-2 text-gray-600 hover:text-white hover:bg-[#25b181] rounded-lg transition-all shadow-sm"
+              >
+                <X className="w-5 h-5" />
+                <span className="text-sm font-medium">Close</span>
+              </button>
             </div>
-            <div className="flex justify-between text-xs sm:text-sm text-gray-600">
-              <span className={`text-center ${currentStep === 1 ? 'text-[#25B181] font-semibold' : ''}`}>Basic Details</span>
-              <span className={`text-center ${currentStep === 2 ? 'text-[#25B181] font-semibold' : ''}`}>Identity</span>
-              <span className={`text-center ${currentStep === 3 ? 'text-[#25B181] font-semibold' : ''}`}>Bank Details</span>
-              <span className={`text-center ${currentStep === 4 ? 'text-[#25B181] font-semibold' : ''}`}>Approval</span>
+          )}
+
+          {/* Header - Hide when landing page is showing */}
+          {!(showLandingPage && !user && currentStep === 1) && (
+            <div className="text-center mb-8">
+              <motion.div
+                initial={{ opacity: 0.8, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2">Loan Application</h1>
+                <p className="text-sm sm:text-base text-gray-600">Get instant approval in just 3 minutes</p>
+              </motion.div>
             </div>
-          </div>
+          )}
+
+          {/* Progress Bar - Hide when landing page is showing */}
+          {!(showLandingPage && !user && currentStep === 1) && (
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-2 gap-2">
+                {[1, 2, 3, 4].map((step) => (
+                  <div key={step} className="flex-1">
+                    <div className={`h-2 rounded-full transition-all ${step <= currentStep ? 'bg-[#25B181]' : 'bg-gray-200'
+                      }`} />
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-between text-xs sm:text-sm text-gray-600">
+                <span className={`text-center ${currentStep === 1 ? 'text-[#25B181] font-semibold' : ''}`}>Basic Details</span>
+                <span className={`text-center ${currentStep === 2 ? 'text-[#25B181] font-semibold' : ''}`}>Identity</span>
+                <span className={`text-center ${currentStep === 3 ? 'text-[#25B181] font-semibold' : ''}`}>Bank Details</span>
+                <span className={`text-center ${currentStep === 4 ? 'text-[#25B181] font-semibold' : ''}`}>Approval</span>
+              </div>
+            </div>
+          )}
 
           {/* Form Card */}
           <motion.div
@@ -3379,7 +3391,7 @@ export default function QuickLoanApplication() {
             className="bg-white rounded-2xl shadow-xl p-4 sm:p-8"
           >
             <AnimatePresence mode="wait">
-              {/* Step 1: Basic Details */}
+              {/* Step 1: Basic Details - With LiveMint-style Landing Page */}
               {currentStep === 1 && (
                 <motion.div
                   initial={{ opacity: 0.9 }}
@@ -3833,7 +3845,7 @@ export default function QuickLoanApplication() {
                     <>
                       <h2 className="text-2xl font-bold text-gray-900 mb-6">Basic Details</h2>
 
-                  {/* Logged in user notice - Show instead of verification */}
+                      {/* Logged in user notice - Show instead of verification */}
                   {user && userDataLoaded && (formData.emailVerified || formData.mobileVerified) ? (
                     <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
                       <div className="flex items-start gap-3">
@@ -3892,7 +3904,7 @@ export default function QuickLoanApplication() {
                   )}
 
                   {/* Email Verification - Only show for non-logged in users */}
-                  {!user && (
+                  {!user && verificationMethod === 'email' && (
                     <>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -4463,6 +4475,8 @@ export default function QuickLoanApplication() {
                       )}
                     </div>
                   </div>
+                    </>
+                  )}
                 </motion.div>
               )}
 
