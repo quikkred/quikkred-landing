@@ -674,8 +674,8 @@ export default function MyLoansPage() {
       setReapplyError('Please enter a valid loan amount (minimum Rs. 10,000)');
       return;
     }
-    if (amount > 500000) {
-      setReapplyError('Maximum loan amount is Rs. 5,00,000');
+    if (amount > 50000) {
+      setReapplyError('Maximum loan amount is Rs. 50,000');
       return;
     }
 
@@ -2298,15 +2298,20 @@ export default function MyLoansPage() {
                         <input
                           type="number"
                           min={reapplyEligibility?.minAmount || 10000}
-                          max={reapplyEligibility?.maxAmount || 500000}
+                          max={50000}
                           value={reapplyForm.loanAmount}
-                          onChange={(e) => setReapplyForm({ ...reapplyForm, loanAmount: e.target.value })}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '' || Number(val) <= 50000) {
+                              setReapplyForm({ ...reapplyForm, loanAmount: val });
+                            }
+                          }}
                           className="w-full pl-12 pr-4 py-3 bg-[#FAFAFA] border-2 border-[#E0E0E0] rounded-xl focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-lg font-semibold"
                           placeholder="Enter amount"
                         />
                       </div>
                       <p className="text-xs text-gray-500 mt-1">
-                        Min: {formatCurrency(reapplyEligibility?.minAmount || 10000)} | Max: {formatCurrency(reapplyEligibility?.maxAmount || 500000)}
+                        Min: {formatCurrency(reapplyEligibility?.minAmount || 10000)} | Max: ₹50,000
                       </p>
                     </div>
 
