@@ -13,6 +13,7 @@ import {
   RotateCcw, Zap
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/components/ui/toast';
 import { loansService } from '@/lib/api/loans.service';
 import { usersService } from '@/lib/api/users.service';
 import { upiAutopayService } from '@/lib/api/upi-autopay.service';
@@ -214,6 +215,7 @@ interface PaginationInfo {
 
 export default function MyLoansPage() {
   const { user, isLoading } = useAuth();
+  const { toast } = useToast();
   const axios = useAxios();
   const router = useRouter();
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -252,6 +254,9 @@ export default function MyLoansPage() {
     maxAmount?: number;
     minAmount?: number;
     reason?: string;
+    message?: string;
+    daysRemaining?: number;
+    cooldownEndsAt?: string;
   } | null>(null);
   const [reapplyForm, setReapplyForm] = useState({
     loanAmount: '',
@@ -645,13 +650,28 @@ export default function MyLoansPage() {
     setReapplyError(null);
     setReapplySuccess(null);
     setReapplyLoading(true);
-    setIsReapplyModalOpen(true);
 
     try {
       const response = await loansService.checkReapplyEligibility(loan.customerId);
       if (response.success && response.data) {
+        // Check for BRE_COOLDOWN or not eligible - show cooldown UI inside modal
+        if (response.data.isEligible === false) {
+          setReapplyEligibility({
+            eligible: false,
+            maxAmount: 0,
+            minAmount: 0,
+            reason: response.data.reason,
+            message: response.data.message,
+            daysRemaining: response.data.daysRemaining,
+            cooldownEndsAt: response.data.cooldownEndsAt,
+          });
+          setIsReapplyModalOpen(true);
+          setReapplyLoading(false);
+          return;
+        }
+
         setReapplyEligibility({
-          eligible: response.data.eligible ?? true,
+          eligible: response.data.eligible ?? response.data.isEligible ?? true,
           maxAmount: response.data.maxAmount ?? 500000,
           minAmount: response.data.minAmount ?? 10000,
           reason: response.data.reason
@@ -659,12 +679,15 @@ export default function MyLoansPage() {
         if (response.data.maxAmount) {
           setReapplyForm(prev => ({ ...prev, loanAmount: String(response.data.maxAmount / 2) }));
         }
+        setIsReapplyModalOpen(true);
       } else {
         setReapplyEligibility({ eligible: true, maxAmount: 500000, minAmount: 10000 });
+        setIsReapplyModalOpen(true);
       }
     } catch (error: any) {
       console.error('Error checking reapply eligibility:', error);
       setReapplyEligibility({ eligible: true, maxAmount: 500000, minAmount: 10000 });
+      setIsReapplyModalOpen(true);
     } finally {
       setReapplyLoading(false);
     }
@@ -2271,12 +2294,63 @@ export default function MyLoansPage() {
                     <p className="text-sm text-gray-600">{reapplySuccess}</p>
                   </div>
                 ) : reapplyEligibility && !reapplyEligibility.eligible ? (
-                  <div className="text-center py-4">
-                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <AlertCircle className="w-8 h-8 text-red-600" />
+                  <div className="text-center py-2">
+                    {/* Cooldown Timer Circle */}
+                    <div className="relative w-28 h-28 mx-auto mb-5">
+                      <svg className="w-28 h-28 -rotate-90" viewBox="0 0 120 120">
+                        <circle cx="60" cy="60" r="52" fill="none" stroke="#E5E7EB" strokeWidth="8" />
+                        <circle
+                          cx="60" cy="60" r="52" fill="none" stroke="url(#cooldownGradient)" strokeWidth="8" strokeLinecap="round"
+                          strokeDasharray={`${Math.max(5, ((reapplyEligibility.daysRemaining || 60) / 60) * 327)} 327`}
+                        />
+                        <defs>
+                          <linearGradient id="cooldownGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="#F59E0B" />
+                            <stop offset="100%" stopColor="#EF4444" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-2xl font-bold text-gray-900">{reapplyEligibility.daysRemaining || '—'}</span>
+                        <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Days Left</span>
+                      </div>
                     </div>
-                    <h4 className="text-lg font-semibold text-gray-800 mb-2">Not Eligible</h4>
-                    <p className="text-sm text-gray-600">{reapplyEligibility.reason || 'You are not eligible for reapplication at this time.'}</p>
+
+                    {/* Status Badge */}
+                    <div className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-semibold mb-3">
+                      <Clock className="w-3 h-3" />
+                      {reapplyEligibility.reason === 'BRE_COOLDOWN' ? 'Cooldown Period Active' : (reapplyEligibility.reason || 'Not Eligible')}
+                    </div>
+
+                    <h4 className="text-lg font-bold text-gray-900 mb-2">Reapply Not Available Yet</h4>
+                    <p className="text-sm text-gray-600 leading-relaxed mb-5">
+                      {reapplyEligibility.message || 'You are not eligible for reapplication at this time.'}
+                    </p>
+
+                    {/* Info Card */}
+                    {reapplyEligibility.cooldownEndsAt && (
+                      <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 mb-5">
+                        <div className="flex items-center justify-center gap-3">
+                          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm border border-amber-200">
+                            <Calendar className="w-5 h-5 text-amber-600" />
+                          </div>
+                          <div className="text-left">
+                            <p className="text-[10px] font-medium text-amber-600 uppercase tracking-wide">Available From</p>
+                            <p className="text-sm font-bold text-gray-900">
+                              {new Date(reapplyEligibility.cooldownEndsAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Close Button */}
+                    <button
+                      onClick={resetReapplyModal}
+                      className="w-full px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
+                    >
+                      Got it
+                    </button>
                   </div>
                 ) : (
                   <div className="space-y-4">
