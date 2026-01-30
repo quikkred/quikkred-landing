@@ -650,21 +650,28 @@ export default function MyLoansPage() {
     try {
       const response = await loansService.checkReapplyEligibility(loan.customerId);
       if (response.success && response.data) {
+        // Map backend field names to frontend (backend uses isEligible, maxLoanAmount, minLoanAmount)
+        const isEligible = response.data.isEligible ?? response.data.eligible ?? false;
+        const maxAmount = response.data.maxLoanAmount ?? response.data.maxAmount ?? 500000;
+        const minAmount = response.data.minLoanAmount ?? response.data.minAmount ?? 10000;
+
         setReapplyEligibility({
-          eligible: response.data.eligible ?? true,
-          maxAmount: response.data.maxAmount ?? 500000,
-          minAmount: response.data.minAmount ?? 10000,
-          reason: response.data.reason
+          eligible: isEligible,
+          maxAmount: maxAmount,
+          minAmount: minAmount,
+          reason: response.data.reason || response.data.message
         });
-        if (response.data.maxAmount) {
-          setReapplyForm(prev => ({ ...prev, loanAmount: String(response.data.maxAmount / 2) }));
+        if (maxAmount && isEligible) {
+          setReapplyForm(prev => ({ ...prev, loanAmount: String(Math.round(maxAmount / 2)) }));
         }
       } else {
-        setReapplyEligibility({ eligible: true, maxAmount: 500000, minAmount: 10000 });
+        // If API fails, don't assume eligibility - default to not eligible
+        setReapplyEligibility({ eligible: false, maxAmount: 0, minAmount: 0, reason: 'Unable to check eligibility' });
       }
     } catch (error: any) {
       console.error('Error checking reapply eligibility:', error);
-      setReapplyEligibility({ eligible: true, maxAmount: 500000, minAmount: 10000 });
+      // On error, don't assume eligibility
+      setReapplyEligibility({ eligible: false, maxAmount: 0, minAmount: 0, reason: 'Unable to check eligibility. Please try again.' });
     } finally {
       setReapplyLoading(false);
     }
@@ -681,8 +688,8 @@ export default function MyLoansPage() {
       setReapplyError('Please enter a valid loan amount (minimum Rs. 10,000)');
       return;
     }
-    if (amount > 500000) {
-      setReapplyError('Maximum loan amount is Rs. 5,00,000');
+    if (amount > 50000) {
+      setReapplyError('Maximum loan amount is Rs. 50,000');
       return;
     }
 
@@ -790,10 +797,23 @@ export default function MyLoansPage() {
     setAutopayForm({ amount: '', frequency: 'monthly', vpa: '' });
   };
 
-  // Check if loan is eligible for reapply (CLOSED status)
+  // Check if loan is eligible for reapply (only show on last loan if it's CLOSED)
   const isEligibleForReapply = (loan: Loan) => {
-    const status = loan.status.toUpperCase();
-    return status === 'CLOSED' || status === 'COMPLETED';
+    // If no loans, not eligible
+    if (!loans || loans.length === 0) return false;
+
+    // Find the most recent loan by createdAt date
+    const sortedLoans = [...loans].sort((a, b) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+    const lastLoan = sortedLoans[0];
+
+    // Only show reapply button on the last loan AND only if its status is CLOSED/COMPLETED
+    const isLastLoan = loan.id === lastLoan.id;
+    const status = lastLoan.status.toUpperCase();
+    const isLastLoanClosed = status === 'CLOSED' || status === 'COMPLETED';
+
+    return isLastLoan && isLastLoanClosed;
   };
 
   // Check if loan is eligible for autopay (ACTIVE status)
@@ -812,6 +832,37 @@ export default function MyLoansPage() {
       return `₹${(amount / 100000).toFixed(2)}L`;
     }
     return `₹${amount.toLocaleString()}`;
+  };
+
+  // Loan Calculator Preview - Calculates fees and breakdown
+  const calculateLoanBreakdown = (amount: number, tenure: number) => {
+    if (!amount || amount <= 0) return null;
+
+    const platformFeeRate = 0.10; // 10%
+    const gstRate = 0.18; // 18% on platform fee
+    const dailyInterestRate = 0.01; // 1% per day
+
+    const platformFee = Math.round(amount * platformFeeRate);
+    const gstOnFee = Math.round(platformFee * gstRate);
+    const totalDeductions = platformFee + gstOnFee;
+    const netDisbursal = amount - totalDeductions;
+    const interest = Math.round(amount * dailyInterestRate * tenure);
+    const totalRepayment = amount + interest;
+
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + tenure);
+
+    return {
+      loanAmount: amount,
+      platformFee,
+      gstOnFee,
+      totalDeductions,
+      netDisbursal,
+      interest,
+      totalRepayment,
+      tenure,
+      dueDate: dueDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+    };
   };
 
   const getStatusColor = (status: string) => {
@@ -2297,15 +2348,20 @@ export default function MyLoansPage() {
                         <input
                           type="number"
                           min={reapplyEligibility?.minAmount || 10000}
-                          max={reapplyEligibility?.maxAmount || 500000}
+                          max={50000}
                           value={reapplyForm.loanAmount}
-                          onChange={(e) => setReapplyForm({ ...reapplyForm, loanAmount: e.target.value })}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '' || Number(val) <= 50000) {
+                              setReapplyForm({ ...reapplyForm, loanAmount: val });
+                            }
+                          }}
                           className="w-full pl-12 pr-4 py-3 bg-[#FAFAFA] border-2 border-[#E0E0E0] rounded-xl focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-lg font-semibold"
                           placeholder="Enter amount"
                         />
                       </div>
                       <p className="text-xs text-gray-500 mt-1">
-                        Min: {formatCurrency(reapplyEligibility?.minAmount || 10000)} | Max: {formatCurrency(reapplyEligibility?.maxAmount || 500000)}
+                        Min: {formatCurrency(reapplyEligibility?.minAmount || 10000)} | Max: ₹50,000
                       </p>
                     </div>
 
@@ -2322,8 +2378,6 @@ export default function MyLoansPage() {
                         <option value="7">7 Days</option>
                         <option value="15">15 Days</option>
                         <option value="30">30 Days</option>
-                        <option value="60">60 Days</option>
-                        <option value="90">90 Days</option>
                       </select>
                     </div>
 
@@ -2338,6 +2392,58 @@ export default function MyLoansPage() {
                         placeholder="e.g., Business expansion, Personal needs"
                       />
                     </div>
+
+                    {/* Loan Calculator Preview */}
+                    {reapplyForm.loanAmount && Number(reapplyForm.loanAmount) >= 10000 && (
+                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
+                        <h4 className="text-sm font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                          <BarChart3 className="w-4 h-4" />
+                          Loan Breakdown Preview
+                        </h4>
+                        {(() => {
+                          const breakdown = calculateLoanBreakdown(
+                            Number(reapplyForm.loanAmount),
+                            Number(reapplyForm.tenure)
+                          );
+                          if (!breakdown) return null;
+
+                          return (
+                            <div className="space-y-2">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Loan Amount:</span>
+                                <span className="font-medium text-gray-900">{formatCurrency(breakdown.loanAmount)}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Platform Fee (10%):</span>
+                                <span className="font-medium text-red-600">- {formatCurrency(breakdown.platformFee)}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">GST on Fee (18%):</span>
+                                <span className="font-medium text-red-600">- {formatCurrency(breakdown.gstOnFee)}</span>
+                              </div>
+                              <div className="border-t border-blue-200 my-2" />
+                              <div className="flex justify-between text-sm">
+                                <span className="text-green-700 font-medium">You Receive:</span>
+                                <span className="font-bold text-green-700">{formatCurrency(breakdown.netDisbursal)}</span>
+                              </div>
+                              <div className="border-t border-blue-200 my-2" />
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Interest (1%/day × {breakdown.tenure} days):</span>
+                                <span className="font-medium text-orange-600">{formatCurrency(breakdown.interest)}</span>
+                              </div>
+                              <div className="flex justify-between text-sm bg-blue-100/50 rounded-lg p-2 -mx-1">
+                                <span className="text-blue-900 font-semibold">Total to Repay:</span>
+                                <span className="font-bold text-blue-900">{formatCurrency(breakdown.totalRepayment)}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Due Date:</span>
+                                <span className="font-medium text-gray-900">{breakdown.dueDate}</span>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    )}
 
                     {/* Submit Button */}
                     <div className="flex gap-3 pt-4">
