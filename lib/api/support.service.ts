@@ -1,3 +1,4 @@
+import getToken from '../getToken';
 import { apiClient, ApiResponse } from './api-client';
 
 export interface SupportTicket {
@@ -86,11 +87,12 @@ class SupportService {
       });
     }
 
+    const token = await getToken(); 
     const response = await fetch('/api/support/ticket', {
       method: 'POST',
       body: formData,
       headers: {
-        'Authorization': `Bearer ${apiClient.getToken()}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
 
@@ -149,11 +151,12 @@ class SupportService {
         formData.append('attachments', file);
       });
 
+      const token = await getToken();
       const response = await fetch(`/api/support/ticket/${ticketId}/message`, {
         method: 'POST',
         body: formData,
         headers: {
-          'Authorization': `Bearer ${apiClient.getToken()}`,
+          'Authorization': `Bearer ${token}`,
         },
       });
 
@@ -234,11 +237,12 @@ class SupportService {
     const formData = new FormData();
     formData.append('file', file);
 
+    const token = await getToken();
     const response = await fetch('/api/support/upload', {
       method: 'POST',
       body: formData,
       headers: {
-        'Authorization': `Bearer ${apiClient.getToken()}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
 

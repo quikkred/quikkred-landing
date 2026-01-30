@@ -9,6 +9,7 @@ import {
 import { QuickApplyV2FormData, AadhaarData } from '@/lib/types/quickApplyV2';
 import { API_BASE_URL } from '@/lib/config';
 import { useQuickApplyTracking, useVerificationFrictionTracking } from '@/lib/hooks/useQuickApplyTracking';
+import useAxios from '@/hooks/useAxios';
 
 // MOCK MODE - Set to false for production with real APIs
 const MOCK_MODE = false;
@@ -56,6 +57,7 @@ export default function PostApprovalAadhaar({
     }, [trackStepViewed, aadhaarFriction]);
     const [aadhaar, setAadhaar] = useState(formData.aadhaar || '');
     const [aadhaarError, setAadhaarError] = useState('');
+    const axios = useAxios();
 
     const [otpSent, setOtpSent] = useState(false);
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -177,18 +179,8 @@ export default function PostApprovalAadhaar({
         }
 
         try {
-            const token = localStorage.getItem('accessToken');
-
-            const response = await fetch(`${API_BASE_URL}/api/kyc/aadhaar/send-otp`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({ aadhaar }),
-            });
-
-            const data = await response.json();
+            const response = await axios.post('/api/kyc/aadhaar/send-otp', { aadhaar });
+            const data = response.data;
 
             if (data.success) {
                 setOtpSent(true);
@@ -272,22 +264,8 @@ export default function PostApprovalAadhaar({
         }
 
         try {
-            const token = localStorage.getItem('accessToken');
-
-            const response = await fetch(`${API_BASE_URL}/api/kyc/aadhaar/verify-otp`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    aadhaar,
-                    otp: otpValue,
-                    clientId,
-                }),
-            });
-
-            const data = await response.json();
+            const response = await axios.post('/api/kyc/aadhaar/verify-otp', { aadhaar });
+            const data = response.data;
 
             if (data.success) {
                 const aadhaarInfo: AadhaarData = {

@@ -1,14 +1,16 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Sora } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { Providers } from "@/components/providers";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
-import { SecurityBanner } from "@/components/security-banner";
 import ConditionalLayout from "@/components/layouts/ConditionalLayout";
-import LanguageGuard from "@/components/LanguageGuard";
 import { Toaster } from "@/components/ui/toast";
 import LiveSupportChat from "@/components/support-chat/LiveSupportChat";
+import getUserDetails from "@/lib/getUserDetails";
+import { AuthProvider } from "@/contexts/AuthContext";
+import getLanguage from "@/lib/getLanguage";
+import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
+import { getTranslation } from "@/lib/getTranslation";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -78,56 +80,26 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const userDetails = await getUserDetails();
+  const language: string | RequestCookie = await getLanguage();
+  const initialData = await getTranslation(language as string);
+
   return (
-    <html lang="en" className={`${inter.variable} ${sora.variable}`} suppressHydrationWarning>
+    <html
+      lang={language as string}
+      dir={language === 'ur' ? 'rtl' : 'ltr'}
+      className={`${inter.variable} ${sora.variable}`}
+      suppressHydrationWarning
+    >
       <head>
-        {/* Google Tag Manager */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-5HM3XTXG');`,
-          }}
-        />
-        {/* Google Analytics & Google Ads (gtag.js) */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-JT6CHHWW78" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', 'G-JT6CHHWW78');
-gtag('config', 'AW-17796230994');`,
-          }}
-        />
-        {/* Meta Pixel Code - Beta & Production only */}
-        {process.env.NEXT_PUBLIC_API_URL !== 'https://alpha.quikkred.in' && (
-          <>
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', '763439572919909');
-fbq('track', 'PageView');`,
-              }}
-            />
-          </>
-        )}
         {/* Language Detection Script */}
-        <script
+
+        {/* <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
@@ -160,7 +132,7 @@ fbq('track', 'PageView');`,
               })();
             `,
           }}
-        />
+        /> */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -192,6 +164,18 @@ fbq('track', 'PageView');`,
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body className="font-sans antialiased" suppressHydrationWarning={true}>
+        {/* Google Tag Manager */}
+        <Script
+          id="gtm-script"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-5HM3XTXG');`,
+          }}
+        />
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe
@@ -201,7 +185,45 @@ fbq('track', 'PageView');`,
             style={{ display: 'none', visibility: 'hidden' }}
           />
         </noscript>
-        {/* Meta Pixel (noscript) - Beta & Production only */}
+
+        {/* Google Analytics & Google Ads (gtag.js) */}
+        <Script
+          id="ga-script"
+          src="https://www.googletagmanager.com/gtag/js?id=G-JT6CHHWW78"
+          strategy="afterInteractive"
+        />
+        <Script
+          id="ga-config"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-JT6CHHWW78');
+gtag('config', 'AW-17796230994');`,
+          }}
+        />
+
+        {/* Meta Pixel Code - Beta & Production only (exclude Alpha) */}
+        {process.env.NEXT_PUBLIC_API_URL !== 'https://alpha.quikkred.in' && (
+          <Script
+            id="fb-pixel"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '763439572919909');
+fbq('track', 'PageView');`,
+            }}
+          />
+        )}
+        {/* Meta Pixel (noscript) - Beta & Production only (exclude Alpha) */}
         {process.env.NEXT_PUBLIC_API_URL !== 'https://alpha.quikkred.in' && (
           <noscript>
             <img
@@ -213,15 +235,17 @@ fbq('track', 'PageView');`,
             />
           </noscript>
         )}
-        <Providers>
-          <LanguageGuard>
+        <AuthProvider userData={userDetails}>
+          <Providers language={language as string} initialData={initialData}>
+            {/* <LanguageGuard> */}
             <ConditionalLayout>
               {children}
             </ConditionalLayout>
-          </LanguageGuard>
-          <Toaster />
+            {/* </LanguageGuard> */}
+            <Toaster />
           <LiveSupportChat />
-        </Providers>
+          </Providers>
+        </AuthProvider>
       </body>
     </html>
   );

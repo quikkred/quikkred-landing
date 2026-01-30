@@ -1,3 +1,4 @@
+import getToken from '../getToken';
 import { apiClient, ApiResponse } from './api-client';
 
 export interface CreditScoreAnalysis {
@@ -185,11 +186,12 @@ class AIService {
     formData.append('document', documentFile);
     formData.append('documentType', documentType);
 
+    const token = await getToken();
     const response = await fetch('/api/ai/document-analysis', {
       method: 'POST',
       body: formData,
       headers: {
-        'Authorization': `Bearer ${apiClient.getToken()}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
 
@@ -277,11 +279,12 @@ class AIService {
     const formData = new FormData();
     formData.append('image', image);
 
+    const token = await getToken();
     const response = await fetch('/api/ai/ocr', {
       method: 'POST',
       body: formData,
       headers: {
-        'Authorization': `Bearer ${apiClient.getToken()}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
 
@@ -298,11 +301,12 @@ class AIService {
     formData.append('audio', audioFile);
     formData.append('userId', userId);
 
+    const token = await getToken();
     const response = await fetch('/api/ai/voice-verify', {
       method: 'POST',
       body: formData,
       headers: {
-        'Authorization': `Bearer ${apiClient.getToken()}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
 

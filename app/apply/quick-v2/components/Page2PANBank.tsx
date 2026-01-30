@@ -14,6 +14,9 @@ import {
 } from '@/lib/constants/quickApplyV2';
 import { API_BASE_URL } from '@/lib/config';
 import { useQuickApplyTracking, useVerificationFrictionTracking } from '@/lib/hooks/useQuickApplyTracking';
+import PanVerify from './ui/PanVerify';
+import useAxios from '@/hooks/useAxios';
+import getToken from '@/lib/getToken';
 
 // MOCK MODE - Set to false for production with real APIs
 const MOCK_MODE = false;
@@ -35,6 +38,7 @@ export default function Page2PANBank({
     const [panLoading, setPanLoading] = useState(false);
     const [panError, setPanError] = useState('');
     const [panReverifyTimer, setPanReverifyTimer] = useState(0);
+    const axios = useAxios();
 
     // Form Errors
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -149,17 +153,8 @@ export default function Page2PANBank({
         }
 
         try {
-            const token = localStorage.getItem('accessToken');
-            const response = await fetch(`${API_BASE_URL}/api/kyc/pan/verify`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({ panNumber: pan }),
-            });
-
-            const data = await response.json();
+            const response = await axios.post('/api/kyc/pan/verify', { panNumber: pan });
+            const data = await response.data;
 
             if (data.success && data.data) {
                 const panData: PANData = {
@@ -240,7 +235,7 @@ export default function Page2PANBank({
         }
 
         try {
-            const token = localStorage.getItem('accessToken');
+            const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/api/kyc/pan/verify`, {
                 method: 'POST',
                 headers: {
@@ -402,36 +397,27 @@ export default function Page2PANBank({
         }
 
         try {
-            const token = localStorage.getItem('accessToken');
-            const response = await fetch(`${API_BASE_URL}/api/loan/submit`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    mobile: formData.mobile,
-                    pincode: formData.pincode,
-                    city: formData.city,
-                    state: formData.state,
-                    employmentType: formData.employmentType,
-                    monthlyIncome: parseInt(formData.monthlyIncome),
-                    salaryDate: formData.salaryDate,
-                    loanAmount: formData.loanAmount,
-                    tenure: formData.tenure,
-                    tenureUnit: 'days',
-                    panCard: formData.pan,
-                    fullName: formData.fullName,
-                    dateOfBirth: formData.dob,
-                    processingFee: loanCalc.processingFee,
-                    gstOnProcessingFee: loanCalc.gstOnProcessingFee,
-                    netDisbursalAmount: loanCalc.netDisbursalAmount,
-                    totalRepayment: loanCalc.totalRepayment,
-                    ipData: formData.ipData,
-                }),
-            });
-
-            const data = await response.json();
+            const response = await axios.post('/api/loan/submit', {
+                mobile: formData.mobile,
+                pincode: formData.pincode,
+                city: formData.city,
+                state: formData.state,
+                employmentType: formData.employmentType,
+                monthlyIncome: parseInt(formData.monthlyIncome),
+                salaryDate: formData.salaryDate,
+                loanAmount: formData.loanAmount,
+                tenure: formData.tenure,
+                tenureUnit: 'days',
+                panCard: formData.pan,
+                fullName: formData.fullName,
+                dateOfBirth: formData.dob,
+                processingFee: loanCalc.processingFee,
+                gstOnProcessingFee: loanCalc.gstOnProcessingFee,
+                netDisbursalAmount: loanCalc.netDisbursalAmount,
+                totalRepayment: loanCalc.totalRepayment,
+                ipData: formData.ipData,
+            })
+            const data = await response.data;
 
             if (data.success) {
                 if (data.data) {
@@ -490,8 +476,8 @@ export default function Page2PANBank({
                                     type="button"
                                     onClick={() => handleEmploymentTypeChange(type.value)}
                                     className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-medium text-xs sm:text-sm transition-all active:scale-[0.98] touch-manipulation ${formData.employmentType === type.value
-                                            ? 'bg-[#25B181] text-white shadow-md'
-                                            : 'bg-white text-gray-700 border border-gray-300 hover:border-[#25B181]'
+                                        ? 'bg-[#25B181] text-white shadow-md'
+                                        : 'bg-white text-gray-700 border border-gray-300 hover:border-[#25B181]'
                                         }`}
                                 >
                                     {type.label}
@@ -671,8 +657,8 @@ export default function Page2PANBank({
                         onClick={onBack}
                         disabled={submitLoading || formData.panVerified}
                         className={`px-3 sm:px-4 py-3 sm:py-3.5 border rounded-lg font-medium text-sm flex items-center gap-1.5 active:scale-[0.98] touch-manipulation ${formData.panVerified
-                                ? 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50'
-                                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                            ? 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50'
+                            : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                             } disabled:opacity-50`}
                     >
                         {formData.panVerified ? (
