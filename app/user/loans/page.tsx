@@ -13,6 +13,7 @@ import {
   RotateCcw, Zap
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/components/ui/toast';
 import { loansService } from '@/lib/api/loans.service';
 import { usersService } from '@/lib/api/users.service';
 import { upiAutopayService } from '@/lib/api/upi-autopay.service';
@@ -214,6 +215,7 @@ interface PaginationInfo {
 
 export default function MyLoansPage() {
   const { user, isLoading } = useAuth();
+  const { toast } = useToast();
   const axios = useAxios();
   const router = useRouter();
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -252,6 +254,9 @@ export default function MyLoansPage() {
     maxAmount?: number;
     minAmount?: number;
     reason?: string;
+    message?: string;
+    daysRemaining?: number;
+    cooldownEndsAt?: string;
   } | null>(null);
   const [reapplyForm, setReapplyForm] = useState({
     loanAmount: '',
@@ -645,33 +650,44 @@ export default function MyLoansPage() {
     setReapplyError(null);
     setReapplySuccess(null);
     setReapplyLoading(true);
-    setIsReapplyModalOpen(true);
 
     try {
       const response = await loansService.checkReapplyEligibility(loan.customerId);
       if (response.success && response.data) {
-        // Map backend field names to frontend (backend uses isEligible, maxLoanAmount, minLoanAmount)
-        const isEligible = response.data.isEligible ?? response.data.eligible ?? false;
-        const maxAmount = response.data.maxLoanAmount ?? response.data.maxAmount ?? 500000;
-        const minAmount = response.data.minLoanAmount ?? response.data.minAmount ?? 10000;
+        // Check for BRE_COOLDOWN or not eligible - show cooldown UI inside modal
+        if (response.data.isEligible === false) {
+          setReapplyEligibility({
+            eligible: false,
+            maxAmount: 0,
+            minAmount: 0,
+            reason: response.data.reason,
+            message: response.data.message,
+            daysRemaining: response.data.daysRemaining,
+            cooldownEndsAt: response.data.cooldownEndsAt,
+          });
+          setIsReapplyModalOpen(true);
+          setReapplyLoading(false);
+          return;
+        }
 
         setReapplyEligibility({
-          eligible: isEligible,
-          maxAmount: maxAmount,
-          minAmount: minAmount,
-          reason: response.data.reason || response.data.message
+          eligible: response.data.eligible ?? response.data.isEligible ?? true,
+          maxAmount: response.data.maxAmount ?? 500000,
+          minAmount: response.data.minAmount ?? 10000,
+          reason: response.data.reason
         });
-        if (maxAmount && isEligible) {
-          setReapplyForm(prev => ({ ...prev, loanAmount: String(Math.round(maxAmount / 2)) }));
+        if (response.data.maxAmount) {
+          setReapplyForm(prev => ({ ...prev, loanAmount: String(response.data.maxAmount / 2) }));
         }
+        setIsReapplyModalOpen(true);
       } else {
-        // If API fails, don't assume eligibility - default to not eligible
-        setReapplyEligibility({ eligible: false, maxAmount: 0, minAmount: 0, reason: 'Unable to check eligibility' });
+        setReapplyEligibility({ eligible: true, maxAmount: 500000, minAmount: 10000 });
+        setIsReapplyModalOpen(true);
       }
     } catch (error: any) {
       console.error('Error checking reapply eligibility:', error);
-      // On error, don't assume eligibility
-      setReapplyEligibility({ eligible: false, maxAmount: 0, minAmount: 0, reason: 'Unable to check eligibility. Please try again.' });
+      setReapplyEligibility({ eligible: true, maxAmount: 500000, minAmount: 10000 });
+      setIsReapplyModalOpen(true);
     } finally {
       setReapplyLoading(false);
     }
@@ -688,8 +704,8 @@ export default function MyLoansPage() {
       setReapplyError('Please enter a valid loan amount (minimum Rs. 10,000)');
       return;
     }
-    if (amount > 50000) {
-      setReapplyError('Maximum loan amount is Rs. 50,000');
+    if (amount > 500000) {
+      setReapplyError('Maximum loan amount is Rs. 5,00,000');
       return;
     }
 
@@ -797,23 +813,10 @@ export default function MyLoansPage() {
     setAutopayForm({ amount: '', frequency: 'monthly', vpa: '' });
   };
 
-  // Check if loan is eligible for reapply (only show on last loan if it's CLOSED)
+  // Check if loan is eligible for reapply (CLOSED status)
   const isEligibleForReapply = (loan: Loan) => {
-    // If no loans, not eligible
-    if (!loans || loans.length === 0) return false;
-
-    // Find the most recent loan by createdAt date
-    const sortedLoans = [...loans].sort((a, b) =>
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-    const lastLoan = sortedLoans[0];
-
-    // Only show reapply button on the last loan AND only if its status is CLOSED/COMPLETED
-    const isLastLoan = loan.id === lastLoan.id;
-    const status = lastLoan.status.toUpperCase();
-    const isLastLoanClosed = status === 'CLOSED' || status === 'COMPLETED';
-
-    return isLastLoan && isLastLoanClosed;
+    const status = loan.status.toUpperCase();
+    return status === 'CLOSED' || status === 'COMPLETED';
   };
 
   // Check if loan is eligible for autopay (ACTIVE status)
@@ -832,37 +835,6 @@ export default function MyLoansPage() {
       return `₹${(amount / 100000).toFixed(2)}L`;
     }
     return `₹${amount.toLocaleString()}`;
-  };
-
-  // Loan Calculator Preview - Calculates fees and breakdown
-  const calculateLoanBreakdown = (amount: number, tenure: number) => {
-    if (!amount || amount <= 0) return null;
-
-    const platformFeeRate = 0.10; // 10%
-    const gstRate = 0.18; // 18% on platform fee
-    const dailyInterestRate = 0.01; // 1% per day
-
-    const platformFee = Math.round(amount * platformFeeRate);
-    const gstOnFee = Math.round(platformFee * gstRate);
-    const totalDeductions = platformFee + gstOnFee;
-    const netDisbursal = amount - totalDeductions;
-    const interest = Math.round(amount * dailyInterestRate * tenure);
-    const totalRepayment = amount + interest;
-
-    const dueDate = new Date();
-    dueDate.setDate(dueDate.getDate() + tenure);
-
-    return {
-      loanAmount: amount,
-      platformFee,
-      gstOnFee,
-      totalDeductions,
-      netDisbursal,
-      interest,
-      totalRepayment,
-      tenure,
-      dueDate: dueDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
-    };
   };
 
   const getStatusColor = (status: string) => {
@@ -2322,12 +2294,63 @@ export default function MyLoansPage() {
                     <p className="text-sm text-gray-600">{reapplySuccess}</p>
                   </div>
                 ) : reapplyEligibility && !reapplyEligibility.eligible ? (
-                  <div className="text-center py-4">
-                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <AlertCircle className="w-8 h-8 text-red-600" />
+                  <div className="text-center py-2">
+                    {/* Cooldown Timer Circle */}
+                    <div className="relative w-28 h-28 mx-auto mb-5">
+                      <svg className="w-28 h-28 -rotate-90" viewBox="0 0 120 120">
+                        <circle cx="60" cy="60" r="52" fill="none" stroke="#E5E7EB" strokeWidth="8" />
+                        <circle
+                          cx="60" cy="60" r="52" fill="none" stroke="url(#cooldownGradient)" strokeWidth="8" strokeLinecap="round"
+                          strokeDasharray={`${Math.max(5, ((reapplyEligibility.daysRemaining || 60) / 60) * 327)} 327`}
+                        />
+                        <defs>
+                          <linearGradient id="cooldownGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="#F59E0B" />
+                            <stop offset="100%" stopColor="#EF4444" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-2xl font-bold text-gray-900">{reapplyEligibility.daysRemaining || '—'}</span>
+                        <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Days Left</span>
+                      </div>
                     </div>
-                    <h4 className="text-lg font-semibold text-gray-800 mb-2">Not Eligible</h4>
-                    <p className="text-sm text-gray-600">{reapplyEligibility.reason || 'You are not eligible for reapplication at this time.'}</p>
+
+                    {/* Status Badge */}
+                    <div className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-semibold mb-3">
+                      <Clock className="w-3 h-3" />
+                      {reapplyEligibility.reason === 'BRE_COOLDOWN' ? 'Cooldown Period Active' : (reapplyEligibility.reason || 'Not Eligible')}
+                    </div>
+
+                    <h4 className="text-lg font-bold text-gray-900 mb-2">Reapply Not Available Yet</h4>
+                    <p className="text-sm text-gray-600 leading-relaxed mb-5">
+                      {reapplyEligibility.message || 'You are not eligible for reapplication at this time.'}
+                    </p>
+
+                    {/* Info Card */}
+                    {reapplyEligibility.cooldownEndsAt && (
+                      <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 mb-5">
+                        <div className="flex items-center justify-center gap-3">
+                          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm border border-amber-200">
+                            <Calendar className="w-5 h-5 text-amber-600" />
+                          </div>
+                          <div className="text-left">
+                            <p className="text-[10px] font-medium text-amber-600 uppercase tracking-wide">Available From</p>
+                            <p className="text-sm font-bold text-gray-900">
+                              {new Date(reapplyEligibility.cooldownEndsAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Close Button */}
+                    <button
+                      onClick={resetReapplyModal}
+                      className="w-full px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
+                    >
+                      Got it
+                    </button>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -2348,20 +2371,15 @@ export default function MyLoansPage() {
                         <input
                           type="number"
                           min={reapplyEligibility?.minAmount || 10000}
-                          max={50000}
+                          max={reapplyEligibility?.maxAmount || 500000}
                           value={reapplyForm.loanAmount}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            if (val === '' || Number(val) <= 50000) {
-                              setReapplyForm({ ...reapplyForm, loanAmount: val });
-                            }
-                          }}
+                          onChange={(e) => setReapplyForm({ ...reapplyForm, loanAmount: e.target.value })}
                           className="w-full pl-12 pr-4 py-3 bg-[#FAFAFA] border-2 border-[#E0E0E0] rounded-xl focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-lg font-semibold"
                           placeholder="Enter amount"
                         />
                       </div>
                       <p className="text-xs text-gray-500 mt-1">
-                        Min: {formatCurrency(reapplyEligibility?.minAmount || 10000)} | Max: ₹50,000
+                        Min: {formatCurrency(reapplyEligibility?.minAmount || 10000)} | Max: {formatCurrency(reapplyEligibility?.maxAmount || 500000)}
                       </p>
                     </div>
 
@@ -2378,6 +2396,8 @@ export default function MyLoansPage() {
                         <option value="7">7 Days</option>
                         <option value="15">15 Days</option>
                         <option value="30">30 Days</option>
+                        <option value="60">60 Days</option>
+                        <option value="90">90 Days</option>
                       </select>
                     </div>
 
@@ -2392,58 +2412,6 @@ export default function MyLoansPage() {
                         placeholder="e.g., Business expansion, Personal needs"
                       />
                     </div>
-
-                    {/* Loan Calculator Preview */}
-                    {reapplyForm.loanAmount && Number(reapplyForm.loanAmount) >= 10000 && (
-                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
-                        <h4 className="text-sm font-semibold text-blue-900 mb-3 flex items-center gap-2">
-                          <BarChart3 className="w-4 h-4" />
-                          Loan Breakdown Preview
-                        </h4>
-                        {(() => {
-                          const breakdown = calculateLoanBreakdown(
-                            Number(reapplyForm.loanAmount),
-                            Number(reapplyForm.tenure)
-                          );
-                          if (!breakdown) return null;
-
-                          return (
-                            <div className="space-y-2">
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Loan Amount:</span>
-                                <span className="font-medium text-gray-900">{formatCurrency(breakdown.loanAmount)}</span>
-                              </div>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Platform Fee (10%):</span>
-                                <span className="font-medium text-red-600">- {formatCurrency(breakdown.platformFee)}</span>
-                              </div>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">GST on Fee (18%):</span>
-                                <span className="font-medium text-red-600">- {formatCurrency(breakdown.gstOnFee)}</span>
-                              </div>
-                              <div className="border-t border-blue-200 my-2" />
-                              <div className="flex justify-between text-sm">
-                                <span className="text-green-700 font-medium">You Receive:</span>
-                                <span className="font-bold text-green-700">{formatCurrency(breakdown.netDisbursal)}</span>
-                              </div>
-                              <div className="border-t border-blue-200 my-2" />
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Interest (1%/day × {breakdown.tenure} days):</span>
-                                <span className="font-medium text-orange-600">{formatCurrency(breakdown.interest)}</span>
-                              </div>
-                              <div className="flex justify-between text-sm bg-blue-100/50 rounded-lg p-2 -mx-1">
-                                <span className="text-blue-900 font-semibold">Total to Repay:</span>
-                                <span className="font-bold text-blue-900">{formatCurrency(breakdown.totalRepayment)}</span>
-                              </div>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Due Date:</span>
-                                <span className="font-medium text-gray-900">{breakdown.dueDate}</span>
-                              </div>
-                            </div>
-                          );
-                        })()}
-                      </div>
-                    )}
 
                     {/* Submit Button */}
                     <div className="flex gap-3 pt-4">
