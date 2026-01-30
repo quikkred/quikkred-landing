@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import {
   CreditCard, Wallet, Smartphone, Building, Globe,
   CheckCircle, AlertCircle, Clock, ArrowRight,

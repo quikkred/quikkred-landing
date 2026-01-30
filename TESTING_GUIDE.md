@@ -41,7 +41,7 @@ The application is running at: **http://localhost:3000**
 - ✅ Check notifications bell icon
 - ✅ View credit score widget
 
-### 4. **Apply for Loan** (http://localhost:3000/apply)
+### 4. **Apply for Loan** (http://localhost:3000/apply/quick)
 **Multi-step form:**
 - **Step 1: Personal Details**
   - Full Name: `John Doe`

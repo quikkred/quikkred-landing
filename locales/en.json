@@ -99,8 +99,8 @@
         "amountMin": "Minimum loan amount is ₹5,000",
         "amountMax": "Maximum loan amount is ₹1,00,000",
         "amountRequired": "Loan amount is required",
-        "emailRequired": "Email is required",
-        "invalidEmail": "Please enter a valid email address"
+        "invalidEmail": "Please enter a valid email address",
+        "emailRequired": "Email is required"
       },
       "step1": {
         "question": "Enter your Mobile number?",
@@ -651,7 +651,8 @@
       "title": "Contact Us",
       "address": "1008, 10th floor, Vikrant tower, Rajendra Place, New Delhi, Delhi, Pin Code 110005",
       "email": "support@quikkred.in",
-      "phone": "+91-9311964796",
+      "phone": "+91-9311913854",
+      "whatsapp": "+91-9311913848",
       "hours": "Mon-Sat: 9 AM - 6 PM"
     },
     "social": {
@@ -1079,7 +1080,7 @@
         "subtitle": "Get instant EMI calculations, see your eligibility, and understand the total cost - all in real-time",
         "features": {
           "noHiddenCharges": "No hidden charges or surprises",
-          "flexibleTenure": "Flexible tenure options up to 45 days",
+          "flexibleTenure": "Flexible tenure options up to 60 months",
           "lowestRates": "Lowest interest rates guaranteed"
         }
       },
@@ -1094,7 +1095,28 @@
         "title": "Trusted by",
         "titleHighlight": "Thousands",
         "subtitle": "Real stories from real customers who transformed their lives with Quikkred",
-        "loanAmount": "Loan Amount"
+        "loanAmount": "Loan Amount",
+        "shareStory": "Share Your Story",
+        "filters": {
+          "all": "All",
+          "text": "Text",
+          "video": "Video"
+        },
+        "stats": {
+          "customers": "Happy Customers",
+          "rating": "Average Rating",
+          "disbursed": "Loans Disbursed",
+          "satisfaction": "Satisfaction Rate"
+        },
+        "loginRequired": {
+          "title": "Login to Share Your Story",
+          "subtitle": "Share your experience and help others make informed decisions",
+          "button": "Login Now"
+        },
+        "success": {
+          "title": "Thank You!",
+          "message": "Your review has been submitted successfully. It will be visible after approval."
+        }
       },
       "cta": {
         "title": "Ready to Transform Your Financial Future?",
@@ -1139,6 +1161,7 @@
       "Festival": "Festival",
       "Other": "Other"
     },
+    "disbursedAmount":"Amount You'll Receive",
     "loanAmount": "Loan Amount",
     "tenure": "Loan Tenure",
     "tenureDays": "days",

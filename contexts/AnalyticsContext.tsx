@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRouter } from "nextjs-toploader/app";
 
 export interface PageView {
   id: string;
@@ -190,7 +190,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     setSession(newSession);
 
     if (debugMode) {
-      console.log('Analytics: Session started', newSession);
+      // console.log('Analytics: Session started', newSession);
     }
   }, [user, debugMode]);
 
@@ -216,7 +216,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (debugMode) {
-      console.log('Analytics: Session ended', updatedSession);
+      // console.log('Analytics: Session ended', updatedSession);
     }
   }, [session, pageViews, userActions, isEnabled, debugMode]);
 
@@ -262,7 +262,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (debugMode) {
-      console.log('Analytics: Page view tracked', pageView);
+      // console.log('Analytics: Page view tracked', pageView);
     }
   }, [isEnabled, user, session, pageViews, debugMode, currentPageStart]);
 
@@ -292,7 +292,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (debugMode) {
-      console.log('Analytics: Action tracked', userAction);
+      // console.log('Analytics: Action tracked', userAction);
     }
   }, [isEnabled, user, session, debugMode]);
 
@@ -395,7 +395,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   const sendAnalyticsData = useCallback((event: string, data: any) => {
     // In a real app, send to analytics service
     if (debugMode) {
-      console.log(`Analytics Event: ${event}`, data);
+      // console.log(`Analytics Event: ${event}`, data);
     }
 
     // Mock API call
@@ -405,7 +405,7 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
       body: JSON.stringify({ event, data, timestamp: new Date().toISOString() })
     }).catch(error => {
       if (debugMode) {
-        console.error('Analytics: Failed to send data', error);
+        // console.error('Analytics: Failed to send data', error);
       }
     });
   }, [debugMode]);

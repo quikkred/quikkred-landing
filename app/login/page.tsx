@@ -2,9 +2,9 @@
 
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 
-export const dynamic = 'force-dynamic';
+// export const dynamic = 'force-dynamic';
 import {
   Mail,
   Phone,
@@ -28,6 +28,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast, Toaster } from "@/components/ui/toast";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { API_BASE_URL } from '@/lib/config';
+import { getSession, signIn } from "next-auth/react";
+import useAxios from "@/hooks/useAxios";
+import GoogleVerify from "../apply/quick-v2/components/ui/GoogleVerify";
+import TruecallerVerify from "../apply/quick-v2/components/ui/TruecallerVerify";
 
 interface LoginForm {
   emailOrPhone: string;
@@ -56,6 +60,7 @@ export default function LoginPage() {
     rememberMe: false
   });
   const [mobileError, setMobileError] = useState("");
+  const axios = useAxios();
 
   // Countdown timer for resend OTP
   useEffect(() => {
@@ -113,17 +118,21 @@ export default function LoginPage() {
         ? { email: formData.emailOrPhone }
         : { mobile: formData.emailOrPhone };
 
-      const response = await fetch(`${API_BASE_URL}/api/auth/customer/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      // const response = await fetch(`${API_BASE_URL}/api/auth/customer/login`, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify(payload),
+      // });
 
-      const data = await response.json();
+      // const data = await response.json();
 
-      if (response.ok && data.success) {
+      const response = await axios.post('/api/auth/customer/login', payload);
+      const data = response.data;
+
+      // if (response.ok && data.success) {
+      if (response.status === 200 || response.status === 201) {
         setOtpSent(true);
         setResendTimer(15); // Start 15-second countdown
         toast({
@@ -153,87 +162,69 @@ export default function LoginPage() {
     }
   };
 
-const verifyOtp = async () => {
-  if (!otp || otp.length !== 6) {
-    setError('Please enter valid 6-digit OTP');
-    toast({
-      variant: "warning",
-      title: "Invalid OTP",
-      description: "Please enter a valid 6-digit OTP.",
-    });
-    return;
-  }
+  const verifyOtp = async () => {
+    if (!otp || otp.length !== 6) {
+      setError("Please enter valid 6-digit OTP");
+      toast({
+        variant: "warning",
+        title: "Invalid OTP",
+        description: "Please enter a valid 6-digit OTP.",
+      });
+      return;
+    }
 
-  setVerifyingOtp(true);
-  setError(null);
+    setVerifyingOtp(true);
+    setError(null);
 
-  try {
-    const payload =
-      loginMethod === 'email'
-        ? { email: formData.emailOrPhone, otp }
-        : { mobile: formData.emailOrPhone, otp };
-
-    const response = await fetch(`${API_BASE_URL}/api/auth/customer/verifyOtp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await response.json();
-
-    if (response.ok && data.success && data.data) {
-      // ✅ Extract data from response
-      const { userId, role, accessToken, refreshToken, email, customerUniqueId } = data.data;
-
-      // ✅ Save important details in localStorage
-      localStorage.setItem("userId", userId);
-      localStorage.setItem("role", role);
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
-      localStorage.setItem("email", email || "");
-      localStorage.setItem("customerUniqueId", customerUniqueId || "");
-
-      // ✅ Continue with your login handler
-      const success = await login(
-        formData.emailOrPhone,
+    try {
+      // ✅ Call NextAuth OTP provider (it will call backend verifyOtp inside authorize())
+      const res = await signIn("otp", {
+        redirect: false,
+        emailOrPhone: formData.emailOrPhone,
         otp,
-        data.data // API response data
-      );
+        loginMethod, // "email" | "mobile"
+      });
 
-      if (success) {
+      // NextAuth returns { ok, error, status, url }
+      if (res?.ok) {
+        const userData = await getSession();
+        // console.log("user data", userData)
         toast({
           variant: "success",
           title: "Login Successful!",
           description: "Welcome back! Redirecting to your dashboard...",
         });
-      } else {
-        setError("Login failed. Please try again.");
-        toast({
-          variant: "error",
-          title: "Login Failed",
-          description: "Unable to log you in. Please try again.",
-        });
+
+        // ✅ redirect where you want
+        // router.push("/dashboard");
+        if (userData) {
+          await login({
+            apiData: userData,
+            email: userData?.user?.email || "",
+          });
+        }
+        router.push("/user");
+        return;
       }
-    } else {
-      setError(data.message || "Invalid OTP. Please try again.");
+
+      // If credentials invalid, NextAuth usually returns error: "CredentialsSignin"
+      setError("Invalid OTP. Please try again.");
       toast({
         variant: "error",
         title: "Invalid OTP",
-        description: data.message || "The OTP you entered is incorrect. Please try again.",
+        description: "The OTP you entered is incorrect. Please try again.",
       });
+    } catch (err: any) {
+      setError(err?.message || "Verification failed. Please try again.");
+      toast({
+        variant: "error",
+        title: "Verification Error",
+        description: err?.message || "Verification failed. Please try again.",
+      });
+    } finally {
+      setVerifyingOtp(false);
     }
-  } catch (err: any) {
-    setError(err.message || "Verification failed. Please try again.");
-    toast({
-      variant: "error",
-      title: "Verification Error",
-      description: err.message || "Verification failed. Please try again.",
-    });
-  } finally {
-    setVerifyingOtp(false);
-  }
-};
-
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -247,10 +238,9 @@ const verifyOtp = async () => {
       }
     } else {
       try {
-        const success = await login(
-          formData.emailOrPhone,
-          formData.password,
-        );
+        const success = await login({
+            email: formData.emailOrPhone || "",
+          });
 
         if (success) {
           toast({
@@ -288,21 +278,6 @@ const verifyOtp = async () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5]">
-      {/* Breadcrumbs */}
-      {/* <div className="container mx-auto px-4 pt-8">
-        <motion.nav
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center space-x-2 text-sm text-gray-700 mb-8"
-        >
-          <Link href="/" className="hover:text-[#0ea5e9] transition-colors">
-            <Home className="w-4 h-4" />
-          </Link>
-          <ArrowRight className="w-3 h-3" />
-          <span className="text-[#0ea5e9] font-medium">Login</span>
-        </motion.nav>
-      </div> */}
-
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -369,12 +344,10 @@ const verifyOtp = async () => {
               className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100"
             >
               {activeTab === 'login' ? (
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-3">
 
                   {/* Login Method Toggle */}
 
-
-                  
                   {/* <div className="flex bg-gray-50 rounded-lg p-1 border border-gray-200">
                     <button
                       type="button"
@@ -449,6 +422,18 @@ const verifyOtp = async () => {
                     </button>
                   </div> */}
 
+                  {/* google auth */}
+                  <div className="grid grid-cols-2 sm:grid-cols-1 gap-2">
+                    <GoogleVerify buttonText="Continue with google" />
+                    <TruecallerVerify buttonText="Continue with truecaller" />
+                  </div>
+
+                  <div className="my-3 flex w-full items-center gap-3 text-sm text-neutral-500">
+                    <div className="flex-1 border-t border-neutral-400" />
+                    <span className="shrink-0 leading-none">or enter email</span>
+                    <div className="flex-1 border-t border-neutral-400" />
+                  </div>
+
                   {/* Email/Phone Input */}
                   <div>
                     <label className="block text-sm font-medium mb-2">
@@ -456,7 +441,7 @@ const verifyOtp = async () => {
                     </label>
                     <div className="relative">
                       {loginMethod === 'email' ? (
-                        <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                        <Mail className="absolute left-3 top-0 translate-y-4 w-5 h-5 text-gray-400" />
                       ) : (
                         <Phone className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                       )}
@@ -467,9 +452,8 @@ const verifyOtp = async () => {
                         onChange={handleInputChange}
                         maxLength={loginMethod === 'phone' ? 10 : undefined}
                         required
-                        className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white ${
-                          loginMethod === 'phone' && mobileError ? 'border-red-500' : 'border-gray-300'
-                        }`}
+                        className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white ${loginMethod === 'phone' && mobileError ? 'border-red-500' : 'border-gray-300'
+                          }`}
                         placeholder={loginMethod === 'email' ? 'Enter your email' : 'Enter 10-digit mobile number'}
                       />
                     </div>
@@ -612,13 +596,13 @@ const verifyOtp = async () => {
                       )}
                       {authMethod === 'otp'
                         ? (otpSent
-                            ? (verifyingOtp ? 'Verifying...' : 'Verify OTP & Login')
-                            : (sendingOtp ? 'Sending OTP...' : 'Send OTP'))
+                          ? (verifyingOtp ? 'Verifying...' : 'Verify OTP & Login')
+                          : (sendingOtp ? 'Sending OTP...' : 'Send OTP'))
                         : (isLoading ? 'Signing In...' : 'Sign In')
                       }
                     </button>
 
-                     {/* Apply Now Button */}
+                    {/* Apply Now Button */}
                     <Link href="/apply/quick" className="block">
                       <motion.button
                         whileHover={{ scale: 1.02 }}

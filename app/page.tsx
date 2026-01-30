@@ -17,7 +17,7 @@ import StepsSection from "@/components/homepage/steps-section";
 import FeaturesSection from "@/components/homepage/features-section";
 import LoansGrid from "@/components/homepage/loans-grid";
 import LoanCalculatorAll from "@/components/homepage/loan-calculator";
-import Testimonials from "@/components/homepage/Testimonials";
+import TestimonialsSection from "@/components/homepage/TestimonialsSection";
 import { FinancialCTA } from "@/components/homepage/financial-cta";
 import SalaryAdvance from "@/components/SalaryAdvance";
 
@@ -146,7 +146,7 @@ export default function Home() {
 
         {/* Interactive Loan Calculator Section */}
         <section className="flex items-center py-8 sm:py-10 lg:py-12 bg-[#F6F6F6]">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center">
+          <div className="container mx-auto sm:px-6 lg:px-8 flex items-center">
             <div className="grid lg:grid-cols-2 gap-4 lg:gap-6 items-center w-full">
               <motion.div
                 initial={{ opacity: 0, x: -50 }}
@@ -199,23 +199,23 @@ export default function Home() {
         {/* <LoansGrid/> */}
 
         {/* Testimonials Section */}
-        {/* <Testimonials/> */}
+        <TestimonialsSection/>
 
           {/* FAQ Section - Full Screen */}
-        <section className="min-h-[calc(100vh-80px)] flex items-center py-12 sm:py-16 lg:py-20 bg-white">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
+        <section className="min-h-[calc(100vh-80px)] flex items-center py-8 sm:py-10 lg:py-12 bg-white">
+          <div className="container mx-auto sm:px-6 lg:px-8 max-w-4xl">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-center mb-10 sm:mb-12 lg:mb-16"
+              className="text-center mb-5 sm:mb-10"
             >
               <span className="inline-block px-4 py-2 bg-[#DAE6FF] text-[#4A66FF] rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
                 FAQs
               </span>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold font-sora mb-3 sm:mb-4 px-4">
                 {t?.homepage?.faq?.heading}</h2>
-              <p className="text-base sm:text-lg lg:text-xl text-gray-600 px-4">
+              <p className="text-sm sm:text-lg lg:text-xl text-gray-600 px-4">
                 {t?.homepage?.faq?.subtitle}
     ?          </p>
             </motion.div>
@@ -252,7 +252,7 @@ export default function Home() {
                     transition={{ duration: 0.3 }}
                     className="overflow-hidden"
                   >
-                    <p className="px-4 sm:px-6 pb-3 sm:pb-4 text-sm sm:text-base text-gray-600">
+                    <p className="px-4 sm:px-6 py-3 sm:py-4 text-sm sm:text-base text-gray-600">
                       {faq.answer}
                     </p>
                   </motion.div>

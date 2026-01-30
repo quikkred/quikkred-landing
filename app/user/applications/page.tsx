@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useRouter } from "nextjs-toploader/app";
 import {
   FileText, Search, Calendar, IndianRupee,
   Clock, CheckCircle, AlertCircle, Eye, RefreshCw,
@@ -201,11 +201,11 @@ export default function MyApplicationsPage() {
   }, [reduxPagination]);
 
   // Check authentication
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, isLoading, router]);
+  // useEffect(() => {
+  //   if (!isLoading && !user) {
+  //     router.push('/login');
+  //   }
+  // }, [user, isLoading, router]);
 
   // Fetch applications using Redux
   useEffect(() => {
@@ -218,9 +218,9 @@ export default function MyApplicationsPage() {
 
     const result = await reduxFetchApplications(currentPage, currentLimit);
 
-    if (result?.requiresAuth) {
-      router.push('/login');
-    }
+    // if (result?.requiresAuth) {
+    //   router.push('/login');
+    // }
   };
 
   // Pagination handlers
