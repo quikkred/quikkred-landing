@@ -153,8 +153,11 @@ export const SERVICEABLE_STATES = [
 export const getInitialFormData = (): QuickApplyV2FormData => ({
     // Pre-Apply
     ipData: null,
-    firstName:"",
-    lastName:"",
+    bankVerified: false,
+    firstName: "",
+    lastName: "", 
+    customerId:"",
+    upiAutoPayStatus: false,
 
     // Page 1
     mobile: '',
