@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { Toaster } from '@/components/ui/toast';
 import { QuickApplyV2FormData, ApprovalDetails, ApplicationStage } from '@/lib/types/quickApplyV2';
@@ -18,6 +18,10 @@ import PostApprovalAadhaar from './components/PostApprovalAadhaar';
 import PostApprovalSelfie from './components/PostApprovalSelfie';
 import { useAuth } from '@/contexts/AuthContext';
 import StepIndicator from './components/ui/StepIndicator';
+import Page3BankDetails from './components/Page3BankDetails';
+import useStorage from '@/hooks/useStorage';
+import Page4Approval from './components/Page4Approval';
+import { StorageApplicationForm } from '@/interfaces/storageInterface';
 
 // Main Page Component
 export default function QuickApplyV2Page() {
@@ -25,7 +29,8 @@ export default function QuickApplyV2Page() {
     const [stage, setStage] = useState<ApplicationStage>('IP_CHECK');
     const [currentStep, setCurrentStep] = useState(0);
     const { user } = useAuth();
-    console.log("user", user);
+    const storage = useStorage();
+    const breForm = useMemo<StorageApplicationForm | null>(() => ((storage.data?.breForm as StorageApplicationForm) || null), [storage]);
 
     // Form Data
     const [formData, setFormData] = useState<QuickApplyV2FormData>(getInitialFormData);
@@ -38,14 +43,21 @@ export default function QuickApplyV2Page() {
 
     // Approval Data
     const [approvalDetails, setApprovalDetails] = useState<ApprovalDetails | null>(null);
-
     const formatDOB = (isoDate?: string) => isoDate ? isoDate.split("T")[0] : "";
 
+    // Combined Logic for Routing and Form Population
+    // 1. Add this at the top of your component
+    const hasAutoRouted = useRef(false);
+
     useEffect(() => {
+        // A. Wait for IP check to finish
+        if (ipLoading || ipBlocked) return;
+
+        // B. Handle User Data Population
         if (user) {
-            console.log("initial", user);
             setFormData((prev) => ({
                 ...prev,
+                customerId: user?.id || "",
                 firstName: user?.firstName || "",
                 lastName: user?.lastName || "",
                 fullName: user?.fullName || "",
@@ -57,11 +69,59 @@ export default function QuickApplyV2Page() {
                 aadhaar: user?.aadhaar || "",
                 dob: formatDOB(user?.dateOfBirth) || "",
                 panVerified: user?.isPanVerify || false,
+                aadhaarVerified: user?.isAadhaarVerify || false,
                 monthlyIncome: user?.monthlyIncome || "",
-                employmentType: (user?.employmentType as "SALARIED" | "SELF-EMPLOYED") || "SALARIED"
-            }))
+                employmentType: (user?.employmentType as "SALARIED" | "SELF-EMPLOYED") || "SALARIED",
+                selfie: (user?.profile?.s3URL as string) || "",
+                selfieVerified: user?.profile?.status === "VERIFIED",
+
+                // bank
+                bankName: user?.bankName || "",
+                accountHolderName: user?.accountHolderName || "",
+                accountNumber: user?.accountNumber || "",
+                ifsc: user?.ifsc || "",
+                bankVerified: user?.bankVerified || false,
+
+                // bre form
+                loanAmount: breForm?.loanAmount || 0,
+                tenure: breForm?.tenure || 0,
+                netDisbursalAmount: breForm?.netDisbursalAmount || 0,
+            }));
+
+            // C. ONE-TIME INITIAL ROUTING
+            // We only jump the user automatically IF we haven't done it yet this session
+            if (!hasAutoRouted.current) {
+                if (user.bankVerified) {
+                    // If everything is done, maybe go to a "Success" or "Final" page
+                    setStage('PAGE_3');
+                    setCurrentStep(3);
+                } else if (user.brePulled) {
+                    // Priority 1: BRE pulled but bank not verified -> Go to Bank Page
+                    setStage('PAGE_3');
+                    setCurrentStep(3);
+                } else if (user.isPanVerify) {
+                    // Priority 2: PAN verified but BRE not pulled -> Go to Page 2 (Income/Bureau)
+                    setStage('PAGE_2');
+                    setCurrentStep(2);
+                } else {
+                    // Default: Start at Page 1
+                    setStage('PAGE_1');
+                    setCurrentStep(1);
+                }
+
+                hasAutoRouted.current = true; // IMPORTANT: Lock the auto-router
+                return;
+            }
         }
-    }, [user]);
+
+        // D. GUEST FLOW: If no user and still stuck in IP_CHECK, move to Page 1
+        if (!user && stage === 'IP_CHECK' && !hasAutoRouted.current) {
+            setStage('PAGE_1');
+            setCurrentStep(1);
+            hasAutoRouted.current = true;
+        }
+
+    }, [user, ipLoading, ipBlocked, stage, breForm]);
 
     // Initialize tracking and check IP on mount
     useEffect(() => {
@@ -77,6 +137,68 @@ export default function QuickApplyV2Page() {
         await performIPCheck();
     };
 
+    // const performIPCheck = async () => {
+    //     setIpLoading(true);
+    //     tracking.trackEvent('CUSTOM_EVENT', { event: TRACKING_EVENTS.IP_CHECK_STARTED });
+
+    //     try {
+    //         const result: IPCheckResponse = await ipCheckService.checkIP();
+
+    //         if (!result.success) {
+    //             setIpBlocked(true);
+    //             setBlockType('error');
+    //             tracking.trackEvent('CUSTOM_EVENT', { event: TRACKING_EVENTS.IP_CHECK_BLOCKED });
+    //             return;
+    //         }
+
+    //         // Check for VPN
+    //         if (result.data?.vpnDetected) {
+    //             setIpBlocked(true);
+    //             setBlockType('vpn');
+    //             tracking.trackEvent('CUSTOM_EVENT', { event: TRACKING_EVENTS.VPN_DETECTED });
+    //             return;
+    //         }
+
+    //         // Check serviceability
+    //         if (result.blocked || !result.serviceable) {
+    //             setIpBlocked(true);
+    //             setBlockType('region');
+    //             setBlockState(result.data?.state || '');
+    //             tracking.trackEvent('CUSTOM_EVENT', {
+    //                 event: TRACKING_EVENTS.IP_CHECK_BLOCKED,
+    //                 state: result.data?.state,
+    //             });
+    //             return;
+    //         }
+
+    //         // Success - update form data with IP info
+    //         setFormData(prev => ({
+    //             ...prev,
+    //             ipData: result.data || null,
+    //             pincode: result.data?.pincode || prev.pincode,
+    //             city: result.data?.city || prev.city,
+    //             state: result.data?.state || prev.state,
+    //         }));
+
+    //         tracking.trackEvent('CUSTOM_EVENT', {
+    //             event: TRACKING_EVENTS.IP_CHECK_PASSED,
+    //             state: result.data?.state,
+    //             city: result.data?.city,
+    //         });
+
+    //         // Move to Page 1
+    //         setStage('PAGE_1');
+    //         setCurrentStep(1);
+    //     } catch (error) {
+    //         console.error('IP check error:', error);
+    //         // Don't block on error - allow user to proceed
+    //         setStage('PAGE_1');
+    //         setCurrentStep(1);
+    //     } finally {
+    //         setIpLoading(false);
+    //     }
+    // };
+
     const performIPCheck = async () => {
         setIpLoading(true);
         tracking.trackEvent('CUSTOM_EVENT', { event: TRACKING_EVENTS.IP_CHECK_STARTED });
@@ -87,31 +209,23 @@ export default function QuickApplyV2Page() {
             if (!result.success) {
                 setIpBlocked(true);
                 setBlockType('error');
-                tracking.trackEvent('CUSTOM_EVENT', { event: TRACKING_EVENTS.IP_CHECK_BLOCKED });
                 return;
             }
 
-            // Check for VPN
             if (result.data?.vpnDetected) {
                 setIpBlocked(true);
                 setBlockType('vpn');
-                tracking.trackEvent('CUSTOM_EVENT', { event: TRACKING_EVENTS.VPN_DETECTED });
                 return;
             }
 
-            // Check serviceability
             if (result.blocked || !result.serviceable) {
                 setIpBlocked(true);
                 setBlockType('region');
                 setBlockState(result.data?.state || '');
-                tracking.trackEvent('CUSTOM_EVENT', {
-                    event: TRACKING_EVENTS.IP_CHECK_BLOCKED,
-                    state: result.data?.state,
-                });
                 return;
             }
 
-            // Success - update form data with IP info
+            // Success - update form data
             setFormData(prev => ({
                 ...prev,
                 ipData: result.data || null,
@@ -120,20 +234,14 @@ export default function QuickApplyV2Page() {
                 state: result.data?.state || prev.state,
             }));
 
-            tracking.trackEvent('CUSTOM_EVENT', {
-                event: TRACKING_EVENTS.IP_CHECK_PASSED,
-                state: result.data?.state,
-                city: result.data?.city,
-            });
+            // ❌ REMOVED: setStage('PAGE_1'); 
+            // ❌ REMOVED: setCurrentStep(1);
 
-            // Move to Page 1
-            setStage('PAGE_1');
-            setCurrentStep(1);
+            // We let the useEffect below handle the navigation now
+
         } catch (error) {
             console.error('IP check error:', error);
-            // Don't block on error - allow user to proceed
-            setStage('PAGE_1');
-            setCurrentStep(1);
+            // Don't block on error
         } finally {
             setIpLoading(false);
         }
@@ -141,7 +249,7 @@ export default function QuickApplyV2Page() {
 
     // Handle Page 1 completion
     const handlePage1Complete = () => {
-        tracking.trackEvent('STEP_COMPLETED', { stepNumber: 1, stepName: 'Basic Details' });
+        tracking.trackEvent('STEP_COMPLETED', { stepNumber: 1, stepName: 'Kyc complete' });
         tracking.linkToCustomer({ mobile: formData.mobile });
         setStage('PAGE_2');
         setCurrentStep(2);
@@ -150,10 +258,20 @@ export default function QuickApplyV2Page() {
 
     // Handle Page 2 completion (submit for approval)
     const handlePage2Complete = () => {
-        tracking.trackEvent('STEP_COMPLETED', { stepNumber: 2, stepName: 'Verification' });
+        tracking.trackEvent('STEP_COMPLETED', { stepNumber: 2, stepName: 'Basic Details' });
         tracking.trackEvent('CUSTOM_EVENT', { event: TRACKING_EVENTS.APPLICATION_SUBMITTED });
-        setStage('BRE_PROCESSING');
+        // setStage('BRE_PROCESSING');
+        setStage('PAGE_3');
         setCurrentStep(3);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handlePage3Complete = () => {
+        tracking.trackEvent('STEP_COMPLETED', { stepNumber: 3, stepName: 'Bank Verification' });
+        tracking.trackEvent('CUSTOM_EVENT', { event: TRACKING_EVENTS.APPLICATION_SUBMITTED });
+        // setStage('BRE_PROCESSING');
+        setStage('PAGE_4');
+        setCurrentStep(4);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
@@ -179,6 +297,11 @@ export default function QuickApplyV2Page() {
     const handleBackToPage1 = () => {
         setStage('PAGE_1');
         setCurrentStep(1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    const handleBackToPage2 = () => {
+        setStage('PAGE_2');
+        setCurrentStep(2);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
@@ -268,7 +391,8 @@ export default function QuickApplyV2Page() {
                 {!ipLoading && !ipBlocked && (
                     <>
                         {/* Step Indicator */}
-                        {['PAGE_1', 'PAGE_2', 'BRE_PROCESSING'].includes(stage) && (
+                        {/* {['PAGE_1', 'PAGE_2', 'BRE_PROCESSING'].includes(stage) && ( */}
+                        {['PAGE_1', 'PAGE_2', 'PAGE_3', 'PAGE_4'].includes(stage) && (
                             <StepIndicator currentStep={currentStep} />
                         )}
 
@@ -291,6 +415,26 @@ export default function QuickApplyV2Page() {
                                         setFormData={setFormData}
                                         onNext={handlePage2Complete}
                                         onBack={handleBackToPage1}
+                                    />
+                                )}
+
+                                {stage === 'PAGE_3' && (
+                                    <Page3BankDetails
+                                        key="page3"
+                                        formData={formData}
+                                        setFormData={setFormData}
+                                        onNext={handlePage3Complete}
+                                        onBack={handleBackToPage2}
+                                    />
+                                )}
+
+                                {stage === 'PAGE_4' && (
+                                    <Page4Approval
+                                        key="page4"
+                                        formData={formData}
+                                        setFormData={setFormData}
+                                        onNext={handlePage2Complete}
+                                        onBack={handleBackToPage2}
                                     />
                                 )}
 
