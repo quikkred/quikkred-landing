@@ -3981,6 +3981,25 @@ export default function QuickLoanApplication() {
                     )}
                   </div>
 
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email Address *
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      disabled={basicDetailsFilled || formData.emailVerified}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'
+                        } ${(basicDetailsFilled || formData.emailVerified) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                      placeholder="Enter your email address"
+                    />
+                    {fieldErrors.email && (
+                      <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+                    )}
+                  </div>
+
                   {/* Show additional fields - always show both for logged-in users */}
                   {user ? (
                     <>
