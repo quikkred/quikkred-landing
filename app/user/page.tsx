@@ -1502,7 +1502,7 @@ export default function UserDashboard() {
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div className="text-center p-3 bg-white rounded-lg border border-slate-200">
                       <p className="text-xs text-slate-600 mb-1">Principal + Interest</p>
-                      <p className="text-base font-bold text-slate-900">₹{getOutstandingBreakdown().principal.toLocaleString()}</p>
+                      <p className="text-base font-bold text-slate-900">₹{activeLoanDetails.emiAmount.toLocaleString()}</p>
                     </div>
                     <div className="text-center p-3 bg-white rounded-lg border border-slate-200">
                       <p className="text-xs text-slate-600 mb-1">Late Charges</p>
