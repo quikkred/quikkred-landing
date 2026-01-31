@@ -1,0 +1,389 @@
+"use client"
+
+import { toast } from "@/components/ui/toast";
+import useAxios from "@/hooks/useAxios";
+import { initialFieldErrors } from "@/lib/constants/quickApply";
+import { FieldErrors } from "@/lib/types/quickApply";
+import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
+import { AxiosError } from "axios";
+import { motion } from "framer-motion";
+import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle, Loader2, Lock, Shield } from "lucide-react";
+import { useRef, useState, useCallback } from "react";
+
+// Regex Constants
+const REGEX = {
+    IFSC: /^[A-Z]{4}0[A-Z0-9]{6}$/,
+    NUMBERS_ONLY: /^\d*$/,
+    ALPHA_SPACE: /[^a-zA-Z\s]/g,
+    IFSC_CLEAN: /[^A-Z0-9]/g
+};
+
+interface Page3Props {
+    formData: QuickApplyV2FormData;
+    setFormData: React.Dispatch<React.SetStateAction<QuickApplyV2FormData>>;
+    onNext: () => void;
+    onBack: () => void;
+}
+
+const Page3BankDetails = ({
+    formData,
+    setFormData,
+    onNext,
+    onBack,
+}: Page3Props) => {
+    const axios = useAxios();
+
+    // UI States (Loading/Errors only, Data stays in formData)
+    const [fieldErrors, setFieldErrors] = useState<FieldErrors>(initialFieldErrors);
+    const [ifscLoading, setIfscLoading] = useState(false);
+    const [verifyLoading, setVerifyLoading] = useState(false);
+    const [submitLoading, setSubmitLoading] = useState(false);
+    const ifscTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    // --- Helpers ---
+
+    // Generic updater to reduce boilerplate
+    const updateFormData = (updates: Partial<QuickApplyV2FormData>) => {
+        setFormData(prev => ({ ...prev, ...updates }));
+    };
+
+    const clearError = (field: string) => {
+        setFieldErrors(prev => ({ ...prev, [field]: "" }));
+    };
+
+    // --- 1. IFSC Logic ---
+
+    const fetchBankDetails = async (ifscCode: string) => {
+        setIfscLoading(true);
+        try {
+            const response = await fetch(`https://ifsc.razorpay.com/${ifscCode}`);
+            if (response.ok) {
+                const data = await response.json();
+                updateFormData({
+                    bankName: data.BANK,
+                    // If you have a branch field in formData, set it here too
+                });
+                toast({
+                    variant: "success",
+                    title: "Bank Detected",
+                    description: `${data.BANK} - ${data.BRANCH}`
+                });
+                clearError("ifsc");
+            } else {
+                updateFormData({ bankName: "" });
+                setFieldErrors(prev => ({ ...prev, ifsc: "Invalid IFSC Code" }));
+            }
+        } catch (error) {
+            console.error(error);
+            updateFormData({ bankName: "" });
+        } finally {
+            setIfscLoading(false);
+        }
+    };
+
+    // --- 2. Unified Change Handler ---
+
+    const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+
+        // A. Account Number: Numbers Only + Max Length
+        if (name === "accountNumber") {
+            if (!REGEX.NUMBERS_ONLY.test(value)) return;
+
+            updateFormData({
+                accountNumber: value,
+                bankVerified: false // Reset verification on change
+            });
+
+            // Local Validation
+            if (value.length > 0 && value.length < 9) {
+                setFieldErrors(prev => ({ ...prev, accountNumber: "Min 9 digits required" }));
+            } else {
+                clearError("accountNumber");
+            }
+        }
+
+        // B. Account Holder: Text Only
+        else if (name === "accountHolderName") {
+            const cleanValue = value.replace(REGEX.ALPHA_SPACE, '');
+            updateFormData({
+                accountHolderName: cleanValue,
+                bankVerified: false
+            });
+            clearError("accountHolderName");
+        }
+
+        // C. IFSC: Uppercase + Auto-Fetch
+        else if (name === "ifsc") {
+            const cleanIfsc = value.toUpperCase().replace(REGEX.IFSC_CLEAN, '').slice(0, 11);
+
+            updateFormData({
+                ifsc: cleanIfsc,
+                bankVerified: false,
+                bankName: cleanIfsc.length < 11 ? "" : formData.bankName // Clear bank if code incomplete
+            });
+
+            // Debounced API Call
+            if (ifscTimeoutRef.current) clearTimeout(ifscTimeoutRef.current);
+
+            if (cleanIfsc.length === 11) {
+                if (REGEX.IFSC.test(cleanIfsc)) {
+                    clearError("ifsc");
+                    ifscTimeoutRef.current = setTimeout(() => fetchBankDetails(cleanIfsc), 300);
+                } else {
+                    setFieldErrors(prev => ({ ...prev, ifsc: "Invalid format (e.g. SBIN0001234)" }));
+                }
+            } else {
+                clearError("ifsc");
+            }
+        }
+
+        // D. Fallback for other fields
+        else {
+            updateFormData({ [name]: value } as any);
+        }
+    };
+
+    // --- 3. Penny Drop Verification ---
+
+    const verifyBankAccount = async () => {
+        // Pre-flight validation
+        const errors: any = {};
+        if (!formData.accountNumber || formData.accountNumber.length < 9) errors.accountNumber = "Invalid account number";
+        if (!formData.ifsc || !REGEX.IFSC.test(formData.ifsc)) errors.ifsc = "Invalid IFSC";
+        if (!formData.accountHolderName || formData.accountHolderName.length < 3) errors.accountHolderName = "Name required";
+
+        if (Object.keys(errors).length > 0) {
+            setFieldErrors(prev => ({ ...prev, ...errors }));
+            return;
+        }
+
+        setVerifyLoading(true);
+        try {
+            const response = await axios.post(`/api/v2/bank/verification`, {
+                accountNumber: formData.accountNumber,
+                ifscCode: formData.ifsc,
+                accountHolderName: formData.accountHolderName,
+                bankName: formData.bankName
+            });
+
+            const result = response.data;
+
+            if (response.status === 200 || response.status === 201) {
+                // Success: Update formData directly
+                updateFormData({
+                    bankVerified: true,
+                    // If API returns normalized name, update it
+                    accountHolderName: result?.data?.accountHolderName || formData.accountHolderName
+                });
+
+                toast({ variant: "success", title: result?.message || "Verified Successfully" });
+            } else {
+                throw new Error(result?.message || "Verification failed");
+            }
+        } catch (error: any) {
+            const msg = error?.response?.data?.message || "Verification failed";
+            toast({ variant: "error", title: "Error", description: msg });
+            updateFormData({ bankVerified: false });
+        } finally {
+            setVerifyLoading(false);
+        }
+    };
+
+    const handleSubmit = async () => {
+        if (!formData.bankVerified) {
+            toast({ variant: "warning", title: "Verification Required", description: "Please verify bank details first" });
+            return;
+        }
+        setSubmitLoading(true);
+        // Simulate API call or navigation delay
+        await new Promise(r => setTimeout(r, 500));
+        onNext();
+        setSubmitLoading(false);
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="space-y-4"
+        >
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Bank Details & Consent</h2>
+
+            {/* Verification Badge */}
+            {formData.bankVerified && (
+                <div className="h-6">
+                    <span className="flex items-center gap-1 text-green-600 text-sm font-medium animate-in fade-in">
+                        <CheckCircle className="w-4 h-4" /> Account Verified
+                    </span>
+                </div>
+            )}
+
+            {/* ROW 1: IFSC & Bank Name */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">IFSC Code *</label>
+                    <div className="relative">
+                        <input
+                            type="text"
+                            name="ifsc"
+                            value={formData.ifsc}
+                            onChange={handleFieldChange}
+                            disabled={formData.bankVerified}
+                            maxLength={11}
+                            className={`w-full px-4 py-3 border rounded-lg uppercase transition-all ${fieldErrors.ifsc ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-[#25B181]'
+                                } ${formData.bankVerified ? 'bg-gray-50' : ''}`}
+                            placeholder="SBIN0001234"
+                        />
+                        <div className="absolute right-3 top-3">
+                            {ifscLoading && <Loader2 className="w-5 h-5 text-[#25B181] animate-spin" />}
+                            {!ifscLoading && formData.bankName && <CheckCircle className="w-5 h-5 text-green-500" />}
+                        </div>
+                    </div>
+                    {fieldErrors.ifsc && <p className="mt-1 text-xs text-red-600">{fieldErrors.ifsc}</p>}
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Bank Name</label>
+                    <input
+                        type="text"
+                        name="bankName"
+                        value={formData.bankName}
+                        readOnly
+                        className={`w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 ${formData.bankName ? 'text-gray-900 font-medium' : 'text-gray-400'
+                            }`}
+                        placeholder="Auto-detected from IFSC"
+                    />
+                </div>
+            </div>
+
+            {/* ROW 2: Account Holder & Number */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Account Holder Name *</label>
+                    <input
+                        type="text"
+                        name="accountHolderName"
+                        value={formData.accountHolderName}
+                        onChange={handleFieldChange}
+                        disabled={formData.bankVerified}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.accountHolderName ? 'border-red-500' : 'border-gray-300'
+                            }`}
+                        placeholder="Name as per bank records"
+                    />
+                    {fieldErrors.accountHolderName && <p className="mt-1 text-xs text-red-600">{fieldErrors.accountHolderName}</p>}
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Account Number *</label>
+                    <input
+                        type="tel"
+                        name="accountNumber"
+                        value={formData.accountNumber}
+                        onChange={handleFieldChange}
+                        disabled={formData.bankVerified}
+                        maxLength={18}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.accountNumber ? 'border-red-500' : 'border-gray-300'
+                            }`}
+                        placeholder="9-18 digit number"
+                    />
+                    {fieldErrors.accountNumber && <p className="mt-1 text-xs text-red-600">{fieldErrors.accountNumber}</p>}
+                </div>
+            </div>
+
+            {/* ACTION: Verify Button */}
+            <div className="pt-2">
+                <button
+                    type="button"
+                    onClick={verifyBankAccount}
+                    disabled={
+                        formData.bankVerified ||
+                        verifyLoading ||
+                        !formData.bankName ||
+                        formData.accountNumber.length < 9
+                    }
+                    className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${formData.bankVerified
+                        ? 'bg-green-100 text-green-700 border border-green-300 cursor-not-allowed'
+                        : verifyLoading
+                            ? 'bg-gray-300 text-gray-600 cursor-wait'
+                            : (!formData.bankName || formData.accountNumber.length < 9)
+                                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                : 'bg-[#25B181] text-white hover:bg-[#1d9469] shadow-sm active:scale-[0.98]'
+                        }`}
+                >
+                    {verifyLoading ? (
+                        <>
+                            <Loader2 className="w-4 h-4 animate-spin" /> Verifying...
+                        </>
+                    ) : formData.bankVerified ? (
+                        <>
+                            <CheckCircle className="w-4 h-4" /> Bank Verified
+                        </>
+                    ) : (
+                        "Verify Bank Account"
+                    )}
+                </button>
+            </div>
+
+            {/* Trust Badge */}
+
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                    <Shield className="w-5 h-5 text-green-600 mt-0.5" />
+                    <div className="text-sm text-green-800">
+                        <p className="font-semibold mb-1">Your data is secure</p>
+                        <p>256-bit encryption • RBI guidelines compliant • No hidden charges</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Navigation */}
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                {/* Back button - disabled once PAN is verified */}
+                <button
+                    onClick={onBack}
+                    // disabled={submitLoading || formData.panVerified}
+                    disabled={submitLoading}
+                    className={`w-full px-3 sm:px-4 py-2 border rounded-lg font-medium text-sm flex items-center justify-center gap-1.5 active:scale-[0.98] touch-manipulation ${submitLoading
+                        ? 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50'
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                        } disabled:opacity-50`}
+                >
+                    {submitLoading ? (
+                        <Lock className="w-4 h-4" />
+                    ) : (
+                        <ArrowLeft className="w-4 h-4" />
+                    )}
+                    <span>Back</span>
+                </button>
+                {submitLoading && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1.5 bg-gray-800 text-white text-[10px] sm:text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        Cannot go back after PAN verification
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800" />
+                    </div>
+                )}
+
+                <button
+                    onClick={handleSubmit}
+                    disabled={submitLoading || !formData.bankVerified}
+                    className="w-full py-2 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg font-semibold text-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 active:scale-[0.98] touch-manipulation"
+                >
+                    {submitLoading ? (
+                        <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span className="text-sm">Submitting...</span>
+                        </>
+                    ) : (
+                        <>
+                            <span>Next</span>
+                            <ArrowRight className="w-4 h-4" />
+                        </>
+                    )}
+                </button>
+            </div>
+        </motion.div>
+    );
+}
+
+export default Page3BankDetails;

@@ -12,6 +12,8 @@ export interface QuickApplyV2FormData {
     ipData: IPData | null;
 
     // Page 1: Basic Details
+    customerId: string;
+    upiAutoPayStatus?: boolean;
     mobile: string;
     otp: string;
     mobileVerified: boolean;
@@ -36,6 +38,7 @@ export interface QuickApplyV2FormData {
     bankName: string;
     accountNumber: string;
     accountHolderName: string;
+    bankVerified: boolean;
 
     // Consents
     termsConsent: boolean;
@@ -47,7 +50,7 @@ export interface QuickApplyV2FormData {
     aadhaar: string;
     aadhaarVerified: boolean;
     aadhaarData: AadhaarData | null;
-    selfie: File | null;
+    selfie: File | string | null;
     selfieVerified: boolean;
     selfieData: SelfieData | null;
     eSignCompleted: boolean;
@@ -103,6 +106,8 @@ export type ApplicationStage =
     | 'IP_CHECK'
     | 'PAGE_1'
     | 'PAGE_2'
+    | 'PAGE_3'
+    | 'PAGE_4'
     | 'BRE_PROCESSING'
     | 'APPROVED'
     | 'REJECTED'
