@@ -45,7 +45,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
-  const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('email');
+  const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('phone');
   const [authMethod, setAuthMethod] = useState<'password' | 'otp'>('otp');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -105,7 +105,7 @@ export default function LoginPage() {
 
   const sendOtp = async () => {
     if (!formData.emailOrPhone) {
-      setError(`Please enter your ${loginMethod}`);
+      setError("Please enter your mobile number");
       return;
     }
 
@@ -114,9 +114,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const payload = loginMethod === 'email'
-        ? { email: formData.emailOrPhone }
-        : { mobile: formData.emailOrPhone };
+      const payload = { mobile: formData.emailOrPhone };
 
       // const response = await fetch(`${API_BASE_URL}/api/auth/customer/login`, {
       //   method: "POST",
@@ -139,8 +137,8 @@ export default function LoginPage() {
           variant: "success",
           title: isResend ? "OTP Resent Successfully!" : "OTP Sent Successfully!",
           description: isResend
-            ? `A new OTP has been sent to your ${loginMethod}. Please check and enter it below.`
-            : `A one-time password has been sent to your ${loginMethod}. Please check and enter it below.`,
+            ? "A new OTP has been sent to your WhatsApp. Please check and enter it below."
+            : "OTP sent to your WhatsApp. Please check and enter it below.",
         });
       } else {
         setError(data.message || 'Failed to send OTP. Please try again.');
@@ -182,7 +180,7 @@ export default function LoginPage() {
         redirect: false,
         emailOrPhone: formData.emailOrPhone,
         otp,
-        loginMethod, // "email" | "mobile"
+        loginMethod: "phone", // always mobile-first
       });
 
       // NextAuth returns { ok, error, status, url }
@@ -200,7 +198,7 @@ export default function LoginPage() {
         if (userData) {
           await login({
             apiData: userData,
-            email: userData?.user?.email || "",
+            mobile: (userData as any)?.mobile || formData.emailOrPhone || "",
           });
         }
         router.push("/user");
@@ -430,34 +428,33 @@ export default function LoginPage() {
 
                   <div className="my-3 flex w-full items-center gap-3 text-sm text-neutral-500">
                     <div className="flex-1 border-t border-neutral-400" />
-                    <span className="shrink-0 leading-none">or enter email</span>
+                    <span className="shrink-0 leading-none">or enter your mobile number</span>
                     <div className="flex-1 border-t border-neutral-400" />
                   </div>
 
-                  {/* Email/Phone Input */}
+                  {/* Phone Number Input */}
                   <div>
-                    <label className="block text-sm font-medium mb-2">
-                      {loginMethod === 'email' ? 'Email Address' : 'Phone Number'}
-                    </label>
-                    <div className="relative">
-                      {loginMethod === 'email' ? (
-                        <Mail className="absolute left-3 top-0 translate-y-4 w-5 h-5 text-gray-400" />
-                      ) : (
+                    <label className="block text-sm font-medium mb-2">Mobile Number</label>
+                    <div className="relative flex">
+                      <span className="inline-flex items-center px-3 py-3 border border-r-0 border-gray-300 rounded-l-lg bg-gray-50 text-gray-600 text-sm font-medium">
+                        +91
+                      </span>
+                      <div className="relative flex-1">
                         <Phone className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                      )}
-                      <input
-                        type={loginMethod === 'email' ? 'email' : 'tel'}
-                        name="emailOrPhone"
-                        value={formData.emailOrPhone}
-                        onChange={handleInputChange}
-                        maxLength={loginMethod === 'phone' ? 10 : undefined}
-                        required
-                        className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white ${loginMethod === 'phone' && mobileError ? 'border-red-500' : 'border-gray-300'
-                          }`}
-                        placeholder={loginMethod === 'email' ? 'Enter your email' : 'Enter 10-digit mobile number'}
-                      />
+                        <input
+                          type="tel"
+                          name="emailOrPhone"
+                          inputMode="numeric"
+                          value={formData.emailOrPhone}
+                          onChange={handleInputChange}
+                          maxLength={10}
+                          required
+                          className={`w-full pl-10 pr-4 py-3 border rounded-r-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white ${mobileError ? 'border-red-500' : 'border-gray-300'}`}
+                          placeholder="Enter your mobile number"
+                        />
+                      </div>
                     </div>
-                    {loginMethod === 'phone' && mobileError && (
+                    {mobileError && (
                       <p className="mt-1 text-xs text-red-600">{mobileError}</p>
                     )}
                   </div>
@@ -499,7 +496,7 @@ export default function LoginPage() {
                             <h4 className="font-medium text-emerald-900">Login with OTP</h4>
                           </div>
                           <p className="text-sm text-emerald-700 mb-3">
-                            Click the button below to receive a one-time password on your {loginMethod}
+                            Click the button below to receive a one-time password on your WhatsApp
                           </p>
                           {/* <button
                             type="button"
