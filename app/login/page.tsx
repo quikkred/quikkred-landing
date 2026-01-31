@@ -421,16 +421,16 @@ export default function LoginPage() {
                   </div> */}
 
                   {/* google auth */}
-                  <div className="grid grid-cols-2 sm:grid-cols-1 gap-2">
+                  {/* <div className="grid grid-cols-2 sm:grid-cols-1 gap-2">
                     <GoogleVerify buttonText="Continue with google" />
                     <TruecallerVerify buttonText="Continue with truecaller" />
-                  </div>
+                  </div> */}
 
-                  <div className="my-3 flex w-full items-center gap-3 text-sm text-neutral-500">
+                  {/* <div className="my-3 flex w-full items-center gap-3 text-sm text-neutral-500">
                     <div className="flex-1 border-t border-neutral-400" />
                     <span className="shrink-0 leading-none">or enter your mobile number</span>
                     <div className="flex-1 border-t border-neutral-400" />
-                  </div>
+                  </div> */}
 
                   {/* Phone Number Input */}
                   <div>
