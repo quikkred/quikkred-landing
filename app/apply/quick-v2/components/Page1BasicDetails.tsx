@@ -50,7 +50,7 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
     }, [trackStepViewed]);
 
     // The logic now correctly handles verification status from the AuthContext
-    const isVerified = useMemo(() => user?.isEmailVerified || user?.isMobileVerified, [user]);
+    const isVerified = useMemo(() => user?.isMobileVerified || user?.isEmailVerified, [user]);
 
     const loanCalc = calculateLoanDetails(formData.loanAmount, formData.tenure);
 
