@@ -62,6 +62,7 @@ export const authOptions: AuthOptions = {
           return {
             id: d.userId,
             email: d.email ?? null,
+            mobile: d.mobile ?? null,
             role: d.role,
             accessToken: d.accessToken,
             refreshToken: d.refreshToken,
@@ -186,6 +187,7 @@ export const authOptions: AuthOptions = {
         token.role = (user as any).role;
         token.verifiedAt = (user as any).verifiedAt;
         token.email = (user as any).email;
+        (token as any).mobile = (user as any).mobile;
         if ((user as any).phoneNumber) (token as any).phoneNumber = (user as any).phoneNumber;
       }
 
@@ -203,6 +205,7 @@ export const authOptions: AuthOptions = {
       (session as any).customerUniqueId = (token as any).customerUniqueId;
       (session as any).role = (token as any).role;
       (session as any).verifiedAt = (token as any).verifiedAt;
+      (session as any).mobile = (token as any).mobile;
 
       return session;
     },
