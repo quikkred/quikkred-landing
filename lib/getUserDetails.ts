@@ -48,7 +48,7 @@ export default async function getUserDetails(): Promise<User | null> {
     const apiData = result.data;
     const fullName = apiData.fullName || baseUser.name;
 
-    // console.log("pan card", apiData)
+    // console.log("api Data", apiData)
 
     const updatedUser: User = {
       ...baseUser,
@@ -66,12 +66,19 @@ export default async function getUserDetails(): Promise<User | null> {
       kycStatus: apiData.kyc?.kycStatus || "PENDING",
       status: apiData.status,
       createdAt: apiData.createdAt,
+      profile: apiData.profile ? {
+        documentType: apiData.profile.documentType || "",
+        status: apiData.profile.status || "",
+        s3Key: apiData.profile.s3Key || "",
+        s3URL: apiData.profile.s3URL || "",
+      } : null,
 
       // verified
       isEmailVerified: apiData.isEmailVerified || false,
       isMobileVerified: apiData.isMobileVerified || false,
       isPanVerify: apiData.isPanVerify || false,
       isAadhaarVerify: apiData.isAadhaarVerify || false,
+      brePulled: apiData.brePulled || false,
 
       // dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
       pan: apiData.panCard || null,
@@ -79,11 +86,16 @@ export default async function getUserDetails(): Promise<User | null> {
       employmentType: apiData.employmentType || null,
       monthlyIncome: apiData.monthlyIncome?.toString() || null,
       companyName: apiData.companyName || null,
+      loanAmount: apiData.requestedLoanAmount?.toString() || null, // Loan amount from API
+
+      // bank
       bankName: apiData.banks?.[0]?.bankName || null,
       accountHolderName: apiData.banks?.[0]?.accountHolderName || null,
       accountNumber: apiData.banks?.[0]?.accountNumber || null,
       ifsc: apiData.banks?.[0]?.ifscCode || null,
-      loanAmount: apiData.requestedLoanAmount?.toString() || null, // Loan amount from API
+      pennyDropStatus: apiData.banks?.[0]?.pennyDropStatus || null,
+      bankVerified: apiData.banks?.[0]?.pennyDropStatus === "VERIFIED",
+      upiAutoPayStatus: apiData?.upiAutoPayStatus || false,
     };
 
     return updatedUser;
