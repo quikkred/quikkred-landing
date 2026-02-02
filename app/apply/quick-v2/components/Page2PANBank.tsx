@@ -632,7 +632,7 @@ export default function Page2PANBank({
                     <span className="font-semibold text-green-600">{formatCurrency(loanCalc.netDisbursalAmount)}</span>
                 </div>
                 <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="text-gray-600">Processing Fee (10% + GST)</span>
+                    <span className="text-gray-600">Platform Fee (10% + GST)</span>
                     <span className="text-gray-700">{formatCurrency(loanCalc.totalDeductions)}</span>
                 </div>
                 <div className="flex justify-between text-xs sm:text-sm border-t pt-1.5 sm:pt-2">
