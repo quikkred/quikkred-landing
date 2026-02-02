@@ -9,6 +9,7 @@ export default function InterestRatePolicyPage() {
   const { t } = useLanguage();
 
   const irp = t?.policies?.interestRate;
+  // console.log(irp)
 
   return (
     <div className="min-h-screen">
