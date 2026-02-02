@@ -1,0 +1,1266 @@
+{
+  "common": {
+    "appName": "Quikkred",
+    "tagline": "Your Gateway to Prosperity",
+    "apply": "Apply Now",
+    "learnMore": "Learn More",
+    "getStarted": "Get Started",
+    "contactUs": "Contact Us",
+    "viewDetails": "View Details",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "back": "Back",
+    "next": "Next",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information",
+    "language": "Select Language",
+    "support": "Support"
+  },
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "products": "Products",
+    "services": "Services",
+    "apply": "Apply",
+    "track": "Track Application",
+    "contact": "Contact",
+    "login": "Login",
+    "register": "Register",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "logout": "Logout",
+    "partners": "Partners",
+    "resources": "Resources",
+    "faqs": "FAQs",
+    "emiCalculator": "EMI Calculator",
+    "emiCalculatorDesc": "Calculate your EMI",
+    "blog": "Blog",
+    "blogDesc": "Financial insights",
+    "careers": "Careers",
+    "privacy": "Privacy Policy",
+    "terms": "Terms & Conditions",
+    "channelPartners": "Channel Partners",
+    "channelPartnersDesc": "Join our network",
+    "corporateTieups": "Corporate Tie-ups",
+    "corporateTieupsDesc": "Business partnerships",
+    "apiIntegration": "API Integration",
+    "apiIntegrationDesc": "Developer resources",
+    "investorRelations": "Investor Relations",
+    "investorRelationsDesc": "For investors"
+  },
+  "hero": {
+    "title": "Get Instant Personal Loans",
+    "subtitle": "Up to ₹5,00,000 with minimal documentation",
+    "description": "Quick loans up to ₹5 Lakhs with minimal documentation. Get approved in minutes, not days.",
+    "cta": {
+      "primary": "Get Instant Approval",
+      "secondary": "Check Eligibility"
+    },
+    "badge": "RBI Licensed NBFC",
+    "stats": {
+      "customers": "+ Happy Customers",
+      "disbursed": "+ Disbursed",
+      "rating": " Rating",
+      "branches": "+ Partner Branches"
+    },
+    "benefits": {
+      "quick": "Quick Approval",
+      "secure": "100% Secure",
+      "paperless": "Paperless Process"
+    },
+    "trustedBy": "Trusted by thousands of customers",
+    "dataProtected": "Data Protected",
+    "rbiCompliant": "RBI Compliant NBFC Partnered",
+    "languageBar": {
+      "availableIn": "Available in:",
+      "more": "more"
+    },
+    "form": {
+      "heading": "Get",
+      "headingHighlight": "Instant Cash",
+      "headingLine2": "When You Need It",
+      "getStarted": "Get Started",
+      "getInstantLoan": "Get Instant Loan →",
+      "phonePlaceholder": "Enter your mobile number",
+      "cta": "Check Eligibility",
+      "errors": {
+        "numbersOnly": "Mobile number can only contain numbers",
+        "tenDigits": "Mobile number must be exactly 10 digits",
+        "validStart": "Mobile number must start with 6, 7, 8, or 9",
+        "nameNoNumbers": "Name cannot contain numbers",
+        "nameRequired": "Name is required",
+        "nameAlphabetsOnly": "Name can only contain alphabets",
+        "nameMinLength": "Name must be at least 3 characters",
+        "amountNumbersOnly": "Amount can only contain numbers",
+        "amountMin": "Minimum loan amount is ₹5,000",
+        "amountMax": "Maximum loan amount is ₹1,00,000",
+        "amountRequired": "Loan amount is required",
+        "emailRequired": "Email is required",
+        "invalidEmail": "Please enter a valid email address"
+      },
+      "step1": {
+        "question": "Enter your Mobile number?",
+        "placeholder": "Enter your mobile number"
+      },
+      "step2": {
+        "question": "What's your name?",
+        "placeholder": "Enter your name"
+      },
+      "step3": {
+        "question": "How much do you need?",
+        "placeholder": "Enter Amount in ₹"
+      },
+      "step4": {
+        "question": "Enter email address?",
+        "placeholder": "Enter your email"
+      },
+      "next": "Next →",
+      "submit": "Submit",
+      "thankYou": "Thank You!",
+      "successMessage": "Your application has been submitted successfully. We'll contact you soon.",
+      "submitAnother": "Submit Another",
+      "trustBadge": "RBI Registered NBFC • 100% Secure",
+      "headingHighlight1": "Approval",
+      "description": "No paperwork. No waiting. Just instant approval and quick disbursal. Your financial emergency solved in minutes.",
+      "features": {
+        "instantApproval": "Instant Approval",
+        "secure": "100% Secure",
+        "sameDayDisbursal": "Same Day Disbursal"
+      },
+      "buttons": {
+        "applyNow": "Apply Now",
+        "talkToExpert": "Talk to Expert"
+      },
+      "steps": [
+        {
+          "number": "1",
+          "title": "Fill Details",
+          "description": "Basic info in 60 seconds"
+        },
+        {
+          "number": "2",
+          "title": "Get Approved",
+          "description": "Instant decision on screen"
+        },
+        {
+          "number": "3",
+          "title": "Receive Money",
+          "description": "Direct to your account"
+        }
+      ]
+    }
+  },
+    "loansGrid": {
+      "badge": "Our Products",
+      "title": "Loans Designed for",
+      "titleHighlight": "Every Need",
+      "subtitle": "Choose from our range of flexible loan products tailored to your requirements",
+      "loans": [
+        {
+          "title": "Salary Advance",
+          "amount": "₹5,000 - ₹5,00,000",
+          "description": "Get advance up to 2x your monthly salary instantly"
+        },
+        {
+          "title": "Personal Loan",
+          "amount": "₹10,000 - ₹50,00,000",
+          "description": "Quick cash for all your personal needs"
+        },
+        {
+          "title": "Emergency Fund",
+          "amount": "₹10,000 - ₹2,00,000",
+          "description": "24-hour support for medical and urgent needs"
+        },
+        {
+          "title": "Festival Advance",
+          "amount": "₹5,000 - ₹1,00,000",
+          "description": "Celebrate every festival without financial worry"
+        },
+        {
+          "title": "Medical Loan",
+          "amount": "₹25,000 - ₹10,00,000",
+          "description": "Healthcare financing for planned treatments"
+        },
+        {
+          "title": "Travel Now Pay Later",
+          "amount": "₹25,000 - ₹3,00,000",
+          "description": "Book your dream vacation today, pay next month"
+        }
+      ],
+      "button": "Learn more"
+    },
+    "featuresSection": {
+      "heading": "A Better, Smarter Way to",
+      "headingHighlight": "Borrow",
+      "subtitle": "Experience the future of lending with our innovative approach",
+      "features": [
+        {
+          "title": "Apply Online",
+          "description": "The price shown is the total price you'll pay, with no hidden fees"
+        },
+        {
+          "title": "Flexible Repayments",
+          "description": "Choose a repayment schedule that fits your lifestyle and budget."
+        },
+        {
+          "title": "100% Secure",
+          "description": "Bank-level encryption keeps your personal and financial data safe."
+        },
+        {
+          "title": "Lightning Fast",
+          "description": "Get approved in minutes and receive funds within 24 hours."
+        }
+      ]
+    },
+    "stepsSection": {
+      "badge": "How It Works",
+      "heading": "Get Your Loan in",
+      "headingHighlight": "Simple Steps",
+      "subtitle": "Experience the fastest and most transparent loan process",
+      "steps": [
+        {
+          "number": "1",
+          "title": "Apply Online",
+          "description": "Fill a simple form with employment details and upload salary slips"
+        },
+        {
+          "number": "2",
+          "title": "Instant Verification",
+          "description": "Our AI verifies your details and approves within seconds"
+        },
+        {
+          "number": "3",
+          "title": "Get Money",
+          "description": "Money transferred to your bank account in 5 minutes"
+        }
+      ]
+    },
+    "testimonials": {
+      "heading": "Don't Just Take Our",
+      "headingHighlight": "Word",
+      "subheading": "For It",
+      "items": [
+        {
+          "name": "Rajesh Kumar",
+          "text": "The bullet loan let me stock up for the festival season. I paid it back easily after my sales. A total game-changer.",
+          "image": "https://randomuser.me/api/portraits/men/32.jpg"
+        },
+        {
+          "name": "Priya Sharma",
+          "text": "Finally, a loan that understands freelancers! No monthly EMI pressure, just one payment when my project invoice clears.",
+          "image": "https://randomuser.me/api/portraits/women/44.jpg"
+        },
+        {
+          "name": "Amit Patel",
+          "text": "Emergency medical loan saved my father's life. The quick disbursal and hassle-free process was a blessing.",
+          "image": "https://randomuser.me/api/portraits/men/40.jpg"
+        }
+      ]
+    },
+  
+  "products": {
+    "title": "Our Loan Products",
+    "subtitle": "Choose the perfect loan for your needs",
+    "hero": {
+      "title": "Find the Right",
+      "highlightWord": "Loan for You",
+      "subtitle": "Get instant loan approval with Quikkred. Fast, secure, and 100% digital process designed for modern India.",
+      "buttonPrimary": "Calculate EMI Now",
+      "buttonSecondary": "Apply for the loan"
+    },
+    "featured": {
+      "badge": "Most Popular",
+      "title": "Lightning Payday - Our Flagship Product",
+      "tagline": "\"Salary aa gaya? Abhi nahi? Le lo abhi!\" - Get instant cash before your payday arrives.",
+      "productTitle": "Lightning Payday",
+      "productDescription": "Quick payday loan before your salary arrives",
+      "features": [
+        "2-minute approval process",
+        "Same-day cash in your account",
+        "Zero paperwork required",
+        "No salary slip needed",
+        "Repay on your next payday"
+      ],
+      "applyButton": "Apply for Lightning Payday",
+      "quickStats": "Quick Stats",
+      "amountRange": "Amount Range",
+      "interestRate": "Interest Rate",
+      "tenure": "Tenure",
+      "processingFee": "Processing Fee",
+      "approvalTime": "Approval Time",
+      "approvalTimeValue": "2 minutes"
+    },
+    "allProducts": {
+      "title": "All Loan Products",
+      "subtitle": "Choose from our comprehensive range of loan offerings designed for every financial need",
+      "amount": "Amount",
+      "tenure": "Tenure",
+      "interestRate": "Interest Rate",
+      "processingFee": "Processing Fee",
+      "keyFeatures": "Key Features",
+      "learnMore": "Learn More",
+      "applyNow": "Apply Now",
+      "eligibilityCriteria": "Eligibility Criteria",
+      "popular": "POPULAR"
+    },
+    "loanProducts": {
+      "lightningPayday": {
+        "title": "Lightning Payday",
+        "tagline": "Salary aa gaya? Abhi nahi? Le lo abhi!",
+        "description": "Quick payday loan before your salary arrives",
+        "features": ["2-min approval", "Same-day cash", "Zero paper"],
+        "eligibility": ["Age: 21-58 years", "Salaried employee", "Basic KYC documents", "Bank account required"]
+      },
+      "instantCash": {
+        "title": "Instant Cash",
+        "tagline": "Paisa abhi, tension khatam!",
+        "description": "Instant money transfer directly to your bank",
+        "features": ["UPI direct in bank", "No salary slip needed"],
+        "eligibility": ["Age: 21-60 years", "Any income source", "Valid Aadhaar & PAN", "Active bank account"]
+      },
+      "weekendBooster": {
+        "title": "Weekend Booster",
+        "tagline": "Friday night? Party on us!",
+        "description": "Get cash on Friday, repay next salary",
+        "features": ["Friday 5 PM disbursal", "Repay next salary"],
+        "eligibility": ["Salaried professional", "Regular salary credit", "Basic KYC", "3 months employment"]
+      },
+      "emergency24x7": {
+        "title": "Emergency 24×7",
+        "tagline": "Hospital bill? Bike repair? We're open!",
+        "description": "Round the clock emergency funding",
+        "features": ["3 AM approval also", "Highest speed"],
+        "eligibility": ["Emergency situation", "Basic KYC documents", "Any income proof", "Active mobile number"]
+      },
+      "festivalFire": {
+        "title": "Festival Fire",
+        "tagline": "Diwali, Eid, Xmas – celebrate bindaas",
+        "description": "Special festival loans at lower rates",
+        "features": ["Special low rate", "Extra ₹5K bonus possible"],
+        "eligibility": ["Festival season only", "Regular income proof", "Valid ID documents", "6 months bank statement"]
+      },
+      "topupTurbo": {
+        "title": "Top-Up Turbo",
+        "tagline": "Already took loan? Take extra now!",
+        "description": "Extra cash for existing borrowers instantly",
+        "features": ["Instant repeat cash – no new documents"],
+        "eligibility": ["Existing Quikkred customer", "Good repayment history", "Running loan active", "No overdue payments"]
+      }
+    },
+    "whyChooseUs": {
+      "badge": "Why Choose Us",
+      "title": "Why Choose",
+      "titleHighlight": "Quikkred?",
+      "subtitle": "We're not just another lending platform. We're your financial partner committed to your prosperity.",
+      "items": {
+        "lightningFast": {
+          "title": "Lightning Fast",
+          "description": "30-second approval with AI-powered decisioning"
+        },
+        "secure": {
+          "title": "100% Secure",
+          "description": "Bank-grade encryption and data protection"
+        },
+        "trusted": {
+          "title": "Trusted by Many",
+          "description": "+ happy customers and counting"
+        },
+        "rbiLicensed": {
+          "title": "RBI Licensed",
+          "description": "Fully compliant and regulated NBFC"
+        }
+      }
+    },
+    "types": {
+      "personal": {
+        "name": "Payday Loan",
+        "description": "Quick cash for all your personal needs",
+        "amount": "₹10,000 - ₹5,00,000",
+        "tenure": "7 - 90 days",
+        "rate": "1% per day + 10% platform fee + GST",
+        "features": [
+          "30-second AI approval",
+          "Flexible tenure: 7, 15, 30, 60, 90 days",
+          "Minimal documentation",
+          "Money in 30 minutes"
+        ]
+      },
+      "salary": {
+        "name": "Salary Advance",
+        "description": "Get advance before your payday arrives",
+        "amount": "₹10,000 - ₹2,00,000",
+        "tenure": "7 - 30 days",
+        "rate": "1% per day + 10% platform fee + GST",
+        "features": [
+          "Instant approval for salaried",
+          "Repay on next payday",
+          "No collateral required",
+          "Same-day disbursal"
+        ]
+      },
+      "emergency": {
+        "name": "Emergency Fund",
+        "description": "24/7 support for urgent needs",
+        "amount": "₹10,000 - ₹2,00,000",
+        "tenure": "7 - 90 days",
+        "rate": "1% per day + 10% platform fee + GST",
+        "features": [
+          "24/7 approval",
+          "Instant disbursal",
+          "No questions asked",
+          "Medical emergencies covered"
+        ]
+      },
+      "festival": {
+        "name": "Festival Advance",
+        "description": "Celebrate every festival without worry",
+        "amount": "₹10,000 - ₹1,00,000",
+        "tenure": "15 - 60 days",
+        "rate": "1% per day + 10% platform fee + GST",
+        "features": [
+          "Quick approval",
+          "Flexible repayment",
+          "All festivals covered",
+          "No prepayment penalty"
+        ]
+      },
+      "medical": {
+        "name": "Medical Loan",
+        "description": "Healthcare financing when you need it",
+        "amount": "₹10,000 - ₹5,00,000",
+        "tenure": "30 - 90 days",
+        "rate": "1% per day + 10% platform fee + GST",
+        "features": [
+          "Fast approval",
+          "Hospital tie-ups available",
+          "Compassionate support",
+          "Flexible repayment"
+        ]
+      },
+      "travel": {
+        "name": "Travel Advance",
+        "description": "Travel now, pay later",
+        "amount": "₹10,000 - ₹3,00,000",
+        "tenure": "30 - 90 days",
+        "rate": "1% per day + 10% platform fee + GST",
+        "features": [
+          "Instant approval",
+          "Book your trip today",
+          "Flexible tenure",
+          "No prepayment charges"
+        ]
+      }
+    },
+    "cta": {
+      "title": "Ready to Start Your Application?",
+      "description": "Our secure online application takes less than 3 minutes.",
+      "button": "Apply Loan"
+    }
+  },
+  "features": {
+    "title": "Why Choose Quikkred",
+    "subtitle": "Experience the future of digital lending",
+    "list": {
+      "instant": {
+        "title": "Instant Approval",
+        "description": "Get approved in just 30 seconds with our AI-powered system"
+      },
+      "paperless": {
+        "title": "100% Paperless",
+        "description": "Complete digital process from application to disbursement"
+      },
+      "secure": {
+        "title": "Bank-Level Security",
+        "description": "Your data is protected with 256-bit SSL encryption"
+      },
+      "transparent": {
+        "title": "Transparent Pricing",
+        "description": "No hidden charges, clear terms and conditions"
+      },
+      "support": {
+        "title": "24/7 Support",
+        "description": "Round-the-clock customer support in multiple languages"
+      },
+      "flexible": {
+        "title": "Flexible Repayment",
+        "description": "Choose tenure and EMI that suits your comfort"
+      }
+    }
+  },
+  "application": {
+    "title": "Loan Application",
+    "steps": {
+      "personal": "Personal Details",
+      "employment": "Employment Info",
+      "documents": "Documents",
+      "loan": "Loan Details",
+      "review": "Review & Submit"
+    },
+    "fields": {
+      "fullName": "Full Name",
+      "email": "Email Address",
+      "mobile": "Mobile Number",
+      "pan": "PAN Number",
+      "aadhaar": "Aadhaar Number",
+      "dob": "Date of Birth",
+      "address": "Address",
+      "city": "City",
+      "state": "State",
+      "pincode": "PIN Code",
+      "employmentType": "Employment Type",
+      "companyName": "Company Name",
+      "designation": "Designation",
+      "monthlyIncome": "Monthly Income",
+      "loanAmount": "Loan Amount Required",
+      "loanPurpose": "Purpose of Loan",
+      "tenure": "Loan Tenure"
+    },
+    "placeholders": {
+      "fullName": "Enter your full name",
+      "email": "example@email.com",
+      "mobile": "Enter 10-digit mobile number",
+      "pan": "ABCDE1234F",
+      "aadhaar": "XXXX XXXX XXXX",
+      "amount": "Enter amount in ₹"
+    },
+    "validation": {
+      "required": "This field is required",
+      "invalidEmail": "Please enter a valid email",
+      "invalidMobile": "Please enter a valid 10-digit mobile number",
+      "invalidPAN": "Please enter a valid PAN number",
+      "invalidAadhaar": "Please enter a valid Aadhaar number",
+      "minAmount": "Minimum amount is",
+      "maxAmount": "Maximum amount is"
+    }
+  },
+  "dashboard": {
+    "welcome": "Welcome back",
+    "overview": "Overview",
+    "activeLoans": "Active Loans",
+    "totalOutstanding": "Total Outstanding",
+    "nextEMI": "Next EMI",
+    "creditScore": "Credit Score",
+    "recentTransactions": "Recent Transactions",
+    "quickActions": "Quick Actions",
+    "payEMI": "Pay EMI",
+    "applyLoan": "Apply for New Loan",
+    "viewStatement": "View Statement",
+    "support": "Get Support",
+    "profile": {
+      "title": "My Profile",
+      "personalInfo": "Personal Information",
+      "kycStatus": "KYC Status",
+      "documents": "Documents",
+      "settings": "Settings"
+    }
+  },
+  "footer": {
+    "about": {
+      "title": "About Quikkred",
+      "description": "India's most trusted AI-powered digital lending platform. Get payday loans from ₹10,000 to ₹5,00,000 with transparent fees: 10% platform fee, 18% GST, and 1% per day interest."
+    },
+    "quickLinks": {
+      "title": "Quick Links",
+      "items": {
+        "about": "About Us",
+        "products": "Our Products",
+        "partners": "Partners",
+        "careers": "Careers",
+        "contact": "Contact Us",
+        "ourStory": "Our Story",
+        "leadershipTeam": "Leadership Team",
+        "pressMedia": "Press & Media",
+        "awardsRecognition": "Awards & Recognition",
+        "csrInitiatives": "CSR Initiatives",
+        "testimonials": "Testimonials"
+      }
+    },
+    "products": {
+      "title": "Products",
+      "items": {
+        "personal": "Personal Loan",
+        "salary": "Salary Advance",
+        "emergency": "Emergency Fund",
+        "medical": "Medical Loan",
+        "travel": "Travel Loan",
+        "festival": "Festival Advance"
+      }
+    },
+    "resources": {
+      "title": "Resources",
+      "items": {
+        "eligibilityCheck": "Eligibility Check",
+        "interestRates": "Interest Rates",
+        "documentChecklist": "Document Checklist",
+        "howToApply": "How to Apply",
+        "financialLiteracy": "Financial Literacy"
+      }
+    },
+    "support": {
+      "title": "Support",
+      "items": {
+        "customerSupport": "Customer Support",
+        "grievanceRedressal": "Grievance Redressal",
+        "nodalOfficer": "Nodal Officer",
+        "locateBranch": "Locate Branch",
+        "downloadForms": "Download Forms",
+        "reportFraud": "Report Fraud"
+      }
+    },
+    "legal": {
+      "title": "Legal",
+      "items": {
+        "privacy": "Privacy Policy",
+        "terms": "Terms & Conditions",
+        "disclaimer": "Disclaimer",
+        "grievance": "Grievance Redressal",
+        "cookiePolicy": "Cookie Policy",
+        "fairPracticeCode": "Fair Practice Code",
+        "interestRatePolicy": "Interest Rate Policy",
+        "kycPolicy": "KYC/AML Policy",
+        "rbiGuidelines": "RBI Guidelines",
+        "itSecurityPolicy": "IT Security Policy",
+        "collectionPolicy": "Collection Policy",
+        "refundCancellation": "Refund & Cancellation",
+        "disclaimerDisclosure": "Disclaimer & Disclosure"
+      }
+    },
+    "policyLinks": {
+      "title": "Policy Links",
+      "items": {
+        "fairPracticeCode": "Fair Practices Code",
+        "interestRatePolicy": "Interest Rate Policy",
+        "kycPolicy": "KYC / AML Policy",
+        "grievanceRedressal": "Grievance Redressal Policy",
+        "collectionPolicy": "Collection Policy",
+        "privacyPolicy": "Privacy Policy",
+        "itPolicy": "IT Policy",
+        "creditPolicy": "Credit Policy",
+        "lendingPolicy": "Lending Policy",
+        "refundCancellation": "Refund & Cancellation",
+        "disclaimerDisclosure": "Disclaimer & Disclosure",
+        "settlementWriteoffPolicy": "Settlement & Write-off Policy",
+        "investmentPolicy": "Investment Policy"
+      }
+    },
+    "contact": {
+      "title": "Contact Us",
+      "address": "1008, 10th floor, Vikrant tower, Rajendra Place, New Delhi, Delhi, Pin Code 110005",
+      "email": "support@quikkred.in",
+      "phone": "+91-9311913854",
+      "whatsapp": "+91-9311913848",
+      "hours": "Mon-Sat: 9 AM - 6 PM"
+    },
+    "social": {
+      "title": "Follow Us",
+      "facebook": "Facebook",
+      "twitter": "Twitter",
+      "linkedin": "LinkedIn",
+      "instagram": "Instagram"
+    },
+    "mobileApp": {
+      "title": "Download our mobile app",
+      "appStore": "App Store",
+      "playStore": "Play Store",
+      "comingSoon": "Coming Soon!",
+      "comingSoonMessage": "Our mobile app will be available soon. Stay tuned!"
+    },
+    "copyright": "© 2018-2026 Quikkred. All rights reserved.",
+    "disclaimer": "Quikkred is a digital lending platform powered by Satsai Finlease Private Limited, an RBI registered NBFC (Registration No: B-14.01646). Loan Amount: ₹10,000 to ₹5,00,000. Platform Fee: 10% + 18% GST. Interest: 1% per day. Tenure: 7-90 days."
+  },
+  "contact": {
+    "title": "Get in Touch",
+    "subtitle": "We're here to help you",
+    "form": {
+      "name": "Your Name",
+      "email": "Your Email",
+      "phone": "Phone Number",
+      "subject": "Subject",
+      "message": "Message",
+      "send": "Send Message"
+    },
+    "info": {
+      "address": "Head Office",
+      "phone": "Phone",
+      "email": "Email",
+      "hours": "Business Hours"
+    },
+    "support": {
+      "title": "24/7 Customer Support",
+      "description": "For urgent assistance, our team is available round the clock",
+      "chat": "Start Live Chat",
+      "call": "Call Now"
+    }
+  },
+  "about": {
+    "title": "About Quikkred",
+    "subtitle": "Your Gateway to Financial Freedom",
+    "ourStory": "Our Story",
+    "ourStoryDesc": "Journey of innovation",
+    "leadershipTeam": "Leadership Team",
+    "leadershipDesc": "Meet our leaders",
+    "missionVision": "Mission & Vision",
+    "missionVisionDesc": "Our purpose",
+    "timeline": "Timeline",
+    "timelineDesc": "Road of our Journey",
+    "values": "Values",
+    "valuesDesc": "Social responsibility",
+    "mission": {
+      "title": "Our Mission",
+      "description": "To make financial services accessible, affordable, and transparent for every Indian, empowering dreams and enabling prosperity."
+    },
+    "vision": {
+      "title": "Our Vision",
+      "description": "To be India's most trusted digital lending platform, transforming lives through innovative financial solutions."
+    },
+    "valuesSection": {
+      "title": "Our Values",
+      "trust": "Trust & Transparency",
+      "innovation": "Innovation",
+      "customer": "Customer First",
+      "integrity": "Integrity"
+    },
+    "stats": {
+      "customers": "Happy Customers",
+      "disbursed": "Amount Disbursed",
+      "branches": "Partner Branches",
+      "team": "Team Members"
+    }
+  },
+  "eligibility": {
+    "title": "Eligibility Criteria",
+    "check": "Eligibility Check",
+    "checkDesc": "Check loan eligibility",
+    "age": "Age: 21-60 years",
+    "income": "Monthly Income: ₹15,000+",
+    "employment": "Employment: Salaried/Self-employed",
+    "credit": "CIBIL Score: 650+",
+    "documents": "Valid KYC documents",
+    "documentGuide": "Document Guide",
+    "documentGuideDesc": "Required documents",
+    "interestRates": "Interest Rates",
+    "interestRatesDesc": "Current rates"
+  },
+  "process": {
+    "title": "How It Works",
+    "steps": {
+      "apply": {
+        "title": "Apply Online",
+        "description": "Fill the simple application form"
+      },
+      "verify": {
+        "title": "Quick Verification",
+        "description": "Upload documents for instant verification"
+      },
+      "approval": {
+        "title": "Instant Approval",
+        "description": "Get approved in 30 seconds"
+      },
+      "disbursal": {
+        "title": "Money Transfer",
+        "description": "Receive money in your bank account"
+      }
+    }
+  },
+  "faqs": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know",
+    "description": "Common questions",
+    "categories": {
+      "general": "General",
+      "eligibility": "Eligibility",
+      "documents": "Documents",
+      "repayment": "Repayment",
+      "charges": "Charges"
+    }
+  },
+  "error": {
+    "404": {
+      "title": "Page Not Found",
+      "description": "The page you're looking for doesn't exist",
+      "button": "Go Home"
+    },
+    "500": {
+      "title": "Server Error",
+      "description": "Something went wrong on our end",
+      "button": "Try Again"
+    },
+    "general": {
+      "title": "Oops! Something went wrong",
+      "description": "Please try again later",
+      "button": "Refresh"
+    }
+  },
+  "homepage": {
+    "hero": {
+      "trustBadge": "RBI Registered NBFC • 100% Secure",
+      "heading": "Get Loan",
+      "headingHighlight1": "Approval",
+      "headingLine2": "in",
+      "headingHighlight2": "3 Simple Steps",
+      "description": "No paperwork. No waiting. Just instant approval and quick disbursal. Your financial emergency solved in minutes.",
+      "features": {
+        "instantApproval": "Instant Approval",
+        "secure": "100% Secure",
+        "sameDayDisbursal": "Same Day Disbursal"
+      },
+      "buttons": {
+        "applyNow": "Apply Now",
+        "talkToExpert": "Talk to Expert"
+      },
+      "steps": [
+        {
+          "number": "1",
+          "title": "Fill Details",
+          "description": "Basic info in 60 seconds"
+        },
+        {
+          "number": "2",
+          "title": "Get Approved",
+          "description": "Instant decision on screen"
+        },
+        {
+          "number": "3",
+          "title": "Receive Money",
+          "description": "Direct to your account"
+        }
+      ]
+    },
+    "loansGrid": {
+      "badge": "Our Products",
+      "title": "Loans Designed for",
+      "titleHighlight": "Every Need",
+      "subtitle": "Choose from our range of flexible loan products tailored to your requirements",
+      "loans": [
+        {
+          "title": "Salary Advance",
+          "amount": "₹5,000 - ₹5,00,000",
+          "description": "Get advance up to 2x your monthly salary instantly"
+        },
+        {
+          "title": "Personal Loan",
+          "amount": "₹10,000 - ₹50,00,000",
+          "description": "Quick cash for all your personal needs"
+        },
+        {
+          "title": "Emergency Fund",
+          "amount": "₹10,000 - ₹2,00,000",
+          "description": "24-hour support for medical and urgent needs"
+        },
+        {
+          "title": "Festival Advance",
+          "amount": "₹5,000 - ₹1,00,000",
+          "description": "Celebrate every festival without financial worry"
+        },
+        {
+          "title": "Medical Loan",
+          "amount": "₹25,000 - ₹10,00,000",
+          "description": "Healthcare financing for planned treatments"
+        },
+        {
+          "title": "Travel Now Pay Later",
+          "amount": "₹25,000 - ₹3,00,000",
+          "description": "Book your dream vacation today, pay next month"
+        }
+      ],
+      "button": "Learn more"
+    },
+    "featuresSection": {
+      "badge":"Why Choose Us",
+      "heading": "A Better, Smarter Way to",
+      "headingHighlight": "Borrow",
+      "subtitle": "Experience the future of lending with our innovative approach",
+      "features": [
+        {
+          "title": "Apply Online",
+          "description": "The price shown is the total price you'll pay, with no hidden fees"
+        },
+        {
+          "title": "Flexible Repayments",
+          "description": "Choose a repayment schedule that fits your lifestyle and budget."
+        },
+        {
+          "title": "100% Secure",
+          "description": "Bank-level encryption keeps your personal and financial data safe."
+        },
+        {
+          "title": "Lightning Fast",
+          "description": "Get approved in minutes and receive funds within 24 hours."
+        }
+      ]
+    },
+    "stepsSection": {
+      "badge": "How It Works",
+      "heading": "Get Your Loan in",
+      "headingHighlight": "Simple Steps",
+      "subtitle": "Experience the fastest and most transparent loan process",
+      "steps": [
+        {
+          "number": "1",
+          "title": "Apply Online",
+          "description": "Fill a simple form with employment details and upload salary slips"
+        },
+        {
+          "number": "2",
+          "title": "Instant Verification",
+          "description": "Our AI verifies your details and approves within seconds"
+        },
+        {
+          "number": "3",
+          "title": "Get Money",
+          "description": "Money transferred to your bank account in 5 minutes"
+        }
+      ]
+    },
+    "testimonials": {
+      "heading": "Don't Just Take Our",
+      "headingHighlight": "Word",
+      "subheading": "For It",
+      "items": [
+        {
+          "name": "Rajesh Kumar",
+          "text": "The bullet loan let me stock up for the festival season. I paid it back easily after my sales. A total game-changer.",
+          "image": "https://randomuser.me/api/portraits/men/32.jpg"
+        },
+        {
+          "name": "Priya Sharma",
+          "text": "Finally, a loan that understands freelancers! No monthly EMI pressure, just one payment when my project invoice clears.",
+          "image": "https://randomuser.me/api/portraits/women/44.jpg"
+        },
+        {
+          "name": "Amit Patel",
+          "text": "Emergency medical loan saved my father's life. The quick disbursal and hassle-free process was a blessing.",
+          "image": "https://randomuser.me/api/portraits/men/40.jpg"
+        }
+      ]
+    },
+    "faq": {
+      "badge": "FAQs",
+      "heading": "Any questions?",
+      "headingHighlight": "We've Got Answers.",
+      "subtitle": "Find answers to common questions about our loan products and process",
+      "faqs": [
+        {
+    "question": "What is the loan amount range at Quikkred?",
+    "answer": "Quikkred offers payday loans from ₹10,000 to ₹5,00,000. The exact amount depends on your income, credit profile, and our AI assessment."
+  },
+  {
+    "question": "What are the fees and interest rates?",
+    "answer": "Interest rate is 1% per day on the loan amount. Platform fee is 10% of loan amount with 18% GST on platform fee. Example: For ₹50,000 loan - Platform Fee ₹5,000 + GST ₹900 + Interest ₹500 = ₹6,400 deducted. You receive ₹43,600 and repay ₹50,000."
+  },
+  {
+    "question": "How quickly can I get approved?",
+    "answer": "With our AI-powered system, loan approval takes just 30 seconds! Once approved, money is disbursed to your bank account within 30 minutes during banking hours."
+  },
+  {
+    "question": "What are the eligibility criteria?",
+    "answer": "You must be an Indian citizen aged 21-60 years, have minimum monthly income of ₹15,000, be employed (salaried or self-employed), and have a valid bank account with PAN and Aadhaar."
+  },
+  {
+    "question": "What loan tenures are available?",
+    "answer": "We offer flexible tenures of 7, 15, 30, 60, or 90 days. You can repay anytime without prepayment penalty."
+  },
+  {
+    "question": "Is Quikkred RBI registered?",
+    "answer": "Yes, Quikkred is powered by Satsai Finlease Private Limited, an RBI registered NBFC (Registration: B-14.01646). Your data is protected with bank-level security."
+  }
+      ]
+    },
+    "trustBadges": {
+      "customers": {
+        "value": "+",
+        "title": "Happy Customers"
+      },
+      "disbursed": {
+        "value": "+",
+        "title": "Loans Disbursed"
+      },
+      "approvalTime": {
+        "value": "30 Sec",
+        "title": "Approval Time"
+      },
+      "rating": {
+        "value": "",
+        "title": "Customer Rating"
+      }
+    },
+    "features": {
+      "fast": {
+        "title": "Lightning Fast",
+        "description": "30-second approval with AI-powered instant decisioning"
+      },
+      "secure": {
+        "title": "100% Secure",
+        "description": "Bank-grade 256-bit encryption protects your data"
+      },
+      "aiScore": {
+        "title": "AI Credit Score",
+        "description": "Smart algorithms analyze 500+ data points"
+      },
+      "available": {
+        "title": "24/7 Available",
+        "description": "Apply anytime, no branch visits needed"
+      },
+      "mobile": {
+        "title": "Mobile First",
+        "description": "Complete process on your phone in minutes"
+      },
+      "licensed": {
+        "title": "RBI Licensed",
+        "description": "Fully compliant NBFC with transparent practices"
+      },
+      "flexible": {
+        "title": "Flexible EMIs",
+        "description": "Choose tenure that suits your budget"
+      },
+      "instant": {
+        "title": "Instant Money",
+        "description": "Direct credit to your bank account"
+      }
+    },
+    "loanProducts": {
+      "personal": {
+        "name": "Payday Loan",
+        "description": "Quick cash before your payday",
+        "rate": "1% per day + 10% platform fee"
+      },
+      "business": {
+        "name": "Salary Advance",
+        "description": "Get advance on your salary",
+        "rate": "1% per day + 10% platform fee"
+      },
+      "emergency": {
+        "name": "Emergency Fund",
+        "description": "Instant cash for urgencies",
+        "rate": "1% per day + 10% platform fee"
+      },
+      "education": {
+        "name": "Festival Advance",
+        "description": "Celebrate without worries",
+        "rate": "1% per day + 10% platform fee"
+      }
+    },
+    "steps": {
+      "apply": {
+        "title": "Quick Apply",
+        "description": "Fill a simple form with basic details in under 2 minutes",
+        "time": "2 minutes"
+      },
+      "approval": {
+        "title": "Instant Approval",
+        "description": "Our AI analyzes your profile and gives instant decision",
+        "time": "30 seconds"
+      },
+      "money": {
+        "title": "Get Money",
+        "description": "Funds transferred directly to your bank account",
+        "time": "Instant"
+      }
+    },
+    "sections": {
+      "whyChoose": {
+        "badge": "Why Choose Quikkred",
+        "title": "Revolutionary Features",
+        "subtitle": "Experience the future of digital lending with our cutting-edge technology and customer-first approach"
+      },
+      "products": {
+        "badge": "Our Products",
+        "title": "Loans for Every",
+        "titleHighlight": "Need",
+        "subtitle": "Tailored financial solutions designed to meet your unique requirements"
+      },
+      "calculator": {
+        "badge": "Smart Calculator",
+        "title": "Calculate Your",
+        "titleHighlight": "Dream Loan",
+        "subtitle": "Get instant EMI calculations, see your eligibility, and understand the total cost - all in real-time",
+        "features": {
+          "noHiddenCharges": "No hidden charges or surprises",
+          "flexibleTenure": "Flexible tenure options up to 45 days",
+          "lowestRates": "Lowest interest rates guaranteed"
+        }
+      },
+      "howItWorks": {
+        "badge": "Simple Process",
+        "title": "Get Your Loan in",
+        "titleHighlight": "3 Steps",
+        "subtitle": "From application to money in your account - experience the fastest loan process"
+      },
+      "testimonials": {
+        "badge": "Customer Stories",
+        "title": "Trusted by",
+        "titleHighlight": "Thousands",
+        "subtitle": "Real stories from real customers who transformed their lives with Quikkred",
+        "loanAmount": "Loan Amount",
+        "shareStory": "Share Your Story",
+        "filters": {
+          "all": "All",
+          "text": "Text",
+          "video": "Video"
+        },
+        "stats": {
+          "customers": "Happy Customers",
+          "rating": "Average Rating",
+          "disbursed": "Loans Disbursed",
+          "satisfaction": "Satisfaction Rate"
+        },
+        "loginRequired": {
+          "title": "Login to Share Your Story",
+          "subtitle": "Share your experience and help others make informed decisions",
+          "button": "Login Now"
+        },
+        "success": {
+          "title": "Thank You!",
+          "message": "Your review has been submitted successfully. It will be visible after approval."
+        }
+      },
+      "cta": {
+        "title": "Ready to Transform Your Financial Future?",
+        "subtitle": "Join happy customers who've already taken the smart step towards financial freedom",
+        "applyButton": "Apply for Instant Loan",
+        "talkButton": "Talk to Expert",
+        "badges": {
+          "rbiLicensed": "RBI Licensed",
+          "isoCertified": "ISO Certified",
+          "awardWinning": "Award Winning"
+        }
+      }
+    },
+    "financialCta": {
+      "heading": "Ready to Transform Your Financial Future?",
+      "description": "Get your instant, no-obligation quote in 60 seconds.",
+      "placeholder": "Enter Your email",
+      "buttonText": "Subscribe"
+    }
+  },
+  "error404": {
+    "title": "Page Not Found",
+    "description": "Oops! The page you're looking for doesn't exist or has been moved.",
+    "suggestion": "Don't worry, you can find your way back home or explore our services.",
+    "backHome": "Back to Home",
+    "goBack": "Go Back",
+    "quickLinks": "Quick Links",
+    "exploreProducts": "Explore Products",
+    "helpCenter": "Help Center",
+    "contactUs": "Contact Us",
+    "funFact": "Fun Fact: 404 errors got their name from room 404 at CERN where the first web server was located!"
+  },
+  "calculator": {
+    "title": "Payday Loan Calculator",
+    "subtitle": "Calculate Your Loan Amount & Fees",
+    "loanPurpose": "Select Loan Purpose",
+    "purposes": {
+      "Personal": "Personal",
+      "Medical": "Medical",
+      "Emergency": "Emergency",
+      "Salary": "Salary Advance",
+      "Festival": "Festival",
+      "Other": "Other"
+    },
+    "loanAmount": "Loan Amount",
+    "tenure": "Loan Tenure",
+    "tenureDays": "days",
+    "dailyInterestRate": "Interest Rate",
+    "perDay": "flat",
+    "interestRate": "Interest Rate (flat)",
+    "months": "months",
+    "month": "month",
+    "processingFee": "Platform Fee",
+    "platformFee": "Platform Fee (10%)",
+    "gst": "GST (18% on Platform Fee)",
+    "interest": "Interest (1% per day)",
+    "principalAmount": "Loan Amount",
+    "totalInterest": "Total Charges",
+    "totalRepayment": "Total Repayment",
+    "disbursedAmount": "Amount You'll Receive",
+    "totalPayable": "Amount to Repay",
+    "monthlyEMI": "Repayment Amount",
+    "for": "for",
+    "applyButton": "Apply for This Loan",
+    "applyNowFor": "Apply Now for",
+    "trustMessages": {
+      "noHiddenCharges": "Transparent fees - Platform Fee 10% + GST 18% + Interest 1%",
+      "flexibleRepayment": "Flexible tenure: 7, 15, 30, 60, 90 days",
+      "instantDisbursal": "Instant disbursal within 30 minutes"
+    },
+    "footer": "Get Instant Approval • Money in Bank Within 30 Minutes"
+  },
+  "newsletter": {
+    "title": "Stay Updated with Quikkred",
+    "subtitle": "Get exclusive offers, financial tips, and updates on new loan products",
+    "placeholder": "Enter your email",
+    "button": "Subscribe",
+    "subscribing": "Subscribing...",
+    "successTitle": "Subscribed Successfully!",
+    "successMessage": "Thank you for subscribing to our newsletter.",
+    "errors": {
+      "required": "Email is required",
+      "invalid": "Please enter a valid email",
+      "failed": "Failed to subscribe. Please try again."
+    }
+  },
+  "about": {
+    "hero": {
+      "title": "About Quikkred",
+      "subtitle": "We are India's most trusted AI-powered NBFC, committed to making credit accessible, affordable, and transparent for every Indian. Our mission is to empower dreams and enable financial inclusion through technology and trust.",
+      "buttonPrimary": "Contact Us",
+      "buttonSecondary": "Call Us Now"
+    },
+    "story": {
+      "title": "Our Story",
+      "paragraph1": "QuikKred began in 2018 as a leading RBI-registered NBFC with a clear goal: to build a seamless lending experience for the underserved population of India. We recognized that millions of individuals and small businesses were excluded from traditional financial systems, facing complex processes and limited access to credit.",
+      "paragraph2": "We saw the challenges many faced with traditional financing and knew that by leveraging cutting-edge technology, we could offer accessible and fair loan products. Our digital-first approach removes barriers, simplifies the lending process, and empowers individuals to achieve their financial goals with dignity and ease.",
+      "paragraph3": "Today, we continue to innovate and expand, staying true to our mission of making financial services accessible to everyone who needs them."
+    },
+    "vision": {
+      "title": "Our Vision",
+      "paragraph1": "To be India's most trusted and preferred digital lending platform, empowering millions to achieve their financial aspirations.",
+      "paragraph2": "We see a future where everyone has the financial tools they need to build a secure and prosperous life."
+    },
+    "mission": {
+      "title": "Our Mission",
+      "description": "To make our vision a reality, we are on a mission to:",
+      "features": [
+        "Provide innovative, accessible, and responsible lending solutions.",
+        "Leverage technology for a seamless customer experience.",
+        "Foster financial inclusion across all of India."
+      ]
+    },
+    "values": {
+      "badge": "Our Core Values",
+      "title": "What We",
+      "titleHighlight": "Stand For",
+      "subtitle": "Our values guide every decision we make and every interaction we have",
+      "items": {
+        "customerFirst": {
+          "title": "Customer First",
+          "description": "We are committed to understanding and meeting our customers' needs with empathy and dedication."
+        },
+        "integrity": {
+          "title": "Integrity & Transparency",
+          "description": "We uphold the highest standards of honesty and clarity in all our dealings."
+        },
+        "responsibility": {
+          "title": "Responsibility",
+          "description": "We are dedicated to responsible lending practices that prioritize our customers' long-term financial well-being."
+        },
+        "innovation": {
+          "title": "Innovation",
+          "description": "We continuously innovate to simplify processes and deliver superior financial solutions."
+        },
+        "inclusivity": {
+          "title": "Inclusivity",
+          "description": "We strive to make credit accessible to all, promoting financial inclusion across communities."
+        },
+        "socialImpact": {
+          "title": "Social Impact",
+          "description": "We aim to create a positive social impact by empowering our communities and driving economic growth."
+        }
+      }
+    }
+  }
+}
