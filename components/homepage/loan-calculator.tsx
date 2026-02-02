@@ -23,7 +23,7 @@ export default function LoanCalculatorAll() {
   const [loanAmount, setLoanAmount] = useState(25000)
   const [tenureDays, setTenureDays] = useState(30)
   const [dailyInterestRate, setDailyInterestRate] = useState(1.5) // 1.5% per day
-  const [processingFeePercent, setProcessingFeePercent] = useState(2) // 2% processing fee
+  const [processingFeePercent, setProcessingFeePercent] = useState(2) // 2% Platform Fee
 
   // Daily interest calculation for payday bullet loans
   const totalInterest = (loanAmount * (dailyInterestRate / 100) * tenureDays).toFixed(0)

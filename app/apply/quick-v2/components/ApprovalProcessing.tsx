@@ -307,7 +307,7 @@ export default function ApprovalProcessing({
                             </div>
 
                             <div className="flex justify-between items-center">
-                                <span className="text-xs sm:text-sm text-gray-600">Processing Fee (10%)</span>
+                                <span className="text-xs sm:text-sm text-gray-600">Platform Fee (10%)</span>
                                 <span className="text-xs sm:text-sm font-medium text-gray-700">
                                     {formatCurrency(approvalDetails.processingFee)}
                                 </span>
