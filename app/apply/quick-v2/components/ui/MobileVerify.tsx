@@ -120,7 +120,7 @@ const MobileVerify = () => {
           trackOTPVerified(mobile);
           mobileFriction.completeTracking(true);
             await login({
-            email: session?.user?.email || "",
+            mobile: mobile,
             apiData: session,
           });
         }
