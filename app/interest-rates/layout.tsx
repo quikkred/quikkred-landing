@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     },
 
     description:
-        "View Quikkred interest rates and charges with transparent pricing and no hidden fees. Compare rates by loan product, understand processing fees and GST, and learn the factors that affect your final interest rate.",
+        "View Quikkred interest rates and charges with transparent pricing and no hidden fees. Compare rates by loan product, understand Platform Fees and GST, and learn the factors that affect your final interest rate.",
 
     applicationName: SITE_NAME,
     category: "Finance",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
         "interest rates and charges",
         "loan interest rate",
         "personal loan interest rate",
-        "loan processing fee",
+        "loan Platform Fee",
         "GST on loan charges",
         "transparent pricing",
         "no hidden charges",
