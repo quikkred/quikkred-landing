@@ -124,8 +124,8 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
     }, [trackStepViewed]);
 
     // The logic now correctly handles verification status from the AuthContext
-    // const isVerified = useMemo(() => user?.isEmailVerified || user?.isMobileVerified, [user]);
-    const isVerified = useMemo(() => ((formData?.emailVerified || formData?.mobileVerified) && formData?.panVerified), [formData]);
+    const isVerified = useMemo(() => user?.isEmailVerified || user?.isMobileVerified, [user]);
+    // const isVerified = useMemo(() => ((formData?.emailVerified || formData?.mobileVerified) && formData?.panVerified), [formData]);
 
     const loanCalc = calculateLoanDetails(formData.loanAmount, formData.tenure);
 
@@ -140,6 +140,7 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
     // const canProceed = isVerified &&
     //     formData.loanAmount >= LOAN_CONFIG.MIN_AMOUNT &&
     //     formData.loanAmount <= LOAN_CONFIG.MAX_AMOUNT;
+    const canProceed = useMemo(() => ((formData?.emailVerified || formData?.mobileVerified) && formData?.panVerified && !formData.brePulled), [formData]);
 
     const handleContinue = async () => {
         // onNext();
@@ -376,7 +377,7 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
             {/* Continue Button */}
             <button
                 onClick={handleContinue}
-                disabled={!isVerified}
+                disabled={!canProceed}
                 className="w-full py-2 text-sm bg-gradient-to-r disabled:cursor-not-allowed from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-xl font-semibold sm:text-base shadow-lg shadow-[#25B181]/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
             >
                 Complete Kyc

@@ -74,6 +74,7 @@ export default function QuickApplyV2Page() {
                 employmentType: (user?.employmentType as "SALARIED" | "SELF-EMPLOYED") || "SALARIED",
                 selfie: (user?.profile?.s3URL as string) || "",
                 selfieVerified: user?.profile?.status === "VERIFIED",
+                brePulled: user?.brePulled || false,
 
                 // bank
                 bankName: user?.bankName || "",
@@ -91,22 +92,29 @@ export default function QuickApplyV2Page() {
             // C. ONE-TIME INITIAL ROUTING
             // We only jump the user automatically IF we haven't done it yet this session
             if (!hasAutoRouted.current) {
-                if (user.bankVerified) {
-                    // If everything is done, maybe go to a "Success" or "Final" page
-                    setStage('PAGE_3');
-                    setCurrentStep(3);
-                } else if (user.brePulled) {
-                    // Priority 1: BRE pulled but bank not verified -> Go to Bank Page
-                    setStage('PAGE_3');
-                    setCurrentStep(3);
-                } else if (user.isPanVerify) {
-                    // Priority 2: PAN verified but BRE not pulled -> Go to Page 2 (Income/Bureau)
-                    setStage('PAGE_2');
-                    setCurrentStep(2);
-                } else {
-                    // Default: Start at Page 1
+                //     if (user.bankVerified) {
+                //         // If everything is done, maybe go to a "Success" or "Final" page
+                //         setStage('PAGE_3');
+                //         setCurrentStep(3);
+                //     } else if (user.brePulled) {
+                //         // Priority 1: BRE pulled but bank not verified -> Go to Bank Page
+                //         setStage('PAGE_3');
+                //         setCurrentStep(3);
+                //     } else if (user.isPanVerify) {
+                //         // Priority 2: PAN verified but BRE not pulled -> Go to Page 2 (Income/Bureau)
+                //         setStage('PAGE_2');
+                //         setCurrentStep(2);
+                //     } else {
+                //         // Default: Start at Page 1
+                //         setStage('PAGE_1');
+                //         setCurrentStep(1);
+                //     }
+                if (breForm?.status !== "Approve") {
                     setStage('PAGE_1');
                     setCurrentStep(1);
+                } else {
+                    setStage('PAGE_2');
+                    setCurrentStep(2);
                 }
 
                 hasAutoRouted.current = true; // IMPORTANT: Lock the auto-router

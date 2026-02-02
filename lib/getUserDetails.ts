@@ -48,7 +48,7 @@ export default async function getUserDetails(): Promise<User | null> {
     const apiData = result.data;
     const fullName = apiData.fullName || baseUser.name;
 
-    // console.log("api Data", apiData)
+    console.log("api Data", apiData)
 
     const updatedUser: User = {
       ...baseUser,
