@@ -27,6 +27,7 @@ import getToken from "@/lib/getToken";
 // Declare global types for tracking
 declare global {
   interface Window {
+    fbq?: (...args: any[]) => void;
     gtag?: (...args: any[]) => void;
     dataLayer?: any[];
   }
@@ -39,7 +40,7 @@ interface ApplicationStatusData {
   reason?: string;
 }
 
-// Fire tracking events for GTM
+// Fire tracking events for GTM + Facebook Pixel
 function fireTrackingEvents(status: string, loanNumber?: string, amount?: string) {
   // GTM dataLayer event
   if (typeof window !== 'undefined' && window.dataLayer) {
@@ -62,6 +63,22 @@ function fireTrackingEvents(status: string, loanNumber?: string, amount?: string
     }
   }
 
+  // Facebook Pixel events
+  if (typeof window !== 'undefined' && window.fbq) {
+    if (status.toLowerCase() === 'approved') {
+      window.fbq('track', 'Lead', {
+        content_name: 'Loan Approved',
+        loan_number: loanNumber || '',
+        value: amount ? Number(amount) : 0,
+        currency: 'INR',
+      });
+    } else {
+      window.fbq('trackCustom', 'ApplicationDeclined', {
+        content_name: 'Loan Declined',
+        loan_number: loanNumber || '',
+      });
+    }
+  }
 }
 
 function ApplicationStatusContent() {
