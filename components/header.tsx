@@ -76,6 +76,11 @@ export function Header() {
           description: t.navigation.channelPartnersDesc,
         },
         {
+          name: "Collection Partner",
+          href: "/collect-partner",
+          description: "Join our field collection network and earn",
+        },
+        {
           name: t.navigation.investorRelations,
           href: "/partners/investor-relations",
           description: t.navigation.investorRelationsDesc,
