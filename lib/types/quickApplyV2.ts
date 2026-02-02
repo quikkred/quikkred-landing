@@ -25,6 +25,7 @@ export interface QuickApplyV2FormData {
     employmentType: 'SALARIED' | 'SELF-EMPLOYED';
     monthlyIncome: string;
     salaryDate: number; // 1-31
+    brePulled: boolean;
 
     // Page 2: PAN & Bank
     pan: string;

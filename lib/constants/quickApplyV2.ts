@@ -158,6 +158,7 @@ export const getInitialFormData = (): QuickApplyV2FormData => ({
     lastName: "", 
     customerId:"",
     upiAutoPayStatus: false,
+    brePulled: false,
 
     // Page 1
     mobile: '',
