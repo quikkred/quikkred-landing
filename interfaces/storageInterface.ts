@@ -2,7 +2,7 @@ export interface StorageApplicationForm {
     applicationNumber: string;
     applicationId: string;
 
-    status: "Approve" | "Reject" | "Pending"; // extend if backend adds more
+    status: "Approve" | "Reject" | "Proceed to Bank"; // extend if backend adds more
     reason: string;
 
     loanAmount: number;
