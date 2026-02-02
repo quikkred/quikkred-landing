@@ -290,7 +290,7 @@
       "amountRange": "Amount Range",
       "interestRate": "Interest Rate",
       "tenure": "Tenure",
-      "processingFee": "Processing Fee",
+      "processingFee": "Platform Fee",
       "approvalTime": "Approval Time",
       "approvalTimeValue": "2 minutes"
     },
@@ -300,7 +300,7 @@
       "amount": "Amount",
       "tenure": "Tenure",
       "interestRate": "Interest Rate",
-      "processingFee": "Processing Fee",
+      "processingFee": "Platform Fee",
       "keyFeatures": "Key Features",
       "learnMore": "Learn More",
       "applyNow": "Apply Now",
