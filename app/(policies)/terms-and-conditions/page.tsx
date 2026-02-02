@@ -9,6 +9,7 @@ export default function TermsPage() {
   const { t } = useLanguage();
 
   const terms = t?.policies?.terms;
+  console.log(terms)
   const sections = terms?.sections;
 
   return (
@@ -25,7 +26,7 @@ export default function TermsPage() {
             <h1 className="text-4xl md:text-5xl font-bold mb-4 font-sora">
               {terms?.title || "Terms & Conditions"}
             </h1>
-            {/* <p className="text-xl">{t?.policies?.common?.effectiveDate || "Effective Date"}: {terms?.effectiveDate || "January 1, 2024"}</p> */}
+            <p className="text-xl">{t?.policies?.common?.effectiveDate || "Effective Date"}: {terms?.effectiveDate || "January 1, 2024"}</p>
           </motion.div>
         </div>
       </section>

@@ -8,6 +8,9 @@ import PoliciesLayout from "@/components/layouts/PoliciesLayout";
 export default function RBIGuidelinesPage() {
   const { t } = useLanguage();
 
+  // const rbi = t?.policies;
+  // console.log(rbi)
+  
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -20,9 +23,9 @@ export default function RBIGuidelinesPage() {
           >
             <Shield className="w-16 h-16 mx-auto mb-4" />
             <h1 className="text-4xl md:text-5xl font-bold mb-4 font-sora">
-              RBI Guidelines
+              {"RBI Guidelines"}
             </h1>
-            <p className="text-xl">Regulatory Compliance & Consumer Protection</p>
+            <p className="text-xl">{"Regulatory Compliance & Consumer Protection"}</p>
           </motion.div>
         </div>
       </section>
