@@ -342,6 +342,7 @@ const Page3BankDetails = ({
             <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 {/* Back button - disabled once PAN is verified */}
                 <button
+                    type='button'
                     onClick={onBack}
                     // disabled={submitLoading || formData.panVerified}
                     disabled={submitLoading}

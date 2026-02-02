@@ -37,6 +37,7 @@ export default function Page2PANBank({
 }: Page2Props) {
     // hooks
     const axios = useAxios();
+    // console.log("formData updated:", formData);
 
     // Form Errors
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -143,20 +144,26 @@ export default function Page2PANBank({
             trackFormError('salaryDate', newErrors.salaryDate, 2);
         }
 
+        const basicDetails = {
+            employmentType: formData.employmentType,
+            monthlyIncome: formData.monthlyIncome,
+            salaryDate: formData.salaryDate,
+            firstName,
+            lastName,
+            mobile: "9319558980",
+            email,
+            isBasicDetailsFilled,
+            dateOfBirth,
+            companyName
+        }
+
+        setFormData((prev) => ({
+            ...prev, ...basicDetails
+        }))
+
         try {
-            const response = await axios.post("/api/application/loan/create", {
-                basicDetails: {
-                    employmentType: formData.employmentType,
-                    monthlyIncome: formData.monthlyIncome,
-                    salaryDate: formData.salaryDate,
-                    firstName,
-                    lastName,
-                    mobile,
-                    email,
-                    isBasicDetailsFilled,
-                    dateOfBirth,
-                    companyName
-                }
+            const response = await axios.post("/api/v2/application/loan/create", {
+                basicDetails
             })
             if (response.status === 200 || response.status === 201) {
                 toast({ variant: "success", title: response.data?.message || "Employee details verify successfully" });
@@ -308,6 +315,7 @@ export default function Page2PANBank({
             <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 {/* Back button - disabled once PAN is verified */}
                 <button
+                    type='button'
                     onClick={onBack}
                     // disabled={submitLoading || formData.panVerified}
                     disabled={submitLoading}
@@ -332,7 +340,7 @@ export default function Page2PANBank({
 
                 <button
                     onClick={handleSubmit}
-                    //   disabled={submitLoading || !formData.panVerified}
+                    disabled={submitLoading || !formData.panVerified}
                     className="w-full py-2 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg font-semibold text-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 active:scale-[0.98] touch-manipulation"
                 >
                     {submitLoading ? (
