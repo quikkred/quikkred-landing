@@ -21,7 +21,7 @@ export const LOAN_CONFIG = {
 
     // Fee Structure (CRITICAL - From CLAUDE.md)
     PROCESSING_FEE_PERCENT: 10, // 10% of loan amount
-    GST_PERCENT: 18, // 18% on processing fee
+    GST_PERCENT: 18, // 18% on Platform Fee
     INTEREST_RATE_PER_DAY: 1, // 1% per day (NOT per month/annum)
 };
 
@@ -226,17 +226,17 @@ export function calculateLoanDetails(
 ): LoanCalculation {
     const { PROCESSING_FEE_PERCENT, GST_PERCENT, INTEREST_RATE_PER_DAY } = LOAN_CONFIG;
 
-    // Processing fee (10% of loan amount)
+    // Platform Fee (10% of loan amount)
     const processingFee = Math.round((loanAmount * PROCESSING_FEE_PERCENT) / 100);
 
-    // GST on processing fee (18% of processing fee)
+    // GST on Platform Fee (18% of Platform Fee)
     const gstOnProcessingFee = Math.round((processingFee * GST_PERCENT) / 100);
 
     // Total interest (1% per day × tenure days × loan amount)
     const totalInterest = Math.round((INTEREST_RATE_PER_DAY / 100) * tenure * loanAmount);
 
-    // Total deductions (processing fee + GST + interest)
-    // Note: Interest is not deducted upfront, only processing fee + GST
+    // Total deductions (Platform Fee + GST + interest)
+    // Note: Interest is not deducted upfront, only Platform Fee + GST
     const totalDeductions = processingFee + gstOnProcessingFee;
 
     // Net disbursal amount (loan amount - upfront deductions)

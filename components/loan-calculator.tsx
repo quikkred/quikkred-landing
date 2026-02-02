@@ -16,8 +16,8 @@ export function LoanCalculator({ title, subtitle }: LoanCalculatorProps = {}) {
   const [tenure, setTenure] = useState(7);
   const [interestRate, setInterestRate] = useState(1);
 
-  const processingFee = amount * 0.10; // 10% processing fee
-  const gst = processingFee * 0.18; // 18% GST on processing fee
+  const processingFee = amount * 0.10; // 10% Platform Fee
+  const gst = processingFee * 0.18; // 18% GST on Platform Fee
   const totalProcessingFee = processingFee + gst;
   const dailyInterest = (amount * interestRate * tenure) / 100;
   const totalAmount = amount + totalProcessingFee + dailyInterest;

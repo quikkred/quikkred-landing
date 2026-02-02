@@ -993,7 +993,7 @@ export default function QuickLoanApplication() {
     // Calculate total interest based on daily rate and tenure days
     const totalInterest = principal * dailyRate * tenureDays;
 
-    // Calculate processing fee and GST
+    // Calculate Platform Fee and GST
     const processingFee = principal * processingFeePercent;
     const gstOnProcessingFee = processingFee * gstPercent;
     const totalProcessingFee = processingFee + gstOnProcessingFee;
@@ -3181,7 +3181,7 @@ export default function QuickLoanApplication() {
                 <span className="font-semibold">₹{decision.approvedAmount.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Processing Fee (2%)</span>
+                <span className="text-gray-600">Platform Fee (2%)</span>
                 <span className="font-semibold">₹{decision.processingFee.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm">
@@ -4916,11 +4916,11 @@ export default function QuickLoanApplication() {
                             <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.totalInterest ?? approvalData.totalInterest) || 0).toLocaleString('en-IN')}</p>
                           </div>
                           <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">Processing Fee</p>
+                            <p className="text-sm text-gray-500 mb-1">Platform Fee</p>
                             <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.processingFee ?? approvalData.processingFee) || 0).toLocaleString('en-IN')}</p>
                           </div>
                           <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">GST on Processing Fee</p>
+                            <p className="text-sm text-gray-500 mb-1">GST on Platform Fee</p>
                             <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.gstOnProcessingFee ?? approvalData.gstOnProcessingFee) || 0).toLocaleString('en-IN')}</p>
                           </div>
                           <div className="bg-white rounded-lg p-4 border border-gray-200 col-span-2">
