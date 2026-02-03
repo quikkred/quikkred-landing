@@ -48,7 +48,7 @@
     },
     "digitalLendingGuidelines": {
       "title": "Digital Lending Guidelines",
-      "subheadings": {
+      "subheading1": {
         "title": "Key Provisions We Follow",
         "highlightLabel": [
           "Direct Disbursement:",
@@ -64,6 +64,14 @@
           "Borrowers have the right to exit the loan within a specified look-up period.",
           "Customer data is collected only with explicit consent and used solely for credit assessment and legitimate purposes."
         ]
+      },
+      "subheading2": {
+        "title": "LSP Disclosure & Compliance",
+        "highlightItems": [
+          "Fluxusforge Private Limited operates as the Lending Service Provider (LSP) for Satsai Finlease Private Limited.",
+          "All LSP details are disclosed to borrowers as part of the loan documentation.",
+          "LSP activities are monitored by Satsai Finlease to ensure compliance with RBI guidelines."
+        ]
       }
     },
     "fairPracticeCode": {
@@ -75,7 +83,12 @@
         "Interest rate and fee transparency",
         "Customer grievance redressal",
         "Recovery practices and customer treatment"
-      ]
+      ],
+      "conclusion": {
+        "start": "For detailed information, please refer to our",
+        "link": "Fair Practices Code",
+        "end": "page."
+      }
     },
     "customerProtection": {
       "title": "Customer Protection Framework",
@@ -95,6 +108,112 @@
         "Option to prepay loans with applicable charges as per the loan agreement."
       ]
     },
-    "disclaimer": "QuikkRed is a digital lending platform powered by Fluxusforge Private Limited (LSP). All loans are disbursed by Satsai Finlease Private Limited, an RBI-registered NBFC. This page provides a summary of key RBI guidelines applicable to our platform and lending partner's operations. For complete regulatory information, please refer to the official RBI website at www.rbi.org.in. The guidelines mentioned above are subject to updates and amendments by the RBI from time to time."
+    "kycAmlCompliance": {
+      "title": "KYC/AML Compliance",
+      "sections": [
+        {
+          "title": "Know Your Customer (KYC) Requirements",
+          "items": [
+            "We follow RBI's Master Direction on KYC for customer identification and verification.",
+            "Video KYC (V-KYC) is conducted as per RBI guidelines for digital onboarding.",
+            "Aadhaar-based e-KYC is performed with explicit customer consent.",
+            "Periodic KYC updates are conducted as mandated by regulatory requirements."
+          ]
+        },
+        {
+          "title": "Anti-Money Laundering (AML) Framework",
+          "items": [
+            "Robust transaction monitoring systems to detect suspicious activities.",
+            "Compliance with Prevention of Money Laundering Act (PMLA), 2002.",
+            "Regular training of staff on AML/CFT requirements.",
+            "Reporting of suspicious transactions to Financial Intelligence Unit (FIU-IND)."
+          ]
+        }
+      ],
+      "footer": {
+        "textBeforeLink": "For detailed information, please refer to our",
+        "linkText": "KYC/AML Policy",
+        "linkUrl": "/kyc-policy",
+        "textAfterLink": "page."
+      }
+    },
+    "grievanceRedressal": {
+      "title": "Grievance Redressal Mechanism",
+      "complaintResolution": {
+        "title": "Three-Tier Complaint Resolution",
+        "levels": [
+          {
+            "level": "Level 1",
+            "title": "Customer Support",
+            "description": "Contact our customer support team via email, phone, or in-app chat for initial complaint registration and resolution."
+          },
+          {
+            "level": "Level 2",
+            "title": "Grievance Redressal Officer",
+            "description": "If not satisfied with Level 1 resolution, escalate to our designated Grievance Redressal Officer (GRO)."
+          },
+          {
+            "level": "Level 3",
+            "title": "RBI Ombudsman",
+            "description": "If still unresolved, customers can approach the RBI Ombudsman under the Integrated Ombudsman Scheme."
+          }
+        ]
+      },
+      "ombudsman": {
+        "title": "RBI Ombudsman Details",
+        "website": {
+          "label": "Website",
+          "url": "https://cms.rbi.org.in"
+        },
+        "tollFree": {
+          "label": "Toll-Free Number",
+          "value": "14448"
+        },
+        "email": {
+          "label": "Email",
+          "value": "crpc@rbi.org.in"
+        }
+      },
+      "footer": {
+        "textBeforeLink": "For detailed information, please refer to our",
+        "linkText": "Grievance Redressal Policy",
+        "linkUrl": "/grievance-redressal-policy",
+        "textAfterLink": "page."
+      }
+    },
+    "keyRbiRegulations": {
+      "title": "Key RBI Regulations We Comply With",
+      "items": [
+        {
+          "title": "Master Direction - NBFC Directions, 2016",
+          "description": "Comprehensive framework for NBFC operations, governance, and prudential norms."
+        },
+        {
+          "title": "Digital Lending Guidelines, 2022",
+          "description": "Guidelines on digital lending by banks and NBFCs covering LSP regulations, data privacy, and customer protection."
+        },
+        {
+          "title": "Master Direction on KYC, 2016",
+          "description": "Know Your Customer norms including e-KYC, V-KYC, and periodic updates."
+        },
+        {
+          "title": "Fair Practices Code for NBFCs",
+          "description": "Guidelines ensuring fair treatment of customers in lending practices."
+        },
+        {
+          "title": "Integrated Ombudsman Scheme, 2021",
+          "description": "Unified grievance redressal mechanism for banking and financial services."
+        }
+      ]
+    },
+    "disclaimer": {
+      "title": "Disclaimer",
+      "content": {
+        "textBeforeLink": "QuikkRed is a digital lending platform powered by Fluxusforge Private Limited (LSP). All loans are disbursed by Satsai Finlease Private Limited, an RBI-registered NBFC. This page provides a summary of key RBI guidelines applicable to our platform and lending partner's operations. For complete regulatory information, please refer to the official RBI website at",
+        "linkText": "www.rbi.org.in",
+        "linkUrl": "https://www.rbi.org.in",
+        "textAfterLink": "The guidelines mentioned above are subject to updates and amendments by the RBI from time to time."
+      }
+    }
   }
 }

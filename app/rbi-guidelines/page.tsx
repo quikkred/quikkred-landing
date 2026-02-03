@@ -117,7 +117,7 @@ export default function RBIGuidelinesPage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#25B181] mt-1">•</span>
-                <span><strong>{sections?.lendingPartner?.partner2.highlightLabel[0] || "Website:"}</strong> <a href="https://fluxusforge.in" target="_blank" rel="noopener noreferrer" className="text-[#25B181] hover:underline">fluxusforge.in</a></span>
+                <span><strong>{sections?.lendingPartner?.partner2.highlightLabel[1] || "Website:"}</strong> <a href="https://fluxusforge.in" target="_blank" rel="noopener noreferrer" className="text-[#25B181] hover:underline">fluxusforge.in</a></span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#25B181] mt-1">•</span>
@@ -140,48 +140,48 @@ export default function RBIGuidelinesPage() {
 
           <div className="mb-8 bg-gray-50 rounded-lg p-6">
             <h3 className="text-xl font-semibold mb-4 text-gray-800">
-              {sections?.digitalLendingGuidelines?.subheadings?.title || "Key Provisions We Follow"}
+              {sections?.digitalLendingGuidelines?.subheading1?.title || "Key Provisions We Follow"}
             </h3>
             <ul className="space-y-3 text-gray-600">
               <li className="flex items-start gap-2">
                 <span className="text-[#25B181] mt-1">•</span>
-                <span><strong>{sections?.digitalLendingGuidelines?.subheadings?.highlightLabel[0] || "Direct Disbursement:"}</strong> All loan amounts are disbursed directly to the borrower's bank account without any pass-through or pool accounts.</span>
+                <span><strong>{sections?.digitalLendingGuidelines?.subheading1?.highlightLabel[0] || "Direct Disbursement:"}</strong> {sections?.digitalLendingGuidelines?.subheading1?.highlightItems[0] || "All loan amounts are disbursed directly to the borrower's bank account without any pass-through or pool accounts."}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#25B181] mt-1">•</span>
-                <span><strong>{sections?.digitalLendingGuidelines?.subheadings?.highlightLabel[1] || "Transparent Communication:"}</strong> {"All fees, charges, and annual percentage rates (APR) are disclosed upfront before loan sanction."}</span>
+                <span><strong>{sections?.digitalLendingGuidelines?.subheading1?.highlightLabel[1] || "Transparent Communication:"}</strong> {sections?.digitalLendingGuidelines?.subheading1?.highlightItems[1] || "All fees, charges, and annual percentage rates (APR) are disclosed upfront before loan sanction."}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#25B181] mt-1">•</span>
-                <span><strong>{sections?.digitalLendingGuidelines?.subheadings?.highlightLabel[2] || "Key Fact Statement (KFS):"}</strong> {sections?.digitalLendingGuidelines?.subheadings?.highlightItems[0]|| "A standardized KFS is provided to borrowers containing all essential loan information."}</span>
+                <span><strong>{sections?.digitalLendingGuidelines?.subheading1?.highlightLabel[2] || "Key Fact Statement (KFS):"}</strong> {sections?.digitalLendingGuidelines?.subheading1?.highlightItems[2] || "A standardized KFS is provided to borrowers containing all essential loan information."}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#25B181] mt-1">•</span>
-                <span><strong>{sections?.digitalLendingGuidelines?.subheadings?.highlightLabel[3] || "Cooling-Off Period:"}</strong> {sections?.digitalLendingGuidelines?.subheadings?.highlightItems[3] || "Borrowers have the right to exit the loan within a specified look-up period."}</span>
+                <span><strong>{sections?.digitalLendingGuidelines?.subheading1?.highlightLabel[3] || "Cooling-Off Period:"}</strong> {sections?.digitalLendingGuidelines?.subheading1?.highlightItems[3] || "Borrowers have the right to exit the loan within a specified look-up period."}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#25B181] mt-1">•</span>
-                <span><strong>{sections?.digitalLendingGuidelines?.subheadings?.highlightLabel[4]|| "Data Privacy:"}</strong> {sections?.digitalLendingGuidelines?.subheadings?.highlightItems[4] || "Customer data is collected only with explicit consent and used solely for credit assessment and legitimate purposes."}</span>
+                <span><strong>{sections?.digitalLendingGuidelines?.subheading1?.highlightLabel[4] || "Data Privacy:"}</strong> {sections?.digitalLendingGuidelines?.subheading1?.highlightItems[4] || "Customer data is collected only with explicit consent and used solely for credit assessment and legitimate purposes."}</span>
               </li>
             </ul>
           </div>
 
           <div className="mb-8 bg-gray-50 rounded-lg p-6">
             <h3 className="text-xl font-semibold mb-4 text-gray-800">
-              LSP Disclosure & Compliance
+              {sections?.digitalLendingGuidelines?.subheading2?.title || "LSP Disclosure & Compliance"}
             </h3>
             <ul className="space-y-3 text-gray-600">
               <li className="flex items-start gap-2">
                 <span className="text-[#25B181] mt-1">•</span>
-                <span>Fluxusforge Private Limited operates as the Lending Service Provider (LSP) for Satsai Finlease Private Limited.</span>
+                <span>{sections?.digitalLendingGuidelines?.subheading2?.highlightItems[0] || "Fluxusforge Private Limited operates as the Lending Service Provider (LSP) for Satsai Finlease Private Limited."}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#25B181] mt-1">•</span>
-                <span>All LSP details are disclosed to borrowers as part of the loan documentation.</span>
+                <span>{sections?.digitalLendingGuidelines?.subheading2?.highlightItems[1] || "All LSP details are disclosed to borrowers as part of the loan documentation."}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#25B181] mt-1">•</span>
-                <span>LSP activities are monitored by Satsai Finlease to ensure compliance with RBI guidelines.</span>
+                <span>{sections?.digitalLendingGuidelines?.subheading2?.highlightItems[2] || "LSP activities are monitored by Satsai Finlease to ensure compliance with RBI guidelines."}</span>
               </li>
             </ul>
           </div>
@@ -191,40 +191,51 @@ export default function RBIGuidelinesPage() {
         <div className="mb-10">
           <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
             <Scale className="w-6 h-6 text-[#4A66FF]" />
-            Fair Practices Code
+            {sections?.fairPracticeCode.title || "Fair Practices Code"}
           </h2>
           <p className="text-gray-600 mb-4">
-            In accordance with RBI Master Direction on Non-Banking Financial Company – Non-Systemically Important Non-Deposit taking Company (Reserve Bank) Directions, 2016, our lending partner Satsai Finlease Private Limited has adopted a comprehensive Fair Practices Code that governs:
+            {sections?.fairPracticeCode.introduction || "In accordance with RBI Master Direction on Non-Banking Financial Company – Non-Systemically Important Non-Deposit taking Company (Reserve Bank) Directions, 2016, our lending partner Satsai Finlease Private Limited has adopted a comprehensive Fair Practices Code that governs:"}
           </p>
           <ul className="space-y-3 text-gray-600 mb-4">
             <li className="flex items-start gap-2">
               <span className="text-[#4A66FF] mt-1">•</span>
-              <span>Loan application processing and approval</span>
+              <span>{sections?.fairPracticeCode.items[0] || "Loan application processing and approval"}</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-[#4A66FF] mt-1">•</span>
-              <span>Disclosure of terms and conditions</span>
+              <span>{sections?.fairPracticeCode.items[1] || "Disclosure of terms and conditions"}</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-[#4A66FF] mt-1">•</span>
-              <span>Interest rate and fee transparency</span>
+              <span>{sections?.fairPracticeCode.items[2] || "Interest rate and fee transparency"}</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-[#4A66FF] mt-1">•</span>
-              <span>Customer grievance redressal</span>
+              <span>{sections?.fairPracticeCode.items[3] || "Customer grievance redressal"}</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-[#4A66FF] mt-1">•</span>
-              <span>Recovery practices and customer treatment</span>
+              <span>{sections?.fairPracticeCode.items[4] || "Recovery practices and customer treatment"}</span>
             </li>
           </ul>
           <p className="text-gray-600">
-            For detailed information, please refer to our <a href="/fair-practice" className="text-[#25B181] hover:underline">Fair Practices Code</a> page.
+            {sections?.fairPracticeCode ? (
+              <>
+                {sections.fairPracticeCode.conclusion.start}{" "}
+                <a className="text-[#25B181] hover:underline" href="/fair-practice">{sections.fairPracticeCode.conclusion.link}</a>{" "}
+                {sections.fairPracticeCode.conclusion.end}
+              </>
+            ) : (
+              <>
+                For detailed information, please refer to our <a href="/fair-practice" className="text-[#25B181] hover:underline">Fair Practices Code</a> page.
+              </>
+            )}
+
           </p>
         </div>
 
         {/* Customer Protection */}
-        <div className="mb-10">
+        {/* <div className="mb-10">
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
             <Users className="w-6 h-6 text-[#25B181]" />
             Customer Protection Framework
@@ -257,64 +268,103 @@ export default function RBIGuidelinesPage() {
               </li>
             </ul>
           </div>
+        </div> */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+            <Users className="w-6 h-6 text-[#25B181]" />
+            {sections?.customerProtection?.title || "Customer Protection Framework"}
+          </h2>
+
+          <div className="mb-8 bg-gray-50 rounded-lg p-6">
+            <h3 className="text-xl font-semibold mb-4 text-gray-800">
+              {sections?.customerProtection?.subtitle || "Your Rights as a Borrower"}
+            </h3>
+
+            <ul className="space-y-3 text-gray-600">
+              {sections?.customerProtection?.highlightItems?.map(
+                (item: string, index: number) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="text-[#25B181] mt-1">•</span>
+                    <span>
+                      <strong>
+                        {sections?.customerProtection?.highlightLabel?.[index] || ""}
+                      </strong>{" "}
+                      {item}
+                    </span>
+                  </li>
+                )
+              )}
+            </ul>
+          </div>
         </div>
+
 
         {/* KYC & AML */}
         <div className="mb-10">
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
             <BadgeCheck className="w-6 h-6 text-[#25B181]" />
-            KYC/AML Compliance
+            {sections?.kycAmlCompliance?.title || "KYC/AML Compliance"}
           </h2>
 
           <div className="mb-8 bg-gray-50 rounded-lg p-6">
             <h3 className="text-xl font-semibold mb-4 text-gray-800">
-              Know Your Customer (KYC) Requirements
+              {sections?.kycAmlCompliance?.title || "Know Your Customer (KYC) Requirements"}
             </h3>
             <ul className="space-y-3 text-gray-600">
               <li className="flex items-start gap-2">
                 <span className="text-[#25B181] mt-1">•</span>
-                <span>We follow RBI's Master Direction on KYC for customer identification and verification.</span>
+                <span>{sections?.kycAmlCompliance?.sections[0]?.items[0] || "We follow RBI's Master Direction on KYC for customer identification and verification."}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#25B181] mt-1">•</span>
-                <span>Video KYC (V-KYC) is conducted as per RBI guidelines for digital onboarding.</span>
+                <span>{sections?.kycAmlCompliance?.sections[0]?.items[1] || "Video KYC (V-KYC) is conducted as per RBI guidelines for digital onboarding."}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#25B181] mt-1">•</span>
-                <span>Aadhaar-based e-KYC is performed with explicit customer consent.</span>
+                <span>{sections?.kycAmlCompliance?.sections[0]?.items[2] || "Aadhaar-based e-KYC is performed with explicit customer consent."}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#25B181] mt-1">•</span>
-                <span>Periodic KYC updates are conducted as mandated by regulatory requirements.</span>
+                <span>{sections?.kycAmlCompliance?.sections[0]?.items[3] || "Periodic KYC updates are conducted as mandated by regulatory requirements."}</span>
               </li>
             </ul>
           </div>
 
           <div className="mb-8 bg-gray-50 rounded-lg p-6">
             <h3 className="text-xl font-semibold mb-4 text-gray-800">
-              Anti-Money Laundering (AML) Framework
+              {sections?.kycAmlCompliance?.sections[1].title || "Anti-Money Laundering (AML) Framework"}
             </h3>
             <ul className="space-y-3 text-gray-600">
               <li className="flex items-start gap-2">
                 <span className="text-[#25B181] mt-1">•</span>
-                <span>Robust transaction monitoring systems to detect suspicious activities.</span>
+                <span>{sections?.kycAmlCompliance?.sections[1]?.items[0] || "Robust transaction monitoring systems to detect suspicious activities."}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#25B181] mt-1">•</span>
-                <span>Compliance with Prevention of Money Laundering Act (PMLA), 2002.</span>
+                <span>{sections?.kycAmlCompliance?.sections[1]?.items[1] || "Compliance with Prevention of Money Laundering Act (PMLA), 2002."}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#25B181] mt-1">•</span>
-                <span>Regular training of staff on AML/CFT requirements.</span>
+                <span>{sections?.kycAmlCompliance?.sections[1]?.items[2] || "Regular training of staff on AML/CFT requirements."}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#25B181] mt-1">•</span>
-                <span>Reporting of suspicious transactions to Financial Intelligence Unit (FIU-IND).</span>
+                <span>{sections?.kycAmlCompliance?.sections[1]?.items[3] || "Reporting of suspicious transactions to Financial Intelligence Unit (FIU-IND)."}</span>
               </li>
             </ul>
           </div>
           <p className="text-gray-600">
-            For detailed information, please refer to our <a href="/kyc-policy" className="text-[#25B181] hover:underline">KYC/AML Policy</a> page.
+            {sections?.kycAmlCompliance ? (
+              <>
+                {sections.kycAmlCompliance?.footer.textBeforeLink}{" "}
+                <a className="text-[#25B181] hover:underline" href="/kyc-policy">{sections.kycAmlCompliance?.footer.linkText}{" "}</a>
+                {sections.kycAmlCompliance?.footer.textAfterLink}
+              </>
+            ) : (
+              <>
+                For detailed information, please refer to our <a href="/kyc-policy" className="text-[#25B181] hover:underline">KYC/AML Policy</a> page.
+              </>
+            )}
           </p>
         </div>
 
@@ -322,76 +372,147 @@ export default function RBIGuidelinesPage() {
         <div className="mb-10">
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
             <AlertCircle className="w-6 h-6 text-[#25B181]" />
-            Grievance Redressal Mechanism
+            {sections?.grievanceRedressal?.title || "Grievance Redressal Mechanism"}
           </h2>
 
+          {/* Complaint Resolution */}
           <div className="mb-8 bg-gray-50 rounded-lg p-6">
             <h3 className="text-xl font-semibold mb-4 text-gray-800">
-              Three-Tier Complaint Resolution
+              {sections?.grievanceRedressal?.complaintResolution?.title ||
+                "Three-Tier Complaint Resolution"}
             </h3>
+
             <div className="space-y-6">
-              <div>
-                <h4 className="font-semibold text-gray-800 mb-2">Level 1: Customer Support</h4>
-                <p className="text-gray-600">Contact our customer support team via email, phone, or in-app chat for initial complaint registration and resolution.</p>
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-800 mb-2">Level 2: Grievance Redressal Officer</h4>
-                <p className="text-gray-600">If not satisfied with Level 1 resolution, escalate to our designated Grievance Redressal Officer (GRO).</p>
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-800 mb-2">Level 3: RBI Ombudsman</h4>
-                <p className="text-gray-600">If still unresolved, customers can approach the RBI Ombudsman under the Integrated Ombudsman Scheme.</p>
-              </div>
+              {sections?.grievanceRedressal?.complaintResolution?.levels?.map(
+                (
+                  level: {
+                    level: string;
+                    title: string;
+                    description: string;
+                  },
+                  index: number
+                ) => (
+                  <div key={index}>
+                    <h4 className="font-semibold text-gray-800 mb-2">
+                      {level.level}: {level.title}
+                    </h4>
+                    <p className="text-gray-600">{level.description}</p>
+                  </div>
+                )
+              )}
             </div>
           </div>
 
+          {/* RBI Ombudsman Details */}
           <div className="bg-gradient-to-br from-[var(--emerald-green)]/10 to-[var(--royal-blue)]/10 rounded-lg p-6 border-l-4 border-[#25B181]">
-            <p className="font-semibold text-gray-800 mb-2">RBI Ombudsman Details:</p>
-            <p className="text-gray-600">Website: <a href="https://cms.rbi.org.in" target="_blank" rel="noopener noreferrer" className="text-[#25B181] hover:underline">https://cms.rbi.org.in</a></p>
-            <p className="text-gray-600">Toll-Free Number: 14448</p>
-            <p className="text-gray-600">Email: crpc@rbi.org.in</p>
+            <p className="font-semibold text-gray-800 mb-2">
+              {sections?.grievanceRedressal?.ombudsman?.title ||
+                "RBI Ombudsman Details"}
+            </p>
+
+            <p className="text-gray-600">
+              {sections?.grievanceRedressal?.ombudsman?.website?.label}:{" "}
+              <a
+                href={sections?.grievanceRedressal?.ombudsman?.website?.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#25B181] hover:underline"
+              >
+                {sections?.grievanceRedressal?.ombudsman?.website?.url}
+              </a>
+            </p>
+
+            <p className="text-gray-600">
+              {sections?.grievanceRedressal?.ombudsman?.tollFree?.label}:{" "}
+              {sections?.grievanceRedressal?.ombudsman?.tollFree?.value}
+            </p>
+
+            <p className="text-gray-600">
+              {sections?.grievanceRedressal?.ombudsman?.email?.label}:{" "}
+              {sections?.grievanceRedressal?.ombudsman?.email?.value}
+            </p>
           </div>
+
+          {/* Footer */}
           <p className="text-gray-600 mt-4">
-            For detailed information, please refer to our <a href="/grievance-redressal-policy" className="text-[#25B181] hover:underline">Grievance Redressal Policy</a> page.
+            {sections?.grievanceRedressal?.footer?.textBeforeLink}{" "}
+            <a
+              href={sections?.grievanceRedressal?.footer?.linkUrl}
+              className="text-[#25B181] hover:underline"
+            >
+              {sections?.grievanceRedressal?.footer?.linkText}
+            </a>{" "}
+            {sections?.grievanceRedressal?.footer?.textAfterLink}
           </p>
         </div>
+
 
         {/* Important RBI Circulars */}
         <div className="mb-10">
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
             <FileCheck className="w-6 h-6 text-[#4A66FF]" />
-            Key RBI Regulations We Comply With
+            {sections?.keyRbiRegulations?.title || "Key RBI Regulations We Comply With"}
           </h2>
 
           <div className="space-y-4">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="font-semibold text-gray-800">Master Direction - NBFC Directions, 2016</p>
-              <p className="text-sm text-gray-600">Comprehensive framework for NBFC operations, governance, and prudential norms.</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="font-semibold text-gray-800">Digital Lending Guidelines, 2022</p>
-              <p className="text-sm text-gray-600">Guidelines on digital lending by banks and NBFCs covering LSP regulations, data privacy, and customer protection.</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="font-semibold text-gray-800">Master Direction on KYC, 2016</p>
-              <p className="text-sm text-gray-600">Know Your Customer norms including e-KYC, V-KYC, and periodic updates.</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="font-semibold text-gray-800">Fair Practices Code for NBFCs</p>
-              <p className="text-sm text-gray-600">Guidelines ensuring fair treatment of customers in lending practices.</p>
-            </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="font-semibold text-gray-800">Integrated Ombudsman Scheme, 2021</p>
-              <p className="text-sm text-gray-600">Unified grievance redressal mechanism for banking and financial services.</p>
-            </div>
+            {sections?.keyRbiRegulations?.items?.map(
+              (
+                item: {
+                  title: string;
+                  description: string;
+                },
+                index: number
+              ) => (
+                <div key={index} className="bg-gray-50 rounded-lg p-4">
+                  <p className="font-semibold text-gray-800">{item.title}</p>
+                  <p className="text-sm text-gray-600">{item.description}</p>
+                </div>
+              )
+            )}
           </div>
         </div>
 
+
         {/* Disclaimer */}
         <div className="mb-10 bg-yellow-50 rounded-lg p-6 border-l-4 border-yellow-400">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Disclaimer</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">
+            {sections?.disclaimer?.title || "Disclaimer"}
+          </h3>
+
           <p className="text-gray-600 text-sm">
-            QuikkRed is a digital lending platform powered by Fluxusforge Private Limited (LSP). All loans are disbursed by Satsai Finlease Private Limited, an RBI-registered NBFC. This page provides a summary of key RBI guidelines applicable to our platform and lending partner's operations. For complete regulatory information, please refer to the official RBI website at <a href="https://www.rbi.org.in" target="_blank" rel="noopener noreferrer" className="text-[#25B181] hover:underline">www.rbi.org.in</a>. The guidelines mentioned above are subject to updates and amendments by the RBI from time to time.
+            {sections?.disclaimer?.content ? (
+              <>
+                {sections.disclaimer.content.textBeforeLink}{" "}
+                <a
+                  href={sections.disclaimer.content.linkUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#25B181] hover:underline"
+                >
+                  {sections.disclaimer.content.linkText}
+                </a>{" "}
+                {sections.disclaimer.content.textAfterLink}
+              </>
+            ) : (
+              <>
+                QuikkRed is a digital lending platform powered by Fluxusforge Private
+                Limited (LSP). All loans are disbursed by Satsai Finlease Private Limited,
+                an RBI-registered NBFC. This page provides a summary of key RBI guidelines
+                applicable to our platform and lending partner&apos;s operations. For
+                complete regulatory information, please refer to the official RBI
+                website at{" "}
+                <a
+                  href="https://www.rbi.org.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#25B181] hover:underline"
+                >
+                  www.rbi.org.in
+                </a>
+                . The guidelines mentioned above are subject to updates and amendments by
+                the RBI from time to time.
+              </>
+            )}
           </p>
         </div>
       </PoliciesLayout >
