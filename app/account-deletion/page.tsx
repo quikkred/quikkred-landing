@@ -298,8 +298,6 @@ export default function AccountDeletionPage() {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }
