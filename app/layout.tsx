@@ -219,6 +219,7 @@ t.src=v;s=b.getElementsByTagName(e)[0];
 s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
 fbq('init', '763439572919909');
+fbq('init', '2940321649486833');
 fbq('track', 'PageView');`,
             }}
           />
@@ -231,6 +232,13 @@ fbq('track', 'PageView');`,
               width="1"
               style={{ display: 'none' }}
               src="https://www.facebook.com/tr?id=763439572919909&ev=PageView&noscript=1"
+              alt=""
+            />
+            <img
+              height="1"
+              width="1"
+              style={{ display: 'none' }}
+              src="https://www.facebook.com/tr?id=2940321649486833&ev=PageView&noscript=1"
               alt=""
             />
           </noscript>
