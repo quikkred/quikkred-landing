@@ -296,16 +296,16 @@ export default function MyApplicationsPage() {
 
   // Filter applications
   const filteredApplications = applications.filter(app => {
-    const statusUpper = app.status.toUpperCase();
+    const statusUpper = app.status?.toUpperCase();
     const matchesStatus = filterStatus === 'all' ||
       (filterStatus === 'pending' && statusUpper === 'PENDING') ||
       (filterStatus === 'processing' && statusUpper === 'PROCESSING') ||
       (filterStatus === 'approved' && (statusUpper === 'APPROVED' || statusUpper === 'DISBURSED')) ||
       (filterStatus === 'rejected' && (statusUpper === 'REJECTED' || statusUpper === 'CANCELLED'));
 
-    const matchesSearch = app.applicationNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (app.purpose?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (app.customerId?.fullName?.toLowerCase() || '').includes(searchTerm.toLowerCase());
+    const matchesSearch = app.applicationNumber?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+      (app.purpose?.toLowerCase() || '')?.includes(searchTerm.toLowerCase()) ||
+      (app.customerId?.fullName?.toLowerCase() || '')?.includes(searchTerm.toLowerCase());
 
     return matchesStatus && matchesSearch;
   });
