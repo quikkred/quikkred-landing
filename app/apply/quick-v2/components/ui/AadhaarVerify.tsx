@@ -7,6 +7,8 @@ import useAxios from "@/hooks/useAxios";
 import { AxiosError } from "axios";
 import { toast } from "@/components/ui/toast";
 import { useSearchParams } from "next/navigation";
+import tracking from "@/lib/tracking";
+import { TRACKING_EVENTS } from "@/lib/constants/quickApplyV2";
 
 // Helper for Aadhaar Validation (12 digits)
 const isValidAadhaar = (aadhaar: string) => /^\d{12}$/.test(aadhaar);
@@ -38,7 +40,7 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
     const axios = useAxios();
     const searchParams = useSearchParams();
 
-    const checkAadhaarStatus = useCallback(async () => {
+    const checkAadhaarStatus = async () => {
         try {
             // Using Redux for aadhaar/status API
             // const result = await getAadhaarStatus();
@@ -59,6 +61,7 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
                     title: "Aadhaar Verified",
                     description: result.message || "Your Aadhaar has been verified successfully.",
                 });
+                tracking.trackEvent('CUSTOM_EVENT', { event: TRACKING_EVENTS.AADHAAR_VERIFIED });
             } else {
                 console.log('ℹ️ Aadhaar not verified:', result.message || 'Verification pending or failed');
                 // setAadhaarVerified(false);
@@ -80,14 +83,14 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
         } finally {
             setLoading(false);
         }
-    }, [])
+    };
 
     useEffect(() => {
         const verifiedParam = searchParams.get('verified');
-        if (verifiedParam && verifiedParam === "true" && !formData.aadhaarVerified) {
+        if (verifiedParam && verifiedParam === "true") {
             checkAadhaarStatus();
         }
-    }, [searchParams, checkAadhaarStatus, formData]);
+    }, [searchParams]);
 
     const handleAadhaarChange = (value: string) => {
         const numericValue = value.replace(/\D/g, "");
@@ -181,6 +184,7 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
                     aadhaarData: data.data || {}
                 }));
                 toast({ variant: "success", title: "Aadhaar verification successfully", description: "" });
+                tracking.trackEvent('CUSTOM_EVENT', { event: TRACKING_EVENTS.AADHAAR_VERIFIED });
             } else {
                 setError(data.message || "Invalid OTP. Verification failed.");
             }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import LayoutInterface from "@/interfaces/layoutInterface";
 import { KycStatusProvider } from "@/lib/contexts/KycStatusContext";
+import ApplicationProvider from "@/contexts/ApplicationContext";
 
 const SITE_NAME = "Quikkred";
 const SITE_URL = "https://quikkred.in";
@@ -106,9 +107,11 @@ export const metadata: Metadata = {
 
 const ApplyQuickV2 = ({ children }: LayoutInterface) => {
     return <>
-        <KycStatusProvider>
-            {children}
-        </KycStatusProvider>
+        <ApplicationProvider>
+            <KycStatusProvider>
+                {children}
+            </KycStatusProvider>
+        </ApplicationProvider>
     </>
 };
 export default ApplyQuickV2;

@@ -3,6 +3,7 @@
 import { toast } from "@/components/ui/toast";
 import useAxios from "@/hooks/useAxios";
 import { initialFieldErrors } from "@/lib/constants/quickApply";
+import tracking from "@/lib/tracking";
 import { FieldErrors } from "@/lib/types/quickApply";
 import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
 import { AxiosError } from "axios";
@@ -178,6 +179,7 @@ const Page3BankDetails = ({
                 });
 
                 toast({ variant: "success", title: result?.message || "Verified Successfully" });
+                tracking.trackEvent('CUSTOM_EVENT', { event: 'BANK_DETAILS_COLLECTED' });
             } else {
                 throw new Error(result?.message || "Verification failed");
             }
