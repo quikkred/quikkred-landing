@@ -153,8 +153,12 @@ export const SERVICEABLE_STATES = [
 export const getInitialFormData = (): QuickApplyV2FormData => ({
     // Pre-Apply
     ipData: null,
-    firstName:"",
-    lastName:"",
+    bankVerified: false,
+    firstName: "",
+    lastName: "", 
+    customerId:"",
+    upiAutoPayStatus: false,
+    brePulled: false,
 
     // Page 1
     mobile: '',
@@ -168,6 +172,7 @@ export const getInitialFormData = (): QuickApplyV2FormData => ({
     employmentType: 'SALARIED',
     monthlyIncome: '',
     salaryDate: 1,
+    companyName: "",
 
     // Page 2
     pan: '',
