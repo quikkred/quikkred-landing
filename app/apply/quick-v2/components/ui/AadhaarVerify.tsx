@@ -200,7 +200,7 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
 
     return (
         <div className="bg-white rounded-xl p-3 border border-gray-200 shadow-sm space-y-2 mt-3">
-            <h3 className="text-sm sm:text-base font-bold text-gray-900 flex items-center gap-2">
+            <h3 className="text-sm sm:text-base font-semibold text-gray-900 flex items-center gap-2">
                 <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-[#25B181]" />
                 Aadhaar Verification
             </h3>
