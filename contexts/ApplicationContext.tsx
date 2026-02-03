@@ -6,6 +6,7 @@ import { ApplicationInterface } from "@/interfaces/applicationInterface";
 import LayoutInterface from "@/interfaces/layoutInterface";
 import { AxiosError } from "axios";
 import { createContext, useContext, useEffect, useState } from "react";
+import { useAuth } from "./AuthContext";
 
 interface ApplicationContextStateInterface {
     loading: boolean;
@@ -16,6 +17,7 @@ interface ApplicationContextInterface {
     loading: boolean;
     application: ApplicationInterface | null;
     setApplication: (application: ApplicationInterface) => void;
+    getApplication: () => void;
 }
 
 const initialState: ApplicationContextStateInterface = {
@@ -26,24 +28,25 @@ const initialState: ApplicationContextStateInterface = {
 const ApplicationContext = createContext<ApplicationContextInterface>({
     loading: false,
     application: null,
-    setApplication: () => { }
+    setApplication: () => { },
+    getApplication: () => { },
 })
 
 const ApplicationProvider = ({ children }: LayoutInterface) => {
     const axios = useAxios();
     const storage = useStorage();
     const [state, setState] = useState<ApplicationContextStateInterface>(initialState);
+    const { user } = useAuth();
 
     const updateState = (state: Partial<ApplicationContextStateInterface>) => setState((prev) => ({ ...prev, ...state }));
 
-    const getApplicationById = async () => {
+    const getApplication = async () => {
         try {
             const applicationId = storage.get("applicationId");
             if (applicationId) {
                 updateState({ loading: true });
                 const response = await axios.get(`/api/application/loan/${applicationId}`);
                 if (response.status === 200 || response.status === 201) {
-                    console.log("application data:", response.data);
                     updateState({ data: response.data?.data || null });
                 }
             }
@@ -57,13 +60,15 @@ const ApplicationProvider = ({ children }: LayoutInterface) => {
     }
 
     useEffect(() => {
-        getApplicationById();
-    }, []);
+        if(!user) return; 
+        getApplication();
+    }, [user]);
 
     return <ApplicationContext.Provider value={{
         application: state.data,
         loading: state.loading,
-        setApplication: (application) => updateState({ data: application })
+        setApplication: (application) => updateState({ data: application }),
+        getApplication,
     }}>
         {children}
     </ApplicationContext.Provider>
