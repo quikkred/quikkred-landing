@@ -51,7 +51,7 @@ export default function useAxios() {
                 // If 401 Unauthorized
                 if (status === 401) {
                     // Prevent infinite loops (don't retry auth endpoints)
-                    if (prevRequest && !prevRequest.url?.includes("/api/auth")) {
+                    // if (prevRequest && !prevRequest.url?.includes("/api/auth")) {
                         toast({
                             variant: "error",
                             title: "Signed out",
@@ -60,7 +60,7 @@ export default function useAxios() {
 
                         // Force signout and redirect
                         await signOut({ redirect: true, callbackUrl: "/login" });
-                    }
+                    // }
                 }
                 return Promise.reject(error);
             }
