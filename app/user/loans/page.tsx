@@ -1933,20 +1933,20 @@ export default function MyLoansPage() {
                     </div>
                   </div>
 
-                  {/* Processing Fee & Deductions */}
+                  {/* Platform Fee & Deductions */}
                   {(detailedLoan.processingFee || detailedLoan.gstOnProcessingFee) && (
                     <div className="bg-gradient-to-br from-slate-50 to-gray-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-200">
                       <div className="flex items-center gap-2 mb-3 sm:mb-4">
                         <Receipt className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
-                        <h4 className="text-base sm:text-lg font-bold text-gray-800">Processing Fee & Deductions</h4>
+                        <h4 className="text-base sm:text-lg font-bold text-gray-800">Platform Fee & Deductions</h4>
                       </div>
                       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                         <div>
-                          <p className="text-sm text-gray-600">Processing Fee {detailedLoan.processingPercent ? `(${detailedLoan.processingPercent}%)` : ''}</p>
+                          <p className="text-sm text-gray-600">Platform Fee {detailedLoan.processingPercent ? `(${detailedLoan.processingPercent}%)` : ''}</p>
                           <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.processingFee || 0)}</p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600">GST on Processing Fee {detailedLoan.gstOnProcessingPercent ? `(${detailedLoan.gstOnProcessingPercent}%)` : ''}</p>
+                          <p className="text-sm text-gray-600">GST on Platform Fee {detailedLoan.gstOnProcessingPercent ? `(${detailedLoan.gstOnProcessingPercent}%)` : ''}</p>
                           <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.gstOnProcessingFee || 0)}</p>
                         </div>
                         <div>

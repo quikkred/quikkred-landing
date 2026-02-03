@@ -57,7 +57,7 @@ export default function QuickLoanApplication() {
   const [selfieCaptured, setSelfieCaptured] = useState(false);
   const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
   const [selfieVerified, setSelfieVerified] = useState(false); // Profile photo verification status
-  const [verificationMethod, setVerificationMethod] = useState<'mobile' | 'email'>('email');
+  const [verificationMethod, setVerificationMethod] = useState<'mobile' | 'email'>('mobile');
   const [userDataLoaded, setUserDataLoaded] = useState(false);
   const [panVerifying, setPanVerifying] = useState(false);
   const [aadhaarVerifying, setAadhaarVerifying] = useState(false);
@@ -993,7 +993,7 @@ export default function QuickLoanApplication() {
     // Calculate total interest based on daily rate and tenure days
     const totalInterest = principal * dailyRate * tenureDays;
 
-    // Calculate processing fee and GST
+    // Calculate Platform Fee and GST
     const processingFee = principal * processingFeePercent;
     const gstOnProcessingFee = processingFee * gstPercent;
     const totalProcessingFee = processingFee + gstOnProcessingFee;
@@ -1064,7 +1064,7 @@ export default function QuickLoanApplication() {
     }
 
     // Check verification (logged-in users are auto-verified)
-    const isVerified = user ? true : (verificationMethod === 'email' ? formData.emailVerified : formData.mobileVerified);
+    const isVerified = user ? true : formData.mobileVerified;
     if (!isVerified) return false;
 
     // Full Name validation
@@ -1343,9 +1343,7 @@ export default function QuickLoanApplication() {
   const sendOTP = async () => {
     setLoading(true);
     try {
-      const payload = verificationMethod === 'email'
-        ? { email: formData.email }
-        : { mobile: formData.mobile };
+      const payload = { mobile: formData.mobile };
       console.log('Sending OTP with payload:', payload);
 
       const response = await fetch(`${API_BASE_URL}/api/auth/customer/create`, {
@@ -1364,7 +1362,7 @@ export default function QuickLoanApplication() {
         toast({
           variant: "success",
           title: "OTP Sent Successfully!",
-          description: `A one-time password has been sent to your ${verificationMethod}. Please check and enter it below.`,
+          description: "OTP sent to your WhatsApp. Please check and enter it below.",
         });
       } else {
         toast({
@@ -1396,9 +1394,7 @@ export default function QuickLoanApplication() {
 
     setLoading(true);
     try {
-      const payload = verificationMethod === 'email'
-        ? { email: formData.email, otp: formData.otp }
-        : { mobile: formData.mobile, otp: formData.otp };
+      const payload = { mobile: formData.mobile, otp: formData.otp };
 
       // const response = await fetch(`${API_BASE_URL}/api/auth/customer/verifyOtp`, {
       //   method: "POST",
@@ -1411,24 +1407,20 @@ export default function QuickLoanApplication() {
       // const data = await response.json();
       const response = await signIn("otp", {
         redirect: false,
-        emailOrPhone: payload?.email || payload?.mobile,
+        emailOrPhone: payload.mobile,
         otp: payload.otp,
-        loginMethod: verificationMethod, // "email" | "mobile"
+        loginMethod: "mobile",
       });
       
       if (response?.ok) {
         const data: any = await getSession();
 
         login({
-          email: payload?.email || "",
+          mobile: payload.mobile,
           apiData: data,
         });
 
-        if (verificationMethod === 'email') {
-          setFormData(prev => ({ ...prev, emailVerified: true }));
-        } else {
-          setFormData(prev => ({ ...prev, mobileVerified: true }));
-        }
+        setFormData(prev => ({ ...prev, mobileVerified: true }));
         setOtpSent(false); // Reset OTP sent state after successful verification
 
         // Store userId if provided
@@ -1439,7 +1431,7 @@ export default function QuickLoanApplication() {
         toast({
           variant: "success",
           title: "Verification Successful!",
-          description: `Your ${verificationMethod === 'email' ? 'email' : 'mobile number'} has been verified successfully.`,
+          description: "Your mobile number has been verified successfully.",
         });
 
         // Auto-fill form with customer data after successful OTP verification
@@ -2601,7 +2593,7 @@ export default function QuickLoanApplication() {
       let hasError = false;
 
       // For logged-in users, skip verification check
-      const isVerified = user ? true : (verificationMethod === 'email' ? formData.emailVerified : formData.mobileVerified);
+      const isVerified = user ? true : formData.mobileVerified;
 
       // Verification check for non-logged in users
       if (!user && !isVerified) {
@@ -3181,7 +3173,7 @@ export default function QuickLoanApplication() {
                 <span className="font-semibold">₹{decision.approvedAmount.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Processing Fee (2%)</span>
+                <span className="text-gray-600">Platform Fee (2%)</span>
                 <span className="font-semibold">₹{decision.processingFee.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm">
@@ -3903,118 +3895,6 @@ export default function QuickLoanApplication() {
                       </>
                   )}
 
-                  {/* Email Verification - Only show for non-logged in users */}
-                  {!user && verificationMethod === 'email' && (
-                    <>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Email Address *
-                        </label>
-
-                        <div className="flex flex-col sm:flex-row gap-2">
-                          <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={(e) => {
-                              const value = e.target.value;
-
-                              setFormData((prev) => ({ ...prev, email: value }));
-
-                              // Email validation
-                              const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                              if (!regex.test(value)) {
-                                setFieldErrors((prev) => ({
-                                  ...prev,
-                                  email: "Please enter a valid email address",
-                                }));
-                              } else {
-                                setFieldErrors((prev) => ({ ...prev, email: "" }));
-                              }
-                            }}
-                            disabled={formData.emailVerified || basicDetailsFilled}
-                            className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${fieldErrors.email ? "border-red-500" : "border-gray-300"
-                              }`}
-                            placeholder="your@email.com"
-                          />
-
-                          {/* Send/Resend OTP button (only if not verified) */}
-                          {!formData.emailVerified && !basicDetailsFilled && (
-                            <button
-                              onClick={async () => {
-                                const email = formData.email;
-                                const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-                                // Validate email before sending OTP
-                                if (!regex.test(email)) {
-                                  setFieldErrors((prev) => ({
-                                    ...prev,
-                                    email: "Please enter a valid email address",
-                                  }));
-                                  return;
-                                }
-
-                                // Clear error
-                                setFieldErrors((prev) => ({ ...prev, email: "" }));
-
-                                setLoading(true);
-                                try {
-                                  await sendOTP(); // call your API
-                                } finally {
-                                  setLoading(false);
-                                }
-                              }}
-                              disabled={!formData.email || !!fieldErrors.email || loading || (otpSent && emailOtpTimer > 0)}
-                              className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
-                            >
-                              {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Verify"}
-                            </button>
-                          )}
-
-                          {/* If email verified show green check */}
-                          {(formData.emailVerified || basicDetailsFilled) && (
-                            <CheckCircle className="w-10 h-10 text-green-600" />
-                          )}
-                        </div>
-
-                        {/* Error or helper text */}
-                        {fieldErrors.email ? (
-                          <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
-                        ) : (
-                          <p className="mt-1 text-xs text-gray-500">
-                            We'll use this email for all loan communication
-                          </p>
-                        )}
-                      </div>
-
-
-                      {!formData.emailVerified && otpSent && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Enter OTP *
-                          </label>
-                          <div className="flex flex-col sm:flex-row gap-2">
-                            <input
-                              type="text"
-                              name="otp"
-                              value={formData.otp}
-                              onChange={handleChange}
-                              maxLength={6}
-                              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                              placeholder="Enter 6-digit OTP"
-                            />
-                            <button
-                              onClick={verifyOTP}
-                              disabled={formData.otp.length !== 6 || loading}
-                              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
-                            >
-                              Verify
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )}
 
                   {/* Mobile Verification - Only show for non-logged in users */}
                   {!user && verificationMethod === 'mobile' && (
@@ -4101,29 +3981,28 @@ export default function QuickLoanApplication() {
                     )}
                   </div>
 
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email Address *
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      disabled={basicDetailsFilled || formData.emailVerified}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'
+                        } ${(basicDetailsFilled || formData.emailVerified) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                      placeholder="Enter your email address"
+                    />
+                    {fieldErrors.email && (
+                      <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+                    )}
+                  </div>
+
                   {/* Show additional fields - always show both for logged-in users */}
                   {user ? (
                     <>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Email Address *
-                        </label>
-                        <input
-                          type="email"
-                          name="email"
-                          value={formData.email}
-                          onChange={handleChange}
-                          disabled={formData.emailVerified || basicDetailsFilled}
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'
-                            } ${(formData.emailVerified || basicDetailsFilled) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                          placeholder="your@email.com"
-                        />
-                        {fieldErrors.email ? (
-                          <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
-                        ) : (
-                          <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
-                        )}
-                      </div>
                       {/* Mobile + DOB side by side for logged-in user */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
@@ -4173,105 +4052,30 @@ export default function QuickLoanApplication() {
                     </>
                   ) : (
                     <>
-                      {verificationMethod === 'email' && (
-                        <>
-                          {/* Mobile + DOB side by side for email verification */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Mobile Number *
-                              </label>
-                              <input
-                                type="tel"
-                                name="mobile"
-                                value={formData.mobile}
-                                onChange={handleChange}
-                                onBlur={handleMobileBlur}
-                                disabled={basicDetailsFilled}
-                                maxLength={10}
-                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
-                                  } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                                placeholder="9876543210"
-                              />
-                              {fieldErrors.mobile && (
-                                <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
-                              )}
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Date of Birth *
-                              </label>
-                              <input
-                                type="date"
-                                name="dob"
-                                value={formData.dob}
-                                onChange={handleChange}
-                                disabled={basicDetailsFilled}
-                                max={(() => {
-                                  const date = new Date();
-                                  date.setFullYear(date.getFullYear() - 18);
-                                  return date.toISOString().split('T')[0];
-                                })()}
-                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
-                                  } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                                required
-                              />
-                              {fieldErrors.dob && (
-                                <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
-                              )}
-                            </div>
-                          </div>
-                        </>
-                      )}
-
-                      {verificationMethod === 'mobile' && (
-                        <>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Email Address *
-                            </label>
-                            <input
-                              type="email"
-                              name="email"
-                              value={formData.email}
-                              onChange={handleChange}
-                              disabled={formData.emailVerified || basicDetailsFilled}
-                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'
-                                } ${(formData.emailVerified || basicDetailsFilled) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                              placeholder="your@email.com"
-                            />
-                            {fieldErrors.email ? (
-                              <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
-                            ) : (
-                              <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
-                            )}
-                          </div>
-                          {/* DOB for mobile verification */}
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Date of Birth *
-                            </label>
-                            <input
-                              type="date"
-                              name="dob"
-                              value={formData.dob}
-                              onChange={handleChange}
-                              disabled={basicDetailsFilled}
-                              max={(() => {
-                                const date = new Date();
-                                date.setFullYear(date.getFullYear() - 18);
-                                return date.toISOString().split('T')[0];
-                              })()}
-                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
-                                } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                              required
-                            />
-                            {fieldErrors.dob && (
-                              <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
-                            )}
-                          </div>
-                        </>
-                      )}
+                      {/* DOB for mobile verification */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Date of Birth *
+                        </label>
+                        <input
+                          type="date"
+                          name="dob"
+                          value={formData.dob}
+                          onChange={handleChange}
+                          disabled={basicDetailsFilled}
+                          max={(() => {
+                            const date = new Date();
+                            date.setFullYear(date.getFullYear() - 18);
+                            return date.toISOString().split('T')[0];
+                          })()}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
+                            } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                          required
+                        />
+                        {fieldErrors.dob && (
+                          <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
+                        )}
+                      </div>
                     </>
                   )}
 
@@ -4916,11 +4720,11 @@ export default function QuickLoanApplication() {
                             <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.totalInterest ?? approvalData.totalInterest) || 0).toLocaleString('en-IN')}</p>
                           </div>
                           <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">Processing Fee</p>
+                            <p className="text-sm text-gray-500 mb-1">Platform Fee</p>
                             <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.processingFee ?? approvalData.processingFee) || 0).toLocaleString('en-IN')}</p>
                           </div>
                           <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">GST on Processing Fee</p>
+                            <p className="text-sm text-gray-500 mb-1">GST on Platform Fee</p>
                             <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.gstOnProcessingFee ?? approvalData.gstOnProcessingFee) || 0).toLocaleString('en-IN')}</p>
                           </div>
                           <div className="bg-white rounded-lg p-4 border border-gray-200 col-span-2">

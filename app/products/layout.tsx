@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   },
 
   description:
-    "Explore Quikkred’s loan products with transparent pricing, flexible tenure, and quick approvals. Compare amount ranges, interest rates, processing fees, eligibility criteria, and apply online in minutes.",
+    "Explore Quikkred’s loan products with transparent pricing, flexible tenure, and quick approvals. Compare amount ranges, interest rates, Platform Fees, eligibility criteria, and apply online in minutes.",
 
   applicationName: SITE_NAME,
   category: "Finance",
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     "quick loan approval",
     "loan eligibility",
     "loan interest rate",
-    "processing fee",
+    "Platform Fee",
     "loan tenure",
     "apply loan online",
     "secure loan platform",
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     url: PAGE_URL,
     title: "Loan Products | Compare & Apply Online",
     description:
-      "Compare Quikkred loan products—amount range, tenure, interest rate, processing fee, and eligibility. Apply online with a fast, secure, AI-powered journey.",
+      "Compare Quikkred loan products—amount range, tenure, interest rate, Platform Fee, and eligibility. Apply online with a fast, secure, AI-powered journey.",
     siteName: SITE_NAME,
     locale: "en_IN",
     images: [

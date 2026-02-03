@@ -270,7 +270,7 @@ function UserDashboardContent() {
               <CreditCard className="w-12 h-12 text-slate-600 mx-auto mb-3" />
               <p className="text-slate-400">No active loans</p>
               <button
-                onClick={() => router.push('/apply')}
+                onClick={() => router.push('/apply/quick')}
                 className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
               >
                 Apply for a Loan
