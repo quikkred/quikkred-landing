@@ -92,15 +92,15 @@ const SelfieVerify = ({ formData, setFormData }: SelfieVerifyProps) => {
                 onCapture={handleSelfieCapture}
             />
 
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
                     <Camera className="w-5 h-5" />
                     Capture Live Selfie *
                 </h3>
 
                 {!selfieCaptured ? (
                     <>
-                        <p className="text-sm text-gray-600 mb-4">
+                        <p className="text-sm text-gray-600 mb-2">
                             Take a clear photo of your face for identity verification
                         </p>
                         <button
