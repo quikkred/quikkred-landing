@@ -31,7 +31,7 @@
   "fees": {
     "title": "Fees and Charges",
     "processingFee": {
-      "title": "Processing Fee",
+      "title": "Platform Fee",
       "description": "1% - 5% of the loan amount (non-refundable)"
     },
     "lateFee": {

@@ -1,7 +1,7 @@
 "use client"
 
 import React from 'react';
-import { User, Calendar, Mail, Smartphone, CheckCircle, Lock } from 'lucide-react';
+import { User, Calendar, Smartphone, CheckCircle, Lock } from 'lucide-react';
 import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
 
 interface BasicDetailsProps {
@@ -13,7 +13,6 @@ const BasicDetails = ({
     formData,
     setFormData
 }: BasicDetailsProps) => {
-    const isEmailVerified = formData.emailVerified || false;
     const isMobileVerified = formData.mobileVerified || false;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -107,40 +106,6 @@ const BasicDetails = ({
                     </div>
                 </div>
 
-                {/* Email Address Field */}
-                <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-gray-700 ml-1 flex justify-between">
-                        <span>Email Address</span>
-                        {isEmailVerified && (
-                            <span className="text-[10px] text-green-600 flex items-center gap-1 font-semibold">
-                                <CheckCircle className="w-3 h-3" /> Verified
-                            </span>
-                        )}
-                    </label>
-                    <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Mail className={`h-4 w-4 ${isEmailVerified ? 'text-green-500' : 'text-gray-400'}`} />
-                        </div>
-                        <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            readOnly={isEmailVerified}
-                            placeholder="rahul@example.com"
-                            className={`block w-full pl-10 pr-10 py-2.5 text-sm border rounded-lg transition-colors
-                                ${isEmailVerified
-                                    ? 'bg-green-50/50 border-green-200 text-gray-700 cursor-not-allowed'
-                                    : 'border-gray-200 focus:ring-2 focus:ring-[#25B181]/20 focus:border-[#25B181]'
-                                }`}
-                        />
-                        {isEmailVerified && (
-                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                <Lock className="h-3 w-3 text-green-600/70" />
-                            </div>
-                        )}
-                    </div>
-                </div>
             </div>
         </div>
     );
