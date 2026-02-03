@@ -5,6 +5,8 @@ import { Camera, X, RotateCw, Check, AlertCircle, Loader2, ScanFace } from "luci
 import useAxios from "@/hooks/useAxios";
 import { toast } from "@/components/ui/toast";
 import getToken from "@/lib/getToken";
+import tracking from "@/lib/tracking";
+import { TRACKING_EVENTS } from "@/lib/constants/quickApplyV2";
 
 interface SelfieCaptureProps {
     isOpen: boolean;
@@ -240,6 +242,7 @@ export default function SelfieVerifyModal({ isOpen, onClose, onCapture }: Selfie
             
             if (response.status === 200 || response.status === 201) {
                 toast({ variant: "success", title: "Verified", description: "Identity verified successfully." });
+                tracking.trackEvent('CUSTOM_EVENT', { event: TRACKING_EVENTS.SELFIE_CAPTURED });
                 return true;
             } else {
                 setError(response.data?.message || 'Verification failed.');

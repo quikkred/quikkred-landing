@@ -172,6 +172,7 @@ export const getInitialFormData = (): QuickApplyV2FormData => ({
     employmentType: 'SALARIED',
     monthlyIncome: '',
     salaryDate: 1,
+    companyName: "",
 
     // Page 2
     pan: '',

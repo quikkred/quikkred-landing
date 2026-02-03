@@ -26,6 +26,7 @@ export interface QuickApplyV2FormData {
     monthlyIncome: string;
     salaryDate: number; // 1-31
     brePulled: boolean;
+    companyName: string;
 
     // Page 2: PAN & Bank
     pan: string;
