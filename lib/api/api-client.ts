@@ -43,7 +43,6 @@ class ApiClient {
     // Get fresh token for each request
     // const token = this.getToken();
     const token = await getToken();
-    console.log("call token api...")
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',

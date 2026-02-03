@@ -14,14 +14,12 @@ import { useEffect, useMemo, useState } from "react";
 interface Page4Props {
   formData: QuickApplyV2FormData;
   setFormData: React.Dispatch<React.SetStateAction<QuickApplyV2FormData>>;
-  onNext: () => void;
   onBack: () => void;
 }
 
 const Page4Approval = ({
   formData,
   setFormData,
-  onNext,
   onBack,
 }: Page4Props) => {
   const [mandateLoading, setMandateLoading] = useState(false);
