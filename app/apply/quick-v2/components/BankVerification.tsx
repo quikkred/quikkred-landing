@@ -21,19 +21,19 @@ const REGEX = {
     IFSC_CLEAN: /[^A-Z0-9]/g
 };
 
-interface Page3Props {
+interface BankVerificationProps {
     formData: QuickApplyV2FormData;
     setFormData: React.Dispatch<React.SetStateAction<QuickApplyV2FormData>>;
     onNext: () => void;
     onBack: () => void;
 }
 
-const Page3BankDetails = ({
+const BankVerification = ({
     formData,
     setFormData,
     onNext,
     onBack,
-}: Page3Props) => {
+}: BankVerificationProps) => {
     const axios = useAxios();
 
     // UI States (Loading/Errors only, Data stays in formData)
@@ -240,7 +240,7 @@ const Page3BankDetails = ({
                             onChange={handleFieldChange}
                             disabled={formData.bankVerified}
                             maxLength={11}
-                            className={`w-full px-4 py-3 border rounded-lg uppercase transition-all ${fieldErrors.ifsc ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-[#25B181]'
+                            className={`w-full px-4 py-3 placeholder:text-base border rounded-lg uppercase transition-all ${fieldErrors.ifsc ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-[#25B181]'
                                 } ${formData.bankVerified ? 'bg-gray-50' : ''}`}
                             placeholder="SBIN0001234"
                         />
@@ -259,7 +259,7 @@ const Page3BankDetails = ({
                         name="bankName"
                         value={formData.bankName}
                         readOnly
-                        className={`w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 ${formData.bankName ? 'text-gray-900 font-medium' : 'text-gray-400'
+                        className={`w-full px-4 py-3 placeholder:text-base border border-gray-300 rounded-lg bg-gray-50 ${formData.bankName ? 'text-gray-900 font-medium' : 'text-gray-400'
                             }`}
                         placeholder="Auto-detected from IFSC"
                     />
@@ -276,7 +276,7 @@ const Page3BankDetails = ({
                         value={formData.accountHolderName}
                         onChange={handleFieldChange}
                         disabled={formData.bankVerified}
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.accountHolderName ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full px-4 py-3 placeholder:text-base border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.accountHolderName ? 'border-red-500' : 'border-gray-300'
                             }`}
                         placeholder="Name as per bank records"
                     />
@@ -292,7 +292,7 @@ const Page3BankDetails = ({
                         onChange={handleFieldChange}
                         disabled={formData.bankVerified}
                         maxLength={18}
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.accountNumber ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full px-4 py-3 placeholder:text-base border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.accountNumber ? 'border-red-500' : 'border-gray-300'
                             }`}
                         placeholder="9-18 digit number"
                     />
@@ -301,7 +301,7 @@ const Page3BankDetails = ({
             </div>
 
             {/* ACTION: Verify Button */}
-            <div className="pt-2">
+            <div className="w-full">
                 <button
                     type="button"
                     onClick={verifyBankAccount}
@@ -311,7 +311,7 @@ const Page3BankDetails = ({
                         !formData.bankName ||
                         formData.accountNumber.length < 9
                     }
-                    className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${formData.bankVerified
+                    className={`w-full px-6 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${formData.bankVerified
                         ? 'bg-green-100 text-green-700 border border-green-300 cursor-not-allowed'
                         : verifyLoading
                             ? 'bg-gray-300 text-gray-600 cursor-wait'
@@ -411,4 +411,4 @@ const Page3BankDetails = ({
     );
 }
 
-export default Page3BankDetails;
+export default BankVerification;

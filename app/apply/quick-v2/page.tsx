@@ -10,7 +10,6 @@ import { tracking } from '@/lib/tracking';
 
 // Components
 import { IPCheckLoading, BlockedScreen } from './components/IPCheckScreen';
-import Page1BasicDetails from './components/Page1BasicDetails';
 import Page2PANBank from './components/Page2PANBank';
 // import ApprovalProcessing from './components/ApprovalProcessing';
 // import PostApprovalBank from './components/PostApprovalBank';
@@ -18,25 +17,28 @@ import Page2PANBank from './components/Page2PANBank';
 // import PostApprovalSelfie from './components/PostApprovalSelfie';
 import { useAuth } from '@/contexts/AuthContext';
 import StepIndicator from './components/ui/StepIndicator';
-import Page3BankDetails from './components/Page3BankDetails';
+import Page3BankDetails from './components/BankVerification';
 import useStorage from '@/hooks/useStorage';
 import Page4Approval from './components/Page4Approval';
 import { StorageApplicationForm } from '@/interfaces/storageInterface';
 import { useApplication } from '@/contexts/ApplicationContext';
 import CustomerLogin from './components/ui/CustomerLogin';
 
+// setps
+import CheckEligibility from './components/CheckEligibility';
+import FormSteps, { FormStepsType } from './components/ui/FormSteps';
+
 // Main Page Component
 export default function QuickApplyV2Page() {
     // Stage Management
     const [stage, setStage] = useState<ApplicationStage>('IP_CHECK');
+    const [step, setStep] = useState<FormStepsType>("eligibility");
     const [currentStep, setCurrentStep] = useState(0);
     const { user } = useAuth();
     const storage = useStorage();
-    const breForm = useMemo<StorageApplicationForm | null>(() => ((storage.data?.breForm as StorageApplicationForm) || null), [storage]);
-    // console.log("bre form", breForm)
-    const application = useApplication();
-    // console.log("application:", application);
-    const isLogin = useMemo(() => (user?.isEmailVerified || user?.isMobileVerified), [user]);
+    // const breForm = useMemo<StorageApplicationForm | null>(() => ((storage.data?.breForm as StorageApplicationForm) || null), [storage]);
+    const { application } = useApplication();
+    console.log("application:", application);
 
     // Form Data
     const [formData, setFormData] = useState<QuickApplyV2FormData>(getInitialFormData);
@@ -60,7 +62,7 @@ export default function QuickApplyV2Page() {
         if (ipLoading || ipBlocked) return;
 
         // B. Handle User Data Population
-        if (user) {
+        if (user || application) {
             setFormData((prev) => ({
                 ...prev,
                 customerId: user?.id || "",
@@ -91,10 +93,14 @@ export default function QuickApplyV2Page() {
                 bankVerified: user?.bankVerified || false,
 
                 // bre form
-                loanAmount: breForm?.loanAmount || 0,
-                tenure: breForm?.tenure || 0,
-                netDisbursalAmount: breForm?.netDisbursalAmount || 0,
+                loanAmount: application?.requestedLoanAmount || 0,
+                tenure: application?.tenure || 0,
+                netDisbursalAmount: application?.netDisbursalAmount || 0,
             }));
+
+            if((user?.isEmailVerified || user?.isMobileVerified) && user?.brePulled && application?.status === "APPROVED"){
+                setStep("bank")
+            }
 
             // C. ONE-TIME INITIAL ROUTING
             // We only jump the user automatically IF we haven't done it yet this session
@@ -119,11 +125,7 @@ export default function QuickApplyV2Page() {
         //     hasAutoRouted.current = true;
         //     return;
         // }
-
-        setStage('PAGE_1');
-        setCurrentStep(1);
-
-    }, [user, ipLoading, ipBlocked, stage, breForm]);
+    }, [user, ipLoading, ipBlocked, stage, application]);
 
     // Initialize tracking and check IP on mount
     useEffect(() => {
@@ -185,32 +187,6 @@ export default function QuickApplyV2Page() {
         }
     };
 
-    // Handle Page 1 completion
-    const handlePage1Complete = () => {
-        tracking.trackEvent('STEP_COMPLETED', { stepNumber: 1, stepName: 'Kyc complete' });
-        tracking.linkToCustomer({ mobile: formData.mobile });
-        setStage('PAGE_2');
-        setCurrentStep(2);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    // Handle Page 2 completion (submit for approval)
-    const handlePage2Complete = () => {
-        tracking.trackEvent('STEP_COMPLETED', { stepNumber: 2, stepName: 'Basic Details' });
-        tracking.trackEvent('CUSTOM_EVENT', { event: TRACKING_EVENTS.APPLICATION_SUBMITTED });
-        setStage('PAGE_3');
-        setCurrentStep(3);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    const handlePage3Complete = () => {
-        tracking.trackEvent('STEP_COMPLETED', { stepNumber: 3, stepName: 'Bank Verification' });
-        tracking.trackEvent('CUSTOM_EVENT', { event: TRACKING_EVENTS.APPLICATION_SUBMITTED });
-        setStage('PAGE_4');
-        setCurrentStep(4);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
     // Handle approval
     const handleApproved = (details: ApprovalDetails) => {
         setApprovalDetails(details);
@@ -227,18 +203,6 @@ export default function QuickApplyV2Page() {
             event: TRACKING_EVENTS.BRE_REJECTED,
             reason,
         });
-    };
-
-    // Go back to Page 1
-    const handleBackToPage1 = () => {
-        setStage('PAGE_1');
-        setCurrentStep(1);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-    const handleBackToPage2 = () => {
-        setStage('PAGE_2');
-        setCurrentStep(2);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     return (
@@ -276,77 +240,18 @@ export default function QuickApplyV2Page() {
             </header>
 
             {/* Main Content */}
-            {
-                isLogin ?
-                    <main className="flex-1 w-full max-w-lg mx-auto px-3 py-3 sm:py-6">
-                        {/* IP Check Loading */}
-                        {stage === 'IP_CHECK' && ipLoading && <IPCheckLoading />}
-
-                        {/* Blocked Screen */}
-                        {ipBlocked && (
-                            <BlockedScreen
-                                type={blockType}
-                                state={blockState}
-                                onRetry={blockType !== 'region' ? performIPCheck : undefined}
-                            />
-                        )}
-
-                        {/* Main Flow */}
-                        {!ipLoading && !ipBlocked && (
-                            <>
-                                {/* Step Indicator */}
-                                <StepIndicator currentStep={currentStep} />
-
-                                {/* Form Card - Compact padding on mobile */}
-                                <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl p-3 sm:p-6">
-                                    <AnimatePresence mode="wait">
-                                        {stage === 'PAGE_1' && (
-                                            <Page1BasicDetails
-                                                key="page1"
-                                                formData={formData}
-                                                setFormData={setFormData}
-                                                onNext={handlePage1Complete}
-                                            />
-                                        )}
-
-                                        {stage === 'PAGE_2' && (
-                                            <Page2PANBank
-                                                key="page2"
-                                                formData={formData}
-                                                setFormData={setFormData}
-                                                onNext={handlePage2Complete}
-                                                onBack={handleBackToPage1}
-                                            />
-                                        )}
-
-                                        {stage === 'PAGE_3' && (
-                                            <Page3BankDetails
-                                                key="page3"
-                                                formData={formData}
-                                                setFormData={setFormData}
-                                                onNext={handlePage3Complete}
-                                                onBack={handleBackToPage2}
-                                            />
-                                        )}
-
-                                        {stage === 'PAGE_4' && (
-                                            <Page4Approval
-                                                key="page4"
-                                                formData={formData}
-                                                setFormData={setFormData}
-                                                onNext={handlePage2Complete}
-                                                onBack={handleBackToPage2}
-                                            />
-                                        )}
-                                    </AnimatePresence>
-                                </div>
-                            </>
-                        )}
-                    </main> :
-                    <main className="flex-1 w-full max-w-lg mx-auto px-3 py-3 sm:py-6">
-                        <CustomerLogin />
-                    </main>
-            }
+            <FormSteps
+                key={"form-steps"}
+                step={step}
+                setStep={setStep}
+                blockState={blockState}
+                blockType={blockType}
+                formData={formData}
+                setFormData={setFormData}
+                ipBlocked={ipBlocked}
+                ipLoading={ipLoading}
+                performIPCheck={performIPCheck}
+            />
 
             {/* Compact Footer */}
             <footer className="bg-white border-t border-gray-100 mt-auto">
