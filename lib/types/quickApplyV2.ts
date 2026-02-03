@@ -155,7 +155,7 @@ export interface ApprovalDetails {
     interestRate: number; // 1% per day
     tenure: number; // in days
     processingFee: number; // 10% of loan amount
-    gstOnProcessingFee: number; // 18% of processing fee
+    gstOnProcessingFee: number; // 18% of Platform Fee
     totalInterest: number;
     totalRepayment: number;
     netDisbursalAmount: number;

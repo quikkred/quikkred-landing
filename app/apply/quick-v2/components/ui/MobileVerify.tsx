@@ -81,8 +81,11 @@ const MobileVerify = () => {
       if (res?.ok) {
         const session = await getSession();
         if (session?.user) {
-          await login({
-            // mobile,
+          // Track success
+          trackOTPVerified(mobile);
+          mobileFriction.completeTracking(true);
+            await login({
+            mobile: mobile,
             apiData: session,
           });
         }
