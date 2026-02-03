@@ -39,27 +39,17 @@ export default function Page2PANBank({
     const axios = useAxios();
     // console.log("formData updated:", formData);
 
-    // Form Errors
-    const [errors, setErrors] = useState<Record<string, string>>({});
-
     // Submit Loading
     const [submitLoading, setSubmitLoading] = useState(false);
 
     // Tracking
     const {
         trackStepViewed,
-        trackStepCompleted,
-        trackEmploymentTypeSelected,
-        trackIncomeEntered,
-        trackSalaryDateSelected,
+        trackStepCompleted,       
         trackApplicationSubmitted,
-        trackFieldFocus,
         trackFormError,
         trackAPIError,
     } = useQuickApplyTracking();
-
-    // PAN verification friction tracking
-    const panFriction = useVerificationFrictionTracking('pan');
 
     // Track step viewed
     const hasTrackedStepRef = useRef(false);
@@ -72,30 +62,6 @@ export default function Page2PANBank({
 
     // Loan calculation
     const loanCalc = calculateLoanDetails(formData.loanAmount, formData.tenure);
-
-    const handleEmploymentTypeChange = (type: 'SALARIED' | 'SELF-EMPLOYED') => {
-        setFormData(prev => ({ ...prev, employmentType: type }));
-        setErrors(prev => ({ ...prev, employmentType: '' }));
-        trackEmploymentTypeSelected(type);
-    };
-
-    const handleIncomeChange = (value: string) => {
-        const numValue = value.replace(/\D/g, '');
-        setFormData(prev => ({ ...prev, monthlyIncome: numValue }));
-        setErrors(prev => ({ ...prev, monthlyIncome: '' }));
-
-        // Track income when user stops typing (debounced effect)
-        if (numValue && parseInt(numValue) > 0) {
-            trackIncomeEntered(parseInt(numValue));
-        }
-    };
-
-    // Handle salary date selection with tracking
-    const handleSalaryDateChange = (date: number) => {
-        setFormData(prev => ({ ...prev, salaryDate: date }));
-        setErrors(prev => ({ ...prev, salaryDate: '' }));
-        trackSalaryDateSelected(date);
-    };
 
     // Validate and Submit
     const handleSubmit = async () => {
@@ -197,96 +163,6 @@ export default function Page2PANBank({
             <AadhaarVerify formData={formData} setFormData={setFormData} />
             <SelfieVerify formData={formData} setFormData={setFormData} />
 
-            {/* Employment Details */}
-            <div className="bg-gray-50 rounded-lg sm:rounded-xl p-3 sm:p-4">
-                <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-[#25B181]" />
-                    Employment Details
-                </h3>
-
-                <div className="space-y-3">
-                    {/* Employment Type */}
-                    <div>
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
-                            Employment Type *
-                        </label>
-                        <div className="grid grid-cols-2 gap-2">
-                            {EMPLOYMENT_TYPES.map((type) => (
-                                <button
-                                    key={type.value}
-                                    type="button"
-                                    onClick={() => handleEmploymentTypeChange(type.value)}
-                                    className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-medium text-xs sm:text-sm transition-all active:scale-[0.98] touch-manipulation ${formData.employmentType === type.value
-                                        ? 'bg-[#25B181] text-white shadow-md'
-                                        : 'bg-white text-gray-700 border border-gray-300 hover:border-[#25B181]'
-                                        }`}
-                                >
-                                    {type.label}
-                                </button>
-                            ))}
-                        </div>
-                        {errors.employmentType && (
-                            <p className="mt-1 text-xs text-red-600">{errors.employmentType}</p>
-                        )}
-                    </div>
-
-                    {/* Monthly Income */}
-                    <div>
-                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
-                            Monthly Income *
-                        </label>
-                        <div className="relative">
-                            <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
-                            <input
-                                type="text"
-                                inputMode="numeric"
-                                value={formData.monthlyIncome}
-                                onChange={(e) => handleIncomeChange(e.target.value)}
-                                onFocus={() => trackFieldFocus('monthlyIncome', 2)}
-                                className={`w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 border rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-[#25B181] ${errors.monthlyIncome ? 'border-red-500' : 'border-gray-300'
-                                    }`}
-                                placeholder="Enter monthly income"
-                            />
-                        </div>
-                        {errors.monthlyIncome && (
-                            <p className="mt-1 text-xs text-red-600">{errors.monthlyIncome}</p>
-                        )}
-                    </div>
-
-                    {/* Salary Date - only for salaried */}
-                    {formData.employmentType === 'SALARIED' && (
-                        <div>
-                            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
-                                Salary Credit Date *
-                            </label>
-                            <div className="relative">
-                                <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
-                                <select
-                                    value={formData.salaryDate || ''}
-                                    onChange={(e) => handleSalaryDateChange(parseInt(e.target.value) || 0)}
-                                    onFocus={() => trackFieldFocus('salaryDate', 2)}
-                                    className={`w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 border rounded-lg text-sm sm:text-base focus:ring-2 focus:ring-[#25B181] appearance-none ${errors.salaryDate ? 'border-red-500' : 'border-gray-300'
-                                        }`}
-                                >
-                                    <option value="">Select salary date</option>
-                                    {SALARY_DATES.map((date) => (
-                                        <option key={date.value} value={date.value}>
-                                            {date.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            {errors.salaryDate && (
-                                <p className="mt-1 text-xs text-red-600">{errors.salaryDate}</p>
-                            )}
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* PAN Verification */}
-            {/* <PanVerify formData={formData} setFormData={setFormData} /> */}
-
             {/* Loan Summary */}
             <div className="bg-gradient-to-r from-[#25B181]/10 to-[#51C9AF]/10 rounded-lg sm:rounded-xl p-3 sm:p-4 space-y-1.5 sm:space-y-2">
                 <div className="flex justify-between text-xs sm:text-sm">
@@ -302,14 +178,6 @@ export default function Page2PANBank({
                     <span className="font-semibold text-gray-900">{formatCurrency(loanCalc.totalRepayment)}</span>
                 </div>
             </div>
-
-            {/* Error Message */}
-            {errors.submit && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
-                    <p className="text-xs sm:text-sm text-red-700">{errors.submit}</p>
-                </div>
-            )}
 
             {/* Action Buttons */}
             <div className="grid grid-cols-2 gap-2 sm:gap-3">

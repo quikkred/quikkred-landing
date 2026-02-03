@@ -117,7 +117,7 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
         // Use fullName directly from API
         const fullName = apiData.fullName || currentUser.name;
 
-        console.log('✅ Profile fetched successfully. Name:', fullName);
+        // console.log('✅ Profile fetched successfully. Name:', fullName);
 
         // Update user with real profile data from API
         const updatedUser: User = {
