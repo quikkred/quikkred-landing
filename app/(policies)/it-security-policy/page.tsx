@@ -9,6 +9,17 @@ export default function ITSecurityPolicyPage() {
   const { t } = useLanguage();
 
   const isp = t?.policies?.itSecurity;
+  const i = t?.policies?.itSecurity?.sections[0].introduction;
+  const sm = t?.policies?.itSecurity?.sections[1].securityManagement;
+  console.log(sm);
+  const a = t?.policies?.itSecurity?.[2];
+  const ra = t?.policies?.itSecurity?.[3];
+  const im = t?.policies?.itSecurity?.[4];
+  const r = t?.policies?.itSecurity?.[5];
+  const c = t?.policies?.itSecurity?.[6];
+  // console.log(isp)
+  // const i = isp?.sections?.[0]?.introduction
+  // const sm = isp?.sections?.[1].securityManagement
 
   return (
     <div className="min-h-screen">
@@ -45,13 +56,13 @@ export default function ITSecurityPolicyPage() {
         <div className="mb-10">
           <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
             <Shield className="w-6 h-6 text-[#25B181]" />
-            {isp?.sections?.introduction?.title || "1. Introduction and Scope"}
+            {i.title || "1. Introduction and Scope"}
           </h2>
           <p className="text-[#2b2b2b] leading-[1.7] mb-4">
-            {isp?.sections?.introduction?.content || "This policy sets out the rules and guidelines for the secure and appropriate use of QuikkRed's Information Technology (IT) resources. It applies to all employees, contractors, vendors, and any third parties who have access to QuikkRed's IT infrastructure, systems, applications, and data."}
+            {i.content || "This policy sets out the rules and guidelines for the secure and appropriate use of QuikkRed's Information Technology (IT) resources. It applies to all employees, contractors, vendors, and any third parties who have access to QuikkRed's IT infrastructure, systems, applications, and data."}
           </p>
           <p className="text-[#2b2b2b] leading-[1.7]">
-            <strong>{isp?.sections?.introduction?.objectiveLabel || "Objective"}:</strong> {isp?.sections?.introduction?.objective || "To protect QuikkRed's sensitive data, systems, and assets from unauthorized access, misuse, disclosure, disruption, modification, or destruction, while ensuring compliance with applicable laws and regulatory requirements including RBI guidelines for NBFCs."}
+            <strong>{i.objectiveLabel || "Objective"}</strong> {i.objective || "To protect QuikkRed's sensitive data, systems, and assets from unauthorized access, misuse, disclosure, disruption, modification, or destruction, while ensuring compliance with applicable laws and regulatory requirements including RBI guidelines for NBFCs."}
           </p>
         </div>
 
@@ -59,17 +70,17 @@ export default function ITSecurityPolicyPage() {
         <div className="mb-10">
           <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
             <Lock className="w-6 h-6 text-[#25B181]" />
-            {isp?.sections?.securityManagement?.title || "2. Information Security Management"}
+            {sm[0]?.title || "2. Information Security Management"}
           </h2>
 
           {/* 2.1 Data Classification */}
           <div className="mb-6 bg-gray-50 rounded-lg p-6">
-            <h3 className="text-lg font-medium mb-3 text-[#2b2b2b]">{isp?.sections?.securityManagement?.dataClassification?.title || "2.1 Data Classification"}</h3>
+            <h3 className="text-lg font-medium mb-3 text-[#2b2b2b]">{sm[0]?.dataClassification.title || "2.1 Data Classification"}</h3>
             <p className="text-[#2b2b2b] leading-[1.7] mb-3">
-              {isp?.sections?.securityManagement?.dataClassification?.intro || "All data handled by QuikkRed shall be classified into the following categories:"}
+              {sm[0]?.dataClassification.intro || "All data handled by QuikkRed shall be classified into the following categories:"}
             </p>
             <ul className="space-y-3 text-[#2b2b2b] leading-[1.7]">
-              {(isp?.sections?.securityManagement?.dataClassification?.items || [
+              {(sm[0]?.dataClassification.items || [
                 { label: "Confidential", description: "Highly sensitive financial, customer (KYC, transactional), or proprietary business data. Access restricted to authorized personnel only." },
                 { label: "Internal", description: "Operational data, non-public communications, internal policies, and procedures. Accessible to employees on a need-to-know basis." },
                 { label: "Public", description: "Information intended for general release, such as marketing materials, press releases, and publicly available policies." }
@@ -122,7 +133,7 @@ export default function ITSecurityPolicyPage() {
         <div className="mb-10">
           <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
             <Key className="w-6 h-6 text-[#25B181]" />
-            {isp?.sections?.acceptableUse?.title || "3. Acceptable Use Policy (AUP)"}
+            {/* {sm?.[3].title || "3. Acceptable Use Policy (AUP)"} */}
           </h2>
 
           {/* 3.1 General Usage */}
