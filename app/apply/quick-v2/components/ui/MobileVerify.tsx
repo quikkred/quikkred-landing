@@ -6,6 +6,7 @@ import { signIn, getSession } from "next-auth/react";
 import { useAuth } from "@/contexts/AuthContext";
 import { VALIDATION, TIMERS } from "@/lib/constants/quickApplyV2";
 import useAxios from "@/hooks/useAxios";
+import { useQuickApplyTracking, useVerificationFrictionTracking } from "@/lib/hooks";
 
 const MobileVerify = () => {
   const { login } = useAuth();
@@ -19,6 +20,11 @@ const MobileVerify = () => {
   const [otp, setOtp] = useState("");
   const [otpError, setOtpError] = useState("");
   const [otpTimer, setOtpTimer] = useState(0);
+
+  const {
+    trackOTPVerified
+  } = useQuickApplyTracking();
+  const mobileFriction = useVerificationFrictionTracking('mobile');
 
   // Timer Logic
   useEffect(() => {
@@ -84,7 +90,7 @@ const MobileVerify = () => {
           // Track success
           trackOTPVerified(mobile);
           mobileFriction.completeTracking(true);
-            await login({
+          await login({
             mobile: mobile,
             apiData: session,
           });

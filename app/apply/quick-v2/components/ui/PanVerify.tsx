@@ -8,7 +8,6 @@ import useAxios from "@/hooks/useAxios";
 import { AxiosError } from "axios";
 import { useQuickApplyTracking, useVerificationFrictionTracking } from "@/lib/hooks";
 import { toast } from "@/components/ui/toast";
-import useStorage from "@/hooks/useStorage";
 
 interface PanVerifyProps {
     formData: QuickApplyV2FormData;
@@ -20,7 +19,6 @@ const PanVerify = ({ formData, setFormData }: PanVerifyProps) => {
     const [error, setError] = useState("");
     const [panReverifyTimer, setPanReverifyTimer] = useState(0);
     const axios = useAxios();
-    const storage = useStorage();
 
     // Tracking
     const {
@@ -92,7 +90,6 @@ const PanVerify = ({ formData, setFormData }: PanVerifyProps) => {
 
             if (data.success) {
                 toast({ variant: "success", title: data?.message || data?.data?.message || "Pan verify successfully" });
-                storage.set("applicationId", data?.data?.applicationNumber || data?.data?.applicationId);
                 setFormData((prev) => ({
                     ...prev,
                     panVerified: true,
@@ -125,7 +122,7 @@ const PanVerify = ({ formData, setFormData }: PanVerifyProps) => {
 
     return (
         <div className="bg-white rounded-xl p-3 border border-gray-200 shadow-sm space-y-2">
-            <h3 className="text-sm sm:text-base font-bold text-gray-900 flex items-center gap-2">
+            <h3 className="text-sm sm:text-base font-semibold text-gray-900 flex items-center gap-2">
                 <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-[#25B181]" />
                 PAN Verification
             </h3>
