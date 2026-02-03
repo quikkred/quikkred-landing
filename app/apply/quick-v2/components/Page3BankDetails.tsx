@@ -10,6 +10,8 @@ import { AxiosError } from "axios";
 import { motion } from "framer-motion";
 import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle, Loader2, Lock, Shield } from "lucide-react";
 import { useRef, useState, useCallback } from "react";
+import SelfieVerify from "./ui/SelfieVerify";
+import { calculateLoanDetails, formatCurrency } from "@/lib/constants/quickApplyV2";
 
 // Regex Constants
 const REGEX = {
@@ -40,6 +42,8 @@ const Page3BankDetails = ({
     const [verifyLoading, setVerifyLoading] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
     const ifscTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    const loanCalc = calculateLoanDetails(formData.loanAmount, formData.tenure);
 
     // --- Helpers ---
 
@@ -222,6 +226,8 @@ const Page3BankDetails = ({
                 </div>
             )}
 
+            <SelfieVerify formData={formData} setFormData={setFormData} />
+
             {/* ROW 1: IFSC & Bank Name */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -337,6 +343,22 @@ const Page3BankDetails = ({
                         <p className="font-semibold mb-1">Your data is secure</p>
                         <p>256-bit encryption • RBI guidelines compliant • No hidden charges</p>
                     </div>
+                </div>
+            </div>
+
+            {/* Loan Summary */}
+            <div className="bg-gradient-to-r from-[#25B181]/10 to-[#51C9AF]/10 rounded-lg sm:rounded-xl p-3 sm:p-4 space-y-1.5 sm:space-y-2">
+                <div className="flex justify-between text-xs sm:text-sm">
+                    <span className="text-gray-600">You&apos;ll receive</span>
+                    <span className="font-semibold text-green-600">{formatCurrency(loanCalc.netDisbursalAmount)}</span>
+                </div>
+                <div className="flex justify-between text-xs sm:text-sm">
+                    <span className="text-gray-600">Processing Fee (10% + GST)</span>
+                    <span className="text-gray-700">{formatCurrency(loanCalc.totalDeductions)}</span>
+                </div>
+                <div className="flex justify-between text-xs sm:text-sm border-t pt-1.5 sm:pt-2">
+                    <span className="text-gray-600">Total Repayment</span>
+                    <span className="font-semibold text-gray-900">{formatCurrency(loanCalc.totalRepayment)}</span>
                 </div>
             </div>
 
