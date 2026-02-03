@@ -1,10 +1,10 @@
 // Compact Step Indicator Component
 function StepIndicator({ currentStep }: { currentStep: number }) {
     const steps = [
-        { id: 1, label: 'Kyc' },
-        { id: 2, label: 'Details' },
-        { id: 3, label: 'Bank' },
-        { id: 4, label: 'Approval' },
+        { id: 1, label: 'Eligibility Check' },
+        // { id: 2, label: 'Details' },
+        { id: 2, label: 'Bank Verification' },
+        { id: 3, label: 'Approval & Mandate' },
     ];
 
     return (
@@ -12,13 +12,15 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
             {steps.map((step, index) => (
                 <div key={step.id} className="flex items-center">
                     <div className="flex items-center gap-1.5">
-                        <div
-                            className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${currentStep >= step.id
-                                ? 'bg-[#25B181] text-white'
-                                : 'bg-gray-200 text-gray-500'
-                                }`}
-                        >
-                            {currentStep > step.id ? '✓' : step.id}
+                        <div className="w-auto">
+                            <div
+                                className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${currentStep >= step.id
+                                    ? 'bg-[#25B181] text-white'
+                                    : 'bg-gray-200 text-gray-500'
+                                    }`}
+                            >
+                                {currentStep > step.id ? '✓' : step.id}
+                            </div>
                         </div>
                         <span
                             className={`text-xs sm:text-sm font-medium ${currentStep >= step.id ? 'text-[#25B181]' : 'text-gray-400'
