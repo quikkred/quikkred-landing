@@ -278,9 +278,16 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
   };
 
   const updateUser = (userData: Partial<User>) => {
-    if (user) {
-      const updatedUser = { ...user, ...userData };
-      setUser(updatedUser);
+    if (userData) {
+      // const updatedUser = { ...user, ...userData };
+      // setUser(updatedUser);
+      setUser((prev) => {
+        // If there is no user, we can't perform a partial update
+        if (!prev) return null;
+
+        // Return a complete User object
+        return { ...prev, ...userData } as User;
+      });
       // Update localStorage if needed
       // if (userData.name) {
       //   localStorage.setItem('userName', userData.name);
