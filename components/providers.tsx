@@ -62,7 +62,7 @@ export function Providers({ language, initialData, children }: { language: strin
   return (
     <CriticalErrorBoundary>
       <ReduxProvider>
-        <SessionProvider refetchInterval={30} refetchOnWindowFocus>
+        <SessionProvider refetchInterval={60} refetchOnWindowFocus>
           <I18nextProvider i18n={i18n}>
             <LanguageProvider lang={language as string} initialData={initialData}>
               <ThemeProvider>
