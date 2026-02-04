@@ -12,14 +12,6 @@ export default function ITSecurityPolicyPage() {
   const i = t?.policies?.itSecurity?.sections[0].introduction;
   const sm = t?.policies?.itSecurity?.sections[1].securityManagement;
   console.log(sm);
-  const a = t?.policies?.itSecurity?.[2];
-  const ra = t?.policies?.itSecurity?.[3];
-  const im = t?.policies?.itSecurity?.[4];
-  const r = t?.policies?.itSecurity?.[5];
-  const c = t?.policies?.itSecurity?.[6];
-  // console.log(isp)
-  // const i = isp?.sections?.[0]?.introduction
-  // const sm = isp?.sections?.[1].securityManagement
 
   return (
     <div className="min-h-screen">
