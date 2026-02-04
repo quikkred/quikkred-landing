@@ -16,6 +16,7 @@ import FinFactorStatus from './ui/FinFactorStatus';
 import AadhaarVerify from './ui/AadhaarVerify';
 import EmployeeDetails from './ui/EmployeeDetails';
 import { useApplication } from '@/contexts/ApplicationContext';
+import { AlertCircle } from 'lucide-react'; // 1. Import Icon
 
 interface CheckEligibilityProps {
     formData: QuickApplyV2FormData;
@@ -40,8 +41,10 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
     const storage = useStorage();
     const searchParams = useSearchParams();
     const [isLoading, setLoading] = useState(false);
-    const { getApplication } = useApplication();
-    // console.log(storage);
+    
+    // 2. Destructure 'application' to check status
+    const { getApplication, application } = useApplication(); 
+
     const {
         updateKycStatusState
     } = useKycStatus();
@@ -54,11 +57,9 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
     // Track previous values for change detection
     const hasTrackedStepRef = useRef(false);
 
-    // Inside your page component
+    // ... [Keep existing fetchBreFinfactorResult function unchanged] ...
     const fetchBreFinfactorResult = async () => {
         console.log('📊 finfactor=success detected, auto-calling BRE finFactor API...');
-
-        // 1. Show the modal and set loading to true
         setFinFactorDetails({
             visibility: true,
             loading: true,
@@ -71,29 +72,19 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
 
             if (response.status === 200 || response.status === 201) {
                 console.log('✅ BRE finFactor result:', result.data);
-
-                // 2. Set the data and stop loading (The modal stays visible to show the result)
                 setFinFactorDetails({
-                    visibility: true, // Keep it visible
-                    loading: false,   // Stop spinner
-                    data: result.data // Pass the Approved/Rejected data
+                    visibility: true,
+                    loading: false,
+                    data: result.data
                 });
-
                 toast({ variant: "success", title: "Success", description: "Analysis completed." });
-
             } else {
                 throw new Error(result.message || "Analysis failed");
             }
-
         } catch (error: any) {
             console.error('BRE finFactor failed:', error);
-
             const errorMsg = error.response?.data?.message || "Something went wrong";
             toast({ variant: "error", title: "Error", description: errorMsg });
-
-            // 3. Handle API Failure - OPTIONAL: 
-            // You might want to close the modal or show a specific error state
-            // For now, let's close it so the user isn't stuck
             setFinFactorDetails(prev => ({ ...prev, loading: false, visibility: false }));
         }
     };
@@ -105,7 +96,6 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
         }
     }, [searchParams]);
 
-    // Track step viewed on mount
     useEffect(() => {
         if (!hasTrackedStepRef.current) {
             hasTrackedStepRef.current = true;
@@ -121,8 +111,8 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
     }, [otpTimer]);
 
     const canProceed = useMemo(() => (
-        (formData?.emailVerified || formData?.mobileVerified) && formData?.panVerified && !formData.brePulled 
-        && (typeof formData.monthlyIncome === "string" ? parseInt(formData.monthlyIncome): formData.monthlyIncome) > 0 
+        (formData?.emailVerified || formData?.mobileVerified) && formData?.panVerified && !formData.brePulled
+        && (typeof formData.monthlyIncome === "string" ? parseInt(formData.monthlyIncome) : formData.monthlyIncome) > 0
         && formData.companyName !== "" && formData.loanAmount >= 5000
     ), [formData]);
 
@@ -149,7 +139,6 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
             requestedLoanAmount: formData.loanAmount,
         }
 
-        // console.log("basicDetails", basicDetails);
         try {
             setLoading(true);
             const basicResponse = await axios.post("/api/v2/application/loan/create", {
@@ -159,7 +148,6 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
 
             if (basicResponse.status === 200 || basicResponse.status === 201) {
                 setLoading(false);
-
                 console.log("basic response:", basicResponse.data);
                 storage.set("applicationId", basicResponse?.data?.data?.applicationNumber);
                 updateKycStatusState({ loading: true, visibility: true, onSuccess: () => onNext() });
@@ -169,22 +157,20 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
                     if (response.status === 200 || response.status === 201) {
                         console.log(response.data)
                         if (response.data?.data) {
-                            // storage.set("breForm", response.data?.data);
                             getApplication();
+                            setFormData((prev) => ({ ...prev, breStatus: response.data?.data?.status }));
                             updateKycStatusState({
                                 loading: false,
                                 status: response.data?.data?.status === "Approve" ? "approved" : response.data?.data?.status === "Proceed to Bank" ? "proceed-to-bank" : "rejected",
-                                // ✅ Pass Backend Data Here
                                 data: response.data?.data,
-                                title: response.data?.message || "BRE checked successfully",   // e.g., "Proceed to Bank"
-                                description: response?.data?.data?.reason || "Your application does not meet eligibility criteria", // e.g., "BRE checked successfully"
+                                title: response.data?.message || "BRE checked successfully",
+                                description: response?.data?.data?.reason || "Your application does not meet eligibility criteria",
                                 onSuccess: () => onNext()
                             });
                         }
                     }
                 } catch (error: unknown) {
                     if (error instanceof AxiosError) {
-                        // console.log(error?.response?.data);
                         toast({ variant: "error", title: error?.response?.data?.message || "Kyc Failed", description: "User denied request." });
                         updateKycStatusState({ description: error?.response?.data?.message || "Your application does not meet eligibility criteria" });
                     }
@@ -221,28 +207,56 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
 
             <div className="w-full">
                 <h2 className="font-bold text-base mb-1 text-red-600">** Loan Eligibility & Approval **</h2>
-
                 <p className="text-xs mb-1">
                     • Loans are not available in select states/UTs (Andaman & Nicobar Islands, Arunachal Pradesh, Assam, Jammu & Kashmir, Ladakh, Lakshadweep, Manipur, Meghalaya, Mizoram, Nagaland, Sikkim, Tripura, Daman & Diu).
                 </p>
-
                 <p className="text-xs">
                     • Applicants working in Police, Defence, or Legal professions are not eligible.
                 </p>
             </div>
 
-            {/* Continue Button */}
-            <button
-                onClick={handleContinue}
-                disabled={isLoading || !canProceed}
-                // disabled={isLoading}
-                className="w-full py-2 text-sm bg-gradient-to-r disabled:cursor-not-allowed from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-xl font-semibold sm:text-base shadow-lg shadow-[#25B181]/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-            >
-                Check Eligibility
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                </svg>
-            </button>
+            {/* 3. Conditional Rendering: Reject Message vs Button */}
+            {(formData?.breStatus === "REJECTED" || formData?.breStatus === "Rejected") ? (
+                <div className="mb-5 bg-red-100/50 border border-red-200 rounded-xl px-4 py-3 shadow-sm animate-in fade-in slide-in-from-top-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
+                        {/* LEFT SIDE: Status & Message */}
+                        <div className="flex items-center gap-3">
+                            <div className="shrink-0">
+                                <AlertCircle className="h-5 w-5 text-red-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-bold text-red-900 leading-none">
+                                    Application Rejected
+                                </h3>
+                                <p className="text-[11px] text-red-600 font-medium mt-1">
+                                    Eligible to reapply after <span className="font-bold underline decoration-red-300 underline-offset-2">60 days</span>.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* RIGHT SIDE: Application Number */}
+                        <div className="flex flex-col items-start sm:items-end border-t sm:border-t-0 border-red-100 pt-2 sm:pt-0 pl-8 sm:pl-0">
+                            <span className="font-mono text-sm font-bold text-red-900 tracking-tight leading-none break-all">
+                                {application?.applicationNumber}
+                            </span>
+                            <span className="text-[10px] font-semibold text-red-400 uppercase tracking-wider mt-1">
+                                Application No
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <button
+                    onClick={handleContinue}
+                    disabled={isLoading || !canProceed}
+                    className="w-full py-2 text-sm bg-gradient-to-r disabled:cursor-not-allowed from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-xl font-semibold sm:text-base shadow-lg shadow-[#25B181]/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                >
+                    Check Eligibility
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            )}
         </motion.div>
     );
 }

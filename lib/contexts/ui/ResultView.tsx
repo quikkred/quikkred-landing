@@ -11,7 +11,9 @@ import {
     Percent,
     CheckCircle2,
     Landmark,
-    ArrowRight
+    ArrowRight,
+    Ban,
+    AlertTriangle
 } from "lucide-react";
 import { useRouter } from "nextjs-toploader/app";
 import useAxios from "@/hooks/useAxios";
@@ -99,16 +101,14 @@ const ResultView = ({
         gradientBg = "bg-gradient-to-b from-blue-50 to-white";
         icon = <Landmark className="w-10 h-10" />;
         defaultTitle = "Proceed to Bank Verification";
-        // ✅ Fixed: Uses API reason
-        defaultDesc = data?.reason || "Your application requires additional bank verification to proceed.";
+        defaultDesc = "Your application requires additional bank verification to proceed.";
     } else {
-        // Rejected or default
+        // Rejected
         themeColor = "text-red-500 bg-red-100 ring-red-50";
         gradientBg = "bg-gradient-to-b from-red-50 to-white";
-        icon = <ShieldAlert className="w-10 h-10" />;
+        icon = <Ban className="w-10 h-10" />; // Changed to Ban icon for stronger visual
         defaultTitle = "Application Rejected";
-        // ✅ Fixed: Uses API reason instead of hardcoded string
-        defaultDesc = data?.reason || "We couldn't verify your identity based on the details provided.";
+        defaultDesc = "Based on our credit policy, we cannot proceed with your application at this time.";
     }
 
     const displayTitle = title || defaultTitle;
@@ -124,7 +124,7 @@ const ResultView = ({
     };
 
     return (
-        <div className="flex flex-col">
+        <div className="flex flex-col w-full">
             {/* --- HEADER SECTION --- */}
             <div className={`relative ${isApproved && data?.loanAmount ? 'h-24' : 'h-32'} flex items-center justify-center overflow-hidden transition-colors ${gradientBg}`}>
                 <div className="absolute inset-0 opacity-30"
@@ -146,30 +146,70 @@ const ResultView = ({
                     <h3 className={`text-xl font-bold tracking-tight text-gray-900`}>
                         {displayTitle}
                     </h3>
-                    {/* Only show description if we don't have the big data card or if it's rejected/ptb */}
-                    {(!isApproved || !data?.loanAmount) && (
+                    {/* Only show generic description if NOT rejected (Rejected has specific box below) */}
+                    {!isRejected && (!isApproved || !data?.loanAmount) && (
                         <p className="text-sm text-gray-500 mt-1">
                             {displayDesc}
                         </p>
                     )}
                 </div>
 
-                {/* --- 1. PROCEED TO BANK / REJECTED ID VIEW --- */}
-                {/* Show Application ID for PTB or Rejected if available */}
-                {(isPtb || isRejected) && (data?.applicationNumber || data?.applicationId) && (
+                {/* --- 1. REJECTED SPECIFIC VIEW --- */}
+                {isRejected && (
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className={`rounded-xl p-3 mb-6 border text-center ${isRejected ? 'bg-red-50 border-red-100' : 'bg-blue-50 border-blue-100'}`}
+                        className="space-y-4 mb-6"
                     >
-                        <p className={`text-xs uppercase font-semibold mb-1 ${isRejected ? 'text-red-500' : 'text-blue-500'}`}>Application ID</p>
-                        <p className="font-bold text-gray-800 text-base tracking-wide">
-                            {data.applicationNumber || data.applicationId}
-                        </p>
+                        {/* Rejection Reason Box */}
+                        <div className="bg-red-50 rounded-xl p-4 border border-red-100 text-left">
+                            <div className="flex items-start gap-3">
+                                <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="text-xs font-bold text-red-800 uppercase tracking-wide mb-1">
+                                        Reason for Rejection
+                                    </p>
+                                    <p className="text-sm text-red-700 leading-relaxed font-medium">
+                                        {data?.reason || "Internal credit policy criteria not met."}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Application ID & Retry Info */}
+                        <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 text-center">
+                            <p className="text-xs text-gray-500 mb-1">Application No</p>
+                            <p className="text-sm font-bold text-gray-900 font-mono mb-3">
+                                {data?.applicationNumber || data?.applicationId || "N/A"}
+                            </p>
+                            <div className="h-px w-full bg-gray-200 my-3"></div>
+                            <p className="text-xs text-gray-500">
+                                You can re-apply after <span className="font-bold text-gray-900">60 days</span>.
+                            </p>
+                        </div>
                     </motion.div>
                 )}
 
-                {/* --- 2. LOAN OFFER DATA VIEW (Only if Approved & Data exists) --- */}
+                {/* --- 2. PROCEED TO BANK ID VIEW --- */}
+                {isPtb && (data?.applicationNumber || data?.applicationId) && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="rounded-xl p-3 mb-6 border text-center bg-blue-50 border-blue-100"
+                    >
+                        <p className="text-xs uppercase font-semibold mb-1 text-blue-500">Application ID</p>
+                        <p className="font-bold text-gray-800 text-base tracking-wide">
+                            {data.applicationNumber || data.applicationId}
+                        </p>
+                        {data?.reason && (
+                             <p className="text-xs text-blue-600 mt-2 px-2">
+                                {data.reason}
+                             </p>
+                        )}
+                    </motion.div>
+                )}
+
+                {/* --- 3. LOAN OFFER DATA VIEW (Only if Approved & Data exists) --- */}
                 {isApproved && data && data.loanAmount && (
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
@@ -255,7 +295,7 @@ const ResultView = ({
                     </button>
                 )}
 
-                {/* CASE 3: Rejected / Default Buttons */}
+                {/* CASE 3: Rejected Buttons */}
                 {isRejected && (
                     <div className="grid grid-cols-2 gap-3">
                         <button
@@ -268,7 +308,7 @@ const ResultView = ({
 
                         <button
                             onClick={handleGoDashboard}
-                            className="w-full py-3 px-2 bg-red-50 border border-red-100 hover:bg-red-100 text-red-700 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2"
+                            className="w-full py-3 px-2 bg-gray-900 hover:bg-black text-white rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 shadow-md"
                         >
                             <LayoutDashboard className="w-4 h-4" />
                             Dashboard

@@ -43,7 +43,6 @@ const FormSteps = ({
     performIPCheck,
 }: FormStepsProps) => {
     const { user } = useAuth();
-    const { application } = useApplication();
     const isLogin = useMemo(() => (user?.isEmailVerified || user?.isMobileVerified), [user]);
     const currentStep = useMemo(() => (step === "eligibility" ? 2 : step === "bank" ? 3 : 1), [step]);
 
@@ -76,7 +75,7 @@ const FormSteps = ({
 
             {/* Main Flow */}
             {!ipLoading && !ipBlocked && (
-                application?.isSubmit ? <ApplicationSuccess />: <>
+                user?.isSubmit ? <ApplicationSuccess />: <>
                     {/* Step Indicator */}
                     <StepIndicator currentStep={currentStep} />
 
