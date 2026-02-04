@@ -120,10 +120,13 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
         }
     }, [otpTimer]);
 
-    const canProceed = useMemo(() => ((formData?.emailVerified || formData?.mobileVerified) && formData?.panVerified && !formData.brePulled), [formData]);
+    const canProceed = useMemo(() => (
+        (formData?.emailVerified || formData?.mobileVerified) && formData?.panVerified && !formData.brePulled 
+        && (typeof formData.monthlyIncome === "string" ? parseInt(formData.monthlyIncome): formData.monthlyIncome) > 0 
+        && formData.companyName !== "" && formData.loanAmount >= 5000
+    ), [formData]);
 
     const handleContinue = async () => {
-
         const nameParts = formData.fullName.trim().split(/\s+/);
         const firstName = nameParts[0] || "";
         const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";

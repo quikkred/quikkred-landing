@@ -12,6 +12,7 @@ import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle, Loader2, Lock, Shield 
 import { useRef, useState, useCallback } from "react";
 import SelfieVerify from "./ui/SelfieVerify";
 import { calculateLoanDetails, formatCurrency } from "@/lib/constants/quickApplyV2";
+import { useApplication } from "@/contexts/ApplicationContext";
 
 // Regex Constants
 const REGEX = {
@@ -35,6 +36,7 @@ const BankVerification = ({
     onBack,
 }: BankVerificationProps) => {
     const axios = useAxios();
+    const { getApplication } = useApplication();
 
     // UI States (Loading/Errors only, Data stays in formData)
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>(initialFieldErrors);
@@ -64,6 +66,7 @@ const BankVerification = ({
             const response = await fetch(`https://ifsc.razorpay.com/${ifscCode}`);
             if (response.ok) {
                 const data = await response.json();
+                console.log("bank razorpay", data)
                 updateFormData({
                     bankName: data.BANK,
                     // If you have a branch field in formData, set it here too
@@ -203,9 +206,56 @@ const BankVerification = ({
         }
         setSubmitLoading(true);
         // Simulate API call or navigation delay
-        await new Promise(r => setTimeout(r, 500));
-        onNext();
-        setSubmitLoading(false);
+        // await new Promise(r => setTimeout(r, 500));
+        // onNext();
+
+        const nameParts = formData.fullName.trim().split(/\s+/);
+        const firstName = nameParts[0] || "";
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+
+        const isBasicDetailsFilled = true;
+
+        const basicDetails = {
+            employmentType: formData.employmentType,
+            monthlyIncome: formData.monthlyIncome,
+            salaryDate: formData.salaryDate,
+            firstName,
+            lastName,
+            mobile: formData.mobile,
+            email: formData.email,
+            isBasicDetailsFilled,
+            dateOfBirth: formData.dob,
+            companyName: formData.companyName,
+            isSubmit: true,
+        }
+
+        try {
+            // const response = await axios.post("/api/mandate-checkout/generate-link", {
+            //     applicationId: application?._id,
+            // });
+            // if(response.status === 200 || response.status === 201){
+            //     console.log(response.data);
+            // }
+            const response = await axios.post("/api/v2/application/loan/create", {
+                basicDetails
+            });
+            if (response.status === 200 || response.status === 201) {
+                toast({
+                    variant: "success",
+                    title: "Application submitted successfully",
+                    description: "Your application has been received and is being reviewed. We’ll notify you of the next steps shortly."
+                });
+                getApplication();
+                console.log("data", response.data);
+            }
+        } catch (error: unknown) {
+            if (error instanceof AxiosError) {
+                console.log(error.response?.data);
+                toast({ variant: "error", title: error.response?.data?.message || "Internal server error" });
+            }
+        } finally {
+            setSubmitLoading(false);
+        }
     };
 
     return (
