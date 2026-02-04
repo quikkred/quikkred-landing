@@ -29,6 +29,8 @@ const reasons = [
   "Other",
 ];
 
+const API_BASE_URL = "https://alpha.quikkred.in"
+
 const AccountDeletion = () => {
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
@@ -87,7 +89,7 @@ const AccountDeletion = () => {
     if (!validate()) return;
 
     try {
-      const response = await fetch("/api/user/account-deletion-request", {
+      const response = await fetch(`${API_BASE_URL}/api/test3/deletion`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
