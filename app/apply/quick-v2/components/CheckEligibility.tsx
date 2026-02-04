@@ -41,9 +41,9 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
     const storage = useStorage();
     const searchParams = useSearchParams();
     const [isLoading, setLoading] = useState(false);
-    
+
     // 2. Destructure 'application' to check status
-    const { getApplication, application } = useApplication(); 
+    const { getApplication, application, getCustomer } = useApplication();
 
     const {
         updateKycStatusState
@@ -130,7 +130,7 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
             firstName,
             lastName,
             mobile: formData.mobile,
-            email: formData.email,
+            // email: formData.email,
             isBasicDetailsFilled,
             dateOfBirth: formData.dob,
             companyName: formData.companyName,
@@ -157,6 +157,7 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
                     if (response.status === 200 || response.status === 201) {
                         console.log(response.data)
                         if (response.data?.data) {
+                            getCustomer();
                             getApplication();
                             setFormData((prev) => ({ ...prev, breStatus: response.data?.data?.status }));
                             updateKycStatusState({

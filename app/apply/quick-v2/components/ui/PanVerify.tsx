@@ -8,6 +8,8 @@ import useAxios from "@/hooks/useAxios";
 import { AxiosError } from "axios";
 import { useQuickApplyTracking, useVerificationFrictionTracking } from "@/lib/hooks";
 import { toast } from "@/components/ui/toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { useApplication } from "@/contexts/ApplicationContext";
 
 interface PanVerifyProps {
     formData: QuickApplyV2FormData;
@@ -19,6 +21,7 @@ const PanVerify = ({ formData, setFormData }: PanVerifyProps) => {
     const [error, setError] = useState("");
     const [panReverifyTimer, setPanReverifyTimer] = useState(0);
     const axios = useAxios();
+    const { getCustomer } = useApplication();
 
     // Tracking
     const {
@@ -97,6 +100,7 @@ const PanVerify = ({ formData, setFormData }: PanVerifyProps) => {
                     // fullName: data.data.fullName, 
                     panData: data.data || { panNumber: formData.pan },
                 }));
+                getCustomer();
                 trackPANVerifySuccess({ fullName: formData.fullName });
                 panFriction.completeTracking(true);
                 setPanReverifyTimer(TIMERS.REVERIFY_COOLDOWN);
