@@ -6,7 +6,7 @@ import { ApplicationInterface } from "@/interfaces/applicationInterface";
 import LayoutInterface from "@/interfaces/layoutInterface";
 import { AxiosError } from "axios";
 import { createContext, useContext, useEffect, useState } from "react";
-import { useAuth } from "./AuthContext";
+import { useAuth, User } from "./AuthContext";
 
 interface ApplicationContextStateInterface {
     loading: boolean;
@@ -18,6 +18,7 @@ interface ApplicationContextInterface {
     application: ApplicationInterface | null;
     setApplication: (application: ApplicationInterface) => void;
     getApplication: () => void;
+    getCustomer: () => void;
 }
 
 const initialState: ApplicationContextStateInterface = {
@@ -30,13 +31,14 @@ const ApplicationContext = createContext<ApplicationContextInterface>({
     application: null,
     setApplication: () => { },
     getApplication: () => { },
+    getCustomer: () => { },
 })
 
 const ApplicationProvider = ({ children }: LayoutInterface) => {
     const axios = useAxios();
     const storage = useStorage();
     const [state, setState] = useState<ApplicationContextStateInterface>(initialState);
-    const { user } = useAuth();
+    const { user, updateUser } = useAuth();
 
     const updateState = (state: Partial<ApplicationContextStateInterface>) => setState((prev) => ({ ...prev, ...state }));
 
@@ -59,8 +61,71 @@ const ApplicationProvider = ({ children }: LayoutInterface) => {
         }
     }
 
+    const getCustomer = async () => {
+        try {
+            const response = await axios.get("/api/customer/get");
+            if (response.status === 200 || response.status === 201) {
+                const apiData = response.data?.data;
+                const fullName = apiData.fullName;
+
+                const userData: Partial<User> = {
+                    firstName: apiData.firstName || "",
+                    lastName: apiData.lastName || "",
+                    name: fullName,
+                    fullName,
+                    email: apiData.email,
+                    mobile: apiData.mobile,
+                    dateOfBirth: apiData.dateOfBirth,
+                    address: apiData.currentAddress?.line1,
+                    city: apiData.currentAddress?.city,
+                    state: apiData.currentAddress?.state,
+                    pincode: apiData.currentAddress?.pincode,
+                    kycStatus: apiData.kyc?.kycStatus || "PENDING",
+                    status: apiData.status,
+                    createdAt: apiData.createdAt,
+                    profile: apiData.profile ? {
+                        documentType: apiData.profile.documentType || "",
+                        status: apiData.profile.status || "",
+                        s3Key: apiData.profile.s3Key || "",
+                        s3URL: apiData.profile.s3URL || "",
+                    } : null,
+
+                    // verified
+                    isEmailVerified: apiData.isEmailVerified || false,
+                    isMobileVerified: apiData.isMobileVerified || false,
+                    isPanVerify: apiData.isPanVerify || false,
+                    isAadhaarVerify: apiData.isAadhaarVerify || false,
+                    brePulled: apiData.brePulled || false,
+
+                    // dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
+                    pan: apiData.panCard || null,
+                    aadhaar: apiData.aadhaarNumber || null,
+                    employmentType: apiData.employmentType || null,
+                    monthlyIncome: apiData.monthlyIncome?.toString() || null,
+                    companyName: apiData.companyName || null,
+                    loanAmount: apiData.requestedLoanAmount?.toString() || null, // Loan amount from API
+
+                    // bank
+                    bankName: apiData.banks?.[0]?.bankName || null,
+                    accountHolderName: apiData.banks?.[0]?.accountHolderName || null,
+                    accountNumber: apiData.banks?.[0]?.accountNumber || null,
+                    ifsc: apiData.banks?.[0]?.ifscCode || null,
+                    pennyDropStatus: apiData.banks?.[0]?.pennyDropStatus || null,
+                    bankVerified: apiData.banks?.[0]?.pennyDropStatus === "VERIFIED",
+                    upiAutoPayStatus: apiData?.upiAutoPayStatus || false,
+                }
+
+                updateUser(userData);
+            }
+        } catch (error: unknown) {
+            if (error instanceof AxiosError) {
+                console.log("get customer error:", error.response?.data?.message);
+            }
+        }
+    }
+
     useEffect(() => {
-        if(!user) return; 
+        if (!user) return;
         getApplication();
     }, [user]);
 
@@ -69,6 +134,7 @@ const ApplicationProvider = ({ children }: LayoutInterface) => {
         loading: state.loading,
         setApplication: (application) => updateState({ data: application }),
         getApplication,
+        getCustomer,
     }}>
         {children}
     </ApplicationContext.Provider>

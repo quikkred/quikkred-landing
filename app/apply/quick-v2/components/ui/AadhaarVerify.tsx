@@ -9,6 +9,7 @@ import { toast } from "@/components/ui/toast";
 import { useSearchParams } from "next/navigation";
 import tracking from "@/lib/tracking";
 import { TRACKING_EVENTS } from "@/lib/constants/quickApplyV2";
+import { useApplication } from "@/contexts/ApplicationContext";
 
 // Helper for Aadhaar Validation (12 digits)
 const isValidAadhaar = (aadhaar: string) => /^\d{12}$/.test(aadhaar);
@@ -31,6 +32,7 @@ interface AadhaarVerifyProps {
 const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const { getCustomer } = useApplication();
 
     // State for OTP flow
     const [otpSent, setOtpSent] = useState(false);
@@ -183,6 +185,7 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
                     dob: formattedDOB || prev.dob,
                     aadhaarData: data.data || {}
                 }));
+                getCustomer();
                 toast({ variant: "success", title: "Aadhaar verification successfully", description: "" });
                 tracking.trackEvent('CUSTOM_EVENT', { event: TRACKING_EVENTS.AADHAAR_VERIFIED });
             } else {
