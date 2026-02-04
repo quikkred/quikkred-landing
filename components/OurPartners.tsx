@@ -35,6 +35,14 @@ export default function OurPartners() {
           <p className="text-gray-500 text-base leading-relaxed mb-8">
             Satsai Finlease Private Limited continues to act as the Regulated Entity (RE) and remains the primary data controller for all lending operations and associated financial activities.
           </p>
+          <div>
+            <div className="mb-2">
+              <span className="font-bold">Website: </span><a className="font-bold hover:text-[#25B181]" href="https://satsaifinlease.com" target="_blank">https://satsaifinlease.com</a>
+            </div>
+            <div>
+              <a className="font-bold hover:text-[#25B181]" href="https://satsaifinlease.com/general-terms-and-conditions" target="_blank">Terms & Conditions</a>
+            </div>
+          </div>
         </motion.div>
 
         {/* Add more partners from below */}
