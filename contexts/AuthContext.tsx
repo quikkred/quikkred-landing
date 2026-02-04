@@ -143,6 +143,7 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
             s3Key: apiData.profile.s3Key || "",
             s3URL: apiData.profile.s3URL || "",
           } : null,
+          isSubmit: apiData?.isSubmit || false,
 
           // verified
           isEmailVerified: apiData.isEmailVerified || false,
