@@ -45,6 +45,7 @@ export interface User {
     s3URL: string,
   } | null,
   upiAutoPayStatus?: boolean,
+  isSubmit?: boolean,
 }
 
 interface LoginProps { apiData?: any; email?: string; mobile?: string; }

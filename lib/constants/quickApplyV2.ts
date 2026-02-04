@@ -159,6 +159,7 @@ export const getInitialFormData = (): QuickApplyV2FormData => ({
     customerId: "",
     upiAutoPayStatus: false,
     brePulled: false,
+    breStatus: "Pending",
 
     interestRate: 0,
     totalInterest: 0,
