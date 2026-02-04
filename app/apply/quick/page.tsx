@@ -3566,7 +3566,7 @@ export default function QuickLoanApplication() {
                             <h4 className="font-bold text-gray-900">Satsai Finlease Pvt Ltd</h4>
                             <p className="text-xs text-gray-600">RBI Registered NBFC</p>
                             <p className="text-[10px] text-emerald-600 font-semibold mt-1">RBI Reg: B-14.01646</p>
-                            <p className="text-[10px] text-gray-500">CIN: U71290DL1996PTC081328</p>
+                            <p className="text-[10px] text-gray-500">CIN: U62099DL2026PTC460990</p>
                           </div>
                         </div>
                       </div>
@@ -3802,7 +3802,7 @@ export default function QuickLoanApplication() {
                       <div className="bg-white border-t border-gray-200 py-6 px-4 sm:px-8 rounded-b-2xl">
                         <div className="bg-gray-50 rounded-xl p-4 mb-4">
                           <p className="text-xs text-gray-600 leading-relaxed">
-                            <span className="font-bold text-gray-900">Disclaimer:</span> Quikkred is a digital lending platform and is authorized to provide services on behalf of its partner NBFC - Satsai Finlease Private Limited (RBI Reg: B-14.01646 | CIN: U71290DL1996PTC081328).
+                            <span className="font-bold text-gray-900">Disclaimer:</span> Quikkred is a digital lending platform and is authorized to provide services on behalf of its partner NBFC - Satsai Finlease Private Limited (RBI Reg: B-14.01646 | CIN: U62099DL2026PTC460990).
                           </p>
                         </div>
 

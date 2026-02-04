@@ -36,7 +36,7 @@ export default function RBIGuidelinesPage() {
             About RBI Regulations
           </h2>
           <p className="text-gray-600 mb-4">
-            QuikkRed is a digital lending platform powered by <strong>Fluxusforge Private Limited</strong> (Loan Service Provider). All loans on our platform are disbursed by <strong>Satsai Finlease Private Limited</strong>, an RBI-registered Non-Banking Financial Company (NBFC) established in 1996 (CIN: U71290DL1996PTC081328).
+            QuikkRed is a digital lending platform powered by <strong>Fluxusforge Private Limited</strong> (Loan Service Provider). All loans on our platform are disbursed by <strong>Satsai Finlease Private Limited</strong>, an RBI-registered Non-Banking Financial Company (NBFC) established in 1996 (CIN: U62099DL2026PTC460990).
           </p>
           <p className="text-gray-600">
             The RBI has established comprehensive guidelines to ensure that NBFCs and their digital lending partners maintain financial stability, protect consumer interests, and follow ethical business practices. This page outlines the key RBI regulations applicable to our platform and our lending partner's operations.
@@ -65,7 +65,7 @@ export default function RBIGuidelinesPage() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#25B181] mt-1">•</span>
-                <span><strong>CIN:</strong> U71290DL1996PTC081328</span>
+                <span><strong>CIN:</strong> U62099DL2026PTC460990</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#25B181] mt-1">•</span>
