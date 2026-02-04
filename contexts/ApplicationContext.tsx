@@ -89,6 +89,7 @@ const ApplicationProvider = ({ children }: LayoutInterface) => {
                         s3Key: apiData.profile.s3Key || "",
                         s3URL: apiData.profile.s3URL || "",
                     } : null,
+                    isSubmit: apiData?.isSubmit || false,
 
                     // verified
                     isEmailVerified: apiData.isEmailVerified || false,
