@@ -218,6 +218,21 @@ const policyTranslationLoaders: Record<string, Record<string, () => Promise<any>
     as: () => import('@/locales/policies/rbi-guidelines/as.json').then(m => m.default),
     ur: () => import('@/locales/policies/rbi-guidelines/ur.json').then(m => m.default),
   },
+  disclaimerDisclosure: {
+    en: () => import('@/locales/policies/disclaimer-disclosure/en.json').then(m => m.default),
+    hi: () => import('@/locales/policies/disclaimer-disclosure/hi.json').then(m => m.default),
+    bn: () => import('@/locales/policies/disclaimer-disclosure/bn.json').then(m => m.default),
+    ta: () => import('@/locales/policies/disclaimer-disclosure/ta.json').then(m => m.default),
+    te: () => import('@/locales/policies/disclaimer-disclosure/te.json').then(m => m.default),
+    mr: () => import('@/locales/policies/disclaimer-disclosure/mr.json').then(m => m.default),
+    gu: () => import('@/locales/policies/disclaimer-disclosure/gu.json').then(m => m.default),
+    kn: () => import('@/locales/policies/disclaimer-disclosure/kn.json').then(m => m.default),
+    ml: () => import('@/locales/policies/disclaimer-disclosure/ml.json').then(m => m.default),
+    pa: () => import('@/locales/policies/disclaimer-disclosure/pa.json').then(m => m.default),
+    or: () => import('@/locales/policies/disclaimer-disclosure/or.json').then(m => m.default),
+    as: () => import('@/locales/policies/disclaimer-disclosure/as.json').then(m => m.default),
+    ur: () => import('@/locales/policies/disclaimer-disclosure/ur.json').then(m => m.default),
+  }
 };
 
 // --- HELPERS ---
@@ -284,6 +299,7 @@ export async function getTranslation(langCode: string): Promise<TranslationData>
       refund: mergedPolicyTranslations.refund || {},
       rbiGuidelines: mergedPolicyTranslations.rbiGuidelines || {},
       terms: mergedPolicyTranslations.terms || {},
+      disclaimerDisclosure: mergedPolicyTranslations.disclaimerDisclosure || {},
     }
   };
 

@@ -7,9 +7,8 @@ import PoliciesLayout from "@/components/layouts/PoliciesLayout";
 
 export default function InterestRatePolicyPage() {
   const { t } = useLanguage();
-
-  const irp = t?.policies?.interestRate;
-  // console.log(irp)
+  const irp = t?.policies?.interestRate
+  console.log(irp)
 
   return (
     <div className="min-h-screen">
@@ -39,12 +38,12 @@ export default function InterestRatePolicyPage() {
             {irp?.documentDetails?.title || "Document Details"}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[#2b2b2b] leading-[1.7]">
-            <div><span className="font-semibold">{t?.policies?.common?.title || "Title"}:</span> {irp?.documentDetails?.policyTitle || "Interest rate and penal charges policy"}</div>
-            <div><span className="font-semibold">{t?.policies?.common?.classification || "Classification"}:</span> {irp?.documentDetails?.classification || "Public"}</div>
-            <div><span className="font-semibold">{t?.policies?.common?.approvalDate || "Approved Date"}:</span> {irp?.documentDetails?.approvalDate || "30th June 2023"}</div>
-            <div><span className="font-semibold">{t?.policies?.common?.lastReviewDate || "Last Review Date"}:</span> {irp?.documentDetails?.lastReviewDate || "21st April 2025"}</div>
-            <div><span className="font-semibold">{t?.policies?.common?.approvedBy || "Approved By"}:</span> {irp?.documentDetails?.approvedBy || "Board of Directors"}</div>
-            <div><span className="font-semibold">{t?.policies?.common?.custodian || "Custodian"}:</span> {irp?.documentDetails?.custodian || "Operation"}</div>
+            <div><span className="font-semibold">{irp?.documentDetails?.label?.title || "Title"}:</span> {irp?.documentDetails?.value?.policyTitle || "Interest rate and penal charges policy"}</div>
+            <div><span className="font-semibold">{irp?.documentDetails?.label?.classification || "Classification"}:</span> {irp?.documentDetails?.value?.classification || "Public"}</div>
+            <div><span className="font-semibold">{irp?.documentDetails?.label?.approvedDate || "Approved Date"}:</span> {irp?.documentDetails?.value?.approvalDate || "30th June 2023"}</div>
+            <div><span className="font-semibold">{irp?.documentDetails?.label?.lastReviewDate || "Last Review Date"}:</span> {irp?.documentDetails?.value?.lastReviewDate || "21st April 2025"}</div>
+            <div><span className="font-semibold">{irp?.documentDetails?.label?.approvedBy || "Approved By"}:</span> {irp?.documentDetails?.value?.approvedBy || "Board of Directors"}</div>
+            <div><span className="font-semibold">{irp?.documentDetails?.label?.custodian || "Custodian"}:</span> {irp?.documentDetails?.value?.custodian || "Operation"}</div>
           </div>
         </div>
 
@@ -54,7 +53,7 @@ export default function InterestRatePolicyPage() {
             <BookOpen className="w-6 h-6 text-[#25B181]" />
             {irp?.sections?.introduction?.title || "1. Introduction"}
           </h2>
-          {(irp?.sections?.introduction?.content || [
+          {(irp?.sections.introduction?.content || [
             "The Reserve Bank of India (\"RBI\") vide its Master Direction – Reserve Bank of India (Non-Banking Financial Company – Scale Based Regulation) Directions, 2023 advised all Non-Systemically Important Non-Deposit taking NBFCs to lay out appropriate internal principles and procedures in determining interest rates, Platform fee and other charges. RBI also directed to make the policy available on the website of the NBFC, and update whenever there is a change.",
             "The Board of Directors of Satsai Finlease Private Limited (\"Company\") in their meeting held on June 30, 2023, had adopted the Interest Rate Policy (\"the Policy\") in accordance with the RBI Directions earlier applicable on the Company. The same has now been revised to reflect the changes in internal policies etc.",
             "This Policy should always be read in conjunction with extant RBI guidelines, directives, circulars and instructions."
