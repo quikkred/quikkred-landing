@@ -71,6 +71,7 @@ export interface ApplicationInterface {
 
     tenure: number;
     interestRate: number;
+    tenureUnit: string;
 
     emiAmount: number;
     totalInterest: number;

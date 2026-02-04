@@ -27,6 +27,14 @@ export interface QuickApplyV2FormData {
     salaryDate: number; // 1-31
     brePulled: boolean;
     companyName: string;
+    tenureUnit: string;
+    gstOnProcessingFee: number;
+    netDisbursalAmount: number;
+
+    interestRate: number,
+    totalInterest: number,
+    processingFee: number,
+    totalRepayment: number,
 
     // Page 2: PAN & Bank
     pan: string;
