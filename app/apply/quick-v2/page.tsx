@@ -19,7 +19,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import StepIndicator from './components/ui/StepIndicator';
 import Page3BankDetails from './components/BankVerification';
 import useStorage from '@/hooks/useStorage';
-import Page4Approval from './components/Page4Approval';
+import Page4Approval from './components/ApproveMandate';
 import { StorageApplicationForm } from '@/interfaces/storageInterface';
 import { useApplication } from '@/contexts/ApplicationContext';
 import CustomerLogin from './components/ui/CustomerLogin';
@@ -32,7 +32,7 @@ import FormSteps, { FormStepsType } from './components/ui/FormSteps';
 export default function QuickApplyV2Page() {
     // Stage Management
     const [stage, setStage] = useState<ApplicationStage>('IP_CHECK');
-    const [step, setStep] = useState<FormStepsType>("eligibility");
+    const [step, setStep] = useState<FormStepsType>("login");
     const [currentStep, setCurrentStep] = useState(0);
     const { user } = useAuth();
     const storage = useStorage();
@@ -95,27 +95,26 @@ export default function QuickApplyV2Page() {
                 // bre form
                 loanAmount: application?.requestedLoanAmount || 0,
                 tenure: application?.tenure || 0,
+                tenureUnit: application?.tenureUnit || "Days",
                 netDisbursalAmount: application?.netDisbursalAmount || 0,
+                interestRate: application?.interestRate || 0,
+                totalInterest: application?.totalInterest || 0,
+                processingFee: application?.processingFee || 0,
+                totalRepayment: application?.totalRepayment || 0,
+                gstOnProcessingFee: application?.gstOnProcessingFee || 0,
             }));
 
-            if((user?.isEmailVerified || user?.isMobileVerified) && user?.brePulled && application?.status === "APPROVED"){
-                setStep("bank")
+            const isLogin = user?.isEmailVerified || user?.isMobileVerified;
+            const eligibilityStep = isLogin && user?.brePulled && application?.status !== "REJECTED";
+            // const bankStep = eligibilityStep && (
+            //     user?.bankVerified && user?.profile?.status === "VERIFIED"
+            // )
+
+            if (eligibilityStep) {
+                setStep("bank");
+            } else if (isLogin) {
+                setStep("eligibility");
             }
-
-            // C. ONE-TIME INITIAL ROUTING
-            // We only jump the user automatically IF we haven't done it yet this session
-            // if (!hasAutoRouted.current) {
-            //     if (breForm?.status !== "Approve") {
-            //         setStage('PAGE_1');
-            //         setCurrentStep(1);
-            //     } else {
-            //         setStage('PAGE_2');
-            //         setCurrentStep(2);
-            //     }
-
-            //     hasAutoRouted.current = true; // IMPORTANT: Lock the auto-router
-            //     return;
-            // }
         }
 
         // D. GUEST FLOW: If no user and still stuck in IP_CHECK, move to Page 1
