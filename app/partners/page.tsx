@@ -64,8 +64,14 @@ export default function PartnersPage() {
         </div>
       </section>
 
+      <section className="bg-gray-50 py-8 sm:py-10 lg:py-12">
+        <div className="max-w-[768px] mx-auto px-4 sm:px-6 lg:px-8">
+          <OurPartners />
+        </div>
+      </section>
+
       {/* Choose Your Partnership Path Section */}
-      <section id="partnership-paths" className="bg-gray-50 py-8 sm:py-10 lg:py-12">
+      <section id="partnership-paths" className="bg-white py-8 sm:py-10 lg:py-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -74,12 +80,6 @@ export default function PartnersPage() {
             transition={{ duration: 0.6 }}
             className="max-w-5xl mx-auto"
           >
-
-            <section className="bg-gray-50 py-8 sm:py-10 lg:py-12">
-              <div className="max-w-[768px] mx-auto px-4 sm:px-6 lg:px-8">
-                <OurPartners />
-              </div>
-            </section>
 
             {/* Section Header */}
             <div className="text-center mb-12 sm:mb-16">
@@ -154,7 +154,7 @@ export default function PartnersPage() {
       </section>
 
       {/* Why Partner With Us Section */}
-      <section className="bg-white py-8 sm:py-10 lg:py-12">
+      <section className="bg-gray-50 py-8 sm:py-10 lg:py-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -248,7 +248,7 @@ export default function PartnersPage() {
       </section>
 
       {/* Call to Action Section */}
-      <section className="flex items-center justify-center bg-[#f6f6f6] py-8 sm:py-10 lg:py-12 overflow-hidden">
+      <section className="flex items-center justify-center bg-white py-8 sm:py-10 lg:py-12 overflow-hidden">
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 50 }}
           whileInView={{ opacity: 1, scale: 1, y: 0 }}
