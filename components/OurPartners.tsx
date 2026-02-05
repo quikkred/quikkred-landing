@@ -18,7 +18,7 @@ export default function OurPartners() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: 0.2 }}
           className="bg-white rounded-2xl p-8 sm:p-10 shadow-lg shadow-gray-200/50 hover:shadow-xl hover:shadow-gray-200/60 transition-all border border-gray-100"
         >
           <div className="w-16 h-16 bg-[#E8F7F3] rounded-2xl flex items-center justify-center mb-6">
