@@ -16,7 +16,8 @@ import FinFactorStatus from './ui/FinFactorStatus';
 import AadhaarVerify from './ui/AadhaarVerify';
 import EmployeeDetails from './ui/EmployeeDetails';
 import { useApplication } from '@/contexts/ApplicationContext';
-import { AlertCircle, Loader2 } from 'lucide-react'; // 1. Import Icon
+import { AlertCircle, ArrowRight, Landmark, Loader2 } from 'lucide-react'; // 1. Import Icon
+import MissingField from './ui/MissingField';
 
 interface CheckEligibilityProps {
     formData: QuickApplyV2FormData;
@@ -41,6 +42,7 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
     const storage = useStorage();
     const searchParams = useSearchParams();
     const [isLoading, setLoading] = useState(false);
+    const [ptbLoading, setPtbLoading] = useState(false);
 
     // 2. Destructure 'application' to check status
     const { getApplication, application, getCustomer } = useApplication();
@@ -72,6 +74,8 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
 
             if (response.status === 200 || response.status === 201) {
                 console.log('✅ BRE finFactor result:', result.data);
+                getCustomer();
+                getApplication();
                 setFinFactorDetails({
                     visibility: true,
                     loading: false,
@@ -110,16 +114,97 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
         }
     }, [otpTimer]);
 
-    const canProceed = useMemo(() => (
-        (formData?.emailVerified || formData?.mobileVerified) && formData?.panVerified && !formData.brePulled
-        && (typeof formData.monthlyIncome === "string" ? parseInt(formData.monthlyIncome) : formData.monthlyIncome) > 0
-        && formData.companyName !== "" && formData.loanAmount >= 5000
-    ), [formData]);
+
+    const canProceed = useMemo(() => {
+        // 1. Safe parsing for Loan Amount
+        const loanAmount = Number(formData.loanAmount) || 0;
+
+        // 2. Safe parsing for Monthly Income
+        const income = Number(formData.monthlyIncome) || 0;
+
+        // 3. Verification check (Needs at least one verified contact + PAN)
+        const isContactVerified = !!(formData.emailVerified || formData.mobileVerified);
+        const isPanVerified = !!formData.panVerified;
+        const isAadhaarVerify = !!formData.aadhaarVerified;
+
+        // 4. BRE check (Don't allow if already pulled)
+        const isBreValid = !formData.brePulled;
+
+        // 5. Employment details check
+        const isWorkDetailsValid = formData.companyName?.trim() !== "";
+
+        // Final result
+        return (
+            isContactVerified &&
+            isPanVerified &&
+            isAadhaarVerify &&
+            isBreValid &&
+            income > 0 &&
+            isWorkDetailsValid &&
+            (loanAmount >= 5000 && loanAmount <= 25000)
+        );
+    }, [formData]);
+
+    const handleProceedToBankApi = async () => {
+        setPtbLoading(true);
+        try {
+            const response = await axios.get(`/api/v2/finfactorConsentRequest`);
+            const result = response.data;
+
+            if (response.status === 200 || response.status === 201) {
+                toast({ variant: "success", title: "Success", description: result.message || "Bank verification initiated successfully." });
+                if (result.data?.url) {
+                    window.location.href = result.data.url;
+                } else {
+                    // onContinue();
+                }
+            } else {
+                toast({ variant: "error", title: "Failed", description: result.message || "Failed to initiate bank verification." });
+            }
+        } catch (error: unknown) {
+            if (error instanceof AxiosError) {
+                console.error('PTB API error:', error);
+                toast({ variant: "error", title: "Network Error", description: error.response?.data?.message || "Unable to connect to server. Please try again." });
+            }
+        } finally {
+            setPtbLoading(false);
+        }
+    };
 
     const handleContinue = async () => {
         const nameParts = formData.fullName.trim().split(/\s+/);
         const firstName = nameParts[0] || "";
         const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+
+        // Email Regex: Standard email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        // Mobile Regex: 10 digits starting with 6-9 (Indian Standard)
+        const mobileRegex = /^[6-9]\d{9}$/;
+
+        // Validate Email
+        if (!formData.email) {
+            toast({ variant: "error", title: "Email is required" });
+            return;
+        } else if (!emailRegex.test(formData.email)) {
+            toast({ variant: "error", title: "Invalid Email format", description: "Please enter a valid email address." });
+            return;
+        }
+
+        // Validate Mobile
+        if (!formData.mobile) {
+            toast({ variant: "error", title: "Mobile is required" });
+            return;
+        } else if (!mobileRegex.test(formData.mobile)) {
+            toast({ variant: "error", title: "Invalid Mobile number", description: "Please enter a valid 10-digit mobile number." });
+            return;
+        }
+
+        // Validate Loan Amount (from previous requirement)
+        if (formData.loanAmount < 5000 || formData.loanAmount > 25000) {
+            toast({ variant: "error", title: "Invalid Amount", description: "Loan must be between ₹5,000 and ₹25,000." });
+            return;
+        }
 
         const isBasicDetailsFilled = true;
 
@@ -130,7 +215,7 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
             firstName,
             lastName,
             mobile: formData.mobile,
-            // email: formData.email,
+            email: formData.email,
             isBasicDetailsFilled,
             dateOfBirth: formData.dob,
             companyName: formData.companyName,
@@ -139,23 +224,39 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
             requestedLoanAmount: formData.loanAmount,
         }
 
+        // const kycDetails = {
+        //     isKycDetailsFilled: true
+        // }
+
         try {
             setLoading(true);
             const basicResponse = await axios.post("/api/v2/application/loan/create", {
                 basicDetails,
-                loanDetails
+                loanDetails,
+                // kycDetails,
             });
 
             if (basicResponse.status === 200 || basicResponse.status === 201) {
                 setLoading(false);
                 console.log("basic response:", basicResponse.data);
-                storage.set("applicationId", basicResponse?.data?.data?.applicationNumber);
-                updateKycStatusState({ loading: true, visibility: true, onSuccess: () => onNext() });
+                // storage.set("applicationId", basicResponse?.data?.data?.applicationNumber);
+                updateKycStatusState({ loading: true, visibility: true });
 
                 try {
                     const response = await axios.get("/api/v2/bre/initialize");
                     if (response.status === 200 || response.status === 201) {
                         console.log(response.data)
+                        // const eligibilityStep = isLogin && user?.brePulled && application && application?.status !== "REJECTED";
+
+                        /*
+                         "data": {
+        "applicationNumber": "APP20261770280936508",
+        "applicationId": "698457e864cf957cd5376479",
+        "status": "Reject",
+        "reason": "Your credit profile does not meet eligibility criteria"
+    }
+                        */
+
                         if (response.data?.data) {
                             getCustomer();
                             getApplication();
@@ -202,6 +303,7 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
             />
             <h2 className="text-lg sm:text-xl font-bold text-gray-900">Get Instant Cash</h2>
 
+            <MissingField formData={formData} setFormData={setFormData} />
             <PanVerify formData={formData} setFormData={setFormData} />
             <AadhaarVerify formData={formData} setFormData={setFormData} />
             <EmployeeDetails formData={formData} setFormData={setFormData} />
@@ -245,6 +347,56 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
                             </span>
                         </div>
                     </div>
+                </div>
+            ) : (formData?.breStatus === "PROCEED TO BANK" || formData?.breStatus === "Proceed to Bank") ? (
+                <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                    {/* Status Box */}
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 shadow-sm">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
+                            <div className="flex items-center gap-3">
+                                <div className="shrink-0 bg-emerald-100 p-1.5 rounded-full">
+                                    <Landmark className="h-5 w-5 text-emerald-600" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-bold text-emerald-900 leading-none">
+                                        Verification Required
+                                    </h3>
+                                    <p className="text-[11px] text-emerald-700 font-medium mt-1">
+                                        Bank statement verification needed.
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-start sm:items-end border-t sm:border-t-0 border-emerald-100 pt-2 sm:pt-0 pl-11 sm:pl-0">
+                                <span className="font-mono text-sm font-bold text-emerald-900 tracking-tight leading-none break-all">
+                                    {application?.applicationNumber}
+                                </span>
+                                <span className="text-[10px] font-semibold text-emerald-500 uppercase tracking-wider mt-1">
+                                    Application No
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Action Button */}
+                    <button
+                        onClick={handleProceedToBankApi}
+                        disabled={ptbLoading}
+                        className="w-full group relative py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-70 disabled:cursor-not-allowed text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40 hover:-translate-y-0.5"
+                    >
+                        <span className="flex items-center justify-center gap-2">
+                            {ptbLoading ? (
+                                <>
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    <span>Processing...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span>Proceed to Bank</span>
+                                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                </>
+                            )}
+                        </span>
+                    </button>
                 </div>
             ) : (
                 <button
