@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/toast";
@@ -34,6 +34,13 @@ interface DigiLockerSuccessData {
     };
 }
 
+// Extend Window interface for DigiLocker SDK
+declare global {
+    interface Window {
+        initializeSurePassDigiLocker?: (params: any) => void;
+    }
+}
+
 const DigiLockerVerify = ({
     callbackURL = "/user",
     buttonText = "Sign in with DigiLocker",
@@ -43,17 +50,12 @@ const DigiLockerVerify = ({
     onError
 }: DigiLockerVerifyProps) => {
     const [isLoading, setIsLoading] = useState(false);
-    const [isPolling, setIsPolling] = useState(false);
-    const [clientId, setClientId] = useState<string | null>(null);
-    const [pollCount, setPollCount] = useState(0);
+    const [sdkLoaded, setSdkLoaded] = useState(false);
 
     const router = useRouter();
     const { login } = useAuth();
     const { toast } = useToast();
     const axios = useAxios();
-
-    const MAX_POLL_ATTEMPTS = 60; // 60 attempts * 2 seconds = 2 minutes max
-    const POLL_INTERVAL = 2000; // 2 seconds
 
     // Strict mobile number validation
     const validateMobile = (mobile: string): { valid: boolean; error?: string } => {
@@ -88,17 +90,52 @@ const DigiLockerVerify = ({
         return { valid: true };
     };
 
+    // Load SurePass DigiLocker SDK
+    useEffect(() => {
+        // Check if SDK is already loaded
+        if (typeof window !== 'undefined' && window.initializeSurePassDigiLocker) {
+            setSdkLoaded(true);
+            return;
+        }
+
+        // Load SDK script dynamically
+        const script = document.createElement('script');
+        script.src = 'https://kyc-api.surepass.io/sdk/digilocker-sdk.js';
+        script.async = true;
+        script.onload = () => {
+            console.log('[DigiLocker SDK] Loaded successfully');
+            setSdkLoaded(true);
+        };
+        script.onerror = () => {
+            console.error('[DigiLocker SDK] Failed to load');
+            toast({
+                variant: "error",
+                title: "SDK Load Error",
+                description: "Failed to load DigiLocker SDK. Please refresh and try again."
+            });
+        };
+
+        document.body.appendChild(script);
+
+        return () => {
+            // Cleanup on unmount
+            if (document.body.contains(script)) {
+                document.body.removeChild(script);
+            }
+        };
+    }, [toast]);
+
     // DigiLocker Icon
     const DigiLockerIcon = () => (
         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
             <rect x="3" y="6" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="2" />
-            <path d="M7 6V5C7 3.34315 8.34315 2 10 2H14C15.6569 2 17 3.34315 17 5V6" stroke="currentColor" strokeWidth="2" />
+            <path d="M7 6V5C7 3.34315 8.34315 2 10 2H14C15.6569 2 17 5V6" stroke="currentColor" strokeWidth="2" />
             <circle cx="12" cy="13" r="2" fill="currentColor" />
             <path d="M12 15V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
         </svg>
     );
 
-    // Initialize DigiLocker flow
+    // Initialize DigiLocker with Web SDK
     const handleDigiLockerInit = async () => {
         try {
             setIsLoading(true);
@@ -128,45 +165,131 @@ const DigiLockerVerify = ({
                 }
             }
 
-            // Call backend to initialize DigiLocker
-            const response = await axios.post('/api/auth/customer/digilocker/login', {
-                mobile: mobile?.replace(/\D/g, ''),
-                email: email?.toLowerCase(),
-                redirectUrl: `${window.location.origin}/auth/digilocker/callback`
-            });
-
-            if (!response.data?.success || !response.data?.data?.url) {
-                throw new Error(response.data?.message || "Failed to initialize DigiLocker");
-            }
-
-            const { clientId: newClientId, url } = response.data.data;
-            setClientId(newClientId);
-
-            // Store clientId in localStorage for callback page
-            localStorage.setItem('digilocker_client_id', newClientId);
-            localStorage.setItem('digilocker_callback_url', callbackURL);
-
-            toast({
-                variant: "success",
-                title: "Redirecting to DigiLocker",
-                description: "Please complete verification in the DigiLocker window"
-            });
-
-            // Open DigiLocker in new window or redirect
-            const digiLockerWindow = window.open(url, '_blank', 'width=600,height=700');
-
-            // If popup blocked, redirect in same window
-            if (!digiLockerWindow || digiLockerWindow.closed) {
-                window.location.href = url;
+            // Check if SDK is loaded
+            if (!sdkLoaded || !window.initializeSurePassDigiLocker) {
+                toast({
+                    variant: "error",
+                    title: "SDK Not Ready",
+                    description: "DigiLocker SDK is still loading. Please try again in a moment."
+                });
+                setIsLoading(false);
                 return;
             }
 
-            // Start polling for completion
-            setIsPolling(true);
-            setPollCount(0);
+            // Get initialization params from backend (no SurePass call, just generate request_id)
+            const initResponse = await axios.post('/api/auth/customer/digilocker/init-params', {
+                mobile: mobile?.replace(/\D/g, ''),
+                email: email?.toLowerCase()
+            });
+
+            if (!initResponse.data?.success) {
+                throw new Error(initResponse.data?.message || "Failed to initialize");
+            }
+
+            const { requestId, logoUrl } = initResponse.data.data;
+
+            console.log('[DigiLocker] Initializing Web SDK with requestId:', requestId);
+
+            // Initialize DigiLocker Web SDK (this calls SurePass from browser)
+            window.initializeSurePassDigiLocker({
+                signup_flow: true,
+                logo_url: logoUrl || `${window.location.origin}/logo.png`,
+                skip_main_screen: false,
+                mobile: mobile?.replace(/\D/g, ''),
+                email: email?.toLowerCase(),
+                request_id: requestId,
+
+                // Success callback - called when user completes DigiLocker
+                onSuccess: async (data: any) => {
+                    console.log('[DigiLocker SDK] Success callback:', data);
+
+                    try {
+                        // Send client_id to backend for verification
+                        const verifyResponse = await axios.post('/api/auth/customer/digilocker/verify', {
+                            clientId: data.client_id,
+                            token: data.token,
+                            requestId: requestId,
+                            mobile: mobile?.replace(/\D/g, ''),
+                            email: email?.toLowerCase()
+                        });
+
+                        if (!verifyResponse.data?.success) {
+                            throw new Error(verifyResponse.data?.message || "Verification failed");
+                        }
+
+                        const userData = verifyResponse.data.data;
+
+                        toast({
+                            variant: "success",
+                            title: userData.isNewCustomer ? "Account Created!" : "Welcome Back!",
+                            description: userData.isNewCustomer
+                                ? "Your account has been created with verified KYC!"
+                                : "Logged in successfully via DigiLocker"
+                        });
+
+                        // Call auth context login
+                        await login({
+                            apiData: {
+                                accessToken: userData.accessToken,
+                                refreshToken: userData.refreshToken,
+                                userId: userData.userId,
+                                role: "CUSTOMER"
+                            },
+                            mobile: userData.mobile || ""
+                        });
+
+                        // Call success callback
+                        onSuccess?.(userData);
+
+                        // Redirect
+                        router.push(callbackURL);
+
+                    } catch (verifyError: any) {
+                        console.error('[DigiLocker] Verification error:', verifyError);
+                        const errorMsg = verifyError.response?.data?.message || verifyError.message || "Verification failed";
+
+                        toast({
+                            variant: "error",
+                            title: "Verification Failed",
+                            description: errorMsg
+                        });
+
+                        onError?.(errorMsg);
+                    } finally {
+                        setIsLoading(false);
+                    }
+                },
+
+                // Error callback
+                onError: (error: any) => {
+                    console.error('[DigiLocker SDK] Error callback:', error);
+
+                    const errorMsg = error?.message || "DigiLocker verification failed";
+
+                    toast({
+                        variant: "error",
+                        title: "DigiLocker Error",
+                        description: errorMsg
+                    });
+
+                    onError?.(errorMsg);
+                    setIsLoading(false);
+                },
+
+                // Close callback - user closed the DigiLocker window
+                onClose: () => {
+                    console.log('[DigiLocker SDK] User closed DigiLocker');
+                    toast({
+                        variant: "default",
+                        title: "Cancelled",
+                        description: "DigiLocker verification was cancelled"
+                    });
+                    setIsLoading(false);
+                }
+            });
 
         } catch (error: any) {
-            console.error("DigiLocker init error:", error);
+            console.error("[DigiLocker init error:", error);
             const errorMsg = error.response?.data?.message || error.message || "Failed to start DigiLocker verification";
 
             toast({
@@ -180,169 +303,22 @@ const DigiLockerVerify = ({
         }
     };
 
-    // Poll for DigiLocker completion
-    const checkDigiLockerStatus = useCallback(async () => {
-        if (!clientId || !isPolling) return;
-
-        try {
-            const response = await axios.get(`/api/auth/customer/digilocker/status?clientId=${clientId}`);
-
-            if (response.data?.data?.isCompleted) {
-                // DigiLocker verification completed - now complete the sign-in
-                setIsPolling(false);
-                await completeDigiLockerLogin();
-                return;
-            }
-
-            // Check if expired or failed
-            const status = response.data?.data?.status;
-            if (status === "EXPIRED" || status === "FAILED" || status === "REJECTED") {
-                setIsPolling(false);
-                setIsLoading(false);
-                setClientId(null);
-
-                toast({
-                    variant: "error",
-                    title: "Verification Failed",
-                    description: status === "EXPIRED"
-                        ? "DigiLocker session expired. Please try again."
-                        : "DigiLocker verification was not completed. Please try again."
-                });
-
-                onError?.(status);
-                return;
-            }
-
-            // Continue polling
-            setPollCount(prev => prev + 1);
-
-        } catch (error: any) {
-            console.error("DigiLocker status check error:", error);
-
-            // If 404, session expired
-            if (error.response?.status === 404) {
-                setIsPolling(false);
-                setIsLoading(false);
-                setClientId(null);
-
-                toast({
-                    variant: "error",
-                    title: "Session Expired",
-                    description: "DigiLocker session expired. Please try again."
-                });
-
-                onError?.("SESSION_EXPIRED");
-            }
-        }
-    }, [clientId, isPolling, axios, toast, onError]);
-
-    // Complete DigiLocker login
-    const completeDigiLockerLogin = async () => {
-        if (!clientId) return;
-
-        try {
-            const response = await axios.post('/api/auth/customer/digilocker/complete', {
-                clientId
-            });
-
-            if (!response.data?.success) {
-                throw new Error(response.data?.message || "Failed to complete sign-in");
-            }
-
-            const userData = response.data.data;
-
-            // Clear stored data
-            localStorage.removeItem('digilocker_client_id');
-            localStorage.removeItem('digilocker_callback_url');
-
-            toast({
-                variant: "success",
-                title: userData.isNewCustomer ? "Account Created!" : "Welcome Back!",
-                description: userData.isNewCustomer
-                    ? "Your account has been created with verified KYC!"
-                    : "Logged in successfully via DigiLocker"
-            });
-
-            // Call auth context login
-            await login({
-                apiData: {
-                    accessToken: userData.accessToken,
-                    refreshToken: userData.refreshToken,
-                    userId: userData.userId,
-                    role: "CUSTOMER"
-                },
-                mobile: userData.mobile || ""
-            });
-
-            // Call success callback
-            onSuccess?.(userData);
-
-            // Redirect
-            router.push(callbackURL);
-
-        } catch (error: any) {
-            console.error("DigiLocker complete error:", error);
-            const errorMsg = error.response?.data?.message || error.message || "Failed to complete sign-in";
-
-            toast({
-                variant: "error",
-                title: "Sign-in Failed",
-                description: errorMsg
-            });
-
-            onError?.(errorMsg);
-        } finally {
-            setIsLoading(false);
-            setIsPolling(false);
-            setClientId(null);
-        }
-    };
-
-    // Polling effect
-    useEffect(() => {
-        if (!isPolling || !clientId) return;
-
-        // Stop polling after max attempts
-        if (pollCount >= MAX_POLL_ATTEMPTS) {
-            setIsPolling(false);
-            setIsLoading(false);
-            setClientId(null);
-
-            toast({
-                variant: "error",
-                title: "Timeout",
-                description: "DigiLocker verification timed out. Please try again."
-            });
-
-            onError?.("TIMEOUT");
-            return;
-        }
-
-        const pollTimer = setTimeout(checkDigiLockerStatus, POLL_INTERVAL);
-        return () => clearTimeout(pollTimer);
-    }, [isPolling, clientId, pollCount, checkDigiLockerStatus, toast, onError]);
-
-    // Check for returning from DigiLocker callback
-    useEffect(() => {
-        const storedClientId = localStorage.getItem('digilocker_client_id');
-        if (storedClientId && !clientId) {
-            setClientId(storedClientId);
-            setIsLoading(true);
-            setIsPolling(true);
-        }
-    }, [clientId]);
-
     return (
         <button
             type="button"
             onClick={handleDigiLockerInit}
-            disabled={isLoading}
+            disabled={isLoading || !sdkLoaded}
             className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-[#1a365d] to-[#2b6cb0] border-2 border-blue-700 rounded-xl font-semibold text-sm text-white hover:from-[#2b6cb0] hover:to-[#3182ce] disabled:opacity-50 transition-all active:scale-[0.98] touch-manipulation shadow-md"
         >
             {isLoading ? (
                 <>
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>{isPolling ? "Waiting for verification..." : "Connecting..."}</span>
+                    <span>Verifying...</span>
+                </>
+            ) : !sdkLoaded ? (
+                <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Loading SDK...</span>
                 </>
             ) : (
                 <>
