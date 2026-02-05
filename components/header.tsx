@@ -67,7 +67,7 @@ export function Header() {
     // },
     {
       name: t.navigation.partners,
-      href: "/partners",
+      href: "/our-partners",
       icon: Users,
       submenu: [
         {
@@ -82,7 +82,7 @@ export function Header() {
         },
         {
           name: t.navigation.investorRelations,
-          href: "/partners/investor-relations",
+          href: "/investor-relations",
           description: t.navigation.investorRelationsDesc,
         },
       ],
