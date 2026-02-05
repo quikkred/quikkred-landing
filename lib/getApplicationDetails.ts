@@ -31,7 +31,12 @@ const getApplicationDetails = async (): Promise<ApplicationInterface | null> => 
             return null;
         }
 
-        return (result?.data?.[0] || result?.data) as ApplicationInterface;
+        const data = (result?.data?.[0] || result?.data) as ApplicationInterface;
+        if(Array.isArray(data) && data.length === 0){
+            return null;
+        }
+
+        return data;
     } catch (error: unknown) {
         console.error("getApplicationDetails error:", error);
         return null;
