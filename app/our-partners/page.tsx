@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import OurPartners from "@/components/OurPartners";
 
 export default function PartnersPage() {
   return (
@@ -73,6 +74,13 @@ export default function PartnersPage() {
             transition={{ duration: 0.6 }}
             className="max-w-5xl mx-auto"
           >
+
+            <section className="bg-gray-50 py-8 sm:py-10 lg:py-12">
+              <div className="max-w-[768px] mx-auto px-4 sm:px-6 lg:px-8">
+                <OurPartners />
+              </div>
+            </section>
+
             {/* Section Header */}
             <div className="text-center mb-12 sm:mb-16">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
