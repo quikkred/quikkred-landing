@@ -4016,6 +4016,16 @@ export default function QuickLoanApplication() {
                         <span className="text-[9px] sm:text-[10px] bg-[#25B181] text-white px-1.5 py-0.5 rounded-full">Fastest</span>
                       </div>
 
+                      {/* Important Notice */}
+                      <div className="mb-3 p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
+                        <div className="flex gap-2">
+                          <span className="text-amber-600 text-xs mt-0.5">⚠️</span>
+                          <p className="text-[10px] sm:text-xs text-amber-800 leading-relaxed">
+                            <strong className="font-semibold">Important:</strong> Please provide your own active mobile number. You'll receive an OTP on this number for verification.
+                          </p>
+                        </div>
+                      </div>
+
                       {/* DigiLocker - One-click KYC */}
                       <div className="mb-2">
                         <DigiLockerVerify

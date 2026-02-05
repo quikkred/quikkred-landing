@@ -421,6 +421,16 @@ export default function LoginPage() {
                     </button>
                   </div> */}
 
+                  {/* Important Notice */}
+                  <div className="mb-3 p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="flex gap-2">
+                      <span className="text-amber-600 text-xs mt-0.5">⚠️</span>
+                      <p className="text-xs text-amber-800 leading-relaxed">
+                        <strong className="font-semibold">Important:</strong> Provide your own active mobile number. You'll receive an OTP for verification.
+                      </p>
+                    </div>
+                  </div>
+
                   {/* DigiLocker - One-click Sign-in + KYC */}
                   <DigiLockerVerify
                     buttonText="Sign in with DigiLocker"
