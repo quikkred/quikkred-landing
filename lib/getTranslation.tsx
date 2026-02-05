@@ -232,6 +232,21 @@ const policyTranslationLoaders: Record<string, Record<string, () => Promise<any>
     or: () => import('@/locales/policies/disclaimer-disclosure/or.json').then(m => m.default),
     as: () => import('@/locales/policies/disclaimer-disclosure/as.json').then(m => m.default),
     ur: () => import('@/locales/policies/disclaimer-disclosure/ur.json').then(m => m.default),
+  },
+  settlementWriteoff: {
+    en: () => import('@/locales/policies/settlement-writeoff/en.json').then(m => m.default),
+    hi: () => import('@/locales/policies/settlement-writeoff/hi.json').then(m => m.default),
+    // bn: () => import('@/locales/policies/settlement-writeoff/bn.json').then(m => m.default),
+    // ta: () => import('@/locales/policies/settlement-writeoff/ta.json').then(m => m.default),
+    // te: () => import('@/locales/policies/settlement-writeoff/te.json').then(m => m.default),
+    // mr: () => import('@/locales/policies/settlement-writeoff/mr.json').then(m => m.default),
+    // gu: () => import('@/locales/policies/settlement-writeoff/gu.json').then(m => m.default),
+    // kn: () => import('@/locales/policies/settlement-writeoff/kn.json').then(m => m.default),
+    // ml: () => import('@/locales/policies/settlement-writeoff/ml.json').then(m => m.default),
+    // pa: () => import('@/locales/policies/settlement-writeoff/pa.json').then(m => m.default),
+    // or: () => import('@/locales/policies/settlement-writeoff/or.json').then(m => m.default),
+    // as: () => import('@/locales/policies/settlement-writeoff/as.json').then(m => m.default),
+    // ur: () => import('@/locales/policies/settlement-writeoff/ur.json').then(m => m.default),
   }
 };
 
@@ -300,6 +315,7 @@ export async function getTranslation(langCode: string): Promise<TranslationData>
       rbiGuidelines: mergedPolicyTranslations.rbiGuidelines || {},
       terms: mergedPolicyTranslations.terms || {},
       disclaimerDisclosure: mergedPolicyTranslations.disclaimerDisclosure || {},
+      settlementWriteoff: mergedPolicyTranslations.settlementWriteoff || {},
     }
   };
 
