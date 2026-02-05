@@ -104,8 +104,8 @@ const FormSteps = ({
                                     key="bank"
                                     formData={formData}
                                     setFormData={setFormData}
-                                    onNext={() => handleChangeStep("bank")}
-                                    onBack={() => handleChangeStep("eligibility")}
+                                    // onNext={() => handleChangeStep("bank")}
+                                    // onBack={() => handleChangeStep("eligibility")}
                                 />
                             )}
 
