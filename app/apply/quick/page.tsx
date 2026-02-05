@@ -15,7 +15,7 @@ import { useToast, Toaster } from "@/components/ui/toast";
 import SelfieCapture from "@/components/camera/SelfieCapture";
 import { useCustomer } from "@/store/hooks/useCustomer";
 import { QuickApplyFormData, FieldErrors } from "@/lib/types/quickApply";
-import { getInitialFormData, initialFieldErrors, INDIAN_STATES, BLACKLISTED_STATES } from "@/lib/constants/quickApply";
+import { getInitialFormData, initialFieldErrors, INDIAN_STATES, BLACKLISTED_STATES, RELATIONSHIP_TYPES } from "@/lib/constants/quickApply";
 import {
   formatDateForInput,
   toBoolean,
@@ -23,6 +23,10 @@ import {
 import { API_BASE_URL } from "@/lib/config";
 import getToken from "@/lib/getToken";
 import { getSession, signIn } from "next-auth/react";
+import { useQuickApplyTracking, useVerificationFrictionTracking } from "@/lib/hooks/useQuickApplyTracking";
+import TruecallerVerify from "@/app/apply/quick/components/ui/TruecallerVerify";
+import GoogleVerify from "@/app/apply/quick/components/ui/GoogleVerify";
+import DigiLockerVerify from "@/app/apply/quick/components/ui/DigiLockerVerify";
 
 export default function QuickLoanApplication() {
 
@@ -48,6 +52,44 @@ export default function QuickLoanApplication() {
     getFinfactor,
     initESign,
   } = useCustomer();
+
+  // Tracking hooks
+  const {
+    trackStepViewed,
+    trackStepCompleted,
+    trackOTPRequested,
+    trackOTPVerified,
+    trackOTPFailed,
+    trackPANVerifyStarted,
+    trackPANVerifySuccess,
+    trackPANVerifyFailed,
+    trackAadhaarOTPSent,
+    trackAadhaarVerifySuccess,
+    trackAadhaarVerifyFailed,
+    trackSelfieCaptureStarted,
+    trackSelfieCaptureSuccess,
+    trackSelfieCaptureFailed,
+    trackBankVerifyStarted,
+    trackBankVerifySuccess,
+    trackBankVerifyFailed,
+    trackBREProcessingStarted,
+    trackBREApproved,
+    trackBRERejected,
+    trackApplicationSubmitted,
+    trackApplicationCompleted,
+    trackFormError,
+    trackAPIError,
+    trackEmploymentTypeSelected,
+    trackIncomeEntered,
+    trackIPCheckStarted,
+    trackIPCheckPassed,
+    trackIPCheckBlocked,
+  } = useQuickApplyTracking();
+
+  const panFriction = useVerificationFrictionTracking('pan');
+  const aadhaarFriction = useVerificationFrictionTracking('aadhaar');
+  const bankFriction = useVerificationFrictionTracking('bank');
+  const selfieFriction = useVerificationFrictionTracking('selfie');
 
   const [currentStep, setCurrentStep] = useState(1);
   const [showLandingPage, setShowLandingPage] = useState(true); // LiveMint-style landing page state
@@ -151,6 +193,15 @@ export default function QuickLoanApplication() {
 
   // Form data state (using imported initial values)
   const [formData, setFormData] = useState(getInitialFormData());
+
+  // Track step views (only after landing page is dismissed)
+  useEffect(() => {
+    if (showLandingPage && !user) return;
+    const stepNames: Record<number, string> = { 1: 'Basic Details', 2: 'KYC Verification', 3: 'Bank Details', 4: 'Approval' };
+    if (currentStep >= 1 && currentStep <= 4) {
+      trackStepViewed(currentStep, stepNames[currentStep]);
+    }
+  }, [currentStep, showLandingPage, user]);
 
   // Autofill mobile from localStorage (from /apply page)
   useEffect(() => {
@@ -1345,6 +1396,7 @@ export default function QuickLoanApplication() {
     try {
       const payload = { mobile: formData.mobile };
       console.log('Sending OTP with payload:', payload);
+      trackOTPRequested(formData.mobile);
 
       const response = await fetch(`${API_BASE_URL}/api/auth/customer/create`, {
         method: "POST",
@@ -1365,6 +1417,7 @@ export default function QuickLoanApplication() {
           description: "OTP sent to your WhatsApp. Please check and enter it below.",
         });
       } else {
+        trackAPIError('/api/auth/customer/create', data.message || 'Send OTP failed');
         toast({
           variant: "error",
           title: "Failed to Send OTP",
@@ -1372,6 +1425,7 @@ export default function QuickLoanApplication() {
         });
       }
     } catch (error: any) {
+      trackAPIError('/api/auth/customer/create', error.message || 'Network error');
       toast({
         variant: "error",
         title: "Error",
@@ -1421,6 +1475,7 @@ export default function QuickLoanApplication() {
         });
 
         setFormData(prev => ({ ...prev, mobileVerified: true }));
+        trackOTPVerified(formData.mobile);
         setOtpSent(false); // Reset OTP sent state after successful verification
 
         // Store userId if provided
@@ -1653,6 +1708,7 @@ export default function QuickLoanApplication() {
           }
         }
       } else {
+        trackOTPFailed(response?.error || 'Invalid OTP', 1);
         toast({
           variant: "error",
           title: "Verification Failed",
@@ -1660,6 +1716,8 @@ export default function QuickLoanApplication() {
         });
       }
     } catch (error: any) {
+      trackOTPFailed(error.message || 'Network error', 1);
+      trackAPIError('/api/auth/customer/verify', error.message || 'Network error');
       toast({
         variant: "error",
         title: "Verification Error",
@@ -1686,6 +1744,8 @@ export default function QuickLoanApplication() {
     }
 
     setPanVerifying(true);
+    trackPANVerifyStarted();
+    panFriction.recordAttempt();
     try {
       const token = await getToken();
 
@@ -1720,6 +1780,8 @@ export default function QuickLoanApplication() {
         setPanData(result.data || null);
         setPanError(""); // Clear any errors
         setPanReverifyTimer(15); // Start 15 second cooldown for reverify
+        trackPANVerifySuccess({ fullName: result.data?.name });
+        panFriction.completeTracking(true);
 
         toast({
           variant: "success",
@@ -1731,6 +1793,8 @@ export default function QuickLoanApplication() {
         const errorMsg = result.message || 'Failed to verify PAN. Please check the PAN number and try again.';
         setPanError(errorMsg);
         setPanReverifyTimer(15); // Start 15 second cooldown before retry
+        trackPANVerifyFailed(errorMsg, panFriction.getAttempts());
+        panFriction.completeTracking(false);
         toast({
           variant: "error",
           title: "Verification Failed",
@@ -1741,6 +1805,9 @@ export default function QuickLoanApplication() {
       const errorMsg = error.message || 'Failed to verify PAN. Please try again.';
       setPanError(errorMsg);
       setPanReverifyTimer(30); // Start 30 second cooldown before retry
+      trackPANVerifyFailed(errorMsg, panFriction.getAttempts());
+      panFriction.completeTracking(false);
+      trackAPIError('/api/kyc/pan/verification', errorMsg);
       toast({
         variant: "error",
         title: "Verification Error",
@@ -1767,6 +1834,7 @@ export default function QuickLoanApplication() {
     }
 
     setAadhaarVerifying(true);
+    aadhaarFriction.recordAttempt();
     try {
       const token = await getToken();
 
@@ -1798,6 +1866,7 @@ export default function QuickLoanApplication() {
           setAadhaarOtpSent(true);
           setAadhaarOtpTimer(30); // Start 30 second countdown
           setAadhaarError(""); // Clear any errors
+          trackAadhaarOTPSent();
           toast({
             variant: "success",
             title: "OTP Sent Successfully!",
@@ -1807,6 +1876,7 @@ export default function QuickLoanApplication() {
       } else {
         const errorMsg = verifyResult.message || 'Aadhaar verification failed. Please check the number and try again.';
         setAadhaarError(errorMsg);
+        trackAPIError('/api/kyc/aadhaar/verification', errorMsg);
         toast({
           variant: "error",
           title: "Verification Failed",
@@ -1816,6 +1886,7 @@ export default function QuickLoanApplication() {
     } catch (error: any) {
       const errorMsg = error.message || 'Network error. Please check your connection and try again.';
       setAadhaarError(errorMsg);
+      trackAPIError('/api/kyc/aadhaar/verification', errorMsg);
       toast({
         variant: "error",
         title: "Error",
@@ -1860,6 +1931,8 @@ export default function QuickLoanApplication() {
         setAadhaarError(""); // Clear any errors
         setAadhaarOtp(""); // Clear OTP field
         setAadhaarReverifyTimer(30); // Start 30 second cooldown for reverify
+        trackAadhaarVerifySuccess();
+        aadhaarFriction.completeTracking(true);
 
         // Parse date format from DD-MM-YYYY to YYYY-MM-DD
         const formatDOB = (dateStr: string) => {
@@ -1894,6 +1967,8 @@ export default function QuickLoanApplication() {
         const errorMsg = result.message || result.error || 'Invalid OTP. Please check and try again.';
         setAadhaarError(errorMsg);
         setAadhaarReverifyTimer(30); // Start 30 second cooldown before retry
+        trackAadhaarVerifyFailed(errorMsg, aadhaarFriction.getAttempts());
+        aadhaarFriction.completeTracking(false);
         toast({
           variant: "error",
           title: "Verification Failed",
@@ -1904,6 +1979,8 @@ export default function QuickLoanApplication() {
       const errorMsg = error.message || 'Network error. Please check your connection and try again.';
       setAadhaarError(errorMsg);
       setAadhaarReverifyTimer(30); // Start 30 second cooldown before retry
+      trackAadhaarVerifyFailed(errorMsg, aadhaarFriction.getAttempts());
+      trackAPIError('/api/kyc/aadhaar/verify', errorMsg);
       toast({
         variant: "error",
         title: "Verification Error",
@@ -2055,6 +2132,8 @@ export default function QuickLoanApplication() {
 
     setBankVerifying(true);
     setBankVerifyError("");
+    trackBankVerifyStarted();
+    bankFriction.recordAttempt();
 
     try {
       const token = await getToken();
@@ -2078,6 +2157,8 @@ export default function QuickLoanApplication() {
       if (response.ok && result.success) {
         setBankVerified(true);
         setBankVerifyError("");
+        trackBankVerifySuccess(formData.bankName === 'OTHER' ? formData.customBankName : formData.bankName);
+        bankFriction.completeTracking(true);
 
         // Update account holder name if returned from API
         if (result.data?.accountHolderName) {
@@ -2098,6 +2179,8 @@ export default function QuickLoanApplication() {
         const errorMsg = result.message || result.error || 'Bank verification failed. Please check your details.';
         setBankVerifyError(errorMsg);
         setBankVerified(false);
+        trackBankVerifyFailed(errorMsg, bankFriction.getAttempts());
+        bankFriction.completeTracking(false);
         toast({
           variant: "error",
           title: "Verification Failed",
@@ -2108,6 +2191,8 @@ export default function QuickLoanApplication() {
       const errorMsg = error.message || 'Network error. Please check your connection and try again.';
       setBankVerifyError(errorMsg);
       setBankVerified(false);
+      trackBankVerifyFailed(errorMsg, bankFriction.getAttempts());
+      trackAPIError('/api/kyc/bank/verification', errorMsg);
       toast({
         variant: "error",
         title: "Verification Error",
@@ -2120,11 +2205,14 @@ export default function QuickLoanApplication() {
 
   const captureSelfi = () => {
     setSelfieCapture(true);
+    trackSelfieCaptureStarted();
+    selfieFriction.recordAttempt();
   };
 
   const handleSelfieCapture = (imageFile: File) => {
     // Validate image file
     if (!imageFile) {
+      trackSelfieCaptureFailed('No image file', selfieFriction.getAttempts());
       toast({
         variant: "error",
         title: "Invalid Selfie",
@@ -2135,6 +2223,7 @@ export default function QuickLoanApplication() {
 
     // Check file size (max 5MB)
     if (imageFile.size > 5 * 1024 * 1024) {
+      trackSelfieCaptureFailed('File too large', selfieFriction.getAttempts());
       toast({
         variant: "error",
         title: "File Too Large",
@@ -2145,6 +2234,7 @@ export default function QuickLoanApplication() {
 
     // Check file type
     if (!imageFile.type.startsWith('image/')) {
+      trackSelfieCaptureFailed('Invalid file type', selfieFriction.getAttempts());
       toast({
         variant: "error",
         title: "Invalid File Type",
@@ -2155,6 +2245,7 @@ export default function QuickLoanApplication() {
 
     // Validate image is not blank/empty by checking file size
     if (imageFile.size < 1000) { // Less than 1KB is likely a blank/corrupt image
+      trackSelfieCaptureFailed('Blank image detected', selfieFriction.getAttempts());
       toast({
         variant: "error",
         title: "Blank Image Detected",
@@ -2173,6 +2264,8 @@ export default function QuickLoanApplication() {
 
     // Face verification (livenessStatus) succeeded - disable retake
     setSelfieVerified(true);
+    trackSelfieCaptureSuccess();
+    selfieFriction.completeTracking(true);
 
     toast({
       variant: "success",
@@ -2729,6 +2822,9 @@ export default function QuickLoanApplication() {
       }
 
       // Save Step 1 data (basic details + employment + loan amount)
+      trackStepCompleted(1, 'Basic Details');
+      if (formData.employmentType) trackEmploymentTypeSelected(formData.employmentType as 'SALARIED' | 'SELF-EMPLOYED');
+      if (formData.monthlyIncome) trackIncomeEntered(parseFloat(formData.monthlyIncome));
       setLoading(true);
       const saveSuccess = await saveCustomerData(1);
       setLoading(false);
@@ -2800,6 +2896,7 @@ export default function QuickLoanApplication() {
       }
 
       // Save Step 2 data (Aadhaar & PAN)
+      trackStepCompleted(2, 'KYC Verification');
       setLoading(true);
 
       try {
@@ -2881,6 +2978,8 @@ export default function QuickLoanApplication() {
       }
 
       // Save Bank Details and call BRE API
+      trackStepCompleted(3, 'Bank Details');
+      trackBREProcessingStarted();
       setLoading(true);
       setApprovalLoading(true);
 
@@ -2911,6 +3010,11 @@ export default function QuickLoanApplication() {
 
         // Store BRE data for Step 4 (Approval)
         if (breResponse && breResponse.success && breResponse.data) {
+          trackBREApproved({
+            approvedAmount: breResponse.data.approvedAmount || 0,
+            netDisbursalAmount: breResponse.data.netDisbursalAmount || 0,
+            tenure: breResponse.data.tenure || 0,
+          });
           setApprovalData({
             ...breResponse.data,
             // Add user details for display
@@ -2924,6 +3028,7 @@ export default function QuickLoanApplication() {
           });
         } else {
           // If BRE API fails, show error
+          trackBRERejected(breResponse?.message || 'BRE check failed');
           toast({
             variant: "error",
             title: "BRE Check Failed",
@@ -2961,6 +3066,12 @@ export default function QuickLoanApplication() {
         }
 
         // Step 4 Final Submit - submit the application with user's selected loan amount
+        trackApplicationSubmitted({
+          loanAmount: parseFloat(formData.loanAmount?.replace(/,/g, '') || '0'),
+          tenure: parseInt(formData.tenure || '0'),
+          employmentType: formData.employmentType,
+          monthlyIncome: parseFloat(formData.monthlyIncome || '0'),
+        });
         const payload = {
           isSubmit: true,
         };
@@ -3896,6 +4007,43 @@ export default function QuickLoanApplication() {
                   )}
 
 
+                  {/* Quick Verify - Truecaller & Google (for non-logged in users) */}
+                  {!user && !formData.mobileVerified && !basicDetailsFilled && (
+                    <div className="bg-gradient-to-r from-[#25B181]/5 to-[#51C9AF]/5 rounded-xl p-3 sm:p-4 border border-[#25B181]/20 mb-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Zap className="w-4 h-4 text-[#25B181]" />
+                        <span className="text-sm font-semibold text-gray-900">Quick Verify</span>
+                        <span className="text-[9px] sm:text-[10px] bg-[#25B181] text-white px-1.5 py-0.5 rounded-full">Fastest</span>
+                      </div>
+
+                      {/* DigiLocker - One-click KYC */}
+                      <div className="mb-2">
+                        <DigiLockerVerify
+                          buttonText="Sign in with DigiLocker"
+                          mobile={formData.mobile}
+                          callbackURL="/apply/quick"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-2 my-2">
+                        <div className="flex-1 h-px bg-gray-200" />
+                        <span className="text-[9px] text-gray-400">or continue with</span>
+                        <div className="flex-1 h-px bg-gray-200" />
+                      </div>
+
+                      <div className="flex gap-2">
+                        <TruecallerVerify callbackURL="/apply/quick" />
+                        <GoogleVerify callbackURL="/apply/quick" />
+                      </div>
+
+                      <div className="flex items-center gap-2 mt-3">
+                        <div className="flex-1 h-px bg-gray-300" />
+                        <span className="text-[10px] text-gray-500">or enter mobile</span>
+                        <div className="flex-1 h-px bg-gray-300" />
+                      </div>
+                    </div>
+                  )}
+
                   {/* Mobile Verification - Only show for non-logged in users */}
                   {!user && verificationMethod === 'mobile' && (
                     <>
@@ -4507,7 +4655,88 @@ export default function QuickLoanApplication() {
                     )}
                   </div>
 
+                  {/* Personal References */}
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                    <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      <Users className="w-5 h-5" />
+                      Personal References
+                    </h3>
+                    <p className="text-xs text-gray-500 mb-4">References will not be contacted unless required for verification</p>
 
+                    {/* Reference 1 */}
+                    <div className="mb-4 p-3 bg-white border border-gray-200 rounded-lg">
+                      <p className="text-sm font-medium text-gray-700 mb-3">Reference 1</p>
+                      <div className="space-y-3">
+                        <input
+                          type="text"
+                          name="reference1Name"
+                          value={formData.reference1Name}
+                          onChange={handleChange}
+                          placeholder="Full Name"
+                          className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-[#25B181] ${fieldErrors.reference1Name ? 'border-red-500' : 'border-gray-300'}`}
+                        />
+                        {fieldErrors.reference1Name && <p className="text-xs text-red-500">{fieldErrors.reference1Name}</p>}
+                        <input
+                          type="tel"
+                          name="reference1Mobile"
+                          value={formData.reference1Mobile}
+                          onChange={handleChange}
+                          placeholder="Mobile Number"
+                          maxLength={10}
+                          className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-[#25B181] ${fieldErrors.reference1Mobile ? 'border-red-500' : 'border-gray-300'}`}
+                        />
+                        {fieldErrors.reference1Mobile && <p className="text-xs text-red-500">{fieldErrors.reference1Mobile}</p>}
+                        <select
+                          name="reference1Relationship"
+                          value={formData.reference1Relationship}
+                          onChange={handleChange as any}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#25B181]"
+                        >
+                          <option value="">Select Relationship</option>
+                          {RELATIONSHIP_TYPES.map(r => (
+                            <option key={r.value} value={r.value}>{r.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Reference 2 */}
+                    <div className="p-3 bg-white border border-gray-200 rounded-lg">
+                      <p className="text-sm font-medium text-gray-700 mb-3">Reference 2</p>
+                      <div className="space-y-3">
+                        <input
+                          type="text"
+                          name="reference2Name"
+                          value={formData.reference2Name}
+                          onChange={handleChange}
+                          placeholder="Full Name"
+                          className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-[#25B181] ${fieldErrors.reference2Name ? 'border-red-500' : 'border-gray-300'}`}
+                        />
+                        {fieldErrors.reference2Name && <p className="text-xs text-red-500">{fieldErrors.reference2Name}</p>}
+                        <input
+                          type="tel"
+                          name="reference2Mobile"
+                          value={formData.reference2Mobile}
+                          onChange={handleChange}
+                          placeholder="Mobile Number"
+                          maxLength={10}
+                          className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-[#25B181] ${fieldErrors.reference2Mobile ? 'border-red-500' : 'border-gray-300'}`}
+                        />
+                        {fieldErrors.reference2Mobile && <p className="text-xs text-red-500">{fieldErrors.reference2Mobile}</p>}
+                        <select
+                          name="reference2Relationship"
+                          value={formData.reference2Relationship}
+                          onChange={handleChange as any}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#25B181]"
+                        >
+                          <option value="">Select Relationship</option>
+                          {RELATIONSHIP_TYPES.map(r => (
+                            <option key={r.value} value={r.value}>{r.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
 
                 </motion.div>
               )}
