@@ -30,8 +30,9 @@ import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { API_BASE_URL } from '@/lib/config';
 import { getSession, signIn } from "next-auth/react";
 import useAxios from "@/hooks/useAxios";
-import GoogleVerify from "../apply/quick-v2/components/ui/GoogleVerify";
-import TruecallerVerify from "../apply/quick-v2/components/ui/TruecallerVerify";
+import GoogleVerify from "../apply/quick/components/ui/GoogleVerify";
+import TruecallerVerify from "../apply/quick/components/ui/TruecallerVerify";
+import DigiLockerVerify from "../apply/quick/components/ui/DigiLockerVerify";
 
 interface LoginForm {
   emailOrPhone: string;
@@ -420,10 +421,22 @@ export default function LoginPage() {
                     </button>
                   </div> */}
 
+                  {/* DigiLocker - One-click Sign-in + KYC */}
+                  <DigiLockerVerify
+                    buttonText="Sign in with DigiLocker"
+                    mobile={formData.emailOrPhone}
+                  />
+
+                  <div className="my-2 flex w-full items-center gap-3 text-xs text-neutral-400">
+                    <div className="flex-1 border-t border-neutral-300" />
+                    <span className="shrink-0 leading-none">or continue with</span>
+                    <div className="flex-1 border-t border-neutral-300" />
+                  </div>
+
                   {/* Social Login - Google & Truecaller */}
-                  <div className="grid grid-cols-2 sm:grid-cols-1 gap-2">
-                    <GoogleVerify buttonText="Continue with Google" />
-                    <TruecallerVerify buttonText="Continue with Truecaller" />
+                  <div className="grid grid-cols-2 gap-2">
+                    <GoogleVerify buttonText="Google" />
+                    <TruecallerVerify buttonText="Truecaller" />
                   </div>
 
                   <div className="my-3 flex w-full items-center gap-3 text-sm text-neutral-500">
