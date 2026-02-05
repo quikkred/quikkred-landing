@@ -18,6 +18,7 @@ export interface QuickApplyV2FormData {
     pincode: string;
     city: string;
     state: string;
+    productId?: string; // Loan product ID
     loanAmount: number;
     tenure: number; // in days: 7, 15, 30
     employmentType: 'SALARIED' | 'SELF-EMPLOYED';
