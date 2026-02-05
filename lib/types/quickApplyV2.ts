@@ -51,6 +51,7 @@ export interface QuickApplyV2FormData {
     selfieVerified: boolean;
     selfieData: SelfieData | null;
     eSignCompleted: boolean;
+    bsaInitiated?: boolean; // Bank Statement Analysis initiated
 
     // References (Post-Approval)
     reference1Name: string;
