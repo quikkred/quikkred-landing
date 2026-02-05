@@ -16,7 +16,7 @@ import FinFactorStatus from './ui/FinFactorStatus';
 import AadhaarVerify from './ui/AadhaarVerify';
 import EmployeeDetails from './ui/EmployeeDetails';
 import { useApplication } from '@/contexts/ApplicationContext';
-import { AlertCircle } from 'lucide-react'; // 1. Import Icon
+import { AlertCircle, Loader2 } from 'lucide-react'; // 1. Import Icon
 
 interface CheckEligibilityProps {
     formData: QuickApplyV2FormData;
@@ -252,10 +252,19 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
                     disabled={isLoading || !canProceed}
                     className="w-full py-2 text-sm bg-gradient-to-r disabled:cursor-not-allowed from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-xl font-semibold sm:text-base shadow-lg shadow-[#25B181]/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                 >
-                    Check Eligibility
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                    </svg>
+                    {isLoading ? (
+                        <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span className="text-sm">Submitting...</span>
+                        </>
+                    ) : (
+                        <>
+                            <span>Check Eligibility</span>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                            </svg>
+                        </>
+                    )}
                 </button>
             )}
         </motion.div>

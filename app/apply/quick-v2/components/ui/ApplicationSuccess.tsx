@@ -128,7 +128,7 @@ const ApplicationSuccess = () => {
                     )}
 
                     {/* Timeline */}
-                    <div className="relative pl-4 border-l-2 border-gray-100 space-y-6">
+                    <div className="relative pl-3.5 border-l-2 border-gray-100 space-y-6">
                         <TimelineItem
                             active={true}
                             title="Application Submitted"
