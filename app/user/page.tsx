@@ -1750,31 +1750,7 @@ export default function UserDashboard() {
                       </div>
                     </div>
 
-                    {/* UPI Payment Option */}
-                    <div className="mt-4 bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl p-4 border-2 border-purple-200">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Smartphone className="w-5 h-5 text-purple-700" />
-                        <h4 className="text-base font-semibold text-purple-900">Pay via UPI</h4>
-                      </div>
-                      <p className="text-sm text-purple-700 mb-2">
-                        You can also pay using any UPI app (Google Pay, PhonePe, Paytm, etc.)
-                      </p>
-                      <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-purple-100">
-                        <div>
-                          <p className="text-xs text-gray-500">UPI ID</p>
-                          <p className="text-sm font-bold text-gray-900 font-mono">401655461518@RATN0000315.ifsc.npci</p>
-                        </div>
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText('401655461518@RATN0000315.ifsc.npci');
-                            toast({ variant: "success", title: "Copied!", description: "UPI ID copied to clipboard" });
-                          }}
-                          className="p-2 hover:bg-purple-100 rounded-lg transition-colors"
-                        >
-                          <Copy className="w-4 h-4 text-purple-600" />
-                        </button>
-                      </div>
-                    </div>
+                   {/* -------------------------------------------------------->UPI */}
 
                     {/* Help Section */}
                     <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -2107,3 +2083,31 @@ export default function UserDashboard() {
     </>
   );
 }
+
+
+
+ {/* UPI Payment Option */}
+                    {/* <div className="mt-4 bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl p-4 border-2 border-purple-200">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Smartphone className="w-5 h-5 text-purple-700" />
+                        <h4 className="text-base font-semibold text-purple-900">Pay via UPI</h4>
+                      </div>
+                      <p className="text-sm text-purple-700 mb-2">
+                        You can also pay using any UPI app (Google Pay, PhonePe, Paytm, etc.)
+                      </p>
+                      <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-purple-100">
+                        <div>
+                          <p className="text-xs text-gray-500">UPI ID</p>
+                          <p className="text-sm font-bold text-gray-900 font-mono">401655461518@RATN0000315.ifsc.npci</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText('401655461518@RATN0000315.ifsc.npci');
+                            toast({ variant: "success", title: "Copied!", description: "UPI ID copied to clipboard" });
+                          }}
+                          className="p-2 hover:bg-purple-100 rounded-lg transition-colors"
+                        >
+                          <Copy className="w-4 h-4 text-purple-600" />
+                        </button>
+                      </div>
+                    </div> */}
