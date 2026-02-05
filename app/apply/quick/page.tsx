@@ -23,6 +23,8 @@ import {
 import { API_BASE_URL } from "@/lib/config";
 import getToken from "@/lib/getToken";
 import { getSession, signIn } from "next-auth/react";
+import GoogleVerify from "../quick-v2/components/ui/GoogleVerify";
+import TruecallerVerify from "../quick-v2/components/ui/TruecallerVerify";
 
 export default function QuickLoanApplication() {
 
@@ -3329,7 +3331,7 @@ export default function QuickLoanApplication() {
         />
         <div className="max-w-3xl mx-auto">
           {/* Close button - Hide when landing page is showing */}
-          {!(showLandingPage && !user && currentStep === 1) && (
+          {/* {!(showLandingPage && !user && currentStep === 1) && ( */}
             <div className="flex justify-end mb-4">
               <button
                 onClick={() => {
@@ -3345,7 +3347,7 @@ export default function QuickLoanApplication() {
                 <span className="text-sm font-medium">Close</span>
               </button>
             </div>
-          )}
+          {/* )} */}
 
           {/* Header - Hide when landing page is showing */}
           {!(showLandingPage && !user && currentStep === 1) && (
@@ -3381,6 +3383,8 @@ export default function QuickLoanApplication() {
             </div>
           )}
 
+         
+
           {/* Form Card */}
           <motion.div
             key={currentStep}
@@ -3409,8 +3413,11 @@ export default function QuickLoanApplication() {
                   {/* ORIGINAL FORM - Shows after landing page */}
                   {/* ============================================ */}
                   {/* {(!showLandingPage || user) && ( */}
+
+
        <>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-6">Basic Details</h2>
+       
+                     
 
                       {/* Logged in user notice - Show instead of verification */}
                   {user && userDataLoaded && (formData.emailVerified || formData.mobileVerified) ? (
@@ -3427,8 +3434,11 @@ export default function QuickLoanApplication() {
                     </div>
                   ) : (
                     <>
-                      {/* Verification Method Toggle - Only show for non-logged in users */}
-                      <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                        <div className="grid grid-cols-2 sm:grid-cols-1 gap-2">
+                              <GoogleVerify buttonText="Continue with google" callbackURL="/apply/quick"/>
+                              <TruecallerVerify buttonText="Continue with truecaller" callbackURL="/apply/quick"/>
+                            </div>
+                      {/* <div className="bg-gray-50 rounded-xl p-4 mb-6">     
                       <label className="block text-sm font-medium text-gray-700 mb-3">
                         Choose Verification Method *
                       </label>
@@ -3466,9 +3476,11 @@ export default function QuickLoanApplication() {
                           Verify with Mobile
                         </button>
                       </div>
-                    </div>
+                    </div> */}
                       </>
                   )}
+
+                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Basic Details</h2>
 
                   {/* Email Verification - Only show for non-logged in users */}
                   {!user && verificationMethod === 'email' && (
