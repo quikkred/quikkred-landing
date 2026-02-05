@@ -89,7 +89,7 @@ const AccountDeletion = () => {
     if (!validate()) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/test3/deletion`, {
+      const response = await fetch(`${API_BASE_URL}api/account-deletion-request/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
