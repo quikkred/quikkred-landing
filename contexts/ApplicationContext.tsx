@@ -1,11 +1,10 @@
 "use client";
 
 import useAxios from "@/hooks/useAxios";
-import useStorage from "@/hooks/useStorage";
 import { ApplicationInterface } from "@/interfaces/applicationInterface";
 import LayoutInterface from "@/interfaces/layoutInterface";
 import { AxiosError } from "axios";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { useAuth, User } from "./AuthContext";
 
 interface ApplicationContextStateInterface {
@@ -34,23 +33,27 @@ const ApplicationContext = createContext<ApplicationContextInterface>({
     getCustomer: () => { },
 })
 
-const ApplicationProvider = ({ children }: LayoutInterface) => {
+const ApplicationProvider = ({ children, payload }: LayoutInterface & { payload: ApplicationInterface | null }) => {
     const axios = useAxios();
-    const storage = useStorage();
-    const [state, setState] = useState<ApplicationContextStateInterface>(initialState);
-    const { user, updateUser } = useAuth();
+    const [state, setState] = useState<ApplicationContextStateInterface>({ ...initialState, data: payload });
+    const { updateUser } = useAuth();
 
     const updateState = (state: Partial<ApplicationContextStateInterface>) => setState((prev) => ({ ...prev, ...state }));
 
     const getApplication = async () => {
         try {
-            const applicationId = storage.get("applicationId");
-            if (applicationId) {
-                updateState({ loading: true });
-                const response = await axios.get(`/api/application/loan/${applicationId}`);
-                if (response.status === 200 || response.status === 201) {
-                    updateState({ data: response.data?.data || null });
-                }
+            // const applicationId = storage.get("applicationId");
+            // if (applicationId) {
+            //     updateState({ loading: true });
+            //     const response = await axios.get(`/api/application/loan/${applicationId}`);
+            //     if (response.status === 200 || response.status === 201) {
+            //         updateState({ data: response.data?.data || null });
+            //     }
+            // }
+            updateState({ loading: true });
+            const response = await axios.get("/api/v2/applicationByCustomerToken");
+            if(response.status === 200 || response.status === 201) {
+                updateState({ data: response.data?.data || null });
             }
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
@@ -124,11 +127,6 @@ const ApplicationProvider = ({ children }: LayoutInterface) => {
             }
         }
     }
-
-    useEffect(() => {
-        if (!user) return;
-        getApplication();
-    }, [user]);
 
     return <ApplicationContext.Provider value={{
         application: state.data,
