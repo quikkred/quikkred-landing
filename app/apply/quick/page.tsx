@@ -1895,10 +1895,52 @@ export default function QuickLoanApplication() {
           console.log('📊 Address data stored:', result.data.address);
         }
 
+        // ============================================
+        // PHASE 1-4: Handle Validation Results
+        // ============================================
+        let warningMessages: string[] = [];
+
+        // Phase 1: Contact Validation
+        if (result.data.contactValidation) {
+          const cv = result.data.contactValidation;
+          console.log('📱 Contact Validation:', cv);
+
+          if (!cv.contactMatchesAadhaar) {
+            if (cv.mismatch?.mobile) {
+              warningMessages.push("⚠️ Mobile number doesn't match Aadhaar records");
+            }
+            if (cv.mismatch?.email) {
+              warningMessages.push("⚠️ Email doesn't match Aadhaar records");
+            }
+          }
+        }
+
+        // Phase 4: Duplicate Detection
+        if (result.data.duplicateCheck?.isDuplicate) {
+          const dc = result.data.duplicateCheck;
+          console.log('🚨 Duplicate Aadhaar detected:', dc);
+          warningMessages.push(`⚠️ This Aadhaar is already registered with ${dc.duplicateCount} other account(s)`);
+        }
+
+        // Phase 2: Photo Validation
+        if (result.data.photoValidation?.photoUploaded) {
+          console.log('📸 Aadhaar photo uploaded:', result.data.photoValidation.photoUrl);
+        }
+
+        // Phase 3: Address Validation
+        if (result.data.addressValidation?.addressExtracted) {
+          console.log('🏠 Address validation:', result.data.addressValidation);
+        }
+
+        // Show toast with warnings if any
+        const successMessage = warningMessages.length > 0
+          ? `Aadhaar verified for ${result.data.name}.\n\n${warningMessages.join('\n')}`
+          : `Aadhaar verified for ${result.data.name}. Your details have been auto-filled.`;
+
         toast({
-          variant: "success",
-          title: "Aadhaar Verified Successfully! ✓",
-          description: `Aadhaar verified for ${result.data.name}. Your details have been auto-filled.`,
+          variant: warningMessages.length > 0 ? "warning" : "success",
+          title: warningMessages.length > 0 ? "Aadhaar Verified with Warnings" : "Aadhaar Verified Successfully! ✓",
+          description: successMessage,
         });
       } else {
         const errorMsg = result.message || result.error || 'Invalid OTP. Please check and try again.';
