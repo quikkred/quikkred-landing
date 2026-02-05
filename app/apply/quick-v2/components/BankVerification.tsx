@@ -36,7 +36,7 @@ const BankVerification = ({
     // onBack,
 }: BankVerificationProps) => {
     const axios = useAxios();
-    const { getApplication } = useApplication();
+    const { getApplication, getCustomer } = useApplication();
 
     // UI States (Loading/Errors only, Data stays in formData)
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>(initialFieldErrors);
@@ -247,7 +247,9 @@ const BankVerification = ({
                     description: "Your application has been received and is being reviewed. We’ll notify you of the next steps shortly."
                 });
                 getApplication();
+                getCustomer();
                 console.log("data", response.data);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
