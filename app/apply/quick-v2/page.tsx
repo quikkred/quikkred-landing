@@ -33,13 +33,13 @@ export default function QuickApplyV2Page() {
     // Stage Management
     const [stage, setStage] = useState<ApplicationStage>('IP_CHECK');
     const [step, setStep] = useState<FormStepsType>("login");
-    const [currentStep, setCurrentStep] = useState(0);
+    // const [currentStep, setCurrentStep] = useState(0);
     const { user } = useAuth();
-    const storage = useStorage();
+    // const storage = useStorage();
     // const breForm = useMemo<StorageApplicationForm | null>(() => ((storage.data?.breForm as StorageApplicationForm) || null), [storage]);
     const { application } = useApplication();
     console.log("application:", application);
-    // console.log("user", user);
+    console.log("user", user);
 
     // Form Data
     const [formData, setFormData] = useState<QuickApplyV2FormData>(getInitialFormData);
@@ -83,7 +83,7 @@ export default function QuickApplyV2Page() {
                 employmentType: (user?.employmentType as "SALARIED" | "SELF-EMPLOYED") || "SALARIED",
                 selfie: (user?.profile?.s3URL as string) || "",
                 selfieVerified: user?.profile?.status === "VERIFIED",
-                brePulled: user?.brePulled || false,
+                brePulled: application?.breHistory?.brePulled || user?.brePulled || false,
                 companyName: user?.companyName || "",
                 breStatus: application?.status || "PENDING",
 
@@ -106,11 +106,11 @@ export default function QuickApplyV2Page() {
                 gstOnProcessingFee: application?.gstOnProcessingFee || 0,
             }));
 
-            const isLogin = user?.isEmailVerified || user?.isMobileVerified;
-            const eligibilityStep = isLogin && user?.brePulled && application?.status !== "REJECTED";
-            // const bankStep = eligibilityStep && (
-            //     user?.bankVerified && user?.profile?.status === "VERIFIED"
-            // )
+            // const isLogin = user?.isEmailVerified || user?.isMobileVerified;
+            const isLogin = user?.isMobileVerified;
+            const brePulled = application?.breHistory?.brePulled || user?.brePulled || false;
+            const eligibilityStep = isLogin && brePulled && application && application?.status !== "REJECTED" && application?.status !== "PROCEED TO BANK";
+            // const eligibilityStep = isLogin && application && application?.status !== "REJECTED";
 
             if (eligibilityStep) {
                 setStep("bank");
