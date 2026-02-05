@@ -55,6 +55,39 @@ const DigiLockerVerify = ({
     const MAX_POLL_ATTEMPTS = 60; // 60 attempts * 2 seconds = 2 minutes max
     const POLL_INTERVAL = 2000; // 2 seconds
 
+    // Strict mobile number validation
+    const validateMobile = (mobile: string): { valid: boolean; error?: string } => {
+        const cleaned = mobile.replace(/\D/g, '');
+
+        // Must be exactly 10 digits
+        if (cleaned.length !== 10) {
+            return { valid: false, error: "Mobile number must be exactly 10 digits" };
+        }
+
+        // Must start with 6, 7, 8, or 9
+        if (!/^[6-9]/.test(cleaned)) {
+            return { valid: false, error: "Mobile number must start with 6, 7, 8, or 9" };
+        }
+
+        // Reject common fake numbers
+        const fakeNumbers = [
+            '9999999999', '0000000000', '1111111111', '2222222222',
+            '3333333333', '4444444444', '5555555555', '6666666666',
+            '7777777777', '8888888888', '1234567890', '0123456789'
+        ];
+
+        if (fakeNumbers.includes(cleaned)) {
+            return { valid: false, error: "Please provide a valid, active mobile number" };
+        }
+
+        // Check for repeating patterns (e.g., 9090909090)
+        if (/^(\d{2})\1{4}$/.test(cleaned)) {
+            return { valid: false, error: "Please provide a valid mobile number" };
+        }
+
+        return { valid: true };
+    };
+
     // DigiLocker Icon
     const DigiLockerIcon = () => (
         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
@@ -79,6 +112,20 @@ const DigiLockerVerify = ({
                 });
                 setIsLoading(false);
                 return;
+            }
+
+            // Strict mobile validation
+            if (mobile) {
+                const validation = validateMobile(mobile);
+                if (!validation.valid) {
+                    toast({
+                        variant: "error",
+                        title: "Invalid Mobile Number",
+                        description: validation.error || "Please enter a valid mobile number"
+                    });
+                    setIsLoading(false);
+                    return;
+                }
             }
 
             // Call backend to initialize DigiLocker
