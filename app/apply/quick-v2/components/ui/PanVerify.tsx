@@ -8,7 +8,7 @@ import useAxios from "@/hooks/useAxios";
 import { AxiosError } from "axios";
 import { useQuickApplyTracking, useVerificationFrictionTracking } from "@/lib/hooks";
 import { toast } from "@/components/ui/toast";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, User } from "@/contexts/AuthContext";
 import { useApplication } from "@/contexts/ApplicationContext";
 
 interface PanVerifyProps {
@@ -16,12 +16,23 @@ interface PanVerifyProps {
     setFormData: React.Dispatch<React.SetStateAction<QuickApplyV2FormData>>;
 }
 
+// Helper: Format Date from DD-MM-YYYY (API) to YYYY-MM-DD (Input)
+const formatDOB = (dateStr: string) => {
+    if (!dateStr) return null;
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+        return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+    return dateStr;
+};
+
+
 const PanVerify = ({ formData, setFormData }: PanVerifyProps) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [panReverifyTimer, setPanReverifyTimer] = useState(0);
     const axios = useAxios();
-    const { getCustomer } = useApplication();
+    const { fetchUserData } = useApplication();
 
     // Tracking
     const {
@@ -93,15 +104,17 @@ const PanVerify = ({ formData, setFormData }: PanVerifyProps) => {
 
             if (data.success) {
                 toast({ variant: "success", title: data?.message || data?.data?.message || "Pan verify successfully" });
+                const user = await fetchUserData();
                 setFormData((prev) => ({
                     ...prev,
                     panVerified: true,
                     // If the API returns the name/dob after verification, you can auto-fill them here if you wish
                     // fullName: data.data.fullName, 
+                    fullName: user?.fullName || formData.fullName || "",
+                    dob: formatDOB(user?.dateOfBirth || "") || formData.dob,
                     panData: data.data || { panNumber: formData.pan },
                 }));
-                getCustomer();
-                trackPANVerifySuccess({ fullName: formData.fullName });
+                trackPANVerifySuccess({ fullName: formData.fullName || user?.fullName });
                 panFriction.completeTracking(true);
                 setPanReverifyTimer(TIMERS.REVERIFY_COOLDOWN);
             } else {
