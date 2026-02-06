@@ -61,6 +61,16 @@ export default function LoginPage() {
   });
   const [mobileError, setMobileError] = useState("");
   const axios = useAxios();
+  const [isIOS, setIsIOS] = useState(false);
+
+  // 1. Detect Platform & Mount
+  useEffect(() => {
+    // iOS Detection Regex
+    if (typeof navigator !== "undefined") {
+      const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+      setIsIOS(isIOSDevice);
+    }
+  }, []);
 
   // Countdown timer for resend OTP
   useEffect(() => {
@@ -239,8 +249,8 @@ export default function LoginPage() {
     } else {
       try {
         const success = await login({
-            email: formData.emailOrPhone || "",
-          });
+          email: formData.emailOrPhone || "",
+        });
 
         if (success) {
           toast({
@@ -423,9 +433,11 @@ export default function LoginPage() {
                   </div> */}
 
                   {/* google auth */}
-                  <div className="grid grid-cols-2 sm:grid-cols-1 gap-2">
+                  <div className={`grid ${!isIOS && "grid-cols-2 sm:grid-cols-1"} gap-2`}>
                     <GoogleVerify buttonText="Continue with google" />
-                    <TruecallerVerify buttonText="Continue with truecaller" />
+                    {
+                      !isIOS && <TruecallerVerify buttonText="Continue with truecaller" />
+                    }
                   </div>
 
                   <div className="my-3 flex w-full items-center gap-3 text-sm text-neutral-500">
