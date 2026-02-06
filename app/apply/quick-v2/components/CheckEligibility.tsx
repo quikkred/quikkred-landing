@@ -303,9 +303,9 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
             />
             <h2 className="text-lg sm:text-xl font-bold text-gray-900">Get Instant Cash</h2>
 
-            <MissingField formData={formData} setFormData={setFormData} />
             <PanVerify formData={formData} setFormData={setFormData} />
             <AadhaarVerify formData={formData} setFormData={setFormData} />
+            <MissingField formData={formData} setFormData={setFormData} />
             <EmployeeDetails formData={formData} setFormData={setFormData} />
 
             <div className="w-full">
