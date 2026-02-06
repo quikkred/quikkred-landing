@@ -25,6 +25,7 @@ import getToken from "@/lib/getToken";
 import { getSession, signIn } from "next-auth/react";
 import GoogleVerify from "../quick-v2/components/ui/GoogleVerify";
 import TruecallerVerify from "../quick-v2/components/ui/TruecallerVerify";
+import AadhaarMobileVerificationModal from "./components/AadhaarMobileVerificationModal";
 
 export default function QuickLoanApplication() {
 
@@ -147,6 +148,10 @@ export default function QuickLoanApplication() {
 
   // Data agreement checkbox for Step 2
   const [dataAgreementChecked, setDataAgreementChecked] = useState(false);
+
+  // Aadhaar Mobile Verification Modal
+  const [showAadhaarMobileModal, setShowAadhaarMobileModal] = useState(false);
+  const [aadhaarMobileHash, setAadhaarMobileHash] = useState("");
 
   // Track if PAN is verified (to disable basic details editing when user navigates back)
   const [basicDetailsFilled, setBasicDetailsFilled] = useState(false);
@@ -1065,9 +1070,8 @@ export default function QuickLoanApplication() {
       return true;
     }
 
-    // Check verification (logged-in users are auto-verified)
-    const isVerified = user ? true : (verificationMethod === 'email' ? formData.emailVerified : formData.mobileVerified);
-    if (!isVerified) return false;
+    // No mobile/email verification required anymore - Aadhaar will validate contact
+    // Just check if required fields are filled
 
     // Full Name validation
     if (!formData.fullName || formData.fullName.trim().length < 3) return false;
@@ -1895,10 +1899,68 @@ export default function QuickLoanApplication() {
           console.log('📊 Address data stored:', result.data.address);
         }
 
+        // ============================================
+        // PHASE 1-4: Handle Validation Results
+        // ============================================
+        let warningMessages: string[] = [];
+
+        // Phase 1: Contact Validation
+        if (result.data.contactValidation) {
+          const cv = result.data.contactValidation;
+          console.log('📱 Contact Validation:', cv);
+
+          if (!cv.contactMatchesAadhaar && cv.requiresAdditionalContactDetails) {
+            // ⚠️ MISMATCH: Show modal to get Aadhaar mobile
+            setAadhaarMobileHash(result.data.aadhaarResponse?.mobile_hash || "");
+            setShowAadhaarMobileModal(true);
+
+            toast({
+              variant: "warning",
+              title: "Mobile Verification Required",
+              description: "Please enter your Aadhaar-registered mobile number"
+            });
+
+            // Don't proceed to next step - wait for mobile verification
+            setAadhaarVerifying(false);
+            return;
+          }
+
+          if (!cv.contactMatchesAadhaar) {
+            if (cv.mismatch?.mobile) {
+              warningMessages.push("⚠️ Mobile number doesn't match Aadhaar records");
+            }
+            if (cv.mismatch?.email) {
+              warningMessages.push("⚠️ Email doesn't match Aadhaar records");
+            }
+          }
+        }
+
+        // Phase 4: Duplicate Detection
+        if (result.data.duplicateCheck?.isDuplicate) {
+          const dc = result.data.duplicateCheck;
+          console.log('🚨 Duplicate Aadhaar detected:', dc);
+          warningMessages.push(`⚠️ This Aadhaar is already registered with ${dc.duplicateCount} other account(s)`);
+        }
+
+        // Phase 2: Photo Validation
+        if (result.data.photoValidation?.photoUploaded) {
+          console.log('📸 Aadhaar photo uploaded:', result.data.photoValidation.photoUrl);
+        }
+
+        // Phase 3: Address Validation
+        if (result.data.addressValidation?.addressExtracted) {
+          console.log('🏠 Address validation:', result.data.addressValidation);
+        }
+
+        // Show toast with warnings if any
+        const successMessage = warningMessages.length > 0
+          ? `Aadhaar verified for ${result.data.name}.\n\n${warningMessages.join('\n')}`
+          : `Aadhaar verified for ${result.data.name}. Your details have been auto-filled.`;
+
         toast({
-          variant: "success",
-          title: "Aadhaar Verified Successfully! ✓",
-          description: `Aadhaar verified for ${result.data.name}. Your details have been auto-filled.`,
+          variant: warningMessages.length > 0 ? "warning" : "success",
+          title: warningMessages.length > 0 ? "Aadhaar Verified with Warnings" : "Aadhaar Verified Successfully! ✓",
+          description: successMessage,
         });
       } else {
         const errorMsg = result.message || result.error || 'Invalid OTP. Please check and try again.';
@@ -1922,6 +1984,30 @@ export default function QuickLoanApplication() {
     } finally {
       setAadhaarVerifying(false);
     }
+  };
+
+  // Handle when user successfully verifies Aadhaar mobile
+  const handleAadhaarMobileVerified = (verifiedMobile: string) => {
+    setShowAadhaarMobileModal(false);
+
+    // Update form with verified mobile
+    setFormData(prev => ({
+      ...prev,
+      mobile: verifiedMobile // Update to Aadhaar mobile
+    }));
+
+    toast({
+      variant: "success",
+      title: "Mobile Verified!",
+      description: "Your Aadhaar mobile has been verified successfully"
+    });
+
+    // Show success message for Aadhaar verification
+    toast({
+      variant: "success",
+      title: "Aadhaar Verified Successfully! ✓",
+      description: "Your details have been verified and auto-filled."
+    });
   };
 
   // IFSC Lookup using Razorpay API
@@ -2602,18 +2688,8 @@ export default function QuickLoanApplication() {
       };
       let hasError = false;
 
-      // For logged-in users, skip verification check
-      const isVerified = user ? true : (verificationMethod === 'email' ? formData.emailVerified : formData.mobileVerified);
-
-      // Verification check for non-logged in users
-      if (!user && !isVerified) {
-        toast({
-          variant: "warning",
-          title: "Verification Required",
-          description: "Please verify your email or mobile to proceed.",
-        });
-        return;
-      }
+      // NO MOBILE/EMAIL VERIFICATION REQUIRED
+      // Contact validation will be done via Aadhaar hash comparison in Step 2
 
       // Full Name validation
       if (!formData.fullName) {
@@ -2738,20 +2814,22 @@ export default function QuickLoanApplication() {
         return;
       }
 
-      // Save Step 1 data (basic details + employment + loan amount)
-      setLoading(true);
-      const saveSuccess = await saveCustomerData(1);
-      setLoading(false);
+      // Save Step 1 data only for logged-in users
+      // For non-logged-in users, data will be saved after Aadhaar verification in Step 2
+      if (user) {
+        setLoading(true);
+        const saveSuccess = await saveCustomerData(1);
+        setLoading(false);
 
-      // If save failed, don't proceed to next step
-      if (!saveSuccess) {
-        toast({
-          variant: "error",
-          title: "Cannot Proceed",
-
-
-        });
-        return;
+        // If save failed, don't proceed to next step
+        if (!saveSuccess) {
+          toast({
+            variant: "error",
+            title: "Cannot Proceed",
+            description: "Failed to save your details. Please try again."
+          });
+          return;
+        }
       }
     }
 
@@ -3329,6 +3407,19 @@ export default function QuickLoanApplication() {
           onClose={handleCloseSelfieModal}
           onCapture={handleSelfieCapture}
         />
+
+        {/* Aadhaar Mobile Verification Modal */}
+        <AadhaarMobileVerificationModal
+          isOpen={showAadhaarMobileModal}
+          onClose={() => {
+            // Optional: Allow closing modal or force verification
+            // setShowAadhaarMobileModal(false);
+          }}
+          aadhaarMobileHash={aadhaarMobileHash}
+          customerId={user?.customerId}
+          onVerified={handleAadhaarMobileVerified}
+        />
+
         <div className="max-w-3xl mx-auto">
           {/* Close button - Hide when landing page is showing */}
           {/* {!(showLandingPage && !user && currentStep === 1) && ( */}
@@ -3407,14 +3498,41 @@ export default function QuickLoanApplication() {
                   {/* ============================================ */}
                   {/* LIVEMINT-STYLE LANDING PAGE - Shows first */}
                   {/* ============================================ */}
-                 {/* ----------------------------------------------------------------------------------------------------------- */}
+                  {showLandingPage && !user && (
+                    <div className="text-center space-y-6 py-8">
+                      <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
+                        Get Personal Loan up to <span className="text-orange-500">₹25,000</span>
+                      </h1>
+                      <p className="text-xl text-gray-700">in just <span className="text-emerald-600 font-semibold">5 minutes!</span></p>
+
+                      <div className="grid grid-cols-3 gap-4 my-8">
+                        <div className="bg-orange-50 rounded-xl p-4">
+                          <Percent className="w-8 h-8 text-orange-500 mx-auto mb-2" />
+                          <p className="text-sm font-semibold">1%/day Interest</p>
+                        </div>
+                        <div className="bg-orange-50 rounded-xl p-4">
+                          <Zap className="w-8 h-8 text-orange-500 mx-auto mb-2" />
+                          <p className="text-sm font-semibold">5 Min Approval</p>
+                        </div>
+                        <div className="bg-orange-50 rounded-xl p-4">
+                          <Shield className="w-8 h-8 text-orange-500 mx-auto mb-2" />
+                          <p className="text-sm font-semibold">100% Secure</p>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => setShowLandingPage(false)}
+                        className="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white py-4 rounded-xl font-semibold text-lg hover:shadow-lg transition-all"
+                      >
+                        Get Started →
+                      </button>
+                    </div>
+                  )}
 
                   {/* ============================================ */}
                   {/* ORIGINAL FORM - Shows after landing page */}
                   {/* ============================================ */}
-                  {/* {(!showLandingPage || user) && ( */}
-
-
+                  {(!showLandingPage || user) && (
        <>
        
                      
@@ -3602,62 +3720,22 @@ export default function QuickLoanApplication() {
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Mobile Number *
                         </label>
-                        <div className="flex flex-col sm:flex-row gap-2">
-                          <input
-                            type="tel"
-                            name="mobile"
-                            value={formData.mobile}
-                            onChange={handleChange}
-                            onBlur={handleMobileBlur}
-                            disabled={formData.mobileVerified || basicDetailsFilled}
-                            maxLength={10}
-                            className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
-                              }`}
-                            placeholder="enter mobile number"
-                          />
-                          {!formData.mobileVerified && !basicDetailsFilled && (
-                            <button
-                              onClick={sendOTP}
-                              disabled={!formData.mobile || loading || (otpSent && emailOtpTimer > 0)}
-                              className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
-                            >
-                              {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Verify"}
-                            </button>
-                          )}
-                          {(formData.mobileVerified || basicDetailsFilled) && (
-                            <CheckCircle className="w-10 h-10 text-green-600" />
-                          )}
-                        </div>
+                        <input
+                          type="tel"
+                          name="mobile"
+                          value={formData.mobile}
+                          onChange={handleChange}
+                          onBlur={handleMobileBlur}
+                          disabled={basicDetailsFilled}
+                          maxLength={10}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
+                            }`}
+                          placeholder="enter mobile number"
+                        />
                         {fieldErrors.mobile && (
                           <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
                         )}
                       </div>
-
-                      {!formData.mobileVerified && !basicDetailsFilled && otpSent && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Enter OTP *
-                          </label>
-                          <div className="flex flex-col sm:flex-row gap-2">
-                            <input
-                              type="text"
-                              name="otp"
-                              value={formData.otp}
-                              onChange={handleChange}
-                              maxLength={6}
-                              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                              placeholder="Enter 6-digit OTP"
-                            />
-                            <button
-                              onClick={verifyOTP}
-                              disabled={formData.otp.length !== 6 || loading}
-                              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
-                            >
-                              Verify
-                            </button>
-                          </div>
-                        </div>
-                      )}
                     </>
                   )}
 
@@ -4059,7 +4137,7 @@ export default function QuickLoanApplication() {
                     </div>
                   </div>
                     </>
-                 {/* )} */}
+                 )}
                 </motion.div>
               )}
 
