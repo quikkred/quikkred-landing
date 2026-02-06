@@ -59,7 +59,7 @@ export default function QuickLoanApplication() {
   const [selfieCaptured, setSelfieCaptured] = useState(false);
   const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
   const [selfieVerified, setSelfieVerified] = useState(false); // Profile photo verification status
-  const [verificationMethod, setVerificationMethod] = useState<'mobile' | 'email'>('mobile');
+  const [verificationMethod, setVerificationMethod] = useState<'mobile' | 'email'>('email');
   const [userDataLoaded, setUserDataLoaded] = useState(false);
   const [panVerifying, setPanVerifying] = useState(false);
   const [aadhaarVerifying, setAadhaarVerifying] = useState(false);
