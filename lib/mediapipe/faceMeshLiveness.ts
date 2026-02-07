@@ -4,12 +4,11 @@
  * Achieves 95-97% accuracy vs 70-80% with face-api.js
  */
 
-import * as faceLandmarksDetection from '@tensorflow-models/face-landmarks-detection';
-import '@tensorflow/tfjs-core';
-import '@tensorflow/tfjs-backend-webgl';
+// All heavy imports are done dynamically inside initializeFaceMesh()
+// to avoid the bundler statically resolving @mediapipe/face_mesh (which has no ESM exports).
 
 // Track if models are loaded
-let detector: faceLandmarksDetection.FaceLandmarksDetector | null = null;
+let detector: any = null;
 let isInitialized = false;
 
 /**
@@ -21,7 +20,9 @@ export const initializeFaceMesh = async (): Promise<boolean> => {
   try {
     console.log('🔄 Loading MediaPipe Face Mesh model...');
 
-    // Dynamically import TensorFlow.js
+    // Dynamically import TensorFlow.js and face-landmarks-detection
+    // Dynamic imports prevent the bundler from statically resolving
+    // @mediapipe/face_mesh which has no ESM exports.
     const tf = await import('@tensorflow/tfjs-core');
     await import('@tensorflow/tfjs-backend-webgl');
 
@@ -29,11 +30,13 @@ export const initializeFaceMesh = async (): Promise<boolean> => {
     await tf.setBackend('webgl');
     await tf.ready();
 
+    const faceLandmarksDetection = await import('@tensorflow-models/face-landmarks-detection');
+
     // Create detector with optimized settings
     detector = await faceLandmarksDetection.createDetector(
       faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh,
       {
-        runtime: 'tfjs',
+        runtime: 'tfjs' as const,
         refineLandmarks: true, // Enable iris tracking
         maxFaces: 1,
       }
