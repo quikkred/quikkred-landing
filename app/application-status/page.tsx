@@ -27,6 +27,7 @@ import getToken from "@/lib/getToken";
 // Declare global types for tracking
 declare global {
   interface Window {
+    fbq?: (...args: any[]) => void;
     gtag?: (...args: any[]) => void;
     dataLayer?: any[];
   }
@@ -39,7 +40,7 @@ interface ApplicationStatusData {
   reason?: string;
 }
 
-// Fire tracking events for GTM
+// Fire tracking events for GTM + Facebook Pixel
 function fireTrackingEvents(status: string, loanNumber?: string, amount?: string) {
   // GTM dataLayer event
   if (typeof window !== 'undefined' && window.dataLayer) {
@@ -62,6 +63,22 @@ function fireTrackingEvents(status: string, loanNumber?: string, amount?: string
     }
   }
 
+  // Facebook Pixel events
+  if (typeof window !== 'undefined' && window.fbq) {
+    if (status.toLowerCase() === 'approved') {
+      window.fbq('track', 'Lead', {
+        content_name: 'Loan Approved',
+        loan_number: loanNumber || '',
+        value: amount ? Number(amount) : 0,
+        currency: 'INR',
+      });
+    } else {
+      window.fbq('trackCustom', 'ApplicationDeclined', {
+        content_name: 'Loan Declined',
+        loan_number: loanNumber || '',
+      });
+    }
+  }
 }
 
 function ApplicationStatusContent() {
@@ -162,7 +179,7 @@ function ApplicationStatusContent() {
                 We couldn&apos;t find any recent application status. This could happen if you&apos;ve already viewed it or accessed this page directly.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link href="/apply/quick">
+                <Link href="/apply/quick-v2">
                   <button className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[#25B181] to-[#1F8F68] text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center">
                     <FileText className="w-5 h-5 mr-2" />
                     Apply for Loan
