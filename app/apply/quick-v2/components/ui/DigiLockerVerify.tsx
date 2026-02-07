@@ -6,8 +6,10 @@ import useAxios from "@/hooks/useAxios";
 
 const DigiLockerVerify = ({
     buttonText = "DigiLocker",
+    extraParams = {},
 }: {
     buttonText?: string;
+    extraParams?: Record<string, string>;
 }) => {
     const [showModal, setShowModal] = useState(false);
     const [mobile, setMobile] = useState("");
@@ -68,6 +70,7 @@ const DigiLockerVerify = ({
             const response = await axios.post("/api/auth/customer/digilocker/login", {
                 mobile,
                 email,
+                ...extraParams,
             });
             const data = response.data;
 
