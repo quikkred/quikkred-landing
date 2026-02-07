@@ -34,6 +34,7 @@ import getToken from "@/lib/getToken";
 import { getSession, signIn } from "next-auth/react";
 import GoogleVerify from "../quick-v2/components/ui/GoogleVerify";
 import TruecallerVerify from "../quick-v2/components/ui/TruecallerVerify";
+import DigiLockerVerify from "../quick-v2/components/ui/DigiLockerVerify";
 // import AadhaarMobileVerificationModal from "./components/AadhaarMobileVerificationModal";
 
 // Auto-decision engine
@@ -112,6 +113,7 @@ export default function QuickLoanApplication() {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [showLandingPage, setShowLandingPage] = useState(true); // LiveMint-style landing page state
+  const [digiLockerProcessing, setDigiLockerProcessing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [decision, setDecision] = useState<any>(null);
   const [selfieCapture, setSelfieCapture] = useState(false);
@@ -437,6 +439,108 @@ export default function QuickLoanApplication() {
     };
     requestLocation();
   }, []);
+
+  // DigiLocker callback handler — login, fetch profile, auto-fill & verify
+  useEffect(() => {
+    const requestId = searchParams.get("requestId");
+    const status = searchParams.get("status");
+
+    if (requestId && status === "success" && !digiLockerProcessing) {
+      setDigiLockerProcessing(true);
+
+      (async () => {
+        try {
+          // 1. Authenticate via NextAuth DigiLocker provider
+          const res = await signIn("digilocker", {
+            redirect: false,
+            requestId,
+          });
+
+          if (!res?.ok) {
+            toast({
+              variant: "error",
+              title: "DigiLocker Login Failed",
+              description: res?.error || "Authentication failed. Please try again.",
+            });
+            setDigiLockerProcessing(false);
+            return;
+          }
+
+          // 2. Get session & login
+          const userData = await getSession();
+          if (userData) {
+            await login({
+              apiData: userData,
+              email: userData?.user?.email || "",
+            });
+          }
+
+          // 3. Fetch profile to get DigiLocker-verified data
+          const result = await getCustomer();
+
+          if (result.success && result.data) {
+            const profileData = result.data;
+
+            // Auto-fill form with verified data
+            setFormData(prev => ({
+              ...prev,
+              fullName: profileData.fullName || prev.fullName,
+              mobile: profileData.mobile || prev.mobile,
+              email: profileData.email || prev.email,
+              pan: profileData.panCard || prev.pan,
+              aadhaar: profileData.aadhaarNumber || prev.aadhaar,
+              dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
+              state: profileData.state ? profileData.state.toLowerCase() : prev.state,
+              employmentType: profileData.employmentType || prev.employmentType,
+              monthlyIncome: profileData.monthlyIncome?.toString() || prev.monthlyIncome,
+              companyName: profileData.companyName || prev.companyName,
+              mobileVerified: profileData.isMobileVerified || true,
+              emailVerified: profileData.isEmailVerified || false,
+            }));
+
+            // Mark KYC as verified if DigiLocker provided it
+            if (toBoolean(profileData.isPanVerify)) {
+              setPanVerified(true);
+              setBasicDetailsFilled(true);
+            }
+            if (toBoolean(profileData.isAadhaarVerify)) {
+              setAadhaarVerified(true);
+            }
+
+            setUserDataLoaded(true);
+
+            toast({
+              variant: "success",
+              title: "DigiLocker Verified!",
+              description: "Your details have been verified and pre-filled. Please review and continue.",
+            });
+          } else {
+            toast({
+              variant: "success",
+              title: "DigiLocker Login Successful!",
+              description: "Welcome! Please fill in your details to continue.",
+            });
+          }
+
+          // 4. Stay on apply/quick — skip landing, show form
+          setShowLandingPage(false);
+          setDigiLockerProcessing(false);
+
+          // Clean up URL params
+          const cleanUrl = window.location.pathname;
+          window.history.replaceState({}, '', cleanUrl);
+
+        } catch (err: any) {
+          toast({
+            variant: "error",
+            title: "Error",
+            description: err?.message || "DigiLocker login failed. Please try again.",
+          });
+          setDigiLockerProcessing(false);
+        }
+      })();
+    }
+  }, [searchParams]);
 
   // Apply API-determined step after data is loaded
   useEffect(() => {
@@ -5278,6 +5382,19 @@ y += boxHeight + 4;
   }
 
   // Main application form
+  if (digiLockerProcessing) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5] flex items-center justify-center">
+        <Toaster />
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#2B63B5] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800">Processing DigiLocker Login...</h2>
+          <p className="text-gray-500 mt-2">Please wait while we verify your identity.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5] py-8 px-4">
@@ -5438,6 +5555,7 @@ y += boxHeight + 4;
                         <div className="grid grid-cols-2 sm:grid-cols-1 gap-2">
                               <GoogleVerify buttonText="Continue with google" callbackURL="/apply/quick"/>
                               <TruecallerVerify buttonText="Continue with truecaller" callbackURL="/apply/quick"/>
+                              <DigiLockerVerify buttonText="Continue with DigiLocker" extraParams={{ apply: "true" }} />
                             </div>
                       {/* <div className="bg-gray-50 rounded-xl p-4 mb-6">     
                       <label className="block text-sm font-medium text-gray-700 mb-3">
