@@ -34,7 +34,7 @@ import getToken from "@/lib/getToken";
 import { getSession, signIn } from "next-auth/react";
 import GoogleVerify from "../quick-v2/components/ui/GoogleVerify";
 import TruecallerVerify from "../quick-v2/components/ui/TruecallerVerify";
-import AadhaarMobileVerificationModal from "./components/AadhaarMobileVerificationModal";
+// import AadhaarMobileVerificationModal from "./components/AadhaarMobileVerificationModal";
 
 // Auto-decision engine
 
@@ -3432,7 +3432,6 @@ y += boxHeight + 4;
       //   body: JSON.stringify(payload),
       // });
 
-      // const data = await response.json();
       const response = await signIn("otp", {
         redirect: false,
         emailOrPhone: payload?.email || payload?.mobile,
@@ -3440,28 +3439,34 @@ y += boxHeight + 4;
         loginMethod: verificationMethod, // "email" | "mobile"
       });
 
+      if (response?.ok) {
+        // Get session data after successful sign-in
+        const sessionData = await getSession();
+
         login({
           email: payload?.email || "",
-          apiData: data,
+          apiData: sessionData,
         });
 
         if (verificationMethod === 'email') {
           setFormData(prev => ({ ...prev, emailVerified: true }));
         } else {
-        setFormData(prev => ({ ...prev, mobileVerified: true }));
+          setFormData(prev => ({ ...prev, mobileVerified: true }));
         }
         setOtpSent(false); // Reset OTP sent state after successful verification
 
-        // Store access token if provided in response
-        if (data.data?.accessToken) {
-          localStorage.setItem('accessToken', data.data.accessToken);
-          localStorage.setItem('token', data.data.accessToken);
-          localStorage.setItem('authToken', data.data.accessToken);
+        // Store access token if provided in session
+        const accessToken = (sessionData as any)?.accessToken || (sessionData as any)?.user?.accessToken;
+        if (accessToken) {
+          localStorage.setItem('accessToken', accessToken);
+          localStorage.setItem('token', accessToken);
+          localStorage.setItem('authToken', accessToken);
           console.log('✅ Access token stored');
         }
         // Store userId if provided
-        if (data.data?.userId) {
-          localStorage.setItem('userId', data.data.userId);
+        const userId = (sessionData as any)?.userId || (sessionData as any)?.user?.id;
+        if (userId) {
+          localStorage.setItem('userId', userId);
         }
 
         toast({
@@ -3471,7 +3476,7 @@ y += boxHeight + 4;
         });
 
         // Auto-fill form with customer data after successful OTP verification
-        const token = data.data?.accessToken ||
+        const token = accessToken ||
           localStorage.getItem('accessToken') ||
           localStorage.getItem('token') ||
           localStorage.getItem('authToken');
@@ -3694,7 +3699,7 @@ y += boxHeight + 4;
         toast({
           variant: "error",
           title: "Verification Failed",
-          description: data.message || 'Invalid OTP. Please try again.',
+          description: response?.error || 'Invalid OTP. Please try again.',
         });
       }
     } catch (error: any) {
@@ -5245,7 +5250,8 @@ y += boxHeight + 4;
         />
 
         {/* Aadhaar Mobile Verification Modal */}
-        <AadhaarMobileVerificationModal
+        
+        {/* <AadhaarMobileVerificationModal
           isOpen={showAadhaarMobileModal}
           onClose={() => {
             // Optional: Allow closing modal or force verification
@@ -5254,7 +5260,7 @@ y += boxHeight + 4;
           aadhaarMobileHash={aadhaarMobileHash}
           customerId={user?.customerId}
           onVerified={handleAadhaarMobileVerified}
-        />
+        /> */}
 
         <div className="max-w-3xl mx-auto">
           {/* Close button - Hide when landing page is showing */}

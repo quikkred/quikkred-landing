@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useRouter } from "nextjs-toploader/app";
+import { useSearchParams } from "next/navigation";
 
 // export const dynamic = 'force-dynamic';
 import {
@@ -32,7 +33,7 @@ import { getSession, signIn } from "next-auth/react";
 import useAxios from "@/hooks/useAxios";
 import GoogleVerify from "../apply/quick/components/ui/GoogleVerify";
 import TruecallerVerify from "../apply/quick/components/ui/TruecallerVerify";
-import DigiLockerVerify from "../apply/quick/components/ui/DigiLockerVerify";
+import DigiLockerVerify from "../apply/quick-v2/components/ui/DigiLockerVerify";
 
 interface LoginForm {
   emailOrPhone: string;
@@ -61,7 +62,9 @@ export default function LoginPage() {
     rememberMe: false
   });
   const [mobileError, setMobileError] = useState("");
+  const [digiLockerProcessing, setDigiLockerProcessing] = useState(false);
   const axios = useAxios();
+  const searchParams = useSearchParams();
   const [isIOS, setIsIOS] = useState(false);
 
   // 1. Detect Platform & Mount
@@ -85,6 +88,55 @@ export default function LoginPage() {
       if (interval) clearInterval(interval);
     };
   }, [resendTimer]);
+
+  // DigiLocker callback handler
+  useEffect(() => {
+    const requestId = searchParams.get("requestId");
+    const status = searchParams.get("status");
+
+    if (requestId && status === "success" && !digiLockerProcessing) {
+      setDigiLockerProcessing(true);
+
+      (async () => {
+        try {
+          const res = await signIn("digilocker", {
+            redirect: false,
+            requestId,
+          });
+
+          if (res?.ok) {
+            const userData = await getSession();
+            toast({
+              variant: "success",
+              title: "Login Successful!",
+              description: "Welcome! Redirecting to your dashboard...",
+            });
+            if (userData) {
+              await login({
+                apiData: userData,
+                email: userData?.user?.email || "",
+              });
+            }
+            router.push("/user");
+          } else {
+            toast({
+              variant: "error",
+              title: "DigiLocker Login Failed",
+              description: res?.error || "Authentication failed. Please try again.",
+            });
+            setDigiLockerProcessing(false);
+          }
+        } catch (err: any) {
+          toast({
+            variant: "error",
+            title: "Error",
+            description: err?.message || "DigiLocker login failed. Please try again.",
+          });
+          setDigiLockerProcessing(false);
+        }
+      })();
+    }
+  }, [searchParams]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -287,6 +339,18 @@ export default function LoginPage() {
     { icon: KeyRound, text: "Multi-Factor Authentication" }
   ];
 
+  if (digiLockerProcessing) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#2B63B5] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800">Processing DigiLocker Login...</h2>
+          <p className="text-gray-500 mt-2">Please wait while we verify your identity.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5]">
       <div className="container mx-auto px-4 py-12">
@@ -438,7 +502,10 @@ export default function LoginPage() {
                     <GoogleVerify buttonText="Continue with google" />
                     {
                       !isIOS && <TruecallerVerify buttonText="Continue with truecaller" />
+                    
                     }
+
+                    <DigiLockerVerify buttonText="Continue with DigiLocker" />
                   </div>
 
                   <div className="my-3 flex w-full items-center gap-3 text-sm text-neutral-500">
