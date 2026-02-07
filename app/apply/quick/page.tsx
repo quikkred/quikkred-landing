@@ -25,6 +25,55 @@ import getToken from "@/lib/getToken";
 import { getSession, signIn } from "next-auth/react";
 import GoogleVerify from "../quick-v2/components/ui/GoogleVerify";
 import TruecallerVerify from "../quick-v2/components/ui/TruecallerVerify";
+// import AadhaarMobileVerificationModal from "./components/AadhaarMobileVerificationModal";
+
+// Auto-decision engine
+
+
+// const autoDecisionEngine = (data: any) => {
+//   const { monthlyIncome, loanAmount, pan, aadhaar } = data;
+
+
+//   const minIncome = 25000;
+//   const maxLoanToIncome = 40;
+//   const maxEligibleAmount = monthlyIncome * maxLoanToIncome;
+
+
+//   if (monthlyIncome < minIncome) {
+//     return {
+//       approved: false,
+//       reason: "Minimum monthly income requirement not met (₹25,000)",
+//       suggestedAction: "Please reapply when your monthly income is ₹25,000 or above"
+//     };
+//   }
+
+//   if (loanAmount > maxEligibleAmount) {
+//     return {
+//       approved: false,
+//       reason: `Requested amount exceeds maximum eligible amount (₹${maxEligibleAmount.toLocaleString()})`,
+//       suggestedAction: `Maximum loan amount you can apply for: ₹${maxEligibleAmount.toLocaleString()}`
+//     };
+//   }
+
+//   if (!pan || !aadhaar) {
+//     return {
+//       approved: false,
+//       reason: "PAN and Aadhaar details are mandatory",
+//       suggestedAction: "Please provide valid PAN and Aadhaar numbers"
+//     };
+//   }
+
+//   // Approved!
+//   return {
+//     approved: true,
+//     approvedAmount: loanAmount,
+//     interestRate: 12.5,
+//     tenure: data.tenure || 12,
+//     emi: Math.round((loanAmount * (12.5/100/12) * Math.pow(1 + 12.5/100/12, 12)) / (Math.pow(1 + 12.5/100/12, 12) - 1)),
+//     processingFee: Math.round(loanAmount * 0.02)
+//   };
+// };
+
 
 export default function QuickLoanApplication() {
 
@@ -1410,32 +1459,41 @@ export default function QuickLoanApplication() {
       //   body: JSON.stringify(payload),
       // });
 
-      // const data = await response.json();
       const response = await signIn("otp", {
         redirect: false,
         emailOrPhone: payload?.email || payload?.mobile,
         otp: payload.otp,
         loginMethod: verificationMethod, // "email" | "mobile"
       });
-      
+
       if (response?.ok) {
-        const data: any = await getSession();
+        // Get session data after successful sign-in
+        const sessionData = await getSession();
 
         login({
           email: payload?.email || "",
-          apiData: data,
+          apiData: sessionData,
         });
 
         if (verificationMethod === 'email') {
           setFormData(prev => ({ ...prev, emailVerified: true }));
         } else {
-        setFormData(prev => ({ ...prev, mobileVerified: true }));
+          setFormData(prev => ({ ...prev, mobileVerified: true }));
         }
         setOtpSent(false); // Reset OTP sent state after successful verification
 
+        // Store access token if provided in session
+        const accessToken = (sessionData as any)?.accessToken || (sessionData as any)?.user?.accessToken;
+        if (accessToken) {
+          localStorage.setItem('accessToken', accessToken);
+          localStorage.setItem('token', accessToken);
+          localStorage.setItem('authToken', accessToken);
+          console.log('✅ Access token stored');
+        }
         // Store userId if provided
-        if (data?.userId) {
-          localStorage.setItem('userId', data.userId);
+        const userId = (sessionData as any)?.userId || (sessionData as any)?.user?.id;
+        if (userId) {
+          localStorage.setItem('userId', userId);
         }
 
         toast({
@@ -1445,7 +1503,10 @@ export default function QuickLoanApplication() {
         });
 
         // Auto-fill form with customer data after successful OTP verification
-        const token = data?.accessToken;
+        const token = accessToken ||
+          localStorage.getItem('accessToken') ||
+          localStorage.getItem('token') ||
+          localStorage.getItem('authToken');
 
         if (token) {
           try {
@@ -3371,6 +3432,20 @@ export default function QuickLoanApplication() {
           onClose={handleCloseSelfieModal}
           onCapture={handleSelfieCapture}
         />
+
+        {/* Aadhaar Mobile Verification Modal */}
+        
+        {/* <AadhaarMobileVerificationModal
+          isOpen={showAadhaarMobileModal}
+          onClose={() => {
+            // Optional: Allow closing modal or force verification
+            // setShowAadhaarMobileModal(false);
+          }}
+          aadhaarMobileHash={aadhaarMobileHash}
+          customerId={user?.customerId}
+          onVerified={handleAadhaarMobileVerified}
+        /> */}
+
         <div className="max-w-3xl mx-auto">
           {/* Close button - Hide when landing page is showing */}
           {/* {!(showLandingPage && !user && currentStep === 1) && ( */}
