@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useRouter } from "nextjs-toploader/app";
+import { useSearchParams } from "next/navigation";
 
 // export const dynamic = 'force-dynamic';
 import {
@@ -30,9 +31,9 @@ import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { API_BASE_URL } from '@/lib/config';
 import { getSession, signIn } from "next-auth/react";
 import useAxios from "@/hooks/useAxios";
-import GoogleVerify from "../apply/quick/components/ui/GoogleVerify";
-import TruecallerVerify from "../apply/quick/components/ui/TruecallerVerify";
-import DigiLockerVerify from "../apply/quick/components/ui/DigiLockerVerify";
+import GoogleVerify from "../apply/quick-v2/components/ui/GoogleVerify";
+import TruecallerVerify from "../apply/quick-v2/components/ui/TruecallerVerify";
+import DigiLockerVerify from "../apply/quick-v2/components/ui/DigiLockerVerify";
 
 interface LoginForm {
   emailOrPhone: string;
@@ -46,7 +47,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
-  const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('phone');
+  const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('email');
   const [authMethod, setAuthMethod] = useState<'password' | 'otp'>('otp');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +62,19 @@ export default function LoginPage() {
     rememberMe: false
   });
   const [mobileError, setMobileError] = useState("");
+  const [digiLockerProcessing, setDigiLockerProcessing] = useState(false);
   const axios = useAxios();
+  const searchParams = useSearchParams();
+  const [isIOS, setIsIOS] = useState(false);
+
+  // 1. Detect Platform & Mount
+  useEffect(() => {
+    // iOS Detection Regex
+    if (typeof navigator !== "undefined") {
+      const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+      setIsIOS(isIOSDevice);
+    }
+  }, []);
 
   // Countdown timer for resend OTP
   useEffect(() => {
@@ -75,6 +88,55 @@ export default function LoginPage() {
       if (interval) clearInterval(interval);
     };
   }, [resendTimer]);
+
+  // DigiLocker callback handler
+  useEffect(() => {
+    const requestId = searchParams.get("requestId");
+    const status = searchParams.get("status");
+
+    if (requestId && status === "success" && !digiLockerProcessing) {
+      setDigiLockerProcessing(true);
+
+      (async () => {
+        try {
+          const res = await signIn("digilocker", {
+            redirect: false,
+            requestId,
+          });
+
+          if (res?.ok) {
+            const userData = await getSession();
+            toast({
+              variant: "success",
+              title: "Login Successful!",
+              description: "Welcome! Redirecting to your dashboard...",
+            });
+            if (userData) {
+              await login({
+                apiData: userData,
+                email: userData?.user?.email || "",
+              });
+            }
+            router.push("/user");
+          } else {
+            toast({
+              variant: "error",
+              title: "DigiLocker Login Failed",
+              description: res?.error || "Authentication failed. Please try again.",
+            });
+            setDigiLockerProcessing(false);
+          }
+        } catch (err: any) {
+          toast({
+            variant: "error",
+            title: "Error",
+            description: err?.message || "DigiLocker login failed. Please try again.",
+          });
+          setDigiLockerProcessing(false);
+        }
+      })();
+    }
+  }, [searchParams]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -106,7 +168,7 @@ export default function LoginPage() {
 
   const sendOtp = async () => {
     if (!formData.emailOrPhone) {
-      setError("Please enter your mobile number");
+      setError(`Please enter your ${loginMethod}`);
       return;
     }
 
@@ -115,7 +177,9 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const payload = { mobile: formData.emailOrPhone };
+      const payload = loginMethod === 'email'
+        ? { email: formData.emailOrPhone }
+        : { mobile: formData.emailOrPhone };
 
       // const response = await fetch(`${API_BASE_URL}/api/auth/customer/login`, {
       //   method: "POST",
@@ -138,8 +202,8 @@ export default function LoginPage() {
           variant: "success",
           title: isResend ? "OTP Resent Successfully!" : "OTP Sent Successfully!",
           description: isResend
-            ? "A new OTP has been sent to your WhatsApp. Please check and enter it below."
-            : "OTP sent to your WhatsApp. Please check and enter it below.",
+            ? `A new OTP has been sent to your ${loginMethod}. Please check and enter it below.`
+            : `A one-time password has been sent to your ${loginMethod}. Please check and enter it below.`,
         });
       } else {
         setError(data.message || 'Failed to send OTP. Please try again.');
@@ -181,7 +245,7 @@ export default function LoginPage() {
         redirect: false,
         emailOrPhone: formData.emailOrPhone,
         otp,
-        loginMethod: "phone", // always mobile-first
+        loginMethod, // "email" | "mobile"
       });
 
       // NextAuth returns { ok, error, status, url }
@@ -199,7 +263,7 @@ export default function LoginPage() {
         if (userData) {
           await login({
             apiData: userData,
-            mobile: (userData as any)?.mobile || formData.emailOrPhone || "",
+            email: userData?.user?.email || "",
           });
         }
         router.push("/user");
@@ -238,8 +302,8 @@ export default function LoginPage() {
     } else {
       try {
         const success = await login({
-            email: formData.emailOrPhone || "",
-          });
+          email: formData.emailOrPhone || "",
+        });
 
         if (success) {
           toast({
@@ -274,6 +338,18 @@ export default function LoginPage() {
     { icon: Award, text: "ISO 27001 Certified" },
     { icon: KeyRound, text: "Multi-Factor Authentication" }
   ];
+
+  if (digiLockerProcessing) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#2B63B5] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800">Processing DigiLocker Login...</h2>
+          <p className="text-gray-500 mt-2">Please wait while we verify your identity.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5]">
@@ -421,63 +497,47 @@ export default function LoginPage() {
                     </button>
                   </div> */}
 
-                  {/* Important Notice */}
-                  <div className="mb-3 p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
-                    <div className="flex gap-2">
-                      <span className="text-amber-600 text-xs mt-0.5">⚠️</span>
-                      <p className="text-xs text-amber-800 leading-relaxed">
-                        <strong className="font-semibold">Important:</strong> Provide your own active mobile number. You'll receive an OTP for verification.
-                      </p>
-                    </div>
-                  </div>
+                  {/* google auth */}
+                  <div className={`grid ${!isIOS && "grid-cols-2 sm:grid-cols-1"} gap-2`}>
+                    <GoogleVerify buttonText="Continue with google" />
+                    {
+                      !isIOS && <TruecallerVerify buttonText="Continue with truecaller" />
+                    
+                    }
 
-                  {/* DigiLocker - One-click Sign-in + KYC */}
-                  <DigiLockerVerify
-                    buttonText="Sign in with DigiLocker"
-                    mobile={formData.emailOrPhone}
-                  />
-
-                  <div className="my-2 flex w-full items-center gap-3 text-xs text-neutral-400">
-                    <div className="flex-1 border-t border-neutral-300" />
-                    <span className="shrink-0 leading-none">or continue with</span>
-                    <div className="flex-1 border-t border-neutral-300" />
-                  </div>
-
-                  {/* Social Login - Google & Truecaller */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <GoogleVerify buttonText="Google" />
-                    <TruecallerVerify buttonText="Truecaller" />
+                    <DigiLockerVerify buttonText="Continue with DigiLocker" />
                   </div>
 
                   <div className="my-3 flex w-full items-center gap-3 text-sm text-neutral-500">
                     <div className="flex-1 border-t border-neutral-400" />
-                    <span className="shrink-0 leading-none">or enter your mobile number</span>
+                    <span className="shrink-0 leading-none">or enter email</span>
                     <div className="flex-1 border-t border-neutral-400" />
                   </div>
 
-                  {/* Phone Number Input */}
+                  {/* Email/Phone Input */}
                   <div>
-                    <label className="block text-sm font-medium mb-2">Mobile Number</label>
-                    <div className="relative flex">
-                      <span className="inline-flex items-center px-3 py-3 border border-r-0 border-gray-300 rounded-l-lg bg-gray-50 text-gray-600 text-sm font-medium">
-                        +91
-                      </span>
-                      <div className="relative flex-1">
+                    <label className="block text-sm font-medium mb-2">
+                      {loginMethod === 'email' ? 'Email Address' : 'Phone Number'}
+                    </label>
+                    <div className="relative">
+                      {loginMethod === 'email' ? (
+                        <Mail className="absolute left-3 top-0 translate-y-4 w-5 h-5 text-gray-400" />
+                      ) : (
                         <Phone className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                        <input
-                          type="tel"
-                          name="emailOrPhone"
-                          inputMode="numeric"
-                          value={formData.emailOrPhone}
-                          onChange={handleInputChange}
-                          maxLength={10}
-                          required
-                          className={`w-full pl-10 pr-4 py-3 border rounded-r-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white ${mobileError ? 'border-red-500' : 'border-gray-300'}`}
-                          placeholder="Enter your mobile number"
-                        />
-                      </div>
+                      )}
+                      <input
+                        type={loginMethod === 'email' ? 'email' : 'tel'}
+                        name="emailOrPhone"
+                        value={formData.emailOrPhone}
+                        onChange={handleInputChange}
+                        maxLength={loginMethod === 'phone' ? 10 : undefined}
+                        required
+                        className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white ${loginMethod === 'phone' && mobileError ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                        placeholder={loginMethod === 'email' ? 'Enter your email' : 'Enter 10-digit mobile number'}
+                      />
                     </div>
-                    {mobileError && (
+                    {loginMethod === 'phone' && mobileError && (
                       <p className="mt-1 text-xs text-red-600">{mobileError}</p>
                     )}
                   </div>
@@ -519,7 +579,7 @@ export default function LoginPage() {
                             <h4 className="font-medium text-emerald-900">Login with OTP</h4>
                           </div>
                           <p className="text-sm text-emerald-700 mb-3">
-                            Click the button below to receive a one-time password on your WhatsApp
+                            Click the button below to receive a one-time password on your {loginMethod}
                           </p>
                           {/* <button
                             type="button"
@@ -623,7 +683,7 @@ export default function LoginPage() {
                     </button>
 
                     {/* Apply Now Button */}
-                    <Link href="/apply/quick" className="block">
+                    <Link href="/apply/quick-v2" className="block">
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
@@ -673,7 +733,7 @@ export default function LoginPage() {
                   <p className="text-gray-700 mb-6">
                     Join thousands who have already transformed their financial journey with instant AI-powered loans.
                   </p>
-                  <Link href="/apply/quick">
+                  <Link href="/apply/quick-v2">
                     <button className="w-full bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all mb-4">
                       Start Your Application
                     </button>

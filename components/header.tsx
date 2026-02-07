@@ -67,7 +67,7 @@ export function Header() {
     // },
     {
       name: t.navigation.partners,
-      href: "/partners",
+      href: "/our-partners",
       icon: Users,
       submenu: [
         {
@@ -82,7 +82,7 @@ export function Header() {
         },
         {
           name: t.navigation.investorRelations,
-          href: "/partners/investor-relations",
+          href: "/investor-relations",
           description: t.navigation.investorRelationsDesc,
         },
       ],
@@ -213,7 +213,7 @@ export function Header() {
                 </motion.button>
               </Link>
             ) : (
-              <Link href={isHomePage ? "/login" : "/apply/quick"} className="sm:hidden">
+              <Link href={isHomePage ? "/login" : "/apply/quick-v2"} className="sm:hidden">
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   className="px-3 py-2 bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-xs font-semibold rounded-lg shadow-md min-h-[36px]"
@@ -247,7 +247,7 @@ export function Header() {
                 </motion.button>
               </Link>
             ) : (
-              <Link href="/apply/quick">
+              <Link href="/apply/quick-v2">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -380,7 +380,7 @@ export function Header() {
                   </Link>
                 ) : (
                   <Link
-                    href="/apply/quick"
+                    href="/apply/quick-v2"
                     onClick={() => setMobileMenuOpen(false)}
                     className="block mt-2"
                   >

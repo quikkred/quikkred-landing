@@ -51,7 +51,7 @@ const GoogleVerify = ({
             ) : (
                 <>
                     <GoogleIcon />
-                    <span className="hidden xs:inline">{buttonText}</span>
+                    <span className="hidden sm:inline-block">{buttonText}</span>
                 </>
             )}
         </button>
