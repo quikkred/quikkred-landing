@@ -83,8 +83,8 @@ export default function CameraTestPage() {
           <div className="space-y-2">
             <div className="flex items-center gap-3">
               <span className="text-gray-400">getUserMedia Support:</span>
-              <span className={`font-bold ${navigator.mediaDevices?.getUserMedia ? 'text-green-400' : 'text-red-400'}`}>
-                {navigator.mediaDevices?.getUserMedia ? '✅ Supported' : '❌ Not Supported'}
+              <span className={`font-bold ${typeof navigator.mediaDevices?.getUserMedia === 'function' ? 'text-green-400' : 'text-red-400'}`}>
+                {typeof navigator.mediaDevices?.getUserMedia === 'function' ? '✅ Supported' : '❌ Not Supported'}
               </span>
             </div>
             <div className="flex items-center gap-3">
