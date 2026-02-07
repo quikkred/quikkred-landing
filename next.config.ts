@@ -105,8 +105,12 @@ devIndicators: false,
 
   // Turbopack configuration (required in Next.js 16)
   turbopack: {
-    // Empty config to silence webpack/turbopack conflict warning
-    // TensorFlow.js should work with Turbopack in client components
+    resolveAlias: {
+      // Stub out @mediapipe/face_mesh — the ESM bundle of
+      // @tensorflow-models/face-landmarks-detection statically imports it,
+      // but we only use runtime: 'tfjs', so FaceMesh is never called.
+      '@mediapipe/face_mesh': './lib/stubs/mediapipe-face-mesh.js',
+    },
   },
 
   // Optimize output
