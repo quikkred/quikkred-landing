@@ -15,6 +15,7 @@ export type TranslationData = typeof enData & {
     refund?: Record<string, any>;
     terms?: Record<string, any>;
     rbiGuidelines?: Record<string, any>;
+    creditPolicy?: Record<string, any>;
     [key: string]: Record<string, any> | undefined;
   };
 };
@@ -247,6 +248,21 @@ const policyTranslationLoaders: Record<string, Record<string, () => Promise<any>
     or: () => import('@/locales/policies/settlement-writeoff/or.json').then(m => m.default),
     as: () => import('@/locales/policies/settlement-writeoff/as.json').then(m => m.default),
     ur: () => import('@/locales/policies/settlement-writeoff/ur.json').then(m => m.default),
+  },
+  creditPolicy: {
+    en: () => import('@/locales/policies/credit-policy/en.json').then(m => m.default),
+    hi: () => import('@/locales/policies/credit-policy/hi.json').then(m => m.default),
+    bn: () => import('@/locales/policies/credit-policy/bn.json').then(m => m.default),
+    ta: () => import('@/locales/policies/credit-policy/ta.json').then(m => m.default),
+    te: () => import('@/locales/policies/credit-policy/te.json').then(m => m.default),
+    mr: () => import('@/locales/policies/credit-policy/mr.json').then(m => m.default),
+    gu: () => import('@/locales/policies/credit-policy/gu.json').then(m => m.default),
+    kn: () => import('@/locales/policies/credit-policy/kn.json').then(m => m.default),
+    ml: () => import('@/locales/policies/credit-policy/ml.json').then(m => m.default),
+    pa: () => import('@/locales/policies/credit-policy/pa.json').then(m => m.default),
+    or: () => import('@/locales/policies/credit-policy/or.json').then(m => m.default),
+    as: () => import('@/locales/policies/credit-policy/as.json').then(m => m.default),
+    ur: () => import('@/locales/policies/credit-policy/ur.json').then(m => m.default),
   }
 };
 
@@ -316,6 +332,7 @@ export async function getTranslation(langCode: string): Promise<TranslationData>
       terms: mergedPolicyTranslations.terms || {},
       disclaimerDisclosure: mergedPolicyTranslations.disclaimerDisclosure || {},
       settlementWriteoff: mergedPolicyTranslations.settlementWriteoff || {},
+      creditPolicy: mergedPolicyTranslations.creditPolicy || {},
     }
   };
 
