@@ -30,8 +30,9 @@ import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { API_BASE_URL } from '@/lib/config';
 import { getSession, signIn } from "next-auth/react";
 import useAxios from "@/hooks/useAxios";
-import GoogleVerify from "../apply/quick-v2/components/ui/GoogleVerify";
-import TruecallerVerify from "../apply/quick-v2/components/ui/TruecallerVerify";
+import GoogleVerify from "../apply/quick/components/ui/GoogleVerify";
+import TruecallerVerify from "../apply/quick/components/ui/TruecallerVerify";
+import DigiLockerVerify from "../apply/quick/components/ui/DigiLockerVerify";
 
 interface LoginForm {
   emailOrPhone: string;
