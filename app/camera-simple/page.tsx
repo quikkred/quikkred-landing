@@ -52,9 +52,7 @@ export default function CameraSimplePage() {
       addLog('✅ Video is playing!');
       setIsStarted(true);
 
-      // Start face detection
-      addLog('🔍 Starting face detection...');
-      startFaceDetection();
+      addLog('🔍 Face detection ready');
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : String(err);

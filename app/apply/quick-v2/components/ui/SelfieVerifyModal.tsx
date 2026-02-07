@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Camera, X, RotateCw, Check, AlertCircle, Loader2, ScanFace } from "lucide-react";
 import useAxios from "@/hooks/useAxios";
 import { toast } from "@/components/ui/toast";
 import getToken from "@/lib/getToken";
 import tracking from "@/lib/tracking";
 import { TRACKING_EVENTS } from "@/lib/constants/quickApplyV2";
+import { initializeFaceMesh, detectLiveness, dispose, type LivenessDetectionResult } from "@/lib/mediapipe/faceMeshLiveness";
 
 interface SelfieCaptureProps {
     isOpen: boolean;
@@ -28,6 +29,9 @@ export default function SelfieVerifyModal({ isOpen, onClose, onCapture }: Selfie
     const [isVerifying, setIsVerifying] = useState(false);
     const [verificationStatus, setVerificationStatus] = useState<'idle' | 'success' | 'failed'>('idle');
     const [capturedFile, setCapturedFile] = useState<File | null>(null);
+    const [modelLoading, setModelLoading] = useState(false);
+    const [mediapipeReady, setMediapipeReady] = useState(false);
+    const [livenessResult, setLivenessResult] = useState<LivenessDetectionResult | null>(null);
     const axios = useAxios();
 
     // 1. Scroll Locking
@@ -42,51 +46,122 @@ export default function SelfieVerifyModal({ isOpen, onClose, onCapture }: Selfie
         };
     }, [isOpen]);
 
-    // 2. Camera Lifecycle
+    // 2. Camera Lifecycle + MediaPipe Initialization
     useEffect(() => {
         if (isOpen && !isStreaming) {
+            // Initialize MediaPipe model alongside camera start
+            setModelLoading(true);
+            initializeFaceMesh()
+                .then((success) => {
+                    setMediapipeReady(success);
+                    if (!success) {
+                        console.warn('MediaPipe failed to load — falling back to brightness-based detection');
+                    }
+                })
+                .catch(() => {
+                    console.warn('MediaPipe initialization error — falling back to brightness-based detection');
+                    setMediapipeReady(false);
+                })
+                .finally(() => setModelLoading(false));
+
             startCamera();
         }
         return () => {
             stopCamera();
+            dispose();
+            setMediapipeReady(false);
         };
     }, [isOpen]);
 
-    // 3. Face Detection Mock Logic
+    // 3. Face Detection Logic (MediaPipe with brightness fallback)
+    const runBrightnessFallback = useCallback(() => {
+        if (!videoRef.current || videoRef.current.readyState !== 4) return;
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx || !videoRef.current) return;
+        canvas.width = videoRef.current.videoWidth / 4;
+        canvas.height = videoRef.current.videoHeight / 4;
+        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(canvas.width / 4, canvas.height / 4, canvas.width / 2, canvas.height / 2);
+        let brightness = 0;
+        for (let i = 0; i < imageData.data.length; i += 4) {
+            brightness += (imageData.data[i] + imageData.data[i + 1] + imageData.data[i + 2]) / 3;
+        }
+        brightness = brightness / (imageData.data.length / 4);
+        if (brightness > 60 && brightness < 200) {
+            setFaceDetected(true);
+            setDetectionMessage("Face detected");
+        } else if (brightness <= 60) {
+            setFaceDetected(false);
+            setDetectionMessage("Lighting is too dark");
+        } else {
+            setFaceDetected(false);
+            setDetectionMessage("Adjust your position");
+        }
+    }, []);
+
     useEffect(() => {
         if (!isStreaming || !videoRef.current) return;
-        const detectInterval = setInterval(() => {
-            if (videoRef.current && videoRef.current.readyState === 4) {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                if (ctx && videoRef.current) {
-                    // Use a small canvas for performance
-                    canvas.width = videoRef.current.videoWidth / 4;
-                    canvas.height = videoRef.current.videoHeight / 4;
-                    ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-                    
-                    const imageData = ctx.getImageData(canvas.width / 4, canvas.height / 4, canvas.width / 2, canvas.height / 2);
-                    let brightness = 0;
-                    for (let i = 0; i < imageData.data.length; i += 4) {
-                        brightness += (imageData.data[i] + imageData.data[i + 1] + imageData.data[i + 2]) / 3;
-                    }
-                    brightness = brightness / (imageData.data.length / 4);
 
-                    if (brightness > 60 && brightness < 200) {
-                        setFaceDetected(true);
-                        setDetectionMessage("Face detected");
-                    } else if (brightness <= 60) {
-                        setFaceDetected(false);
-                        setDetectionMessage("Lighting is too dark");
-                    } else {
-                        setFaceDetected(false);
-                        setDetectionMessage("Adjust your position");
-                    }
-                }
+        let running = true;
+
+        const runDetection = async () => {
+            if (!running || !videoRef.current || videoRef.current.readyState !== 4) return;
+
+            // Fall back to brightness if MediaPipe isn't ready
+            if (!mediapipeReady) {
+                runBrightnessFallback();
+                return;
             }
-        }, 500);
-        return () => clearInterval(detectInterval);
-    }, [isStreaming]);
+
+            try {
+                const result = await detectLiveness(videoRef.current);
+                if (!running) return;
+
+                setLivenessResult(result);
+                const { details } = result;
+
+                // Build detection message based on priority
+                if (!details.faceDetected) {
+                    setFaceDetected(false);
+                    setDetectionMessage("No face detected — position your face in the frame");
+                } else if (details.faceDistance === 'too_far') {
+                    setFaceDetected(false);
+                    setDetectionMessage("Move closer to camera");
+                } else if (details.faceDistance === 'too_close') {
+                    setFaceDetected(false);
+                    setDetectionMessage("Move back a bit");
+                } else if (details.lighting === 'too_dark') {
+                    setFaceDetected(false);
+                    setDetectionMessage("Lighting is too dark");
+                } else if (details.lighting === 'too_bright') {
+                    setFaceDetected(false);
+                    setDetectionMessage("Reduce glare");
+                } else if (!details.eyesOpen.left || !details.eyesOpen.right) {
+                    setFaceDetected(true);
+                    setDetectionMessage("Keep your eyes open");
+                } else if (Math.abs(details.headPose.yaw) > 20) {
+                    setFaceDetected(true);
+                    setDetectionMessage("Face the camera directly");
+                } else {
+                    setFaceDetected(true);
+                    setDetectionMessage("Face detected ✓ — ready to capture");
+                }
+            } catch (err) {
+                console.warn('MediaPipe detection error, using fallback:', err);
+                runBrightnessFallback();
+            }
+        };
+
+        const detectInterval = setInterval(runDetection, 500);
+        // Run immediately on mount
+        runDetection();
+
+        return () => {
+            running = false;
+            clearInterval(detectInterval);
+        };
+    }, [isStreaming, mediapipeReady, runBrightnessFallback]);
 
     const startCamera = async () => {
         setError("");
@@ -281,6 +356,7 @@ export default function SelfieVerifyModal({ isOpen, onClose, onCapture }: Selfie
         setError("");
         setIsVerifying(false);
         setVerificationStatus('idle');
+        setLivenessResult(null);
         onClose();
     };
 
@@ -341,7 +417,15 @@ export default function SelfieVerifyModal({ isOpen, onClose, onCapture }: Selfie
                                     muted
                                     className="absolute inset-0 w-full h-full object-cover scale-x-[-1]"
                                 />
-                                
+
+                                {/* Model Loading Overlay */}
+                                {modelLoading && (
+                                    <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm">
+                                        <Loader2 className="w-8 h-8 text-emerald-400 animate-spin mb-2" />
+                                        <p className="text-white text-sm font-medium">Loading face detection...</p>
+                                    </div>
+                                )}
+
                                 {isStreaming && (
                                     <div className="absolute inset-0 pointer-events-none z-20">
                                         {/* Scanner Line Animation */}
@@ -357,12 +441,17 @@ export default function SelfieVerifyModal({ isOpen, onClose, onCapture }: Selfie
                                         </div>
 
                                         {/* Status Badge */}
-                                        <div className="absolute top-4 left-0 right-0 flex justify-center">
+                                        <div className="absolute top-4 left-0 right-0 flex flex-col items-center gap-1.5">
                                             <div className={`px-4 py-1.5 rounded-full text-xs font-semibold backdrop-blur-md shadow-sm transition-colors duration-300 ${
                                                 faceDetected ? 'bg-emerald-500/90 text-white' : 'bg-black/60 text-white/90'
                                             }`}>
                                                 {detectionMessage}
                                             </div>
+                                            {livenessResult && faceDetected && mediapipeReady && (
+                                                <div className="px-3 py-1 rounded-full text-[10px] font-medium backdrop-blur-md bg-black/40 text-white/70">
+                                                    Liveness: {livenessResult.livenessScore}%
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 )}
