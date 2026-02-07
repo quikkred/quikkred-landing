@@ -64,8 +64,9 @@ export default function PartnersPage() {
         </div>
       </section>
 
+      {/* Our partners */}
       <section className="bg-gray-50 py-8 sm:py-10 lg:py-12">
-        <div className="max-w-[768px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1024px] mx-auto px-4 sm:px-6 lg:px-8">
           <OurPartners />
         </div>
       </section>
