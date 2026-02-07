@@ -972,6 +972,47 @@ export default function QuickLoanApplication() {
     }
   }, [formData.loanAmount, formData.tenure, formData.tenureUnit, selectedProduct]);
 
+  // Fetch loan products on mount
+  useEffect(() => {
+    const fetchLoanProducts = async () => {
+      const token = await getToken();
+      setLoadingProducts(true);
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/loanProduct/allLoanProductsNameOnly`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success && result.data) {
+          setLoanProducts(result.data);
+        } else {
+          console.error('Failed to fetch loan products:', result.message);
+          toast({
+            title: "Error",
+            description: "Failed to load loan products. Please refresh the page.",
+            variant: "error"
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching loan products:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load loan products. Please refresh the page.",
+          variant: "error"
+        });
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    fetchLoanProducts();
+  }, []);
+
   // Generate Agreement HTML with customer data
   const generateAgreementHTML = (data: any) => {
     const getValue = (value: any) => {
@@ -5979,6 +6020,151 @@ y += boxHeight + 4;
                       )}
                     </div>
                   </div>
+                  {/* Loan Product Selection */}
+                  <div className="mt-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Select Loan Product
+                    </label>
+                    <select
+                      name="productId"
+                      value={formData.productId}
+                      onChange={(e) => handleProductChange(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                      disabled={loadingProducts}
+                    >
+                      <option value="">
+                        {loadingProducts ? 'Loading products...' : 'Select a loan product'}
+                      </option>
+                      {loanProducts.map((product) => (
+                        <option key={product._id} value={product._id}>
+                          {product.productName} - {product.category} (Rate: {product.dailyInterestRate}% daily)
+                        </option>
+                      ))}
+                    </select>
+                    {selectedProduct && (
+                      <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-sm text-blue-800">
+                          <span className="font-semibold">Daily Interest Rate:</span> {selectedProduct.dailyInterestRate}% |
+                          <span className="font-semibold ml-2">Processing Fee:</span> {selectedProduct.processingFee}% |
+                          <span className="font-semibold ml-2">GST:</span> {selectedProduct.gst}%
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Tenure Selector */}
+                  {selectedProduct && (
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Loan Tenure (days)
+                      </label>
+                      {selectedProduct.allowedTenures && selectedProduct.allowedTenures.length > 0 ? (
+                        <select
+                          name="tenure"
+                          value={formData.tenure}
+                          onChange={(e) => setFormData(prev => ({ ...prev, tenure: e.target.value }))}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                        >
+                          {selectedProduct.allowedTenures.map((t: number) => (
+                            <option key={t} value={t.toString()}>
+                              {t} days
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type="number"
+                          name="tenure"
+                          value={formData.tenure}
+                          onChange={(e) => setFormData(prev => ({ ...prev, tenure: e.target.value }))}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                          placeholder="Enter tenure in days"
+                          min={selectedProduct.minTenure || 1}
+                          max={selectedProduct.maxTenure || 365}
+                        />
+                      )}
+                    </div>
+                  )}
+
+                  {/* EMI Calculation Display */}
+                  {emiCalculation && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-4 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-6 shadow-lg"
+                    >
+                      <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <Sparkles className="w-5 h-5 text-green-600 mr-2" />
+                        EMI Calculation Details
+                      </h3>
+
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="bg-white rounded-lg p-4 shadow-sm">
+                          <p className="text-xs text-gray-600 mb-1">Principal Amount</p>
+                          <p className="text-2xl font-bold text-gray-900">
+                            ₹{emiCalculation.principal.toLocaleString('en-IN')}
+                          </p>
+                        </div>
+                        <div className="bg-white rounded-lg p-4 shadow-sm">
+                          <p className="text-xs text-gray-600 mb-1">{emiCalculation.isLumpSum ? 'Total Repayment' : 'Monthly EMI'}</p>
+                          <p className="text-2xl font-bold text-green-600">
+                            ₹{emiCalculation.emi.toLocaleString('en-IN')}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-3 mb-4">
+                        <div className="bg-white rounded-lg p-3 shadow-sm">
+                          <p className="text-xs text-gray-600 mb-1">Total Interest</p>
+                          <p className="text-lg font-semibold text-gray-900">
+                            ₹{emiCalculation.totalInterest.toLocaleString('en-IN')}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            @ {emiCalculation.dailyInterestRate}% daily
+                          </p>
+                        </div>
+                        <div className="bg-white rounded-lg p-3 shadow-sm">
+                          <p className="text-xs text-gray-600 mb-1">Processing Fee</p>
+                          <p className="text-lg font-semibold text-gray-900">
+                            ₹{emiCalculation.processingFee.toLocaleString('en-IN')}
+                          </p>
+                        </div>
+                        <div className="bg-white rounded-lg p-3 shadow-sm">
+                          <p className="text-xs text-gray-600 mb-1">GST</p>
+                          <p className="text-lg font-semibold text-gray-900">
+                            ₹{emiCalculation.gst.toLocaleString('en-IN')}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg p-4 text-white">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="text-sm opacity-90 mb-1">Total Amount Payable</p>
+                            <p className="text-3xl font-bold">
+                              ₹{emiCalculation.totalAmount.toLocaleString('en-IN')}
+                            </p>
+                            <p className="text-xs opacity-80 mt-1">
+                              Over {emiCalculation.tenureValue} days{!emiCalculation.isLumpSum && ` (~${emiCalculation.tenureMonths} months)`}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm opacity-90 mb-1">Processing Fee (incl. GST)</p>
+                            <p className="text-xl font-bold">
+                              ₹{emiCalculation.totalProcessingFee.toLocaleString('en-IN')}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p className="text-xs text-yellow-800">
+                          <span className="font-semibold">Note:</span> This is an indicative calculation. Final EMI may vary based on approval terms and conditions.
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+
                     </>
                  )}
                 </motion.div>
