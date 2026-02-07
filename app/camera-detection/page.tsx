@@ -7,7 +7,7 @@ export default function CameraDetectionPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number>(0);
 
   const [isStreaming, setIsStreaming] = useState(false);
   const [faceDetected, setFaceDetected] = useState(false);
