@@ -65,7 +65,8 @@ function AuthorizeMandateContent() {
             if (token) params.append('token', token);
             if (applicationId) params.append('applicationId', applicationId);
 
-            const response = await fetch(`${API_URL}/api/mandate-checkout/details?${params}`);
+            // const response = await fetch(`${API_URL}/api/mandate-checkout/details?${params}`);
+            const response = await fetch(`${API_URL}/api/v2/mandate/details?${params}`);
             const data = await response.json();
 
             if (data.success) {
@@ -87,7 +88,8 @@ function AuthorizeMandateContent() {
             setProcessing(true);
             setError(null);
             // Create order
-            const response = await fetch(`${API_URL}/api/mandate-checkout/create-order`, {
+            // const response = await fetch(`${API_URL}/api/mandate-checkout/create-order`, {
+            const response = await fetch(`${API_URL}/api/v2/mandate/create-order`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -317,8 +319,8 @@ function AuthorizeMandateContent() {
                         <div className="bg-gray-50 rounded-xl p-4 mb-5">
                             <div className="grid grid-cols-2 gap-3 text-sm">
                                 <div>
-                                    <p className="text-gray-400 text-xs">Loan Number</p>
-                                    <p className="font-semibold text-gray-900">{mandateData?.loanNumber}</p>
+                                    <p className="text-gray-400 text-xs">Application Number</p>
+                                    <p className="font-semibold text-gray-900">{mandateData?.applicationNumber}</p>
                                 </div>
                                 <div className="text-right">
                                     <p className="text-gray-400 text-xs">Customer</p>
@@ -395,7 +397,7 @@ function AuthorizeMandateContent() {
                         <button
                             onClick={initiatePayment}
                             disabled={processing || !razorpayLoaded}
-                            className="w-full bg-gradient-to-r from-[#25B181] to-[#1D9068] text-white py-4 rounded-xl font-semibold text-base hover:opacity-95 transition disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg"
+                            className="w-full bg-gradient-to-r from-[#25B181] to-[#1D9068] text-white py-4 rounded-xl font-semibold text-base hover:opacity-95 transition disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg disabled:cursor-not-allowed"
                         >
                             {processing ? (
                                 <>
