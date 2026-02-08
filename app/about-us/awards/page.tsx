@@ -266,7 +266,7 @@ export default function AwardsPage() {
               Join thousands of satisfied customers who trust Quikkred for their financial needs
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Link href="/apply/quick">
+              <Link href="/apply/quick-v2">
                 <button
                   className="px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all"
                   style={{ backgroundColor: '#FFD600', color: '#145214' }}
