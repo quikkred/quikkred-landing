@@ -8,11 +8,10 @@ import { FieldErrors } from "@/lib/types/quickApply";
 import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
 import { AxiosError } from "axios";
 import { motion } from "framer-motion";
-import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle, IndianRupee, Loader2, Lock, Shield } from "lucide-react";
-import { useRef, useState, useCallback, useMemo } from "react";
+import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle, Loader2, Lock, Shield } from "lucide-react";
+import { useRef, useState, useCallback } from "react";
 import SelfieVerify from "./ui/SelfieVerify";
 import { calculateLoanDetails, formatCurrency } from "@/lib/constants/quickApplyV2";
-import { useApplication } from "@/contexts/ApplicationContext";
 
 // Regex Constants
 const REGEX = {
@@ -22,21 +21,20 @@ const REGEX = {
     IFSC_CLEAN: /[^A-Z0-9]/g
 };
 
-interface BankVerificationProps {
+interface Page3Props {
     formData: QuickApplyV2FormData;
     setFormData: React.Dispatch<React.SetStateAction<QuickApplyV2FormData>>;
-    // onNext: () => void;
-    // onBack: () => void;
+    onNext: () => void;
+    onBack: () => void;
 }
 
-const BankVerification = ({
+const Page3BankDetails = ({
     formData,
     setFormData,
-    // onNext,
-    // onBack,
-}: BankVerificationProps) => {
+    onNext,
+    onBack,
+}: Page3Props) => {
     const axios = useAxios();
-    const { getApplication, getCustomer } = useApplication();
 
     // UI States (Loading/Errors only, Data stays in formData)
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>(initialFieldErrors);
@@ -46,7 +44,6 @@ const BankVerification = ({
     const ifscTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const loanCalc = calculateLoanDetails(formData.loanAmount, formData.tenure);
-    const canProceed = useMemo(() => (formData.bankVerified && formData.selfieVerified), [formData]);
 
     // --- Helpers ---
 
@@ -67,7 +64,6 @@ const BankVerification = ({
             const response = await fetch(`https://ifsc.razorpay.com/${ifscCode}`);
             if (response.ok) {
                 const data = await response.json();
-                // console.log("bank razorpay", data)
                 updateFormData({
                     bankName: data.BANK,
                     // If you have a branch field in formData, set it here too
@@ -201,64 +197,15 @@ const BankVerification = ({
     };
 
     const handleSubmit = async () => {
-        if (!canProceed) {
-            toast({ variant: "warning", title: "Verification Required", description: "Please verify bank or selfie first" });
+        if (!formData.bankVerified) {
+            toast({ variant: "warning", title: "Verification Required", description: "Please verify bank details first" });
             return;
         }
         setSubmitLoading(true);
         // Simulate API call or navigation delay
-        // await new Promise(r => setTimeout(r, 500));
-        // onNext();
-
-        const nameParts = formData.fullName.trim().split(/\s+/);
-        const firstName = nameParts[0] || "";
-        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
-
-        const isBasicDetailsFilled = true;
-
-        const basicDetails = {
-            employmentType: formData.employmentType,
-            monthlyIncome: formData.monthlyIncome,
-            salaryDate: formData.salaryDate,
-            firstName,
-            lastName,
-            mobile: formData.mobile,
-            email: formData.email,
-            isBasicDetailsFilled,
-            dateOfBirth: formData.dob,
-            companyName: formData.companyName,
-            isSubmit: true,
-        }
-
-        try {
-            // const response = await axios.post("/api/mandate-checkout/generate-link", {
-            //     applicationId: application?._id,
-            // });
-            // if(response.status === 200 || response.status === 201){
-            //     console.log(response.data);
-            // }
-            const response = await axios.post("/api/v2/application/loan/create", {
-                basicDetails
-            });
-            if (response.status === 200 || response.status === 201) {
-                toast({
-                    variant: "success",
-                    title: "Application submitted successfully",
-                    description: "Your application has been received and is being reviewed. We’ll notify you of the next steps shortly."
-                });
-                getApplication();
-                getCustomer();
-                console.log("data", response.data);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        } catch (error: unknown) {
-            if (error instanceof AxiosError) {
-                console.log(error.response?.data);
-                toast({ variant: "error", title: error.response?.data?.message || "Internal server error" });
-            }
-        } finally {
-            setSubmitLoading(false);
-        }
+        await new Promise(r => setTimeout(r, 500));
+        onNext();
+        setSubmitLoading(false);
     };
 
     return (
@@ -293,7 +240,7 @@ const BankVerification = ({
                             onChange={handleFieldChange}
                             disabled={formData.bankVerified}
                             maxLength={11}
-                            className={`w-full px-4 py-3 placeholder:text-base border rounded-lg uppercase transition-all ${fieldErrors.ifsc ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-[#25B181]'
+                            className={`w-full px-4 py-3 border rounded-lg uppercase transition-all ${fieldErrors.ifsc ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-[#25B181]'
                                 } ${formData.bankVerified ? 'bg-gray-50' : ''}`}
                             placeholder="SBIN0001234"
                         />
@@ -312,7 +259,7 @@ const BankVerification = ({
                         name="bankName"
                         value={formData.bankName}
                         readOnly
-                        className={`w-full px-4 py-3 placeholder:text-base border border-gray-300 rounded-lg bg-gray-50 ${formData.bankName ? 'text-gray-900 font-medium' : 'text-gray-400'
+                        className={`w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 ${formData.bankName ? 'text-gray-900 font-medium' : 'text-gray-400'
                             }`}
                         placeholder="Auto-detected from IFSC"
                     />
@@ -329,7 +276,7 @@ const BankVerification = ({
                         value={formData.accountHolderName}
                         onChange={handleFieldChange}
                         disabled={formData.bankVerified}
-                        className={`w-full px-4 py-3 placeholder:text-base border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.accountHolderName ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.accountHolderName ? 'border-red-500' : 'border-gray-300'
                             }`}
                         placeholder="Name as per bank records"
                     />
@@ -345,7 +292,7 @@ const BankVerification = ({
                         onChange={handleFieldChange}
                         disabled={formData.bankVerified}
                         maxLength={18}
-                        className={`w-full px-4 py-3 placeholder:text-base border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.accountNumber ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.accountNumber ? 'border-red-500' : 'border-gray-300'
                             }`}
                         placeholder="9-18 digit number"
                     />
@@ -354,7 +301,7 @@ const BankVerification = ({
             </div>
 
             {/* ACTION: Verify Button */}
-            <div className="w-full">
+            <div className="pt-2">
                 <button
                     type="button"
                     onClick={verifyBankAccount}
@@ -364,7 +311,7 @@ const BankVerification = ({
                         !formData.bankName ||
                         formData.accountNumber.length < 9
                     }
-                    className={`w-full px-6 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${formData.bankVerified
+                    className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${formData.bankVerified
                         ? 'bg-green-100 text-green-700 border border-green-300 cursor-not-allowed'
                         : verifyLoading
                             ? 'bg-gray-300 text-gray-600 cursor-wait'
@@ -399,56 +346,10 @@ const BankVerification = ({
                 </div>
             </div>
 
-            <div className="bg-gray-50 rounded-xl p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                    <div className="flex justify-start items-center gap-2">
-                        <IndianRupee className="w-5 h-5 text-[#25B181]" />
-                        <span>Loan Details</span>
-                    </div>
-                    {formData && (
-                        <span className="text-xs font-normal text-gray-500 ml-2">(Based on your selected amount)</span>
-                    )}
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white rounded-lg px-4 py-2 border border-gray-200">
-                        <p className="text-xs sm:text-sm text-gray-500">Your Loan Amount</p>
-                        <p className="text-lg sm:text-xl font-bold text-[#25B181]">
-                            ₹{(formData?.loanAmount || 0).toLocaleString('en-IN')}
-                        </p>
-                    </div>
-                    <div className="bg-white rounded-lg px-4 py-2 border border-gray-200">
-                        <p className="text-xs sm:text-sm text-gray-500">Tenure</p>
-                        <p className="text-lg sm:text-xl font-bold text-gray-900">
-                            {formData?.tenure || 0} {(formData?.tenureUnit) === 'Days' ? 'Days' : 'Months'}
-                        </p>
-                    </div>
-                    <div className="bg-white rounded-lg px-4 py-2 border border-gray-200">
-                        <p className="text-xs sm:text-sm text-gray-500">Interest Rate</p>
-                        <p className="text-lg sm:text-xl font-bold text-gray-900">{(formData?.interestRate) || 0}%</p>
-                    </div>
-                    <div className="bg-white rounded-lg px-4 py-2 border border-gray-200">
-                        <p className="text-xs sm:text-sm text-gray-500">Interest Amount</p>
-                        <p className="text-lg sm:text-xl font-bold text-gray-900">₹{((formData?.totalInterest) || 0).toLocaleString('en-IN')}</p>
-                    </div>
-                    <div className="bg-white rounded-lg px-4 py-2 border border-gray-200">
-                        <p className="text-xs sm:text-sm text-gray-500">Processing Fee</p>
-                        <p className="text-lg sm:text-xl font-bold text-gray-900">₹{((formData?.processingFee) || 0).toLocaleString('en-IN')}</p>
-                    </div>
-                    <div className="bg-white rounded-lg px-4 py-2 border border-gray-200">
-                        <p className="text-xs sm:text-sm text-gray-500">GST on Processing Fee</p>
-                        <p className="text-lg sm:text-xl font-bold text-gray-900">₹{((formData?.gstOnProcessingFee) || 0).toLocaleString('en-IN')}</p>
-                    </div>
-                    <div className="bg-white rounded-lg px-4 py-2 border border-gray-200 col-span-2">
-                        <p className="text-xs sm:text-sm text-gray-500">Total Repayment</p>
-                        <p className="text-lg sm:text-xl font-bold text-gray-900">₹{((formData?.totalRepayment) || 0).toLocaleString('en-IN')}</p>
-                    </div>
-                </div>
-            </div>
-
             {/* Loan Summary */}
             <div className="bg-gradient-to-r from-[#25B181]/10 to-[#51C9AF]/10 rounded-lg sm:rounded-xl p-3 sm:p-4 space-y-1.5 sm:space-y-2">
                 <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="text-gray-600">You&apos;ll receive (Net Disbursal Amount)</span>
+                    <span className="text-gray-600">You&apos;ll receive</span>
                     <span className="font-semibold text-green-600">{formatCurrency(loanCalc.netDisbursalAmount)}</span>
                 </div>
                 <div className="flex justify-between text-xs sm:text-sm">
@@ -462,26 +363,8 @@ const BankVerification = ({
             </div>
 
             {/* Navigation */}
-            <button
-                onClick={handleSubmit}
-                disabled={submitLoading || !canProceed}
-                className="w-full py-2 text-sm bg-gradient-to-r disabled:cursor-not-allowed from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-xl font-semibold sm:text-base shadow-lg shadow-[#25B181]/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-            >
-                {submitLoading ? (
-                    <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span className="text-sm">Submitting...</span>
-                    </>
-                ) : (
-                    <>
-                        <span>Application Submit</span>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                        </svg>
-                    </>
-                )}
-            </button>
-            {/* <div className="grid grid-cols-2 gap-2 sm:gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                {/* Back button - disabled once PAN is verified */}
                 <button
                     type='button'
                     onClick={onBack}
@@ -504,7 +387,7 @@ const BankVerification = ({
                         Cannot go back after PAN verification
                         <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800" />
                     </div>
-                )} 
+                )}
 
                 <button
                     onClick={handleSubmit}
@@ -523,9 +406,9 @@ const BankVerification = ({
                         </>
                     )}
                 </button>
-            </div> */}
+            </div>
         </motion.div>
     );
 }
 
-export default BankVerification;
+export default Page3BankDetails;
