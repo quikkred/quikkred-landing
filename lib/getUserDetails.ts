@@ -24,6 +24,8 @@ export default async function getUserDetails(): Promise<User | null> {
   // @ts-ignore
   const accessToken: string | undefined = session.accessToken;
 
+  // console.log("access-token:", accessToken);
+
   if (!accessToken) return baseUser; // logged in but no backend token
 
   // 4) Fetch profile from your API using backend token
@@ -72,6 +74,7 @@ export default async function getUserDetails(): Promise<User | null> {
         s3Key: apiData.profile.s3Key || "",
         s3URL: apiData.profile.s3URL || "",
       } : null,
+      isSubmit: apiData?.isSubmit || false,
 
       // verified
       isEmailVerified: apiData.isEmailVerified || false,

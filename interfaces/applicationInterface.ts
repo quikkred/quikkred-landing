@@ -1,14 +1,6 @@
-import { User } from "@/contexts/AuthContext";
-
 /* -------------------- DOCUMENT -------------------- */
 export interface ApplicationDocument {
-    documentId: {
-        _id: string;
-        s3Key: string;
-        s3URL: string;
-        status: "UPLOADED" | "VERIFIED" | "REJECTED";
-        uploadedAt: string;
-    };
+    documentId: string;
     documentType: string;
     documentName: string;
 }
@@ -30,46 +22,52 @@ export interface DisbursementBankAccount {
     status: "PENDING" | "VERIFIED" | "REJECTED";
 }
 
-/* -------------------- BRE ERROR -------------------- */
-export interface ExternalApiError {
-    api: string;
-    message: string;
-    error: string;
-    at: string;
+/* -------------------- VERIFICATION CHECKLIST -------------------- */
+export interface VerificationChecklist {
+    identityVerification: {
+        panVerified: boolean;
+        aadhaarVerified: boolean;
+        bankAccountVerified: boolean;
+        agreementSigned: boolean;
+        faceMatchDone: boolean;
+        brePulled: boolean;
+        bsaPulled: boolean;
+        bsaToBrePulled: boolean;
+        manualBrePulled: boolean;
+    };
 }
 
-export interface ExternalApiResponseErr {
-    [key: string]: ExternalApiError;
+/* -------------------- BRE HISTORY -------------------- */
+export interface BreHistory {
+    brePulled: boolean;
+    brePulledAt: string;
+    breStatus: "APPROVED" | "REJECTED" | "PENDING";
 }
 
-/* -------------------- FINAL DECISION -------------------- */
-export interface FinalDecision {
-    Decision: "Approve" | "Reject";
-    LoanAmount: number | null;
-    RulesEvaluation: Record<string, boolean>;
-    DecisionReason: string;
-    version: string;
-    rule_engine_name: string;
+/* -------------------- FINFACTOR -------------------- */
+export interface FinfactorDetails {
+    transactions: any[]; // refine when schema is available
 }
 
 /* -------------------- MAIN APPLICATION -------------------- */
 export interface ApplicationInterface {
     _id: string;
 
-    customerId: User; // 👈 imported interface
-
     applicationNumber: string;
+    customerId: string;
 
-    status: "PENDING" | "APPROVED" | "REJECTED";
+    status: "PENDING" | "APPROVED" | "REJECTED" | "PROCEED TO BANK";
+    priority: "LOW" | "MEDIUM" | "HIGH";
 
     isSubmit: boolean;
     isDeleted: boolean;
 
     requestedLoanAmount: number;
-    approvedLoanAmount: number;
     breApprovedLoanAmount: number;
+    approvedLoanAmount: number;
 
     tenure: number;
+    tenureUnit: "Days" | "Months";
     interestRate: number;
 
     emiAmount: number;
@@ -77,7 +75,10 @@ export interface ApplicationInterface {
     totalRepayment: number;
 
     processingFee: number;
+    processingPercent: number;
     gstOnProcessingFee: number;
+    gstOnProcessingPercent: number;
+
     netDisbursalAmount: number;
 
     cibilScore: number;
@@ -86,31 +87,27 @@ export interface ApplicationInterface {
     fraudScore: number;
     autoDecisionScore: number;
 
-    autopayStatus: "created" | "active" | "failed" | "cancelled";
+    paymentDetails: any[];
+
+    disbursementStatus: "NOT_PAYMENT" | "PAID" | "FAILED";
+    disbursementBankAccount: DisbursementBankAccount;
+
+    autopayStatus: "created" | "active" | "failed" | "cancelled" | null;
     emandateCancelled: boolean;
-
-    autopayAuthUrl?: string;
-    autopaySetupDate?: string;
-
-    razorpayPlanId?: string;
-    razorpaySubscriptionId?: string;
-
     autopayNotificationsSent: AutopayNotification[];
+
+    collectionRetryCount: number;
+
+    verificationChecklist: VerificationChecklist;
+    breHistory: BreHistory;
+    finfactor: FinfactorDetails;
 
     documents: ApplicationDocument[];
 
-    paymentDetails: any[]; // refine later if schema available
+    statusHistory: any[];
+    internalNotes: any[];
 
-    disbursementStatus: "NOT_PAYMENT" | "PAID" | "FAILED";
-
-    disbursementBankAccount?: DisbursementBankAccount;
-
-    externalApiResponseErr?: ExternalApiResponseErr;
-
-    finalDecision?: FinalDecision;
-
-    lastModifiedBy: string;
-
+    appliedDate: string;
     createdAt: string;
     updatedAt: string;
 
