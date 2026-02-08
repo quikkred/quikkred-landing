@@ -155,19 +155,10 @@ export const getInitialFormData = (): QuickApplyV2FormData => ({
     ipData: null,
     bankVerified: false,
     firstName: "",
-    lastName: "",
-    customerId: "",
+    lastName: "", 
+    customerId:"",
     upiAutoPayStatus: false,
     brePulled: false,
-    breStatus: "Pending",
-
-    interestRate: 0,
-    totalInterest: 0,
-    processingFee: 0,
-    totalRepayment: 0,
-    tenureUnit: "Days",
-    gstOnProcessingFee: 0,
-    netDisbursalAmount: 0,
 
     // Page 1
     mobile: '',
