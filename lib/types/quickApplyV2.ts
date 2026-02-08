@@ -20,13 +20,23 @@ export interface QuickApplyV2FormData {
     pincode: string;
     city: string;
     state: string;
+    productId?: string; // Loan product ID
     loanAmount: number;
     tenure: number; // in days: 7, 15, 30
     employmentType: 'SALARIED' | 'SELF-EMPLOYED';
     monthlyIncome: string;
     salaryDate: number; // 1-31
     brePulled: boolean;
+    breStatus: string;
     companyName: string;
+    tenureUnit: string;
+    gstOnProcessingFee: number;
+    netDisbursalAmount: number;
+
+    interestRate: number,
+    totalInterest: number,
+    processingFee: number,
+    totalRepayment: number,
 
     // Page 2: PAN & Bank
     pan: string;
@@ -56,6 +66,7 @@ export interface QuickApplyV2FormData {
     selfieVerified: boolean;
     selfieData: SelfieData | null;
     eSignCompleted: boolean;
+    bsaInitiated?: boolean; // Bank Statement Analysis initiated
 
     // References (Post-Approval)
     reference1Name: string;
