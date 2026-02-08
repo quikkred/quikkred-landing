@@ -1219,8 +1219,7 @@ export default function QuickLoanApplication() {
     }
 
     // Check verification (logged-in users are auto-verified)
-    // TEMPORARILY: Skip email OTP verification since DigiLocker handles it
-    const isVerified = user ? true : true; // (verificationMethod === 'email' ? formData.emailVerified : formData.mobileVerified);
+    const isVerified = user ? true : (verificationMethod === 'email' ? formData.emailVerified : formData.mobileVerified);
     if (!isVerified) return false;
 
     // Full Name validation
@@ -2811,10 +2810,9 @@ export default function QuickLoanApplication() {
       let hasError = false;
 
       // For logged-in users, skip verification check
-      // TEMPORARILY: Skip email OTP verification since DigiLocker handles it
-      const isVerified = user ? true : true; // (verificationMethod === 'email' ? formData.emailVerified : formData.mobileVerified);
+      const isVerified = user ? true : (verificationMethod === 'email' ? formData.emailVerified : formData.mobileVerified);
 
-      // Verification check for non-logged in users (temporarily disabled)
+      // Verification check for non-logged in users
       if (!user && !isVerified) {
         toast({
           variant: "warning",
@@ -3719,8 +3717,8 @@ export default function QuickLoanApplication() {
 
                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Basic Details</h2>
 
-                  {/* Email OTP Verification - TEMPORARILY COMMENTED OUT (DigiLocker handles verification) */}
-                  {/* {!user && verificationMethod === 'email' && (
+                  {/* Email Verification - Only show for non-logged in users */}
+                  {!user && verificationMethod === 'email' && (
                     <>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -3754,12 +3752,14 @@ export default function QuickLoanApplication() {
                             placeholder="your@email.com"
                           />
 
+                          {/* Send/Resend OTP button (only if not verified) */}
                           {!formData.emailVerified && !basicDetailsFilled && (
                             <button
                               onClick={async () => {
                                 const email = formData.email;
                                 const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+                                // Validate email before sending OTP
                                 if (!regex.test(email)) {
                                   setFieldErrors((prev) => ({
                                     ...prev,
@@ -3768,11 +3768,12 @@ export default function QuickLoanApplication() {
                                   return;
                                 }
 
+                                // Clear error
                                 setFieldErrors((prev) => ({ ...prev, email: "" }));
 
                                 setLoading(true);
                                 try {
-                                  await sendOTP();
+                                  await sendOTP(); // call your API
                                 } finally {
                                   setLoading(false);
                                 }
@@ -3784,11 +3785,13 @@ export default function QuickLoanApplication() {
                             </button>
                           )}
 
+                          {/* If email verified show green check */}
                           {(formData.emailVerified || basicDetailsFilled) && (
                             <CheckCircle className="w-10 h-10 text-green-600" />
                           )}
                         </div>
 
+                        {/* Error or helper text */}
                         {fieldErrors.email ? (
                           <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
                         ) : (
@@ -3825,10 +3828,10 @@ export default function QuickLoanApplication() {
                         </div>
                       )}
                     </>
-                  )} */}
+                  )}
 
-                  {/* Mobile OTP Verification - TEMPORARILY COMMENTED OUT (DigiLocker handles verification) */}
-                  {/* {!user && verificationMethod === 'mobile' && (
+                  {/* Mobile Verification - Only show for non-logged in users */}
+                  {!user && verificationMethod === 'mobile' && (
                     <>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -3891,7 +3894,7 @@ export default function QuickLoanApplication() {
                         </div>
                       )}
                     </>
-                  )} */}
+                  )}
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -3988,72 +3991,105 @@ export default function QuickLoanApplication() {
                     </>
                   ) : (
                     <>
-                      {/* Email, Mobile, DOB for non-logged-in users */}
+                      {verificationMethod === 'email' && (
+                        <>
+                          {/* Mobile + DOB side by side for email verification */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Mobile Number *
+                              </label>
+                              <input
+                                type="tel"
+                                name="mobile"
+                                value={formData.mobile}
+                                onChange={handleChange}
+                                onBlur={handleMobileBlur}
+                                disabled={basicDetailsFilled}
+                                maxLength={10}
+                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
+                                  } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                placeholder="9876543210"
+                              />
+                              {fieldErrors.mobile && (
+                                <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
+                              )}
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Date of Birth *
+                              </label>
+                              <input
+                                type="date"
+                                name="dob"
+                                value={formData.dob}
+                                onChange={handleChange}
+                                disabled={basicDetailsFilled}
+                                max={(() => {
+                                  const date = new Date();
+                                  date.setFullYear(date.getFullYear() - 18);
+                                  return date.toISOString().split('T')[0];
+                                })()}
+                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
+                                  } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                required
+                              />
+                              {fieldErrors.dob && (
+                                <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
+                              )}
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {verificationMethod === 'mobile' && (
+                        <>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Email Address *
+                            </label>
+                            <input
+                              type="email"
+                              name="email"
+                              value={formData.email}
+                              onChange={handleChange}
+                              disabled={formData.emailVerified || basicDetailsFilled}
+                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'
+                                } ${(formData.emailVerified || basicDetailsFilled) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                              placeholder="your@email.com"
+                            />
+                            {fieldErrors.email ? (
+                              <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+                            ) : (
+                              <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
+                            )}
+                          </div>
+                      {/* DOB for mobile verification */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Email Address *
+                          Date of Birth *
                         </label>
                         <input
-                          type="email"
-                          name="email"
-                          value={formData.email}
+                          type="date"
+                          name="dob"
+                          value={formData.dob}
                           onChange={handleChange}
                           disabled={basicDetailsFilled}
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'
+                          max={(() => {
+                            const date = new Date();
+                            date.setFullYear(date.getFullYear() - 18);
+                            return date.toISOString().split('T')[0];
+                          })()}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
                             } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                          placeholder="your@email.com"
+                          required
                         />
-                        {fieldErrors.email ? (
-                          <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
-                        ) : (
-                          <p className="mt-1 text-xs text-gray-500">We&apos;ll use this email for all loan communication</p>
+                        {fieldErrors.dob && (
+                          <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
                         )}
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Mobile Number *
-                          </label>
-                          <input
-                            type="tel"
-                            name="mobile"
-                            value={formData.mobile}
-                            onChange={handleChange}
-                            onBlur={handleMobileBlur}
-                            disabled={basicDetailsFilled}
-                            maxLength={10}
-                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
-                              } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                            placeholder="9876543210"
-                          />
-                          {fieldErrors.mobile && (
-                            <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
-                          )}
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Date of Birth *
-                          </label>
-                          <input
-                            type="date"
-                            name="dob"
-                            value={formData.dob}
-                            onChange={handleChange}
-                            disabled={basicDetailsFilled}
-                            max={(() => {
-                              const date = new Date();
-                              date.setFullYear(date.getFullYear() - 18);
-                              return date.toISOString().split('T')[0];
-                            })()}
-                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
-                              } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                            required
-                          />
-                          {fieldErrors.dob && (
-                            <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
-                          )}
-                        </div>
-                      </div>
+                        </>
+                      )}
                     </>
                   )}
 
