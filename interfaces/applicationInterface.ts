@@ -1,6 +1,14 @@
+import { User } from "@/contexts/AuthContext";
+
 /* -------------------- DOCUMENT -------------------- */
 export interface ApplicationDocument {
-    documentId: string;
+    documentId: {
+        _id: string;
+        s3Key: string;
+        s3URL: string;
+        status: "UPLOADED" | "VERIFIED" | "REJECTED";
+        uploadedAt: string;
+    };
     documentType: string;
     documentName: string;
 }
@@ -22,52 +30,46 @@ export interface DisbursementBankAccount {
     status: "PENDING" | "VERIFIED" | "REJECTED";
 }
 
-/* -------------------- VERIFICATION CHECKLIST -------------------- */
-export interface VerificationChecklist {
-    identityVerification: {
-        panVerified: boolean;
-        aadhaarVerified: boolean;
-        bankAccountVerified: boolean;
-        agreementSigned: boolean;
-        faceMatchDone: boolean;
-        brePulled: boolean;
-        bsaPulled: boolean;
-        bsaToBrePulled: boolean;
-        manualBrePulled: boolean;
-    };
+/* -------------------- BRE ERROR -------------------- */
+export interface ExternalApiError {
+    api: string;
+    message: string;
+    error: string;
+    at: string;
 }
 
-/* -------------------- BRE HISTORY -------------------- */
-export interface BreHistory {
-    brePulled: boolean;
-    brePulledAt: string;
-    breStatus: "APPROVED" | "REJECTED" | "PENDING";
+export interface ExternalApiResponseErr {
+    [key: string]: ExternalApiError;
 }
 
-/* -------------------- FINFACTOR -------------------- */
-export interface FinfactorDetails {
-    transactions: any[]; // refine when schema is available
+/* -------------------- FINAL DECISION -------------------- */
+export interface FinalDecision {
+    Decision: "Approve" | "Reject";
+    LoanAmount: number | null;
+    RulesEvaluation: Record<string, boolean>;
+    DecisionReason: string;
+    version: string;
+    rule_engine_name: string;
 }
 
 /* -------------------- MAIN APPLICATION -------------------- */
 export interface ApplicationInterface {
     _id: string;
 
-    applicationNumber: string;
-    customerId: string;
+    customerId: User; // 👈 imported interface
 
-    status: "PENDING" | "APPROVED" | "REJECTED" | "PROCEED TO BANK";
-    priority: "LOW" | "MEDIUM" | "HIGH";
+    applicationNumber: string;
+
+    status: "PENDING" | "APPROVED" | "REJECTED";
 
     isSubmit: boolean;
     isDeleted: boolean;
 
     requestedLoanAmount: number;
-    breApprovedLoanAmount: number;
     approvedLoanAmount: number;
+    breApprovedLoanAmount: number;
 
     tenure: number;
-    tenureUnit: "Days" | "Months";
     interestRate: number;
 
     emiAmount: number;
@@ -75,10 +77,7 @@ export interface ApplicationInterface {
     totalRepayment: number;
 
     processingFee: number;
-    processingPercent: number;
     gstOnProcessingFee: number;
-    gstOnProcessingPercent: number;
-
     netDisbursalAmount: number;
 
     cibilScore: number;
@@ -87,27 +86,31 @@ export interface ApplicationInterface {
     fraudScore: number;
     autoDecisionScore: number;
 
-    paymentDetails: any[];
-
-    disbursementStatus: "NOT_PAYMENT" | "PAID" | "FAILED";
-    disbursementBankAccount: DisbursementBankAccount;
-
-    autopayStatus: "created" | "active" | "failed" | "cancelled" | null;
+    autopayStatus: "created" | "active" | "failed" | "cancelled";
     emandateCancelled: boolean;
+
+    autopayAuthUrl?: string;
+    autopaySetupDate?: string;
+
+    razorpayPlanId?: string;
+    razorpaySubscriptionId?: string;
+
     autopayNotificationsSent: AutopayNotification[];
-
-    collectionRetryCount: number;
-
-    verificationChecklist: VerificationChecklist;
-    breHistory: BreHistory;
-    finfactor: FinfactorDetails;
 
     documents: ApplicationDocument[];
 
-    statusHistory: any[];
-    internalNotes: any[];
+    paymentDetails: any[]; // refine later if schema available
 
-    appliedDate: string;
+    disbursementStatus: "NOT_PAYMENT" | "PAID" | "FAILED";
+
+    disbursementBankAccount?: DisbursementBankAccount;
+
+    externalApiResponseErr?: ExternalApiResponseErr;
+
+    finalDecision?: FinalDecision;
+
+    lastModifiedBy: string;
+
     createdAt: string;
     updatedAt: string;
 
