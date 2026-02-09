@@ -1,5 +1,5 @@
 "use client";
-import { Biohazard, Bot, Clock, Mail, Phone } from "lucide-react";
+import { Biohazard, Bot, Clock, Mail, Phone, User, MessageSquare, Tag} from "lucide-react";
 import { useState, ChangeEvent, FormEvent, DragEvent } from "react";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
@@ -11,14 +11,8 @@ export default function ComplaintForm() {
   const [complaintId, setComplaintId] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [errors, setErrors] = useState({
-    name: "",
-    email: "",
-    phone: "",
-  });
-  const handleTextareaChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setCharCount(e.target.value.length);
-  };
+  const [errors, setErrors] = useState({name: "", email: "", phone: ""});
+  const handleTextareaChange = (e: ChangeEvent<HTMLTextAreaElement>) => {setCharCount(e.target.value.length)};
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     files.forEach((file) => {
@@ -37,16 +31,13 @@ export default function ComplaintForm() {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
     const formData = new FormData(form);
-
     const nameError = validateName(formData.get("name") as string);
     const emailError = validateEmail(formData.get("email") as string);
     const phoneError = validatePhone(formData.get("phone") as string);
-
     if (nameError || emailError || phoneError) {
       setErrors({ name: nameError, email: emailError, phone: phoneError });
       return;
     }
-
     const randomId = Math.floor(100000 + Math.random() * 900000).toString();
     setComplaintId(randomId);
     setShowSuccess(true);
@@ -57,7 +48,6 @@ export default function ComplaintForm() {
   };
   const handleReset = () => {
     setShowResetConfirm(true);
-    // Small delay to ensure modal is rendered before scrolling
     setTimeout(() => {
       const modalElement = document.querySelector(
         ".fixed.inset-0.bg-black\\/50",
@@ -88,7 +78,6 @@ export default function ComplaintForm() {
     }
     return "";
   };
-
   const validateEmail = (value: string) => {
     if (value.length === 0) return "";
     if (
@@ -98,7 +87,6 @@ export default function ComplaintForm() {
     }
     return "";
   };
-
   const validatePhone = (value: string) => {
     if (value.length === 0) return "";
     if (!/^\d{10}$/.test(value)) {
@@ -110,12 +98,10 @@ export default function ComplaintForm() {
     const value = e.target.value;
     setErrors((prev) => ({ ...prev, name: validateName(value) }));
   };
-
   const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setErrors((prev) => ({ ...prev, email: validateEmail(value) }));
   };
-
   const handlePhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setErrors((prev) => ({ ...prev, phone: validatePhone(value) }));
@@ -223,19 +209,25 @@ export default function ComplaintForm() {
                 <label className="block font-semibold text-[#2d3748] mb-2 text-sm">
                   Full Name <span className="text-[#e53e3e] ml-1">*</span>
                 </label>
-                <input
-                  type="text"
-                  name="name"
-                  required
-                  autoComplete="off"
-                  placeholder="Enter your full name"
-                  onChange={handleNameChange}
-                  className={`w-full p-3 px-4 border-2 rounded-lg text-[15px] transition-all duration-300 bg-white focus:outline-none ${
-                    errors.name
-                      ? "border-[#e53e3e] focus:border-[#e53e3e] focus:shadow-[0_0_0_3px_rgba(229,62,62,0.1)]"
-                      : "border-[#e2e8f0] focus:border-[#14b8a6] focus:shadow-[0_0_0_3px_rgba(20,184,166,0.1)]"
-                  }`}
-                />
+                <div className="relative">
+                  <User
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[#718096]"
+                    size={20}
+                  />
+                  <input
+                    type="text"
+                    name="name"
+                    required
+                    autoComplete="off"
+                    placeholder="Enter your full name"
+                    onChange={handleNameChange}
+                    className={`w-full p-3 pl-11 pr-4 border-2 rounded-lg text-[15px] transition-all duration-300 bg-white focus:outline-none ${
+                      errors.name
+                        ? "border-[#e53e3e] focus:border-[#e53e3e] focus:shadow-[0_0_0_3px_rgba(229,62,62,0.1)]"
+                        : "border-[#e2e8f0] focus:border-[#14b8a6] focus:shadow-[0_0_0_3px_rgba(20,184,166,0.1)]"
+                    }`}
+                  />
+                </div>
                 {errors.name && (
                   <div className="mt-2 flex items-center gap-2 text-[#e53e3e] text-sm animate-[slideDown_0.2s_ease]">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -259,19 +251,25 @@ export default function ComplaintForm() {
                 <label className="block font-semibold text-[#2d3748] mb-2 text-sm">
                   Email Address <span className="text-[#e53e3e] ml-1">*</span>
                 </label>
-                <input
-                  type="email"
-                  name="email"
-                  required
-                  autoComplete="off"
-                  placeholder="your.email@example.com"
-                  onChange={handleEmailChange}
-                  className={`w-full p-3 px-4 border-2 rounded-lg text-[15px] transition-all duration-300 bg-white focus:outline-none ${
-                    errors.email
-                      ? "border-[#e53e3e] focus:border-[#e53e3e] focus:shadow-[0_0_0_3px_rgba(229,62,62,0.1)]"
-                      : "border-[#e2e8f0] focus:border-[#14b8a6] focus:shadow-[0_0_0_3px_rgba(20,184,166,0.1)]"
-                  }`}
-                />
+                <div className="relative">
+                  <Mail
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[#718096]"
+                    size={20}
+                  />
+                  <input
+                    type="email"
+                    name="email"
+                    required
+                    autoComplete="off"
+                    placeholder="your.email@example.com"
+                    onChange={handleEmailChange}
+                    className={`w-full p-3 pl-11 pr-4 border-2 rounded-lg text-[15px] transition-all duration-300 bg-white focus:outline-none ${
+                      errors.email
+                        ? "border-[#e53e3e] focus:border-[#e53e3e] focus:shadow-[0_0_0_3px_rgba(229,62,62,0.1)]"
+                        : "border-[#e2e8f0] focus:border-[#14b8a6] focus:shadow-[0_0_0_3px_rgba(20,184,166,0.1)]"
+                    }`}
+                  />
+                </div>
                 {errors.email && (
                   <div className="mt-2 flex items-center gap-2 text-[#e53e3e] text-sm animate-[slideDown_0.2s_ease]">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -295,20 +293,26 @@ export default function ComplaintForm() {
                 <label className="block font-semibold text-[#2d3748] mb-2 text-sm">
                   Phone Number <span className="text-[#e53e3e] ml-1">*</span>
                 </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  required
-                  autoComplete="off"
-                  placeholder="+1 (555) 000-0000"
-                  onChange={handlePhoneChange}
-                  maxLength={10}
-                  className={`w-full p-3 px-4 border-2 rounded-lg text-[15px] transition-all duration-300 bg-white focus:outline-none ${
-                    errors.phone
-                      ? "border-[#e53e3e] focus:border-[#e53e3e] focus:shadow-[0_0_0_3px_rgba(229,62,62,0.1)]"
-                      : "border-[#e2e8f0] focus:border-[#14b8a6] focus:shadow-[0_0_0_3px_rgba(20,184,166,0.1)]"
-                  }`}
-                />
+                <div className="relative">
+                  <Phone
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[#718096]"
+                    size={20}
+                  />
+                  <input
+                    type="tel"
+                    name="phone"
+                    required
+                    autoComplete="off"
+                    placeholder="0123456789"
+                    onChange={handlePhoneChange}
+                    maxLength={10}
+                    className={`w-full p-3 pl-11 pr-4 border-2 rounded-lg text-[15px] transition-all duration-300 bg-white focus:outline-none ${
+                      errors.phone
+                        ? "border-[#e53e3e] focus:border-[#e53e3e] focus:shadow-[0_0_0_3px_rgba(229,62,62,0.1)]"
+                        : "border-[#e2e8f0] focus:border-[#14b8a6] focus:shadow-[0_0_0_3px_rgba(20,184,166,0.1)]"
+                    }`}
+                  />
+                </div>
                 {errors.phone && (
                   <div className="mt-2 flex items-center gap-2 text-[#e53e3e] text-sm animate-[slideDown_0.2s_ease]">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -333,32 +337,44 @@ export default function ComplaintForm() {
                   Complaint Category{" "}
                   <span className="text-[#e53e3e] ml-1">*</span>
                 </label>
-                <select
-                  required
-                  className="w-full p-3 px-4 pr-10 border-2 border-[#e2e8f0] rounded-lg text-[15px] transition-all duration-300 bg-white cursor-pointer appearance-none bg-[url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 12 12%27%3E%3Cpath fill=%27%234a5568%27 d=%27M6 9L1 4h10z%27/%3E%3C/svg%3E')] bg-no-repeat bg-[right_16px_center] focus:outline-none focus:border-[#14b8a6] focus:shadow-[0_0_0_3px_rgba(20,184,166,0.1)]"
-                >
-                  <option value="">Select a category</option>
-                  <option value="Disbursement">
-                    Disbursement and Application related
-                  </option>
-                  <option value="Repayment">Repayment and billing</option>
-                  <option value="Collection">Collection and Behaviour</option>
-                  <option value="Technical">Technical and Accounts</option>
-                </select>
+                <div className="relative">
+                  <Tag
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-[#718096]"
+                    size={20}
+                  />
+                  <select
+                    required
+                    className="w-full p-3 pl-11 pr-10 border-2 border-[#e2e8f0] rounded-lg text-[15px] transition-all duration-300 bg-white cursor-pointer appearance-none bg-[url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 12 12%27%3E%3Cpath fill=%27%234a5568%27 d=%27M6 9L1 4h10z%27/%3E%3C/svg%3E')] bg-no-repeat bg-[right_16px_center] focus:outline-none focus:border-[#14b8a6] focus:shadow-[0_0_0_3px_rgba(20,184,166,0.1)]"
+                  >
+                    <option value="">Select a category</option>
+                    <option value="Disbursement">
+                      Disbursement and Application related
+                    </option>
+                    <option value="Repayment">Repayment and billing</option>
+                    <option value="Collection">Collection and Behaviour</option>
+                    <option value="Technical">Technical and Accounts</option>
+                  </select>
+                </div>
               </div>
               <div className="mb-6">
                 <label className="block font-semibold text-[#2d3748] mb-2 text-sm">
                   Complaint Details{" "}
                   <span className="text-[#e53e3e] ml-1">*</span>
                 </label>
-                <textarea
-                  required
-                  placeholder="Please describe your complaint in detail. Include dates, times, and any relevant information..."
-                  maxLength={1000}
-                  onChange={handleTextareaChange}
-                  className="w-full p-3 px-4 border-2 border-[#e2e8f0] rounded-lg text-[15px] transition-all duration-300 bg-white resize-y min-h-[120px] focus:outline-none focus:border-[#14b8a6] focus:shadow-[0_0_0_3px_rgba(20,184,166,0.1)]"
-                />
-                <div className="text-right text-[13px] text-[#718096] mt-[-3.5]">
+                <div className="relative">
+                  <MessageSquare
+                    className="absolute left-3 top-3 text-[#718096]"
+                    size={20}
+                  />
+                  <textarea
+                    required
+                    placeholder="Please describe your complaint in detail. Include dates, times, and any relevant information..."
+                    maxLength={1000}
+                    onChange={handleTextareaChange}
+                    className="w-full p-3 pl-11 pr-4 border-2 border-[#e2e8f0] rounded-lg text-[15px] transition-all duration-300 bg-white resize-y min-h-[120px] focus:outline-none focus:border-[#14b8a6] focus:shadow-[0_0_0_3px_rgba(20,184,166,0.1)]"
+                  />
+                </div>
+                <div className="text-right text-[13px] text-[#718096] mt-[-4.5]">
                   <span>{charCount}</span>/1000 characters
                 </div>
               </div>
@@ -393,7 +409,6 @@ export default function ComplaintForm() {
                       : "No, skip this step"}
                   </span>
                 </div>
-
                 {/* Upload Section - Only shown when toggle is ON */}
                 {showUpload && (
                   <>
@@ -455,7 +470,6 @@ export default function ComplaintForm() {
                         </span>
                       </label>
                     </div>
-
                     <div>
                       {uploadedFiles.map((file, index) => (
                         <div
