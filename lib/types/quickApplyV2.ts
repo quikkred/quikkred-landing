@@ -37,6 +37,7 @@ export interface QuickApplyV2FormData {
     totalInterest: number,
     processingFee: number,
     totalRepayment: number,
+    interestAmount: number;
 
     // Page 2: PAN & Bank
     pan: string;
