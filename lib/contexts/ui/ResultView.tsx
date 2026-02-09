@@ -202,9 +202,9 @@ const ResultView = ({
                             {data.applicationNumber || data.applicationId}
                         </p>
                         {data?.reason && (
-                             <p className="text-xs text-blue-600 mt-2 px-2">
+                            <p className="text-xs text-blue-600 mt-2 px-2">
                                 {data.reason}
-                             </p>
+                            </p>
                         )}
                     </motion.div>
                 )}

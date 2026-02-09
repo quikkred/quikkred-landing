@@ -161,6 +161,7 @@ export const getInitialFormData = (): QuickApplyV2FormData => ({
     brePulled: false,
     breStatus: "Pending",
     interestAmount: 0,
+    approvedLoanAmount: 0,
     bsaInitiated: false,
     productId: "",
 
