@@ -13,7 +13,6 @@ import { TRACKING_EVENTS } from "@/lib/constants/quickApplyV2";
 import { useApplication } from "@/contexts/ApplicationContext";
 import { AlertCircle, Ban } from "lucide-react";
 import BankVerification from "../BankVerification";
-import ApproveMandate from "../ApproveMandate";
 import ApplicationSuccess from "./ApplicationSuccess";
 
 // export type FormStepsType = "eligibility" | "bank" | "mandate";
@@ -43,7 +42,6 @@ const FormSteps = ({
     performIPCheck,
 }: FormStepsProps) => {
     const { user } = useAuth();
-    const isLogin = useMemo(() => (user?.isEmailVerified || user?.isMobileVerified), [user]);
     const currentStep = useMemo(() => (step === "eligibility" ? 2 : step === "bank" ? 3 : 1), [step]);
 
     const handleChangeStep = (nextStep: FormStepsType) => {
@@ -106,19 +104,8 @@ const FormSteps = ({
                                     key="bank"
                                     formData={formData}
                                     setFormData={setFormData}
-                                    // onNext={() => handleChangeStep("bank")}
-                                    // onBack={() => handleChangeStep("eligibility")}
                                 />
                             )}
-
-                            {/* {step === 'mandate' && (
-                                <ApproveMandate
-                                    key="mandate"
-                                    formData={formData}
-                                    setFormData={setFormData}
-                                    onBack={() => handleChangeStep("bank")}
-                                />
-                            )} */}
                         </AnimatePresence>
                     </div>
                 </>

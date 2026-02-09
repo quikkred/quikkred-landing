@@ -32,7 +32,7 @@ const getApplicationDetails = async (): Promise<ApplicationInterface | null> => 
         }
 
         const data = (result?.data?.[0] || result?.data) as ApplicationInterface;
-        if(Array.isArray(data) && data.length === 0){
+        if (Array.isArray(data) && data.length === 0) {
             return null;
         }
 

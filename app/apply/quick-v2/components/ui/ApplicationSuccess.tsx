@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -78,7 +79,7 @@ const ApplicationSuccess = ({
                         <div className="text-center border-b border-gray-100 pb-4 mb-4">
                             <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Approved Loan Amount</p>
                             <div className="text-3xl font-extrabold text-emerald-600 flex items-center justify-center">
-                                {formatCurrency(formData?.loanAmount)}
+                                {formatCurrency(formData?.approvedLoanAmount)}
                             </div>
                         </div>
 
