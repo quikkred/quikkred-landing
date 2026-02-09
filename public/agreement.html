@@ -298,12 +298,10 @@
             grid-template-columns: 1fr 1fr;
             gap: 40px;
             margin-top: 20px;
-            align-items: stretch;
         }
 
         .signature-box {
             text-align: center;
-            height: 100%;
         }
 
         .esign-box {
@@ -313,11 +311,6 @@
             background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
             border-radius: 12px;
             min-height: 180px;
-            height: 100%;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
         }
 
         .esign-box .icon {
@@ -339,7 +332,7 @@
         }
 
         .esign-box .details {
-            margin-top: auto;
+            margin-top: 15px;
             font-size: 9px;
             color: #666;
             line-height: 1.6;
@@ -827,7 +820,7 @@
                     '{{LOCKIN_PERIOD}}': '15',
                     '{{DEFAULT_DAYS}}': '30',
                     '{{DISBURSEMENT_TAT}}': '24-48 hours',
-                    '{{JURISDICTION}}': getValue(data.city) !== 'N/A' ? data.city : 'New Delhi',
+                    '{{JURISDICTION}}': getValue(data.city) !== 'N/A' ? data.city : 'Mumbai',
                     '{{COOLING_OFF_HOURS}}': '48',
                     '{{GRIEVANCE_EMAIL}}': 'grievance@quikkred.in',
                     '{{GRIEVANCE_PHONE}}': '+91-9311913854',
@@ -840,7 +833,7 @@
                     '{{LENDER_AUTH_REF}}': 'AUTH' + Date.now(),
 
                     // Footer Details
-                    '{{REGISTERED_ADDRESS}}': '1008, 10th Floor, Vikrant Tower, Rajendra Place, New Delhi - 110005',
+                    '{{REGISTERED_ADDRESS}}': 'Mumbai, Maharashtra',
                     '{{SUPPORT_EMAIL}}': 'support@quikkred.in',
                     '{{SUPPORT_PHONE}}': '+91-9311913854',
                     '{{WEBSITE}}': 'www.quikkred.in',
@@ -1040,7 +1033,7 @@
                     </div>
                     <div class="loan-item">
                         <div class="amount">₹{{PROCESSING_FEE}}</div>
-                        <div class="label">Processing Fee ({{PROCESSING_FEE_PERCENT}}%)</div>
+                        <div class="label">Platform Fee ({{PROCESSING_FEE_PERCENT}}%)</div>
                     </div>
                     <div class="loan-item highlight">
                         <div class="amount">₹{{DISBURSEMENT_AMOUNT}}</div>
@@ -1125,7 +1118,7 @@
 
                     <li><strong>Repayment:</strong> The Borrower agrees to repay the loan as per the repayment schedule mentioned above. The EMI/repayment amount shall be auto-debited from the Borrower's registered bank account on the due date(s) via eNACH/eMandate. The Borrower authorizes Quikkred to initiate such debits.</li>
 
-                    <li><strong>Interest & Charges:</strong> The applicable interest rate is {{INTEREST_RATE}}% {{INTEREST_TYPE}} ({{APR}}% APR). Processing fee of {{PROCESSING_FEE_PERCENT}}% is deducted upfront. GST at {{GST_RATE}}% is applicable on fees and charges.</li>
+                    <li><strong>Interest & Charges:</strong> The applicable interest rate is {{INTEREST_RATE}}% {{INTEREST_TYPE}} ({{APR}}% APR). Platform Fee of {{PROCESSING_FEE_PERCENT}}% is deducted upfront. GST at {{GST_RATE}}% is applicable on fees and charges.</li>
 
                     <li><strong>Late Payment:</strong> If any EMI/repayment is not received by the due date:
                         <ul style="margin-top: 5px;">
