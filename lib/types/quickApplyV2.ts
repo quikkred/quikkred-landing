@@ -22,6 +22,7 @@ export interface QuickApplyV2FormData {
     state: string;
     productId?: string; // Loan product ID
     loanAmount: number;
+    approvedLoanAmount: number;
     tenure: number; // in days: 7, 15, 30
     employmentType: 'SALARIED' | 'SELF-EMPLOYED';
     monthlyIncome: string;

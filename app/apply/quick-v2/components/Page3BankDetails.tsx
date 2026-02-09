@@ -12,7 +12,6 @@ import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle, IndianRupee, Loader2, 
 import { useRef, useState, useCallback, useMemo } from "react";
 import SelfieVerify from "./ui/SelfieVerify";
 import { calculateLoanDetails, formatCurrency } from "@/lib/constants/quickApplyV2";
-import { useApplication } from "@/contexts/ApplicationContext";
 
 // Regex Constants
 const REGEX = {
@@ -22,21 +21,20 @@ const REGEX = {
     IFSC_CLEAN: /[^A-Z0-9]/g
 };
 
-interface BankVerificationProps {
+interface Page3Props {
     formData: QuickApplyV2FormData;
     setFormData: React.Dispatch<React.SetStateAction<QuickApplyV2FormData>>;
-    // onNext: () => void;
-    // onBack: () => void;
+    onNext: () => void;
+    onBack: () => void;
 }
 
-const BankVerification = ({
+const Page3BankDetails = ({
     formData,
     setFormData,
-    // onNext,
-    // onBack,
-}: BankVerificationProps) => {
+    onNext,
+    onBack,
+}: Page3Props) => {
     const axios = useAxios();
-    const { getApplication, getCustomer } = useApplication();
 
     // UI States (Loading/Errors only, Data stays in formData)
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>(initialFieldErrors);
@@ -68,7 +66,6 @@ const BankVerification = ({
             const response = await fetch(`https://ifsc.razorpay.com/${ifscCode}`);
             if (response.ok) {
                 const data = await response.json();
-                // console.log("bank razorpay", data)
                 updateFormData({
                     bankName: data.BANK,
                     // If you have a branch field in formData, set it here too
@@ -202,64 +199,15 @@ const BankVerification = ({
     };
 
     const handleSubmit = async () => {
-        if (!canProceed) {
-            toast({ variant: "warning", title: "Verification Required", description: "Please verify bank or selfie first" });
+        if (!formData.bankVerified) {
+            toast({ variant: "warning", title: "Verification Required", description: "Please verify bank details first" });
             return;
         }
         setSubmitLoading(true);
         // Simulate API call or navigation delay
-        // await new Promise(r => setTimeout(r, 500));
-        // onNext();
-
-        const nameParts = formData.fullName.trim().split(/\s+/);
-        const firstName = nameParts[0] || "";
-        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
-
-        const isBasicDetailsFilled = true;
-
-        const basicDetails = {
-            employmentType: formData.employmentType,
-            monthlyIncome: formData.monthlyIncome,
-            salaryDate: formData.salaryDate,
-            firstName,
-            lastName,
-            mobile: formData.mobile,
-            email: formData.email,
-            isBasicDetailsFilled,
-            dateOfBirth: formData.dob,
-            companyName: formData.companyName,
-            isSubmit: true,
-        }
-
-        try {
-            // const response = await axios.post("/api/mandate-checkout/generate-link", {
-            //     applicationId: application?._id,
-            // });
-            // if(response.status === 200 || response.status === 201){
-            //     console.log(response.data);
-            // }
-            const response = await axios.post("/api/v2/application/loan/create", {
-                basicDetails
-            });
-            if (response.status === 200 || response.status === 201) {
-                toast({
-                    variant: "success",
-                    title: "Application submitted successfully",
-                    description: "Your application has been received and is being reviewed. We’ll notify you of the next steps shortly."
-                });
-                getApplication();
-                getCustomer();
-                console.log("data", response.data);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        } catch (error: unknown) {
-            if (error instanceof AxiosError) {
-                console.log(error.response?.data);
-                toast({ variant: "error", title: error.response?.data?.message || "Internal server error" });
-            }
-        } finally {
-            setSubmitLoading(false);
-        }
+        await new Promise(r => setTimeout(r, 500));
+        onNext();
+        setSubmitLoading(false);
     };
 
     return (
@@ -294,7 +242,7 @@ const BankVerification = ({
                             onChange={handleFieldChange}
                             disabled={formData.bankVerified}
                             maxLength={11}
-                            className={`w-full px-4 py-3 placeholder:text-base border rounded-lg uppercase transition-all ${fieldErrors.ifsc ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-[#25B181]'
+                            className={`w-full px-4 py-3 border rounded-lg uppercase transition-all ${fieldErrors.ifsc ? 'border-red-500 focus:ring-red-200' : 'border-gray-300 focus:ring-[#25B181]'
                                 } ${formData.bankVerified ? 'bg-gray-50' : ''}`}
                             placeholder="SBIN0001234"
                         />
@@ -313,7 +261,7 @@ const BankVerification = ({
                         name="bankName"
                         value={formData.bankName}
                         readOnly
-                        className={`w-full px-4 py-3 placeholder:text-base border border-gray-300 rounded-lg bg-gray-50 ${formData.bankName ? 'text-gray-900 font-medium' : 'text-gray-400'
+                        className={`w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 ${formData.bankName ? 'text-gray-900 font-medium' : 'text-gray-400'
                             }`}
                         placeholder="Auto-detected from IFSC"
                     />
@@ -330,7 +278,7 @@ const BankVerification = ({
                         value={formData.accountHolderName}
                         onChange={handleFieldChange}
                         disabled={formData.bankVerified}
-                        className={`w-full px-4 py-3 placeholder:text-base border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.accountHolderName ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.accountHolderName ? 'border-red-500' : 'border-gray-300'
                             }`}
                         placeholder="Name as per bank records"
                     />
@@ -346,7 +294,7 @@ const BankVerification = ({
                         onChange={handleFieldChange}
                         disabled={formData.bankVerified}
                         maxLength={18}
-                        className={`w-full px-4 py-3 placeholder:text-base border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.accountNumber ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.accountNumber ? 'border-red-500' : 'border-gray-300'
                             }`}
                         placeholder="9-18 digit number"
                     />
@@ -355,7 +303,7 @@ const BankVerification = ({
             </div>
 
             {/* ACTION: Verify Button */}
-            <div className="w-full">
+            <div className="pt-2">
                 <button
                     type="button"
                     onClick={verifyBankAccount}
@@ -365,7 +313,7 @@ const BankVerification = ({
                         !formData.bankName ||
                         formData.accountNumber.length < 9
                     }
-                    className={`w-full px-6 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${formData.bankVerified
+                    className={`w-full sm:w-auto px-6 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${formData.bankVerified
                         ? 'bg-green-100 text-green-700 border border-green-300 cursor-not-allowed'
                         : verifyLoading
                             ? 'bg-gray-300 text-gray-600 cursor-wait'
@@ -414,7 +362,7 @@ const BankVerification = ({
                     <div className="bg-white rounded-lg px-4 py-2 border border-gray-200">
                         <p className="text-xs sm:text-sm text-gray-500">Your Loan Amount</p>
                         <p className="text-lg sm:text-xl font-bold text-[#25B181]">
-                            ₹{(formData?.approvedLoanAmount || 0).toLocaleString('en-IN')}
+                            ₹{(formData?.loanAmount || 0).toLocaleString('en-IN')}
                         </p>
                     </div>
                     <div className="bg-white rounded-lg px-4 py-2 border border-gray-200">
@@ -463,27 +411,52 @@ const BankVerification = ({
             </div>
 
             {/* Navigation */}
-            <button
-                onClick={handleSubmit}
-                disabled={submitLoading || !canProceed}
-                className="w-full py-2 text-sm bg-gradient-to-r disabled:cursor-not-allowed from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-xl font-semibold sm:text-base shadow-lg shadow-[#25B181]/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-            >
-                {submitLoading ? (
-                    <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span className="text-sm">Submitting...</span>
-                    </>
-                ) : (
-                    <>
-                        <span>Application Submit</span>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                        </svg>
-                    </>
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                {/* Back button - disabled once PAN is verified */}
+                <button
+                    type='button'
+                    onClick={onBack}
+                    // disabled={submitLoading || formData.panVerified}
+                    disabled={submitLoading}
+                    className={`w-full px-3 sm:px-4 py-2 border rounded-lg font-medium text-sm flex items-center justify-center gap-1.5 active:scale-[0.98] touch-manipulation ${submitLoading
+                        ? 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50'
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                        } disabled:opacity-50`}
+                >
+                    {submitLoading ? (
+                        <Lock className="w-4 h-4" />
+                    ) : (
+                        <ArrowLeft className="w-4 h-4" />
+                    )}
+                    <span>Back</span>
+                </button>
+                {submitLoading && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1.5 bg-gray-800 text-white text-[10px] sm:text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        Cannot go back after PAN verification
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800" />
+                    </div>
                 )}
-            </button>
+
+                <button
+                    onClick={handleSubmit}
+                    disabled={submitLoading || !formData.bankVerified}
+                    className="w-full py-2 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg font-semibold text-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 active:scale-[0.98] touch-manipulation"
+                >
+                    {submitLoading ? (
+                        <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span className="text-sm">Submitting...</span>
+                        </>
+                    ) : (
+                        <>
+                            <span>Next</span>
+                            <ArrowRight className="w-4 h-4" />
+                        </>
+                    )}
+                </button>
+            </div>
         </motion.div>
     );
 }
 
-export default BankVerification;
+export default Page3BankDetails;
