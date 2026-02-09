@@ -1,7 +1,6 @@
 "use client"
 
 import { toast } from "@/components/ui/toast";
-import { useApplication } from "@/contexts/ApplicationContext";
 import useAxios from "@/hooks/useAxios";
 import useStorage from "@/hooks/useStorage";
 import { StorageApplicationForm } from "@/interfaces/storageInterface";
@@ -12,24 +11,26 @@ import { CheckCircle, CreditCard, FileText, IndianRupee, Loader2, Mail, Phone, S
 import { useRouter } from "nextjs-toploader/app";
 import { useEffect, useMemo, useState } from "react";
 
-interface ApproveMandateProps {
+interface Page4Props {
   formData: QuickApplyV2FormData;
   setFormData: React.Dispatch<React.SetStateAction<QuickApplyV2FormData>>;
+  onNext: () => void;
   onBack: () => void;
 }
 
-const ApproveMandate = ({
+const Page4Approval = ({
   formData,
   setFormData,
+  onNext,
   onBack,
-}: ApproveMandateProps) => {
+}: Page4Props) => {
   const [mandateLoading, setMandateLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [mandateVerifying, setMandateVerifying] = useState(false);
   const router = useRouter();
   const storage = useStorage();
   const axios = useAxios();
-  const { application } = useApplication();
+  const calculatedLoanDetails = useMemo<StorageApplicationForm | null>(() => ((storage.data?.breForm as StorageApplicationForm) || null), [storage]);
   const upiAutopayConsent = useMemo<boolean>(() => (formData?.upiAutoPayStatus === true), [formData]);
 
   // Load Razorpay script for UPI Autopay
@@ -102,7 +103,7 @@ const ApproveMandate = ({
     }
 
     // Get application ID and customer ID
-    const applicationId = application?._id;
+    const applicationId = calculatedLoanDetails?.applicationId;
     // const customerId = reduxCustomer?.data?._id || reduxCustomer?.data?.id || approvalData?.customerId;
     const customerId = formData?.customerId;
 
@@ -257,7 +258,7 @@ const ApproveMandate = ({
           customerId: result.data?.customerId || '',
           applicationId: result.data?.applicationId || '',
           loanNumber: result.data?.applicationNumber || result.data?.loanNumber || '',
-          amount: formData?.loanAmount || ''
+          amount: calculatedLoanDetails?.loanAmount || ''
         })
 
         // Redirect to congratulations page
@@ -307,7 +308,7 @@ const ApproveMandate = ({
         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
           <IndianRupee className="w-5 h-5 text-[#25B181]" />
           Loan Details
-          {formData && (
+          {calculatedLoanDetails && (
             <span className="text-xs font-normal text-gray-500 ml-2">(Based on your selected amount)</span>
           )}
         </h3>
@@ -315,34 +316,34 @@ const ApproveMandate = ({
           <div className="bg-white rounded-lg p-4 border border-gray-200">
             <p className="text-sm text-gray-500 mb-1">Your Loan Amount</p>
             <p className="text-xl font-bold text-[#25B181]">
-              ₹{(formData?.loanAmount || 0).toLocaleString('en-IN')}
+              ₹{(calculatedLoanDetails?.loanAmount || 0).toLocaleString('en-IN')}
             </p>
           </div>
           <div className="bg-white rounded-lg p-4 border border-gray-200">
             <p className="text-sm text-gray-500 mb-1">Tenure</p>
             <p className="text-xl font-bold text-gray-900">
-              {formData?.tenure || 0} {(formData?.tenureUnit) === 'Days' ? 'Days' : 'Months'}
+              {calculatedLoanDetails?.tenure || 0} {(calculatedLoanDetails?.tenureUnit) === 'Days' ? 'Days' : 'Months'}
             </p>
           </div>
           <div className="bg-white rounded-lg p-4 border border-gray-200">
             <p className="text-sm text-gray-500 mb-1">Interest Rate</p>
-            <p className="text-xl font-bold text-gray-900">{(formData?.interestRate) || 0}%</p>
+            <p className="text-xl font-bold text-gray-900">{(calculatedLoanDetails?.interestRate) || 0}%</p>
           </div>
           <div className="bg-white rounded-lg p-4 border border-gray-200">
             <p className="text-sm text-gray-500 mb-1">Interest Amount</p>
-            <p className="text-xl font-bold text-gray-900">₹{((formData?.totalInterest) || 0).toLocaleString('en-IN')}</p>
+            <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.totalInterest) || 0).toLocaleString('en-IN')}</p>
           </div>
           <div className="bg-white rounded-lg p-4 border border-gray-200">
             <p className="text-sm text-gray-500 mb-1">Processing Fee</p>
-            <p className="text-xl font-bold text-gray-900">₹{((formData?.processingFee) || 0).toLocaleString('en-IN')}</p>
+            <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.processingFee) || 0).toLocaleString('en-IN')}</p>
           </div>
           <div className="bg-white rounded-lg p-4 border border-gray-200">
             <p className="text-sm text-gray-500 mb-1">GST on Processing Fee</p>
-            <p className="text-xl font-bold text-gray-900">₹{((formData?.gstOnProcessingFee) || 0).toLocaleString('en-IN')}</p>
+            <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.gstOnProcessingFee) || 0).toLocaleString('en-IN')}</p>
           </div>
           <div className="bg-white rounded-lg p-4 border border-gray-200 col-span-2">
             <p className="text-sm text-gray-500 mb-1">Total Repayment</p>
-            <p className="text-xl font-bold text-gray-900">₹{((formData?.totalRepayment) || 0).toLocaleString('en-IN')}</p>
+            <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.totalRepayment) || 0).toLocaleString('en-IN')}</p>
           </div>
         </div>
 
@@ -353,7 +354,7 @@ const ApproveMandate = ({
               <p className="text-sm text-green-600 font-medium">You Will Receive</p>
               <p className="text-xs text-green-500">Net Disbursal Amount</p>
             </div>
-            <p className="text-2xl font-bold text-green-600">₹{((formData?.netDisbursalAmount) || 0).toLocaleString('en-IN')}</p>
+            <p className="text-2xl font-bold text-green-600">₹{((calculatedLoanDetails?.netDisbursalAmount) || 0).toLocaleString('en-IN')}</p>
           </div>
         </div>
       </div>
@@ -555,4 +556,4 @@ const ApproveMandate = ({
   )
 }
 
-export default ApproveMandate;
+export default Page4Approval

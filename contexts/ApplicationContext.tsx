@@ -1,11 +1,11 @@
 "use client";
 
 import useAxios from "@/hooks/useAxios";
+import useStorage from "@/hooks/useStorage";
 import { ApplicationInterface } from "@/interfaces/applicationInterface";
 import LayoutInterface from "@/interfaces/layoutInterface";
 import { AxiosError } from "axios";
-import { createContext, useContext, useState } from "react";
-import { useAuth, User, userInitializer } from "./AuthContext";
+import { createContext, useContext, useEffect, useState } from "react";
 
 interface ApplicationContextStateInterface {
     loading: boolean;
@@ -16,9 +16,6 @@ interface ApplicationContextInterface {
     loading: boolean;
     application: ApplicationInterface | null;
     setApplication: (application: ApplicationInterface) => void;
-    getApplication: () => void;
-    getCustomer: () => void;
-    fetchUserData: () => Promise<User | null>;
 }
 
 const initialState: ApplicationContextStateInterface = {
@@ -29,40 +26,26 @@ const initialState: ApplicationContextStateInterface = {
 const ApplicationContext = createContext<ApplicationContextInterface>({
     loading: false,
     application: null,
-    setApplication: () => { },
-    getApplication: () => { },
-    getCustomer: () => { },
-    fetchUserData: async () => (null),
+    setApplication: () => { }
 })
 
-const ApplicationProvider = ({ children, payload }: LayoutInterface & { payload: ApplicationInterface | null }) => {
+const ApplicationProvider = ({ children }: LayoutInterface) => {
     const axios = useAxios();
-    const [state, setState] = useState<ApplicationContextStateInterface>({ ...initialState, data: payload });
-    const { updateUser } = useAuth();
+    const storage = useStorage();
+    const [state, setState] = useState<ApplicationContextStateInterface>(initialState);
 
     const updateState = (state: Partial<ApplicationContextStateInterface>) => setState((prev) => ({ ...prev, ...state }));
 
-    const getApplication = async () => {
+    const getApplicationById = async () => {
         try {
-            // const applicationId = storage.get("applicationId");
-            // if (applicationId) {
-            //     updateState({ loading: true });
-            //     const response = await axios.get(`/api/application/loan/${applicationId}`);
-            //     if (response.status === 200 || response.status === 201) {
-            //         updateState({ data: response.data?.data || null });
-            //     }
-            // }
-            updateState({ loading: true });
-            const response = await axios.get("/api/v2/applicationByCustomerToken");
-            if (response.status === 200 || response.status === 201) {
-                const result = response.data;
-                const data = (result?.data?.[0] || result?.data) as ApplicationInterface;
-                // console.log("application get to func", result, data)
-                if (Array.isArray(data) && data.length === 0) {
-                    // toast({ variant: "error", title: "Application not Found." });
-                    return updateState({ data: null });
+            const applicationId = storage.get("applicationId");
+            if (applicationId) {
+                updateState({ loading: true });
+                const response = await axios.get(`/api/application/loan/${applicationId}`);
+                if (response.status === 200 || response.status === 201) {
+                    console.log("application data:", response.data);
+                    updateState({ data: response.data?.data || null });
                 }
-                updateState({ data: data });
             }
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
@@ -73,47 +56,14 @@ const ApplicationProvider = ({ children, payload }: LayoutInterface & { payload:
         }
     }
 
-    const getCustomer = async () => {
-        try {
-            const response = await axios.get("/api/customer/get");
-            if (response.status === 200 || response.status === 201) {
-                const apiData = response.data?.data;
-                // const fullName = apiData.fullName;
-
-                const userData: Partial<User> = userInitializer({ apiData });
-                updateUser(userData);
-            }
-        } catch (error: unknown) {
-            if (error instanceof AxiosError) {
-                console.log("get customer error:", error.response?.data?.message);
-            }
-        }
-    }
-
-    const fetchUserData = async () => {
-        try {
-            const response = await axios.get("/api/customer/get");
-            if (response.status === 200 || response.status === 201) {
-                const apiData = response.data?.data;
-
-                const userData: Partial<User> = userInitializer({ apiData });
-                return userData as User;
-            }
-        } catch (error: unknown) {
-            if (error instanceof AxiosError) {
-                console.log("fetch user error:", error.response?.data?.message);
-            }
-        }
-        return null;
-    }
+    useEffect(() => {
+        getApplicationById();
+    }, []);
 
     return <ApplicationContext.Provider value={{
         application: state.data,
         loading: state.loading,
-        setApplication: (application) => updateState({ data: application }),
-        getApplication,
-        getCustomer,
-        fetchUserData,
+        setApplication: (application) => updateState({ data: application })
     }}>
         {children}
     </ApplicationContext.Provider>
