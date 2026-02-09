@@ -10,10 +10,13 @@ import { useRouter } from "nextjs-toploader/app";
 
 const TruecallerVerify = ({
     callbackURL = "/user",
-    buttonText = "Truecaller"
+    buttonText = "Truecaller",
+    smButtonText = "Truecaller",
 }: {
     callbackURL?: string;
     buttonText?: string;
+    smButtonText?: string;
+    callback?: () => void;
 }) => {
     const [loading, setLoading] = useState(false);
 
@@ -176,6 +179,7 @@ const TruecallerVerify = ({
                 <>
                     <TruecallerIcon />
                     <span className="hidden sm:inline-block">{buttonText}</span>
+                    <span className="inline-block sm:hidden">{smButtonText}</span>
                 </>
             )}
         </button>

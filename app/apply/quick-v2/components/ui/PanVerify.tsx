@@ -70,6 +70,10 @@ const PanVerify = ({ formData, setFormData }: PanVerifyProps) => {
     };
 
     const handleVerify = async () => {
+        if (!formData.aadhaarVerified) {
+            setError("Aadhaar verification is required first.");
+            return;
+        }
         // 1. Validation (Only PAN now)
         if (!formData.pan || !isValidPAN(formData.pan)) {
             setError("Please enter a valid PAN Number.");
