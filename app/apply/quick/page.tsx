@@ -1304,6 +1304,9 @@ export default function QuickLoanApplication() {
     // Loan Amount validation
     if (!formData.loanAmount || parseFloat(formData.loanAmount) <= 0) return false;
 
+    // Product selection validation
+    if (!formData.productId || !selectedProduct) return false;
+
     return true;
   };
 
@@ -2528,7 +2531,19 @@ export default function QuickLoanApplication() {
             isBasicDetailsFilled: true
           },
           loanDetails: {
-            requestedLoanAmount: parseFloat(formData.loanAmount)
+            requestedLoanAmount: parseFloat(formData.loanAmount),
+            productId: formData.productId,
+            purpose: formData.purpose,
+            // Selected product complete details
+            product: selectedProduct ? {
+              id: selectedProduct._id,
+              name: selectedProduct.productName,
+              category: selectedProduct.category,
+              dailyInterestRate: selectedProduct.dailyInterestRate,
+              ...(selectedProduct.description && { description: selectedProduct.description }),
+              ...(selectedProduct.minAmount && { minAmount: selectedProduct.minAmount }),
+              ...(selectedProduct.maxAmount && { maxAmount: selectedProduct.maxAmount }),
+            } : null,
           },
           ...(locationData && {
             location: {
@@ -2982,6 +2997,16 @@ export default function QuickLoanApplication() {
           variant: "warning",
           title: "Invalid Loan Amount",
           description: "Please enter the approximate loan amount you need.",
+        });
+        return;
+      }
+
+      // Product validation for Step 1
+      if (!formData.productId || !selectedProduct) {
+        toast({
+          variant: "warning",
+          title: "Product Selection Required",
+          description: "Please select a loan product to continue.",
         });
         return;
       }
