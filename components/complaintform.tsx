@@ -1,5 +1,5 @@
 "use client";
-import { Biohazard, Bot, Clock, Mail, Phone, User, MessageSquare, Tag} from "lucide-react";
+import { Biohazard, Bot, Clock, Mail, Phone, User, MessageSquare, Tag, Upload, TriangleAlert, ChevronDown, File,  Check, AlertTriangle } from "lucide-react";
 import { useState, ChangeEvent, FormEvent, DragEvent } from "react";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
@@ -11,8 +11,10 @@ export default function ComplaintForm() {
   const [complaintId, setComplaintId] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [errors, setErrors] = useState({name: "", email: "", phone: ""});
-  const handleTextareaChange = (e: ChangeEvent<HTMLTextAreaElement>) => {setCharCount(e.target.value.length)};
+  const [errors, setErrors] = useState({ name: "", email: "", phone: "" });
+  const handleTextareaChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    setCharCount(e.target.value.length);
+  };
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     files.forEach((file) => {
@@ -230,19 +232,7 @@ export default function ComplaintForm() {
                 </div>
                 {errors.name && (
                   <div className="mt-2 flex items-center gap-2 text-[#e53e3e] text-sm animate-[slideDown_0.2s_ease]">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path
-                        d="M8 1L1 15H15L8 1Z"
-                        fill="#e53e3e"
-                        opacity="0.1"
-                      />
-                      <path
-                        d="M8 6V9M8 11H8.01"
-                        stroke="#e53e3e"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                      />
-                    </svg>
+                    <TriangleAlert size={16} />
                     <span>{errors.name}</span>
                   </div>
                 )}
@@ -272,19 +262,7 @@ export default function ComplaintForm() {
                 </div>
                 {errors.email && (
                   <div className="mt-2 flex items-center gap-2 text-[#e53e3e] text-sm animate-[slideDown_0.2s_ease]">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path
-                        d="M8 1L1 15H15L8 1Z"
-                        fill="#e53e3e"
-                        opacity="0.1"
-                      />
-                      <path
-                        d="M8 6V9M8 11H8.01"
-                        stroke="#e53e3e"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                      />
-                    </svg>
+                    <TriangleAlert size={16} />
                     <span>{errors.email}</span>
                   </div>
                 )}
@@ -315,19 +293,7 @@ export default function ComplaintForm() {
                 </div>
                 {errors.phone && (
                   <div className="mt-2 flex items-center gap-2 text-[#e53e3e] text-sm animate-[slideDown_0.2s_ease]">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path
-                        d="M8 1L1 15H15L8 1Z"
-                        fill="#e53e3e"
-                        opacity="0.1"
-                      />
-                      <path
-                        d="M8 6V9M8 11H8.01"
-                        stroke="#e53e3e"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                      />
-                    </svg>
+                    <TriangleAlert size={16} />
                     <span>{errors.phone}</span>
                   </div>
                 )}
@@ -344,7 +310,7 @@ export default function ComplaintForm() {
                   />
                   <select
                     required
-                    className="w-full p-3 pl-11 pr-10 border-2 border-[#e2e8f0] rounded-lg text-[15px] transition-all duration-300 bg-white cursor-pointer appearance-none bg-[url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 viewBox=%270 0 12 12%27%3E%3Cpath fill=%27%234a5568%27 d=%27M6 9L1 4h10z%27/%3E%3C/svg%3E')] bg-no-repeat bg-[right_16px_center] focus:outline-none focus:border-[#14b8a6] focus:shadow-[0_0_0_3px_rgba(20,184,166,0.1)]"
+                    className="w-full p-3 pl-11 pr-10 border-2 border-[#e2e8f0] rounded-lg text-[15px] transition-all duration-300 bg-white cursor-pointer appearance-none focus:outline-none focus:border-[#14b8a6] focus:shadow-[0_0_0_3px_rgba(20,184,166,0.1)]"
                   >
                     <option value="">Select a category</option>
                     <option value="Disbursement">
@@ -354,6 +320,10 @@ export default function ComplaintForm() {
                     <option value="Collection">Collection and Behaviour</option>
                     <option value="Technical">Technical and Accounts</option>
                   </select>
+                  <ChevronDown
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#4a5568] pointer-events-none"
+                    size={16}
+                  />
                 </div>
               </div>
               <div className="mb-6">
@@ -432,36 +402,7 @@ export default function ComplaintForm() {
                         className="hidden"
                       />
                       <label htmlFor="fileInput" className="cursor-pointer">
-                        <svg
-                          className="mx-auto mb-2.5 opacity-60"
-                          width="40"
-                          height="40"
-                          viewBox="0 0 40 40"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M32 15L20 3L8 15"
-                            stroke="#14b8a6"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                          <path
-                            d="M20 3V25"
-                            stroke="#14b8a6"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                          <path
-                            d="M35 25V35C35 35.5304 34.7893 36.0391 34.4142 36.4142C34.0391 36.7893 33.5304 37 33 37H7C6.46957 37 5.96086 36.7893 5.58579 36.4142C5.21071 36.0391 5 35.5304 5 35V25"
-                            stroke="#14b8a6"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
+                        <Upload className="mx-auto" />
                         <p className="text-[#4a5568] text-sm mb-1">
                           <strong>Click to upload</strong> or drag and drop
                         </p>
@@ -477,24 +418,11 @@ export default function ComplaintForm() {
                           className="flex items-center justify-between p-2.5 px-3.5 bg-[#f7fafc] rounded-md mt-2.5 text-sm"
                         >
                           <div className="flex items-center gap-2">
-                            <svg
-                              width="16"
-                              height="16"
-                              viewBox="0 0 16 16"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
-                            >
-                              <path
-                                d="M9 2H3C2.46957 2 1.96086 2.21071 1.58579 2.58579C1.21071 2.96086 1 3.46957 1 4V12C1 12.5304 1.21071 13.0391 1.58579 13.4142C1.96086 13.7893 2.46957 14 3 14H11C11.5304 14 12.0391 13.7893 12.4142 13.4142C12.7893 13.0391 13 12.5304 13 12V6L9 2Z"
-                                stroke="#14b8a6"
-                                strokeWidth="1.5"
-                              />
-                              <path
-                                d="M9 2V6H13"
-                                stroke="#14b8a6"
-                                strokeWidth="1.5"
-                              />
-                            </svg>
+                            <File
+                              size={16}
+                              className="text-teal-500"
+                              strokeWidth={1.5}
+                            />
                             <span>{file.name}</span>
                           </div>
                           <button
@@ -534,21 +462,7 @@ export default function ComplaintForm() {
         <div className="fixed inset-0 bg-black/50 z-[1000] flex items-center justify-center">
           <div className="bg-white p-10 rounded-2xl max-w-[500px] text-center shadow-[0_20px_60px_rgba(0,0,0,0.3)] animate-[slideUp_0.3s_ease]">
             <div className="w-20 h-20 bg-[#10b981] rounded-full flex items-center justify-center mx-auto mb-5">
-              <svg
-                width="40"
-                height="40"
-                viewBox="0 0 40 40"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M8 20L16 28L32 12"
-                  stroke="white"
-                  strokeWidth="4"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <Check size={40} className="text-white" strokeWidth={4} />
             </div>
             <h3 className="text-[#2d3748] text-2xl mb-3">
               Complaint Submitted Successfully!
@@ -576,21 +490,11 @@ export default function ComplaintForm() {
         <div className="fixed inset-0 bg-black/50 z-[1000] flex items-center justify-center p-4">
           <div className="bg-white p-6 rounded-xl max-w-[380px] w-full shadow-[0_20px_60px_rgba(0,0,0,0.3)] animate-[slideUp_0.3s_ease]">
             <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M12 9V11M12 15H12.01M5.07183 19H18.9282C20.4678 19 21.4301 17.3333 20.6603 16L13.7321 4C12.9623 2.66667 11.0377 2.66667 10.2679 4L3.33975 16C2.56995 17.3333 3.53223 19 5.07183 19Z"
-                  stroke="#ef4444"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <AlertTriangle
+                size={24}
+                className="text-red-500"
+                strokeWidth={2}
+              />
             </div>
             <h3 className="text-[#2d3748] text-lg mb-2 font-bold text-center">
               Reset Form?
