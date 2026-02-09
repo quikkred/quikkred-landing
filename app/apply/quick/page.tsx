@@ -1125,6 +1125,47 @@ export default function QuickLoanApplication() {
     }
   }, [user]);
 
+  
+  // Fetch loan products on mount
+  useEffect(() => {
+    const fetchLoanProducts = async () => {
+      const token = await getToken();
+      setLoadingProducts(true);
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/loanProduct/allLoanProductsNameOnly`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success && result.data) {
+          setLoanProducts(result.data);
+        } else {
+          console.error('Failed to fetch loan products:', result.message);
+          toast({
+            title: "Error",
+            description: "Failed to load loan products. Please refresh the page.",
+            variant: "error"
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching loan products:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load loan products. Please refresh the page.",
+          variant: "error"
+        });
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    fetchLoanProducts();
+  }, []);
 
   // Calculate EMI when loan amount, tenure, tenure unit, or product changes
   useEffect(() => {
