@@ -152,8 +152,8 @@ export default function ComplaintForm() {
     <div className="min-h-screen bg-[#f8f9fa] p-5">
       <div className="max-w-[1400px] mx-auto">
         {/* Warning Banner */}
-        <div className="bg-[#fff3cd] border-2 border-[#ffc107] rounded-xl p-5 px-[30px] mb-10 shadow-[0_4px_12px_rgba(255,193,7,0.15)]">
-          <p className="text-[#856404] text-sm leading-[1.6] mb-2 flex items-start gap-2.5">
+        <div className="bg-[#fff3cd] border-2 border-[#ffc107] rounded-xl p-5 px-[30px] mb-7 shadow-[0_4px_12px_rgba(255,193,7,0.15)]">
+          <p className="text-[#856404] text-sm leading-[1.6] mb-1 flex items-start gap-2.5">
             <Biohazard className="flex-shrink-0 mt-0.5" />
             <span>
               <strong>Before submitting:</strong> Please provide as much detail
@@ -186,8 +186,7 @@ export default function ComplaintForm() {
             </p>
             <div className="bg-[#e6f7ff] border-l-4 border-[#1890ff] p-4 px-5 rounded-lg mt-5">
               <p className="text-[#0050b3] text-sm font-medium m-0">
-                <Clock />
-                Average Response Time: 24-48 hours
+                <Clock /> Average Response Time: 24-48 hours
               </p>
             </div>
             <div className="bg-[#f7fafc] p-6 rounded-xl mt-[30px]">
@@ -359,7 +358,7 @@ export default function ComplaintForm() {
                   onChange={handleTextareaChange}
                   className="w-full p-3 px-4 border-2 border-[#e2e8f0] rounded-lg text-[15px] transition-all duration-300 bg-white resize-y min-h-[120px] focus:outline-none focus:border-[#14b8a6] focus:shadow-[0_0_0_3px_rgba(20,184,166,0.1)]"
                 />
-                <div className="text-right text-[13px] text-[#718096] mt-1.5">
+                <div className="text-right text-[13px] text-[#718096] mt-[-3.5]">
                   <span>{charCount}</span>/1000 characters
                 </div>
               </div>
