@@ -16,7 +16,7 @@ export const LOAN_CONFIG = {
     DEFAULT_AMOUNT: 10000,
 
     // Tenure Options (in days)
-    TENURE_OPTIONS: [7, 15, 30] as const,
+    TENURE_OPTIONS: [15, 30] as const, // Only 15 and 30 days loans allowed
     DEFAULT_TENURE: 15,
 
     // Fee Structure (CRITICAL - From CLAUDE.md)
