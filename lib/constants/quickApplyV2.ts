@@ -16,12 +16,12 @@ export const LOAN_CONFIG = {
     DEFAULT_AMOUNT: 10000,
 
     // Tenure Options (in days)
-    TENURE_OPTIONS: [7, 15, 30] as const,
+    TENURE_OPTIONS: [15, 30] as const, // Only 15 and 30 days loans allowed
     DEFAULT_TENURE: 15,
 
     // Fee Structure (CRITICAL - From CLAUDE.md)
     PROCESSING_FEE_PERCENT: 10, // 10% of loan amount
-    GST_PERCENT: 18, // 18% on processing fee
+    GST_PERCENT: 18, // 18% on Platform Fee
     INTEREST_RATE_PER_DAY: 1, // 1% per day (NOT per month/annum)
 };
 
@@ -153,8 +153,25 @@ export const SERVICEABLE_STATES = [
 export const getInitialFormData = (): QuickApplyV2FormData => ({
     // Pre-Apply
     ipData: null,
-    firstName:"",
-    lastName:"",
+    bankVerified: false,
+    firstName: "",
+    lastName: "",
+    customerId: "",
+    upiAutoPayStatus: false,
+    brePulled: false,
+    breStatus: "Pending",
+    interestAmount: 0,
+    approvedLoanAmount: 0,
+    bsaInitiated: false,
+    productId: "",
+
+    interestRate: 0,
+    totalInterest: 0,
+    processingFee: 0,
+    totalRepayment: 0,
+    tenureUnit: "Days",
+    gstOnProcessingFee: 0,
+    netDisbursalAmount: 0,
 
     // Page 1
     mobile: '',
@@ -168,6 +185,7 @@ export const getInitialFormData = (): QuickApplyV2FormData => ({
     employmentType: 'SALARIED',
     monthlyIncome: '',
     salaryDate: 1,
+    companyName: "",
 
     // Page 2
     pan: '',
@@ -226,17 +244,17 @@ export function calculateLoanDetails(
 ): LoanCalculation {
     const { PROCESSING_FEE_PERCENT, GST_PERCENT, INTEREST_RATE_PER_DAY } = LOAN_CONFIG;
 
-    // Processing fee (10% of loan amount)
+    // Platform Fee (10% of loan amount)
     const processingFee = Math.round((loanAmount * PROCESSING_FEE_PERCENT) / 100);
 
-    // GST on processing fee (18% of processing fee)
+    // GST on Platform Fee (18% of Platform Fee)
     const gstOnProcessingFee = Math.round((processingFee * GST_PERCENT) / 100);
 
     // Total interest (1% per day × tenure days × loan amount)
     const totalInterest = Math.round((INTEREST_RATE_PER_DAY / 100) * tenure * loanAmount);
 
-    // Total deductions (processing fee + GST + interest)
-    // Note: Interest is not deducted upfront, only processing fee + GST
+    // Total deductions (Platform Fee + GST + interest)
+    // Note: Interest is not deducted upfront, only Platform Fee + GST
     const totalDeductions = processingFee + gstOnProcessingFee;
 
     // Net disbursal amount (loan amount - upfront deductions)

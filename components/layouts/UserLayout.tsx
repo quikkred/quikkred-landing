@@ -673,7 +673,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                       <div className="p-3 border-b border-[#E0E0E0]">
                         <p className="font-medium text-gray-800">{userData.name.toLowerCase()
                           .replace(/\b\w/g, char => char.toUpperCase())}</p>
-                        <p className="text-sm text-gray-600">{userData.email}</p>
+                        <p className="text-sm text-gray-600">{userData.email || userData.mobile}</p>
 
                         {/* <div className="flex items-center gap-2 mt-2">
                           <div className="px-2 py-1 bg-gradient-to-r from-[#FFD700] to-[#FBC02D] text-white text-xs rounded-full font-medium">

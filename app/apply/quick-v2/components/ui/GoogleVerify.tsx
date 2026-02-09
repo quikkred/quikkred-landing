@@ -6,10 +6,12 @@ import { useQuickApplyTracking } from "@/lib/hooks/useQuickApplyTracking";
 
 const GoogleVerify = ({
     callbackURL = "/user",
-    buttonText = "Google"
+    buttonText = "Google",
+    smButtonText = "Google"
 }: {
     callbackURL?: string;
     buttonText?: string;
+    smButtonText?: string;
 }) => {
     const [isLoading, setIsLoading] = useState(false);
 
@@ -51,7 +53,8 @@ const GoogleVerify = ({
             ) : (
                 <>
                     <GoogleIcon />
-                    <span className="hidden xs:inline">{buttonText}</span>
+                    <span className="hidden sm:inline-block">{buttonText}</span>
+                    <span className="inline-block sm:hidden">{buttonText}</span>
                 </>
             )}
         </button>

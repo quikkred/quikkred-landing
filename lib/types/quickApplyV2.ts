@@ -12,17 +12,33 @@ export interface QuickApplyV2FormData {
     ipData: IPData | null;
 
     // Page 1: Basic Details
+    customerId: string;
+    upiAutoPayStatus?: boolean;
     mobile: string;
     otp: string;
     mobileVerified: boolean;
     pincode: string;
     city: string;
     state: string;
+    productId?: string; // Loan product ID
     loanAmount: number;
+    approvedLoanAmount: number;
     tenure: number; // in days: 7, 15, 30
     employmentType: 'SALARIED' | 'SELF-EMPLOYED';
     monthlyIncome: string;
     salaryDate: number; // 1-31
+    brePulled: boolean;
+    breStatus: string;
+    companyName: string;
+    tenureUnit: string;
+    gstOnProcessingFee: number;
+    netDisbursalAmount: number;
+
+    interestRate: number,
+    totalInterest: number,
+    processingFee: number,
+    totalRepayment: number,
+    interestAmount: number;
 
     // Page 2: PAN & Bank
     pan: string;
@@ -36,6 +52,7 @@ export interface QuickApplyV2FormData {
     bankName: string;
     accountNumber: string;
     accountHolderName: string;
+    bankVerified: boolean;
 
     // Consents
     termsConsent: boolean;
@@ -47,10 +64,11 @@ export interface QuickApplyV2FormData {
     aadhaar: string;
     aadhaarVerified: boolean;
     aadhaarData: AadhaarData | null;
-    selfie: File | null;
+    selfie: File | string | null;
     selfieVerified: boolean;
     selfieData: SelfieData | null;
     eSignCompleted: boolean;
+    bsaInitiated?: boolean; // Bank Statement Analysis initiated
 
     // References (Post-Approval)
     reference1Name: string;
@@ -103,6 +121,8 @@ export type ApplicationStage =
     | 'IP_CHECK'
     | 'PAGE_1'
     | 'PAGE_2'
+    | 'PAGE_3'
+    | 'PAGE_4'
     | 'BRE_PROCESSING'
     | 'APPROVED'
     | 'REJECTED'
@@ -148,7 +168,7 @@ export interface ApprovalDetails {
     interestRate: number; // 1% per day
     tenure: number; // in days
     processingFee: number; // 10% of loan amount
-    gstOnProcessingFee: number; // 18% of processing fee
+    gstOnProcessingFee: number; // 18% of Platform Fee
     totalInterest: number;
     totalRepayment: number;
     netDisbursalAmount: number;

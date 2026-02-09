@@ -430,7 +430,7 @@ export default function InterestRatesPage() {
                         </div>
                       </div>
                       <div>
-                        <div className="text-gray-500 mb-1">Processing Fee</div>
+                        <div className="text-gray-500 mb-1">Platform Fee</div>
                         <div className="font-semibold">{product.processingFee}</div>
                       </div>
                       <div>

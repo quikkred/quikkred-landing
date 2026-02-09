@@ -13,6 +13,7 @@ import {
   RotateCcw, Zap
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/components/ui/toast';
 import { loansService } from '@/lib/api/loans.service';
 import { usersService } from '@/lib/api/users.service';
 import { upiAutopayService } from '@/lib/api/upi-autopay.service';
@@ -146,6 +147,8 @@ interface DetailedLoan {
   updatedAt: string;
   lastPaymentDate?: string;
   closureDate?: string;
+  lateChargeInterestOutstanding?: number;
+  lateChargeInterest?: number;
 }
 
 interface LoanCalculation {
@@ -214,6 +217,7 @@ interface PaginationInfo {
 
 export default function MyLoansPage() {
   const { user, isLoading } = useAuth();
+  const { toast } = useToast();
   const axios = useAxios();
   const router = useRouter();
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -252,6 +256,9 @@ export default function MyLoansPage() {
     maxAmount?: number;
     minAmount?: number;
     reason?: string;
+    message?: string;
+    daysRemaining?: number;
+    cooldownEndsAt?: string;
   } | null>(null);
   const [reapplyForm, setReapplyForm] = useState({
     loanAmount: '',
@@ -645,13 +652,28 @@ export default function MyLoansPage() {
     setReapplyError(null);
     setReapplySuccess(null);
     setReapplyLoading(true);
-    setIsReapplyModalOpen(true);
 
     try {
       const response = await loansService.checkReapplyEligibility(loan.customerId);
       if (response.success && response.data) {
+        // Check for BRE_COOLDOWN or not eligible - show cooldown UI inside modal
+        if (response.data.isEligible === false) {
+          setReapplyEligibility({
+            eligible: false,
+            maxAmount: 0,
+            minAmount: 0,
+            reason: response.data.reason,
+            message: response.data.message,
+            daysRemaining: response.data.daysRemaining,
+            cooldownEndsAt: response.data.cooldownEndsAt,
+          });
+          setIsReapplyModalOpen(true);
+          setReapplyLoading(false);
+          return;
+        }
+
         setReapplyEligibility({
-          eligible: response.data.eligible ?? true,
+          eligible: response.data.eligible ?? response.data.isEligible ?? true,
           maxAmount: response.data.maxAmount ?? 500000,
           minAmount: response.data.minAmount ?? 10000,
           reason: response.data.reason
@@ -659,12 +681,15 @@ export default function MyLoansPage() {
         if (response.data.maxAmount) {
           setReapplyForm(prev => ({ ...prev, loanAmount: String(response.data.maxAmount / 2) }));
         }
+        setIsReapplyModalOpen(true);
       } else {
         setReapplyEligibility({ eligible: true, maxAmount: 500000, minAmount: 10000 });
+        setIsReapplyModalOpen(true);
       }
     } catch (error: any) {
       console.error('Error checking reapply eligibility:', error);
       setReapplyEligibility({ eligible: true, maxAmount: 500000, minAmount: 10000 });
+      setIsReapplyModalOpen(true);
     } finally {
       setReapplyLoading(false);
     }
@@ -1112,31 +1137,28 @@ export default function MyLoansPage() {
           <div className="flex gap-2 overflow-x-auto pb-1">
             <button
               onClick={() => setFilterStatus('all')}
-              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${
-                filterStatus === 'all'
-                  ? 'bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white'
-                  : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
-              }`}
+              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${filterStatus === 'all'
+                ? 'bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white'
+                : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
+                }`}
             >
               All ({loans.length})
             </button>
             <button
               onClick={() => setFilterStatus('active')}
-              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${
-                filterStatus === 'active'
-                  ? 'bg-[#4A66FF] text-white'
-                  : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
-              }`}
+              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${filterStatus === 'active'
+                ? 'bg-[#4A66FF] text-white'
+                : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
+                }`}
             >
               Active ({activeLoans.length})
             </button>
             <button
               onClick={() => setFilterStatus('closed')}
-              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${
-                filterStatus === 'closed'
-                  ? 'bg-[#25B181] text-white'
-                  : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
-              }`}
+              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap ${filterStatus === 'closed'
+                ? 'bg-[#25B181] text-white'
+                : 'bg-[#FAFAFA] border border-[#E0E0E0] text-gray-700 hover:bg-white'
+                }`}
             >
               Closed ({loans.filter(l => {
                 const s = l.status.toLowerCase();
@@ -1300,11 +1322,10 @@ export default function MyLoansPage() {
                       <button
                         key={pageNumber}
                         onClick={() => handlePageChange(pageNumber)}
-                        className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                          pagination.page === pageNumber
-                            ? 'bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white'
-                            : 'text-gray-700 bg-white border border-[#E0E0E0] hover:bg-[#FAFAFA]'
-                        }`}
+                        className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${pagination.page === pageNumber
+                          ? 'bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white'
+                          : 'text-gray-700 bg-white border border-[#E0E0E0] hover:bg-[#FAFAFA]'
+                          }`}
                       >
                         {pageNumber}
                       </button>
@@ -1550,16 +1571,14 @@ export default function MyLoansPage() {
                                 key={bank.id}
                                 type="button"
                                 onClick={() => handleSelectExistingBank(bank.id)}
-                                className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
-                                  selectedBankId === bank.id
-                                    ? 'border-[#25B181] bg-[#25B181]/5'
-                                    : 'border-[#E0E0E0] hover:border-[#25B181]/50'
-                                }`}
+                                className={`w-full p-3 rounded-lg border-2 text-left transition-all ${selectedBankId === bank.id
+                                  ? 'border-[#25B181] bg-[#25B181]/5'
+                                  : 'border-[#E0E0E0] hover:border-[#25B181]/50'
+                                  }`}
                               >
                                 <div className="flex items-center gap-3">
-                                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                                    selectedBankId === bank.id ? 'bg-[#25B181]' : 'bg-gray-100'
-                                  }`}>
+                                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${selectedBankId === bank.id ? 'bg-[#25B181]' : 'bg-gray-100'
+                                    }`}>
                                     <Building className={`w-5 h-5 ${selectedBankId === bank.id ? 'text-white' : 'text-gray-500'}`} />
                                   </div>
                                   <div className="flex-1 min-w-0">
@@ -1750,11 +1769,10 @@ export default function MyLoansPage() {
                           <TrendingUp className="w-4 h-4 text-[#4A66FF]" />
                           Priority
                         </span>
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          newLoanResult.priority === 'High' ? 'bg-red-100 text-red-700' :
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${newLoanResult.priority === 'High' ? 'bg-red-100 text-red-700' :
                           newLoanResult.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-green-100 text-green-700'
-                        }`}>
+                            'bg-green-100 text-green-700'
+                          }`}>
                           {newLoanResult.priority}
                         </span>
                       </div>
@@ -1844,8 +1862,8 @@ export default function MyLoansPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-4 lg:grid-cols-4 gap-1 sm:gap-1">
                       <div>
                         <p className="text-sm text-gray-600">Customer Name</p>
-                        <p className="font-semibold text-gray-900">{detailedLoan.customerId.fullName .toLowerCase()
-    .replace(/\b\w/g, char => char.toUpperCase())}</p>
+                        <p className="font-semibold text-gray-900">{detailedLoan.customerId.fullName.toLowerCase()
+                          .replace(/\b\w/g, char => char.toUpperCase())}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Customer Email</p>
@@ -1856,10 +1874,10 @@ export default function MyLoansPage() {
                         <p className="font-semibold text-gray-900">{detailedLoan.productName}</p>
                       </div> */}
                       {detailedLoan.branch && (
-                      <div>
-                        <p className="text-sm text-gray-600">Branch</p>
-                        <p className="font-semibold text-gray-900">{detailedLoan.branch.replace(/_/g, ' ')}</p>
-                      </div>
+                        <div>
+                          <p className="text-sm text-gray-600">Branch</p>
+                          <p className="font-semibold text-gray-900">{detailedLoan.branch.replace(/_/g, ' ')}</p>
+                        </div>
                       )}
                       <div>
                         <p className="text-sm text-gray-600">Status</p>
@@ -1907,23 +1925,29 @@ export default function MyLoansPage() {
                           <p className="font-semibold text-red-600">{formatCurrency(detailedLoan.lateCharges)}</p>
                         </div>
                       )}
+                      {detailedLoan.lateChargeInterest && detailedLoan.lateChargeInterest > 0 && (
+                        <div>
+                          <p className="text-sm text-gray-600">Late Charge Interest</p>
+                          <p className="font-semibold text-red-600">{formatCurrency(detailedLoan.lateChargeInterest)}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  {/* Processing Fee & Deductions */}
+                  {/* Platform Fee & Deductions */}
                   {(detailedLoan.processingFee || detailedLoan.gstOnProcessingFee) && (
                     <div className="bg-gradient-to-br from-slate-50 to-gray-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-slate-200">
                       <div className="flex items-center gap-2 mb-3 sm:mb-4">
                         <Receipt className="w-4 h-4 sm:w-5 sm:h-5 text-slate-600" />
-                        <h4 className="text-base sm:text-lg font-bold text-gray-800">Processing Fee & Deductions</h4>
+                        <h4 className="text-base sm:text-lg font-bold text-gray-800">Platform Fee & Deductions</h4>
                       </div>
                       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                         <div>
-                          <p className="text-sm text-gray-600">Processing Fee {detailedLoan.processingPercent ? `(${detailedLoan.processingPercent}%)` : ''}</p>
+                          <p className="text-sm text-gray-600">Platform Fee {detailedLoan.processingPercent ? `(${detailedLoan.processingPercent}%)` : ''}</p>
                           <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.processingFee || 0)}</p>
                         </div>
                         <div>
-                          <p className="text-sm text-gray-600">GST on Processing Fee {detailedLoan.gstOnProcessingPercent ? `(${detailedLoan.gstOnProcessingPercent}%)` : ''}</p>
+                          <p className="text-sm text-gray-600">GST on Platform Fee {detailedLoan.gstOnProcessingPercent ? `(${detailedLoan.gstOnProcessingPercent}%)` : ''}</p>
                           <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.gstOnProcessingFee || 0)}</p>
                         </div>
                         <div>
@@ -1984,31 +2008,37 @@ export default function MyLoansPage() {
                         <p className="font-semibold text-gray-900">{formatCurrency(detailedLoan.interestOutstanding)}</p>
                       </div>
 
-                       <div>
+                      <div>
                         <p className="text-sm text-gray-600">Late Charges Outstanding</p>
                         <p className="text-lg font-bold text-red-600">{formatCurrency(detailedLoan.lateChargesOutstanding)}</p>
                       </div>
-                                            <div>
+
+                      <div>
+                        <p className="text-sm text-gray-600">Late Charge Outstanding Interest</p>
+                        <p className="text-lg font-bold text-red-600">{formatCurrency(detailedLoan?.lateChargeInterestOutstanding)}</p>
+                      </div>
+
+                      <div>
                         <p className="text-sm text-gray-600">Total Outstanding</p>
                         <p className="text-lg font-bold text-red-600">{formatCurrency(detailedLoan.totalOutstanding)}</p>
                       </div>
-{detailedLoan?.dpd > 1 && (
-  <>
-    <div>
-      <p className="text-sm text-gray-600">DPD (Days Past Due)</p>
-      <p className="font-semibold text-gray-900">
-        {detailedLoan.dpd} days
-      </p>
-    </div>
+                      {detailedLoan?.dpd > 1 && (
+                        <>
+                          <div>
+                            <p className="text-sm text-gray-600">DPD (Days Past Due)</p>
+                            <p className="font-semibold text-gray-900">
+                              {detailedLoan.dpd} days
+                            </p>
+                          </div>
 
-    <div>
-      <p className="text-sm text-gray-600">DPD Bucket</p>
-      <p className="font-semibold text-gray-900">
-        {detailedLoan.dpdBucket}
-      </p>
-    </div>
-  </>
-)}
+                          <div>
+                            <p className="text-sm text-gray-600">DPD Bucket</p>
+                            <p className="font-semibold text-gray-900">
+                              {detailedLoan.dpdBucket}
+                            </p>
+                          </div>
+                        </>
+                      )}
 
                       {/* <div>
                         <p className="text-sm text-gray-600">First Due Date</p>
@@ -2033,39 +2063,39 @@ export default function MyLoansPage() {
 
                   {/* Payment Behavior */}
                   {detailedLoan.paymentBehavior && (
-                  <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-teal-200">
-                    <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                      <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600" />
-                      <h4 className="text-base sm:text-lg font-bold text-gray-800">Payment Behavior</h4>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-                      {/* <div className="text-center">
+                    <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-teal-200">
+                      <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                        <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600" />
+                        <h4 className="text-base sm:text-lg font-bold text-gray-800">Payment Behavior</h4>
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                        {/* <div className="text-center">
                         <p className="text-xs sm:text-sm text-gray-600 mb-1">EMIs Paid</p>
                         <div className="text-xl sm:text-2xl font-bold text-green-600">{detailedLoan.paymentBehavior.totalEMIsPaid}</div>
                       </div> */}
-                      {/* <div className="text-center">
+                        {/* <div className="text-center">
                         <p className="text-xs sm:text-sm text-gray-600 mb-1">EMIs Missed</p>
                         <div className="text-xl sm:text-2xl font-bold text-red-600">{detailedLoan.paymentBehavior.totalEMIsMissed}</div>
                       </div> */}
-                      <div className="text-center">
-                        <p className="text-xs sm:text-sm text-gray-600 mb-1">On-Time Payments</p>
-                        <div className="text-xl sm:text-2xl font-bold text-green-600">{detailedLoan?.paymentBehavior?.onTimePayments}</div>
-                      </div>
-                      {/* <div className="text-center">
+                        <div className="text-center">
+                          <p className="text-xs sm:text-sm text-gray-600 mb-1">On-Time Payments</p>
+                          <div className="text-xl sm:text-2xl font-bold text-green-600">{detailedLoan?.paymentBehavior?.onTimePayments}</div>
+                        </div>
+                        {/* <div className="text-center">
                         <p className="text-xs sm:text-sm text-gray-600 mb-1">Late Payments</p>
                         <div className="text-xl sm:text-2xl font-bold text-orange-600">{detailedLoan.paymentBehavior.latePayments}</div>
                       </div> */}
                         <div className="text-center">
-                        <p className="text-xs sm:text-sm text-gray-600 mb-1">Partial Payments</p>
-                        <div className="text-xl sm:text-2xl font-bold text-blue-600">{detailedLoan?.paymentBehavior?.partialPaymentCount}</div>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-xs sm:text-sm text-gray-600 mb-1">Bounce Count</p>
-                        <div className="text-xl sm:text-2xl font-bold text-red-600">{detailedLoan?.paymentBehavior?.bounceCount}</div>
-                      </div>
+                          <p className="text-xs sm:text-sm text-gray-600 mb-1">Partial Payments</p>
+                          <div className="text-xl sm:text-2xl font-bold text-blue-600">{detailedLoan?.paymentBehavior?.partialPaymentCount}</div>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xs sm:text-sm text-gray-600 mb-1">Bounce Count</p>
+                          <div className="text-xl sm:text-2xl font-bold text-red-600">{detailedLoan?.paymentBehavior?.bounceCount}</div>
+                        </div>
 
+                      </div>
                     </div>
-                  </div>
                   )}
 
                   {/* Repayment Schedule */}
@@ -2081,11 +2111,11 @@ export default function MyLoansPage() {
                             <tr>
                               <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Installment</th>
                               <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700">Due Date</th>
-                                <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Principal</th>
-                                <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Interest</th>
+                              <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Principal</th>
+                              <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Interest</th>
                               <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Total Repayment</th>
-                            
-                              
+
+
                               <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Paid Amount</th>
                               <th className="px-3 py-2 text-center text-xs font-semibold text-gray-700">Status</th>
                               <th className="px-3 py-2 text-right text-xs font-semibold text-gray-700">Balance</th>
@@ -2096,18 +2126,17 @@ export default function MyLoansPage() {
                               <tr key={installment._id} className="hover:bg-slate-50">
                                 <td className="px-3 py-2 font-medium text-gray-900">{installment.installmentNo}</td>
                                 <td className="px-3 py-2 text-gray-900">{new Date(installment.dueDate).toLocaleDateString()}</td>
-                                 <td className="px-3 py-2 text-right text-gray-900">{formatCurrency(installment.principal)}</td>
-                                  <td className="px-3 py-2 text-right text-gray-900">{formatCurrency(installment.interest)}</td>
+                                <td className="px-3 py-2 text-right text-gray-900">{formatCurrency(installment.principal)}</td>
+                                <td className="px-3 py-2 text-right text-gray-900">{formatCurrency(installment.interest)}</td>
                                 <td className="px-3 py-2 text-right font-semibold text-gray-900">{formatCurrency(installment.emiAmount)}</td>
-                               
-                               
+
+
                                 <td className="px-3 py-2 text-right font-semibold text-green-600">{formatCurrency(installment.paidAmount)}</td>
                                 <td className="px-3 py-2 text-center">
-                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                    installment.status === 'PAID' ? 'text-green-600 bg-green-100' :
+                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${installment.status === 'PAID' ? 'text-green-600 bg-green-100' :
                                     installment.status === 'PENDING' ? 'text-yellow-600 bg-yellow-100' :
-                                    'text-red-600 bg-red-100'
-                                  }`}>
+                                      'text-red-600 bg-red-100'
+                                    }`}>
                                     {installment.status}
                                   </span>
                                 </td>
@@ -2151,12 +2180,11 @@ export default function MyLoansPage() {
                                 <td className="px-3 py-2 font-mono text-xs text-gray-700">{payment.utrNumber || '-'}</td>
                                 {/* <td className="px-3 py-2 font-mono text-xs text-gray-700">{payment.receiptNumber || '-'}</td> */}
                                 <td className="px-3 py-2 text-center">
-                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                    payment.status === 'SUCCESS' || payment.status === 'COMPLETED' ? 'text-green-600 bg-green-100' :
+                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${payment.status === 'SUCCESS' || payment.status === 'COMPLETED' ? 'text-green-600 bg-green-100' :
                                     payment.status === 'PENDING' ? 'text-yellow-600 bg-yellow-100' :
-                                    payment.status === 'FAILED' ? 'text-red-600 bg-red-100' :
-                                    'text-gray-600 bg-gray-100'
-                                  }`}>
+                                      payment.status === 'FAILED' ? 'text-red-600 bg-red-100' :
+                                        'text-gray-600 bg-gray-100'
+                                    }`}>
                                     {payment.status}
                                   </span>
                                 </td>
@@ -2271,12 +2299,63 @@ export default function MyLoansPage() {
                     <p className="text-sm text-gray-600">{reapplySuccess}</p>
                   </div>
                 ) : reapplyEligibility && !reapplyEligibility.eligible ? (
-                  <div className="text-center py-4">
-                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <AlertCircle className="w-8 h-8 text-red-600" />
+                  <div className="text-center py-2">
+                    {/* Cooldown Timer Circle */}
+                    <div className="relative w-28 h-28 mx-auto mb-5">
+                      <svg className="w-28 h-28 -rotate-90" viewBox="0 0 120 120">
+                        <circle cx="60" cy="60" r="52" fill="none" stroke="#E5E7EB" strokeWidth="8" />
+                        <circle
+                          cx="60" cy="60" r="52" fill="none" stroke="url(#cooldownGradient)" strokeWidth="8" strokeLinecap="round"
+                          strokeDasharray={`${Math.max(5, ((reapplyEligibility.daysRemaining || 60) / 60) * 327)} 327`}
+                        />
+                        <defs>
+                          <linearGradient id="cooldownGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="#F59E0B" />
+                            <stop offset="100%" stopColor="#EF4444" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-2xl font-bold text-gray-900">{reapplyEligibility.daysRemaining || '—'}</span>
+                        <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wide">Days Left</span>
+                      </div>
                     </div>
-                    <h4 className="text-lg font-semibold text-gray-800 mb-2">Not Eligible</h4>
-                    <p className="text-sm text-gray-600">{reapplyEligibility.reason || 'You are not eligible for reapplication at this time.'}</p>
+
+                    {/* Status Badge */}
+                    <div className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-semibold mb-3">
+                      <Clock className="w-3 h-3" />
+                      {reapplyEligibility.reason === 'BRE_COOLDOWN' ? 'Cooldown Period Active' : (reapplyEligibility.reason || 'Not Eligible')}
+                    </div>
+
+                    <h4 className="text-lg font-bold text-gray-900 mb-2">Reapply Not Available Yet</h4>
+                    <p className="text-sm text-gray-600 leading-relaxed mb-5">
+                      {reapplyEligibility.message || 'You are not eligible for reapplication at this time.'}
+                    </p>
+
+                    {/* Info Card */}
+                    {reapplyEligibility.cooldownEndsAt && (
+                      <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 mb-5">
+                        <div className="flex items-center justify-center gap-3">
+                          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm border border-amber-200">
+                            <Calendar className="w-5 h-5 text-amber-600" />
+                          </div>
+                          <div className="text-left">
+                            <p className="text-[10px] font-medium text-amber-600 uppercase tracking-wide">Available From</p>
+                            <p className="text-sm font-bold text-gray-900">
+                              {new Date(reapplyEligibility.cooldownEndsAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Close Button */}
+                    <button
+                      onClick={resetReapplyModal}
+                      className="w-full px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
+                    >
+                      Got it
+                    </button>
                   </div>
                 ) : (
                   <div className="space-y-4">
