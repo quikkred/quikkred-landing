@@ -22,6 +22,7 @@ export interface User {
   isMobileVerified?: boolean;
   isPanVerify?: boolean;
   isAadhaarVerify?: boolean;
+  brePulled?: boolean;
   kycStatus?: 'PENDING' | 'VERIFIED' | 'REJECTED';
   status?: string;
   createdAt?: string;
@@ -34,10 +35,20 @@ export interface User {
   accountHolderName?: string,
   accountNumber?: string,
   ifsc?: string,
+  pennyDropStatus?: string,
+  bankVerified?: boolean,
   loanAmount?: string,
+  profile?: {
+    documentType: string,
+    status: string,
+    s3Key: string,
+    s3URL: string,
+  } | null,
+  upiAutoPayStatus?: boolean,
+  isSubmit?: boolean,
 }
 
-interface LoginProps { apiData?: any; email?: string; }
+interface LoginProps { apiData?: any; email?: string; mobile?: string; }
 
 interface AuthContextType {
   user: User | null;
@@ -50,6 +61,60 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const userInitializer = ({ apiData, currentUser }: { apiData: any, currentUser?: Partial<User> }): User => {
+  if (apiData) {
+    return {
+      ...(currentUser || {}),
+      firstName: apiData.firstName || "",
+      lastName: apiData.lastName || "",
+      name: apiData.fullName || currentUser?.name,
+      fullName: apiData.fullName || currentUser?.name,
+      email: apiData.email || currentUser?.email,
+      mobile: apiData.mobile || currentUser?.mobile,
+      dateOfBirth: apiData.dateOfBirth,
+      address: apiData.address?.line1,
+      city: apiData.currentAddress?.city,
+      state: apiData.currentAddress?.state,
+      pincode: apiData.currentAddress?.pincode,
+      kycStatus: apiData.kyc?.kycStatus || "PENDING",
+      status: apiData.status,
+      createdAt: apiData.createdAt,
+      profile: apiData.profile ? {
+        documentType: apiData.profile.documentType || "",
+        status: apiData.profile.status || "",
+        s3Key: apiData.profile.s3Key || "",
+        s3URL: apiData.profile.s3URL || "",
+      } : null,
+      isSubmit: apiData?.isSubmit || false,
+
+      // verified
+      isEmailVerified: apiData.isEmailVerified || false,
+      isMobileVerified: apiData.isMobileVerified || false,
+      isPanVerify: apiData.isPanVerify || false,
+      isAadhaarVerify: apiData.isAadhaarVerify || false,
+      brePulled: apiData.brePulled || false,
+
+      // dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
+      pan: apiData.panCard || null,
+      aadhaar: apiData.aadhaarNumber || null,
+      employmentType: apiData.employmentType || null,
+      monthlyIncome: apiData.monthlyIncome?.toString() || null,
+      companyName: apiData.companyName || null,
+      loanAmount: apiData.requestedLoanAmount?.toString() || null, // Loan amount from API
+
+      // bank
+      bankName: apiData.banks?.[0]?.bankName || null,
+      accountHolderName: apiData.banks?.[0]?.accountHolderName || null,
+      accountNumber: apiData.banks?.[0]?.accountNumber || null,
+      ifsc: apiData.banks?.[0]?.ifscCode || null,
+      pennyDropStatus: apiData.banks?.[0]?.pennyDropStatus || null,
+      bankVerified: apiData.banks?.[0]?.pennyDropStatus === "VERIFIED",
+      upiAutoPayStatus: apiData?.upiAutoPayStatus || false,
+    } as User;
+  }
+  return currentUser as User;
+}
 
 export function AuthProvider({ userData, children }: { userData: User | null; children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(userData);
@@ -105,38 +170,12 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
         const apiData = result.data;
 
         // Use fullName directly from API
-        const fullName = apiData.fullName || currentUser.name;
+        // const fullName = apiData.fullName || currentUser.name;
 
-        console.log('✅ Profile fetched successfully. Name:', fullName);
+        // console.log('✅ Profile fetched successfully. Name:', fullName);
 
         // Update user with real profile data from API
-        const updatedUser: User = {
-          ...currentUser,
-          name: fullName,
-          fullName: fullName,
-          email: apiData.email || currentUser.email,
-          mobile: apiData.mobile || currentUser.mobile,
-          dateOfBirth: apiData.dateOfBirth,
-          address: apiData.currentAddress?.line1,
-          city: apiData.currentAddress?.city,
-          state: apiData.currentAddress?.state,
-          pincode: apiData.currentAddress?.pincode,
-          isEmailVerified: apiData.isEmailVerified,
-          isMobileVerified: apiData.isMobileVerified,
-          kycStatus: apiData.kyc?.kycStatus || 'PENDING',
-          status: apiData.status,
-          createdAt: apiData.createdAt,
-          pan: apiData.panCard || null,
-          aadhaar: apiData.aadhaarNumber || null,
-          employmentType: apiData.employmentType || null,
-          monthlyIncome: apiData.monthlyIncome?.toString() || null,
-          companyName: apiData.companyName || null,
-          bankName: apiData.banks?.[0]?.bankName || null,
-          accountHolderName: apiData.banks?.[0]?.accountHolderName || null,
-          accountNumber: apiData.banks?.[0]?.accountNumber || null,
-          ifsc: apiData.banks?.[0]?.ifscCode || null,
-          loanAmount: apiData.requestedLoanAmount?.toString() || null, // Loan amount from API 
-        };
+        const updatedUser: User = userInitializer({ apiData, currentUser })
 
         setUser(updatedUser);
 
@@ -152,7 +191,7 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
     }
   };
 
-  const login = async ({ apiData, email = "" }: LoginProps): Promise<boolean> => {
+  const login = async ({ apiData, email = "", mobile = "" }: LoginProps): Promise<boolean> => {
     setIsLoading(true);
 
     try {
@@ -160,16 +199,12 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
       if (apiData && (apiData.user?.id || apiData.userId) && (apiData.token || apiData.accessToken)) {
         const authToken = apiData.accessToken || apiData.token;
 
-        // Determine if login was with email or mobile
-        const isEmailLogin = email.includes('@');
-        const isMobileLogin = /^\+?\d{10,}$/.test(email);
-
         // Create user object from API data
         const userData: User = {
           id: apiData.user?.id || apiData.userId,
           name: apiData.fullName || apiData.name || 'User',
-          email: isEmailLogin ? email : (apiData.email || ''),
-          mobile: isMobileLogin ? email : (apiData.mobile || ''),
+          email: email || apiData.email || '',
+          mobile: mobile || apiData.mobile || '',
         };
 
         // Store session in localStorage
@@ -251,16 +286,23 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
   };
 
   const updateUser = (userData: Partial<User>) => {
-    if (user) {
-      const updatedUser = { ...user, ...userData };
-      setUser(updatedUser);
+    if (userData) {
+      // const updatedUser = { ...user, ...userData };
+      // setUser(updatedUser);
+      setUser((prev) => {
+        // If there is no user, we can't perform a partial update
+        if (!prev) return null;
+
+        // Return a complete User object
+        return { ...prev, ...userData } as User;
+      });
       // Update localStorage if needed
-      if (userData.name) {
-        localStorage.setItem('userName', userData.name);
-      }
-      if (userData.email) {
-        localStorage.setItem('userEmail', userData.email);
-      }
+      // if (userData.name) {
+      //   localStorage.setItem('userName', userData.name);
+      // }
+      // if (userData.email) {
+      //   localStorage.setItem('userEmail', userData.email);
+      // }
     }
   };
 

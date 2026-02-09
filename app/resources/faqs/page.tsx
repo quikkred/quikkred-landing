@@ -96,7 +96,7 @@ export default function FAQsPage() {
     {
       id: "5",
       question: "What are the interest rates and charges?",
-      answer: "Our interest rates start from 8.99% per annum and go up to 24% based on your credit profile. We have no hidden charges - only a processing fee of 2% of the loan amount (minimum ₹1,000). All charges are clearly disclosed before approval.",
+      answer: "Our interest rates start from 8.99% per annum and go up to 24% based on your credit profile. We have no hidden charges - only a Platform Fee of 2% of the loan amount (minimum ₹1,000). All charges are clearly disclosed before approval.",
       category: "general",
       isPopular: true,
       tags: ["interest", "rates", "charges", "fees"]

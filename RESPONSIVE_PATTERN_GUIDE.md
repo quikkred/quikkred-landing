@@ -82,7 +82,7 @@ space-y-3 sm:space-y-4            // Vertical spacing
 ### 🔘 Buttons & CTAs
 ```tsx
 // Full-width mobile, auto desktop
-<Link href="/apply" className="w-full sm:w-auto">
+<Link href="/apply/quick" className="w-full sm:w-auto">
   <button className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4">
 
 // Stacked mobile, horizontal desktop

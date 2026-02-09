@@ -10,10 +10,13 @@ import { useRouter } from "nextjs-toploader/app";
 
 const TruecallerVerify = ({
     callbackURL = "/user",
-    buttonText = "Truecaller"
+    buttonText = "Truecaller",
+    smButtonText = "Truecaller",
 }: {
     callbackURL?: string;
     buttonText?: string;
+    smButtonText?: string;
+    callback?: () => void;
 }) => {
     const [loading, setLoading] = useState(false);
 
@@ -162,6 +165,7 @@ const TruecallerVerify = ({
 
     return (
         <button
+            type="button"
             onClick={handleTruecallerLogin}
             disabled={loading}
             className="flex-1 flex md:hidden items-center justify-center gap-2 py-2.5 sm:py-3 bg-white border-2 border-[#0066FF] rounded-lg font-medium text-xs sm:text-sm text-gray-800 hover:bg-[#0066FF]/5 disabled:opacity-50 transition-all active:scale-[0.98] touch-manipulation"
@@ -174,7 +178,8 @@ const TruecallerVerify = ({
             ) : (
                 <>
                     <TruecallerIcon />
-                    <span className="hidden xs:inline">{buttonText}</span>
+                    <span className="hidden sm:inline-block">{buttonText}</span>
+                    <span className="inline-block sm:hidden">{smButtonText}</span>
                 </>
             )}
         </button>

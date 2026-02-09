@@ -296,16 +296,16 @@ export default function MyApplicationsPage() {
 
   // Filter applications
   const filteredApplications = applications.filter(app => {
-    const statusUpper = app.status.toUpperCase();
+    const statusUpper = app.status?.toUpperCase();
     const matchesStatus = filterStatus === 'all' ||
       (filterStatus === 'pending' && statusUpper === 'PENDING') ||
       (filterStatus === 'processing' && statusUpper === 'PROCESSING') ||
       (filterStatus === 'approved' && (statusUpper === 'APPROVED' || statusUpper === 'DISBURSED')) ||
       (filterStatus === 'rejected' && (statusUpper === 'REJECTED' || statusUpper === 'CANCELLED'));
 
-    const matchesSearch = app.applicationNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (app.purpose?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (app.customerId?.fullName?.toLowerCase() || '').includes(searchTerm.toLowerCase());
+    const matchesSearch = app.applicationNumber?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+      (app.purpose?.toLowerCase() || '')?.includes(searchTerm.toLowerCase()) ||
+      (app.customerId?.fullName?.toLowerCase() || '')?.includes(searchTerm.toLowerCase());
 
     return matchesStatus && matchesSearch;
   });
@@ -700,11 +700,11 @@ export default function MyApplicationsPage() {
                         <p className="font-semibold text-gray-900">{detailedApplication.interestRate || 0}%</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">Processing Fee</p>
+                        <p className="text-sm text-gray-600">Platform Fee</p>
                         <p className="font-semibold text-gray-900">₹{(detailedApplication.processingFee || 0).toLocaleString()}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">GST on Processing Fee</p>
+                        <p className="text-sm text-gray-600">GST on Platform Fee</p>
                         <p className="font-semibold text-gray-900">₹{(detailedApplication.gstOnProcessingFee || 0).toLocaleString()}</p>
                       </div>
 <div>

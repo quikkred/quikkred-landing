@@ -23,6 +23,58 @@ import {
 import { API_BASE_URL } from "@/lib/config";
 import getToken from "@/lib/getToken";
 import { getSession, signIn } from "next-auth/react";
+import GoogleVerify from "../quick-v2/components/ui/GoogleVerify";
+import TruecallerVerify from "../quick-v2/components/ui/TruecallerVerify";
+import DigiLockerVerify from "../quick-v2/components/ui/DigiLockerVerify";
+// import AadhaarMobileVerificationModal from "./components/AadhaarMobileVerificationModal";
+
+// Auto-decision engine
+
+
+// const autoDecisionEngine = (data: any) => {
+//   const { monthlyIncome, loanAmount, pan, aadhaar } = data;
+
+
+//   const minIncome = 25000;
+//   const maxLoanToIncome = 40;
+//   const maxEligibleAmount = monthlyIncome * maxLoanToIncome;
+
+
+//   if (monthlyIncome < minIncome) {
+//     return {
+//       approved: false,
+//       reason: "Minimum monthly income requirement not met (₹25,000)",
+//       suggestedAction: "Please reapply when your monthly income is ₹25,000 or above"
+//     };
+//   }
+
+//   if (loanAmount > maxEligibleAmount) {
+//     return {
+//       approved: false,
+//       reason: `Requested amount exceeds maximum eligible amount (₹${maxEligibleAmount.toLocaleString()})`,
+//       suggestedAction: `Maximum loan amount you can apply for: ₹${maxEligibleAmount.toLocaleString()}`
+//     };
+//   }
+
+//   if (!pan || !aadhaar) {
+//     return {
+//       approved: false,
+//       reason: "PAN and Aadhaar details are mandatory",
+//       suggestedAction: "Please provide valid PAN and Aadhaar numbers"
+//     };
+//   }
+
+//   // Approved!
+//   return {
+//     approved: true,
+//     approvedAmount: loanAmount,
+//     interestRate: 12.5,
+//     tenure: data.tenure || 12,
+//     emi: Math.round((loanAmount * (12.5/100/12) * Math.pow(1 + 12.5/100/12, 12)) / (Math.pow(1 + 12.5/100/12, 12) - 1)),
+//     processingFee: Math.round(loanAmount * 0.02)
+//   };
+// };
+
 
 export default function QuickLoanApplication() {
 
@@ -51,6 +103,7 @@ export default function QuickLoanApplication() {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [showLandingPage, setShowLandingPage] = useState(true); // LiveMint-style landing page state
+  const [digiLockerProcessing, setDigiLockerProcessing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [decision, setDecision] = useState<any>(null);
   const [selfieCapture, setSelfieCapture] = useState(false);
@@ -440,6 +493,108 @@ export default function QuickLoanApplication() {
     };
     requestLocation();
   }, []);
+
+  // DigiLocker callback handler — login, fetch profile, auto-fill & verify
+  useEffect(() => {
+    const requestId = searchParams.get("requestId");
+    const status = searchParams.get("status");
+
+    if (requestId && status === "success" && !digiLockerProcessing) {
+      setDigiLockerProcessing(true);
+
+      (async () => {
+        try {
+          // 1. Authenticate via NextAuth DigiLocker provider
+          const res = await signIn("digilocker", {
+            redirect: false,
+            requestId,
+          });
+
+          if (!res?.ok) {
+            toast({
+              variant: "error",
+              title: "DigiLocker Login Failed",
+              description: res?.error || "Authentication failed. Please try again.",
+            });
+            setDigiLockerProcessing(false);
+            return;
+          }
+
+          // 2. Get session & login
+          const userData = await getSession();
+          if (userData) {
+            await login({
+              apiData: userData,
+              email: userData?.user?.email || "",
+            });
+          }
+
+          // 3. Fetch profile to get DigiLocker-verified data
+          const result = await getCustomer();
+
+          if (result.success && result.data) {
+            const profileData = result.data;
+
+            // Auto-fill form with verified data
+            setFormData(prev => ({
+              ...prev,
+              fullName: profileData.fullName || prev.fullName,
+              mobile: profileData.mobile || prev.mobile,
+              email: profileData.email || prev.email,
+              pan: profileData.panCard || prev.pan,
+              aadhaar: profileData.aadhaarNumber || prev.aadhaar,
+              dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
+              state: profileData.state ? profileData.state.toLowerCase() : prev.state,
+              employmentType: profileData.employmentType || prev.employmentType,
+              monthlyIncome: profileData.monthlyIncome?.toString() || prev.monthlyIncome,
+              companyName: profileData.companyName || prev.companyName,
+              mobileVerified: profileData.isMobileVerified || true,
+              emailVerified: profileData.isEmailVerified || false,
+            }));
+
+            // Mark KYC as verified if DigiLocker provided it
+            if (toBoolean(profileData.isPanVerify)) {
+              setPanVerified(true);
+              setBasicDetailsFilled(true);
+            }
+            if (toBoolean(profileData.isAadhaarVerify)) {
+              setAadhaarVerified(true);
+            }
+
+            setUserDataLoaded(true);
+
+            toast({
+              variant: "success",
+              title: "DigiLocker Verified!",
+              description: "Your details have been verified and pre-filled. Please review and continue.",
+            });
+          } else {
+            toast({
+              variant: "success",
+              title: "DigiLocker Login Successful!",
+              description: "Welcome! Please fill in your details to continue.",
+            });
+          }
+
+          // 4. Stay on apply/quick — skip landing, show form
+          setShowLandingPage(false);
+          setDigiLockerProcessing(false);
+
+          // Clean up URL params
+          const cleanUrl = window.location.pathname;
+          window.history.replaceState({}, '', cleanUrl);
+
+        } catch (err: any) {
+          toast({
+            variant: "error",
+            title: "Error",
+            description: err?.message || "DigiLocker login failed. Please try again.",
+          });
+          setDigiLockerProcessing(false);
+        }
+      })();
+    }
+  }, [searchParams]);
 
   // Apply API-determined step after data is loaded
   useEffect(() => {
@@ -970,6 +1125,47 @@ export default function QuickLoanApplication() {
     }
   }, [user]);
 
+  
+  // Fetch loan products on mount
+  useEffect(() => {
+    const fetchLoanProducts = async () => {
+      const token = await getToken();
+      setLoadingProducts(true);
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/loanProduct/allLoanProductsNameOnly`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success && result.data) {
+          setLoanProducts(result.data);
+        } else {
+          console.error('Failed to fetch loan products:', result.message);
+          toast({
+            title: "Error",
+            description: "Failed to load loan products. Please refresh the page.",
+            variant: "error"
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching loan products:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load loan products. Please refresh the page.",
+          variant: "error"
+        });
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    fetchLoanProducts();
+  }, []);
 
   // Calculate EMI when loan amount, tenure, tenure unit, or product changes
   useEffect(() => {
@@ -993,7 +1189,7 @@ export default function QuickLoanApplication() {
     // Calculate total interest based on daily rate and tenure days
     const totalInterest = principal * dailyRate * tenureDays;
 
-    // Calculate processing fee and GST
+    // Calculate Platform Fee and GST
     const processingFee = principal * processingFeePercent;
     const gstOnProcessingFee = processingFee * gstPercent;
     const totalProcessingFee = processingFee + gstOnProcessingFee;
@@ -1107,6 +1303,9 @@ export default function QuickLoanApplication() {
 
     // Loan Amount validation
     if (!formData.loanAmount || parseFloat(formData.loanAmount) <= 0) return false;
+
+    // Product selection validation
+    if (!formData.productId || !selectedProduct) return false;
 
     return true;
   };
@@ -1408,20 +1607,20 @@ export default function QuickLoanApplication() {
       //   body: JSON.stringify(payload),
       // });
 
-      // const data = await response.json();
       const response = await signIn("otp", {
         redirect: false,
         emailOrPhone: payload?.email || payload?.mobile,
         otp: payload.otp,
         loginMethod: verificationMethod, // "email" | "mobile"
       });
-      
+
       if (response?.ok) {
-        const data: any = await getSession();
+        // Get session data after successful sign-in
+        const sessionData = await getSession();
 
         login({
           email: payload?.email || "",
-          apiData: data,
+          apiData: sessionData,
         });
 
         if (verificationMethod === 'email') {
@@ -1431,9 +1630,18 @@ export default function QuickLoanApplication() {
         }
         setOtpSent(false); // Reset OTP sent state after successful verification
 
+        // Store access token if provided in session
+        const accessToken = (sessionData as any)?.accessToken || (sessionData as any)?.user?.accessToken;
+        if (accessToken) {
+          localStorage.setItem('accessToken', accessToken);
+          localStorage.setItem('token', accessToken);
+          localStorage.setItem('authToken', accessToken);
+          console.log('✅ Access token stored');
+        }
         // Store userId if provided
-        if (data?.userId) {
-          localStorage.setItem('userId', data.userId);
+        const userId = (sessionData as any)?.userId || (sessionData as any)?.user?.id;
+        if (userId) {
+          localStorage.setItem('userId', userId);
         }
 
         toast({
@@ -1443,7 +1651,10 @@ export default function QuickLoanApplication() {
         });
 
         // Auto-fill form with customer data after successful OTP verification
-        const token = data?.accessToken;
+        const token = accessToken ||
+          localStorage.getItem('accessToken') ||
+          localStorage.getItem('token') ||
+          localStorage.getItem('authToken');
 
         if (token) {
           try {
@@ -1893,10 +2104,52 @@ export default function QuickLoanApplication() {
           console.log('📊 Address data stored:', result.data.address);
         }
 
+        // ============================================
+        // PHASE 1-4: Handle Validation Results
+        // ============================================
+        let warningMessages: string[] = [];
+
+        // Phase 1: Contact Validation
+        if (result.data.contactValidation) {
+          const cv = result.data.contactValidation;
+          console.log('📱 Contact Validation:', cv);
+
+          if (!cv.contactMatchesAadhaar) {
+            if (cv.mismatch?.mobile) {
+              warningMessages.push("⚠️ Mobile number doesn't match Aadhaar records");
+            }
+            if (cv.mismatch?.email) {
+              warningMessages.push("⚠️ Email doesn't match Aadhaar records");
+            }
+          }
+        }
+
+        // Phase 4: Duplicate Detection
+        if (result.data.duplicateCheck?.isDuplicate) {
+          const dc = result.data.duplicateCheck;
+          console.log('🚨 Duplicate Aadhaar detected:', dc);
+          warningMessages.push(`⚠️ This Aadhaar is already registered with ${dc.duplicateCount} other account(s)`);
+        }
+
+        // Phase 2: Photo Validation
+        if (result.data.photoValidation?.photoUploaded) {
+          console.log('📸 Aadhaar photo uploaded:', result.data.photoValidation.photoUrl);
+        }
+
+        // Phase 3: Address Validation
+        if (result.data.addressValidation?.addressExtracted) {
+          console.log('🏠 Address validation:', result.data.addressValidation);
+        }
+
+        // Show toast with warnings if any
+        const successMessage = warningMessages.length > 0
+          ? `Aadhaar verified for ${result.data.name}.\n\n${warningMessages.join('\n')}`
+          : `Aadhaar verified for ${result.data.name}. Your details have been auto-filled.`;
+
         toast({
-          variant: "success",
-          title: "Aadhaar Verified Successfully! ✓",
-          description: `Aadhaar verified for ${result.data.name}. Your details have been auto-filled.`,
+          variant: warningMessages.length > 0 ? "warning" : "success",
+          title: warningMessages.length > 0 ? "Aadhaar Verified with Warnings" : "Aadhaar Verified Successfully! ✓",
+          description: successMessage,
         });
       } else {
         const errorMsg = result.message || result.error || 'Invalid OTP. Please check and try again.';
@@ -2278,7 +2531,19 @@ export default function QuickLoanApplication() {
             isBasicDetailsFilled: true
           },
           loanDetails: {
-            requestedLoanAmount: parseFloat(formData.loanAmount)
+            requestedLoanAmount: parseFloat(formData.loanAmount),
+            productId: formData.productId,
+            purpose: formData.purpose,
+            // Selected product complete details
+            product: selectedProduct ? {
+              id: selectedProduct._id,
+              name: selectedProduct.productName,
+              category: selectedProduct.category,
+              dailyInterestRate: selectedProduct.dailyInterestRate,
+              ...(selectedProduct.description && { description: selectedProduct.description }),
+              ...(selectedProduct.minAmount && { minAmount: selectedProduct.minAmount }),
+              ...(selectedProduct.maxAmount && { maxAmount: selectedProduct.maxAmount }),
+            } : null,
           },
           ...(locationData && {
             location: {
@@ -2736,6 +3001,16 @@ export default function QuickLoanApplication() {
         return;
       }
 
+      // Product validation for Step 1
+      if (!formData.productId || !selectedProduct) {
+        toast({
+          variant: "warning",
+          title: "Product Selection Required",
+          description: "Please select a loan product to continue.",
+        });
+        return;
+      }
+
       // Save Step 1 data (basic details + employment + loan amount)
       setLoading(true);
       const saveSuccess = await saveCustomerData(1);
@@ -3181,7 +3456,7 @@ export default function QuickLoanApplication() {
                 <span className="font-semibold">₹{decision.approvedAmount.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Processing Fee (2%)</span>
+                <span className="text-gray-600">Platform Fee (2%)</span>
                 <span className="font-semibold">₹{decision.processingFee.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm">
@@ -3316,6 +3591,19 @@ export default function QuickLoanApplication() {
   }
 
   // Main application form
+  if (digiLockerProcessing) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5] flex items-center justify-center">
+        <Toaster />
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#2B63B5] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800">Processing DigiLocker Login...</h2>
+          <p className="text-gray-500 mt-2">Please wait while we verify your identity.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5] py-8 px-4">
@@ -3327,9 +3615,23 @@ export default function QuickLoanApplication() {
           onClose={handleCloseSelfieModal}
           onCapture={handleSelfieCapture}
         />
+
+        {/* Aadhaar Mobile Verification Modal */}
+        
+        {/* <AadhaarMobileVerificationModal
+          isOpen={showAadhaarMobileModal}
+          onClose={() => {
+            // Optional: Allow closing modal or force verification
+            // setShowAadhaarMobileModal(false);
+          }}
+          aadhaarMobileHash={aadhaarMobileHash}
+          customerId={user?.customerId}
+          onVerified={handleAadhaarMobileVerified}
+        /> */}
+
         <div className="max-w-3xl mx-auto">
           {/* Close button - Hide when landing page is showing */}
-          {!(showLandingPage && !user && currentStep === 1) && (
+          {/* {!(showLandingPage && !user && currentStep === 1) && ( */}
             <div className="flex justify-end mb-4">
               <button
                 onClick={() => {
@@ -3345,7 +3647,7 @@ export default function QuickLoanApplication() {
                 <span className="text-sm font-medium">Close</span>
               </button>
             </div>
-          )}
+          {/* )} */}
 
           {/* Header - Hide when landing page is showing */}
           {!(showLandingPage && !user && currentStep === 1) && (
@@ -3381,6 +3683,8 @@ export default function QuickLoanApplication() {
             </div>
           )}
 
+         
+
           {/* Form Card */}
           <motion.div
             key={currentStep}
@@ -3403,447 +3707,17 @@ export default function QuickLoanApplication() {
                   {/* ============================================ */}
                   {/* LIVEMINT-STYLE LANDING PAGE - Shows first */}
                   {/* ============================================ */}
-                  {showLandingPage && !user && (
-                    <div className="-m-4 sm:-m-8">
-                      {/* Hero Section with Trust Badge */}
-                      <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-white relative overflow-hidden rounded-t-2xl">
-                        <div className="absolute top-20 right-0 w-64 h-64 bg-orange-100/50 rounded-full blur-3xl" />
-                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-amber-100/50 rounded-full blur-2xl" />
-
-                        <div className="relative px-4 sm:px-8 pt-6 pb-8">
-                          {/* Header with Logo and Trust Badge */}
-                          <div className="flex items-center justify-between mb-6">
-                            {/* Quikkred Logo */}
-                            <div className="flex items-center">
-                              <Image
-                                src="/logo.svg"
-                                alt="Quikkred"
-                                width={140}
-                                height={40}
-                                className="h-10 w-auto"
-                                priority
-                              />
-                            </div>
-
-                            {/* Trust Badge */}
-                            <div className="inline-flex items-center gap-1.5 bg-emerald-600 text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg">
-                              <Shield className="w-3.5 h-3.5" />
-                              100% Secure
-                            </div>
-                          </div>
-
-                          {/* Hero Headline */}
-                          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
-                            Get Personal Loan up to
-                          </h1>
-                          <div className="flex items-baseline gap-2 flex-wrap mb-1">
-                            <span className="text-3xl sm:text-4xl font-bold text-orange-500">₹25,000</span>
-                            <span className="text-xl sm:text-2xl font-bold text-gray-900">in</span>
-                            <span className="text-3xl sm:text-4xl font-bold text-emerald-600">5 mins!</span>
-                          </div>
-
-                          {/* Benefits Section */}
-                          <div className="mt-6">
-                            <div className="flex items-center gap-2 mb-4">
-                              <div className="flex-1 h-px bg-gray-300" />
-                              <span className="text-sm font-semibold text-gray-700">Benefits & Features</span>
-                              <div className="flex-1 h-px bg-gray-300" />
-                            </div>
-
-                            <div className="grid grid-cols-3 gap-2">
-                              <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-center">
-                                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm border border-amber-200">
-                                  <Percent className="w-5 h-5 text-orange-500" />
-                                </div>
-                                <p className="text-xs font-semibold text-gray-900">Interest rate</p>
-                                <p className="text-[10px] text-gray-600">starting at 1%/day</p>
-                              </div>
-
-                              <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-center">
-                                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm border border-amber-200">
-                                  <Zap className="w-5 h-5 text-orange-500" />
-                                </div>
-                                <p className="text-xs font-semibold text-gray-900">100% Digital</p>
-                                <p className="text-[10px] text-gray-600">Process</p>
-                              </div>
-
-                              <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-center">
-                                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm border border-amber-200">
-                                  <Calendar className="w-5 h-5 text-orange-500" />
-                                </div>
-                                <p className="text-xs font-semibold text-gray-900">Tenure up to</p>
-                                <p className="text-[10px] text-gray-600">90 Days</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Lead Capture Form Section - Mobile Number Only */}
-                      <div className="bg-white px-4 sm:px-8 py-6">
-                        <h2 className="text-lg font-bold text-gray-900 mb-2">
-                          Get Money in your Bank Account Instantly
-                        </h2>
-                        <p className="text-sm text-gray-600 mb-6">
-                          Enter your mobile number to check your loan eligibility
-                        </p>
-
-                        <div className="space-y-4">
-                          {/* Mobile Number Input */}
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Mobile Number *
-                            </label>
-                            <div className="relative">
-                              <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1 text-gray-500">
-                                <span className="text-base font-medium">+91</span>
-                                <div className="w-px h-5 bg-gray-300 ml-1" />
-                              </div>
-                              <input
-                                type="tel"
-                                name="mobile"
-                                value={formData.mobile}
-                                onChange={(e) => {
-                                  const value = e.target.value.replace(/\D/g, '').slice(0, 10);
-                                  setFormData(prev => ({ ...prev, mobile: value }));
-                                  if (fieldErrors.mobile) setFieldErrors(prev => ({ ...prev, mobile: '' }));
-                                }}
-                                className={`w-full pl-20 pr-4 py-4 text-lg border-2 rounded-xl focus:ring-2 focus:ring-[#25B181] focus:border-[#25B181] ${fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'}`}
-                                placeholder="9876543210"
-                                maxLength={10}
-                                autoFocus
-                              />
-                            </div>
-                            {fieldErrors.mobile && (
-                              <p className="text-xs text-red-500 mt-1">{fieldErrors.mobile}</p>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Apply Now Button */}
-                        <button
-                          onClick={() => {
-                            // Validate mobile number only
-                            if (formData.mobile.length !== 10) {
-                              setFieldErrors(prev => ({ ...prev, mobile: 'Please enter a valid 10-digit mobile number' }));
-                              return;
-                            }
-                            setShowLandingPage(false);
-                          }}
-                          className="w-full mt-6 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-lg shadow-lg shadow-orange-500/30 transition-all active:scale-[0.98]"
-                        >
-                          Get Started
-                        </button>
-
-                        {/* Consent Checkboxes */}
-                        <div className="mt-4 space-y-3">
-                          <label className="flex items-start gap-2 cursor-pointer">
-                            <div className="mt-0.5">
-                              <div className="w-5 h-5 rounded border-2 flex items-center justify-center bg-emerald-500 border-emerald-500">
-                                <CheckCircle className="w-3.5 h-3.5 text-white" />
-                              </div>
-                            </div>
-                            <p className="text-xs text-gray-600 leading-relaxed">
-                              By continuing, I agree to Credit Bureau <a href="/terms-and-conditions" className="text-blue-600 underline">Terms and Conditions</a> and authorize Quikkred and its <a href="/partners" className="text-blue-600 underline">Partners</a> to collect and store the Credit Bureau data for checking my eligibility for loan.
-                            </p>
-                          </label>
-
-                          <label className="flex items-start gap-2 cursor-pointer">
-                            <div className="mt-0.5">
-                              <div className="w-5 h-5 rounded border-2 flex items-center justify-center bg-emerald-500 border-emerald-500">
-                                <CheckCircle className="w-3.5 h-3.5 text-white" />
-                              </div>
-                            </div>
-                            <p className="text-xs text-gray-600 leading-relaxed">
-                              By continuing, I agree to the <a href="/privacy-policy" className="text-blue-600 underline">Privacy Policy</a> and <a href="/terms-and-conditions" className="text-blue-600 underline">Terms and Conditions</a> of Quikkred and its <a href="/partners" className="text-blue-600 underline">Partners</a>, and I consent to receive communications via SMS, E-mail, and WhatsApp.
-                            </p>
-                          </label>
-                        </div>
-                      </div>
-
-                      {/* Lending Partners Section */}
-                      <div className="bg-gradient-to-b from-amber-50 to-white py-8 px-4 sm:px-8">
-                        <div className="flex items-center gap-2 mb-2 justify-center">
-                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
-                          <h3 className="text-base font-bold text-gray-900">Our Lending Partners</h3>
-                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
-                        </div>
-                        <p className="text-xs text-gray-600 text-center mb-6">Loan Solutions from Our Trusted Lenders</p>
-
-                        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center gap-4">
-                          <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
-                            <Landmark className="w-8 h-8 text-white" />
-                          </div>
-                          <div>
-                            <h4 className="font-bold text-gray-900">Satsai Finlease Pvt Ltd</h4>
-                            <p className="text-xs text-gray-600">RBI Registered NBFC</p>
-                            <p className="text-[10px] text-emerald-600 font-semibold mt-1">RBI Reg: B-14.01646</p>
-                            <p className="text-[10px] text-gray-500">CIN: U71290DL1996PTC081328</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 3 Steps Process Section */}
-                      <div className="bg-white py-8 px-4 sm:px-8">
-                        <div className="flex items-center gap-2 mb-6 justify-center">
-                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
-                          <h3 className="text-base font-bold text-gray-900">Your loan is 3 steps away</h3>
-                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-3">
-                          <div className="text-center">
-                            <p className="text-orange-400 font-bold text-lg mb-2">01</p>
-                            <div className="w-14 h-14 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center mx-auto mb-2 border-2 border-orange-200">
-                              <Users className="w-6 h-6 text-orange-500" />
-                            </div>
-                            <p className="text-xs font-semibold text-gray-900">Enter Basic</p>
-                            <p className="text-xs text-gray-600">Details</p>
-                          </div>
-                          <div className="text-center">
-                            <p className="text-orange-400 font-bold text-lg mb-2">02</p>
-                            <div className="w-14 h-14 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center mx-auto mb-2 border-2 border-orange-200">
-                              <IndianRupee className="w-6 h-6 text-orange-500" />
-                            </div>
-                            <p className="text-xs font-semibold text-gray-900">Choose & Apply</p>
-                            <p className="text-xs text-gray-600">Loan Offers</p>
-                          </div>
-                          <div className="text-center">
-                            <p className="text-orange-400 font-bold text-lg mb-2">03</p>
-                            <div className="w-14 h-14 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center mx-auto mb-2 border-2 border-orange-200">
-                              <Landmark className="w-6 h-6 text-orange-500" />
-                            </div>
-                            <p className="text-xs font-semibold text-gray-900">Instant Cash in</p>
-                            <p className="text-xs text-gray-600">Bank</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Eligibility Section */}
-                      <div className="bg-gray-50 py-8 px-4 sm:px-8">
-                        <div className="flex items-center gap-2 mb-6 justify-center">
-                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
-                          <h3 className="text-base font-bold text-gray-900">Personal Loan Eligibility</h3>
-                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
-                        </div>
-
-                        <div className="space-y-3">
-                          <div className="flex items-start gap-3">
-                            <span className="text-sm font-bold text-gray-900 min-w-20">Age:</span>
-                            <span className="text-sm text-gray-700">21 - 60 years</span>
-                          </div>
-                          <div className="flex items-start gap-3">
-                            <span className="text-sm font-bold text-gray-900 min-w-20">Income:</span>
-                            <span className="text-sm text-gray-700">Minimum Rs 15,000/month for salaried applicants</span>
-                          </div>
-                          <div className="flex items-start gap-3">
-                            <span className="text-sm font-bold text-gray-900 min-w-20">Resident:</span>
-                            <span className="text-sm text-gray-700">A resident of India</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Why Choose Us Section */}
-                      <div className="bg-gradient-to-b from-gray-50 to-emerald-50/30 py-8 px-4 sm:px-8">
-                        <div className="flex items-center gap-2 mb-6 justify-center">
-                          <Star className="w-4 h-4 text-orange-400" />
-                          <h3 className="text-base font-bold text-gray-900">Why Choose Us</h3>
-                          <Star className="w-4 h-4 text-orange-400" />
-                        </div>
-
-                        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-                          <div className="bg-emerald-50 rounded-xl p-3 mb-4 flex items-center justify-center gap-2">
-                            <BadgeCheck className="w-5 h-5 text-emerald-600" />
-                            <span className="text-sm font-semibold text-emerald-800">Trusted by 50K+ users</span>
-                          </div>
-
-                          <div className="flex items-center justify-center gap-4 mb-4 pb-4 border-b border-gray-100">
-                            <span className="text-xl font-bold text-emerald-600">Quikkred</span>
-                          </div>
-
-                          <div className="space-y-4">
-                            <div className="flex items-start gap-3">
-                              <Star className="w-4 h-4 text-orange-400 fill-orange-400 mt-0.5" />
-                              <div>
-                                <p className="text-sm font-bold text-gray-900">Your Money, Our Expertise</p>
-                                <p className="text-xs text-gray-600">Quikkred: India&apos;s Trusted Financial Platform</p>
-                              </div>
-                            </div>
-                            <div className="flex items-start gap-3">
-                              <Star className="w-4 h-4 text-orange-400 fill-orange-400 mt-0.5" />
-                              <div>
-                                <p className="text-sm font-bold text-gray-900">100% Digital Loans</p>
-                                <p className="text-xs text-gray-600">No Paperwork, No Collateral</p>
-                              </div>
-                            </div>
-                            <div className="flex items-start gap-3">
-                              <Star className="w-4 h-4 text-orange-400 fill-orange-400 mt-0.5" />
-                              <div>
-                                <p className="text-sm font-bold text-gray-900">Best Loan Offers</p>
-                                <p className="text-xs text-gray-600">Lowest Rate, Flexible tenures</p>
-                              </div>
-                            </div>
-                            <div className="flex items-start gap-3">
-                              <Star className="w-4 h-4 text-orange-400 fill-orange-400 mt-0.5" />
-                              <div>
-                                <p className="text-sm font-bold text-gray-900">RBI Registered Partners</p>
-                                <p className="text-xs text-gray-600">Borrow securely from Reliable lenders</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Rates & Charges Section */}
-                      <div className="bg-white py-8 px-4 sm:px-8">
-                        <div className="flex items-center gap-2 mb-6 justify-center">
-                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
-                          <h3 className="text-base font-bold text-gray-900">Rates & Charges</h3>
-                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
-                        </div>
-
-                        <div className="space-y-3 mb-6">
-                          <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center">
-                              <IndianRupee className="w-6 h-6 text-orange-500" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-bold text-gray-900">Finance Amount</p>
-                              <p className="text-xs text-gray-600">₹5,000 - ₹25,000</p>
-                            </div>
-                          </div>
-
-                          <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center">
-                              <FileText className="w-6 h-6 text-orange-500" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-bold text-gray-900">Platform Fee</p>
-                              <p className="text-xs text-gray-600">10% of loan amount</p>
-                            </div>
-                          </div>
-
-                          <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center">
-                              <Percent className="w-6 h-6 text-orange-500" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-bold text-gray-900">GST on Platform Fee</p>
-                              <p className="text-xs text-gray-600">18% of platform fee</p>
-                            </div>
-                          </div>
-
-                          <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center">
-                              <Calendar className="w-6 h-6 text-orange-500" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-bold text-gray-900">Tenure</p>
-                              <p className="text-xs text-gray-600">Up to 90 days</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Interest Rates */}
-                        <div className="flex items-center gap-2 mb-4 justify-center">
-                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
-                          <h4 className="text-sm font-bold text-gray-900">Interest & Penalty</h4>
-                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
-                        </div>
-
-                        <div className="bg-emerald-50 rounded-xl p-4 space-y-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <Star className="w-3 h-3 text-orange-400 fill-orange-400" />
-                              <span className="text-sm font-semibold text-gray-900">Daily Interest Rate</span>
-                            </div>
-                            <span className="text-sm text-gray-700">1% per day</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <Star className="w-3 h-3 text-orange-400 fill-orange-400" />
-                              <span className="text-sm font-semibold text-gray-900">Cheque Bounce</span>
-                            </div>
-                            <span className="text-sm text-gray-700">₹500 per instance</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <Star className="w-3 h-3 text-orange-400 fill-orange-400" />
-                              <span className="text-sm font-semibold text-gray-900">Late Payment</span>
-                            </div>
-                            <span className="text-sm text-gray-700">2% per month</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* APR Calculation Section */}
-                      <div className="bg-gray-50 py-8 px-4 sm:px-8">
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">Illustrative Loan Calculation</h3>
-                        <p className="text-xs text-gray-600 mb-6 leading-relaxed">
-                          The total cost includes platform fee (10%), GST (18% on platform fee). Interest is charged at 1% per day on the loan amount.
-                        </p>
-
-                        {/* Comparison Table */}
-                        <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200">
-                          <div className="bg-indigo-800 text-white p-3 grid grid-cols-3 text-xs font-semibold">
-                            <span>Variable</span>
-                            <span className="text-center">Case 1</span>
-                            <span className="text-center">Case 2</span>
-                          </div>
-
-                          {[
-                            { label: 'Loan Amount', case1: '₹10,000', case2: '₹25,000' },
-                            { label: 'Tenure', case1: '30 Days', case2: '15 Days' },
-                            { label: 'Interest Rate', case1: '1%/day', case2: '1%/day' },
-                            { label: 'Platform Fee', case1: '₹1,000', case2: '₹2,500' },
-                            { label: 'GST (18%)', case1: '₹180', case2: '₹450' },
-                            { label: 'Total Interest', case1: '₹3,000', case2: '₹3,750' },
-                            { label: 'You Receive', case1: '₹8,820', case2: '₹22,050' },
-                            { label: 'Total Repayment', case1: '₹10,000', case2: '₹25,000' },
-                          ].map((row, index) => (
-                            <div key={row.label} className={`grid grid-cols-3 text-xs p-3 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
-                              <span className="font-medium text-gray-900">{row.label}</span>
-                              <span className="text-center text-gray-700">{row.case1}</span>
-                              <span className="text-center text-gray-700">{row.case2}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Disclaimer Footer */}
-                      <div className="bg-white border-t border-gray-200 py-6 px-4 sm:px-8 rounded-b-2xl">
-                        <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                          <p className="text-xs text-gray-600 leading-relaxed">
-                            <span className="font-bold text-gray-900">Disclaimer:</span> Quikkred is a digital lending platform and is authorized to provide services on behalf of its partner NBFC - Satsai Finlease Private Limited (RBI Reg: B-14.01646 | CIN: U71290DL1996PTC081328).
-                          </p>
-                        </div>
-
-                        <div className="text-center space-y-2">
-                          <p className="text-xs text-gray-700 font-semibold">Satsai Finlease Private Limited</p>
-                          <p className="text-[10px] text-gray-500">
-                            1008, 10th floor, Vikrant Tower, Rajendra Place, New Delhi - 110005
-                          </p>
-                          <div className="flex items-center justify-center gap-4 text-[10px] text-gray-500">
-                            <a href="tel:+919311913854" className="flex items-center gap-1 hover:text-emerald-600">
-                              <Phone className="w-3 h-3" />
-                              +91 9311913854
-                            </a>
-                            <span>•</span>
-                            <a href="mailto:support@quikkred.in" className="hover:text-emerald-600">
-                              support@quikkred.in
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                 {/* ----------------------------------------------------------------------------------------------------------- */}
 
                   {/* ============================================ */}
                   {/* ORIGINAL FORM - Shows after landing page */}
                   {/* ============================================ */}
-                  {(!showLandingPage || user) && (
-                    <>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-6">Basic Details</h2>
+                  {/* {(!showLandingPage || user) && ( */}
+
+
+       <>
+       
+                     
 
                       {/* Logged in user notice - Show instead of verification */}
                   {user && userDataLoaded && (formData.emailVerified || formData.mobileVerified) ? (
@@ -3860,8 +3734,12 @@ export default function QuickLoanApplication() {
                     </div>
                   ) : (
                     <>
-                      {/* Verification Method Toggle - Only show for non-logged in users */}
-                      {/* <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                        <div className="grid grid-cols-2 sm:grid-cols-1 gap-2">
+                              <GoogleVerify buttonText="Continue with google" callbackURL="/apply/quick"/>
+                              <TruecallerVerify buttonText="Continue with truecaller" callbackURL="/apply/quick"/>
+                              <DigiLockerVerify buttonText="Continue with DigiLocker" extraParams={{ apply: "true" }} />
+                            </div>
+                      {/* <div className="bg-gray-50 rounded-xl p-4 mb-6">     
                       <label className="block text-sm font-medium text-gray-700 mb-3">
                         Choose Verification Method *
                       </label>
@@ -3902,6 +3780,8 @@ export default function QuickLoanApplication() {
                     </div> */}
                       </>
                   )}
+
+                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Basic Details</h2>
 
                   {/* Email Verification - Only show for non-logged in users */}
                   {!user && verificationMethod === 'email' && (
@@ -4102,28 +3982,32 @@ export default function QuickLoanApplication() {
                   </div>
 
                   {/* Show additional fields - always show both for logged-in users */}
+                  {/* {user ? (
+                    <>
+                          <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email Address *
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      disabled={basicDetailsFilled || formData.emailVerified}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'
+                        } ${(basicDetailsFilled || formData.emailVerified) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                      placeholder="Enter your email address"
+                    />
+                    {fieldErrors.email && (
+                      <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+                    )}
+                          </div>
+                  </>
+                  ):(<>N/A</>)} */}
+
+                  {/* Show additional fields - always show both for logged-in users */}
                   {user ? (
                     <>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Email Address *
-                        </label>
-                        <input
-                          type="email"
-                          name="email"
-                          value={formData.email}
-                          onChange={handleChange}
-                          disabled={formData.emailVerified || basicDetailsFilled}
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'
-                            } ${(formData.emailVerified || basicDetailsFilled) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                          placeholder="your@email.com"
-                        />
-                        {fieldErrors.email ? (
-                          <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
-                        ) : (
-                          <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
-                        )}
-                      </div>
                       {/* Mobile + DOB side by side for logged-in user */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
@@ -4246,30 +4130,30 @@ export default function QuickLoanApplication() {
                               <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
                             )}
                           </div>
-                          {/* DOB for mobile verification */}
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Date of Birth *
-                            </label>
-                            <input
-                              type="date"
-                              name="dob"
-                              value={formData.dob}
-                              onChange={handleChange}
-                              disabled={basicDetailsFilled}
-                              max={(() => {
-                                const date = new Date();
-                                date.setFullYear(date.getFullYear() - 18);
-                                return date.toISOString().split('T')[0];
-                              })()}
-                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
-                                } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                              required
-                            />
-                            {fieldErrors.dob && (
-                              <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
-                            )}
-                          </div>
+                      {/* DOB for mobile verification */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Date of Birth *
+                        </label>
+                        <input
+                          type="date"
+                          name="dob"
+                          value={formData.dob}
+                          onChange={handleChange}
+                          disabled={basicDetailsFilled}
+                          max={(() => {
+                            const date = new Date();
+                            date.setFullYear(date.getFullYear() - 18);
+                            return date.toISOString().split('T')[0];
+                          })()}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
+                            } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                          required
+                        />
+                        {fieldErrors.dob && (
+                          <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
+                        )}
+                      </div>
                         </>
                       )}
                     </>
@@ -4475,8 +4359,155 @@ export default function QuickLoanApplication() {
                       )}
                     </div>
                   </div>
-                    </>
+
+
+  {/* Loan Product Selection */}
+                  <div className="mt-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Select Loan Product
+                    </label>
+                    <select
+                      name="productId"
+                      value={formData.productId}
+                      onChange={(e) => handleProductChange(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                      disabled={loadingProducts}
+                    >
+                      <option value="">
+                        {loadingProducts ? 'Loading products...' : 'Select a loan product'}
+                      </option>
+                      {loanProducts.map((product) => (
+                        <option key={product._id} value={product._id}>
+                          {product.productName} - {product.category} (Rate: {product.dailyInterestRate}% daily)
+                        </option>
+                      ))}
+                    </select>
+                    {selectedProduct && (
+                      <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-sm text-blue-800">
+                          <span className="font-semibold">Daily Interest Rate:</span> {selectedProduct.dailyInterestRate}% |
+                          <span className="font-semibold ml-2">Processing Fee:</span> {selectedProduct.processingFee}% |
+                          <span className="font-semibold ml-2">GST:</span> {selectedProduct.gst}%
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Tenure Selector */}
+                  {selectedProduct && (
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Loan Tenure (days)
+                      </label>
+                      {selectedProduct.allowedTenures && selectedProduct.allowedTenures.length > 0 ? (
+                        <select
+                          name="tenure"
+                          value={formData.tenure}
+                          onChange={(e) => setFormData(prev => ({ ...prev, tenure: e.target.value }))}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                        >
+                          {selectedProduct.allowedTenures.map((t: number) => (
+                            <option key={t} value={t.toString()}>
+                              {t} days
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type="number"
+                          name="tenure"
+                          value={formData.tenure}
+                          onChange={(e) => setFormData(prev => ({ ...prev, tenure: e.target.value }))}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                          placeholder="Enter tenure in days"
+                          min={selectedProduct.minTenure || 1}
+                          max={selectedProduct.maxTenure || 365}
+                        />
+                      )}
+                    </div>
                   )}
+
+                  {/* EMI Calculation Display */}
+                  {emiCalculation && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-4 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-6 shadow-lg"
+                    >
+                      <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <Sparkles className="w-5 h-5 text-green-600 mr-2" />
+                        EMI Calculation Details
+                      </h3>
+
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="bg-white rounded-lg p-4 shadow-sm">
+                          <p className="text-xs text-gray-600 mb-1">Principal Amount</p>
+                          <p className="text-2xl font-bold text-gray-900">
+                            ₹{emiCalculation.principal.toLocaleString('en-IN')}
+                          </p>
+                        </div>
+                        <div className="bg-white rounded-lg p-4 shadow-sm">
+                          <p className="text-xs text-gray-600 mb-1">{emiCalculation.isLumpSum ? 'Total Repayment' : 'Monthly EMI'}</p>
+                          <p className="text-2xl font-bold text-green-600">
+                            ₹{emiCalculation.emi.toLocaleString('en-IN')}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-3 mb-4">
+                        <div className="bg-white rounded-lg p-3 shadow-sm">
+                          <p className="text-xs text-gray-600 mb-1">Total Interest</p>
+                          <p className="text-lg font-semibold text-gray-900">
+                            ₹{emiCalculation.totalInterest.toLocaleString('en-IN')}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            @ {emiCalculation.dailyInterestRate}% daily
+                          </p>
+                        </div>
+                        <div className="bg-white rounded-lg p-3 shadow-sm">
+                          <p className="text-xs text-gray-600 mb-1">Processing Fee</p>
+                          <p className="text-lg font-semibold text-gray-900">
+                            ₹{emiCalculation.processingFee.toLocaleString('en-IN')}
+                          </p>
+                        </div>
+                        <div className="bg-white rounded-lg p-3 shadow-sm">
+                          <p className="text-xs text-gray-600 mb-1">GST</p>
+                          <p className="text-lg font-semibold text-gray-900">
+                            ₹{emiCalculation.gst.toLocaleString('en-IN')}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg p-4 text-white">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="text-sm opacity-90 mb-1">Total Amount Payable</p>
+                            <p className="text-3xl font-bold">
+                              ₹{emiCalculation.totalAmount.toLocaleString('en-IN')}
+                            </p>
+                            <p className="text-xs opacity-80 mt-1">
+                              Over {emiCalculation.tenureValue} days{!emiCalculation.isLumpSum && ` (~${emiCalculation.tenureMonths} months)`}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm opacity-90 mb-1">Processing Fee (incl. GST)</p>
+                            <p className="text-xl font-bold">
+                              ₹{emiCalculation.totalProcessingFee.toLocaleString('en-IN')}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p className="text-xs text-yellow-800">
+                          <span className="font-semibold">Note:</span> This is an indicative calculation. Final EMI may vary based on approval terms and conditions.
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+
+                    </>
+                 {/* )} */}
                 </motion.div>
               )}
 
@@ -4916,11 +4947,11 @@ export default function QuickLoanApplication() {
                             <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.totalInterest ?? approvalData.totalInterest) || 0).toLocaleString('en-IN')}</p>
                           </div>
                           <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">Processing Fee</p>
+                            <p className="text-sm text-gray-500 mb-1">Platform Fee</p>
                             <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.processingFee ?? approvalData.processingFee) || 0).toLocaleString('en-IN')}</p>
                           </div>
                           <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">GST on Processing Fee</p>
+                            <p className="text-sm text-gray-500 mb-1">GST on Platform Fee</p>
                             <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.gstOnProcessingFee ?? approvalData.gstOnProcessingFee) || 0).toLocaleString('en-IN')}</p>
                           </div>
                           <div className="bg-white rounded-lg p-4 border border-gray-200 col-span-2">
@@ -5392,3 +5423,447 @@ export default function QuickLoanApplication() {
     </>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+ {/* {showLandingPage && !user && (
+                    <div className="-m-4 sm:-m-8">
+                      
+                      <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-white relative overflow-hidden rounded-t-2xl">
+                        <div className="absolute top-20 right-0 w-64 h-64 bg-orange-100/50 rounded-full blur-3xl" />
+                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-amber-100/50 rounded-full blur-2xl" />
+
+                        <div className="relative px-4 sm:px-8 pt-6 pb-8">
+                         
+                          <div className="flex items-center justify-between mb-6">
+                          
+                            <div className="flex items-center">
+                              <Image
+                                src="/logo.svg"
+                                alt="Quikkred"
+                                width={140}
+                                height={40}
+                                className="h-10 w-auto"
+                                priority
+                              />
+                            </div>
+
+                            
+                            <div className="inline-flex items-center gap-1.5 bg-emerald-600 text-white px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg">
+                              <Shield className="w-3.5 h-3.5" />
+                              100% Secure
+                            </div>
+                          </div>
+
+                         
+                          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+                            Get Personal Loan up to
+                          </h1>
+                          <div className="flex items-baseline gap-2 flex-wrap mb-1">
+                            <span className="text-3xl sm:text-4xl font-bold text-orange-500">₹25,000</span>
+                            <span className="text-xl sm:text-2xl font-bold text-gray-900">in</span>
+                            <span className="text-3xl sm:text-4xl font-bold text-emerald-600">5 mins!</span>
+                          </div>
+
+                         
+                          <div className="mt-6">
+                            <div className="flex items-center gap-2 mb-4">
+                              <div className="flex-1 h-px bg-gray-300" />
+                              <span className="text-sm font-semibold text-gray-700">Benefits & Features</span>
+                              <div className="flex-1 h-px bg-gray-300" />
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-2">
+                              <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-center">
+                                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm border border-amber-200">
+                                  <Percent className="w-5 h-5 text-orange-500" />
+                                </div>
+                                <p className="text-xs font-semibold text-gray-900">Interest rate</p>
+                                <p className="text-[10px] text-gray-600">starting at 1%/day</p>
+                              </div>
+
+                              <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-center">
+                                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm border border-amber-200">
+                                  <Zap className="w-5 h-5 text-orange-500" />
+                                </div>
+                                <p className="text-xs font-semibold text-gray-900">100% Digital</p>
+                                <p className="text-[10px] text-gray-600">Process</p>
+                              </div>
+
+                              <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 text-center">
+                                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm border border-amber-200">
+                                  <Calendar className="w-5 h-5 text-orange-500" />
+                                </div>
+                                <p className="text-xs font-semibold text-gray-900">Tenure up to</p>
+                                <p className="text-[10px] text-gray-600">90 Days</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      
+                      <div className="bg-white px-4 sm:px-8 py-6">
+                        <h2 className="text-lg font-bold text-gray-900 mb-2">
+                          Get Money in your Bank Account Instantly
+                        </h2>
+                        <p className="text-sm text-gray-600 mb-6">
+                          Enter your mobile number to check your loan eligibility
+                        </p>
+
+                        <div className="space-y-4">
+                        
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Mobile Number *
+                            </label>
+                            <div className="relative">
+                              <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1 text-gray-500">
+                                <span className="text-base font-medium">+91</span>
+                                <div className="w-px h-5 bg-gray-300 ml-1" />
+                              </div>
+                              <input
+                                type="tel"
+                                name="mobile"
+                                value={formData.mobile}
+                                onChange={(e) => {
+                                  const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                  setFormData(prev => ({ ...prev, mobile: value }));
+                                  if (fieldErrors.mobile) setFieldErrors(prev => ({ ...prev, mobile: '' }));
+                                }}
+                                className={`w-full pl-20 pr-4 py-4 text-lg border-2 rounded-xl focus:ring-2 focus:ring-[#25B181] focus:border-[#25B181] ${fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'}`}
+                                placeholder="9876543210"
+                                maxLength={10}
+                                autoFocus
+                              />
+                            </div>
+                            {fieldErrors.mobile && (
+                              <p className="text-xs text-red-500 mt-1">{fieldErrors.mobile}</p>
+                            )}
+                          </div>
+                        </div>
+
+                      
+                        <button
+                          onClick={() => {
+                            // Validate mobile number only
+                            if (formData.mobile.length !== 10) {
+                              setFieldErrors(prev => ({ ...prev, mobile: 'Please enter a valid 10-digit mobile number' }));
+                              return;
+                            }
+                            setShowLandingPage(false);
+                          }}
+                          className="w-full mt-6 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-lg shadow-lg shadow-orange-500/30 transition-all active:scale-[0.98]"
+                        >
+                          Get Started
+                        </button>
+
+                        
+                        <div className="mt-4 space-y-3">
+                          <label className="flex items-start gap-2 cursor-pointer">
+                            <div className="mt-0.5">
+                              <div className="w-5 h-5 rounded border-2 flex items-center justify-center bg-emerald-500 border-emerald-500">
+                                <CheckCircle className="w-3.5 h-3.5 text-white" />
+                              </div>
+                            </div>
+                            <p className="text-xs text-gray-600 leading-relaxed">
+                              By continuing, I agree to Credit Bureau <a href="/terms-and-conditions" className="text-blue-600 underline">Terms and Conditions</a> and authorize Quikkred and its <a href="/partners" className="text-blue-600 underline">Partners</a> to collect and store the Credit Bureau data for checking my eligibility for loan.
+                            </p>
+                          </label>
+
+                          <label className="flex items-start gap-2 cursor-pointer">
+                            <div className="mt-0.5">
+                              <div className="w-5 h-5 rounded border-2 flex items-center justify-center bg-emerald-500 border-emerald-500">
+                                <CheckCircle className="w-3.5 h-3.5 text-white" />
+                              </div>
+                            </div>
+                            <p className="text-xs text-gray-600 leading-relaxed">
+                              By continuing, I agree to the <a href="/privacy-policy" className="text-blue-600 underline">Privacy Policy</a> and <a href="/terms-and-conditions" className="text-blue-600 underline">Terms and Conditions</a> of Quikkred and its <a href="/partners" className="text-blue-600 underline">Partners</a>, and I consent to receive communications via SMS, E-mail, and WhatsApp.
+                            </p>
+                          </label>
+                        </div>
+                      </div>
+
+                     
+                      <div className="bg-gradient-to-b from-amber-50 to-white py-8 px-4 sm:px-8">
+                        <div className="flex items-center gap-2 mb-2 justify-center">
+                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
+                          <h3 className="text-base font-bold text-gray-900">Our Lending Partners</h3>
+                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
+                        </div>
+                        <p className="text-xs text-gray-600 text-center mb-6">Loan Solutions from Our Trusted Lenders</p>
+
+                        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center gap-4">
+                          <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <Landmark className="w-8 h-8 text-white" />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-gray-900">Satsai Finlease Pvt Ltd</h4>
+                            <p className="text-xs text-gray-600">RBI Registered NBFC</p>
+                            <p className="text-[10px] text-emerald-600 font-semibold mt-1">RBI Reg: B-14.01646</p>
+                            <p className="text-[10px] text-gray-500">CIN: U71290DL1996PTC081328</p>
+                          </div>
+                        </div>
+                      </div>
+
+                     
+                      <div className="bg-white py-8 px-4 sm:px-8">
+                        <div className="flex items-center gap-2 mb-6 justify-center">
+                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
+                          <h3 className="text-base font-bold text-gray-900">Your loan is 3 steps away</h3>
+                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="text-center">
+                            <p className="text-orange-400 font-bold text-lg mb-2">01</p>
+                            <div className="w-14 h-14 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center mx-auto mb-2 border-2 border-orange-200">
+                              <Users className="w-6 h-6 text-orange-500" />
+                            </div>
+                            <p className="text-xs font-semibold text-gray-900">Enter Basic</p>
+                            <p className="text-xs text-gray-600">Details</p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-orange-400 font-bold text-lg mb-2">02</p>
+                            <div className="w-14 h-14 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center mx-auto mb-2 border-2 border-orange-200">
+                              <IndianRupee className="w-6 h-6 text-orange-500" />
+                            </div>
+                            <p className="text-xs font-semibold text-gray-900">Choose & Apply</p>
+                            <p className="text-xs text-gray-600">Loan Offers</p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-orange-400 font-bold text-lg mb-2">03</p>
+                            <div className="w-14 h-14 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center mx-auto mb-2 border-2 border-orange-200">
+                              <Landmark className="w-6 h-6 text-orange-500" />
+                            </div>
+                            <p className="text-xs font-semibold text-gray-900">Instant Cash in</p>
+                            <p className="text-xs text-gray-600">Bank</p>
+                          </div>
+                        </div>
+                      </div>
+
+                     
+                      <div className="bg-gray-50 py-8 px-4 sm:px-8">
+                        <div className="flex items-center gap-2 mb-6 justify-center">
+                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
+                          <h3 className="text-base font-bold text-gray-900">Personal Loan Eligibility</h3>
+                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
+                        </div>
+
+                        <div className="space-y-3">
+                          <div className="flex items-start gap-3">
+                            <span className="text-sm font-bold text-gray-900 min-w-20">Age:</span>
+                            <span className="text-sm text-gray-700">21 - 60 years</span>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <span className="text-sm font-bold text-gray-900 min-w-20">Income:</span>
+                            <span className="text-sm text-gray-700">Minimum Rs 15,000/month for salaried applicants</span>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <span className="text-sm font-bold text-gray-900 min-w-20">Resident:</span>
+                            <span className="text-sm text-gray-700">A resident of India</span>
+                          </div>
+                        </div>
+                      </div>
+
+                  
+                      <div className="bg-gradient-to-b from-gray-50 to-emerald-50/30 py-8 px-4 sm:px-8">
+                        <div className="flex items-center gap-2 mb-6 justify-center">
+                          <Star className="w-4 h-4 text-orange-400" />
+                          <h3 className="text-base font-bold text-gray-900">Why Choose Us</h3>
+                          <Star className="w-4 h-4 text-orange-400" />
+                        </div>
+
+                        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                          <div className="bg-emerald-50 rounded-xl p-3 mb-4 flex items-center justify-center gap-2">
+                            <BadgeCheck className="w-5 h-5 text-emerald-600" />
+                            <span className="text-sm font-semibold text-emerald-800">Trusted by 50K+ users</span>
+                          </div>
+
+                          <div className="flex items-center justify-center gap-4 mb-4 pb-4 border-b border-gray-100">
+                            <span className="text-xl font-bold text-emerald-600">Quikkred</span>
+                          </div>
+
+                          <div className="space-y-4">
+                            <div className="flex items-start gap-3">
+                              <Star className="w-4 h-4 text-orange-400 fill-orange-400 mt-0.5" />
+                              <div>
+                                <p className="text-sm font-bold text-gray-900">Your Money, Our Expertise</p>
+                                <p className="text-xs text-gray-600">Quikkred: India&apos;s Trusted Financial Platform</p>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-3">
+                              <Star className="w-4 h-4 text-orange-400 fill-orange-400 mt-0.5" />
+                              <div>
+                                <p className="text-sm font-bold text-gray-900">100% Digital Loans</p>
+                                <p className="text-xs text-gray-600">No Paperwork, No Collateral</p>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-3">
+                              <Star className="w-4 h-4 text-orange-400 fill-orange-400 mt-0.5" />
+                              <div>
+                                <p className="text-sm font-bold text-gray-900">Best Loan Offers</p>
+                                <p className="text-xs text-gray-600">Lowest Rate, Flexible tenures</p>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-3">
+                              <Star className="w-4 h-4 text-orange-400 fill-orange-400 mt-0.5" />
+                              <div>
+                                <p className="text-sm font-bold text-gray-900">RBI Registered Partners</p>
+                                <p className="text-xs text-gray-600">Borrow securely from Reliable lenders</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                     
+                      <div className="bg-white py-8 px-4 sm:px-8">
+                        <div className="flex items-center gap-2 mb-6 justify-center">
+                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
+                          <h3 className="text-base font-bold text-gray-900">Rates & Charges</h3>
+                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
+                        </div>
+
+                        <div className="space-y-3 mb-6">
+                          <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center">
+                              <IndianRupee className="w-6 h-6 text-orange-500" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-gray-900">Finance Amount</p>
+                              <p className="text-xs text-gray-600">₹5,000 - ₹25,000</p>
+                            </div>
+                          </div>
+
+                          <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center">
+                              <FileText className="w-6 h-6 text-orange-500" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-gray-900">Platform Fee</p>
+                              <p className="text-xs text-gray-600">10% of loan amount</p>
+                            </div>
+                          </div>
+
+                          <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center">
+                              <Percent className="w-6 h-6 text-orange-500" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-gray-900">GST on Platform Fee</p>
+                              <p className="text-xs text-gray-600">18% of platform fee</p>
+                            </div>
+                          </div>
+
+                          <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center">
+                              <Calendar className="w-6 h-6 text-orange-500" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-gray-900">Tenure</p>
+                              <p className="text-xs text-gray-600">Up to 90 days</p>
+                            </div>
+                          </div>
+                        </div>
+
+              
+                        <div className="flex items-center gap-2 mb-4 justify-center">
+                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
+                          <h4 className="text-sm font-bold text-gray-900">Interest & Penalty</h4>
+                          <div className="flex-1 h-px bg-gray-300 max-w-16" />
+                        </div>
+
+                        <div className="bg-emerald-50 rounded-xl p-4 space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Star className="w-3 h-3 text-orange-400 fill-orange-400" />
+                              <span className="text-sm font-semibold text-gray-900">Daily Interest Rate</span>
+                            </div>
+                            <span className="text-sm text-gray-700">1% per day</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Star className="w-3 h-3 text-orange-400 fill-orange-400" />
+                              <span className="text-sm font-semibold text-gray-900">Cheque Bounce</span>
+                            </div>
+                            <span className="text-sm text-gray-700">₹500 per instance</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Star className="w-3 h-3 text-orange-400 fill-orange-400" />
+                              <span className="text-sm font-semibold text-gray-900">Late Payment</span>
+                            </div>
+                            <span className="text-sm text-gray-700">2% per month</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-gray-50 py-8 px-4 sm:px-8">
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">Illustrative Loan Calculation</h3>
+                        <p className="text-xs text-gray-600 mb-6 leading-relaxed">
+                          The total cost includes platform fee (10%), GST (18% on platform fee). Interest is charged at 1% per day on the loan amount.
+                        </p>
+
+                 
+                        <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200">
+                          <div className="bg-indigo-800 text-white p-3 grid grid-cols-3 text-xs font-semibold">
+                            <span>Variable</span>
+                            <span className="text-center">Case 1</span>
+                            <span className="text-center">Case 2</span>
+                          </div>
+
+                          {[
+                            { label: 'Loan Amount', case1: '₹10,000', case2: '₹25,000' },
+                            { label: 'Tenure', case1: '30 Days', case2: '15 Days' },
+                            { label: 'Interest Rate', case1: '1%/day', case2: '1%/day' },
+                            { label: 'Platform Fee', case1: '₹1,000', case2: '₹2,500' },
+                            { label: 'GST (18%)', case1: '₹180', case2: '₹450' },
+                            { label: 'Total Interest', case1: '₹3,000', case2: '₹3,750' },
+                            { label: 'You Receive', case1: '₹8,820', case2: '₹22,050' },
+                            { label: 'Total Repayment', case1: '₹10,000', case2: '₹25,000' },
+                          ].map((row, index) => (
+                            <div key={row.label} className={`grid grid-cols-3 text-xs p-3 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
+                              <span className="font-medium text-gray-900">{row.label}</span>
+                              <span className="text-center text-gray-700">{row.case1}</span>
+                              <span className="text-center text-gray-700">{row.case2}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                   
+                      <div className="bg-white border-t border-gray-200 py-6 px-4 sm:px-8 rounded-b-2xl">
+                        <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                          <p className="text-xs text-gray-600 leading-relaxed">
+                            <span className="font-bold text-gray-900">Disclaimer:</span> Quikkred is a digital lending platform and is authorized to provide services on behalf of its partner NBFC - Satsai Finlease Private Limited (RBI Reg: B-14.01646 | CIN: U71290DL1996PTC081328).
+                          </p>
+                        </div>
+
+                        <div className="text-center space-y-2">
+                          <p className="text-xs text-gray-700 font-semibold">Satsai Finlease Private Limited</p>
+                          <p className="text-[10px] text-gray-500">
+                            1008, 10th floor, Vikrant Tower, Rajendra Place, New Delhi - 110005
+                          </p>
+                          <div className="flex items-center justify-center gap-4 text-[10px] text-gray-500">
+                            <a href="tel:+919311913854" className="flex items-center gap-1 hover:text-emerald-600">
+                              <Phone className="w-3 h-3" />
+                              +91 9311913854
+                            </a>
+                            <span>•</span>
+                            <a href="mailto:support@quikkred.in" className="hover:text-emerald-600">
+                              support@quikkred.in
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )} */}
