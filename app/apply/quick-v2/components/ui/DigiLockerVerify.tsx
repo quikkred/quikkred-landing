@@ -7,9 +7,11 @@ import useAxios from "@/hooks/useAxios";
 
 const DigiLockerVerify = ({
     buttonText = "DigiLocker",
+    smButtonText = "DigiLocker",
     extraParams = {},
 }: {
     buttonText?: string;
+    smButtonText?: string;
     extraParams?: Record<string, string>;
 }) => {
     const [showModal, setShowModal] = useState(false);
@@ -236,6 +238,7 @@ const DigiLockerVerify = ({
             >
                 <DigiLockerIcon />
                 <span className="hidden sm:inline-block">{buttonText}</span>
+                <span className="inline-block sm:hidden">{smButtonText}</span>
             </button>
 
             {portalRoot && modalContent && createPortal(modalContent, portalRoot)}

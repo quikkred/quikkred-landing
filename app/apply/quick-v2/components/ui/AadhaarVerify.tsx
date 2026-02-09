@@ -175,7 +175,7 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
 
             if (data.success) {
                 const user = await fetchUserData();
-                console.log("aadhaar user response:", user);
+                // console.log("aadhaar user response:", user);
                 // ✅ Auto-fill Name & DOB on success
                 const formattedDOB = user?.dateOfBirth || data.data?.date_of_birth || data.data?.dob;
 

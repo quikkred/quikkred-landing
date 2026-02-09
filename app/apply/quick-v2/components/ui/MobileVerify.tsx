@@ -170,7 +170,7 @@ const MobileVerify = () => {
             onClick={sendOTP}
             disabled={mobile.length !== 10 || otpLoading}
             className={`
-              w-full py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2
+              w-full py-3.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2
               ${mobile.length === 10 
                 ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20" 
                 : "bg-gray-100 text-gray-400 cursor-not-allowed"}

@@ -74,7 +74,10 @@ const FormSteps = ({
 
             {/* Main Flow */}
             {!ipLoading && !ipBlocked && (
-                user?.isSubmit ? <ApplicationSuccess />: <>
+                user?.isSubmit ? <ApplicationSuccess 
+                    formData={formData}
+                    setFormData={setFormData}
+                />: <>
                     {/* Step Indicator */}
                     <StepIndicator currentStep={currentStep} />
 
