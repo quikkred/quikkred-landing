@@ -302,8 +302,8 @@ export default function LoginPage() {
     } else {
       try {
         const success = await login({
-          email: formData.emailOrPhone || "",
-        });
+            email: formData.emailOrPhone || "",
+          });
 
         if (success) {
           toast({
@@ -498,7 +498,7 @@ export default function LoginPage() {
                   </div> */}
 
                   {/* google auth */}
-                  <div className={`grid ${!isIOS && "grid-cols-2 sm:grid-cols-1"} gap-2`}>
+                  <div className="grid grid-cols-2 sm:grid-cols-1 gap-2">
                     <GoogleVerify buttonText="Continue with google" />
                     {
                       !isIOS && <TruecallerVerify buttonText="Continue with truecaller" />
