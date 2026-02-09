@@ -8,7 +8,6 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import OurPartners from "@/components/OurPartners";
-import OurPartners from "@/components/OurPartners";
 
 export default function PartnersPage() {
   return (
