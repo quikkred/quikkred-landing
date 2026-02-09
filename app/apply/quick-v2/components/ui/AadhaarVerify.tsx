@@ -9,7 +9,6 @@ import { toast } from "@/components/ui/toast";
 import { useSearchParams } from "next/navigation";
 import tracking from "@/lib/tracking";
 import { TRACKING_EVENTS } from "@/lib/constants/quickApplyV2";
-import { useApplication } from "@/contexts/ApplicationContext";
 
 // Helper for Aadhaar Validation (12 digits)
 const isValidAadhaar = (aadhaar: string) => /^\d{12}$/.test(aadhaar);
@@ -32,7 +31,6 @@ interface AadhaarVerifyProps {
 const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const { fetchUserData } = useApplication();
 
     // State for OTP flow
     const [otpSent, setOtpSent] = useState(false);
@@ -174,20 +172,17 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
             const data = response.data;
 
             if (data.success) {
-                const user = await fetchUserData();
-                console.log("aadhaar user response:", user);
                 // ✅ Auto-fill Name & DOB on success
-                const formattedDOB = user?.dateOfBirth || data.data?.date_of_birth || data.data?.dob;
+                const formattedDOB = formatDOB(data.data?.date_of_birth || data.data?.dob);
 
                 // Update global form data (Sets aadhaarVerified to TRUE)
                 setFormData((prev) => ({
                     ...prev,
                     aadhaarVerified: true,
-                    fullName: user?.fullName || data.data?.name || prev.fullName,
+                    fullName: data.data?.name || prev.fullName,
                     dob: formattedDOB || prev.dob,
                     aadhaarData: data.data || {}
                 }));
-                // getCustomer();
                 toast({ variant: "success", title: "Aadhaar verification successfully", description: "" });
                 tracking.trackEvent('CUSTOM_EVENT', { event: TRACKING_EVENTS.AADHAAR_VERIFIED });
             } else {

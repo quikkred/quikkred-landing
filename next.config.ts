@@ -103,19 +103,26 @@ devIndicators: false,
     webpackBuildWorker: true,
   },
 
-  // Turbopack configuration (required in Next.js 16)
-  turbopack: {
-    resolveAlias: {
-      // Stub out @mediapipe/face_mesh — the ESM bundle of
-      // @tensorflow-models/face-landmarks-detection statically imports it,
-      // but we only use runtime: 'tfjs', so FaceMesh is never called.
-      '@mediapipe/face_mesh': './lib/stubs/mediapipe-face-mesh.js',
-    },
-  },
-
   // Optimize output
   poweredByHeader: false,
   compress: true,
+
+  // Bundle analyzer (optional - uncomment to analyze)
+  // webpack: (config, { isServer }) => {
+  //   if (!isServer) {
+  //     config.optimization.splitChunks.cacheGroups = {
+  //       default: false,
+  //       vendors: false,
+  //       lib: {
+  //         test: /[\/]node_modules[\/]/,
+  //         name: 'vendor',
+  //         chunks: 'all',
+  //         priority: 10,
+  //       },
+  //     };
+  //   }
+  //   return config;
+  // },
 };
 
 export default nextConfig;
