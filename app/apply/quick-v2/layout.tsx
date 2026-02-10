@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import LayoutInterface from "@/interfaces/layoutInterface";
 import { KycStatusProvider } from "@/lib/contexts/KycStatusContext";
 import ApplicationProvider from "@/contexts/ApplicationContext";
+import getApplicationDetails from "@/lib/getApplicationDetails";
 
 const SITE_NAME = "Quikkred";
 const SITE_URL = "https://quikkred.in";
@@ -105,9 +106,11 @@ export const metadata: Metadata = {
     },
 };
 
-const ApplyQuickV2 = ({ children }: LayoutInterface) => {
+const ApplyQuickV2 = async ({ children }: LayoutInterface) => {
+    const applicationDetails = await getApplicationDetails();
+
     return <>
-        <ApplicationProvider>
+        <ApplicationProvider payload={applicationDetails || null}>
             <KycStatusProvider>
                 {children}
             </KycStatusProvider>
