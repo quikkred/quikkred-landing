@@ -96,20 +96,24 @@ export default function QuickApplyV2Page() {
                 netDisbursalAmount: breForm?.netDisbursalAmount || 0,
             }));
 
-            // C. ONE-TIME INITIAL ROUTING
-            // We only jump the user automatically IF we haven't done it yet this session
-            // if (!hasAutoRouted.current) {
-            //     if (breForm?.status !== "Approve") {
-            //         setStage('PAGE_1');
-            //         setCurrentStep(1);
-            //     } else {
-            //         setStage('PAGE_2');
-            //         setCurrentStep(2);
-            //     }
+            // const isLogin = user?.isEmailVerified || user?.isMobileVerified;
+            const isLogin = user?.isMobileVerified;
+            const brePulled = application?.breHistory?.brePulled || user?.brePulled || false;
+            const hasApplication = !!application;
+            const isApproved = application?.status === "APPROVED" || application?.status === "Approve";
+            const isRejected = application?.status === "REJECTED" || application?.status === "Reject";
 
-            //     hasAutoRouted.current = true; // IMPORTANT: Lock the auto-router
-            //     return;
-            // }
+            // Routing logic based on application state
+            if (isLogin && hasApplication && brePulled && isApproved) {
+                // BRE completed and approved → Bank Verification
+                setStep("bank");
+            } else if (isLogin && hasApplication && !brePulled) {
+                // Application created but no BRE → Balance Check
+                setStep("balance-check");
+            } else if (isLogin) {
+                // Logged in but no application → Eligibility Check
+                setStep("eligibility");
+            }
         }
 
         // D. GUEST FLOW: If no user and still stuck in IP_CHECK, move to Page 1
