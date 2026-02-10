@@ -1,64 +1,123 @@
 {
-  "title": "Interest Rate Policy",
-  "subtitle": "Transparent and Fair Pricing",
-  "introduction": "QuikkRed is committed to maintaining transparency in all its lending practices. This policy outlines the interest rates, fees, and charges applicable to our loan products.",
-  "rateStructure": {
-    "title": "Interest Rate Structure",
-    "description": "Our interest rates are determined based on various factors including the loan type, tenure, borrower's creditworthiness, and market conditions.",
-    "table": {
-      "product": "Product",
-      "rate": "Interest Rate (per annum)",
-      "tenure": "Tenure",
-      "rows": {
-        "personalLoan": {
-          "product": "Personal Loan",
-          "rate": "12% - 36%",
-          "tenure": "3 - 60 months"
+  "title": "Interest Rate and Penal Charges Policy",
+  "subtitle": "Transparent and Fair Interest Rate Structure",
+  "documentDetails": {
+    "title": "Document Details",
+    "label": {
+      "title": "Title",
+      "classification": "Classification",
+      "approvedDate": "Approved Date",
+      "lastReviewDate": "Last Review Date",
+      "approvedBy": "Approved By",
+      "custodian": "Custodian"
+    },
+    "value": {
+      "policyTitle": "Interest rate and penal charges policy",
+      "classification": "Public",
+      "approvalDate": "30th June 2023",
+      "lastReviewDate": "21st April 2025",
+      "approvedBy": "Board of Directors",
+      "custodian": "Operation"
+    }
+  },
+  "sections": {
+    "introduction": {
+      "title": "1. Introduction",
+      "content": [
+        "The Reserve Bank of India (\"RBI\") vide its Master Direction – Reserve Bank of India (Non-Banking Financial Company – Scale Based Regulation) Directions, 2023 advised all Non-Systemically Important Non-Deposit taking NBFCs to lay out appropriate internal principles and procedures in determining interest rates, Platform fee and other charges. RBI also directed to make the policy available on the website of the NBFC, and update whenever there is a change.",
+        "The Board of Directors of Satsai Finlease Private Limited (\"Company\") in their meeting held on June 30, 2023, had adopted the Interest Rate Policy (\"the Policy\") in accordance with the RBI Directions earlier applicable on the Company. The same has now been revised to reflect the changes in internal policies etc.",
+        "This Policy should always be read in conjunction with extant RBI guidelines, directives, circulars and instructions."
+      ]
+    },
+    "objective": {
+      "title": "2. Objective",
+      "intro": "The main objectives of this Policy are to:",
+      "items": [
+        "Ensure that interest rates are determined in a manner as to ensure long term sustainability of business by taking into account the interests of all stakeholders.",
+        "Develop and adopt a suitable model for calculation of an interest rate.",
+        "Enable fixation of interest rates which are reasonable: both actual and perceived.",
+        "Ensure that computation of interest is accurate, fair and transparent in line with regulatory guidelines and market practices.",
+        "Charge differential rates of interest linked to the risk factors as applicable.",
+        "Decide on the principles, methodology and approach of charging spreads to arrive at final rates charged from customers."
+      ]
+    },
+    "boardRole": {
+      "title": "3. Role of Board of Directors",
+      "content": "The Board of Directors shall have oversight for the interest rate Policy of the Company. To ensure effective implementation of the Interest Rate Policy."
+    },
+    "determination": {
+      "title": "4. Determination of Interest Rates on Loans and Credit Facility",
+      "intro": [
+        "The Company lends money to its customers mainly through digital platforms and has various products to cater to the needs of different categories of customers.",
+        "The interest rate of each product is decided from time to time, giving due consideration to the following factors:"
+      ],
+      "factors": {
+        "costOfCapital": {
+          "title": "Cost of Capital",
+          "content": "To run the business, the Company has been infused with equity share capital in huge proportions, and accordingly the cost of such equity share capital being infused shall be taken into consideration."
         },
-        "salaryAdvance": {
-          "product": "Salary Advance",
-          "rate": "0.03% - 0.07% per day",
-          "tenure": "7 - 45 days"
+        "borrowingCost": {
+          "title": "Weighted Average Cost of Borrowing",
+          "content": "Since the Company borrows funds from various banks, financial institutions and other external lender(s), the weighted average borrowing cost, as well as costs incidental to those borrowings like brokerage, consultancy fees, Platform fees shall be taken into consideration. The cost of borrowings varies according to market conditions thus pricing of interest rates shall be consequently impacted and decided accordingly."
         },
-        "emergencyLoan": {
-          "product": "Emergency Loan",
-          "rate": "0.05% - 0.10% per day",
-          "tenure": "7 - 30 days"
+        "risk": {
+          "title": "Risk",
+          "content": "Risk related to loss of credit due to short tenure of loan, nature of facility, ticket size of loan, geographical condition, customer segment, sourcing channels, stability in earnings and employment, financial position, past repayment track record with us or other lenders, external ratings of customers, credit reports, customer relationship, other existing indebtedness, results from digital verifications etc. Therefore, risk of recovery of loan shall be taken into consideration and accordingly the risk premium would be reckoned."
+        },
+        "opexCost": {
+          "title": "Opex Cost",
+          "content": "It includes employee expenses, office and infrastructure related fixed and variable costs, operations costs, sales and marketing expenses, etc."
+        },
+        "profitMargin": {
+          "title": "Profit Margin",
+          "content": "Fair profit margin is added to arrive at the lending rate. The company may at its discretion fix different margins for different customers, considering the risk of default. All customers will however be notified of the interest payable for the loan to be availed from the company."
         }
-      }
+      },
+      "boardApproval": "The Board of Directors, in its meeting held on April 21, 2025, reviewed and approved the revised Interest Rate and Penal Charges Policy. The Board further resolved to update the interest rate structure, which shall now be applicable as follows:",
+      "rateStructure": [
+        {
+          "type": "Pay Day Loan",
+          "rate": "0.10% to 1.00% per day"
+        },
+        {
+          "type": "Business Loan",
+          "rate": "8% to 25% per annum"
+        },
+        {
+          "type": "Loan Against Property (LAP)",
+          "rate": "12% to 15% per annum"
+        },
+        {
+          "type": "EMI Loan",
+          "rate": "24% to 365% per annum, with a maximum tenure of up to 6 months"
+        }
+      ]
+    },
+    "penalCharges": {
+      "title": "5. Platform fees / Penal Charges / Other Charges",
+      "items": [
+        "Besides interest, other financial charges like Platform fees, Equated Monthly Installment (EMI) bouncing charges, penal charges on late repayment of a loan or EMI, rescheduling charges, prepayment / foreclosure charges, part disbursement charges, charges for issue of statement accounts etc., would be levied by the company wherever considered necessary. Besides these charges, stamp duty, service tax / GST and other cess would be collected at applicable rates from time to time. Any revision in these charges would be implemented on a prospective basis with due communication to customers.",
+        "The board decided that the company will levied a EMI Bouncing charges of Rs. 580/-.",
+        "The Company shall ensure that no capitalisation of penal charges i.e., no further interest computed on such charges.",
+        "The Penal Charges will be levied at the rate of 0.1% per day of outstanding principal loan amount.",
+        "The Company shall display the quantum and reason for penal charges to the customers in the loan agreement and / Key Fact Statement (KFS).",
+        "The applicable penal charges shall be displayed on the Company's website."
+      ]
+    },
+    "communication": {
+      "title": "6. Communication to Customer",
+      "content": [
+        "The Company shall communicate the effective rate of interest to customers at the time of sanction / availing of the loan through the acceptable mode of communication.",
+        "Any changes in the rates and charges would be communicated via website, digital platform, email, SMS, etc."
+      ]
+    },
+    "waiver": {
+      "title": "7. Waiver / Reduction of Charges",
+      "content": "Managing Director or Business Head Loan of the Company may waive or reduce any charges at their discretion."
+    },
+    "amendments": {
+      "title": "8. Amendments to this Policy",
+      "content": "The Board of Directors is authorized to amend this Policy as per changes in RBI guidelines and market conditions."
     }
-  },
-  "fees": {
-    "title": "Fees and Charges",
-    "processingFee": {
-      "title": "Platform Fee",
-      "description": "1% - 5% of the loan amount (non-refundable)"
-    },
-    "lateFee": {
-      "title": "Late Payment Fee",
-      "description": "₹500 or 2% of the overdue amount, whichever is higher"
-    },
-    "prepayment": {
-      "title": "Prepayment/Foreclosure",
-      "description": "No prepayment penalty after 3 EMIs"
-    },
-    "bounceCharges": {
-      "title": "Cheque/ECS Bounce Charges",
-      "description": "₹500 per bounce"
-    }
-  },
-  "annualPercentageRate": {
-    "title": "Annual Percentage Rate (APR)",
-    "description": "The APR includes the interest rate plus all applicable fees and charges, providing a comprehensive view of the total cost of borrowing. APR ranges from 15% to 45% depending on the product and borrower profile."
-  },
-  "disclosure": {
-    "title": "Disclosure",
-    "items": [
-      "All interest rates are calculated on a reducing balance method",
-      "Actual rates may vary based on individual credit assessment",
-      "Rates are subject to change based on RBI guidelines and market conditions",
-      "Complete loan terms including interest rate will be provided in the loan agreement"
-    ]
-  },
-  "footerNote": "For any queries regarding interest rates or charges, please contact our customer support team."
+  }
 }
