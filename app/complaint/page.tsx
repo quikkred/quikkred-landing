@@ -1,4 +1,6 @@
-import ComplaintForm from '@/components/complaintform'
+"use client"
+
+import ComplaintForm from '@/components/ComplaintForm'
 
 export default function ComplaintPage() {
   return <ComplaintForm />
