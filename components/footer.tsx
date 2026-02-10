@@ -99,6 +99,7 @@ export function Footer() {
       { name: t.footer.resources.items.eligibilityCheck, href: "/eligibility-check" },
       { name: t.footer.resources.items.interestRates, href: "/interest-rates" },
       { name: t.footer.resources.items.documentChecklist, href: "/document-checklist" },
+      { name: t.footer.policyLinks.items.interestRatePolicy, href: "/interest-rate-policy" },
       // { name: t.footer.resources.items.howToApply, href: "/resources/how-to-apply" },
       // { name: t.navigation.faqs, href: "/resources/faqs" },
       // { name: t.navigation.blog, href: "/blog" },
@@ -120,7 +121,6 @@ export function Footer() {
       { name: t.footer.legal.items.itSecurityPolicy, href: "/it-security-policy" },
     ],
     policyLinks: [
-      { name: t.footer.policyLinks.items.interestRatePolicy, href: "/interest-rate-policy" },
       { name: t.footer.policyLinks.items.kycPolicy, href: "/kyc-aml-policy" },
       { name: t.footer.policyLinks.items.grievanceRedressal, href: "/grievance-redressal-policy" },
       { name: t.footer.policyLinks.items.collectionPolicy, href: "/collection-policy" },
