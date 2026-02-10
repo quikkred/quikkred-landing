@@ -1,7 +1,11 @@
 import { createPortal } from "react-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, ReactNode } from "react";
 
-const ChatPortal = ({ children }) => {
+interface ChatPortalProps {
+  children: ReactNode;
+}
+
+const ChatPortal = ({ children }: ChatPortalProps) => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
