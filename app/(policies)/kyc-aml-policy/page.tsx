@@ -21,7 +21,7 @@ export default function KYCPolicyPage() {
             className="text-center text-white"
           >
             <Shield className="w-16 h-16 mx-auto mb-4" />
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 font-sora">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 font-sora tracking-wider">
               {kyc?.title || "Know Your Customer (KYC) & Anti-Money Laundering (AML) Policy"}
             </h1>
             <p className="text-xl">{kyc?.subtitle || "Satsai Finlease Pvt. Ltd."}</p>
