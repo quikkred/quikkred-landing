@@ -307,9 +307,10 @@ export default function QuickLoanApplication() {
                 return 'XXXXXXXX' + aadhaar.slice(-4);
               };
 
-              const aadhaarToSet = profileData.aadhaarNumber
-                ? (profileData.isAadhaarVerify ? maskAadhaar(profileData.aadhaarNumber) : profileData.aadhaarNumber)
-                : prev.aadhaar;
+              // const aadhaarToSet = profileData.aadhaarNumber
+              //   ? (profileData.isAadhaarVerify ? maskAadhaar(profileData.aadhaarNumber) : profileData.aadhaarNumber)
+              //   : prev.aadhaar;
+              const aadhaarToSet = profileData.isAadhaarVerify ? maskAadhaar(profileData.aadhaarNumber) : profileData.aadhaarNumber;
 
               setFormData(prev => ({
                 ...prev,
@@ -317,7 +318,7 @@ export default function QuickLoanApplication() {
                 mobile: prev.mobile || profileData.mobile || user.mobile,
                 email: profileData.email || user.email || prev.email,
                 pan: profileData.panCard || prev.pan,
-                aadhaar: aadhaarToSet,
+                aadhaar: profileData.aadhaarNumber ? aadhaarToSet: prev.aadhaar,
                 dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
                 state: profileData.state ? profileData.state.toLowerCase() : prev.state,
                 employmentType: profileData.employmentType || prev.employmentType,
