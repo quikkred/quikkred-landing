@@ -70,6 +70,12 @@ export interface QuickApplyV2FormData {
     eSignCompleted: boolean;
     bsaInitiated?: boolean; // Bank Statement Analysis initiated
 
+    // Balance Check (AA Consent + BSA)
+    applicationId?: string; // Application ID after submission
+    balanceCheckComplete?: boolean; // Balance check flow completed
+    balanceCheckStatus?: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+    finfactorConsent?: boolean; // FinFactor AA consent given
+
     // References (Post-Approval)
     reference1Name: string;
     reference1Mobile: string;

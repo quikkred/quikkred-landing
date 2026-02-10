@@ -88,6 +88,7 @@ export function Footer() {
       { name: t.footer.quickLinks.items.ourStory, href: "/about-us/our-story" },
       // { name: t.footer.quickLinks.items.leadershipTeam, href: "/about-us/leadership-team" },
       { name: t.footer.quickLinks.items.careers, href: "/careers" },
+      { name: t.footer.quickLinks.items.complaint, href: "/complaint" },
       // { name: t.footer.quickLinks.items.pressMedia, href: "/about-us/press" },
       // { name: t.footer.quickLinks.items.awardsRecognition, href: "/about-us/awards" },
       // { name: t.footer.quickLinks.items.csrInitiatives, href: "/about-us/csr" },
@@ -98,6 +99,7 @@ export function Footer() {
       { name: t.footer.resources.items.eligibilityCheck, href: "/eligibility-check" },
       { name: t.footer.resources.items.interestRates, href: "/interest-rates" },
       { name: t.footer.resources.items.documentChecklist, href: "/document-checklist" },
+      { name: t.footer.policyLinks.items.interestRatePolicy, href: "/interest-rate-policy" },
       // { name: t.footer.resources.items.howToApply, href: "/resources/how-to-apply" },
       // { name: t.navigation.faqs, href: "/resources/faqs" },
       // { name: t.navigation.blog, href: "/blog" },
@@ -119,7 +121,6 @@ export function Footer() {
       { name: t.footer.legal.items.itSecurityPolicy, href: "/it-security-policy" },
     ],
     policyLinks: [
-      { name: t.footer.policyLinks.items.interestRatePolicy, href: "/interest-rate-policy" },
       { name: t.footer.policyLinks.items.kycPolicy, href: "/kyc-aml-policy" },
       { name: t.footer.policyLinks.items.grievanceRedressal, href: "/grievance-redressal-policy" },
       { name: t.footer.policyLinks.items.collectionPolicy, href: "/collection-policy" },
