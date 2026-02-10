@@ -88,6 +88,7 @@ export function Footer() {
       { name: t.footer.quickLinks.items.ourStory, href: "/about-us/our-story" },
       // { name: t.footer.quickLinks.items.leadershipTeam, href: "/about-us/leadership-team" },
       { name: t.footer.quickLinks.items.careers, href: "/careers" },
+      { name: t.footer.quickLinks.items.complaint, href: "/complaint" },
       // { name: t.footer.quickLinks.items.pressMedia, href: "/about-us/press" },
       // { name: t.footer.quickLinks.items.awardsRecognition, href: "/about-us/awards" },
       // { name: t.footer.quickLinks.items.csrInitiatives, href: "/about-us/csr" },
