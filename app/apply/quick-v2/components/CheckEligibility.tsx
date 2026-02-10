@@ -82,6 +82,9 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
                     data: result.data
                 });
                 toast({ variant: "success", title: "Success", description: "Analysis completed." });
+                // Clean up URL params
+                const cleanUrl = window.location.pathname;
+                window.history.replaceState({}, '', cleanUrl);
             } else {
                 throw new Error(result.message || "Analysis failed");
             }
