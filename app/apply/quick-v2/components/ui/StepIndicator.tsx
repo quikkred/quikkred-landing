@@ -1,10 +1,10 @@
 // Compact Step Indicator Component
 function StepIndicator({ currentStep }: { currentStep: number }) {
     const steps = [
-        { id: 1, label: 'Eligibility Check' },
-        // { id: 2, label: 'Details' },
-        { id: 2, label: 'Bank Verification' },
-        { id: 3, label: 'Approval & Mandate' },
+        { id: 1, label: 'Register / Login' },
+        { id: 2, label: 'Eligibility Check' },
+        { id: 3, label: 'Bank Statement' },
+        { id: 4, label: 'Bank Verification' },
     ];
 
     return (
