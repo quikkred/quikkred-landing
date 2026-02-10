@@ -765,35 +765,50 @@ export default function QuickLoanApplication() {
       setFinfactorSuccess(true); // Show loading UI
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/kyc/bre/finFactor`, {
-          method: 'GET',
+        // Get applicationId from approval data or localStorage
+        const applicationId = approvalData?.applicationId || localStorage.getItem('applicationMongoId');
+
+        if (!applicationId) {
+          console.error('No applicationId available for balance check');
+          toast({ variant: "error", title: "Error", description: "Application ID not found. Please try again." });
+          breFinFactorCalledRef.current = false;
+          setFinfactorSuccess(false);
+          setConsentLoading(false);
+          return;
+        }
+
+        console.log('🔄 Starting complete balance check flow with applicationId:', applicationId);
+
+        // Call complete balance check flow (consent → FI data → balance check → BRE with BSA)
+        // This takes 30-60 seconds
+        const response = await fetch(`${API_BASE_URL}/api/balance-check/complete`, {
+          method: 'POST',
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ applicationId })
         });
 
         const result = await response.json();
 
         if (response.ok && result.success) {
-          // API SUCCESS - follow normal flow (approve/reject/etc.)
-          console.log('✅ BRE finFactor result fetched successfully:', result.data);
-          toast({ variant: "success", title: "Success", description: result.message || "BRE verification completed successfully." });
+          console.log('✅ Balance check with BRE completed successfully:', result.data);
+          toast({ variant: "success", title: "Success", description: result.message || "Loan verification completed successfully." });
 
           if (result.data) {
             setApprovalData(result.data);
           }
           setFinfactorSuccess(false);
         } else {
-          // API ERROR - redirect to /user
-          console.error('BRE finFactor failed:', result.message);
-          toast({ variant: "error", title: "Processing", description: result.message || "We are processing your application. Please check back later." });
-          router.push('/user');
+          console.error('Balance check failed:', result.message);
+          toast({ variant: "error", title: "Failed", description: result.message || "Verification failed. Please try again." });
+          breFinFactorCalledRef.current = false; // Allow retry on failure
         }
       } catch (error) {
-        // API EXCEPTION - redirect to /user
-        console.error('Error fetching BRE finFactor:', error);
-        toast({ variant: "error", title: "Processing", description: "We are processing your application. Please check back later." });
-        router.push('/user');
+        console.error('Error processing balance check:', error);
+        toast({ variant: "error", title: "Error", description: "Failed to process. Please try again." });
+        breFinFactorCalledRef.current = false; // Allow retry on error
       } finally {
         setConsentLoading(false);
       }
@@ -2508,7 +2523,7 @@ export default function QuickLoanApplication() {
 
       if (!token) {
         console.warn('No token found, skipping customer data save');
-        return false;
+        return true; // ✅ Return true to allow non-logged-in users to proceed
       }
 
       let payload: any = {
@@ -3023,20 +3038,23 @@ export default function QuickLoanApplication() {
         return;
       }
 
-      // Save Step 1 data (basic details + employment + loan amount)
-      setLoading(true);
-      const saveSuccess = await saveCustomerData(1);
-      setLoading(false);
+      // Save Step 1 data only for logged-in users with valid token
+      // For non-logged-in users, data will be saved after Aadhaar verification in Step 2
+      const token = await getToken();
+      if (user && token) {
+        setLoading(true);
+        const saveSuccess = await saveCustomerData(1);
+        setLoading(false);
 
-      // If save failed, don't proceed to next step
-      if (!saveSuccess) {
-        toast({
-          variant: "error",
-          title: "Cannot Proceed",
-
-
-        });
-        return;
+        // If save failed, don't proceed to next step
+        if (!saveSuccess) {
+          toast({
+            variant: "error",
+            title: "Cannot Proceed",
+            description: "Failed to save data. Please try again.",
+          });
+          return;
+        }
       }
     }
 
@@ -3211,6 +3229,12 @@ export default function QuickLoanApplication() {
 
         // Store BRE data for Step 4 (Approval)
         if (breResponse && breResponse.success && breResponse.data) {
+          // Store applicationId for balance check later
+          if (breResponse.data.applicationId) {
+            localStorage.setItem('applicationMongoId', breResponse.data.applicationId);
+            console.log('✅ Stored applicationId for balance check:', breResponse.data.applicationId);
+          }
+
           setApprovalData({
             ...breResponse.data,
             // Add user details for display
