@@ -300,13 +300,25 @@ export default function QuickLoanApplication() {
 
               // Pre-fill form data (using imported formatDateForInput)
               // Note: prev.mobile takes priority (from localStorage/applyMobile)
+
+              // Mask Aadhaar if already verified (show only last 4 digits)
+              const maskAadhaar = (aadhaar: string) => {
+                if (!aadhaar || aadhaar.length !== 12) return aadhaar;
+                return 'XXXXXXXX' + aadhaar.slice(-4);
+              };
+
+              // const aadhaarToSet = profileData.aadhaarNumber
+              //   ? (profileData.isAadhaarVerify ? maskAadhaar(profileData.aadhaarNumber) : profileData.aadhaarNumber)
+              //   : prev.aadhaar;
+              const aadhaarToSet = profileData.isAadhaarVerify ? maskAadhaar(profileData.aadhaarNumber) : profileData.aadhaarNumber;
+
               setFormData(prev => ({
                 ...prev,
                 fullName: profileData.fullName || prev.fullName,
                 mobile: prev.mobile || profileData.mobile || user.mobile,
                 email: profileData.email || user.email || prev.email,
                 pan: profileData.panCard || prev.pan,
-                aadhaar: profileData.aadhaarNumber || prev.aadhaar,
+                aadhaar: profileData.aadhaarNumber ? aadhaarToSet: prev.aadhaar,
                 dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
                 state: profileData.state ? profileData.state.toLowerCase() : prev.state,
                 employmentType: profileData.employmentType || prev.employmentType,
@@ -753,35 +765,50 @@ export default function QuickLoanApplication() {
       setFinfactorSuccess(true); // Show loading UI
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/kyc/bre/finFactor`, {
-          method: 'GET',
+        // Get applicationId from approval data or localStorage
+        const applicationId = approvalData?.applicationId || localStorage.getItem('applicationMongoId');
+
+        if (!applicationId) {
+          console.error('No applicationId available for balance check');
+          toast({ variant: "error", title: "Error", description: "Application ID not found. Please try again." });
+          breFinFactorCalledRef.current = false;
+          setFinfactorSuccess(false);
+          setConsentLoading(false);
+          return;
+        }
+
+        console.log('🔄 Starting complete balance check flow with applicationId:', applicationId);
+
+        // Call complete balance check flow (consent → FI data → balance check → BRE with BSA)
+        // This takes 30-60 seconds
+        const response = await fetch(`${API_BASE_URL}/api/balance-check/complete`, {
+          method: 'POST',
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ applicationId })
         });
 
         const result = await response.json();
 
         if (response.ok && result.success) {
-          // API SUCCESS - follow normal flow (approve/reject/etc.)
-          console.log('✅ BRE finFactor result fetched successfully:', result.data);
-          toast({ variant: "success", title: "Success", description: result.message || "BRE verification completed successfully." });
+          console.log('✅ Balance check with BRE completed successfully:', result.data);
+          toast({ variant: "success", title: "Success", description: result.message || "Loan verification completed successfully." });
 
           if (result.data) {
             setApprovalData(result.data);
           }
           setFinfactorSuccess(false);
         } else {
-          // API ERROR - redirect to /user
-          console.error('BRE finFactor failed:', result.message);
-          toast({ variant: "error", title: "Processing", description: result.message || "We are processing your application. Please check back later." });
-          router.push('/user');
+          console.error('Balance check failed:', result.message);
+          toast({ variant: "error", title: "Failed", description: result.message || "Verification failed. Please try again." });
+          breFinFactorCalledRef.current = false; // Allow retry on failure
         }
       } catch (error) {
-        // API EXCEPTION - redirect to /user
-        console.error('Error fetching BRE finFactor:', error);
-        toast({ variant: "error", title: "Processing", description: "We are processing your application. Please check back later." });
-        router.push('/user');
+        console.error('Error processing balance check:', error);
+        toast({ variant: "error", title: "Error", description: "Failed to process. Please try again." });
+        breFinFactorCalledRef.current = false; // Allow retry on error
       } finally {
         setConsentLoading(false);
       }
@@ -2496,7 +2523,7 @@ export default function QuickLoanApplication() {
 
       if (!token) {
         console.warn('No token found, skipping customer data save');
-        return false;
+        return true; // ✅ Return true to allow non-logged-in users to proceed
       }
 
       let payload: any = {
@@ -3011,25 +3038,33 @@ export default function QuickLoanApplication() {
         return;
       }
 
-      // Save Step 1 data (basic details + employment + loan amount)
-      setLoading(true);
-      const saveSuccess = await saveCustomerData(1);
-      setLoading(false);
+      // Save Step 1 data only for logged-in users with valid token
+      // For non-logged-in users, data will be saved after Aadhaar verification in Step 2
+      const token = await getToken();
+      if (user && token) {
+        setLoading(true);
+        const saveSuccess = await saveCustomerData(1);
+        setLoading(false);
 
-      // If save failed, don't proceed to next step
-      if (!saveSuccess) {
-        toast({
-          variant: "error",
-          title: "Cannot Proceed",
-
-
-        });
-        return;
+        // If save failed, don't proceed to next step
+        if (!saveSuccess) {
+          toast({
+            variant: "error",
+            title: "Cannot Proceed",
+            description: "Failed to save data. Please try again.",
+          });
+          return;
+        }
       }
     }
 
     if (currentStep === 2) {
       // Step 2: Aadhaar & PAN Verification
+
+      // Check if Aadhaar is already verified (from user profile)
+      const isMaskedAadhaar = formData.aadhaar && formData.aadhaar.startsWith('XXXX');
+      const isAadhaarAlreadyVerified = aadhaarVerified || isMaskedAadhaar;
+
       // Aadhaar validation
       if (!formData.aadhaar) {
         setFieldErrors(prev => ({ ...prev, aadhaar: "Aadhaar number is required" }));
@@ -3039,7 +3074,7 @@ export default function QuickLoanApplication() {
           description: "Please enter your Aadhaar number.",
         });
         return;
-      } else if (!aadhaarVerified) {
+      } else if (!isAadhaarAlreadyVerified) {
         const aadhaarRegex = /^\d{12}$/;
         if (!aadhaarRegex.test(formData.aadhaar)) {
           setFieldErrors(prev => ({ ...prev, aadhaar: "Enter a valid 12-digit Aadhaar number" }));
@@ -3194,6 +3229,12 @@ export default function QuickLoanApplication() {
 
         // Store BRE data for Step 4 (Approval)
         if (breResponse && breResponse.success && breResponse.data) {
+          // Store applicationId for balance check later
+          if (breResponse.data.applicationId) {
+            localStorage.setItem('applicationMongoId', breResponse.data.applicationId);
+            console.log('✅ Stored applicationId for balance check:', breResponse.data.applicationId);
+          }
+
           setApprovalData({
             ...breResponse.data,
             // Add user details for display
@@ -4588,8 +4629,11 @@ export default function QuickLoanApplication() {
                         <input
                           type="tel"
                           name="aadhaar"
-                          value={formData.aadhaar.replace(/(\d{4})(?=\d)/g, '$1 ')}
+                          value={formData.aadhaar.replace(/([X\d]{4})(?=[X\d])/g, '$1 ')}
                           onChange={(e) => {
+                            // Don't allow editing if masked (already verified)
+                            if (formData.aadhaar.startsWith('XXXX')) return;
+
                             const rawValue = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
                             const syntheticEvent = {
                               target: {
@@ -4605,13 +4649,16 @@ export default function QuickLoanApplication() {
                             }
                             if (aadhaarError) setAadhaarError("");
                           }}
-                          disabled={aadhaarVerified || aadhaarOtpSent}
+                          disabled={aadhaarVerified || aadhaarOtpSent || formData.aadhaar.startsWith('XXXX')}
                           maxLength={14}
-                          className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 disabled:cursor-not-allowed tracking-widest ${fieldErrors.aadhaar || aadhaarError ? 'border-red-500' : 'border-gray-300'
-                            }`}
+                          className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 disabled:cursor-not-allowed tracking-widest ${
+                            (aadhaarVerified || formData.aadhaar.startsWith('XXXX'))
+                              ? 'bg-green-50 border-green-300'
+                              : (fieldErrors.aadhaar || aadhaarError ? 'border-red-500' : 'border-gray-300')
+                          }`}
                           placeholder="1234 5678 9012"
                         />
-                        {!aadhaarVerified && (
+                        {!aadhaarVerified && !formData.aadhaar.startsWith('XXXX') && (
                           <button
                             type="button"
                             onClick={sendAadhaarOTP}
@@ -4621,7 +4668,7 @@ export default function QuickLoanApplication() {
                             {aadhaarVerifying ? "Sending..." : aadhaarOtpSent ? (aadhaarOtpTimer > 0 ? `Resend (${aadhaarOtpTimer}s)` : "Resend OTP") : "Verify"}
                           </button>
                         )}
-                        {aadhaarVerified && (
+                        {(aadhaarVerified || formData.aadhaar.startsWith('XXXX')) && (
                           <div className="px-6 py-3 bg-green-100 border border-green-300 rounded-lg flex items-center gap-2 whitespace-nowrap">
                             <CheckCircle className="w-5 h-5 text-green-600" />
                             <span className="text-sm font-medium text-green-700">Verified</span>
