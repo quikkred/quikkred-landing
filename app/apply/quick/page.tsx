@@ -143,7 +143,6 @@ export default function QuickLoanApplication() {
   // Loan Products
   const [loanProducts, setLoanProducts] = useState<any[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const [emiCalculation, setEmiCalculation] = useState<any>(null);
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [amountError, setAmountError] = useState("")
 
@@ -734,6 +733,36 @@ export default function QuickLoanApplication() {
     }
   }, [searchParams, bsaStatusUpdated]);
 
+  // Handle Account Aggregator callback
+  useEffect(() => {
+    const aaSuccessParam = searchParams.get('aa-success');
+    const aaErrorParam = searchParams.get('aa-error');
+
+    if (aaSuccessParam === 'true') {
+      toast({
+        variant: "success",
+        title: "Success",
+        description: "Bank statement data saved successfully!"
+      });
+      // Remove the query parameter to prevent showing toast again
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('aa-success');
+      window.history.replaceState({}, '', newUrl.toString());
+    }
+
+    if (aaErrorParam === 'true') {
+      toast({
+        variant: "error",
+        title: "Error",
+        description: "Failed to save bank statement data. Please try again."
+      });
+      // Remove the query parameter
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('aa-error');
+      window.history.replaceState({}, '', newUrl.toString());
+    }
+  }, [searchParams, toast]);
+
   // Auto-trigger BRE finFactor API when ?finfactor=success is in URL
   // This handles the case when user returns after finfactor process or bsaInitiated is true
   const breFinFactorCalledRef = useRef(false);
@@ -1171,6 +1200,14 @@ export default function QuickLoanApplication() {
 
         if (response.ok && result.success && result.data) {
           setLoanProducts(result.data);
+
+          // Set selectedProduct if productId already exists in formData
+          if (formData.productId && result.data.length > 0) {
+            const product = result.data.find((p: any) => p._id === formData.productId);
+            if (product) {
+              setSelectedProduct(product);
+            }
+          }
         } else {
           console.error('Failed to fetch loan products:', result.message);
           toast({
@@ -1194,64 +1231,6 @@ export default function QuickLoanApplication() {
     fetchLoanProducts();
   }, []);
 
-  // Calculate EMI when loan amount, tenure, tenure unit, or product changes
-  useEffect(() => {
-    if (formData.loanAmount && formData.tenure && selectedProduct) {
-      calculateEMI();
-    }
-  }, [formData.loanAmount, formData.tenure, formData.tenureUnit, selectedProduct]);
-
-  const calculateEMI = () => {
-    if (!selectedProduct || !formData.loanAmount || !formData.tenure) {
-      setEmiCalculation(null);
-      return;
-    }
-
-    const principal = parseFloat(formData.loanAmount.replace(/,/g, ''));
-    const tenureDays = parseInt(formData.tenure); // Tenure is always in days for products
-    const dailyRate = selectedProduct.dailyInterestRate / 100;
-    const processingFeePercent = selectedProduct.processingFee / 100;
-    const gstPercent = selectedProduct.gst / 100;
-
-    // Calculate total interest based on daily rate and tenure days
-    const totalInterest = principal * dailyRate * tenureDays;
-
-    // Calculate Platform Fee and GST
-    const processingFee = principal * processingFeePercent;
-    const gstOnProcessingFee = processingFee * gstPercent;
-    const totalProcessingFee = processingFee + gstOnProcessingFee;
-
-    // Total amount to be repaid (principal + interest)
-    const totalAmount = principal + totalInterest;
-
-    // EMI calculation - For tenure <= 45 days, it's lump sum payment
-    let emi: number;
-    let isLumpSum = false;
-    const tenureMonths = Math.ceil(tenureDays / 30); // Convert days to months for display
-
-    if (tenureDays <= 45) {
-      emi = Math.round(totalAmount); // Full amount in one payment
-      isLumpSum = true;
-    } else {
-      emi = Math.round(totalAmount / tenureMonths);
-    }
-
-    setEmiCalculation({
-      principal: principal,
-      dailyInterestRate: selectedProduct.dailyInterestRate,
-      totalDays: tenureDays,
-      totalInterest: Math.round(totalInterest),
-      processingFee: Math.round(processingFee),
-      gst: Math.round(gstOnProcessingFee),
-      totalProcessingFee: Math.round(totalProcessingFee),
-      totalAmount: Math.round(totalAmount),
-      emi: emi,
-      tenureMonths: tenureMonths,
-      isLumpSum: isLumpSum,
-      tenureUnit: 'days',
-      tenureValue: tenureDays
-    });
-  };
 
   const handleProductChange = (productId: string) => {
     const product = loanProducts.find(p => p._id === productId);
@@ -2561,6 +2540,11 @@ export default function QuickLoanApplication() {
             requestedLoanAmount: parseFloat(formData.loanAmount),
             productId: formData.productId,
             purpose: formData.purpose,
+            // Auto tenure based on product type
+            // Personal Loan = 15, Salary Advance = 0
+            tenure: selectedProduct
+              ? (selectedProduct.category?.toLowerCase().includes('salary') ? 0 : 15)
+              : 15,
             // Selected product complete details
             product: selectedProduct ? {
               id: selectedProduct._id,
@@ -2609,9 +2593,18 @@ export default function QuickLoanApplication() {
 
         const result = await response.json();
 
+        console.log('🔍 API Response for loan create:', result);
+        console.log('🔍 result.data:', result.data);
+        console.log('🔍 result.data._id:', result.data?._id);
+
         if (result.data) {
           if (result.data.customerId) localStorage.setItem('userId', result.data.customerId);
-          if (result.data.applicationNumber) localStorage.setItem('applicationId', result.data.applicationNumber);
+          if (result.data._id) {
+            console.log('✅ Setting applicationId in localStorage:', result.data._id);
+            localStorage.setItem('applicationId', result.data._id);
+          } else {
+            console.warn('⚠️ No _id found in result.data');
+          }
           if (result.data.loanNumber) localStorage.setItem('loanNumber', result.data.loanNumber);
         }
 
@@ -2647,10 +2640,19 @@ export default function QuickLoanApplication() {
 
       const result = await response.json();
 
+      console.log('🔍 API Response for step', step, ':', result);
+      console.log('🔍 result.data:', result.data);
+      console.log('🔍 result.data._id:', result.data?._id);
+
       // Store IDs if this is first save
       if (result.data) {
         if (result.data.customerId) localStorage.setItem('userId', result.data.customerId);
-        if (result.data.applicationNumber) localStorage.setItem('applicationId', result.data.applicationNumber);
+        if (result.data._id) {
+          console.log('✅ Setting applicationId in localStorage:', result.data._id);
+          localStorage.setItem('applicationId', result.data._id);
+        } else {
+          console.warn('⚠️ No _id found in result.data');
+        }
         if (result.data.loanNumber) localStorage.setItem('loanNumber', result.data.loanNumber);
       }
 
@@ -3304,11 +3306,18 @@ export default function QuickLoanApplication() {
         if (response.ok && result.success) {
           console.log('✅ Loan application submitted successfully');
           console.log('📊 Response:', result);
+          console.log('🔍 result.data:', result.data);
+          console.log('🔍 result.data._id:', result.data?._id);
 
           // Store IDs from response
           if (result.data) {
             if (result.data.customerId) localStorage.setItem('userId', result.data.customerId);
-            if (result.data.applicationNumber) localStorage.setItem('applicationId', result.data.applicationNumber);
+            if (result.data._id) {
+              console.log('✅ Setting applicationId in localStorage:', result.data._id);
+              localStorage.setItem('applicationId', result.data._id);
+            } else {
+              console.warn('⚠️ No _id found in result.data');
+            }
             if (result.data.loanNumber) localStorage.setItem('loanNumber', result.data.loanNumber);
           }
 
@@ -3666,7 +3675,7 @@ export default function QuickLoanApplication() {
             // setShowAadhaarMobileModal(false);
           }}
           aadhaarMobileHash={aadhaarMobileHash}
-          customerId={user?.customerId}
+          customerId={user?.id}
           onVerified={handleAadhaarMobileVerified}
         /> */}
 
@@ -4401,11 +4410,10 @@ export default function QuickLoanApplication() {
                     </div>
                   </div>
 
-
-  {/* Loan Product Selection */}
+                  {/* Loan Product Selection */}
                   <div className="mt-6">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Select Loan Product
+                      Select Loan Product *
                     </label>
                     <select
                       name="productId"
@@ -4419,133 +4427,19 @@ export default function QuickLoanApplication() {
                       </option>
                       {loanProducts.map((product) => (
                         <option key={product._id} value={product._id}>
-                          {product.productName} - {product.category} (Rate: {product.dailyInterestRate}% daily)
+                          {product.productName} - {product.category}
                         </option>
                       ))}
                     </select>
                     {selectedProduct && (
                       <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                         <p className="text-sm text-blue-800">
-                          <span className="font-semibold">Daily Interest Rate:</span> {selectedProduct.dailyInterestRate}% |
-                          <span className="font-semibold ml-2">Processing Fee:</span> {selectedProduct.processingFee}% |
-                          <span className="font-semibold ml-2">GST:</span> {selectedProduct.gst}%
+                          <span className="font-semibold">Category:</span> {selectedProduct.category} |
+                          <span className="font-semibold ml-2">Tenure:</span> {selectedProduct.category?.toLowerCase().includes('salary') ? '0 days (Pay on salary)' : '15 days'}
                         </p>
                       </div>
                     )}
                   </div>
-
-                  {/* Tenure Selector */}
-                  {selectedProduct && (
-                    <div className="mt-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Loan Tenure (days)
-                      </label>
-                      {selectedProduct.allowedTenures && selectedProduct.allowedTenures.length > 0 ? (
-                        <select
-                          name="tenure"
-                          value={formData.tenure}
-                          onChange={(e) => setFormData(prev => ({ ...prev, tenure: e.target.value }))}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                        >
-                          {selectedProduct.allowedTenures.map((t: number) => (
-                            <option key={t} value={t.toString()}>
-                              {t} days
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <input
-                          type="number"
-                          name="tenure"
-                          value={formData.tenure}
-                          onChange={(e) => setFormData(prev => ({ ...prev, tenure: e.target.value }))}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                          placeholder="Enter tenure in days"
-                          min={selectedProduct.minTenure || 1}
-                          max={selectedProduct.maxTenure || 365}
-                        />
-                      )}
-                    </div>
-                  )}
-
-                  {/* EMI Calculation Display */}
-                  {emiCalculation && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="mt-4 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-6 shadow-lg"
-                    >
-                      <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                        <Sparkles className="w-5 h-5 text-green-600 mr-2" />
-                        EMI Calculation Details
-                      </h3>
-
-                      <div className="grid grid-cols-2 gap-4 mb-4">
-                        <div className="bg-white rounded-lg p-4 shadow-sm">
-                          <p className="text-xs text-gray-600 mb-1">Principal Amount</p>
-                          <p className="text-2xl font-bold text-gray-900">
-                            ₹{emiCalculation.principal.toLocaleString('en-IN')}
-                          </p>
-                        </div>
-                        <div className="bg-white rounded-lg p-4 shadow-sm">
-                          <p className="text-xs text-gray-600 mb-1">{emiCalculation.isLumpSum ? 'Total Repayment' : 'Monthly EMI'}</p>
-                          <p className="text-2xl font-bold text-green-600">
-                            ₹{emiCalculation.emi.toLocaleString('en-IN')}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-3 mb-4">
-                        <div className="bg-white rounded-lg p-3 shadow-sm">
-                          <p className="text-xs text-gray-600 mb-1">Total Interest</p>
-                          <p className="text-lg font-semibold text-gray-900">
-                            ₹{emiCalculation.totalInterest.toLocaleString('en-IN')}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            @ {emiCalculation.dailyInterestRate}% daily
-                          </p>
-                        </div>
-                        <div className="bg-white rounded-lg p-3 shadow-sm">
-                          <p className="text-xs text-gray-600 mb-1">Processing Fee</p>
-                          <p className="text-lg font-semibold text-gray-900">
-                            ₹{emiCalculation.processingFee.toLocaleString('en-IN')}
-                          </p>
-                        </div>
-                        <div className="bg-white rounded-lg p-3 shadow-sm">
-                          <p className="text-xs text-gray-600 mb-1">GST</p>
-                          <p className="text-lg font-semibold text-gray-900">
-                            ₹{emiCalculation.gst.toLocaleString('en-IN')}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg p-4 text-white">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <p className="text-sm opacity-90 mb-1">Total Amount Payable</p>
-                            <p className="text-3xl font-bold">
-                              ₹{emiCalculation.totalAmount.toLocaleString('en-IN')}
-                            </p>
-                            <p className="text-xs opacity-80 mt-1">
-                              Over {emiCalculation.tenureValue} days{!emiCalculation.isLumpSum && ` (~${emiCalculation.tenureMonths} months)`}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm opacity-90 mb-1">Processing Fee (incl. GST)</p>
-                            <p className="text-xl font-bold">
-                              ₹{emiCalculation.totalProcessingFee.toLocaleString('en-IN')}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                        <p className="text-xs text-yellow-800">
-                          <span className="font-semibold">Note:</span> This is an indicative calculation. Final EMI may vary based on approval terms and conditions.
-                        </p>
-                      </div>
-                    </motion.div>
-                  )}
 
                     </>
                  {/* )} */}
@@ -4912,7 +4806,8 @@ export default function QuickLoanApplication() {
                         <p className="text-sm text-gray-500">Application Number</p>
                         <p className="font-semibold text-gray-800">{approvalData.applicationNumber || 'N/A'}</p>
                       </div>
-                      <div className="mt-6">
+                      <div className="mt-6 space-y-4">
+                        {/* FinFactor Bank Verification Button */}
                         <button
                           onClick={async () => {
                             const token = await getToken();
@@ -4947,6 +4842,128 @@ export default function QuickLoanApplication() {
                         >
                           {ptbLoading ? (<><Loader2 className="w-5 h-5 animate-spin" />Processing...</>) : (<>Proceed to Bank<ArrowRight className="w-5 h-5" /></>)}
                         </button>
+
+                        {/* OR Divider */}
+                        <div className="flex items-center gap-4 max-w-md mx-auto">
+                          <div className="flex-1 h-px bg-gray-300"></div>
+                          <span className="text-sm text-gray-500 font-medium">OR</span>
+                          <div className="flex-1 h-px bg-gray-300"></div>
+                        </div>
+
+                        {/* Account Aggregator Button */}
+                        <div className="max-w-md mx-auto">
+                          <button
+                            onClick={async () => {
+                              try {
+                                setLoading(true);
+                                const token = await getToken();
+
+                                if (!token) {
+                                  toast({
+                                    variant: "error",
+                                    title: "Authentication Error",
+                                    description: "Please login again to continue."
+                                  });
+                                  return;
+                                }
+
+                                let applicationId = localStorage.getItem('applicationId');
+                                console.log('🔍 Account Aggregator - customerId:', user?.id);
+                                console.log('🔍 Account Aggregator - applicationId from localStorage:', applicationId);
+
+                                // If applicationId is not in localStorage, try to get from approvalData
+                                if (!applicationId && approvalData?.applicationId) {
+                                  const fromApprovalData = approvalData.applicationId;
+                                  applicationId = fromApprovalData;
+                                  console.log('✅ Using applicationId from approvalData:', fromApprovalData);
+                                  localStorage.setItem('applicationId', fromApprovalData);
+                                }
+
+                                // If still not found, try to get from API response _id if available
+                                if (!applicationId && approvalData?._id) {
+                                  const fromApprovalId = approvalData._id;
+                                  applicationId = fromApprovalId;
+                                  console.log('✅ Using _id from approvalData:', fromApprovalId);
+                                  localStorage.setItem('applicationId', fromApprovalId);
+                                }
+
+                                // Final check - if still no applicationId, show error
+                                if (!applicationId) {
+                                  console.error('❌ No applicationId found');
+                                  toast({
+                                    variant: "error",
+                                    title: "Application ID Missing",
+                                    description: "Unable to find your application. Please restart the application process."
+                                  });
+                                  setLoading(false);
+                                  return;
+                                }
+
+                                const payload = {
+                                  customerId: user?.id,
+                                  applicationId: applicationId,
+                                  callbackUrl: `${window.location.origin}/aa-callback`
+                                };
+
+                                console.log('🔍 Account Aggregator - Final payload:', payload);
+
+                                const response = await fetch(`${API_BASE_URL}/api/test/initialize`, {
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`
+                                  },
+                                  body: JSON.stringify(payload)
+                                });
+
+                                const result = await response.json();
+
+                                if (result.success && result.data?.redirectUrl) {
+                                  toast({
+                                    variant: "success",
+                                    title: "Redirecting...",
+                                    description: "Opening Account Aggregator portal"
+                                  });
+                                  window.location.href = result.data.redirectUrl;
+                                } else {
+                                  toast({
+                                    variant: "error",
+                                    title: "Failed",
+                                    description: result.message || "Unable to initialize Account Aggregator"
+                                  });
+                                }
+                              } catch (error: any) {
+                                console.error('Account Aggregator Error:', error);
+                                toast({
+                                  variant: "error",
+                                  title: "Error",
+                                  description: "Failed to connect to Account Aggregator"
+                                });
+                              } finally {
+                                setLoading(false);
+                              }
+                            }}
+                            disabled={loading}
+                            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                          >
+                            {loading ? (
+                              <>
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                Initializing...
+                              </>
+                            ) : (
+                              <>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Connect via Account Aggregator
+                              </>
+                            )}
+                          </button>
+                          <p className="mt-2 text-xs text-center text-gray-500">
+                            Secure bank statement fetch via RBI approved Account Aggregator
+                          </p>
+                        </div>
                       </div>
                     </div>
                   ) : approvalData ? (
@@ -5292,6 +5309,105 @@ export default function QuickLoanApplication() {
                         </button>
                         <p className="mt-2 text-xs text-gray-500">
                           Click to verify your bank account details. This helps ensure smooth loan disbursement.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Account Aggregator Button */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+                    <div className="flex items-start gap-3 mb-4">
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          Fetch Bank Statement (Optional)
+                        </h3>
+                        <p className="text-sm text-gray-700 mb-4">
+                          Connect your bank via Account Aggregator to automatically fetch your bank statement.
+                          This helps in faster loan processing and approval.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              setLoading(true);
+                              const token = await getToken();
+
+                              if (!token) {
+                                toast({
+                                  variant: "error",
+                                  title: "Authentication Error",
+                                  description: "Please login again to continue."
+                                });
+                                return;
+                              }
+
+                              const payload = {
+                                customerId: user?.id,
+                                applicationId: localStorage.getItem('applicationId')
+                              };
+
+                              const response = await fetch(`${API_BASE_URL}/api/test/initialize`, {
+                                method: 'POST',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify(payload)
+                              });
+
+                              const result = await response.json();
+
+                              if (result.success && result.data?.redirectUrl) {
+                                toast({
+                                  variant: "success",
+                                  title: "Redirecting...",
+                                  description: "Opening Account Aggregator portal"
+                                });
+                                // Redirect to Account Aggregator
+                                window.location.href = result.data.redirectUrl;
+                              } else {
+                                toast({
+                                  variant: "error",
+                                  title: "Failed",
+                                  description: result.message || "Unable to initialize Account Aggregator"
+                                });
+                              }
+                            } catch (error: any) {
+                              console.error('Account Aggregator Error:', error);
+                              toast({
+                                variant: "error",
+                                title: "Error",
+                                description: "Failed to connect to Account Aggregator"
+                              });
+                            } finally {
+                              setLoading(false);
+                            }
+                          }}
+                          disabled={loading}
+                          className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                        >
+                          {loading ? (
+                            <>
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                              Initializing...
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                              </svg>
+                              Connect Bank via Account Aggregator
+                            </>
+                          )}
+                        </button>
+                        <p className="mt-3 text-xs text-gray-600 flex items-start gap-2">
+                          <Shield className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>100% secure • RBI approved • Your data is encrypted</span>
                         </p>
                       </div>
                     </div>
