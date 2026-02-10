@@ -13,12 +13,10 @@ import { TRACKING_EVENTS } from "@/lib/constants/quickApplyV2";
 import { useApplication } from "@/contexts/ApplicationContext";
 import { AlertCircle, Ban } from "lucide-react";
 import BankVerification from "../BankVerification";
-import ApproveMandate from "../ApproveMandate";
 import ApplicationSuccess from "./ApplicationSuccess";
-import BalanceCheckConsent from "../BalanceCheckConsent";
 
 // export type FormStepsType = "eligibility" | "bank" | "mandate";
-export type FormStepsType = "login" | "eligibility" | "balance-check" | "bank" | "submit";
+export type FormStepsType = "login" | "eligibility" | "bank" | "submit";
 
 interface FormStepsProps {
     step: FormStepsType;
@@ -44,23 +42,15 @@ const FormSteps = ({
     performIPCheck,
 }: FormStepsProps) => {
     const { user } = useAuth();
-    const isLogin = useMemo(() => (user?.isEmailVerified || user?.isMobileVerified), [user]);
-    const currentStep = useMemo(() => {
-        if (step === "eligibility") return 2;
-        if (step === "balance-check") return 3;
-        if (step === "bank") return 4;
-        return 1;
-    }, [step]);
+    const currentStep = useMemo(() => (step === "eligibility" ? 2 : step === "bank" ? 3 : 1), [step]);
 
     const handleChangeStep = (nextStep: FormStepsType) => {
         if (nextStep === "eligibility") {
             tracking.trackEvent('STEP_COMPLETED', { stepNumber: 2, stepName: 'Check Eligibility' });
             tracking.trackEvent('CUSTOM_EVENT', { event: TRACKING_EVENTS.APPLICATION_SUBMITTED });
             tracking.linkToCustomer({ mobile: formData.mobile });
-        } else if (nextStep === "balance-check") {
-            tracking.trackEvent('STEP_COMPLETED', { stepNumber: 3, stepName: 'Balance Check Consent' });
         } else if (nextStep === "bank") {
-            tracking.trackEvent('STEP_COMPLETED', { stepNumber: 4, stepName: 'Bank Verification' });
+            tracking.trackEvent('STEP_COMPLETED', { stepNumber: 3, stepName: 'Bank Verification' });
         }
         setStep(nextStep);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -82,7 +72,10 @@ const FormSteps = ({
 
             {/* Main Flow */}
             {!ipLoading && !ipBlocked && (
-                user?.isSubmit ? <ApplicationSuccess />: <>
+                user?.isSubmit ? <ApplicationSuccess 
+                    formData={formData}
+                    setFormData={setFormData}
+                />: <>
                     {/* Step Indicator */}
                     <StepIndicator currentStep={currentStep} />
 
@@ -102,17 +95,7 @@ const FormSteps = ({
                                     key="eligibility"
                                     formData={formData}
                                     setFormData={setFormData}
-                                    onNext={() => handleChangeStep("balance-check")}
-                                />
-                            )}
-
-                            {step === 'balance-check' && (
-                                <BalanceCheckConsent
-                                    key="balance-check"
-                                    formData={formData}
-                                    setFormData={setFormData}
                                     onNext={() => handleChangeStep("bank")}
-                                    onBack={() => handleChangeStep("eligibility")}
                                 />
                             )}
 
@@ -121,19 +104,8 @@ const FormSteps = ({
                                     key="bank"
                                     formData={formData}
                                     setFormData={setFormData}
-                                    // onNext={() => handleChangeStep("bank")}
-                                    // onBack={() => handleChangeStep("eligibility")}
                                 />
                             )}
-
-                            {/* {step === 'mandate' && (
-                                <ApproveMandate
-                                    key="mandate"
-                                    formData={formData}
-                                    setFormData={setFormData}
-                                    onBack={() => handleChangeStep("bank")}
-                                />
-                            )} */}
                         </AnimatePresence>
                     </div>
                 </>

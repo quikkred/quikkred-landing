@@ -237,32 +237,48 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
             });
 
             if (basicResponse.status === 200 || basicResponse.status === 201) {
-                console.log("basic response:", basicResponse.data);
-
-                // Store applicationId in formData for balance check step
-                const applicationId = basicResponse?.data?.data?.applicationId;
-                const applicationNumber = basicResponse?.data?.data?.applicationNumber;
-
-                if (applicationId) {
-                    setFormData((prev) => ({
-                        ...prev,
-                        applicationId: applicationId,
-                    }));
-                }
-
-                // Refresh customer and application data
-                getCustomer();
-                getApplication();
-
-                // Move to balance check step (BRE will be called there with BSA data)
-                toast({
-                    variant: "success",
-                    title: "Application Created",
-                    description: `Application ${applicationNumber} created successfully. Proceeding to bank statement verification.`
-                });
-
                 setLoading(false);
-                onNext();
+                console.log("basic response:", basicResponse.data);
+                // storage.set("applicationId", basicResponse?.data?.data?.applicationNumber);
+                updateKycStatusState({ loading: true, visibility: true });
+
+                try {
+                    const response = await axios.get("/api/v2/bre/initialize");
+                    if (response.status === 200 || response.status === 201) {
+                        console.log(response.data)
+                        // const eligibilityStep = isLogin && user?.brePulled && application && application?.status !== "REJECTED";
+
+                        /*
+                         "data": {
+        "applicationNumber": "APP20261770280936508",
+        "applicationId": "698457e864cf957cd5376479",
+        "status": "Reject",
+        "reason": "Your credit profile does not meet eligibility criteria"
+    }
+                        */
+
+                        if (response.data?.data) {
+                            getCustomer();
+                            getApplication();
+                            setFormData((prev) => ({ ...prev, breStatus: response.data?.data?.status }));
+                            updateKycStatusState({
+                                loading: false,
+                                status: response.data?.data?.status === "Approve" ? "approved" : response.data?.data?.status === "Proceed to Bank" ? "proceed-to-bank" : "rejected",
+                                data: response.data?.data,
+                                title: response.data?.message || "BRE checked successfully",
+                                description: response?.data?.data?.reason || "Your application does not meet eligibility criteria",
+                                onSuccess: () => onNext()
+                            });
+                        }
+                    }
+                } catch (error: unknown) {
+                    if (error instanceof AxiosError) {
+                        toast({ variant: "error", title: error?.response?.data?.message || "Kyc Failed", description: "User denied request." });
+                        updateKycStatusState({ description: error?.response?.data?.message || "Your application does not meet eligibility criteria" });
+                    }
+                } finally {
+                    updateKycStatusState({ loading: false });
+                }
             }
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
@@ -287,8 +303,8 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
             />
             <h2 className="text-lg sm:text-xl font-bold text-gray-900">Get Instant Cash</h2>
 
-            <PanVerify formData={formData} setFormData={setFormData} />
             <AadhaarVerify formData={formData} setFormData={setFormData} />
+            <PanVerify formData={formData} setFormData={setFormData} />
             <MissingField formData={formData} setFormData={setFormData} />
             <EmployeeDetails formData={formData} setFormData={setFormData} />
 
