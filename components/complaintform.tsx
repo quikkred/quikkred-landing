@@ -1,7 +1,9 @@
 "use client";
-import { Biohazard, Bot, Clock, Mail, Phone, User, MessageSquare, Tag, Upload, TriangleAlert, ChevronDown, File,  Check, AlertTriangle } from "lucide-react";
+import { Biohazard, Bot, Clock, Mail, Phone, User, MessageSquare, Tag, Upload, TriangleAlert, ChevronDown, File, Check, AlertTriangle } from "lucide-react";
 import { useState, ChangeEvent, FormEvent, DragEvent } from "react";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+const API_BASE_URL = "https://alpha.quikkred.in";
+import { toast } from "./ui/toast";
 
 export default function ComplaintForm() {
   const [charCount, setCharCount] = useState(0);
@@ -11,7 +13,8 @@ export default function ComplaintForm() {
   const [complaintId, setComplaintId] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [errors, setErrors] = useState({ name: "", email: "", phone: "" });
+  const [errors, setErrors] = useState({ name: "", email: "", mobile: "" });
+
   const handleTextareaChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     setCharCount(e.target.value.length);
   };
@@ -19,7 +22,11 @@ export default function ComplaintForm() {
     const files = Array.from(e.target.files || []);
     files.forEach((file) => {
       if (file.size > 5 * 1024 * 1024) {
-        alert(`${file.name} is too large. Maximum file size is 5MB.`);
+        toast({
+          title: "File Too Large",
+          description: `${file.name} exceeds the 5MB limit and was not added.`,
+          variant: "error",
+        });
         return;
       }
       setUploadedFiles((prev) => [...prev, file]);
@@ -29,25 +36,72 @@ export default function ComplaintForm() {
   const removeFile = (fileName: string) => {
     setUploadedFiles((prev) => prev.filter((f) => f.name !== fileName));
   };
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     const form = e.target as HTMLFormElement;
-    const formData = new FormData(form);
-    const nameError = validateName(formData.get("name") as string);
-    const emailError = validateEmail(formData.get("email") as string);
-    const phoneError = validatePhone(formData.get("phone") as string);
+    const fd = new FormData(form);
+
+    const name = (fd.get("name") as string) || "";
+    const email = (fd.get("email") as string) || "";
+    const mobile = (fd.get("mobile") as string) || "";
+    const complaintType = (fd.get("complaintType") as string) || "";
+    const description = (fd.get("description") as string) || "";
+    const nameError = validateName(name);
+    const emailError = validateEmail(email);
+    const phoneError = validatePhone(mobile);
+
     if (nameError || emailError || phoneError) {
-      setErrors({ name: nameError, email: emailError, phone: phoneError });
+      setErrors({
+        name: nameError,
+        email: emailError,
+        mobile: phoneError,
+      });
       return;
     }
-    const randomId = Math.floor(100000 + Math.random() * 900000).toString();
-    setComplaintId(randomId);
-    setShowSuccess(true);
-    form.reset();
-    setUploadedFiles([]);
-    setCharCount(0);
-    setErrors({ name: "", email: "", phone: "" });
+
+    try {
+      const formData = new FormData();
+      formData.append("name", name.trim());
+      formData.append("email", email.trim());
+      formData.append("mobile", mobile.trim());
+      formData.append("complaintType", complaintType.trim());
+      formData.append("description", description.trim());
+      uploadedFiles.forEach((file) => {
+        formData.append("attachment", file);
+      });
+
+      const response = await fetch(`${API_BASE_URL}/api/complaint/register`, {
+        method: "POST",
+        body: formData, // 👈 NOT JSON
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        const randomId = Math.floor(100000 + Math.random() * 900000).toString();
+        setComplaintId(randomId);
+        setShowSuccess(true);
+        form.reset();
+        setUploadedFiles([]);
+        setCharCount(0);
+        setErrors({ name: "", email: "", mobile: "" });
+      } else {
+        toast({
+          title: "Submission Failed",
+          description: data.message || "An error occurred while submitting your complaint.",
+          variant: "error",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Network Error",
+        description: "Unable to submit your complaint. Please try again later.",
+        variant: "error",
+      });
+    }
   };
+
   const handleReset = () => {
     setShowResetConfirm(true);
     setTimeout(() => {
@@ -106,7 +160,7 @@ export default function ComplaintForm() {
   };
   const handlePhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setErrors((prev) => ({ ...prev, phone: validatePhone(value) }));
+    setErrors((prev) => ({ ...prev, mobile: validatePhone(value) }));
   };
   const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -129,7 +183,11 @@ export default function ComplaintForm() {
     const files = Array.from(e.dataTransfer.files);
     files.forEach((file) => {
       if (file.size > 5 * 1024 * 1024) {
-        alert(`${file.name} is too large. Maximum file size is 5MB.`);
+        toast({
+          title: "File Too Large",
+          description: `${file.name} exceeds the 5MB limit and was not added.`,
+          variant: "error",
+        })
         return;
       }
       setUploadedFiles((prev) => [...prev, file]);
@@ -278,23 +336,23 @@ export default function ComplaintForm() {
                   />
                   <input
                     type="tel"
-                    name="phone"
+                    name="mobile"
                     required
                     autoComplete="off"
                     placeholder="0123456789"
                     onChange={handlePhoneChange}
                     maxLength={10}
                     className={`w-full p-3 pl-11 pr-4 border-2 rounded-lg text-[15px] transition-all duration-300 bg-white focus:outline-none ${
-                      errors.phone
+                      errors.mobile
                         ? "border-[#e53e3e] focus:border-[#e53e3e] focus:shadow-[0_0_0_3px_rgba(229,62,62,0.1)]"
                         : "border-[#e2e8f0] focus:border-[#14b8a6] focus:shadow-[0_0_0_3px_rgba(20,184,166,0.1)]"
                     }`}
                   />
                 </div>
-                {errors.phone && (
+                {errors.mobile && (
                   <div className="mt-2 flex items-center gap-2 text-[#e53e3e] text-sm animate-[slideDown_0.2s_ease]">
                     <TriangleAlert size={16} />
-                    <span>{errors.phone}</span>
+                    <span>{errors.mobile}</span>
                   </div>
                 )}
               </div>
@@ -309,16 +367,23 @@ export default function ComplaintForm() {
                     size={20}
                   />
                   <select
+                    name="complaintType"
                     required
                     className="w-full p-3 pl-11 pr-10 border-2 border-[#e2e8f0] rounded-lg text-[15px] transition-all duration-300 bg-white cursor-pointer appearance-none focus:outline-none focus:border-[#14b8a6] focus:shadow-[0_0_0_3px_rgba(20,184,166,0.1)]"
                   >
                     <option value="">Select a category</option>
-                    <option value="Disbursement">
-                      Disbursement and Application related
+                    <option value="Disbursement & Application related">
+                      Disbursement & Application related
                     </option>
-                    <option value="Repayment">Repayment and billing</option>
-                    <option value="Collection">Collection and Behaviour</option>
-                    <option value="Technical">Technical and Accounts</option>
+                    <option value="Repayment & billing">
+                      Repayment & billing
+                    </option>
+                    <option value="Collection & Behaviour">
+                      Collection & Behaviour
+                    </option>
+                    <option value="Technical & Accounts">
+                      Technical & Accounts
+                    </option>
                   </select>
                   <ChevronDown
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-[#4a5568] pointer-events-none"
@@ -337,6 +402,7 @@ export default function ComplaintForm() {
                     size={20}
                   />
                   <textarea
+                    name="description"
                     required
                     placeholder="Please describe your complaint in detail. Include dates, times, and any relevant information..."
                     maxLength={1000}
@@ -396,6 +462,7 @@ export default function ComplaintForm() {
                       <input
                         type="file"
                         id="fileInput"
+                        name="attachment"
                         accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                         multiple
                         onChange={handleFileChange}
