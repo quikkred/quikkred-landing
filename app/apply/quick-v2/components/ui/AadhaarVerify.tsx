@@ -63,6 +63,9 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
                     title: "Aadhaar Verified",
                     description: result.message || "Your Aadhaar has been verified successfully.",
                 });
+                // Clean up URL params
+                const cleanUrl = window.location.pathname;
+                window.history.replaceState({}, '', cleanUrl);
                 tracking.trackEvent('CUSTOM_EVENT', { event: TRACKING_EVENTS.AADHAAR_VERIFIED });
             } else {
                 console.log('ℹ️ Aadhaar not verified:', result.message || 'Verification pending or failed');
