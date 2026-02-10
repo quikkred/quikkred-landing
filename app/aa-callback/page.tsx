@@ -68,8 +68,8 @@ export default function AccountAggregatorCallback() {
                     throw new Error('Authentication required. Please login again.');
                 }
 
-                // Call POST /api/test/storeData
-                const response = await fetch(`${API_BASE_URL}/api/test/storeData`, {
+                // Call POST /api/surepassAA/storeData
+                const response = await fetch(`${API_BASE_URL}/api/surepassAA/storeData`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
