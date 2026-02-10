@@ -235,7 +235,7 @@ const ApproveMandate = ({
                 // Store IDs from response
                 if (result.data) {
                     if (result.data.customerId) localStorage.setItem('userId', result.data.customerId);
-                    if (result.data.applicationNumber) localStorage.setItem('applicationId', result.data.applicationNumber);
+                    if (result.data._id) localStorage.setItem('applicationId', result.data._id);
                     if (result.data.loanNumber) localStorage.setItem('loanNumber', result.data.loanNumber);
                 }
 
