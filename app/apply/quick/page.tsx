@@ -4907,7 +4907,7 @@ export default function QuickLoanApplication() {
 
                                 console.log('🔍 Account Aggregator - Final payload:', payload);
 
-                                const response = await fetch(`${API_BASE_URL}/api/test/initialize`, {
+                                const response = await fetch(`${API_BASE_URL}/api/surepassAA/initialize`, {
                                   method: 'POST',
                                   headers: {
                                     'Content-Type': 'application/json',
@@ -5351,7 +5351,7 @@ export default function QuickLoanApplication() {
                                 applicationId: localStorage.getItem('applicationId')
                               };
 
-                              const response = await fetch(`${API_BASE_URL}/api/test/initialize`, {
+                              const response = await fetch(`${API_BASE_URL}/api/surepassAA/initialize`, {
                                 method: 'POST',
                                 headers: {
                                   'Content-Type': 'application/json',
