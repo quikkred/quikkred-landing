@@ -767,84 +767,84 @@ export default function QuickLoanApplication() {
   // This handles the case when user returns after finfactor process or bsaInitiated is true
   const breFinFactorCalledRef = useRef(false);
 
-  useEffect(() => {
-    const fetchBreFinfactorResult = async () => {
-      const finfactorParam = searchParams.get('finfactor');
+  // useEffect(() => {
+  //   const fetchBreFinfactorResult = async () => {
+  //     const finfactorParam = searchParams.get('finfactor');
 
-      // Only proceed if:
-      // 1. finfactor=success is in URL
-      // 2. Not already loading
-      // 3. Not already called
-      // 4. No approvalData yet
-      if (finfactorParam !== 'success' || consentLoading || breFinFactorCalledRef.current || approvalData) {
-        return;
-      }
+  //     // Only proceed if:
+  //     // 1. finfactor=success is in URL
+  //     // 2. Not already loading
+  //     // 3. Not already called
+  //     // 4. No approvalData yet
+  //     if (finfactorParam !== 'success' || consentLoading || breFinFactorCalledRef.current || approvalData) {
+  //       return;
+  //     }
 
-      console.log('📊 finfactor=success detected, auto-calling BRE finFactor API...');
+  //     console.log('📊 finfactor=success detected, auto-calling BRE finFactor API...');
 
-      const token = await getToken();
-      if (!token) {
-        console.error('No auth token found for BRE finFactor');
-        return;
-      }
+  //     const token = await getToken();
+  //     if (!token) {
+  //       console.error('No auth token found for BRE finFactor');
+  //       return;
+  //     }
 
-      breFinFactorCalledRef.current = true;
-      setConsentLoading(true);
-      setCurrentStep(4); // Ensure we're on Step 4
-      setFinfactorSuccess(true); // Show loading UI
+  //     breFinFactorCalledRef.current = true;
+  //     setConsentLoading(true);
+  //     setCurrentStep(4); // Ensure we're on Step 4
+  //     setFinfactorSuccess(true); // Show loading UI
 
-      try {
-        // Get applicationId from approval data or localStorage
-        const applicationId = approvalData?.applicationId || localStorage.getItem('applicationMongoId');
+  //     try {
+  //       // Get applicationId from approval data or localStorage
+  //       const applicationId = approvalData?.applicationId || localStorage.getItem('applicationMongoId');
 
-        if (!applicationId) {
-          console.error('No applicationId available for balance check');
-          toast({ variant: "error", title: "Error", description: "Application ID not found. Please try again." });
-          breFinFactorCalledRef.current = false;
-          setFinfactorSuccess(false);
-          setConsentLoading(false);
-          return;
-        }
+  //       if (!applicationId) {
+  //         console.error('No applicationId available for balance check');
+  //         toast({ variant: "error", title: "Error", description: "Application ID not found. Please try again." });
+  //         breFinFactorCalledRef.current = false;
+  //         setFinfactorSuccess(false);
+  //         setConsentLoading(false);
+  //         return;
+  //       }
 
-        console.log('🔄 Starting complete balance check flow with applicationId:', applicationId);
+  //       console.log('🔄 Starting complete balance check flow with applicationId:', applicationId);
 
-        // Call complete balance check flow (consent → FI data → balance check → BRE with BSA)
-        // This takes 30-60 seconds
-        const response = await fetch(`${API_BASE_URL}/api/balance-check/complete`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ applicationId })
-        });
+  //       // Call complete balance check flow (consent → FI data → balance check → BRE with BSA)
+  //       // This takes 30-60 seconds
+  //       const response = await fetch(`${API_BASE_URL}/api/balance-check/complete`, {
+  //         method: 'POST',
+  //         headers: {
+  //           'Authorization': `Bearer ${token}`,
+  //           'Content-Type': 'application/json'
+  //         },
+  //         body: JSON.stringify({ applicationId })
+  //       });
 
-        const result = await response.json();
+  //       const result = await response.json();
 
-        if (response.ok && result.success) {
-          console.log('✅ Balance check with BRE completed successfully:', result.data);
-          toast({ variant: "success", title: "Success", description: result.message || "Loan verification completed successfully." });
+  //       if (response.ok && result.success) {
+  //         console.log('✅ Balance check with BRE completed successfully:', result.data);
+  //         toast({ variant: "success", title: "Success", description: result.message || "Loan verification completed successfully." });
 
-          if (result.data) {
-            setApprovalData(result.data);
-          }
-          setFinfactorSuccess(false);
-        } else {
-          console.error('Balance check failed:', result.message);
-          toast({ variant: "error", title: "Failed", description: result.message || "Verification failed. Please try again." });
-          breFinFactorCalledRef.current = false; // Allow retry on failure
-        }
-      } catch (error) {
-        console.error('Error processing balance check:', error);
-        toast({ variant: "error", title: "Error", description: "Failed to process. Please try again." });
-        breFinFactorCalledRef.current = false; // Allow retry on error
-      } finally {
-        setConsentLoading(false);
-      }
-    };
+  //         if (result.data) {
+  //           setApprovalData(result.data);
+  //         }
+  //         setFinfactorSuccess(false);
+  //       } else {
+  //         console.error('Balance check failed:', result.message);
+  //         toast({ variant: "error", title: "Failed", description: result.message || "Verification failed. Please try again." });
+  //         breFinFactorCalledRef.current = false; // Allow retry on failure
+  //       }
+  //     } catch (error) {
+  //       console.error('Error processing balance check:', error);
+  //       toast({ variant: "error", title: "Error", description: "Failed to process. Please try again." });
+  //       breFinFactorCalledRef.current = false; // Allow retry on error
+  //     } finally {
+  //       setConsentLoading(false);
+  //     }
+  //   };
 
-    fetchBreFinfactorResult();
-  }, [searchParams, consentLoading, approvalData, toast]);
+  //   fetchBreFinfactorResult();
+  // }, [searchParams, consentLoading, approvalData, toast]);
 
   // Check Aadhaar verification status when verified=true query param is present
   // Only calls API after user profile data is loaded AND if isAadhaarVerify !== true
