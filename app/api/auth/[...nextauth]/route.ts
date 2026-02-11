@@ -76,6 +76,49 @@ export const authOptions: AuthOptions = {
       },
     }),
 
+    // ✅ DigiLocker Provider
+    CredentialsProvider({
+      id: "digilocker",
+      name: "DigiLocker",
+      credentials: {
+        requestId: { label: "Request ID", type: "text" },
+      },
+      async authorize(credentials) {
+        const requestId = credentials?.requestId;
+        if (!requestId) return null;
+
+        try {
+          const res = await fetch(
+            `${API_BASE_URL}/api/auth/customer/digilocker/status?requestId=${encodeURIComponent(requestId)}`,
+            {
+              method: "GET",
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+
+          const json = await res.json().catch(() => null);
+
+          if (res.ok && json?.success && json?.data) {
+            const d = json.data;
+            return {
+              id: d.userId,
+              email: d.email ?? null,
+              mobile: d.mobile ?? null,
+              role: d.role,
+              accessToken: d.accessToken,
+              refreshToken: d.refreshToken,
+              customerUniqueId: d.customerUniqueId,
+              verifiedAt: d.verifiedAt ?? new Date().toISOString(),
+            };
+          }
+
+          throw new Error(json?.message || "DigiLocker verification failed");
+        } catch (err: any) {
+          throw new Error(err.message || "DigiLocker verification failed");
+        }
+      },
+    }),
+
     // ✅ Truecaller Provider
     CredentialsProvider({
       id: "truecaller",
@@ -178,8 +221,8 @@ export const authOptions: AuthOptions = {
         }
       }
 
-      // ✅ 2) OTP/Truecaller sign-in
-      if ((account?.provider === "otp" || account?.provider === "truecaller") && user) {
+      // ✅ 2) OTP/Truecaller/DigiLocker sign-in
+      if ((account?.provider === "otp" || account?.provider === "truecaller" || account?.provider === "digilocker") && user) {
         token.userId = (user as any).id;
         token.accessToken = (user as any).accessToken;
         token.refreshToken = (user as any).refreshToken;

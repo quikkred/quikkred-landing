@@ -75,7 +75,7 @@ export default function LoanCalculatorAll() {
               className="w-full h-1 bg-gradient-to-r from-[#51C9AF] to-slate-300 rounded-lg appearance-none cursor-pointer accent-[#25B181]"
             />
             <div className="flex justify-between text-[9px] text-slate-500">
-              <span>₹2k</span>
+              <span>₹5k</span>
               <span>₹25L</span>
             </div>
           </div>
@@ -164,7 +164,7 @@ export default function LoanCalculatorAll() {
           </div>
 
           <Button
-            onClick={() => router.push('/apply/quick-v2')}
+            onClick={() => router.push('/apply/quick')}
             className="w-full bg-[#25B181] hover:bg-[#1F8F68] text-white font-bold py-2.5 sm:py-3 rounded-xl mb-1.5 transition-all duration-300 text-xs sm:text-sm shadow-lg hover:shadow-xl"
           >
             {t?.calculator?.applyButton}

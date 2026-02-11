@@ -20,32 +20,49 @@ const EmployeeDetails = ({ formData, setFormData }: EmployeeDetailsProps) => {
 
     const [errors, setErrors] = useState<Record<string, string>>({});
 
+    // --- HELPER: Formats 100000 -> "1,00,000" ---
+    const formatIndianNumber = (value: string | number) => {
+        if (!value) return "";
+        const rawNum = value.toString().replace(/,/g, "").replace(/\D/g, "");
+        if (!rawNum) return "";
+        return new Intl.NumberFormat("en-IN").format(Number(rawNum));
+    };
+
+    // --- HELPER: Get Raw Number from "1,00,000" -> 100000 ---
+    const getRawNumber = (value: string) => {
+        return value.replace(/,/g, "").replace(/\D/g, "");
+    };
+
     /* ---------------- EMPLOYMENT TYPE ---------------- */
-    const handleEmploymentTypeChange = (
-        type: "SALARIED" | "SELF-EMPLOYED"
-    ) => {
+    const handleEmploymentTypeChange = (type: "SALARIED" | "SELF-EMPLOYED") => {
         setFormData((prev) => ({
             ...prev,
             employmentType: type,
         }));
-
         setErrors((prev) => ({ ...prev, employmentType: "" }));
         trackEmploymentTypeSelected(type);
     };
 
     /* ---------------- MONTHLY INCOME ---------------- */
     const handleMonthlyIncomeChange = (value: string) => {
-        const numValue = value.replace(/\D/g, "");
+        // 1. Get raw number (remove commas)
+        const rawValue = getRawNumber(value);
 
+        // 2. LIMIT: 10,00,000
+        if (rawValue && parseInt(rawValue) > 1000000) {
+            return;
+        }
+
+        // 3. Save RAW value to state (e.g., "30000", not "30,000")
         setFormData((prev) => ({
             ...prev,
-            monthlyIncome: numValue,
+            monthlyIncome: rawValue, 
         }));
 
         setErrors((prev) => ({ ...prev, monthlyIncome: "" }));
 
-        if (numValue && parseInt(numValue) > 0) {
-            trackIncomeEntered(parseInt(numValue));
+        if (rawValue && parseInt(rawValue) > 0) {
+            trackIncomeEntered(parseInt(rawValue));
         }
     };
 
@@ -55,19 +72,22 @@ const EmployeeDetails = ({ formData, setFormData }: EmployeeDetailsProps) => {
             ...prev,
             companyName: value,
         }));
-
         setErrors((prev) => ({ ...prev, companyName: "" }));
     };
 
     /* ---------------- LOAN AMOUNT ---------------- */
     const handleLoanAmountChange = (value: string) => {
-        const numValue = Number(value.replace(/\D/g, "") || 0);
+        const rawValue = getRawNumber(value);
+
+        // LIMIT: 1,00,000
+        if (rawValue && parseInt(rawValue) > 100000) {
+            return;
+        }
 
         setFormData((prev) => ({
             ...prev,
-            loanAmount: numValue,
+            loanAmount: Number(rawValue),
         }));
-
         setErrors((prev) => ({ ...prev, loanAmount: "" }));
     };
 
@@ -84,27 +104,24 @@ const EmployeeDetails = ({ formData, setFormData }: EmployeeDetailsProps) => {
                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
                         Employment Type *
                     </label>
-
                     <div className="grid grid-cols-2 gap-2">
                         {EMPLOYMENT_TYPES.map((type) => (
                             <button
                                 key={type.value}
                                 type="button"
                                 onClick={() => handleEmploymentTypeChange(type.value)}
-                                className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-medium text-xs sm:text-sm transition-all ${formData.employmentType === type.value
+                                className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-medium text-xs sm:text-sm transition-all ${
+                                    formData.employmentType === type.value
                                         ? "bg-[#25B181] text-white shadow-md"
                                         : "bg-white text-gray-700 border border-gray-300 hover:border-[#25B181]"
-                                    }`}
+                                }`}
                             >
                                 {type.label}
                             </button>
                         ))}
                     </div>
-
                     {errors.employmentType && (
-                        <p className="mt-1 text-xs text-red-600">
-                            {errors.employmentType}
-                        </p>
+                        <p className="mt-1 text-xs text-red-600">{errors.employmentType}</p>
                     )}
                 </div>
 
@@ -115,57 +132,39 @@ const EmployeeDetails = ({ formData, setFormData }: EmployeeDetailsProps) => {
                         <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
                             Monthly Income *
                         </label>
-
                         <div className="relative">
                             <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input
                                 type="text"
                                 inputMode="numeric"
-                                value={formData.monthlyIncome}
-                                onChange={(e) =>
-                                    handleMonthlyIncomeChange(e.target.value)
-                                }
+                                // FIX: Format the raw value for display here
+                                value={formatIndianNumber(formData.monthlyIncome)} 
+                                onChange={(e) => handleMonthlyIncomeChange(e.target.value)}
                                 onFocus={() => trackFieldFocus("monthlyIncome", 2)}
                                 className="w-full pl-8 pr-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#25B181] border-gray-300"
                                 placeholder="Enter income"
                             />
                         </div>
-
                         {errors.monthlyIncome && (
-                            <p className="mt-1 text-xs text-red-600">
-                                {errors.monthlyIncome}
-                            </p>
+                            <p className="mt-1 text-xs text-red-600">{errors.monthlyIncome}</p>
                         )}
                     </div>
 
                     {/* Company / Source */}
                     <div>
                         <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
-                            {formData.employmentType === "SALARIED"
-                                ? "Company Name"
-                                : "Income Source"}{" "}
-                            *
+                            {formData.employmentType === "SALARIED" ? "Company Name" : "Income Source"} *
                         </label>
-
                         <input
                             type="text"
                             value={formData.companyName}
-                            onChange={(e) =>
-                                handleCompanyNameChange(e.target.value)
-                            }
+                            onChange={(e) => handleCompanyNameChange(e.target.value)}
                             onFocus={() => trackFieldFocus("companyName", 2)}
                             className="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#25B181] border-gray-300"
-                            placeholder={
-                                formData.employmentType === "SALARIED"
-                                    ? "Your company"
-                                    : "Your income source"
-                            }
+                            placeholder={formData.employmentType === "SALARIED" ? "Your company" : "Your income source"}
                         />
-
                         {errors.companyName && (
-                            <p className="mt-1 text-xs text-red-600">
-                                {errors.companyName}
-                            </p>
+                            <p className="mt-1 text-xs text-red-600">{errors.companyName}</p>
                         )}
                     </div>
                 </div>
@@ -175,40 +174,28 @@ const EmployeeDetails = ({ formData, setFormData }: EmployeeDetailsProps) => {
                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
                         How much loan do you need? *
                     </label>
-
                     <div className="relative">
                         <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
                             type="text"
                             inputMode="numeric"
-                            value={formData.loanAmount}
-                            onChange={(e) =>
-                                handleLoanAmountChange(e.target.value)
-                            }
+                            // Format number from state for display
+                            value={formData.loanAmount ? formatIndianNumber(formData.loanAmount) : ""}
+                            onChange={(e) => handleLoanAmountChange(e.target.value)}
                             onFocus={() => trackFieldFocus("loanAmount", 2)}
                             className="w-full pl-8 pr-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#25B181] border-gray-300"
                             placeholder="₹ 5,000 - ₹ 25,000"
                         />
                     </div>
 
-                    {formData.loanAmount < 5000 && (
-                        <p className="mt-1 text-xs text-red-500">
-                            Minimum loan amount is ₹5,000
-                        </p>
+                    {formData.loanAmount > 0 && formData.loanAmount < 5000 && (
+                        <p className="mt-1 text-xs text-red-500">Minimum loan amount is ₹5,000</p>
                     )}
-
                     {formData.loanAmount > 25000 && (
-                        <p className="mt-1 text-xs text-red-500">
-                            Maximum loan amount is ₹25,000
-                        </p>
+                        <p className="mt-1 text-xs text-red-500">Maximum loan amount is ₹25,000</p>
                     )}
-
-                    {!formData.loanAmount ||
-                        (formData.loanAmount >= 5000 &&
-                            formData.loanAmount <= 25000) ? (
-                        <p className="mt-1 text-xs text-gray-500">
-                            Enter the approximate loan amount
-                        </p>
+                    {!formData.loanAmount || (formData.loanAmount >= 5000 && formData.loanAmount <= 25000) ? (
+                        <p className="mt-1 text-xs text-gray-500">Enter the approximate loan amount</p>
                     ) : null}
                 </div>
             </div>
