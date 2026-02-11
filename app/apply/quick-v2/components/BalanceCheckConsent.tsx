@@ -44,18 +44,19 @@ export default function BalanceCheckConsent({
     }, [trackStepViewed]);
 
     // Check if returning from finfactor redirect
-    useEffect(() => {
-        const finfactorParam = searchParams.get('finfactor');
-        if (finfactorParam === 'success') {
-            setConsentComplete(true);
-            setFormData(prev => ({ ...prev, finfactorConsent: true }));
 
-            // Auto-trigger balance check processing
-            setTimeout(() => {
-                handleProcessBalanceCheck();
-            }, 1000);
-        }
-    }, [searchParams, setFormData]);
+    // useEffect(() => {
+    //     const finfactorParam = searchParams.get('finfactor');
+    //     if (finfactorParam === 'success') {
+    //         setConsentComplete(true);
+    //         setFormData(prev => ({ ...prev, finfactorConsent: true }));
+
+    //         // Auto-trigger balance check processing
+    //         setTimeout(() => {
+    //             handleProcessBalanceCheck();
+    //         }, 1000);
+    //     }
+    // }, [searchParams, setFormData]);
 
     // Skip if already completed
     useEffect(() => {
@@ -180,12 +181,12 @@ export default function BalanceCheckConsent({
                 }, 2000);
             } else {
                 setError(result.message || 'Balance check failed. Please try again.');
-                trackAPIError('/api/balance-check/complete', result.message);
+                // trackAPIError('/api/balance-check/complete', result.message);
             }
         } catch (err: any) {
             const errorMsg = err?.message || 'Network error. Please try again.';
             setError(errorMsg);
-            trackAPIError('/api/balance-check/complete', errorMsg);
+            // trackAPIError('/api/balance-check/complete', errorMsg);
         } finally {
             setProcessing(false);
         }
