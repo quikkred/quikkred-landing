@@ -143,7 +143,6 @@ export default function QuickLoanApplication() {
   // Loan Products
   const [loanProducts, setLoanProducts] = useState<any[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const [emiCalculation, setEmiCalculation] = useState<any>(null);
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [amountError, setAmountError] = useState("")
 
@@ -300,13 +299,25 @@ export default function QuickLoanApplication() {
 
               // Pre-fill form data (using imported formatDateForInput)
               // Note: prev.mobile takes priority (from localStorage/applyMobile)
+
+              // Mask Aadhaar if already verified (show only last 4 digits)
+              const maskAadhaar = (aadhaar: string) => {
+                if (!aadhaar || aadhaar.length !== 12) return aadhaar;
+                return 'XXXXXXXX' + aadhaar.slice(-4);
+              };
+
+              // const aadhaarToSet = profileData.aadhaarNumber
+              //   ? (profileData.isAadhaarVerify ? maskAadhaar(profileData.aadhaarNumber) : profileData.aadhaarNumber)
+              //   : prev.aadhaar;
+              const aadhaarToSet = profileData.isAadhaarVerify ? maskAadhaar(profileData.aadhaarNumber) : profileData.aadhaarNumber;
+
               setFormData(prev => ({
                 ...prev,
                 fullName: profileData.fullName || prev.fullName,
                 mobile: prev.mobile || profileData.mobile || user.mobile,
                 email: profileData.email || user.email || prev.email,
                 pan: profileData.panCard || prev.pan,
-                aadhaar: profileData.aadhaarNumber || prev.aadhaar,
+                aadhaar: profileData.aadhaarNumber ? aadhaarToSet: prev.aadhaar,
                 dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
                 state: profileData.state ? profileData.state.toLowerCase() : prev.state,
                 employmentType: profileData.employmentType || prev.employmentType,
@@ -722,73 +733,118 @@ export default function QuickLoanApplication() {
     }
   }, [searchParams, bsaStatusUpdated]);
 
+  // Handle Account Aggregator callback
+  useEffect(() => {
+    const aaSuccessParam = searchParams.get('aa-success');
+    const aaErrorParam = searchParams.get('aa-error');
+
+    if (aaSuccessParam === 'true') {
+      toast({
+        variant: "success",
+        title: "Success",
+        description: "Bank statement data saved successfully!"
+      });
+      // Remove the query parameter to prevent showing toast again
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('aa-success');
+      window.history.replaceState({}, '', newUrl.toString());
+    }
+
+    if (aaErrorParam === 'true') {
+      toast({
+        variant: "error",
+        title: "Error",
+        description: "Failed to save bank statement data. Please try again."
+      });
+      // Remove the query parameter
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('aa-error');
+      window.history.replaceState({}, '', newUrl.toString());
+    }
+  }, [searchParams, toast]);
+
   // Auto-trigger BRE finFactor API when ?finfactor=success is in URL
   // This handles the case when user returns after finfactor process or bsaInitiated is true
   const breFinFactorCalledRef = useRef(false);
 
-  useEffect(() => {
-    const fetchBreFinfactorResult = async () => {
-      const finfactorParam = searchParams.get('finfactor');
+  // useEffect(() => {
+  //   const fetchBreFinfactorResult = async () => {
+  //     const finfactorParam = searchParams.get('finfactor');
 
-      // Only proceed if:
-      // 1. finfactor=success is in URL
-      // 2. Not already loading
-      // 3. Not already called
-      // 4. No approvalData yet
-      if (finfactorParam !== 'success' || consentLoading || breFinFactorCalledRef.current || approvalData) {
-        return;
-      }
+  //     // Only proceed if:
+  //     // 1. finfactor=success is in URL
+  //     // 2. Not already loading
+  //     // 3. Not already called
+  //     // 4. No approvalData yet
+  //     if (finfactorParam !== 'success' || consentLoading || breFinFactorCalledRef.current || approvalData) {
+  //       return;
+  //     }
 
-      console.log('📊 finfactor=success detected, auto-calling BRE finFactor API...');
+  //     console.log('📊 finfactor=success detected, auto-calling BRE finFactor API...');
 
-      const token = await getToken();
-      if (!token) {
-        console.error('No auth token found for BRE finFactor');
-        return;
-      }
+  //     const token = await getToken();
+  //     if (!token) {
+  //       console.error('No auth token found for BRE finFactor');
+  //       return;
+  //     }
 
-      breFinFactorCalledRef.current = true;
-      setConsentLoading(true);
-      setCurrentStep(4); // Ensure we're on Step 4
-      setFinfactorSuccess(true); // Show loading UI
+  //     breFinFactorCalledRef.current = true;
+  //     setConsentLoading(true);
+  //     setCurrentStep(4); // Ensure we're on Step 4
+  //     setFinfactorSuccess(true); // Show loading UI
 
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/kyc/bre/finFactor`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+  //     try {
+  //       // Get applicationId from approval data or localStorage
+  //       const applicationId = approvalData?.applicationId || localStorage.getItem('applicationMongoId');
 
-        const result = await response.json();
+  //       if (!applicationId) {
+  //         console.error('No applicationId available for balance check');
+  //         toast({ variant: "error", title: "Error", description: "Application ID not found. Please try again." });
+  //         breFinFactorCalledRef.current = false;
+  //         setFinfactorSuccess(false);
+  //         setConsentLoading(false);
+  //         return;
+  //       }
 
-        if (response.ok && result.success) {
-          // API SUCCESS - follow normal flow (approve/reject/etc.)
-          console.log('✅ BRE finFactor result fetched successfully:', result.data);
-          toast({ variant: "success", title: "Success", description: result.message || "BRE verification completed successfully." });
+  //       console.log('🔄 Starting complete balance check flow with applicationId:', applicationId);
 
-          if (result.data) {
-            setApprovalData(result.data);
-          }
-          setFinfactorSuccess(false);
-        } else {
-          // API ERROR - redirect to /user
-          console.error('BRE finFactor failed:', result.message);
-          toast({ variant: "error", title: "Processing", description: result.message || "We are processing your application. Please check back later." });
-          router.push('/user');
-        }
-      } catch (error) {
-        // API EXCEPTION - redirect to /user
-        console.error('Error fetching BRE finFactor:', error);
-        toast({ variant: "error", title: "Processing", description: "We are processing your application. Please check back later." });
-        router.push('/user');
-      } finally {
-        setConsentLoading(false);
-      }
-    };
+  //       // Call complete balance check flow (consent → FI data → balance check → BRE with BSA)
+  //       // This takes 30-60 seconds
+  //       const response = await fetch(`${API_BASE_URL}/api/balance-check/complete`, {
+  //         method: 'POST',
+  //         headers: {
+  //           'Authorization': `Bearer ${token}`,
+  //           'Content-Type': 'application/json'
+  //         },
+  //         body: JSON.stringify({ applicationId })
+  //       });
 
-    fetchBreFinfactorResult();
-  }, [searchParams, consentLoading, approvalData, toast]);
+  //       const result = await response.json();
+
+  //       if (response.ok && result.success) {
+  //         console.log('✅ Balance check with BRE completed successfully:', result.data);
+  //         toast({ variant: "success", title: "Success", description: result.message || "Loan verification completed successfully." });
+
+  //         if (result.data) {
+  //           setApprovalData(result.data);
+  //         }
+  //         setFinfactorSuccess(false);
+  //       } else {
+  //         console.error('Balance check failed:', result.message);
+  //         toast({ variant: "error", title: "Failed", description: result.message || "Verification failed. Please try again." });
+  //         breFinFactorCalledRef.current = false; // Allow retry on failure
+  //       }
+  //     } catch (error) {
+  //       console.error('Error processing balance check:', error);
+  //       toast({ variant: "error", title: "Error", description: "Failed to process. Please try again." });
+  //       breFinFactorCalledRef.current = false; // Allow retry on error
+  //     } finally {
+  //       setConsentLoading(false);
+  //     }
+  //   };
+
+  //   fetchBreFinfactorResult();
+  // }, [searchParams, consentLoading, approvalData, toast]);
 
   // Check Aadhaar verification status when verified=true query param is present
   // Only calls API after user profile data is loaded AND if isAadhaarVerify !== true
@@ -1125,65 +1181,56 @@ export default function QuickLoanApplication() {
     }
   }, [user]);
 
-
-  // Calculate EMI when loan amount, tenure, tenure unit, or product changes
+  
+  // Fetch loan products on mount
   useEffect(() => {
-    if (formData.loanAmount && formData.tenure && selectedProduct) {
-      calculateEMI();
-    }
-  }, [formData.loanAmount, formData.tenure, formData.tenureUnit, selectedProduct]);
+    const fetchLoanProducts = async () => {
+      const token = await getToken();
+      setLoadingProducts(true);
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/loanProduct/allLoanProductsNameOnly`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        });
 
-  const calculateEMI = () => {
-    if (!selectedProduct || !formData.loanAmount || !formData.tenure) {
-      setEmiCalculation(null);
-      return;
-    }
+        const result = await response.json();
 
-    const principal = parseFloat(formData.loanAmount.replace(/,/g, ''));
-    const tenureDays = parseInt(formData.tenure); // Tenure is always in days for products
-    const dailyRate = selectedProduct.dailyInterestRate / 100;
-    const processingFeePercent = selectedProduct.processingFee / 100;
-    const gstPercent = selectedProduct.gst / 100;
+        if (response.ok && result.success && result.data) {
+          setLoanProducts(result.data);
 
-    // Calculate total interest based on daily rate and tenure days
-    const totalInterest = principal * dailyRate * tenureDays;
+          // Set selectedProduct if productId already exists in formData
+          if (formData.productId && result.data.length > 0) {
+            const product = result.data.find((p: any) => p._id === formData.productId);
+            if (product) {
+              setSelectedProduct(product);
+            }
+          }
+        } else {
+          console.error('Failed to fetch loan products:', result.message);
+          toast({
+            title: "Error",
+            description: "Failed to load loan products. Please refresh the page.",
+            variant: "error"
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching loan products:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load loan products. Please refresh the page.",
+          variant: "error"
+        });
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
 
-    // Calculate Platform Fee and GST
-    const processingFee = principal * processingFeePercent;
-    const gstOnProcessingFee = processingFee * gstPercent;
-    const totalProcessingFee = processingFee + gstOnProcessingFee;
+    fetchLoanProducts();
+  }, []);
 
-    // Total amount to be repaid (principal + interest)
-    const totalAmount = principal + totalInterest;
-
-    // EMI calculation - For tenure <= 45 days, it's lump sum payment
-    let emi: number;
-    let isLumpSum = false;
-    const tenureMonths = Math.ceil(tenureDays / 30); // Convert days to months for display
-
-    if (tenureDays <= 45) {
-      emi = Math.round(totalAmount); // Full amount in one payment
-      isLumpSum = true;
-    } else {
-      emi = Math.round(totalAmount / tenureMonths);
-    }
-
-    setEmiCalculation({
-      principal: principal,
-      dailyInterestRate: selectedProduct.dailyInterestRate,
-      totalDays: tenureDays,
-      totalInterest: Math.round(totalInterest),
-      processingFee: Math.round(processingFee),
-      gst: Math.round(gstOnProcessingFee),
-      totalProcessingFee: Math.round(totalProcessingFee),
-      totalAmount: Math.round(totalAmount),
-      emi: emi,
-      tenureMonths: tenureMonths,
-      isLumpSum: isLumpSum,
-      tenureUnit: 'days',
-      tenureValue: tenureDays
-    });
-  };
 
   const handleProductChange = (productId: string) => {
     const product = loanProducts.find(p => p._id === productId);
@@ -1262,6 +1309,9 @@ export default function QuickLoanApplication() {
 
     // Loan Amount validation
     if (!formData.loanAmount || parseFloat(formData.loanAmount) <= 0) return false;
+
+    // Product selection validation
+    if (!formData.productId || !selectedProduct) return false;
 
     return true;
   };
@@ -2452,7 +2502,7 @@ export default function QuickLoanApplication() {
 
       if (!token) {
         console.warn('No token found, skipping customer data save');
-        return false;
+        return true; // ✅ Return true to allow non-logged-in users to proceed
       }
 
       let payload: any = {
@@ -2487,7 +2537,24 @@ export default function QuickLoanApplication() {
             isBasicDetailsFilled: true
           },
           loanDetails: {
-            requestedLoanAmount: parseFloat(formData.loanAmount)
+            requestedLoanAmount: parseFloat(formData.loanAmount),
+            productId: formData.productId,
+            purpose: formData.purpose,
+            // Auto tenure based on product type
+            // Personal Loan = 15, Salary Advance = 0
+            tenure: selectedProduct
+              ? (selectedProduct.category?.toLowerCase().includes('salary') ? 0 : 15)
+              : 15,
+            // Selected product complete details
+            product: selectedProduct ? {
+              id: selectedProduct._id,
+              name: selectedProduct.productName,
+              category: selectedProduct.category,
+              dailyInterestRate: selectedProduct.dailyInterestRate,
+              ...(selectedProduct.description && { description: selectedProduct.description }),
+              ...(selectedProduct.minAmount && { minAmount: selectedProduct.minAmount }),
+              ...(selectedProduct.maxAmount && { maxAmount: selectedProduct.maxAmount }),
+            } : null,
           },
           ...(locationData && {
             location: {
@@ -2526,9 +2593,18 @@ export default function QuickLoanApplication() {
 
         const result = await response.json();
 
+        console.log('🔍 API Response for loan create:', result);
+        console.log('🔍 result.data:', result.data);
+        console.log('🔍 result.data._id:', result.data?._id);
+
         if (result.data) {
           if (result.data.customerId) localStorage.setItem('userId', result.data.customerId);
-          if (result.data.applicationNumber) localStorage.setItem('applicationId', result.data.applicationNumber);
+          if (result.data._id) {
+            console.log('✅ Setting applicationId in localStorage:', result.data._id);
+            localStorage.setItem('applicationId', result.data._id);
+          } else {
+            console.warn('⚠️ No _id found in result.data');
+          }
           if (result.data.loanNumber) localStorage.setItem('loanNumber', result.data.loanNumber);
         }
 
@@ -2564,10 +2640,19 @@ export default function QuickLoanApplication() {
 
       const result = await response.json();
 
+      console.log('🔍 API Response for step', step, ':', result);
+      console.log('🔍 result.data:', result.data);
+      console.log('🔍 result.data._id:', result.data?._id);
+
       // Store IDs if this is first save
       if (result.data) {
         if (result.data.customerId) localStorage.setItem('userId', result.data.customerId);
-        if (result.data.applicationNumber) localStorage.setItem('applicationId', result.data.applicationNumber);
+        if (result.data._id) {
+          console.log('✅ Setting applicationId in localStorage:', result.data._id);
+          localStorage.setItem('applicationId', result.data._id);
+        } else {
+          console.warn('⚠️ No _id found in result.data');
+        }
         if (result.data.loanNumber) localStorage.setItem('loanNumber', result.data.loanNumber);
       }
 
@@ -2945,25 +3030,43 @@ export default function QuickLoanApplication() {
         return;
       }
 
-      // Save Step 1 data (basic details + employment + loan amount)
-      setLoading(true);
-      const saveSuccess = await saveCustomerData(1);
-      setLoading(false);
-
-      // If save failed, don't proceed to next step
-      if (!saveSuccess) {
+      // Product validation for Step 1
+      if (!formData.productId || !selectedProduct) {
         toast({
-          variant: "error",
-          title: "Cannot Proceed",
-
-
+          variant: "warning",
+          title: "Product Selection Required",
+          description: "Please select a loan product to continue.",
         });
         return;
+      }
+
+      // Save Step 1 data only for logged-in users with valid token
+      // For non-logged-in users, data will be saved after Aadhaar verification in Step 2
+      const token = await getToken();
+      if (user && token) {
+        setLoading(true);
+        const saveSuccess = await saveCustomerData(1);
+        setLoading(false);
+
+        // If save failed, don't proceed to next step
+        if (!saveSuccess) {
+          toast({
+            variant: "error",
+            title: "Cannot Proceed",
+            description: "Failed to save data. Please try again.",
+          });
+          return;
+        }
       }
     }
 
     if (currentStep === 2) {
       // Step 2: Aadhaar & PAN Verification
+
+      // Check if Aadhaar is already verified (from user profile)
+      const isMaskedAadhaar = formData.aadhaar && formData.aadhaar.startsWith('XXXX');
+      const isAadhaarAlreadyVerified = aadhaarVerified || isMaskedAadhaar;
+
       // Aadhaar validation
       if (!formData.aadhaar) {
         setFieldErrors(prev => ({ ...prev, aadhaar: "Aadhaar number is required" }));
@@ -2973,7 +3076,7 @@ export default function QuickLoanApplication() {
           description: "Please enter your Aadhaar number.",
         });
         return;
-      } else if (!aadhaarVerified) {
+      } else if (!isAadhaarAlreadyVerified) {
         const aadhaarRegex = /^\d{12}$/;
         if (!aadhaarRegex.test(formData.aadhaar)) {
           setFieldErrors(prev => ({ ...prev, aadhaar: "Enter a valid 12-digit Aadhaar number" }));
@@ -3128,6 +3231,12 @@ export default function QuickLoanApplication() {
 
         // Store BRE data for Step 4 (Approval)
         if (breResponse && breResponse.success && breResponse.data) {
+          // Store applicationId for balance check later
+          if (breResponse.data.applicationId) {
+            localStorage.setItem('applicationMongoId', breResponse.data.applicationId);
+            console.log('✅ Stored applicationId for balance check:', breResponse.data.applicationId);
+          }
+
           setApprovalData({
             ...breResponse.data,
             // Add user details for display
@@ -3197,11 +3306,18 @@ export default function QuickLoanApplication() {
         if (response.ok && result.success) {
           console.log('✅ Loan application submitted successfully');
           console.log('📊 Response:', result);
+          console.log('🔍 result.data:', result.data);
+          console.log('🔍 result.data._id:', result.data?._id);
 
           // Store IDs from response
           if (result.data) {
             if (result.data.customerId) localStorage.setItem('userId', result.data.customerId);
-            if (result.data.applicationNumber) localStorage.setItem('applicationId', result.data.applicationNumber);
+            if (result.data._id) {
+              console.log('✅ Setting applicationId in localStorage:', result.data._id);
+              localStorage.setItem('applicationId', result.data._id);
+            } else {
+              console.warn('⚠️ No _id found in result.data');
+            }
             if (result.data.loanNumber) localStorage.setItem('loanNumber', result.data.loanNumber);
           }
 
@@ -3559,7 +3675,7 @@ export default function QuickLoanApplication() {
             // setShowAadhaarMobileModal(false);
           }}
           aadhaarMobileHash={aadhaarMobileHash}
-          customerId={user?.customerId}
+          customerId={user?.id}
           onVerified={handleAadhaarMobileVerified}
         /> */}
 
@@ -4293,6 +4409,38 @@ export default function QuickLoanApplication() {
                       )}
                     </div>
                   </div>
+
+                  {/* Loan Product Selection */}
+                  <div className="mt-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Select Loan Product *
+                    </label>
+                    <select
+                      name="productId"
+                      value={formData.productId}
+                      onChange={(e) => handleProductChange(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                      disabled={loadingProducts}
+                    >
+                      <option value="">
+                        {loadingProducts ? 'Loading products...' : 'Select a loan product'}
+                      </option>
+                      {loanProducts.map((product) => (
+                        <option key={product._id} value={product._id}>
+                          {product.productName} - {product.category}
+                        </option>
+                      ))}
+                    </select>
+                    {selectedProduct && (
+                      <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-sm text-blue-800">
+                          <span className="font-semibold">Category:</span> {selectedProduct.category} |
+                          <span className="font-semibold ml-2">Tenure:</span> {selectedProduct.category?.toLowerCase().includes('salary') ? '0 days (Pay on salary)' : '15 days'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
                     </>
                  {/* )} */}
                 </motion.div>
@@ -4375,8 +4523,11 @@ export default function QuickLoanApplication() {
                         <input
                           type="tel"
                           name="aadhaar"
-                          value={formData.aadhaar.replace(/(\d{4})(?=\d)/g, '$1 ')}
+                          value={formData.aadhaar.replace(/([X\d]{4})(?=[X\d])/g, '$1 ')}
                           onChange={(e) => {
+                            // Don't allow editing if masked (already verified)
+                            if (formData.aadhaar.startsWith('XXXX')) return;
+
                             const rawValue = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
                             const syntheticEvent = {
                               target: {
@@ -4392,13 +4543,16 @@ export default function QuickLoanApplication() {
                             }
                             if (aadhaarError) setAadhaarError("");
                           }}
-                          disabled={aadhaarVerified || aadhaarOtpSent}
+                          disabled={aadhaarVerified || aadhaarOtpSent || formData.aadhaar.startsWith('XXXX')}
                           maxLength={14}
-                          className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 disabled:cursor-not-allowed tracking-widest ${fieldErrors.aadhaar || aadhaarError ? 'border-red-500' : 'border-gray-300'
-                            }`}
+                          className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 disabled:cursor-not-allowed tracking-widest ${
+                            (aadhaarVerified || formData.aadhaar.startsWith('XXXX'))
+                              ? 'bg-green-50 border-green-300'
+                              : (fieldErrors.aadhaar || aadhaarError ? 'border-red-500' : 'border-gray-300')
+                          }`}
                           placeholder="1234 5678 9012"
                         />
-                        {!aadhaarVerified && (
+                        {!aadhaarVerified && !formData.aadhaar.startsWith('XXXX') && (
                           <button
                             type="button"
                             onClick={sendAadhaarOTP}
@@ -4408,7 +4562,7 @@ export default function QuickLoanApplication() {
                             {aadhaarVerifying ? "Sending..." : aadhaarOtpSent ? (aadhaarOtpTimer > 0 ? `Resend (${aadhaarOtpTimer}s)` : "Resend OTP") : "Verify"}
                           </button>
                         )}
-                        {aadhaarVerified && (
+                        {(aadhaarVerified || formData.aadhaar.startsWith('XXXX')) && (
                           <div className="px-6 py-3 bg-green-100 border border-green-300 rounded-lg flex items-center gap-2 whitespace-nowrap">
                             <CheckCircle className="w-5 h-5 text-green-600" />
                             <span className="text-sm font-medium text-green-700">Verified</span>
@@ -4652,7 +4806,8 @@ export default function QuickLoanApplication() {
                         <p className="text-sm text-gray-500">Application Number</p>
                         <p className="font-semibold text-gray-800">{approvalData.applicationNumber || 'N/A'}</p>
                       </div>
-                      <div className="mt-6">
+                      <div className="mt-6 space-y-4">
+                        {/* FinFactor Bank Verification Button */}
                         <button
                           onClick={async () => {
                             const token = await getToken();
@@ -4687,6 +4842,128 @@ export default function QuickLoanApplication() {
                         >
                           {ptbLoading ? (<><Loader2 className="w-5 h-5 animate-spin" />Processing...</>) : (<>Proceed to Bank<ArrowRight className="w-5 h-5" /></>)}
                         </button>
+
+                        {/* OR Divider */}
+                        <div className="flex items-center gap-4 max-w-md mx-auto">
+                          <div className="flex-1 h-px bg-gray-300"></div>
+                          <span className="text-sm text-gray-500 font-medium">OR</span>
+                          <div className="flex-1 h-px bg-gray-300"></div>
+                        </div>
+
+                        {/* Account Aggregator Button */}
+                        <div className="max-w-md mx-auto">
+                          <button
+                            onClick={async () => {
+                              try {
+                                setLoading(true);
+                                const token = await getToken();
+
+                                if (!token) {
+                                  toast({
+                                    variant: "error",
+                                    title: "Authentication Error",
+                                    description: "Please login again to continue."
+                                  });
+                                  return;
+                                }
+
+                                let applicationId = localStorage.getItem('applicationId');
+                                console.log('🔍 Account Aggregator - customerId:', user?.id);
+                                console.log('🔍 Account Aggregator - applicationId from localStorage:', applicationId);
+
+                                // If applicationId is not in localStorage, try to get from approvalData
+                                if (!applicationId && approvalData?.applicationId) {
+                                  const fromApprovalData = approvalData.applicationId;
+                                  applicationId = fromApprovalData;
+                                  console.log('✅ Using applicationId from approvalData:', fromApprovalData);
+                                  localStorage.setItem('applicationId', fromApprovalData);
+                                }
+
+                                // If still not found, try to get from API response _id if available
+                                if (!applicationId && approvalData?._id) {
+                                  const fromApprovalId = approvalData._id;
+                                  applicationId = fromApprovalId;
+                                  console.log('✅ Using _id from approvalData:', fromApprovalId);
+                                  localStorage.setItem('applicationId', fromApprovalId);
+                                }
+
+                                // Final check - if still no applicationId, show error
+                                if (!applicationId) {
+                                  console.error('❌ No applicationId found');
+                                  toast({
+                                    variant: "error",
+                                    title: "Application ID Missing",
+                                    description: "Unable to find your application. Please restart the application process."
+                                  });
+                                  setLoading(false);
+                                  return;
+                                }
+
+                                const payload = {
+                                  customerId: user?.id,
+                                  applicationId: applicationId,
+                                  callbackUrl: `${window.location.origin}/aa-callback`
+                                };
+
+                                console.log('🔍 Account Aggregator - Final payload:', payload);
+
+                                const response = await fetch(`${API_BASE_URL}/api/surepassAA/initialize`, {
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`
+                                  },
+                                  body: JSON.stringify(payload)
+                                });
+
+                                const result = await response.json();
+
+                                if (result.success && result.data?.redirectUrl) {
+                                  toast({
+                                    variant: "success",
+                                    title: "Redirecting...",
+                                    description: "Opening Account Aggregator portal"
+                                  });
+                                  window.location.href = result.data.redirectUrl;
+                                } else {
+                                  toast({
+                                    variant: "error",
+                                    title: "Failed",
+                                    description: result.message || "Unable to initialize Account Aggregator"
+                                  });
+                                }
+                              } catch (error: any) {
+                                console.error('Account Aggregator Error:', error);
+                                toast({
+                                  variant: "error",
+                                  title: "Error",
+                                  description: "Failed to connect to Account Aggregator"
+                                });
+                              } finally {
+                                setLoading(false);
+                              }
+                            }}
+                            disabled={loading}
+                            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                          >
+                            {loading ? (
+                              <>
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                                Initializing...
+                              </>
+                            ) : (
+                              <>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Connect via Account Aggregator
+                              </>
+                            )}
+                          </button>
+                          <p className="mt-2 text-xs text-center text-gray-500">
+                            Secure bank statement fetch via RBI approved Account Aggregator
+                          </p>
+                        </div>
                       </div>
                     </div>
                   ) : approvalData ? (
@@ -5032,6 +5309,105 @@ export default function QuickLoanApplication() {
                         </button>
                         <p className="mt-2 text-xs text-gray-500">
                           Click to verify your bank account details. This helps ensure smooth loan disbursement.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Account Aggregator Button */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+                    <div className="flex items-start gap-3 mb-4">
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          Fetch Bank Statement (Optional)
+                        </h3>
+                        <p className="text-sm text-gray-700 mb-4">
+                          Connect your bank via Account Aggregator to automatically fetch your bank statement.
+                          This helps in faster loan processing and approval.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              setLoading(true);
+                              const token = await getToken();
+
+                              if (!token) {
+                                toast({
+                                  variant: "error",
+                                  title: "Authentication Error",
+                                  description: "Please login again to continue."
+                                });
+                                return;
+                              }
+
+                              const payload = {
+                                customerId: user?.id,
+                                applicationId: localStorage.getItem('applicationId')
+                              };
+
+                              const response = await fetch(`${API_BASE_URL}/api/surepassAA/initialize`, {
+                                method: 'POST',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify(payload)
+                              });
+
+                              const result = await response.json();
+
+                              if (result.success && result.data?.redirectUrl) {
+                                toast({
+                                  variant: "success",
+                                  title: "Redirecting...",
+                                  description: "Opening Account Aggregator portal"
+                                });
+                                // Redirect to Account Aggregator
+                                window.location.href = result.data.redirectUrl;
+                              } else {
+                                toast({
+                                  variant: "error",
+                                  title: "Failed",
+                                  description: result.message || "Unable to initialize Account Aggregator"
+                                });
+                              }
+                            } catch (error: any) {
+                              console.error('Account Aggregator Error:', error);
+                              toast({
+                                variant: "error",
+                                title: "Error",
+                                description: "Failed to connect to Account Aggregator"
+                              });
+                            } finally {
+                              setLoading(false);
+                            }
+                          }}
+                          disabled={loading}
+                          className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                        >
+                          {loading ? (
+                            <>
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                              Initializing...
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                              </svg>
+                              Connect Bank via Account Aggregator
+                            </>
+                          )}
+                        </button>
+                        <p className="mt-3 text-xs text-gray-600 flex items-start gap-2">
+                          <Shield className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>100% secure • RBI approved • Your data is encrypted</span>
                         </p>
                       </div>
                     </div>
