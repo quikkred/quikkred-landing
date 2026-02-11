@@ -16,7 +16,7 @@ export const LOAN_CONFIG = {
     DEFAULT_AMOUNT: 10000,
 
     // Tenure Options (in days)
-    TENURE_OPTIONS: [7, 15, 30] as const,
+    TENURE_OPTIONS: [15, 30] as const, // Only 15 and 30 days loans allowed
     DEFAULT_TENURE: 15,
 
     // Fee Structure (CRITICAL - From CLAUDE.md)
@@ -155,10 +155,23 @@ export const getInitialFormData = (): QuickApplyV2FormData => ({
     ipData: null,
     bankVerified: false,
     firstName: "",
-    lastName: "", 
-    customerId:"",
+    lastName: "",
+    customerId: "",
     upiAutoPayStatus: false,
     brePulled: false,
+    breStatus: "Pending",
+    interestAmount: 0,
+    approvedLoanAmount: 0,
+    bsaInitiated: false,
+    productId: "",
+
+    interestRate: 0,
+    totalInterest: 0,
+    processingFee: 0,
+    totalRepayment: 0,
+    tenureUnit: "Days",
+    gstOnProcessingFee: 0,
+    netDisbursalAmount: 0,
 
     // Page 1
     mobile: '',
