@@ -46,6 +46,7 @@ const BankVerification = ({
     const ifscTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const loanCalc = calculateLoanDetails(formData.loanAmount, formData.tenure);
+
     const canProceed = useMemo(() => (formData.bankVerified && formData.selfieVerified), [formData]);
 
     // --- Helpers ---
@@ -413,7 +414,7 @@ const BankVerification = ({
                     <div className="bg-white rounded-lg px-4 py-2 border border-gray-200">
                         <p className="text-xs sm:text-sm text-gray-500">Your Loan Amount</p>
                         <p className="text-lg sm:text-xl font-bold text-[#25B181]">
-                            ₹{(formData?.loanAmount || 0).toLocaleString('en-IN')}
+                            ₹{(formData?.approvedLoanAmount || 0).toLocaleString('en-IN')}
                         </p>
                     </div>
                     <div className="bg-white rounded-lg px-4 py-2 border border-gray-200">
@@ -428,7 +429,7 @@ const BankVerification = ({
                     </div>
                     <div className="bg-white rounded-lg px-4 py-2 border border-gray-200">
                         <p className="text-xs sm:text-sm text-gray-500">Interest Amount</p>
-                        <p className="text-lg sm:text-xl font-bold text-gray-900">₹{((formData?.totalInterest) || 0).toLocaleString('en-IN')}</p>
+                        <p className="text-lg sm:text-xl font-bold text-gray-900">₹{(formData?.interestAmount || 0).toLocaleString('en-IN')}</p>
                     </div>
                     <div className="bg-white rounded-lg px-4 py-2 border border-gray-200">
                         <p className="text-xs sm:text-sm text-gray-500">Processing Fee</p>
@@ -449,15 +450,15 @@ const BankVerification = ({
             <div className="bg-gradient-to-r from-[#25B181]/10 to-[#51C9AF]/10 rounded-lg sm:rounded-xl p-3 sm:p-4 space-y-1.5 sm:space-y-2">
                 <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-gray-600">You&apos;ll receive (Net Disbursal Amount)</span>
-                    <span className="font-semibold text-green-600">{formatCurrency(loanCalc.netDisbursalAmount)}</span>
+                    <span className="font-semibold text-green-600">{formatCurrency(formData?.netDisbursalAmount)}</span>
                 </div>
                 <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-gray-600">Processing Fee (10% + GST)</span>
-                    <span className="text-gray-700">{formatCurrency(loanCalc.totalDeductions)}</span>
+                    <span className="text-gray-700">{formData?.processingFee + formData?.gstOnProcessingFee}</span>
                 </div>
                 <div className="flex justify-between text-xs sm:text-sm border-t pt-1.5 sm:pt-2">
                     <span className="text-gray-600">Total Repayment</span>
-                    <span className="font-semibold text-gray-900">{formatCurrency(loanCalc.totalRepayment)}</span>
+                    <span className="font-semibold text-gray-900">₹{((formData?.totalRepayment) || 0).toLocaleString('en-IN')}</span>
                 </div>
             </div>
 
@@ -481,49 +482,6 @@ const BankVerification = ({
                     </>
                 )}
             </button>
-            {/* <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                <button
-                    type='button'
-                    onClick={onBack}
-                    // disabled={submitLoading || formData.panVerified}
-                    disabled={submitLoading}
-                    className={`w-full px-3 sm:px-4 py-2 border rounded-lg font-medium text-sm flex items-center justify-center gap-1.5 active:scale-[0.98] touch-manipulation ${submitLoading
-                        ? 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50'
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                        } disabled:opacity-50`}
-                >
-                    {submitLoading ? (
-                        <Lock className="w-4 h-4" />
-                    ) : (
-                        <ArrowLeft className="w-4 h-4" />
-                    )}
-                    <span>Back</span>
-                </button>
-                {submitLoading && (
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1.5 bg-gray-800 text-white text-[10px] sm:text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                        Cannot go back after PAN verification
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800" />
-                    </div>
-                )} 
-
-                <button
-                    onClick={handleSubmit}
-                    disabled={submitLoading || !formData.bankVerified}
-                    className="w-full py-2 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-lg font-semibold text-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 active:scale-[0.98] touch-manipulation"
-                >
-                    {submitLoading ? (
-                        <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            <span className="text-sm">Submitting...</span>
-                        </>
-                    ) : (
-                        <>
-                            <span>Next</span>
-                            <ArrowRight className="w-4 h-4" />
-                        </>
-                    )}
-                </button>
-            </div> */}
         </motion.div>
     );
 }

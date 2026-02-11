@@ -19,7 +19,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import StepIndicator from './components/ui/StepIndicator';
 import Page3BankDetails from './components/BankVerification';
 import useStorage from '@/hooks/useStorage';
-import Page4Approval from './components/ApproveMandate';
+// import Page4Approval from './components/ApproveMandate';
 import { StorageApplicationForm } from '@/interfaces/storageInterface';
 import { useApplication } from '@/contexts/ApplicationContext';
 import CustomerLogin from './components/ui/CustomerLogin';
@@ -64,6 +64,15 @@ export default function QuickApplyV2Page() {
 
         // B. Handle User Data Population
         if (user || application) {
+            const rate = ((typeof application?.interestRate === "string" ? parseFloat(application?.interestRate) : (application?.interestRate || 1)) / 100) || 0.01; // 1% per day
+            const approvedLoanAmount = (typeof application?.approvedLoanAmount === "string" ? parseInt(application?.approvedLoanAmount) : application?.approvedLoanAmount) || 0;
+            const tenure = (typeof application?.tenure === "string" ? parseInt(application?.tenure) : application?.tenure) || 15;
+            const interestAmount = rate * approvedLoanAmount * tenure;
+            const processingFee = (approvedLoanAmount * 0.1) || 0;
+            const gstOnProcessingFee = (processingFee * 0.18) || 0;
+            const netDisbursal = approvedLoanAmount - (processingFee + gstOnProcessingFee);
+            const totalRepayment = approvedLoanAmount + interestAmount;
+
             setFormData((prev) => ({
                 ...prev,
                 customerId: user?.id || "",
@@ -96,14 +105,16 @@ export default function QuickApplyV2Page() {
 
                 // bre form
                 loanAmount: application?.requestedLoanAmount || 0,
+                approvedLoanAmount,
                 tenure: application?.tenure || 0,
                 tenureUnit: application?.tenureUnit || "Days",
-                netDisbursalAmount: application?.netDisbursalAmount || 0,
+                netDisbursalAmount: netDisbursal || application?.netDisbursalAmount || 0,
                 interestRate: application?.interestRate || 0,
                 totalInterest: application?.totalInterest || 0,
-                processingFee: application?.processingFee || 0,
-                totalRepayment: application?.totalRepayment || 0,
-                gstOnProcessingFee: application?.gstOnProcessingFee || 0,
+                processingFee: processingFee || application?.processingFee || 0,
+                totalRepayment: totalRepayment || application?.totalRepayment || 0,
+                gstOnProcessingFee: gstOnProcessingFee || application?.gstOnProcessingFee || 0,
+                interestAmount,
             }));
 
             // const isLogin = user?.isEmailVerified || user?.isMobileVerified;

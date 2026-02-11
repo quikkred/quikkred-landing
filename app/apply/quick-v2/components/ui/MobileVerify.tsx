@@ -125,13 +125,13 @@ const MobileVerify = () => {
     <div className="w-full">
       {/* Input Group */}
       <div className="space-y-4">
-        
+
         {/* Mobile Input Field */}
         <div className={`relative transition-all duration-300 ${otpSent ? "opacity-75" : "opacity-100"}`}>
           <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-             {otpSent ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <Phone className="w-5 h-5" />}
+            {otpSent ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <Phone className="w-5 h-5" />}
           </div>
-          
+
           <input
             type="tel"
             inputMode="numeric"
@@ -154,7 +154,7 @@ const MobileVerify = () => {
 
           {/* Edit Button (Only visible when OTP is sent) */}
           {otpSent && (
-            <button 
+            <button
               onClick={handleEditNumber}
               className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 hover:bg-gray-100 rounded-lg text-emerald-600 transition-colors"
               title="Change number"
@@ -170,9 +170,9 @@ const MobileVerify = () => {
             onClick={sendOTP}
             disabled={mobile.length !== 10 || otpLoading}
             className={`
-              w-full py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2
-              ${mobile.length === 10 
-                ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20" 
+              w-full py-3.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2
+              ${mobile.length === 10
+                ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20"
                 : "bg-gray-100 text-gray-400 cursor-not-allowed"}
             `}
           >
@@ -193,7 +193,7 @@ const MobileVerify = () => {
         {/* Phase 2: OTP Verification Area */}
         {otpSent && (
           <div className="animate-in fade-in slide-in-from-top-2 duration-300 space-y-4">
-            
+
             <div className="relative">
               <input
                 ref={otpInputRef}
@@ -209,8 +209,8 @@ const MobileVerify = () => {
                   w-full py-3 text-center text-xl tracking-[0.75em] font-bold text-gray-800
                   border-2 rounded-xl outline-none transition-all
                   placeholder:text-gray-300 placeholder:tracking-normal placeholder:font-normal placeholder:text-sm
-                  ${otpError 
-                    ? "border-red-300 bg-red-50/50 focus:border-red-500" 
+                  ${otpError
+                    ? "border-red-300 bg-red-50/50 focus:border-red-500"
                     : "border-emerald-500/30 bg-emerald-50/30 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"}
                 `}
                 placeholder="• • • • • •"
@@ -226,14 +226,14 @@ const MobileVerify = () => {
                   <span className="text-gray-400">Code expired?</span>
                 )}
               </div>
-              
+
               <button
                 onClick={sendOTP}
                 disabled={otpTimer > 0 || otpLoading}
                 className={`
                   font-semibold transition-colors
-                  ${otpTimer > 0 
-                    ? "text-gray-300 cursor-not-allowed" 
+                  ${otpTimer > 0
+                    ? "text-gray-300 cursor-not-allowed"
                     : "text-emerald-600 hover:text-emerald-700 hover:underline"}
                 `}
               >
@@ -247,7 +247,7 @@ const MobileVerify = () => {
               className={`
                 w-full py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2
                 ${otp.length === 6
-                  ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 translate-y-0" 
+                  ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 translate-y-0"
                   : "bg-gray-200 text-gray-400 cursor-not-allowed"}
               `}
             >
