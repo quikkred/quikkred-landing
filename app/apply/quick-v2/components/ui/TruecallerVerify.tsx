@@ -2,48 +2,37 @@
 
 import { useEffect, useRef, useState } from "react";
 import { toast } from "@/components/ui/toast";
-import { signIn, useSession } from "next-auth/react";
 import { v4 as uuidv4 } from "uuid";
 import { useQuickApplyTracking } from "@/lib/hooks/useQuickApplyTracking";
-import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "nextjs-toploader/app";
 
 const TruecallerVerify = ({
     callbackURL = "/user",
-    buttonText = "Truecaller"
+    buttonText = "Truecaller",
+    smButtonText = "Truecaller",
 }: {
     callbackURL?: string;
     buttonText?: string;
+    smButtonText?: string;
+    callback?: () => void;
 }) => {
     const [loading, setLoading] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
+    const [isIOS, setIsIOS] = useState(false);
 
     // Tracking
-    const {
-        trackTruecallerStarted,
-        trackTruecallerSuccess,
-        trackTruecallerFailed,
-        trackAPIError,
-    } = useQuickApplyTracking();
-    const { data: session } = useSession();
-    const { login } = useAuth();
-    const pollRef = useRef<any>(null);
+    const { trackTruecallerStarted, trackTruecallerFailed } = useQuickApplyTracking();
     const timeoutRef = useRef<any>(null);
     const router = useRouter();
 
-    // 1. Sync Session
+    // 1. Detect Platform & Mount
     useEffect(() => {
-        if (session && loading) {
-            login({ apiData: session });
-            setLoading(false);
+        setIsMounted(true);
+        // iOS Detection Regex
+        if (typeof navigator !== "undefined") {
+            const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+            setIsIOS(isIOSDevice);
         }
-    }, [session, loading, login]);
-
-    // 2. Cleanup
-    useEffect(() => {
-        return () => {
-            if (pollRef.current) clearInterval(pollRef.current);
-            if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        };
     }, []);
 
     const handleTruecallerLogin = async () => {
@@ -54,7 +43,7 @@ const TruecallerVerify = ({
         const id = uuidv4();
         const partnerKey = process.env.NEXT_PUBLIC_TRUECALLER_PARTNER_KEY || "";
 
-        // 1. PREPARE DEEP LINK
+        // 2. PREPARE DEEP LINK
         const params = new URLSearchParams({
             type: "btmsheet",
             requestNonce: id,
@@ -68,97 +57,45 @@ const TruecallerVerify = ({
             btnShape: "rounded",
             ttl: "600000",
         });
+
         const deepLink = `truecallersdk://truesdk/web_verify?${params.toString()}`;
 
-        // 2. START POLLING (IMMEDIATELY)
-        // We start this NOW so it is running before the browser freezes
-        let attempts = 0;
-        const maxAttempts = 30; // 45 seconds max
-
-        pollRef.current = setInterval(async () => {
-            attempts++;
-            try {
-                // Poll your backend to see if Truecaller sent the callback
-                const res = await fetch(`/api/truecaller?requestId=${id}`, { cache: "no-store" });
-
-                // 404 is okay initially (callback hasn't arrived yet)
-                if (res.status === 404) return;
-
-                const json = await res.json().catch(() => null);
-
-                // ... inside the polling success block ...
-                if (json?.status === "VERIFIED") {
-                    clearInterval(pollRef.current);
-                    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
-                    // 1. Set redirect: false so we get the result object back
-                    const result = await signIn("truecaller", {
-                        requestId: id,
-                        callbackUrl: callbackURL,
-                        redirect: false,
-                    });
-
-                    // 2. Check the result
-                    if (result?.ok) {
-                        // SUCCESS: Manually redirect
-                        toast({ variant: "success", title: "Success", description: "Logged in successfully!" });
-                        trackTruecallerSuccess('truecaller_verified');
-                        router.push(callbackURL);
-                        // Or: window.location.href = callbackURL; (force reload)
-                    } else {
-                        // FAIL: Show error
-                        setLoading(false);
-                        trackTruecallerFailed(result?.error || "Authentication failed");
-                        toast({
-                            variant: "error",
-                            title: "Login Failed",
-                            description: result?.error || "Authentication failed"
-                        });
-                    }
-                } else if (["FAILED", "REJECTED", "ERROR"].includes(json?.status)) {
-                    clearInterval(pollRef.current);
-                    setLoading(false);
-                    toast({ variant: "error", title: "Verification Failed", description: "User denied request." });
-                }
-            } catch (err) {
-                console.error("Polling error:", err);
-            }
-
-            if (attempts >= maxAttempts) {
-                clearInterval(pollRef.current);
-                if (loading) {
-                    setLoading(false);
-                    trackTruecallerFailed("Verification timed out.");
-                    toast({ variant: "error", title: "Timeout", description: "Verification timed out." });
-                }
-            }
-        }, 1500);
-
-        // 3. SET "APP NOT INSTALLED" TIMEOUT
+        // 3. SET "APP NOT INSTALLED" TIMEOUT (Fallback if app doesn't open)
         const startTimestamp = Date.now();
         timeoutRef.current = setTimeout(() => {
-            // If document is focused after 2.5s, app probably didn't open
+            // If document is still focused after 2.5s, app probably didn't open
             if (document.hasFocus() && (Date.now() - startTimestamp < 3500)) {
                 setLoading(false);
-                if (pollRef.current) clearInterval(pollRef.current);
+                trackTruecallerFailed("Truecaller app not installed");
                 toast({
                     variant: "error",
                     title: "Truecaller Not Found",
-                    description: "Truecaller app not installed or blocked."
+                    description: "Truecaller app not installed or blocked.",
                 });
             }
         }, 2500);
 
-        // 4. TRIGGER THE DEEP LINK (DELAYED SLIGHTLY)
-        // Small delay ensures the intervals above are registered in the event loop
+        // 4. TRIGGER THE DEEP LINK
+        window.location.href = deepLink;
+
+        // 5. REDIRECT LOGIC
+        // Wait slightly to allow the app to open. If the document loses focus (app opened),
+        // we redirect the user to the /verify-truecaller page to handle the polling UI.
         setTimeout(() => {
-            window.location.href = deepLink;
-        }, 100);
+            if (!document.hasFocus()) {
+                // The user successfully left the browser to go to Truecaller app.
+                // Redirect them to the verification page to see the progress.
+                router.push(`/verify-truecaller?requestNonce=${id}&callback=${callbackURL}`);
+            }
+        }, 800);
     };
 
     const TruecallerIcon = () => (
         <img src="/truecaller-logo.png" alt="Truecaller" className="w-5 h-5 sm:w-6 sm:h-6 rounded" />
     );
+
+    // If not mounted or IS iOS, do not render the button
+    if (!isMounted || isIOS) return null;
 
     return (
         <button
@@ -170,12 +107,13 @@ const TruecallerVerify = ({
             {loading ? (
                 <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-[#0066FF] border-t-transparent rounded-full animate-spin" />
-                    <span className="text-xs text-gray-500">Waiting for App...</span>
+                    <span className="text-xs text-gray-500">Opening App...</span>
                 </div>
             ) : (
                 <>
                     <TruecallerIcon />
                     <span className="hidden sm:inline-block">{buttonText}</span>
+                    <span className="inline-block sm:hidden">{smButtonText}</span>
                 </>
             )}
         </button>
