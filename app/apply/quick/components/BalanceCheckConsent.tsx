@@ -104,92 +104,92 @@ export default function BalanceCheckConsent({
         }
     };
 
-    // const handleProcessBalanceCheck = async () => {
-    //     setProcessing(true);
-    //     setError('');
-    //     setProcessingStage('Fetching bank statements...');
+    const handleProcessBalanceCheck = async () => {
+        setProcessing(true);
+        setError('');
+        setProcessingStage('Fetching bank statements...');
 
-    //     try {
-    //         const token = await getToken();
-    //         if (!token) {
-    //             setError('Please login again to continue.');
-    //             setProcessing(false);
-    //             return;
-    //         }
+        try {
+            const token = await getToken();
+            if (!token) {
+                setError('Please login again to continue.');
+                setProcessing(false);
+                return;
+            }
 
-    //         if (!formData.applicationId) {
-    //             setError('Application ID not found. Please try again.');
-    //             setProcessing(false);
-    //             return;
-    //         }
+            if (!formData.applicationId) {
+                setError('Application ID not found. Please try again.');
+                setProcessing(false);
+                return;
+            }
 
-    //         // Update processing stages
-    //         const stages = [
-    //             'Fetching bank statements...',
-    //             'Analyzing transactions...',
-    //             'Calculating income patterns...',
-    //             'Running credit assessment...',
-    //             'Finalizing decision...'
-    //         ];
+            // Update processing stages
+            const stages = [
+                'Fetching bank statements...',
+                'Analyzing transactions...',
+                'Calculating income patterns...',
+                'Running credit assessment...',
+                'Finalizing decision...'
+            ];
 
-    //         let stageIndex = 0;
-    //         const stageInterval = setInterval(() => {
-    //             if (stageIndex < stages.length - 1) {
-    //                 stageIndex++;
-    //                 setProcessingStage(stages[stageIndex]);
-    //             }
-    //         }, 12000); // Change stage every 12 seconds
+            let stageIndex = 0;
+            const stageInterval = setInterval(() => {
+                if (stageIndex < stages.length - 1) {
+                    stageIndex++;
+                    setProcessingStage(stages[stageIndex]);
+                }
+            }, 12000); // Change stage every 12 seconds
 
-    //         // Trigger complete balance check flow (consent → batch → result → BRE)
-    //         const response = await fetch(`${API_BASE_URL}/api/balance-check/complete`, {
-    //             method: 'POST',
-    //             headers: {
-    //                 'Authorization': `Bearer ${token}`,
-    //                 'Content-Type': 'application/json'
-    //             },
-    //             body: JSON.stringify({
-    //                 applicationId: formData.applicationId
-    //             })
-    //         });
+            // Trigger complete balance check flow (consent → batch → result → BRE)
+            const response = await fetch(`${API_BASE_URL}/api/balance-check/complete`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    applicationId: formData.applicationId
+                })
+            });
 
-    //         clearInterval(stageInterval);
+            clearInterval(stageInterval);
 
-    //         const result = await response.json();
+            const result = await response.json();
 
-    //         if (response.ok && result.success) {
-    //             // BRE completed with BSA data
-    //             const status = result.data?.status || 'APPROVED';
-    //             const decision = result.data;
+            if (response.ok && result.success) {
+                // BRE completed with BSA data
+                const status = result.data?.status || 'APPROVED';
+                const decision = result.data;
 
-    //             setBreDecision(decision);
-    //             setFormData(prev => ({
-    //                 ...prev,
-    //                 balanceCheckComplete: true,
-    //                 balanceCheckStatus: 'COMPLETED',
-    //                 breStatus: status,
-    //                 brePulled: true
-    //             }));
+                setBreDecision(decision);
+                setFormData(prev => ({
+                    ...prev,
+                    balanceCheckComplete: true,
+                    balanceCheckStatus: 'COMPLETED',
+                    breStatus: status,
+                    brePulled: true
+                }));
 
-    //             trackStepCompleted(2, 'Balance Check Consent - Complete');
+                trackStepCompleted(2, 'Balance Check Consent - Complete');
 
-    //             // Auto-advance to next step after showing result
-    //             setTimeout(() => {
-    //                 if (status === 'Approve') {
-    //                     onNext();
-    //                 }
-    //             }, 2000);
-    //         } else {
-    //             setError(result.message || 'Balance check failed. Please try again.');
-    //             trackAPIError('/api/balance-check/complete', result.message);
-    //         }
-    //     } catch (err: any) {
-    //         const errorMsg = err?.message || 'Network error. Please try again.';
-    //         setError(errorMsg);
-    //         trackAPIError('/api/balance-check/complete', errorMsg);
-    //     } finally {
-    //         setProcessing(false);
-    //     }
-    // };
+                // Auto-advance to next step after showing result
+                setTimeout(() => {
+                    if (status === 'Approve') {
+                        onNext();
+                    }
+                }, 2000);
+            } else {
+                setError(result.message || 'Balance check failed. Please try again.');
+                trackAPIError('/api/balance-check/complete', result.message);
+            }
+        } catch (err: any) {
+            const errorMsg = err?.message || 'Network error. Please try again.';
+            setError(errorMsg);
+            trackAPIError('/api/balance-check/complete', errorMsg);
+        } finally {
+            setProcessing(false);
+        }
+    };
 
     return (
         <motion.div
