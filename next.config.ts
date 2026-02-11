@@ -103,15 +103,26 @@ devIndicators: false,
     webpackBuildWorker: true,
   },
 
-  // Turbopack configuration (required in Next.js 16)
-  turbopack: {
-    // Empty config to silence webpack/turbopack conflict warning
-    // TensorFlow.js should work with Turbopack in client components
-  },
-
   // Optimize output
   poweredByHeader: false,
   compress: true,
+
+  // Bundle analyzer (optional - uncomment to analyze)
+  // webpack: (config, { isServer }) => {
+  //   if (!isServer) {
+  //     config.optimization.splitChunks.cacheGroups = {
+  //       default: false,
+  //       vendors: false,
+  //       lib: {
+  //         test: /[\/]node_modules[\/]/,
+  //         name: 'vendor',
+  //         chunks: 'all',
+  //         priority: 10,
+  //       },
+  //     };
+  //   }
+  //   return config;
+  // },
 };
 
 export default nextConfig;

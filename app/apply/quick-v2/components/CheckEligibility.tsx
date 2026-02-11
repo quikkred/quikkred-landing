@@ -82,6 +82,9 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
                     data: result.data
                 });
                 toast({ variant: "success", title: "Success", description: "Analysis completed." });
+                // Clean up URL params
+                const cleanUrl = window.location.pathname;
+                window.history.replaceState({}, '', cleanUrl);
             } else {
                 throw new Error(result.message || "Analysis failed");
             }
@@ -303,8 +306,8 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
             />
             <h2 className="text-lg sm:text-xl font-bold text-gray-900">Get Instant Cash</h2>
 
-            <PanVerify formData={formData} setFormData={setFormData} />
             <AadhaarVerify formData={formData} setFormData={setFormData} />
+            <PanVerify formData={formData} setFormData={setFormData} />
             <MissingField formData={formData} setFormData={setFormData} />
             <EmployeeDetails formData={formData} setFormData={setFormData} />
 

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -5,8 +6,17 @@ import { motion } from "framer-motion";
 import { CheckCircle2, Download, Home, ArrowRight, IndianRupee, Clock, CalendarDays, Building2, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useApplication } from "@/contexts/ApplicationContext";
+import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
 
-const ApplicationSuccess = () => {
+
+interface ApplicationSuccessProps {
+    formData: QuickApplyV2FormData;
+    setFormData: React.Dispatch<React.SetStateAction<QuickApplyV2FormData>>;
+}
+
+const ApplicationSuccess = ({
+    formData,
+}: ApplicationSuccessProps) => {
     const { application } = useApplication();
     // Helper to format currency
     const formatCurrency = (amount: number | null | undefined) => {
@@ -69,7 +79,7 @@ const ApplicationSuccess = () => {
                         <div className="text-center border-b border-gray-100 pb-4 mb-4">
                             <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Approved Loan Amount</p>
                             <div className="text-3xl font-extrabold text-emerald-600 flex items-center justify-center">
-                                {formatCurrency(application?.approvedLoanAmount || application?.breApprovedLoanAmount)}
+                                {formatCurrency(formData?.approvedLoanAmount)}
                             </div>
                         </div>
 
@@ -77,23 +87,40 @@ const ApplicationSuccess = () => {
                             <DetailRow
                                 icon={<CalendarDays className="w-3.5 h-3.5" />}
                                 label="Tenure"
-                                value={`${application?.tenure} ${application?.tenureUnit}`}
+                                value={`${formData?.tenure} ${formData?.tenureUnit}`}
                             />
                             <DetailRow
                                 icon={<Wallet className="w-3.5 h-3.5" />}
-                                label="EMI Amount"
-                                value={formatCurrency(application?.emiAmount)}
+                                label="Total Repayment"
+                                value={formatCurrency(formData?.totalRepayment)}
                             />
                             <DetailRow
                                 icon={<IndianRupee className="w-3.5 h-3.5" />}
                                 label="Processing Fee"
-                                value={formatCurrency(application?.processingFee)}
+                                value={formatCurrency(formData?.processingFee)}
+                            />
+                            <DetailRow
+                                icon={<IndianRupee className="w-3.5 h-3.5" />}
+                                label="GST on Processing Fee"
+                                value={formatCurrency(formData?.gstOnProcessingFee)}
                             />
                             <DetailRow
                                 icon={<Clock className="w-3.5 h-3.5" />}
                                 label="Interest Rate"
-                                value={`${application?.interestRate}% p.a`}
+                                value={`${formData?.interestRate}% p.a`}
                             />
+                            <DetailRow
+                                icon={<IndianRupee className="w-3.5 h-3.5" />}
+                                label="Interest Amount"
+                                value={formatCurrency(formData?.interestAmount)}
+                            />
+                        </div>
+                        <div className="w-full h-[1px] bg-gray-100 my-3" />
+                        <div className="text-center">
+                            <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">You&apos;ll receive (Net Disbursal Amount)</p>
+                            <div className="text-2xl font-extrabold text-emerald-600 flex items-center justify-center">
+                                {formatCurrency(formData?.netDisbursalAmount)}
+                            </div>
                         </div>
                     </div>
                 </div>

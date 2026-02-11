@@ -9,7 +9,7 @@ import ResultView from "./ResultView";
 
 const StatusGuard = () => {
     const { visibility, loading, status, title, description, data, updateVisibility, onSuccess, onFailure } = useKycStatus();
-    
+
     // 2. Add mounted state to prevent SSR hydration mismatches
     const [mounted, setMounted] = useState(false);
 
@@ -73,7 +73,7 @@ const StatusGuard = () => {
     return createPortal(
         <AnimatePresence>
             {visibility && (
-                <div 
+                <div
                     className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6"
                     // Failsafe: ensure pointer events work
                     style={{ pointerEvents: 'auto' }}

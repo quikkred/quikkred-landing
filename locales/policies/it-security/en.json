@@ -1,64 +1,195 @@
 {
   "title": "IT Security Policy",
   "subtitle": "Protecting Your Digital Assets",
-  "introduction": "QuikkRed is committed to maintaining the highest standards of information security to protect customer data and ensure the integrity of our digital lending platform.",
-  "dataProtection": {
-    "title": "Data Protection Measures",
-    "description": "We implement industry-leading security measures to protect your personal and financial information.",
-    "items": [
-      "256-bit SSL encryption for all data transmissions",
-      "Multi-factor authentication for user accounts",
-      "Regular security audits and penetration testing",
-      "Data encryption at rest and in transit",
-      "Secure data centers with 24/7 monitoring"
-    ]
-  },
-  "accessControl": {
-    "title": "Access Control",
-    "description": "Strict access controls ensure that only authorized personnel can access sensitive information.",
-    "items": [
-      "Role-based access control (RBAC)",
-      "Principle of least privilege",
-      "Regular access reviews and audit trails",
-      "Biometric authentication for critical systems"
-    ]
-  },
-  "incidentResponse": {
-    "title": "Incident Response",
-    "description": "We have a comprehensive incident response plan to quickly address any security breaches.",
-    "items": [
-      "24/7 security monitoring and alerting",
-      "Immediate incident containment procedures",
-      "Customer notification within 72 hours of a breach",
-      "Regular incident response drills and updates"
-    ]
-  },
-  "compliance": {
-    "title": "Regulatory Compliance",
-    "description": "Our IT security practices comply with all relevant regulations and standards.",
-    "items": [
-      "RBI Guidelines on IT Security",
-      "Information Technology Act, 2000",
-      "Personal Data Protection regulations",
-      "ISO 27001 standards"
-    ]
-  },
-  "customerResponsibilities": {
-    "title": "Customer Responsibilities",
-    "description": "Help us keep your account secure by following these best practices:",
-    "items": [
-      "Never share your login credentials",
-      "Use strong, unique passwords",
-      "Enable two-factor authentication",
-      "Report suspicious activities immediately",
-      "Keep your contact information updated"
-    ]
-  },
-  "reportingIncidents": {
-    "title": "Reporting Security Incidents",
-    "description": "If you notice any suspicious activity or security concerns, please report immediately to:",
-    "email": "security@quikkred.in",
-    "phone": "+91-9311913854"
-  },
-  "footerNote": "This policy is reviewed and updated annually to ensure continued effectiveness."
+  "effectiveDateLabel": "Effective Date",
+  "effectiveDate": "January 1, 2026",
+  "sections": [
+    {
+      "introduction": {
+        "title": "1. Introduction and Scope",
+        "content": "This policy sets out the rules and guidelines for the secure and appropriate use of QuikkRed's Information Technology (IT) resources. It applies to all employees, contractors, vendors, and any third parties who have access to QuikkRed's IT infrastructure, systems, applications, and data.",
+        "objectiveLabel": "Objective:",
+        "objective": "To protect QuikkRed's sensitive data, systems, and assets from unauthorized access, misuse, disclosure, disruption, modification, or destruction, while ensuring compliance with applicable laws and regulatory requirements including RBI guidelines for NBFCs."
+      }
+    },
+    {
+      "securityManagement": [
+        {
+          "title": "2. Information Security Management",
+          "dataClassification": {
+            "title": "2.1 Data Classification",
+            "intro": "All data handled by QuikkRed shall be classified into the following categories:",
+            "items": [
+              {
+                "label": "Confidential",
+                "description": "Highly sensitive financial, customer (KYC, transactional), or proprietary business data. Access restricted to authorized personnel only."
+              },
+              {
+                "label": "Internal",
+                "description": "Operational data, non-public communications, internal policies, and procedures. Accessible to employees on a need-to-know basis."
+              },
+              {
+                "label": "Public",
+                "description": "Information intended for general release, such as marketing materials, press releases, and publicly available policies."
+              }
+            ]
+          }
+        },
+        {
+          "accessControl": {
+            "title": "2.2 Access Control",
+            "items": [
+              {
+                "label": "Principle of Least Privilege",
+                "description": "Users shall be granted the minimum level of access necessary to perform their job functions."
+              },
+              {
+                "label": "User Authentication",
+                "description": "All users must authenticate using unique credentials before accessing company systems."
+              },
+              {
+                "label": "Strong Passwords",
+                "description": "Passwords must be at least 12 characters long, contain a mix of uppercase, lowercase, numbers, and special characters, and be changed every 90 days."
+              },
+              {
+                "label": "Multi-Factor Authentication (MFA)",
+                "description": "MFA is mandatory for accessing critical systems, remote access, and administrative functions."
+              }
+            ]
+          }
+        },
+        {
+          "encryption": {
+            "items": [
+              "All confidential customer data must be encrypted both in transit (using TLS 1.2 or higher) and at rest (using AES-256 encryption).",
+              "Laptop hard drives storing confidential data must use full-disk encryption.",
+              "Encryption keys must be stored securely and managed through a centralized key management system."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "acceptableUse": {
+        "generalUsage": {
+          "intro": "Company IT resources are provided primarily for business purposes. Limited personal use is permitted provided it does not:",
+          "items": [
+            "Interfere with work performance or productivity",
+            "Consume excessive network bandwidth",
+            "Violate any company policies or applicable laws",
+            "Compromise system security or integrity"
+          ]
+        },
+        "software": {
+          "items": [
+            "Only licensed and authorized software approved by the IT Department may be installed on company devices.",
+            "Users are prohibited from downloading, installing, or using pirated, unlicensed, or unauthorized software.",
+            "All software must be kept updated with the latest security patches."
+          ]
+        },
+        "emailInternet": {
+          "title": "3.3 Email and Internet",
+          "items": [
+            "Company email is for professional use. Users must not use company email for personal business, chain letters, or spam.",
+            "Users must exercise caution when opening email attachments or clicking links from unknown sources to prevent phishing and malware attacks.",
+            "Access to inappropriate, offensive, or non-work-related websites is prohibited."
+          ]
+        }
+      }
+    },
+    {
+      "remoteAccess": [
+        {
+          "title": "4. Remote Access and Mobile Device Management (MDM)"
+        },
+        {
+          "vpn": {
+            "title": "4.1 Remote Access (VPN)",
+            "items": [
+              "All remote access to QuikkRed's internal network must be conducted via a secure Virtual Private Network (VPN) connection.",
+              "VPN access requires multi-factor authentication and is subject to logging and monitoring.",
+              "Users must ensure their home networks are secure and not use public Wi-Fi for accessing sensitive company data."
+            ]
+          }
+        },
+        {
+          "byod": {
+            "title": "4.2 Bring Your Own Device (BYOD)",
+            "items": [
+              "Personal devices used for work purposes must be registered with and governed by the Mobile Device Management (MDM) solution.",
+              "BYOD devices must have up-to-date antivirus software, screen lock enabled, and encryption activated.",
+              "QuikkRed reserves the right to remotely wipe company data from personal devices in case of loss, theft, or employment termination."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "incidentManagement": {
+        "response": {
+          "title": "5.1 Security Incident Response",
+          "items": [
+            "All security incidents must be reported immediately to the IT Security team and formally documented.",
+            "The Incident Response Team will investigate, contain, eradicate, and recover from security incidents following established procedures.",
+            "Post-incident reviews will be conducted to identify root causes and implement preventive measures."
+          ]
+        },
+        "backup": {
+          "title": "5.2 Data Backup",
+          "items": [
+            "Critical business data must be backed up daily to secure, off-site locations.",
+            "Backup integrity must be verified regularly through restoration tests.",
+            "Backup data must be encrypted and access-controlled."
+          ]
+        },
+        "disasterRecovery": {
+          "title": "5.3 Disaster Recovery (DR)",
+          "items": [
+            "A comprehensive Disaster Recovery Plan (DRP) shall be maintained and documented.",
+            "The Disaster Recovery Plan must be tested at least once every six months through tabletop exercises or full-scale drills.",
+            "Recovery Time Objective (RTO) and Recovery Point Objective (RPO) shall be defined for critical systems."
+          ]
+        }
+      }
+    },
+    {
+      "roles": {
+        "title": "6. Roles and Responsibilities",
+        "cisco": {
+          "label": "Chief Information Security Officer (CISO)",
+          "name": "Mr. Rohan Verma",
+          "emailLabel": "Contact Email",
+          "email": "ciso@quikkred.com"
+        },
+        "table": {
+          "roleHeader": "Role",
+          "responsibilitiesHeader": "Responsibilities",
+          "rows": [
+            {
+              "role": "All Users",
+              "responsibilities": "Comply with this policy and all related security procedures. Report any security incidents or suspicious activities immediately. Protect credentials and not share passwords. Complete mandatory security awareness training."
+            },
+            {
+              "role": "IT Department",
+              "responsibilities": "Implement and maintain technical security controls. Manage user access and authentication systems. Monitor systems for security threats. Conduct regular security assessments and vulnerability scans. Maintain and test backup and disaster recovery systems."
+            },
+            {
+              "role": "Chief Information Security Officer (CISO)",
+              "responsibilities": "Develop and maintain information security policies and procedures. Oversee the implementation of security controls across the organization. Report to the Board on security posture and incidents. Ensure compliance with regulatory requirements. Lead security incident response and investigations."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "compliance": {
+        "title": "7. Policy Review and Compliance",
+        "items": [
+          "This policy shall be reviewed annually or whenever there are significant changes to the IT environment, regulatory requirements, or business operations.",
+          "Violations of this policy may result in disciplinary action, up to and including termination of employment.",
+          "All employees must acknowledge receipt and understanding of this policy upon joining and annually thereafter."
+        ]
+      }
+    }
+  ]
 }

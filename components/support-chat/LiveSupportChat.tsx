@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { API_BASE_URL } from '@/lib/config';
 import getToken from '@/lib/getToken';
+import ChatPortal from './ChatPortal';
 
 interface SupportAgent {
   id: string;
@@ -86,7 +87,7 @@ export default function LiveSupportChat({
   const [inputValue, setInputValue] = useState('');
   const [isAgentTyping, setIsAgentTyping] = useState(false);
   const [hasUnread, setHasUnread] = useState(false);
-  const [conversationHistory, setConversationHistory] = useState<{role: string, content: string}[]>([]);
+  const [conversationHistory, setConversationHistory] = useState<{ role: string, content: string }[]>([]);
   const [isMobile, setIsMobile] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
@@ -336,30 +337,32 @@ export default function LiveSupportChat({
   return (
     <>
       {/* Chat Button - Responsive positioning */}
-      <motion.button
-        onClick={toggleChat}
-        className={`fixed z-50 bg-gradient-to-r from-[#25B181] to-[#1F8F68] rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-shadow
+      <ChatPortal>
+        <motion.button
+          onClick={toggleChat}
+          className={`fixed z-50 bg-gradient-to-r from-[#25B181] to-[#1F8F68] rounded-full shadow-lg flex items-center justify-center hover:shadow-xl transition-shadow
           ${isMobile
-            ? 'bottom-4 right-4 w-12 h-12'
-            : 'bottom-6 right-6 w-14 h-14'
-          }
+              ? 'bottom-4 right-4 w-12 h-12'
+              : 'bottom-6 right-6 w-14 h-14'
+            }
           ${isOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'}
         `}
-        style={{
-          paddingBottom: isMobile ? 'env(safe-area-inset-bottom, 0px)' : '0',
-          transition: 'transform 0.2s, opacity 0.2s'
-        }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        aria-label="Open support chat"
-      >
-        <MessageCircle className={`text-white ${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />
-        {hasUnread && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
-            <span className="text-white text-xs font-bold">!</span>
-          </span>
-        )}
-      </motion.button>
+          style={{
+            paddingBottom: isMobile ? 'env(safe-area-inset-bottom, 0px)' : '0',
+            transition: 'transform 0.2s, opacity 0.2s'
+          }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          aria-label="Open support chat"
+        >
+          <MessageCircle className={`text-white ${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />
+          {hasUnread && (
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+              <span className="text-white text-xs font-bold">!</span>
+            </span>
+          )}
+        </motion.button>
+      </ChatPortal>
 
       {/* Chat Window - Full screen on mobile, floating on desktop */}
       <AnimatePresence>
@@ -454,11 +457,10 @@ export default function LiveSupportChat({
                           <p className="text-xs text-gray-500 mb-1 ml-1">{message.agentName}</p>
                         )}
                         <div
-                          className={`rounded-2xl px-4 py-3 ${
-                            message.sender === 'user'
+                          className={`rounded-2xl px-4 py-3 ${message.sender === 'user'
                               ? 'bg-gradient-to-r from-[#25B181] to-[#1F8F68] text-white rounded-br-md'
                               : 'bg-white text-gray-800 shadow-sm border border-gray-100 rounded-bl-md'
-                          }`}
+                            }`}
                         >
                           <p className={`leading-relaxed whitespace-pre-wrap ${isMobile ? 'text-[15px]' : 'text-sm'}`}>
                             {message.content}
