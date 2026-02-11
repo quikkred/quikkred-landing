@@ -54,9 +54,13 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
             if ((response.status === 200 || response.status === 201) && result.data?.isAadhaarVerify === true) {
                 console.log('✅ Aadhaar verified successfully from status API');
                 console.log('📝 Backend has updated isAadhaarVerify = true in database');
+                const user = await fetchUserData();
+
                 setFormData((prev) => ({
                     ...prev,
                     aadhaarVerified: true,
+                    fullName: user?.fullName || prev.fullName,
+                    dob: user?.dateOfBirth || prev.dob,
                 }));
                 toast({
                     variant: "success",
