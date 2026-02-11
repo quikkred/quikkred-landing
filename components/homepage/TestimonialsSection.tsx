@@ -104,7 +104,7 @@ const testimonialsData: Testimonial[] = [
     videoUrl: "/videos/shubham khanna.mp4",
     thumbnail: "/videos/shubham-thumb.jpg",  
     duration: "09sec",
-    title: "This time I'm getting a higher loan , Quikkred has my trust.!",
+    title: "This time I'm getting a higher loan , Quikkred has my trust.",
   },
 
  {
@@ -124,19 +124,19 @@ const testimonialsData: Testimonial[] = [
   title: "Fast service and very supportive team. Good experience.",
 },
 
-  // {
-  //   type: "text",
-  //   id: "5",
-  //   name: "Vikram Singh",
-  //   location: "Lucknow, UP",
-  //   image: "https://randomuser.me/api/portraits/men/55.jpg",
-  //   rating: 5,
-  //   loanAmount: "4,00,000",
-  //   loanType: "Business Loan",
-  //   date: "Dec 2024",
-  //   content:
-  //     "Needed loan for my shop. Bank rejected but Quikkred approved in 24 hours. Interest rate is also reasonable.",
-  // },
+  {
+    type: "text",
+    id: "6",
+    name: "Amrit Singh ",
+    location: "Lucknow, UP",
+    // image: "https://randomuser.me/api/portraits/men/55.jpg",
+    rating: 5,
+    loanAmount: "4,00,000",
+    loanType: "Business Loan",
+    date: "Dec 2024",
+    content:
+      "Best loan service.",
+  },
   // {
   //   type: "text",
   //   id: "6",
