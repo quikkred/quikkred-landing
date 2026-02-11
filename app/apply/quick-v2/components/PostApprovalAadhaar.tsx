@@ -289,11 +289,29 @@ export default function PostApprovalAadhaar({
                     dob: prev.dob || aadhaarInfo.dob,
                 }));
 
+                // ============================================
+                // PHASE 1-4: Handle Validation Results
+                // ============================================
+                if (data.data?.contactValidation) {
+                    console.log('📱 Contact Validation:', data.data.contactValidation);
+                }
+                if (data.data?.duplicateCheck?.isDuplicate) {
+                    console.log('🚨 Duplicate Aadhaar:', data.data.duplicateCheck);
+                }
+                if (data.data?.photoValidation?.photoUploaded) {
+                    console.log('📸 Photo uploaded:', data.data.photoValidation.photoUrl);
+                }
+                if (data.data?.addressValidation?.addressExtracted) {
+                    console.log('🏠 Address validation:', data.data.addressValidation);
+                }
+
                 // Track success
                 trackAadhaarVerifySuccess();
                 aadhaarFriction.completeTracking(true);
                 trackStepCompleted(5, 'Aadhaar Verification', {
                     maskedAadhaar: aadhaarInfo.maskedAadhaar,
+                    contactMatches: data.data?.contactValidation?.contactMatchesAadhaar,
+                    isDuplicate: data.data?.duplicateCheck?.isDuplicate,
                 });
 
                 setTimeout(() => onNext(), 1500);

@@ -1,0 +1,56 @@
+{
+  "hero": {
+    "title": "Disclaimer and Disclosure",
+    "subtitle": "Important Information for Our Users"
+  },
+  "documentDetails": {
+    "title": "Document Details",
+    "fields": {
+      "titleLabel": "Title:",
+      "titleValue": "Disclaimer and Disclosure",
+      "classificationLabel": "Classification:",
+      "classificationValue": "Public",
+      "effectiveDateLabel": "Effective Date:",
+      "effectiveDateValue": "1st April 2025",
+      "approvedByLabel": "Approved by:",
+      "approvedByValue": "Board of Directors"
+    }
+  },
+  "disclaimerSection": {
+    "title": "Disclaimer",
+    "paragraphs": [
+      "We would like to bring to notice, to all those availing of our services that we are an authentic loan providing organization with imperative assent from the RBI to disburse loans to eligible clients.",
+      "It has come to our attention that imposters and deceitful individuals are impersonating us through illicit means and demanding elicit fee charges with the bogus guarantee of giving them loans."
+    ],
+    "warning": {
+      "label": "Warning:",
+      "textBefore": "We strongly reprimand this fake and deceitful impersonation and hereby alert the general public that",
+      "textBold": "we do not charge any upfront fees against our loans.",
+      "textAfter": "Anyone claiming to do so is not part of our organization."
+    }
+  },
+  "disclosureSection": {
+    "title": "Disclosure",
+    "paragraph": "We have noticed that some malicious individuals have started creating fake entities because of some illegal practices. Please report any such activities to your jurisdiction as soon as possible.",
+    "securityNotice": {
+      "textBefore": "At",
+      "textBold": [
+        "Quikkred,",
+        "not to share OTP/password with anyone,"
+      ],
+      "textAfter": [
+        "we advise the public, prospects, and customers",
+        "including Quikkred staff."
+      ]
+    },
+    "liabilityNotice": {
+      "label": "Please note:",
+      "text": "Anyone dealing with scammers does so at their own risk and responsibility. Quikkred takes no responsibility for the losses suffered."
+    }
+  },
+  "boardApproval": {
+    "title": "Board Approval",
+    "approvedByLabel": "Approved by:",
+    "approvedByText": "Board of Directors, Satsai Finlease Private Limited"
+  }
+}

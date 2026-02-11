@@ -22,6 +22,7 @@ export interface QuickApplyV2FormData {
     state: string;
     productId?: string; // Loan product ID
     loanAmount: number;
+    approvedLoanAmount: number;
     tenure: number; // in days: 7, 15, 30
     employmentType: 'SALARIED' | 'SELF-EMPLOYED';
     monthlyIncome: string;
@@ -37,6 +38,7 @@ export interface QuickApplyV2FormData {
     totalInterest: number,
     processingFee: number,
     totalRepayment: number,
+    interestAmount: number;
 
     // Page 2: PAN & Bank
     pan: string;
@@ -67,6 +69,12 @@ export interface QuickApplyV2FormData {
     selfieData: SelfieData | null;
     eSignCompleted: boolean;
     bsaInitiated?: boolean; // Bank Statement Analysis initiated
+
+    // Balance Check (AA Consent + BSA)
+    applicationId?: string; // Application ID after submission
+    balanceCheckComplete?: boolean; // Balance check flow completed
+    balanceCheckStatus?: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+    finfactorConsent?: boolean; // FinFactor AA consent given
 
     // References (Post-Approval)
     reference1Name: string;

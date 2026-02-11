@@ -24,7 +24,7 @@ interface ConditionalLayoutProps {
 }
 
 // Only keep the exceptions here
-const FULL_SCREEN_ROUTES = ['/select-language', '/apply/quick', '/apply/loan', '/aa/', '/authorize-mandate', '/gfin'];
+const FULL_SCREEN_ROUTES = ['/select-language', '/apply/quick', '/apply/loan'];
 
 const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
   const pathname = usePathname();

@@ -1,0 +1,352 @@
+{
+  "title": [
+    "Settlement",
+    "Write-off Policy"
+  ],
+  "subtitle": [
+    "Comprehensive Policy on Settlements",
+    "Write-offs"
+  ],
+  "company": "Satsai Finlease Pvt. Ltd.",
+  "content": "This policy was approved by the Board of Directors in the Board Meeting held on 21st April 2025.)",
+  "heading": [
+    "1. Preamble",
+    "2. Purpose of the Policy",
+    "3. Definitions",
+    "4. Eligibility Framework for Settlements",
+    "5. Technical Write-Off Policy",
+    "6. Determination of Settlement Amount",
+    "7. Delegation of Authority (RBI Mandatory Requirement)",
+    "8. Detailed Settlement Workflow",
+    "9. Fresh Loan Eligibility for Settlement and Write-off Accounts",
+    "10. Accounting Treatment",
+    [
+      "11. Monitoring, Audit",
+      "Reporting"
+    ],
+    "12. Review of Policy",
+    "13. Effective Date"
+  ],
+  "sections": {
+    "preamble": {
+      "companyName": "Satsai Finlease Private Limited",
+      "alias": "the Company",
+      "registration": {
+        "type": "a Non-Banking Financial Company (Base Layer) registered with the",
+        "regulator": "Reserve Bank of India (RBI),"
+      },
+      "content": [
+        "provides unsecured payday loans, personal loans, EMI-based loans, Loan Against Property (LAP), and corporate/business loans. The Company",
+        "s primary objective is to maintain healthy asset quality while ensuring recovery actions are cost-effective, compliant, transparent and consistent with RBI regulations."
+      ]
+    },
+    "purposeOfPolicy": {
+      "start": "This Policy has been formulated to:",
+      "items": [
+        "Provide a standardised, transparent, and fair mechanism for compromise settlements, loan settlements, and technical write-offs.",
+        [
+          "Ensure full compliance with the RBI",
+          "s Framework for Compromise Settlements",
+          "Technical Write-offs (June 08, 2023)."
+        ],
+        "Define detailed processes, documentation, approval authorities, due diligence steps, internal controls, and reporting requirements.",
+        "Establish clear principles for determining settlement amounts, security valuation, hardship verification, and recovery options.",
+        "Prevent misuse, arbitrary waivers, conflicts of interest, and coercive recovery practices.",
+        "Ensure settlements maximize recoveries at minimum cost.",
+        [
+          "Ensure prudential accounting",
+          "provisioning norms are followed while writing off assets."
+        ]
+      ]
+    },
+    "definitions": [
+      {
+        "title": [
+          "3.1 Compromise Settlement",
+          "3.2 Loan Settlement / One-Time Settlement (OTS)",
+          [
+            "3.3 Full",
+            "Final Settlement"
+          ],
+          "3.4 Technical Write-off"
+        ]
+      },
+      {
+        "content": [
+          [
+            "A negotiated agreement with a borrower to fully settle the Company",
+            "s claims for a mutually agreed amount which is less than total dues, resulting in a sacrifice or waiver by the Company. (As per RBI definition)."
+          ],
+          "A structured or lump-sum settlement for stressed or NPA accounts, usually involving upfront payment and closure within a short time frame.",
+          "A lump-sum repayment made by the borrower in exchange for waiver of remaining dues.",
+          "An NPA loan where the borrower still legally owes the amount but the Company removes it from its books only for accounting purposes, without waiving the right to recover."
+        ]
+      }
+    ],
+    "settlementFramework": {
+      "title": [
+        "4.1 General Eligibility",
+        "4.2 Payday / Short Duration Loans",
+        "4.3 Personal Loans / EMI Loans",
+        "4.4 LAP (Loan Against Property)",
+        "4.5 Corporate / Business Loans"
+      ],
+      "content": [
+        {
+          "intro": "A loan may be considered for settlement when:",
+          "points": [
+            {
+              "dpdRule": [
+                "DPD",
+                "> 30 days and/or recovery probability",
+                "< 25% (based on internal metrics)."
+              ]
+            },
+            "NPA classification under IRACP norms.",
+            "Account already written-off but borrower is now reachable.",
+            "Borrower demonstrates genuine hardship.",
+            "Collateral value (for secured loans) insufficient to cover outstanding dues.",
+            "Litigation cost is expected to exceed realizable recovery."
+          ],
+          "points2": [
+            [
+              "Overdue",
+              "30 days"
+            ],
+            "High roll-rate and low likelihood of recovery",
+            "Verified hardship"
+          ],
+          "points3": [
+            "90-180 DPD delinquency",
+            "Borrower unable to meet EMI obligations",
+            "Written-off accounts with potential for partial recovery"
+          ],
+          "points4": [
+            "Fresh valuation showing lower realizable value",
+            [
+              "Litigation cost",
+              "incremental recovery"
+            ],
+            "Borrower offers realistic settlement proposal"
+          ],
+          "points5": [
+            "Business closure / insolvency / severe cash-flow deterioration",
+            "Market value of collateral less than outstanding",
+            "Multiple recovery attempts unsuccessful"
+          ]
+        }
+      ]
+    },
+    "technicalWriteOffPolicy": {
+      "points": [
+        "Technical write-off does NOT reduce borrower liability. The write-off shall be effected only in the books of accounts of the Company.",
+        "Technical write-off accounts must continue to be actively pursued for recovery.",
+        "Partial technical write-offs must ensure provisioning = 100% of gross exposure as required by RBI.",
+        "Re-aging of accounts is not allowed.",
+        "Any waiver must follow compromise settlement norms, not technical write-off norms.",
+        "Recovery efforts, including legal action, collection follow-ups, or settlement negotiations, may continue even after the loan is written off in the books."
+      ]
+    },
+    "freshLoanEligibility": {
+      "description": "The Company does not provide fresh loans to customers whose accounts were settled under compromise or classified as technical write-off. Exceptions may be granted on specific customer request, subject to proper verification of the case, assessment of creditworthiness, and approval by the competent authority.",
+      "coolingPeriod": "A general cooling period of 12-18 months shall be observed."
+    },
+    "accountingTreatment": {
+      "settlement": {
+        "title": "In Case of Settlement",
+        "points": [
+          "Waiver must be booked as a loss.",
+          "Recovery posted to loan account accordingly.",
+          "Written-off assets must be reported separately in financial statements."
+        ]
+      },
+      "writeOff": {
+        "title": "In Case of Write-off",
+        "points": [
+          "Upon write-off, the outstanding principal and accrued interest (if any) shall be removed from the books by debiting the Loan Loss Provision Account.",
+          "Any subsequent recoveries from written-off accounts shall be recognized as Other Income / Recovery from Written-Off Accounts in the period in which they are realized."
+        ]
+      }
+    },
+    "reviewOfPolicy": {
+      "points": [
+        "Annual review by Board.",
+        "Interim review if RBI issues new directions.",
+        "All amendments recorded and notified internally."
+      ]
+    },
+    "determinationOfSettlementAmount": {
+      "title": "6. Determination of Settlement Amount",
+      "components": {
+        "title": "6.1 Components Considered",
+        "items": [
+          "Principal outstanding",
+          "Accrued interest",
+          "Penal Charges",
+          "Overdue charges",
+          "Legal expenses"
+        ]
+      },
+      "factors": {
+        "title": "6.2 Factors Influencing Settlement Calculation",
+        "points": [
+          "Recovery probability score",
+          "Borrower capacity analysis",
+          "Hardship proof",
+          "Collateral distress valuation",
+          "Legal recovery timeframe",
+          "Previous recovery performance in similar cases"
+        ]
+      }
+    },
+    "monitoringAuditReporting": {
+      "title": [
+        "11. Monitoring, Audit",
+        "Reporting"
+      ],
+      "internalMonitoring": {
+        "title": "11.1 Internal Monitoring",
+        "points": [
+          "Monthly MIS of settlements and write-offs",
+          "High-risk accounts flagged to senior management",
+          "Sampling audits of settlements"
+        ]
+      },
+      "auditRequirements": {
+        "title": "11.2 Audit Requirements",
+        "points": [
+          "Internal audit to verify documentation, approvals & compliance",
+          "Statutory auditor review at year-end"
+        ]
+      },
+      "mandatoryReportingToBoard": {
+        "title": "11.3 Mandatory Reporting to Board",
+        "intro": "Quarterly, covering:",
+        "points": [
+          "Number & value of settlements",
+          "Segment-wise data (payday/personal/LAP/business)",
+          "Settlement-wise sacrifice reports",
+          "Fraud/wilful defaulter settlement cases",
+          "Technical write-off recoveries"
+        ]
+      }
+    },
+    "delegationOfAuthority": {
+      "note": "Settlement approvals must be one level higher than loan sanctioning authority.",
+      "matrixTitle": "Authority Matrix",
+      "table": {
+        "headers": [
+          "Loan Type",
+          "Exposure Amount",
+          "Approving Authority"
+        ],
+        "rows": [
+          [
+            "Payday / Small Loans",
+            "Up to ₹1,00,000",
+            "Collection Manager (Not loan sanctioning officer)"
+          ],
+          [
+            "Personal/EMI Loans",
+            "Up to ₹2,00,000",
+            "Head - Collections"
+          ],
+          [
+            "LAP / Business Loans",
+            "Up to ₹10,00,000",
+            "Senior Vice President"
+          ],
+          [
+            "Any Category",
+            "Above ₹10,00,000",
+            "Managing Director / Credit & Recovery Committee"
+          ],
+          [
+            "Fraud / Wilful Defaulter Accounts",
+            "Any Amount",
+            "Board Approval"
+          ]
+        ]
+      },
+      "footerNote": "All approvals are based on Due Past Days (DPD) of the customer."
+    },
+    "detailedSettlementWorkflow": {
+      "title": "8. Detailed Settlement Workflow",
+      "steps": [
+        {
+          "title": "Step 1: Borrower Communication",
+          "points": [
+            "Borrower request received in writing, email, app request, or call recorded.",
+            "Borrower should be informed about credit bureau impact."
+          ]
+        },
+        {
+          "title": "Step 2: KYC & Hardship Verification",
+          "points": [
+            "Obtain supporting documents.",
+            "Bureau history reviewed again."
+          ]
+        },
+        {
+          "title": "Step 3: Recovery Assessment",
+          "intro": "A detailed assessment note must include:",
+          "points": [
+            "Borrower demographics & income data",
+            "Updated KYC",
+            "Loan summary (DPD, charges, prior payments)",
+            "Legal status (notices, court filings)",
+            "Recovery attempts log",
+            "Economic rationale for settlement",
+            "Recommended settlement amount",
+            "Expected loss estimate vs. settlement recovery"
+          ]
+        },
+        {
+          "title": "Step 4: Internal Reviews",
+          "tags": [
+            "Collection team",
+            "Credit team",
+            "Legal team",
+            "Board of Directors (for > ₹10 lakh)",
+            "Finance team for accounting correctness"
+          ]
+        },
+        {
+          "title": "Step 5: Approval",
+          "intro": "Settlement letter issued with:",
+          "points": [
+            "Amount payable",
+            "Amount waived",
+            "Payment deadline",
+            "Consequences of default",
+            "Bureau impact"
+          ]
+        },
+        {
+          "title": "Step 6: Payment",
+          "points": [
+            "Modes of Payments allowed (UPI/NEFT/RTGS).",
+            "Payment must be completed within settlement validity period."
+          ]
+        },
+        {
+          "title": "Step 7: Closure & Documentation",
+          "points": [
+            "NOC issued",
+            "CIBIL reported as \"Settled / Written-off Settled\"",
+            "Legal withdrawal/consent decree (if in court)"
+          ]
+        }
+      ]
+    },
+    "effectiveDate": {
+      "start": "This Loan Settlement Policy is approved by the Board of Directors of Satsai Finlease Private Limited at its meeting held on",
+      "bold": "April 21, 2025",
+      "end": "and shall be effective from the same date."
+    },
+    "signatory": {
+      "company": "For Satsai Finlease Private Limited",
+      "authority": "Authorized Signatory"
+    }
+  }
+}

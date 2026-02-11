@@ -202,7 +202,7 @@ export default function Hero() {
 
     // Save to localStorage and navigate (regardless of API success)
     localStorage.setItem('heroFormData', JSON.stringify(formPayload))
-    router.push('/apply/quick-v2')
+    router.push('/apply/quick')
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
