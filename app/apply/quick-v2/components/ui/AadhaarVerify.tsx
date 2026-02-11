@@ -54,15 +54,22 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
             if ((response.status === 200 || response.status === 201) && result.data?.isAadhaarVerify === true) {
                 console.log('✅ Aadhaar verified successfully from status API');
                 console.log('📝 Backend has updated isAadhaarVerify = true in database');
+                const user = await fetchUserData();
+
                 setFormData((prev) => ({
                     ...prev,
                     aadhaarVerified: true,
+                    fullName: user?.fullName || prev.fullName,
+                    dob: user?.dateOfBirth || prev.dob,
                 }));
                 toast({
                     variant: "success",
                     title: "Aadhaar Verified",
                     description: result.message || "Your Aadhaar has been verified successfully.",
                 });
+                // Clean up URL params
+                const cleanUrl = window.location.pathname;
+                window.history.replaceState({}, '', cleanUrl);
                 tracking.trackEvent('CUSTOM_EVENT', { event: TRACKING_EVENTS.AADHAAR_VERIFIED });
             } else {
                 console.log('ℹ️ Aadhaar not verified:', result.message || 'Verification pending or failed');
