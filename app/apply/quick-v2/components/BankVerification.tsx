@@ -400,7 +400,7 @@ const BankVerification = ({
                 </div>
             </div>
 
-            <div className="bg-gray-50 rounded-xl p-4">
+            {/* <div className="bg-gray-50 rounded-xl p-4">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-2">
                     <div className="flex justify-start items-center gap-2">
                         <IndianRupee className="w-5 h-5 text-[#25B181]" />
@@ -444,7 +444,7 @@ const BankVerification = ({
                         <p className="text-lg sm:text-xl font-bold text-gray-900">₹{((formData?.totalRepayment) || 0).toLocaleString('en-IN')}</p>
                     </div>
                 </div>
-            </div>
+            </div> */}
 
             {/* Loan Summary */}
             <div className="bg-gradient-to-r from-[#25B181]/10 to-[#51C9AF]/10 rounded-lg sm:rounded-xl p-3 sm:p-4 space-y-1.5 sm:space-y-2">
