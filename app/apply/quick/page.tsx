@@ -3137,8 +3137,8 @@ export default function QuickLoanApplication() {
       // Step 2: Aadhaar & PAN Verification
 
       // Check if Aadhaar is already verified (from user profile)
-      const isMaskedAadhaar = formData.aadhaar && formData.aadhaar.startsWith('XXXX');
-      const isAadhaarAlreadyVerified = aadhaarVerified || isMaskedAadhaar;
+      // IMPORTANT: Only check aadhaarVerified boolean (from isAadhaarVerify), NOT aadhaar data
+      const isAadhaarAlreadyVerified = aadhaarVerified;
 
       // Aadhaar validation
       if (!formData.aadhaar) {
@@ -4636,8 +4636,8 @@ export default function QuickLoanApplication() {
                           name="aadhaar"
                           value={formData.aadhaar.replace(/([X\d]{4})(?=[X\d])/g, '$1 ')}
                           onChange={(e) => {
-                            // Don't allow editing if masked (already verified)
-                            if (formData.aadhaar.startsWith('XXXX')) return;
+                            // Don't allow editing if verified (check isAadhaarVerify boolean)
+                            if (aadhaarVerified) return;
 
                             const rawValue = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
                             const syntheticEvent = {
@@ -4654,16 +4654,16 @@ export default function QuickLoanApplication() {
                             }
                             if (aadhaarError) setAadhaarError("");
                           }}
-                          disabled={aadhaarVerified || aadhaarOtpSent || formData.aadhaar.startsWith('XXXX')}
+                          disabled={aadhaarVerified || aadhaarOtpSent}
                           maxLength={14}
                           className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 disabled:cursor-not-allowed tracking-widest ${
-                            (aadhaarVerified || formData.aadhaar.startsWith('XXXX'))
+                            aadhaarVerified
                               ? 'bg-green-50 border-green-300'
                               : (fieldErrors.aadhaar || aadhaarError ? 'border-red-500' : 'border-gray-300')
                           }`}
                           placeholder="1234 5678 9012"
                         />
-                        {!aadhaarVerified && !formData.aadhaar.startsWith('XXXX') && (
+                        {!aadhaarVerified && (
                           <button
                             type="button"
                             onClick={sendAadhaarOTP}
@@ -4673,7 +4673,7 @@ export default function QuickLoanApplication() {
                             {aadhaarVerifying ? "Sending..." : aadhaarOtpSent ? (aadhaarOtpTimer > 0 ? `Resend (${aadhaarOtpTimer}s)` : "Resend OTP") : "Verify"}
                           </button>
                         )}
-                        {(aadhaarVerified || formData.aadhaar.startsWith('XXXX')) && (
+                        {aadhaarVerified && (
                           <div className="px-6 py-3 bg-green-100 border border-green-300 rounded-lg flex items-center gap-2 whitespace-nowrap">
                             <CheckCircle className="w-5 h-5 text-green-600" />
                             <span className="text-sm font-medium text-green-700">Verified</span>
