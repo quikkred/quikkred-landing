@@ -38,6 +38,7 @@
   "exclude": [
     "node_modules",
     "scripts/**/*",
-    "lib/prisma.ts"
+    "lib/prisma.ts",
+    "playwright.config.ts"
   ]
 }
