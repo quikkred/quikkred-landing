@@ -1153,6 +1153,74 @@ export default function QuickLoanApplication() {
   // Track if BRE API has been called to prevent infinite loops
   const breApiCalledRef = useRef(false);
 
+  // Track if customer/get has been called on Step 4
+  const customerDataFetchedOnStep4Ref = useRef(false);
+
+  // Fetch latest customer data when Step 4 loads
+  useEffect(() => {
+    const fetchLatestCustomerData = async () => {
+      // Only run on Step 4
+      if (currentStep !== 4) {
+        customerDataFetchedOnStep4Ref.current = false; // Reset when leaving Step 4
+        return;
+      }
+
+      // Skip if already fetched for this Step 4 session
+      if (customerDataFetchedOnStep4Ref.current) {
+        console.log('[Step 4] Customer data already fetched, skipping duplicate call');
+        return;
+      }
+
+      console.log('[Step 4] Fetching latest customer data...');
+      customerDataFetchedOnStep4Ref.current = true;
+
+      try {
+        // Using Redux for customer/get API
+        const customerResult = await getCustomer();
+
+        if (customerResult.success && customerResult.data) {
+          const profileData = customerResult.data;
+          console.log('[Step 4] ✅ Customer data fetched successfully');
+
+          // Update verification statuses
+          if (toBoolean(profileData.isPanVerify)) {
+            setPanVerified(true);
+          }
+          if (toBoolean(profileData.isAadhaarVerify)) {
+            setAadhaarVerified(true);
+          }
+
+          // Helper to mask Aadhaar (show only last 4 digits)
+          const maskAadhaarNumber = (aadhaar: string) => {
+            if (!aadhaar || aadhaar.length !== 12) return aadhaar;
+            return 'XXXXXXXX' + aadhaar.slice(-4);
+          };
+
+          // Update form data with latest customer info
+          setFormData(prev => ({
+            ...prev,
+            fullName: profileData.fullName || prev.fullName,
+            pan: profileData.panCard || prev.pan,
+            aadhaar: profileData.isAadhaarVerify ? maskAadhaarNumber(profileData.aadhaarNumber) : (profileData.aadhaarNumber || prev.aadhaar),
+            dob: profileData.dateOfBirth ? formatDateForInput(profileData.dateOfBirth) : prev.dob,
+            monthlyIncome: profileData.monthlyIncome || prev.monthlyIncome,
+            employmentType: profileData.employmentType || prev.employmentType,
+            companyName: profileData.companyName || prev.companyName,
+          }));
+
+          console.log('[Step 4] Form data updated with latest customer info');
+        } else {
+          console.log('[Step 4] ⚠️ Customer API returned no data');
+        }
+      } catch (error) {
+        console.error('[Step 4] ❌ Error fetching customer data:', error);
+        // Non-blocking error - continue with existing data
+      }
+    };
+
+    fetchLatestCustomerData();
+  }, [currentStep, getCustomer]);
+
   // Auto-call BRE API when Step 4 is reached (including on hard refresh)
   useEffect(() => {
     const fetchBREData = async () => {
