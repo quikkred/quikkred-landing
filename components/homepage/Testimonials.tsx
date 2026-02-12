@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, useInView } from "framer-motion";
+import { exp } from "@tensorflow/tfjs-core";
 
 // Static data for ratings and images (not translated)
 const testimonialStaticData = [
@@ -334,5 +335,7 @@ export default function Testimonials() {
         )}
       </div>
     </section>
+    
   );
+  
 }
