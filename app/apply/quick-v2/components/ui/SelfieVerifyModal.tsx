@@ -178,7 +178,8 @@ export default function AdvancedFaceCam({ isOpen, onClose, onCapture }: SelfieVe
             const formData = new FormData();
             formData.append('photo', file);
 
-            const response = await axios.postForm(`/api/v2/face/verification`, formData);
+            // const response = await axios.postForm(`/api/v2/face/verification`, formData);
+            const response = await axios.postForm(`/api/kyc/face/rekognition/verify`, formData);
 
             if (response.data?.success && (response.status === 200 || response.status === 201)) {
                 setStatusMsg({ type: 'success', text: "Identity Verified Successfully!" });
@@ -211,7 +212,7 @@ export default function AdvancedFaceCam({ isOpen, onClose, onCapture }: SelfieVe
 
     return createPortal(
         <div className="fixed inset-0 z-[500] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-            <div className="relative w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col h-[75vh] max-h-[680px]">
+            <div className="relative w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col h-[80vh] max-h-[680px]">
 
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4 bg-white">
