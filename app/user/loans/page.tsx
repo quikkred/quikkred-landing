@@ -815,10 +815,31 @@ export default function MyLoansPage() {
     setAutopayForm({ amount: '', frequency: 'monthly', vpa: '' });
   };
 
-  // Check if loan is eligible for reapply (CLOSED status)
+  // Get the most recent closed loan
+  const getMostRecentClosedLoan = () => {
+    const closedLoans = loans.filter(loan => {
+      const status = loan.status.toUpperCase();
+      return status === 'CLOSED' || status === 'COMPLETED';
+    });
+
+    if (closedLoans.length === 0) return null;
+
+    // Sort by createdAt descending (most recent first)
+    return closedLoans.sort((a, b) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )[0];
+  };
+
+  // Check if loan is eligible for reapply (CLOSED status AND is the most recent closed loan)
   const isEligibleForReapply = (loan: Loan) => {
     const status = loan.status.toUpperCase();
-    return status === 'CLOSED' || status === 'COMPLETED';
+    const isClosed = status === 'CLOSED' || status === 'COMPLETED';
+
+    if (!isClosed) return false;
+
+    // Only show reapply button on the most recent closed loan
+    const mostRecentClosedLoan = getMostRecentClosedLoan();
+    return mostRecentClosedLoan?.id === loan.id;
   };
 
   // Check if loan is eligible for autopay (ACTIVE status)
@@ -1919,18 +1940,24 @@ export default function MyLoansPage() {
                         <p className="text-sm text-gray-600">Total Repayment</p>
                         <p className="text-lg font-bold text-green-700">{formatCurrency(detailedLoan.totalRepayment)}</p>
                       </div>
-                      {detailedLoan.lateCharges && detailedLoan.lateCharges > 0 && (
-                        <div>
-                          <p className="text-sm text-gray-600">Late Charges</p>
-                          <p className="font-semibold text-red-600">{formatCurrency(detailedLoan.lateCharges)}</p>
-                        </div>
-                      )}
-                      {detailedLoan.lateChargeInterest && detailedLoan.lateChargeInterest > 0 && (
-                        <div>
-                          <p className="text-sm text-gray-600">Late Charge Interest</p>
-                          <p className="font-semibold text-red-600">{formatCurrency(detailedLoan.lateChargeInterest)}</p>
-                        </div>
-                      )}
+                    {Number(detailedLoan?.lateCharges) > 0 && (
+  <div>
+    <p className="text-sm text-gray-600">Late Charges</p>
+    <p className="font-semibold text-red-600">
+      {formatCurrency(Number(detailedLoan.lateCharges))}
+    </p>
+  </div>
+)}
+
+{Number(detailedLoan?.lateChargeInterest) > 0 && (
+  <div>
+    <p className="text-sm text-gray-600">Late Charge Interest</p>
+    <p className="font-semibold text-red-600">
+      {formatCurrency(Number(detailedLoan.lateChargeInterest))}
+    </p>
+  </div>
+)}
+
                     </div>
                   </div>
 
