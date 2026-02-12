@@ -168,7 +168,7 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
       const formData = new FormData();
       formData.append('photo', file);
 
-      const response = await fetch(`${API_BASE_URL}/api/kyc/face/verification`, {
+      const response = await fetch(`${API_BASE_URL}/api/kyc/face/rekognition/verify`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
