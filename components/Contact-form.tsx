@@ -3,8 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import Image from "next/image"
-import { motion } from "framer-motion";
-import { User, Mail, Phone, Send, MessageSquare, CheckCircle, MapPin, RotateCcw, ArrowRight } from "lucide-react"
+import { User, Mail, Phone, Send, MessageSquare, CheckCircle } from "lucide-react"
 import { API_BASE_URL } from '@/lib/config'
 
 interface FormData {
@@ -25,30 +24,6 @@ interface FormErrors {
 interface ContactFormProps {
   onSuccess?: () => void;
 }
-
-const contactCards = [
-  {
-    icon: Phone,
-    title: "Call Us",
-    description: "Speak directly with our support team",
-    contact: "+91 9311913854",
-    link: "tel:+919311913854"
-  },
-  {
-    icon: Mail,
-    title: "Email Us",
-    description: "Send us your queries anytime",
-    contact: "support@quikkred.in",
-    link: "mailto:support@quikkred.in"
-  },
-  {
-    icon: MapPin,
-    title: "Visit Us",
-    description: "Our head office location",
-    contact: "1008, 10th floor, Vikrant Tower, Rajendra Place, New Delhi - 110005",
-    link: "https://maps.google.com/?q=Vikrant+Tower+Rajendra+Place+New+Delhi"
-  }
-];
 
 export default function ContactForm({ onSuccess }: ContactFormProps) {
   const [formData, setFormData] = useState<FormData>({
@@ -159,7 +134,6 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
 
       const apiSubject = formData.subject ? subjectMap[formData.subject] : "GENERAL_INQUIRY";
 
-      // api not added
       const response = await fetch(`${API_BASE_URL}/api/contactUs/create`, {
         method: 'POST',
         headers: {
@@ -218,191 +192,205 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
   return (
     <div >
       {/* Form Section */}
-      <div className="w-full bg-slate-50/50 py-16 md:py-24">
-        <div className="w-full md:container md:mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-5 sm:mb-10">
-              <span className="inline-block px-4 py-2 bg-[#D3F1EB] text-[#25B181] rounded-full text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
-                Contact Us
-              </span>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 mb-4">
-                Let’s start a <span className="text-[#25B181]">conversation</span>
-              </h2>
-              <p className="text-gray-600 max-w-3xl mx-auto">
-                Have questions about our loan services? We're here to help you find the perfect financial solution.
-              </p>
+      <div className="w-full md:container md:mx-auto px-0 md:px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-0 overflow-hidden">
+            {/* Left Side - Image */}
+            <div className="relative hidden lg:block min-h-[500px]">
+              <Image
+                src="/contact_hero_image.jpg"
+                alt="Contact Us"
+                fill
+                className="object-co"
+              />
+              {/* <div className="absolute inset-0 bg-gradient-to-br from-[#25B181]/80 to-[#1a8a5f]/90" /> */}
+              {/* <div className="absolute inset-0 flex flex-col justify-center items-center text-center p-10">
+                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6">
+                  <MessageSquare className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-white text-3xl font-bold mb-4">Let's Talk</h3>
+                <p className="text-white/90 text-lg max-w-sm">
+                  Have questions about our loan services? We're here to help you find the perfect financial solution.
+                </p>
+                <div className="mt-10 space-y-4 text-left">
+                  <div className="flex items-center gap-3 text-white/90">
+                    <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                      <Mail className="w-5 h-5 text-white" />
+                    </div>
+                    <span>support@quikkred.com</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-white/90">
+                    <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                      <Mail className="w-5 h-5 text-white" />
+                    </div>
+                    <span>loans@quikkred.com</span>
+                  </div>
+                </div>
+              </div> */}
             </div>
 
-            <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-start">
-              {/* LEFT SIDE - Info Hub (5 Columns) */}
-              <div className="lg:col-span-5">
-                <div className="space-y-4 mt-1">
-                  {/* <p className="text-slate-500 text-lg max-w-md">
-                    Have questions about our loan services? We're here to help you find the perfect financial solution.
-                  </p> */}
+            {/* Right Side - Form */}
+            <div className="sm:px-6 md:px-10 lg:px-12">
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Full Name <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <User className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${formErrors.name ? 'text-red-400' : 'text-gray-400'}`} />
+                    <input
+                      id="name"
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      className={`w-full pl-11 pr-4 py-3 border-2 rounded-xl focus:outline-none transition-all text-base ${
+                        formErrors.name
+                          ? 'border-red-300 focus:border-red-500 bg-red-50'
+                          : 'border-gray-200 focus:border-[#25B181] hover:border-gray-300'
+                      }`}
+                      placeholder="John Doe"
+                      style={{ fontSize: '16px' }}
+                    />
+                  </div>
+                  {formErrors.name && (
+                    <p className="mt-1 text-xs text-red-600">{formErrors.name}</p>
+                  )}
                 </div>
 
-                <div className="grid grid-cols-1 gap-10 mb-12">
-                  {contactCards.map((card, index) => {
-                    const IconComponent = card.icon;
-                    return (
-                      <motion.a
-                        key={index}
-                        href={card.link}
-                        initial={{ opacity: 0, y: 15 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: index * 0.1 }}
-                        className="group flex items-center p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-[#25B181]/30 transition-all"
-                      >
-                        <div className="w-12 h-12 bg-[#D3F1EB] rounded-xl flex items-center justify-center mr-4 group-hover:bg-[#25B181] transition-colors">
-                          <IconComponent className="w-6 h-6 text-[#25B181] group-hover:text-white transition-colors" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="text-sm font-bold text-slate-900">{card.title}</h4>
-                          <p className="text-[#25B181] text-sm font-medium">{card.contact}</p>
-                        </div>
-                        <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-[#25B181] group-hover:translate-x-1 transition-all" />
-                      </motion.a>
-                    );
-                  })}
-                </div>
-                <div className="w-full h-[250px] sm:h-[300px] md:h-[350px]">
-                  <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3501.4097591754347!2d77.1807!3d28.6419!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d029e2b6b2f6f%3A0x5c4a5f8a3a2b1c0d!2sVikrant%20Tower%2C%20Rajendra%20Place%2C%20New%20Delhi%2C%20Delhi%20110005!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0 }}
-                    allowFullScreen
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    title="Quikkred Head Office Location"
-                    className="w-full h-full"
-                  />
-                </div>
-              </div>
-
-              {/* RIGHT SIDE - Form Hub (7 Columns) */}
-              <div className="lg:col-span-7">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  className="bg-white rounded-[2rem] p-6 md:p-10 shadow-xl shadow-slate-200/60 border border-slate-100"
-                >
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Name Field */}
-                    <div className="space-y-2">
-                      <label className="text-sm font-bold text-slate-700 flex items-center gap-2 ml-1">
-                        Full Name <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative group">
-                        <User className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${formErrors.name ? 'text-red-400' : 'text-slate-400 group-focus-within:text-[#25B181]'}`} />
-                        <input
-                          type="text"
-                          name="name"
-                          value={formData.name}
-                          onChange={handleChange}
-                          className={`w-full pl-12 pr-4 py-4 bg-slate-50 border-2 rounded-2xl focus:outline-none transition-all ${formErrors.name
-                            ? 'border-red-100 focus:border-red-500'
-                            : 'border-transparent focus:border-[#25B181] focus:bg-white'}`}
-                          placeholder="e.g. John Doe"
-                        />
-                      </div>
-                      {formErrors.name && <p className="text-xs text-red-500 ml-1">{formErrors.name}</p>}
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-bold text-slate-700 ml-1">Email Address *</label>
-                      <div className="relative group">
-                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-[#25B181] transition-colors" />
-                        <input
-                          type="email"
-                          name="email"
-                          value={formData.email}
-                          onChange={handleChange}
-                          className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:outline-none focus:border-[#25B181] focus:bg-white transition-all"
-                          placeholder="john@example.com"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-bold text-slate-700 ml-1">Phone Number *</label>
-                      <div className="relative group">
-                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-[#25B181] transition-colors" />
-                        <input
-                          type="tel"
-                          name="phone"
-                          value={formData.phone}
-                          onChange={handleChange}
-                          className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:outline-none focus:border-[#25B181] focus:bg-white transition-all"
-                          placeholder="+91 00000 00000"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Subject Field */}
-                    <div className="space-y-2">
-                      <label className="text-sm font-bold text-slate-700 ml-1">Subject</label>
-                      <select
-                        name="subject"
-                        value={formData.subject}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Email <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${formErrors.email ? 'text-red-400' : 'text-gray-400'}`} />
+                      <input
+                        id="email"
+                        type="email"
+                        name="email"
+                        value={formData.email}
                         onChange={handleChange}
-                        className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:outline-none focus:border-[#25B181] focus:bg-white transition-all appearance-none cursor-pointer"
-                      >
-                        <option value="">Choose a reason</option>
-                        <option value="loan-inquiry">Loan Inquiry</option>
-                        <option value="technical-support">Technical Support</option>
-                        <option value="general-inquiry">General Enquiry</option>
-                        <option value="application-status">Application Status</option>
-                        <option value="complaint">Complaint</option>
-                      </select>
-                    </div>
-
-                    {/* Message Field */}
-                    <div className="space-y-2">
-                      <div className="flex justify-between ml-1">
-                        <label className="text-sm font-bold text-slate-700">Message *</label>
-                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">{formData.message.length}/500</span>
-                      </div>
-                      <textarea
-                        name="message"
-                        value={formData.message}
-                        onChange={handleChange}
-                        rows={4}
-                        className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:outline-none focus:border-[#25B181] focus:bg-white transition-all resize-none"
-                        placeholder="Tell us how we can help..."
+                        className={`w-full pl-11 pr-4 py-3 border-2 rounded-xl focus:outline-none transition-all text-base ${
+                          formErrors.email
+                            ? 'border-red-300 focus:border-red-500 bg-red-50'
+                            : 'border-gray-200 focus:border-[#25B181] hover:border-gray-300'
+                        }`}
+                        placeholder="john@example.com"
+                        style={{ fontSize: '16px' }}
                       />
                     </div>
+                    {formErrors.email && (
+                      <p className="mt-1 text-xs text-red-600">{formErrors.email}</p>
+                    )}
+                  </div>
 
-                    {/* Actions */}
-                    <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                      <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="flex-1 bg-[#25B181] text-white py-4 px-8 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-[#1e966d] active:scale-[0.98] transition-all shadow-lg shadow-[#25B181]/30 disabled:opacity-50"
-                      >
-                        {isSubmitting ? (
-                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        ) : (
-                          <>
-                            <Send className="w-5 h-5" />
-                            <span>Submit Message</span>
-                          </>
-                        )}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleReset}
-                        className="px-8 py-4 bg-white border-2 border-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-50 hover:border-slate-200 transition-all flex items-center justify-center gap-2"
-                      >
-                        <RotateCcw className="w-4 h-4" />
-                        <span>Reset</span>
-                      </button>
+                  <div>
+                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Phone <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <Phone className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${formErrors.phone ? 'text-red-400' : 'text-gray-400'}`} />
+                      <input
+                        id="phone"
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        maxLength={12}
+                        className={`w-full pl-11 pr-4 py-3 border-2 rounded-xl focus:outline-none transition-all text-base ${
+                          formErrors.phone
+                            ? 'border-red-300 focus:border-red-500 bg-red-50'
+                            : 'border-gray-200 focus:border-[#25B181] hover:border-gray-300'
+                        }`}
+                        placeholder="Enter your mobile number"
+                        style={{ fontSize: '16px' }}
+                      />
                     </div>
-                  </form>
-                </motion.div>
-              </div>
+                    {formErrors.phone && (
+                      <p className="mt-1 text-xs text-red-600">{formErrors.phone}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Subject
+                  </label>
+                  <select
+                    id="subject"
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#25B181] hover:border-gray-300 transition-all bg-white text-base"
+                    style={{ fontSize: '16px' }}
+                  >
+                    <option value="">Select a subject</option>
+                    <option value="loan-inquiry">Loan Inquiry</option>
+                    <option value="application-status">Application Status</option>
+                    <option value="technical-support">Technical Support</option>
+                    <option value="general-inquiry">General Inquiry</option>
+                    <option value="complaint">Complaint</option>
+                  </select>
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label htmlFor="message" className="block text-sm font-medium text-gray-700">
+                      Message <span className="text-red-500">*</span>
+                    </label>
+                    <span className={`text-xs ${formData.message.length > 450 ? 'text-orange-500' : 'text-gray-400'}`}>
+                      {formData.message.length}/500
+                    </span>
+                  </div>
+                  <textarea
+                    id="message"
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    maxLength={500}
+                    rows={4}
+                    className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-all resize-none text-base ${
+                      formErrors.message
+                        ? 'border-red-300 focus:border-red-500 bg-red-50'
+                        : 'border-gray-200 focus:border-[#25B181] hover:border-gray-300'
+                    }`}
+                    placeholder="How can we help you today?"
+                    style={{ fontSize: '16px' }}
+                  />
+                  {formErrors.message && (
+                    <p className="mt-1 text-xs text-red-600">{formErrors.message}</p>
+                  )}
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex-1 bg-gradient-to-r from-[#25B181] to-[#51C9AF] text-white py-3.5 px-6 min-h-[48px] rounded-xl font-semibold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-[#25B181]/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        Send Message
+                      </>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    className="px-4 sm:px-6 py-3.5 min-h-[48px] border-2 border-gray-200 text-gray-600 rounded-xl font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50 text-sm sm:text-base"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>

@@ -7,13 +7,9 @@ import useAxios from "@/hooks/useAxios";
 
 const DigiLockerVerify = ({
     buttonText = "DigiLocker",
-    smButtonText = "DigiLocker",
-    type = "v1",
     extraParams = {},
 }: {
     buttonText?: string;
-    smButtonText?: string;
-    type?: "v1" | "v2";
     extraParams?: Record<string, string>;
 }) => {
     const [showModal, setShowModal] = useState(false);
@@ -72,7 +68,7 @@ const DigiLockerVerify = ({
 
         setLoading(true);
         try {
-            const response = await axios.post(type === "v2" ? "/api/v2/customer/digilocker/login": "/api/auth/customer/digilocker/login", {
+            const response = await axios.post("/api/auth/customer/digilocker/login", {
                 mobile,
                 email,
                 ...extraParams,
@@ -240,7 +236,6 @@ const DigiLockerVerify = ({
             >
                 <DigiLockerIcon />
                 <span className="hidden sm:inline-block">{buttonText}</span>
-                <span className="inline-block sm:hidden">{smButtonText}</span>
             </button>
 
             {portalRoot && modalContent && createPortal(modalContent, portalRoot)}

@@ -8,7 +8,6 @@ export default function CookiePolicyPage() {
   const { t } = useLanguage();
 
   const c = t?.policies?.cookie;
-  // console.log(c)
   const sections = c?.sections;
 
   return (
@@ -23,10 +22,7 @@ export default function CookiePolicyPage() {
       </header>
 
       {/* Main Content Section */}
-      <PoliciesLayout
-        effectiveDateText={t?.policies?.common?.effectiveDate || "Effective Date"}
-        effectiveDate={c?.effectiveDate || "January 1, 2026"}
-      >
+      <PoliciesLayout>
         {/* Introduction */}
         <div className="mb-10">
           <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">

@@ -8,8 +8,8 @@ import { FieldErrors } from "@/lib/types/quickApply";
 import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
 import { AxiosError } from "axios";
 import { motion } from "framer-motion";
-import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle, IndianRupee, Loader2, Lock, Shield } from "lucide-react";
-import { useRef, useState, useCallback, useMemo } from "react";
+import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle, Loader2, Lock, Shield } from "lucide-react";
+import { useRef, useState, useCallback } from "react";
 import SelfieVerify from "./ui/SelfieVerify";
 import { calculateLoanDetails, formatCurrency } from "@/lib/constants/quickApplyV2";
 
@@ -44,8 +44,6 @@ const Page3BankDetails = ({
     const ifscTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const loanCalc = calculateLoanDetails(formData.loanAmount, formData.tenure);
-
-    const canProceed = useMemo(() => (formData.bankVerified && formData.selfieVerified), [formData]);
 
     // --- Helpers ---
 
@@ -348,65 +346,19 @@ const Page3BankDetails = ({
                 </div>
             </div>
 
-            <div className="bg-gray-50 rounded-xl p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                    <div className="flex justify-start items-center gap-2">
-                        <IndianRupee className="w-5 h-5 text-[#25B181]" />
-                        <span>Loan Details</span>
-                    </div>
-                    {formData && (
-                        <span className="text-xs font-normal text-gray-500 ml-2">(Based on your selected amount)</span>
-                    )}
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white rounded-lg px-4 py-2 border border-gray-200">
-                        <p className="text-xs sm:text-sm text-gray-500">Your Loan Amount</p>
-                        <p className="text-lg sm:text-xl font-bold text-[#25B181]">
-                            ₹{(formData?.loanAmount || 0).toLocaleString('en-IN')}
-                        </p>
-                    </div>
-                    <div className="bg-white rounded-lg px-4 py-2 border border-gray-200">
-                        <p className="text-xs sm:text-sm text-gray-500">Tenure</p>
-                        <p className="text-lg sm:text-xl font-bold text-gray-900">
-                            {formData?.tenure || 0} {(formData?.tenureUnit) === 'Days' ? 'Days' : 'Months'}
-                        </p>
-                    </div>
-                    <div className="bg-white rounded-lg px-4 py-2 border border-gray-200">
-                        <p className="text-xs sm:text-sm text-gray-500">Interest Rate</p>
-                        <p className="text-lg sm:text-xl font-bold text-gray-900">{(formData?.interestRate) || 0}%</p>
-                    </div>
-                    <div className="bg-white rounded-lg px-4 py-2 border border-gray-200">
-                        <p className="text-xs sm:text-sm text-gray-500">Interest Amount</p>
-                        <p className="text-lg sm:text-xl font-bold text-gray-900">₹{(formData?.interestAmount || 0).toLocaleString('en-IN')}</p>
-                    </div>
-                    <div className="bg-white rounded-lg px-4 py-2 border border-gray-200">
-                        <p className="text-xs sm:text-sm text-gray-500">Processing Fee</p>
-                        <p className="text-lg sm:text-xl font-bold text-gray-900">₹{((formData?.processingFee) || 0).toLocaleString('en-IN')}</p>
-                    </div>
-                    <div className="bg-white rounded-lg px-4 py-2 border border-gray-200">
-                        <p className="text-xs sm:text-sm text-gray-500">GST on Processing Fee</p>
-                        <p className="text-lg sm:text-xl font-bold text-gray-900">₹{((formData?.gstOnProcessingFee) || 0).toLocaleString('en-IN')}</p>
-                    </div>
-                    <div className="bg-white rounded-lg px-4 py-2 border border-gray-200 col-span-2">
-                        <p className="text-xs sm:text-sm text-gray-500">Total Repayment</p>
-                        <p className="text-lg sm:text-xl font-bold text-gray-900">₹{((formData?.totalRepayment) || 0).toLocaleString('en-IN')}</p>
-                    </div>
-                </div>
-            </div>
-
             {/* Loan Summary */}
             <div className="bg-gradient-to-r from-[#25B181]/10 to-[#51C9AF]/10 rounded-lg sm:rounded-xl p-3 sm:p-4 space-y-1.5 sm:space-y-2">
                 <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="text-gray-600">You&apos;ll receive (Net Disbursal Amount)</span>
-                    <span className="font-semibold text-green-600">{formatCurrency(formData?.netDisbursalAmount)}</span>
+                    <span className="text-gray-600">You&apos;ll receive</span>
+                    <span className="font-semibold text-green-600">{formatCurrency(loanCalc.netDisbursalAmount)}</span>
                 </div>
                 <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-gray-600">Processing Fee (10% + GST)</span>
-                    <span className="text-gray-700">{formData?.processingFee + formData?.gstOnProcessingFee}</span>
+                    <span className="text-gray-700">{formatCurrency(loanCalc.totalDeductions)}</span>
                 </div>
                 <div className="flex justify-between text-xs sm:text-sm border-t pt-1.5 sm:pt-2">
                     <span className="text-gray-600">Total Repayment</span>
-                    <span className="font-semibold text-gray-900">₹{((formData?.totalRepayment) || 0).toLocaleString('en-IN')}</span>
+                    <span className="font-semibold text-gray-900">{formatCurrency(loanCalc.totalRepayment)}</span>
                 </div>
             </div>
 

@@ -70,10 +70,6 @@ const PanVerify = ({ formData, setFormData }: PanVerifyProps) => {
     };
 
     const handleVerify = async () => {
-        if (!formData.aadhaarVerified) {
-            setError("Aadhaar verification is required first.");
-            return;
-        }
         // 1. Validation (Only PAN now)
         if (!formData.pan || !isValidPAN(formData.pan)) {
             setError("Please enter a valid PAN Number.");
@@ -87,13 +83,8 @@ const PanVerify = ({ formData, setFormData }: PanVerifyProps) => {
         try {
             // 2. API Call (Only sending panNumber)
             setLoading(true);
-            // const response = await axios.post('/api/v2/panVerification', {
-            //     panNumber: formData.pan
-            // });
-            const response = await axios.post('/api/kyc/pan/verification', {
-                panNumber: formData.pan,
-                fullName: formData.fullName,
-                dob: formData.dob,
+            const response = await axios.post('/api/v2/panVerification', {
+                panNumber: formData.pan
             });
             const data = response.data;
 

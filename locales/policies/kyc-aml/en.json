@@ -1,234 +1,80 @@
 {
-  "title": "Know Your Customer (KYC) & Anti-Money Laundering (AML) Policy",
-  "subtitle": "Satsai Finlease Pvt. Ltd.",
-  "approvalNote": "(This policy was reviewed and approved by the Board of Directors in the Board Meeting held on April 21, 2025.)",
-  "documentDetails": {
-    "title": "Document Details",
-    "policyTitle": "KYC & AML Policy",
-    "classification": "Public",
-    "approvalDate": "30th June 2023",
-    "lastReviewDate": "21st April 2025",
-    "approvedBy": "Board of Directors",
-    "custodian": "Operation"
-  },
-  "sections": {
-    "preamble": {
-      "title": "1. Preamble",
-      "content": "Satsai Finlease Private Limited (\"SFPL\" / \"the Company\"), being a Base Non-Banking Financial Company (NBFC) registered with the Reserve Bank of India (RBI) under Registration No. B-14.01646, engaged in the business of Payday Loans, EMI-based Loans, Loan Against Property (LAP) and other business loans, recognizes its responsibility to prevent misuse of its financial services for money laundering, terrorist financing and other unlawful activities.",
-      "complianceIntro": "Accordingly, this Know Your Customer (KYC) and Anti-Money Laundering (AML) Policy is formulated in compliance with:",
-      "complianceItems": [
-        "RBI Master Direction – Know Your Customer (KYC) Directions, 2016 (as amended from time to time)",
-        "Prevention of Money Laundering Act, 2002 (PMLA)",
-        "PML (Maintenance of Records) Rules, 2005",
-        "RBI Guidelines for NBFCs (Base Layer)",
-        "FATF Recommendations"
-      ],
-      "conclusion": "This Policy lays down principles, systems, procedures and internal controls to ensure strong customer identification, risk mitigation, due diligence and monitoring."
-    },
-    "objectives": {
-      "title": "2. Objectives",
-      "intro": "The objectives of this Policy are:",
+  "title": "KYC/AML Policy",
+  "subtitle": "Know Your Customer and Anti-Money Laundering",
+  "introduction": "QuikkRed is committed to preventing money laundering and terrorist financing. This policy outlines our approach to customer due diligence and compliance with applicable KYC and AML regulations.",
+  "kycRequirements": {
+    "title": "KYC Requirements",
+    "description": "All customers must provide the following documents for identity and address verification:",
+    "identity": {
+      "title": "Identity Proof (any one)",
       "items": [
-        "To prevent the Company from being used knowingly or unknowingly for money laundering or terrorist financing activities.",
-        "To ensure the Company understands its customers, their financial behavior and associated risks.",
-        "To promote ethical conduct and transparency in business relationships.",
-        "To comply with legal and regulatory requirements under RBI and PMLA framework.",
-        "To define procedures for detection and reporting of suspicious activities."
+        "Aadhaar Card",
+        "PAN Card",
+        "Passport",
+        "Voter ID",
+        "Driving License"
       ]
     },
-    "applicability": {
-      "title": "3. Applicability",
-      "content": "This KYC–AML Policy shall prevail over any other internal document, process, circular or instruction. This policy applies to all products and verticals of the Company, whether existing or introduced in the future."
-    },
-    "definitions": {
-      "title": "4. Definitions",
+    "address": {
+      "title": "Address Proof (any one)",
       "items": [
-        {
-          "term": "Aadhaar number",
-          "definition": "shall have the meaning assigned under the Aadhaar Act, 2016."
-        },
-        {
-          "term": "Authentication",
-          "definition": "means Aadhaar authentication as defined under the Aadhaar Act, 2016."
-        },
-        {
-          "term": "Customer",
-          "definition": "means a person engaged in a financial transaction or activity with the Company."
-        },
-        {
-          "term": "Act and Rules",
-          "definition": "means the Prevention of Money Laundering Act, 2002 and related Rules."
-        },
-        {
-          "term": "Customer Due Diligence (CDD)",
-          "definition": "means identifying and verifying the customer and beneficial owner."
-        },
-        {
-          "term": "Central KYC Records Registry (CKYCR)",
-          "definition": "means an entity maintaining digital KYC records."
-        },
-        {
-          "term": "Quikkred",
-          "definition": "means the digital lending platform operated by Fluxusforge Private Limited."
-        },
-        {
-          "term": "Designated Director",
-          "definition": "means the director responsible for AML compliance."
-        },
-        {
-          "term": "Digital KYC",
-          "definition": "means electronic customer verification as per RBI guidelines."
-        },
-        {
-          "term": "Officially Valid Document (OVD)",
-          "definition": "means passport, driving license, Aadhaar, Voter ID, etc."
-        },
-        {
-          "term": "Principal Officer",
-          "definition": "means the officer responsible for AML reporting."
-        },
-        {
-          "term": "Video based Customer Identification Process (V-CIP)",
-          "definition": "means video-based customer identification as per RBI norms."
-        }
+        "Aadhaar Card",
+        "Utility Bill (not older than 3 months)",
+        "Bank Statement (not older than 3 months)",
+        "Rent Agreement",
+        "Passport"
       ]
     },
-    "principalOfficer": {
-      "title": "5. Appointment of Principal Officer",
-      "content": "The Company shall designate a Principal Officer responsible for AML reporting and coordination with FIU-IND and RBI."
-    },
-    "complianceStructure": {
-      "title": "6. Compliance Structure",
-      "seniorManagement": {
-        "title": "a) Senior Management Responsibility",
-        "content": "Senior Management shall be responsible for AML/KYC implementation."
-      },
-      "training": {
-        "title": "b) Training & Awareness",
-        "content": "Regular AML/KYC training shall be conducted for employees."
-      }
-    },
-    "keyElements": {
-      "title": "7. Key Elements of KYC Policy",
-      "intro": "The KYC Policy consists of:",
+    "additional": {
+      "title": "Additional Documents",
       "items": [
-        "Customer Acceptance Policy (CAP)",
-        "Customer Identification Procedure (CIP)",
-        "Customer Due Diligence (CDD)",
-        "Ongoing Due Diligence",
-        "Monitoring of Transactions",
-        "Record Maintenance",
-        "Reporting Mechanism"
+        "Passport-size photograph",
+        "Bank account details",
+        "Income proof (salary slips/ITR)"
       ]
-    },
-    "customerAcceptance": {
-      "title": "8. Customer Acceptance Policy",
-      "intro": "The Customer Acceptance Policy ensures that:",
-      "items": [
-        "No anonymous or fictitious accounts are opened.",
-        "Customers are accepted only after identity verification.",
-        "CDD is mandatory before any transaction.",
-        "Sanction lists are screened."
-      ],
-      "note": "Safeguards shall not inconvenience genuine customers."
-    },
-    "customerIdentification": {
-      "title": "9. Customer Identification Procedure (CIP)",
-      "content": "Customer identity shall be verified using reliable documents and information.",
-      "methodsIntro": "KYC may be conducted through:",
-      "methods": [
-        "Physical Verification",
-        "Video KYC (V-CIP)",
-        "Digital KYC"
-      ],
-      "note": "OVD and PAN verification is mandatory."
-    },
-    "dueDiligence": {
-      "title": "10. Customer Due Diligence (CDD)",
-      "intro": "CDD includes:",
-      "items": [
-        "Identity verification",
-        "Address proof",
-        "Source of funds",
-        "Purpose of relationship"
-      ],
-      "enhanced": {
-        "title": "Enhanced Due Diligence",
-        "intro": "Enhanced Due Diligence includes:",
-        "items": [
-          "Higher monitoring",
-          "Senior management approval"
-        ]
-      }
-    },
-    "ongoingDueDiligence": {
-      "title": "11. Ongoing Due Diligence",
-      "intro": "Includes:",
-      "items": [
-        "Periodic KYC updates",
-        "Transaction review",
-        "Monitoring unusual activity"
-      ]
-    },
-    "transactionMonitoring": {
-      "title": "12. Transaction Monitoring",
-      "content": [
-        "Continuous monitoring of customer transactions is required.",
-        "Large or unusual transactions are closely reviewed."
-      ],
-      "flaggedIntro": "Suspicious transactions may include:",
-      "flaggedItems": [
-        "Unusual repayment behavior",
-        "Structuring of transactions",
-        "Sudden closures using cash"
-      ]
-    },
-    "fiuReporting": {
-      "title": "13. Reporting to Financial Intelligence Unit-India",
-      "content": "The Company shall report cash and suspicious transactions to FIU-IND as per law.",
-      "address": {
-        "title": "Director, FIU-IND",
-        "line1": "Financial Intelligence Unit-India",
-        "line2": "6th Floor, Hotel Samrat, Chanakyapuri",
-        "line3": "New Delhi - 110021"
-      },
-      "timeline": "Reports shall be submitted by the 15th of the succeeding month."
-    },
-    "recordManagement": {
-      "title": "14. Record Management",
-      "content": "Records shall be retained for at least 5 years after termination of relationship."
-    },
-    "reportingObligations": {
-      "title": "15. Reporting Obligations",
-      "intro": "The Company shall report:",
-      "items": [
-        "STR",
-        "CTR",
-        "NTR"
-      ],
-      "note": "All reports shall be filed through the Principal Officer."
-    },
-    "dataConfidentiality": {
-      "title": "16. Data Confidentiality",
-      "content": "Customer information shall be kept confidential and used only for lawful purposes."
-    },
-    "riskAssessment": {
-      "title": "17. Risk Assessment",
-      "items": [
-        "Annual ML/TF risk assessment shall be conducted.",
-        "Risk shall be documented and reviewed by the Board.",
-        "Risk Based Approach (RBA) shall be followed."
-      ]
-    },
-    "review": {
-      "title": "18. Review & Amendment",
-      "content": "This policy shall be reviewed annually or upon regulatory changes."
     }
   },
-  "boardApproval": {
-    "title": "Board Approval",
-    "content": "Approved by the Board of Directors of Satsai Finlease Private Limited",
-    "dateLabel": "Approved Date",
-    "date": "21.04.2025"
-  }
+  "verification": {
+    "title": "Verification Process",
+    "description": "Our verification process includes:",
+    "items": [
+      "Digital verification through official databases",
+      "Video KYC for remote onboarding",
+      "Physical verification when required",
+      "Periodic re-verification of customer information"
+    ]
+  },
+  "amlMeasures": {
+    "title": "AML Measures",
+    "description": "We implement the following measures to prevent money laundering:",
+    "items": [
+      "Transaction monitoring and suspicious activity reporting",
+      "Customer risk profiling",
+      "Enhanced due diligence for high-risk customers",
+      "Regular staff training on AML procedures",
+      "Maintenance of transaction records as per regulatory requirements"
+    ]
+  },
+  "reporting": {
+    "title": "Reporting Obligations",
+    "description": "We comply with all reporting requirements under the Prevention of Money Laundering Act (PMLA) and report suspicious transactions to the Financial Intelligence Unit (FIU-IND)."
+  },
+  "customerObligations": {
+    "title": "Customer Obligations",
+    "items": [
+      "Provide accurate and complete information",
+      "Update KYC documents when they change or expire",
+      "Cooperate with verification requests",
+      "Report any unauthorized transactions immediately"
+    ]
+  },
+  "principalOfficer": {
+    "title": "Principal Officer",
+    "description": "For any queries related to KYC/AML compliance, please contact:",
+    "name": "Mr. Rahul Sharma",
+    "designation": "Principal Officer - AML Compliance",
+    "email": "compliance@quikkred.in",
+    "phone": "+91-9311913854"
+  },
+  "footerNote": "This policy is subject to change based on regulatory updates and is reviewed annually."
 }
