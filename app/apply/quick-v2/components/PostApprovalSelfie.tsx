@@ -243,7 +243,7 @@ export default function PostApprovalSelfie({
             const formDataUpload = new FormData();
             formDataUpload.append('photo', capturedFile!);
 
-            const response = await fetch(`${API_BASE_URL}/api/kyc/face/verification`, {
+            const response = await fetch(`${API_BASE_URL}/api/kyc/face/rekognition/verify`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -283,7 +283,7 @@ export default function PostApprovalSelfie({
             console.error('Selfie verification error:', error);
             const errorMsg = 'Verification failed. Please try again.';
             setVerificationError(errorMsg);
-            trackAPIError('/api/kyc/face/verification', errorMsg);
+            trackAPIError('/api/kyc/face/rekognition/verify', errorMsg);
             trackSelfieCaptureFailed(errorMsg, selfieFriction.getAttempts());
         } finally {
             setIsVerifying(false);
