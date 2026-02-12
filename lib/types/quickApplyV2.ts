@@ -20,7 +20,7 @@ export interface QuickApplyV2FormData {
     pincode: string;
     city: string;
     state: string;
-    productId?: string; // Loan product ID
+    productId: string; // Loan product ID
     loanAmount: number;
     approvedLoanAmount: number;
     tenure: number; // in days: 7, 15, 30
@@ -33,6 +33,8 @@ export interface QuickApplyV2FormData {
     tenureUnit: string;
     gstOnProcessingFee: number;
     netDisbursalAmount: number;
+    purpose: string,
+    selectedProduct?: any,
 
     interestRate: number,
     totalInterest: number,
