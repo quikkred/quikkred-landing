@@ -4989,19 +4989,19 @@ export default function QuickLoanApplication() {
                                   if (approvalData?._id) {
                                     applicationId = approvalData._id;
                                     console.log('✅ Using _id from approvalData:', applicationId);
-                                    localStorage.setItem('applicationId', applicationId);
+                                    localStorage.setItem('applicationId', applicationId as string);
                                   }
                                   // Try applicationMongoId from localStorage
                                   else if (localStorage.getItem('applicationMongoId')) {
                                     applicationId = localStorage.getItem('applicationMongoId');
                                     console.log('✅ Using applicationMongoId from localStorage:', applicationId);
-                                    localStorage.setItem('applicationId', applicationId);
+                                    localStorage.setItem('applicationId', applicationId as string);
                                   }
                                   // Fallback: Check if approvalData.applicationId looks like a MongoDB ObjectID (24 hex chars)
                                   else if (approvalData?.applicationId && /^[a-f0-9]{24}$/i.test(approvalData.applicationId)) {
                                     applicationId = approvalData.applicationId;
                                     console.log('✅ Using applicationId from approvalData (looks like MongoDB _id):', applicationId);
-                                    localStorage.setItem('applicationId', applicationId);
+                                    localStorage.setItem('applicationId', applicationId as string);
                                   }
                                 }
 
