@@ -52,85 +52,101 @@ const testimonialsData: Testimonial[] = [
   {
     type: "text",
     id: "1",
-    name: "Rajesh Kumar",
+    name: "Avishek Dutta Roy",
     location: "Mumbai, Maharashtra",
-    image: "https://randomuser.me/api/portraits/men/32.jpg",
+    // image: "https://randomuser.me/api/portraits/men/32.jpg",
     rating: 5,
     loanAmount: "2,50,000",
     loanType: "Personal Loan",
     date: "Dec 2024",
     content:
-      "Quikkred made my life so much easier! Got loan approved in just 2 hours. No hidden charges, simple process. Highly recommended!",
+      "I had a very positive experience with Quikkred. The loan process was quick, smooth, and completely hassle-free. The executives were extremely helpful, responsive, and supportive at every step, patiently guiding me through the process and addressing all my queries. I’m genuinely satisfied with their service and truly appreciate the professionalism and efficiency shown by the entire team.!",
   },
   {
     type: "video",
     id: "2",
-    name: "Priya Sharma",
+    name: "Shrushti Swaroop Rane",
     location: "Delhi NCR",
-    image: "https://randomuser.me/api/portraits/women/44.jpg",
+    // image: "https://randomuser.me/api/portraits/women/44.jpg",
     rating: 5,
     loanAmount: "5,00,000",
     loanType: "Business Loan",
     date: "Nov 2024",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
-    duration: "2:30",
-    title: "Quikkred helped me grow my business",
+    videoUrl: "/videos/shrushti.mp4",
+    // thumbnail: "/videos/thumb.jpg",
+    duration: "24sec",
+    title: "Service is good and quick , so helpful customer support. ",
   },
   {
     type: "text",
     id: "3",
-    name: "Amit Patel",
+    name: "Amalraj Anthonymuthu",
     location: "Ahmedabad, Gujarat",
-    image: "https://randomuser.me/api/portraits/men/40.jpg",
+    // image: "https://randomuser.me/api/portraits/men/40.jpg",
     rating: 4,
     loanAmount: "1,00,000",
     loanType: "Emergency Loan",
     date: "Jan 2025",
-    content:
-      "Medical emergency and Quikkred gave same day loan. Customer support was very helpful. Thank you Quikkred team!",
+    content: "Good process and fast and best experience.!",
   },
   {
     type: "video",
     id: "4",
-    name: "Sunita Devi",
+    name: "Shubham khanna ",
     location: "Jaipur, Rajasthan",
-    image: "https://randomuser.me/api/portraits/women/65.jpg",
+    // image: "https://randomuser.me/api/portraits/women/65.jpg",
     rating: 5,
     loanAmount: "3,00,000",
     loanType: "Personal Loan",
     date: "Oct 2024",
-    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
-    duration: "1:45",
-    title: "Home renovation loan - Best experience!",
+    videoUrl: "/videos/shubham khanna.mp4",
+    // thumbnail: "/videos/shubham-thumb.jpg",
+    duration: "09sec",
+    title: "This time I'm getting a higher loan , Quikkred has my trust.",
   },
+
+  {
+    type: "video",
+    id: "5",
+    name: "Amul King",
+    location: "Delhi NCR",
+    rating: 5,
+    loanAmount: "4,50,000",
+    loanType: "Business Loan",
+    date: "Jan 2025",
+
+    videoUrl: "/videos/Amul King.mp4",
+    // thumbnail: "/videos/amul-thumb.jpg", // optional
+
+    duration: "15sec",
+    title: "Fast service and very supportive team. Good experience.",
+  },
+
   {
     type: "text",
-    id: "5",
-    name: "Vikram Singh",
+    id: "6",
+    name: "Amrit Singh ",
     location: "Lucknow, UP",
-    image: "https://randomuser.me/api/portraits/men/55.jpg",
+    // image: "https://randomuser.me/api/portraits/men/55.jpg",
     rating: 5,
     loanAmount: "4,00,000",
     loanType: "Business Loan",
     date: "Dec 2024",
-    content:
-      "Needed loan for my shop. Bank rejected but Quikkred approved in 24 hours. Interest rate is also reasonable.",
+    content: "Best loan service.",
   },
-  {
-    type: "text",
-    id: "6",
-    name: "Meera Reddy",
-    location: "Hyderabad, Telangana",
-    image: "https://randomuser.me/api/portraits/women/33.jpg",
-    rating: 4,
-    loanAmount: "1,50,000",
-    loanType: "Education Loan",
-    date: "Nov 2024",
-    content:
-      "Got loan for daughter's higher education. Minimal documentation and smooth process. Quikkred is truly customer-friendly!",
-  },
+  // {
+  //   type: "text",
+  //   id: "6",
+  //   name: "Meera Reddy",
+  //   location: "Hyderabad, Telangana",
+  //   image: "https://randomuser.me/api/portraits/women/33.jpg",
+  //   rating: 4,
+  //   loanAmount: "1,50,000",
+  //   loanType: "Education Loan",
+  //   date: "Nov 2024",
+  //   content:
+  //     "Got loan for daughter's higher education. Minimal documentation and smooth process. Quikkred is truly customer-friendly!",
+  // },
 ];
 
 // Filter type
@@ -153,7 +169,12 @@ const StarRating = ({ rating }: { rating: number }) => (
 // Default Avatar
 const DefaultAvatar = ({ name }: { name: string }) => (
   <div className="w-9 h-9 sm:w-11 sm:h-11 lg:w-12 lg:h-12 rounded-full bg-gradient-to-br from-[#25B181] to-[#1F8F68] flex items-center justify-center text-white font-bold text-xs sm:text-sm lg:text-base">
-    {name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
+    {name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)}
   </div>
 );
 
@@ -165,48 +186,61 @@ const TextCard = ({ testimonial }: { testimonial: TextTestimonial }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full h-full bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 lg:p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300"
+      className="w-full h-full bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 lg:p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300 flex flex-col"
     >
-      <Quote className="w-6 h-6 sm:w-8 sm:h-8 text-[#25B181]/20 mb-2 sm:mb-3" />
-      <p className="text-gray-700 text-xs sm:text-sm lg:text-base leading-relaxed mb-3 sm:mb-4 line-clamp-4">
-        "{testimonial.content}"
-      </p>
-      <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-        <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 bg-[#D3F1EB] text-[#1F8F68] rounded-full text-[10px] sm:text-xs font-medium">
-          <IndianRupee size={10} className="sm:w-3 sm:h-3" />
-          {testimonial.loanAmount}
-        </span>
-        <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 sm:py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] sm:text-xs font-medium">
-          {testimonial.loanType}
-        </span>
+      <div className="relative mb-3 sm:mb-4 flex-grow">
+        <Quote className="w-5 h-5 sm:w-6 sm:h-6 text-[#25B181]/30 absolute -left-1 -top-1 rotate-180" />
+        <p className="text-gray-700 text-xs sm:text-sm lg:text-base leading-relaxed pl-4 sm:pl-5 line-clamp-4">
+          {testimonial.content}
+        </p>
       </div>
-      <div className="flex items-center gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-gray-100">
-        {testimonial.image && !imageError ? (
-          <Image
-            src={testimonial.image}
-            alt={testimonial.name}
-            width={48}
-            height={48}
-            className="w-9 h-9 sm:w-11 sm:h-11 lg:w-12 lg:h-12 rounded-full object-cover ring-2 ring-[#D3F1EB]"
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <DefaultAvatar name={testimonial.name} />
-        )}
-        <div className="flex-1 min-w-0">
-          <h4 className="font-semibold text-gray-900 text-xs sm:text-sm truncate">{testimonial.name}</h4>
-          <p className="text-[10px] sm:text-xs text-gray-500 truncate">{testimonial.location}</p>
-          <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5 sm:mt-1">
-            <StarRating rating={testimonial.rating} />
-            <span className="text-[10px] sm:text-xs text-gray-400">{testimonial.date}</span>
+      <div className="flex items-end justify-between gap-2 mb-3 sm:mb-4">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2">
+          <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 bg-[#D3F1EB] text-[#1F8F68] rounded-full text-[10px] sm:text-xs font-medium">
+            <IndianRupee size={10} className="sm:w-3 sm:h-3" />
+            {testimonial.loanAmount}
+          </span>
+          <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 sm:py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] sm:text-xs font-medium">
+            {testimonial.loanType}
+          </span>
+        </div>
+        <Quote className="w-5 h-5 sm:w-6 sm:h-6 text-[#25B181]/30 flex-shrink-0" />
+      </div>
+      <div className="flex items-center justify-between gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-gray-100 mt-auto">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          {testimonial.image && !imageError ? (
+            <Image
+              src={testimonial.image}
+              alt={testimonial.name}
+              width={48}
+              height={48}
+              className="w-9 h-9 sm:w-11 sm:h-11 lg:w-12 lg:h-12 rounded-full object-cover ring-2 ring-[#D3F1EB] flex-shrink-0"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <DefaultAvatar name={testimonial.name} />
+          )}
+          <div className="min-w-0">
+            <h4 className="font-semibold text-gray-900 text-xs sm:text-sm truncate">
+              {testimonial.name}
+            </h4>
+            <p className="text-[10px] sm:text-xs text-gray-500 truncate">
+              {testimonial.location}
+            </p>
           </div>
+        </div>
+        <div className="flex flex-col items-end gap-0.5 sm:gap-1 flex-shrink-0">
+          <StarRating rating={testimonial.rating} />
+          <span className="text-[10px] sm:text-xs text-gray-400 whitespace-nowrap">
+            {testimonial.date}
+          </span>
         </div>
       </div>
     </motion.div>
   );
 };
 
-// Video Card
+// VideoCard component - replace the video thumbnail section
 const VideoCard = ({
   testimonial,
   onPlay,
@@ -220,16 +254,18 @@ const VideoCard = ({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full h-full bg-white rounded-xl sm:rounded-2xl overflow-hidden shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300"
+      className="w-full h-full bg-white rounded-xl sm:rounded-2xl overflow-hidden shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300 flex flex-col"
     >
-      <div className="relative h-36 sm:h-44 lg:h-48 bg-gray-200 cursor-pointer group" onClick={onPlay}>
-        {testimonial.thumbnail ? (
-          <Image src={testimonial.thumbnail} alt={testimonial.title} fill className="object-cover" />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-[#25B181] to-[#1F8F68] flex items-center justify-center">
-            <Video className="w-12 h-12 sm:w-16 sm:h-16 text-white/50" />
-          </div>
-        )}
+      <div
+        className="relative h-36 sm:h-44 lg:h-48 bg-gray-900 cursor-pointer group"
+        onClick={onPlay}
+      >
+        <video
+          src={testimonial.videoUrl}
+          className="w-full h-full object-cover"
+          preload="metadata"
+          muted
+        />
         <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
           <div className="w-11 h-11 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-white/90 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
             <Play className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-[#25B181] ml-0.5 sm:ml-1" />
@@ -242,8 +278,10 @@ const VideoCard = ({
           <Video size={10} className="sm:w-3 sm:h-3" />
         </span>
       </div>
-      <div className="p-3 sm:p-4 lg:p-5">
-        <h4 className="font-semibold text-gray-900 text-xs sm:text-sm mb-1.5 sm:mb-2 line-clamp-2">{testimonial.title}</h4>
+      <div className="p-3 sm:p-4 lg:p-5 flex flex-col flex-grow">
+        <h4 className="font-semibold text-gray-900 text-xs sm:text-sm mb-1.5 sm:mb-2 line-clamp-2">
+          {testimonial.title}
+        </h4>
         <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2 sm:mb-3">
           <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 bg-[#D3F1EB] text-[#1F8F68] rounded-full text-[10px] sm:text-xs font-medium">
             <IndianRupee size={10} className="sm:w-3 sm:h-3" />
@@ -253,26 +291,37 @@ const VideoCard = ({
             {testimonial.loanType}
           </span>
         </div>
-        <div className="flex items-center gap-2 sm:gap-3 pt-2 sm:pt-3 border-t border-gray-100">
-          {testimonial.image && !imageError ? (
-            <Image
-              src={testimonial.image}
-              alt={testimonial.name}
-              width={40}
-              height={40}
-              className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 rounded-full object-cover ring-2 ring-[#D3F1EB]"
-              onError={() => setImageError(true)}
-            />
-          ) : (
-            <div className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 rounded-full bg-gradient-to-br from-[#25B181] to-[#1F8F68] flex items-center justify-center text-white font-bold text-[10px] sm:text-xs">
-              {testimonial.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
+        <div className="flex items-center justify-between gap-2 sm:gap-3 pt-2 sm:pt-3 border-t border-gray-100 mt-auto">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            {testimonial.image && !imageError ? (
+              <img
+                src={testimonial.image}
+                alt={testimonial.name}
+                className="w-9 h-9 sm:w-11 sm:h-11 lg:w-12 lg:h-12 rounded-full object-cover ring-2 ring-[#D3F1EB] flex-shrink-0"
+                onError={() => setImageError(true)}
+              />
+            ) : (
+              <div className="w-9 h-9 sm:w-11 sm:h-11 lg:w-12 lg:h-12 rounded-full bg-gradient-to-br from-[#25B181] to-[#1F8F68] flex items-center justify-center text-white font-bold text-xs sm:text-sm flex-shrink-0">
+                {testimonial.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase()
+                  .slice(0, 2)}
+              </div>
+            )}
+            <div className="min-w-0">
+              <h5 className="font-medium text-gray-900 text-xs sm:text-sm truncate">
+                {testimonial.name}
+              </h5>
+              <p className="text-[10px] sm:text-xs text-gray-500 truncate">
+                {testimonial.location}
+              </p>
             </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <h5 className="font-medium text-gray-900 text-xs sm:text-sm truncate">{testimonial.name}</h5>
-            <p className="text-[10px] sm:text-xs text-gray-500 truncate">{testimonial.location}</p>
           </div>
-          <StarRating rating={testimonial.rating} />
+          <div className="flex-shrink-0">
+            <StarRating rating={testimonial.rating} />
+          </div>
         </div>
       </div>
     </motion.div>
@@ -280,7 +329,13 @@ const VideoCard = ({
 };
 
 // Video Modal
-const VideoModal = ({ videoUrl, onClose }: { videoUrl: string; onClose: () => void }) => {
+const VideoModal = ({
+  videoUrl,
+  onClose,
+}: {
+  videoUrl: string;
+  onClose: () => void;
+}) => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -320,7 +375,10 @@ const VideoModal = ({ videoUrl, onClose }: { videoUrl: string; onClose: () => vo
             className="w-full sm:w-[90vw] md:w-[85vw] lg:w-[80vw] max-w-5xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="relative bg-black rounded-lg sm:rounded-xl overflow-hidden shadow-2xl" style={{ paddingBottom: "56.25%" }}>
+            <div
+              className="relative bg-black rounded-lg sm:rounded-xl overflow-hidden shadow-2xl"
+              style={{ paddingBottom: "56.25%" }}
+            >
               <iframe
                 src={`${videoUrl}?autoplay=1`}
                 className="absolute top-0 left-0 w-full h-full"
@@ -330,7 +388,7 @@ const VideoModal = ({ videoUrl, onClose }: { videoUrl: string; onClose: () => vo
             </div>
           </motion.div>
         </motion.div>,
-        document.body
+        document.body,
       )
     : null;
 };
@@ -362,11 +420,13 @@ export default function TestimonialsSection() {
           <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold font-sora mb-2 sm:mb-3 lg:mb-4 px-2">
             {t?.homepage?.sections?.testimonials?.title || "Trusted by"}{" "}
             <span className="text-[#25B181]">
-              {t?.homepage?.sections?.testimonials?.titleHighlight || "Thousands"}
+              {t?.homepage?.sections?.testimonials?.titleHighlight ||
+                "Thousands"}
             </span>
           </h2>
           <p className="text-gray-600 text-xs sm:text-sm lg:text-base xl:text-lg max-w-2xl mx-auto px-2">
-            {t?.homepage?.sections?.testimonials?.subtitle || "Real stories from real customers who transformed their lives with Quikkred"}
+            {t?.homepage?.sections?.testimonials?.subtitle ||
+              "Real stories from real customers who transformed their lives with Quikkred"}
           </p>
         </motion.div>
 
@@ -397,7 +457,9 @@ export default function TestimonialsSection() {
               }`}
             >
               <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">{t?.homepage?.sections?.testimonials?.filters?.text || "Text"}</span>
+              <span className="hidden sm:inline">
+                {t?.homepage?.sections?.testimonials?.filters?.text || "Text"}
+              </span>
             </button>
             <button
               onClick={() => setFilter("video")}
@@ -408,7 +470,9 @@ export default function TestimonialsSection() {
               }`}
             >
               <Video className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">{t?.homepage?.sections?.testimonials?.filters?.video || "Video"}</span>
+              <span className="hidden sm:inline">
+                {t?.homepage?.sections?.testimonials?.filters?.video || "Video"}
+              </span>
             </button>
           </div>
         </motion.div>
@@ -416,28 +480,37 @@ export default function TestimonialsSection() {
 
       {/* Carousel */}
       <div className="relative w-screen left-1/2 -translate-x-1/2">
-        <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-20 md:w-32 lg:w-44 xl:w-52 bg-gradient-to-r from-[#FAFAFA] via-[#FAFAFA]/70 to-transparent z-10 pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-8 sm:w-20 md:w-32 lg:w-44 xl:w-52 bg-gradient-to-l from-[#FAFAFA] via-[#FAFAFA]/70 to-transparent z-10 pointer-events-none" />
-
-        <div className="overflow-x-auto scrollbar-hide px-3 sm:px-6 md:px-10 lg:px-16 xl:px-20" style={{ scrollBehavior: "smooth" }}>
+        <div
+          className="overflow-x-auto scrollbar-hide px-3 sm:px-6 md:px-10 lg:px-16 xl:px-20"
+          style={{ scrollBehavior: "smooth" }}
+        >
           <div className="flex gap-3 sm:gap-4 md:gap-5 lg:gap-6 w-fit py-2">
             {filteredTestimonials.map((testimonial) =>
               testimonial.type === "text" ? (
-                <div key={testimonial.id} className="w-[260px] sm:w-[300px] md:w-[320px] lg:w-[360px] xl:w-[380px] flex-shrink-0">
+                <div
+                  key={testimonial.id}
+                  className="w-[260px] sm:w-[300px] md:w-[320px] lg:w-[360px] xl:w-[380px] flex-shrink-0"
+                >
                   <TextCard testimonial={testimonial} />
                 </div>
               ) : (
-                <div key={testimonial.id} className="w-[260px] sm:w-[300px] md:w-[320px] lg:w-[360px] xl:w-[380px] flex-shrink-0">
-                  <VideoCard testimonial={testimonial} onPlay={() => setSelectedVideo(testimonial.videoUrl)} />
+                <div
+                  key={testimonial.id}
+                  className="w-[260px] sm:w-[300px] md:w-[320px] lg:w-[360px] xl:w-[380px] flex-shrink-0"
+                >
+                  <VideoCard
+                    testimonial={testimonial}
+                    onPlay={() => setSelectedVideo(testimonial.videoUrl)}
+                  />
                 </div>
-              )
+              ),
             )}
           </div>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      {/* <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -445,35 +518,52 @@ export default function TestimonialsSection() {
           className="mt-8 sm:mt-12 lg:mt-16 grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 lg:gap-6"
         >
           <div className="text-center p-3 sm:p-4 lg:p-6 bg-white rounded-lg sm:rounded-xl shadow-sm">
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#25B181] mb-0.5 sm:mb-1">50,000+</div>
+            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#25B181] mb-0.5 sm:mb-1">
+              50,000+
+            </div>
             <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600">
-              {t?.homepage?.sections?.testimonials?.stats?.customers || "Happy Customers"}
+              {t?.homepage?.sections?.testimonials?.stats?.customers ||
+                "Happy Customers"}
             </div>
           </div>
           <div className="text-center p-3 sm:p-4 lg:p-6 bg-white rounded-lg sm:rounded-xl shadow-sm">
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#25B181] mb-0.5 sm:mb-1">4.8/5</div>
+            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#25B181] mb-0.5 sm:mb-1">
+              4.8/5
+            </div>
             <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600">
-              {t?.homepage?.sections?.testimonials?.stats?.rating || "Average Rating"}
+              {t?.homepage?.sections?.testimonials?.stats?.rating ||
+                "Average Rating"}
             </div>
           </div>
           <div className="text-center p-3 sm:p-4 lg:p-6 bg-white rounded-lg sm:rounded-xl shadow-sm">
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#25B181] mb-0.5 sm:mb-1">500+ Cr</div>
+            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#25B181] mb-0.5 sm:mb-1">
+              500+ Cr
+            </div>
             <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600">
-              {t?.homepage?.sections?.testimonials?.stats?.disbursed || "Loans Disbursed"}
+              {t?.homepage?.sections?.testimonials?.stats?.disbursed ||
+                "Loans Disbursed"}
             </div>
           </div>
           <div className="text-center p-3 sm:p-4 lg:p-6 bg-white rounded-lg sm:rounded-xl shadow-sm">
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#25B181] mb-0.5 sm:mb-1">98%</div>
+            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#25B181] mb-0.5 sm:mb-1">
+              98%
+            </div>
             <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600">
-              {t?.homepage?.sections?.testimonials?.stats?.satisfaction || "Satisfaction Rate"}
+              {t?.homepage?.sections?.testimonials?.stats?.satisfaction ||
+                "Satisfaction Rate"}
             </div>
           </div>
         </motion.div>
-      </div>
+      </div> */}
 
       {/* Video Modal */}
       <AnimatePresence>
-        {selectedVideo && <VideoModal videoUrl={selectedVideo} onClose={() => setSelectedVideo(null)} />}
+        {selectedVideo && (
+          <VideoModal
+            videoUrl={selectedVideo}
+            onClose={() => setSelectedVideo(null)}
+          />
+        )}
       </AnimatePresence>
     </section>
   );

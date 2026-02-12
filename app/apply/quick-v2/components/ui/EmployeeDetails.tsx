@@ -5,6 +5,7 @@ import { useQuickApplyTracking } from "@/lib/hooks";
 import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
 import { AlertCircle, Briefcase, IndianRupee } from "lucide-react";
 import { useState } from "react";
+import SelectProduct from "./SelectProduct";
 
 interface EmployeeDetailsProps {
     formData: QuickApplyV2FormData;
@@ -56,7 +57,7 @@ const EmployeeDetails = ({ formData, setFormData }: EmployeeDetailsProps) => {
         // 3. Save RAW value to state (e.g., "30000", not "30,000")
         setFormData((prev) => ({
             ...prev,
-            monthlyIncome: rawValue, 
+            monthlyIncome: rawValue,
         }));
 
         setErrors((prev) => ({ ...prev, monthlyIncome: "" }));
@@ -110,11 +111,10 @@ const EmployeeDetails = ({ formData, setFormData }: EmployeeDetailsProps) => {
                                 key={type.value}
                                 type="button"
                                 onClick={() => handleEmploymentTypeChange(type.value)}
-                                className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-medium text-xs sm:text-sm transition-all ${
-                                    formData.employmentType === type.value
+                                className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-medium text-xs sm:text-sm transition-all ${formData.employmentType === type.value
                                         ? "bg-[#25B181] text-white shadow-md"
                                         : "bg-white text-gray-700 border border-gray-300 hover:border-[#25B181]"
-                                }`}
+                                    }`}
                             >
                                 {type.label}
                             </button>
@@ -138,7 +138,7 @@ const EmployeeDetails = ({ formData, setFormData }: EmployeeDetailsProps) => {
                                 type="text"
                                 inputMode="numeric"
                                 // FIX: Format the raw value for display here
-                                value={formatIndianNumber(formData.monthlyIncome)} 
+                                value={formatIndianNumber(formData.monthlyIncome)}
                                 onChange={(e) => handleMonthlyIncomeChange(e.target.value)}
                                 onFocus={() => trackFieldFocus("monthlyIncome", 2)}
                                 className="w-full pl-8 pr-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#25B181] border-gray-300"
@@ -198,6 +198,8 @@ const EmployeeDetails = ({ formData, setFormData }: EmployeeDetailsProps) => {
                         <p className="mt-1 text-xs text-gray-500">Enter the approximate loan amount</p>
                     ) : null}
                 </div>
+
+                <SelectProduct formData={formData} setFormData={setFormData} />
             </div>
 
             {/* ---------------- SUBMIT ERROR ---------------- */}

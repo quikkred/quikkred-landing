@@ -55,6 +55,7 @@ export interface ApplicationInterface {
 
     applicationNumber: string;
     customerId: string;
+    productId: string;
 
     status: "PENDING" | "APPROVED" | "REJECTED" | "PROCEED TO BANK";
     priority: "LOW" | "MEDIUM" | "HIGH";
