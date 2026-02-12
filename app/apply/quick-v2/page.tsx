@@ -95,6 +95,7 @@ export default function QuickApplyV2Page() {
                 brePulled: application?.breHistory?.brePulled || user?.brePulled || false,
                 companyName: user?.companyName || "",
                 breStatus: application?.status || "PENDING",
+                productId: application?.productId || "",
 
                 // bank
                 bankName: user?.bankName || "",

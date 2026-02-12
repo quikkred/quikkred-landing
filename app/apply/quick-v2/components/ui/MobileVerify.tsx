@@ -9,7 +9,11 @@ import useAxios from "@/hooks/useAxios";
 import { useQuickApplyTracking, useVerificationFrictionTracking } from "@/lib/hooks";
 import { useApplication } from "@/contexts/ApplicationContext";
 
-const MobileVerify = () => {
+const MobileVerify = ({
+  callback,
+}: {
+  callback?: () => void;
+}) => {
   const { login } = useAuth();
   const { getApplication } = useApplication();
   const axios = useAxios();
@@ -102,6 +106,7 @@ const MobileVerify = () => {
             apiData: session,
           });
           getApplication();
+          callback?.();
         }
       } else {
         setOtpError(res?.error || "Invalid OTP. Please try again.");
