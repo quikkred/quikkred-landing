@@ -3833,6 +3833,18 @@ export default function QuickLoanApplication() {
     );
   }
 
+
+  // ----- Above return -----
+const tenureUnit =
+  calculatedLoanDetails?.tenureUnit || approvalData?.tenureUnit;
+
+const interestRate =
+  calculatedLoanDetails?.interestRate || approvalData?.interestRate || 0;
+
+const apr =
+  calculatedLoanDetails?.apr || approvalData?.apr || interestRate; // fallback
+
+
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5] py-8 px-4">
@@ -5173,60 +5185,104 @@ export default function QuickLoanApplication() {
                       </div>
 
                       {/* Loan Details Grid */}
-                      <div className="bg-gray-50 rounded-xl p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                          <IndianRupee className="w-5 h-5 text-[#25B181]" />
-                          Loan Details
-                          {calculatedLoanDetails && (
-                            <span className="text-xs font-normal text-gray-500 ml-2">(Based on your selected amount)</span>
-                          )}
-                        </h3>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">Your Loan Amount</p>
-                            <p className="text-xl font-bold text-[#25B181]">
-                              ₹{((calculatedLoanDetails?.loanAmount || userDesiredAmount || approvalData.loanAmount) || 0).toLocaleString('en-IN')}
-                            </p>
-                          </div>
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">Tenure</p>
-                            <p className="text-xl font-bold text-gray-900">
-                              {(calculatedLoanDetails?.tenure || approvalData.tenure) || 0} {(calculatedLoanDetails?.tenureUnit || approvalData.tenureUnit) === 'Days' ? 'Days' : 'Months'}
-                            </p>
-                          </div>
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">Interest Rate</p>
-                            <p className="text-xl font-bold text-gray-900">{(calculatedLoanDetails?.interestRate || approvalData.interestRate) || 0}%</p>
-                          </div>
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">Interest Amount</p>
-                            <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.totalInterest ?? approvalData.totalInterest) || 0).toLocaleString('en-IN')}</p>
-                          </div>
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">Platform Fee</p>
-                            <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.processingFee ?? approvalData.processingFee) || 0).toLocaleString('en-IN')}</p>
-                          </div>
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">GST on Platform Fee</p>
-                            <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.gstOnProcessingFee ?? approvalData.gstOnProcessingFee) || 0).toLocaleString('en-IN')}</p>
-                          </div>
-                          <div className="bg-white rounded-lg p-4 border border-gray-200 col-span-2">
-                            <p className="text-sm text-gray-500 mb-1">Total Repayment</p>
-                            <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.totalRepayment ?? approvalData.totalRepayment) || 0).toLocaleString('en-IN')}</p>
-                          </div>
-                        </div>
+                   <div className="bg-gray-50 rounded-xl p-6">
+  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+    <IndianRupee className="w-5 h-5 text-[#25B181]" />
+    Loan Details
+    {calculatedLoanDetails && (
+      <span className="text-xs font-normal text-gray-500 ml-2">
+        (Based on your selected amount)
+      </span>
+    )}
+  </h3>
 
-                        {/* Net Disbursal Highlight */}
-                        <div className="mt-4 bg-green-50 border-2 border-green-500 rounded-xl p-4">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="text-sm text-green-600 font-medium">You Will Receive</p>
-                              <p className="text-xs text-green-500">Net Disbursal Amount</p>
-                            </div>
-                            <p className="text-2xl font-bold text-green-600">₹{((calculatedLoanDetails?.netDisbursalAmount ?? approvalData.netDisbursalAmount) || 0).toLocaleString('en-IN')}</p>
-                          </div>
-                        </div>
-                      </div>
+  <div className="grid grid-cols-2 gap-4">
+
+    {/* Loan Amount */}
+    <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <p className="text-sm text-gray-500 mb-1">Your Loan Amount</p>
+      <p className="text-xl font-bold text-[#25B181]">
+        ₹{((calculatedLoanDetails?.loanAmount ||
+          userDesiredAmount ||
+          approvalData.loanAmount) || 0).toLocaleString("en-IN")}
+      </p>
+    </div>
+
+    {/* Tenure */}
+    <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <p className="text-sm text-gray-500 mb-1">Tenure</p>
+      <p className="text-xl font-bold text-gray-900">
+        {(calculatedLoanDetails?.tenure || approvalData.tenure) || 0}{" "}
+        {tenureUnit === "Days" ? "Days" : "Months"}
+      </p>
+    </div>
+
+    {/* INTEREST / APR (UPDATED FEATURE) */}
+    <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <p className="text-sm text-gray-500 mb-1">
+        {tenureUnit === "Months" ? "APR" : "Interest Rate"}
+      </p>
+      <p className="text-xl font-bold text-gray-900">
+        {tenureUnit === "Months" ? apr : interestRate}%
+      </p>
+    </div>
+
+    {/* Interest Amount */}
+    <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <p className="text-sm text-gray-500 mb-1">Interest Amount</p>
+      <p className="text-xl font-bold text-gray-900">
+        ₹{((calculatedLoanDetails?.totalInterest ??
+          approvalData.totalInterest) || 0).toLocaleString("en-IN")}
+      </p>
+    </div>
+
+    {/* Platform Fee */}
+    <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <p className="text-sm text-gray-500 mb-1">Platform Fee</p>
+      <p className="text-xl font-bold text-gray-900">
+        ₹{((calculatedLoanDetails?.processingFee ??
+          approvalData.processingFee) || 0).toLocaleString("en-IN")}
+      </p>
+    </div>
+
+    {/* GST */}
+    <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <p className="text-sm text-gray-500 mb-1">GST on Platform Fee</p>
+      <p className="text-xl font-bold text-gray-900">
+        ₹{((calculatedLoanDetails?.gstOnProcessingFee ??
+          approvalData.gstOnProcessingFee) || 0).toLocaleString("en-IN")}
+      </p>
+    </div>
+
+    {/* Total Repayment */}
+    <div className="bg-white rounded-lg p-4 border border-gray-200 col-span-2">
+      <p className="text-sm text-gray-500 mb-1">Total Repayment</p>
+      <p className="text-xl font-bold text-gray-900">
+        ₹{((calculatedLoanDetails?.totalRepayment ??
+          approvalData.totalRepayment) || 0).toLocaleString("en-IN")}
+      </p>
+    </div>
+  </div>
+
+  {/* Net Disbursal */}
+  <div className="mt-4 bg-green-50 border-2 border-green-500 rounded-xl p-4">
+    <div className="flex justify-between items-center">
+      <div>
+        <p className="text-sm text-green-600 font-medium">
+          You Will Receive
+        </p>
+        <p className="text-xs text-green-500">
+          Net Disbursal Amount
+        </p>
+      </div>
+      <p className="text-2xl font-bold text-green-600">
+        ₹{((calculatedLoanDetails?.netDisbursalAmount ??
+          approvalData.netDisbursalAmount) || 0).toLocaleString("en-IN")}
+      </p>
+    </div>
+  </div>
+</div>
+
 
                       {/* User Details Summary */}
                       <div className="bg-gray-50 rounded-xl p-6">
