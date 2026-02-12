@@ -1311,7 +1311,7 @@ export default function QuickLoanApplication() {
     if (!formData.loanAmount || parseFloat(formData.loanAmount) <= 0) return false;
 
     // Product selection validation
-    if (!formData.productId || !selectedProduct) return false;
+    // if (!formData.productId || !selectedProduct) return false;
 
     return true;
   };
@@ -3031,14 +3031,14 @@ export default function QuickLoanApplication() {
       }
 
       // Product validation for Step 1
-      if (!formData.productId || !selectedProduct) {
-        toast({
-          variant: "warning",
-          title: "Product Selection Required",
-          description: "Please select a loan product to continue.",
-        });
-        return;
-      }
+      // if (!formData.productId || !selectedProduct) {
+      //   toast({
+      //     variant: "warning",
+      //     title: "Product Selection Required",
+      //     description: "Please select a loan product to continue.",
+      //   });
+      //   return;
+      // }
 
       // Save Step 1 data only for logged-in users with valid token
       // For non-logged-in users, data will be saved after Aadhaar verification in Step 2
@@ -4411,7 +4411,7 @@ export default function QuickLoanApplication() {
                   </div>
 
                   {/* Loan Product Selection */}
-                  <div className="mt-6">
+                  {/* <div className="mt-6">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Select Loan Product *
                     </label>
@@ -4439,7 +4439,7 @@ export default function QuickLoanApplication() {
                         </p>
                       </div>
                     )}
-                  </div>
+                  </div> */}
 
                     </>
                  {/* )} */}
