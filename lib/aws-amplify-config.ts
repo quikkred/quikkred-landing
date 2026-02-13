@@ -1,7 +1,7 @@
 import { Amplify } from "aws-amplify";
 
 // Configure AWS Amplify for Face Liveness
-// Note: These credentials should come from your backend or environment variables
+// Note: These credentials should come from environment variables
 export const configureAmplify = (identityPoolId?: string, region: string = "ap-south-1") => {
   if (!identityPoolId) {
     console.warn("AWS Identity Pool ID not provided. Face Liveness will not work without proper authentication.");
@@ -10,8 +10,11 @@ export const configureAmplify = (identityPoolId?: string, region: string = "ap-s
 
   Amplify.configure({
     Auth: {
-      identityPoolId: identityPoolId,
-      region: region
+      Cognito: {
+        identityPoolId: identityPoolId,
+        // Allow unauthenticated access
+        allowGuestAccess: true
+      }
     }
   });
 
@@ -30,9 +33,8 @@ export const configureAmplifyWithCognito = (config: {
       Cognito: {
         userPoolId: config.userPoolId,
         userPoolClientId: config.userPoolClientId,
-        identityPoolId: config.identityPoolId,
-      },
-      region: config.region
+        identityPoolId: config.identityPoolId
+      }
     }
   });
 
