@@ -57,7 +57,7 @@ export interface ApplicationInterface {
     customerId: string;
     productId: string;
 
-    status: "PENDING" | "APPROVED" | "REJECTED" | "PROCEED TO BANK";
+    status: "PENDING" | "APPROVED" | "REJECTED" | "PROCEED TO BANK" | "Approve" | "Proceed to Bank" | "Reject" | "PROCEED_TO_BANK";
     priority: "LOW" | "MEDIUM" | "HIGH";
 
     isSubmit: boolean;
