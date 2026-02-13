@@ -226,7 +226,6 @@ async applyLoan(data: LoanApplication): Promise<ApiResponse<any>> {
   // Submit reapplication for a loan
   async submitReapplication(data: {
     customerId: string;
-    loanAmount: number;
     tenure: number;
     purpose?: string;
     notes?: string;
