@@ -38,8 +38,8 @@ export default function QuickApplyV2Page() {
     // const storage = useStorage();
     // const breForm = useMemo<StorageApplicationForm | null>(() => ((storage.data?.breForm as StorageApplicationForm) || null), [storage]);
     const { application } = useApplication();
-    // console.log("application:", application);
-    // console.log("user", user);
+    console.log("application:", application);
+    console.log("user", user);
 
     // Form Data
     const [formData, setFormData] = useState<QuickApplyV2FormData>(getInitialFormData);
@@ -94,6 +94,8 @@ export default function QuickApplyV2Page() {
                 selfieVerified: user?.profile?.status === "VERIFIED",
                 brePulled: application?.breHistory?.brePulled || user?.brePulled || false,
                 bsaInitiated: user?.bsaInitiated || false,
+                bsaBreStatus: application?.breHistory?.bsaBreStatus || "",
+                bsaStatus: application?.breHistory?.bsaStatus || "",
                 companyName: user?.companyName || "",
                 breStatus: application?.status || "PENDING",
                 productId: application?.productId || "",
@@ -130,13 +132,15 @@ export default function QuickApplyV2Page() {
             // 4. Status is NOT rejected
             // 5. If status is "PROCEED TO BANK", only allow if it's approved (handled after FinFactor)
             const isApproved = application?.status === "APPROVED" || application?.status === "Approve";
+            const bsaBreApproved = application?.breHistory?.bsaBreStatus === "APPROVED";
             const isProceedToBank = application?.status === "PROCEED TO BANK" || application?.status === "Proceed to Bank" || application?.status === "PROCEED_TO_BANK";
-            const isRejected = application?.status === "REJECTED" || application?.status === "Reject";
+            const bsaBreRejected = application?.breHistory?.bsaBreStatus === "REJECTED";
+            const isRejected = application?.status === "REJECTED" || application?.status === "Reject" || bsaBreRejected;
 
             // Navigate to bank step if approved OR if FinFactor was completed and status updated
             const eligibilityStep = isLogin && brePulled && application && !isRejected && !isProceedToBank;
 
-            if (eligibilityStep || isApproved) {
+            if (eligibilityStep || isApproved || bsaBreApproved) {
                 setStep("bank");
             } else if (isLogin) {
                 setStep("eligibility");

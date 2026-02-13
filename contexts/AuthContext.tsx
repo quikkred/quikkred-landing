@@ -99,6 +99,9 @@ export const userInitializer = ({ apiData, currentUser }: { apiData: any, curren
       isAadhaarVerify: apiData.isAadhaarVerify || false,
       brePulled: apiData.brePulled || false,
       bsaInitiated: apiData.bsaInitiated || false,
+      bsaCompleted: apiData.bsaCompleted || false,
+      bsaToBreInitiated: apiData.bsaToBreInitiated || false,
+      bsaToBreCompleted: apiData.bsaToBreCompleted || false,
 
       // dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
       pan: apiData.panCard || null,

@@ -19,6 +19,7 @@ import { useApplication } from '@/contexts/ApplicationContext';
 import { AlertCircle, ArrowRight, Landmark, Loader2 } from 'lucide-react'; // 1. Import Icon
 import MissingField from './ui/MissingField';
 import useLocation from '@/hooks/useLocation';
+import FinFactorVerify from './ui/FinFactorVerify';
 
 interface CheckEligibilityProps {
     formData: QuickApplyV2FormData;
@@ -27,6 +28,7 @@ interface CheckEligibilityProps {
 }
 
 export default function CheckEligibility({ formData, setFormData, onNext }: CheckEligibilityProps) {
+    console.log("formData", formData);
     // OTP States
     const [otpTimer, setOtpTimer] = useState(0);
     const [finFactorDetails, setFinFactorDetails] = useState<{
@@ -40,8 +42,6 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
     });
     const { user } = useAuth();
     const axios = useAxios();
-    const storage = useStorage();
-    const searchParams = useSearchParams();
     const [isLoading, setLoading] = useState(false);
     const [ptbLoading, setPtbLoading] = useState(false);
     const { location, getLocation } = useLocation();
@@ -60,120 +60,6 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
 
     // Track previous values for change detection
     const hasTrackedStepRef = useRef(false);
-
-    // ... [Keep existing fetchBreFinfactorResult function unchanged] ...
-    const fetchBreFinfactorResult = async () => {
-        console.log('📊 finfactor=success detected, auto-calling BRE finFactor API...');
-        console.log('🔍 bsaInitiated status:', formData?.bsaInitiated);
-
-        setFinFactorDetails({
-            visibility: true,
-            loading: true,
-            data: null
-        });
-
-        try {
-            const response = await axios.get(`/api/v2/bre/finFactor`);
-            const result = response.data;
-
-            if (response.status === 200 || response.status === 201) {
-                console.log('✅ BRE finFactor result:', result.data);
-
-                // ⚠️ CRITICAL: Only re-initialize BRE if bsaInitiated is FALSE
-                // If bsaInitiated is TRUE, skip BRE re-initialization and use finFactor result directly
-                if (!formData?.bsaInitiated) {
-                    console.log('📊 bsaInitiated is FALSE, re-initializing BRE...');
-                    try {
-                        const breResponse = await axios.get("/api/v2/bre/initialize");
-                        if (breResponse.status === 200 || breResponse.status === 201) {
-                            console.log('✅ BRE re-initialized after FinFactor:', breResponse.data);
-
-                            // Update formData with new BRE status
-                            setFormData((prev) => ({
-                                ...prev,
-                                breStatus: breResponse.data?.data?.status,
-                                brePulled: true
-                            }));
-
-                            // Update KYC status based on new BRE result
-                            updateKycStatusState({
-                                loading: false,
-                                status: breResponse.data?.data?.status === "Approve" ? "approved" :
-                                    breResponse.data?.data?.status === "Proceed to Bank" ? "proceed-to-bank" : "rejected",
-                                data: breResponse.data?.data,
-                                title: breResponse.data?.message || "FinFactor Analysis Completed",
-                                description: breResponse?.data?.data?.reason || "Your application has been processed",
-                            });
-
-                            // Show modal with final result from BRE
-                            setFinFactorDetails({
-                                visibility: true,
-                                loading: false,
-                                data: breResponse.data.data
-                            });
-                        }
-                    } catch (breError: any) {
-                        console.error('BRE re-initialization failed:', breError);
-                        // Still show FinFactor result even if BRE re-init fails
-                        setFinFactorDetails({
-                            visibility: true,
-                            loading: false,
-                            data: result.data
-                        });
-                    }
-                } else {
-                    console.log('✅ bsaInitiated is TRUE, skipping BRE re-initialization');
-                    // Update formData with finFactor result directly
-                    setFormData((prev) => ({
-                        ...prev,
-                        breStatus: result.data?.status,
-                        brePulled: true
-                    }));
-
-                    // Update KYC status based on finFactor result
-                    updateKycStatusState({
-                        loading: false,
-                        status: result.data?.status === "Approve" ? "approved" :
-                            result.data?.status === "Proceed to Bank" ? "proceed-to-bank" : "rejected",
-                        data: result.data,
-                        title: result.message || "Bank Verification Completed",
-                        description: result.data?.reason || "Your bank statement has been analyzed",
-                    });
-
-                    // Show modal with finFactor result
-                    setFinFactorDetails({
-                        visibility: true,
-                        loading: false,
-                        data: result.data
-                    });
-                }
-
-                // Refresh application and customer data
-                getApplication();
-                getCustomer();
-
-                toast({ variant: "success", title: "Success", description: "Bank verification completed successfully." });
-
-                // Clean up URL params
-                const cleanUrl = window.location.pathname;
-                window.history.replaceState({}, '', cleanUrl);
-            } else {
-                throw new Error(result.message || "Analysis failed");
-            }
-        } catch (error: any) {
-            console.error('BRE finFactor failed:', error);
-            const errorMsg = error.response?.data?.message || "Something went wrong";
-            toast({ variant: "error", title: "Error", description: errorMsg });
-            setFinFactorDetails(prev => ({ ...prev, loading: false, visibility: false }));
-        }
-    };
-
-    useEffect(() => {
-        const finfactorParam = searchParams.get('finfactor');
-        if (finfactorParam === "success") {
-            fetchBreFinfactorResult();
-        }
-    }, [searchParams]);
 
     useEffect(() => {
         if (!hasTrackedStepRef.current) {
@@ -208,6 +94,10 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
             formData.breStatus === "PROCEED TO BANK" ||
             formData.breStatus === "Proceed to Bank";
 
+        // 4b. If BSA-BRE returned REJECTED, block progression
+        const isBsaBreRejected = formData.bsaBreStatus === "REJECTED";
+        if (isBsaBreRejected) return false;
+
         // 5. Employment details check
         const isWorkDetailsValid = formData.companyName?.trim() !== "";
 
@@ -241,9 +131,19 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
                 const result = response.data;
 
                 if (response.status === 200 || response.status === 201) {
-                    // Once finFactor is successful, start the BRE Initialization sequence
+                    // Check BSA-BRE result from finFactor response
+                    const bsaBreResult = result.data?.status === "Reject" || result.data?.status === "REJECTED" ? "REJECTED" : result.data?.status;
+                    console.log('📊 handleProceedToBankApi BSA-BRE status:', bsaBreResult);
+
+                    // Update formData with BSA-BRE result
+                    setFormData(prev => ({
+                        ...prev,
+                        bsaBreStatus: bsaBreResult,
+                        breStatus: bsaBreResult === "REJECTED" ? "REJECTED" : prev.breStatus,
+                    }));
+
+                    // Refresh application and customer data
                     getApplication();
-                    // await fetchBreInitialize();
                     getCustomer();
                 } else {
                     throw new Error(result.message || "Analysis failed");
@@ -255,7 +155,7 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
             }
             return;
         }
-        
+
         setPtbLoading(true);
         try {
             const response = await axios.get(`/api/v2/finfactorConsentRequest`);
@@ -369,16 +269,16 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
             })
         }
 
-        // const kycDetails = {
-        //     isKycDetailsFilled: true
-        // }
+        const kycDetails = {
+            isKycDetailsFilled: true
+        }
 
         try {
             setLoading(true);
             const basicResponse = await axios.post("/api/v2/application/loan/create", {
                 basicDetails,
                 loanDetails,
-                // kycDetails,
+                kycDetails,
             });
 
             if (basicResponse.status === 200 || basicResponse.status === 201) {
@@ -445,30 +345,10 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
             exit={{ opacity: 0 }}
             className="space-y-3 sm:space-y-4"
         >
-            <FinFactorStatus
-                visibility={finFactorDetails.visibility}
-                loading={finFactorDetails.loading}
-                data={finFactorDetails.data}
-                onContinue={async () => {
-                    // Refresh customer and application data
-                    await getCustomer();
-                    await getApplication();
-
-                    // Close the modal
-                    setFinFactorDetails({ visibility: false, loading: false, data: null });
-
-                    // If approved, scroll to top and show next step
-                    if (finFactorDetails.data?.status === "Approve" || finFactorDetails.data?.status === "APPROVED") {
-                        toast({ variant: "success", title: "Congratulations!", description: "Your loan has been approved." });
-                        setTimeout(() => {
-                            onNext();
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                        }, 500);
-                    } else {
-                        // For other statuses, just close modal and show updated state
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                }}
+            <FinFactorVerify 
+                formData={formData}
+                setFormData={setFormData}
+                onNext={onNext}
             />
             <h2 className="text-lg sm:text-xl font-bold text-gray-900">Get Instant Cash</h2>
 
@@ -488,7 +368,7 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
             </div>
 
             {/* 3. Conditional Rendering: Reject Message vs Button */}
-            {(formData?.breStatus === "REJECTED" || formData?.breStatus === "Rejected") ? (
+            {(formData?.breStatus === "REJECTED" || formData?.breStatus === "Rejected" || formData?.bsaBreStatus === "REJECTED") ? (
                 <div className="mb-5 bg-red-100/50 border border-red-200 rounded-xl px-4 py-3 shadow-sm animate-in fade-in slide-in-from-top-2">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
                         {/* LEFT SIDE: Status & Message */}
