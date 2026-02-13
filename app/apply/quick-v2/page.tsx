@@ -118,8 +118,8 @@ export default function QuickApplyV2Page() {
                 interestAmount,
             }));
 
-            // const isLogin = user?.isEmailVerified || user?.isMobileVerified;
-            const isLogin = user?.isMobileVerified;
+            const isLogin = user?.isEmailVerified || user?.isMobileVerified;
+            // const isLogin = user?.isMobileVerified;
             const brePulled = application?.breHistory?.brePulled || user?.brePulled || false;
             const eligibilityStep = isLogin && brePulled && application && application?.status !== "REJECTED" && application?.status !== "PROCEED TO BANK";
             // const eligibilityStep = isLogin && application && application?.status !== "REJECTED";

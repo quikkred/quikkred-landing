@@ -107,7 +107,7 @@ const ApplicationSuccess = ({
                             <DetailRow
                                 icon={<Clock className="w-3.5 h-3.5" />}
                                 label="Interest Rate"
-                                value={`${formData?.interestRate}% p.a`}
+                                value={`${formData?.interestRate}% per day`}
                             />
                             <DetailRow
                                 icon={<IndianRupee className="w-3.5 h-3.5" />}
