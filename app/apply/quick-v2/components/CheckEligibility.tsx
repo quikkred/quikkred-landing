@@ -76,13 +76,13 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
 
             if (response.status === 200 || response.status === 201) {
                 console.log('✅ BRE finFactor result:', result.data);
-                getCustomer();
-                getApplication();
+                // getApplication();
                 setFinFactorDetails({
                     visibility: true,
                     loading: false,
                     data: result.data
                 });
+                // getCustomer();
                 toast({ variant: "success", title: "Success", description: "Analysis completed." });
                 // Clean up URL params
                 const cleanUrl = window.location.pathname;
@@ -348,6 +348,10 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
                 visibility={finFactorDetails.visibility}
                 loading={finFactorDetails.loading}
                 data={finFactorDetails.data}
+                onContinue={() => {
+                    getCustomer();
+                    getApplication();
+                }}
             />
             <h2 className="text-lg sm:text-xl font-bold text-gray-900">Get Instant Cash</h2>
 
