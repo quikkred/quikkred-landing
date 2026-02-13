@@ -388,18 +388,6 @@ const BankVerification = ({
                 </button>
             </div>
 
-            {/* Trust Badge */}
-
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                    <Shield className="w-5 h-5 text-green-600 mt-0.5" />
-                    <div className="text-sm text-green-800">
-                        <p className="font-semibold mb-1">Your data is secure</p>
-                        <p>256-bit encryption • RBI guidelines compliant • No hidden charges</p>
-                    </div>
-                </div>
-            </div>
-
             {/* <div className="bg-gray-50 rounded-xl p-4">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-2">
                     <div className="flex justify-start items-center gap-2">
@@ -482,6 +470,17 @@ const BankVerification = ({
                     </>
                 )}
             </button>
+
+            {/* Trust Badge */}
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                    <Shield className="w-5 h-5 text-green-600 mt-0.5" />
+                    <div className="text-sm text-green-800">
+                        <p className="font-semibold mb-1">Your data is secure</p>
+                        <p>256-bit encryption • RBI guidelines compliant • No hidden charges</p>
+                    </div>
+                </div>
+            </div>
         </motion.div>
     );
 }
