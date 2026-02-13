@@ -82,6 +82,7 @@ export default async function getUserDetails(): Promise<User | null> {
       isPanVerify: apiData.isPanVerify || false,
       isAadhaarVerify: apiData.isAadhaarVerify || false,
       brePulled: apiData.brePulled || false,
+      bsaInitiated: apiData.bsaInitiated || false,
 
       // dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
       pan: apiData.panCard || null,

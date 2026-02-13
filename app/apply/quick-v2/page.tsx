@@ -93,6 +93,7 @@ export default function QuickApplyV2Page() {
                 selfie: (user?.profile?.s3URL as string) || "",
                 selfieVerified: user?.profile?.status === "VERIFIED",
                 brePulled: application?.breHistory?.brePulled || user?.brePulled || false,
+                bsaInitiated: user?.bsaInitiated || false,
                 companyName: user?.companyName || "",
                 breStatus: application?.status || "PENDING",
                 productId: application?.productId || "",
@@ -121,10 +122,21 @@ export default function QuickApplyV2Page() {
             const isLogin = user?.isEmailVerified || user?.isMobileVerified;
             // const isLogin = user?.isMobileVerified;
             const brePulled = application?.breHistory?.brePulled || user?.brePulled || false;
-            const eligibilityStep = isLogin && brePulled && application && application?.status !== "REJECTED" && application?.status !== "PROCEED TO BANK";
-            // const eligibilityStep = isLogin && application && application?.status !== "REJECTED";
 
-            if (eligibilityStep) {
+            // Allow progression if:
+            // 1. User is logged in
+            // 2. BRE has been pulled
+            // 3. Application exists
+            // 4. Status is NOT rejected
+            // 5. If status is "PROCEED TO BANK", only allow if it's approved (handled after FinFactor)
+            const isApproved = application?.status === "APPROVED" || application?.status === "Approve";
+            const isProceedToBank = application?.status === "PROCEED TO BANK" || application?.status === "Proceed to Bank" || application?.status === "PROCEED_TO_BANK";
+            const isRejected = application?.status === "REJECTED" || application?.status === "Reject";
+
+            // Navigate to bank step if approved OR if FinFactor was completed and status updated
+            const eligibilityStep = isLogin && brePulled && application && !isRejected && !isProceedToBank;
+
+            if (eligibilityStep || isApproved) {
                 setStep("bank");
             } else if (isLogin) {
                 setStep("eligibility");
