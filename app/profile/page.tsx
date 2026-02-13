@@ -694,7 +694,8 @@ export default function ProfilePage() {
               </div>
 
               {/* CIBIL Score Section */}
-              {profileData.cibilScore && (
+              {profileData?.cibilScore !== null && profileData?.cibilScore !== undefined && (
+
                 <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg sm:rounded-xl border-2 border-blue-200">
                   <div className="text-center">
                     <p className="text-[10px] sm:text-xs font-medium text-gray-600 mb-2">CIBIL Score</p>
@@ -913,11 +914,11 @@ export default function ProfilePage() {
                           label="Customer ID"
                           value={profileData.customerUniqueId || 'N/A'}
                         />
-                        <InfoField
+                        {/* <InfoField
                           icon={<CheckCircle className="w-5 h-5 text-[#4A66FF]" />}
                           label="Reward Points"
                           value={profileData.points ? profileData.points.toLocaleString('en-IN') : '0'}
-                        />
+                        /> */}
                       </div>
                     </div>
 

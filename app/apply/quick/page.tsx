@@ -767,84 +767,149 @@ export default function QuickLoanApplication() {
   // This handles the case when user returns after finfactor process or bsaInitiated is true
   const breFinFactorCalledRef = useRef(false);
 
-  // useEffect(() => {
-  //   const fetchBreFinfactorResult = async () => {
-  //     const finfactorParam = searchParams.get('finfactor');
+  useEffect(() => {
+    const fetchBreFinfactorResult = async (retryAttempt = 0) => {
+      const finfactorParam = searchParams.get('finfactor');
 
-  //     // Only proceed if:
-  //     // 1. finfactor=success is in URL
-  //     // 2. Not already loading
-  //     // 3. Not already called
-  //     // 4. No approvalData yet
-  //     if (finfactorParam !== 'success' || consentLoading || breFinFactorCalledRef.current || approvalData) {
-  //       return;
-  //     }
+      // Only proceed if:
+      // 1. finfactor=success is in URL
+      // 2. Not already loading
+      // 3. Not already called (or retrying)
+      // 4. No approvalData yet
+      if (finfactorParam !== 'success' || (consentLoading && retryAttempt === 0) || (breFinFactorCalledRef.current && retryAttempt === 0) || approvalData) {
+        return;
+      }
 
-  //     console.log('📊 finfactor=success detected, auto-calling BRE finFactor API...');
+      console.log(`📊 finfactor=success detected, calling BRE finFactor API (Attempt ${retryAttempt + 1}/3)...`);
 
-  //     const token = await getToken();
-  //     if (!token) {
-  //       console.error('No auth token found for BRE finFactor');
-  //       return;
-  //     }
+      const token = await getToken();
+      if (!token) {
+        console.error('No auth token found for BRE finFactor');
+        return;
+      }
 
-  //     breFinFactorCalledRef.current = true;
-  //     setConsentLoading(true);
-  //     setCurrentStep(4); // Ensure we're on Step 4
-  //     setFinfactorSuccess(true); // Show loading UI
+      if (retryAttempt === 0) {
+        breFinFactorCalledRef.current = true;
+      }
+      setConsentLoading(true);
+      setCurrentStep(4); // Ensure we're on Step 4
+      setFinfactorSuccess(true); // Show loading UI with 60 second countdown
 
-  //     try {
-  //       // Get applicationId from approval data or localStorage
-  //       const applicationId = approvalData?.applicationId || localStorage.getItem('applicationMongoId');
+      try {
+        // Get MongoDB _id from localStorage (NOT application number)
+        let applicationId = localStorage.getItem('applicationId') || localStorage.getItem('applicationMongoId');
 
-  //       if (!applicationId) {
-  //         console.error('No applicationId available for balance check');
-  //         toast({ variant: "error", title: "Error", description: "Application ID not found. Please try again." });
-  //         breFinFactorCalledRef.current = false;
-  //         setFinfactorSuccess(false);
-  //         setConsentLoading(false);
-  //         return;
-  //       }
+        // Fallback: Try to get from approvalData._id
+        if (!applicationId && approvalData?._id) {
+          applicationId = approvalData._id;
+        }
 
-  //       console.log('🔄 Starting complete balance check flow with applicationId:', applicationId);
+        if (!applicationId) {
+          console.error('No applicationId available for balance check');
+          toast({ variant: "error", title: "Error", description: "Application ID not found. Please try again." });
+          breFinFactorCalledRef.current = false;
+          setFinfactorSuccess(false);
+          setConsentLoading(false);
+          return;
+        }
 
-  //       // Call complete balance check flow (consent → FI data → balance check → BRE with BSA)
-  //       // This takes 30-60 seconds
-  //       const response = await fetch(`${API_BASE_URL}/api/balance-check/complete`, {
-  //         method: 'POST',
-  //         headers: {
-  //           'Authorization': `Bearer ${token}`,
-  //           'Content-Type': 'application/json'
-  //         },
-  //         body: JSON.stringify({ applicationId })
-  //       });
+        console.log('🔄 Starting complete balance check flow with applicationId:', applicationId);
 
-  //       const result = await response.json();
+        // Call complete balance check flow (consent → FI data → balance check → BRE with BSA)
+        // This takes 30-60 seconds (countdown will show progress)
+        const response = await fetch(`${API_BASE_URL}/api/balance-check/complete`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ applicationId })
+        });
 
-  //       if (response.ok && result.success) {
-  //         console.log('✅ Balance check with BRE completed successfully:', result.data);
-  //         toast({ variant: "success", title: "Success", description: result.message || "Loan verification completed successfully." });
+        const result = await response.json();
 
-  //         if (result.data) {
-  //           setApprovalData(result.data);
-  //         }
-  //         setFinfactorSuccess(false);
-  //       } else {
-  //         console.error('Balance check failed:', result.message);
-  //         toast({ variant: "error", title: "Failed", description: result.message || "Verification failed. Please try again." });
-  //         breFinFactorCalledRef.current = false; // Allow retry on failure
-  //       }
-  //     } catch (error) {
-  //       console.error('Error processing balance check:', error);
-  //       toast({ variant: "error", title: "Error", description: "Failed to process. Please try again." });
-  //       breFinFactorCalledRef.current = false; // Allow retry on error
-  //     } finally {
-  //       setConsentLoading(false);
-  //     }
-  //   };
+        if (response.ok && result.success) {
+          console.log('✅ Balance check with BRE completed successfully:', result.data);
+          toast({ variant: "success", title: "Success", description: result.message || "Loan verification completed successfully." });
 
-  //   fetchBreFinfactorResult();
-  // }, [searchParams, consentLoading, approvalData, toast]);
+          if (result.data) {
+            setApprovalData(result.data);
+          }
+          setFinfactorSuccess(false);
+          setConsentLoading(false);
+        } else {
+          // API returned error
+          console.error('Balance check failed:', result.message);
+
+          if (retryAttempt < 2) {
+            // Retry (attempt 0, 1 can retry. After 2 attempts total = 3 tries)
+            const nextAttempt = retryAttempt + 1;
+            console.log(`🔄 Retrying in 3 seconds... (Attempt ${nextAttempt + 1}/3)`);
+            toast({
+              variant: "error",
+              title: "Retrying",
+              description: `Verification failed. Retrying (${nextAttempt + 1}/3)...`
+            });
+            setConsentLoading(false);
+
+            setTimeout(() => {
+              fetchBreFinfactorResult(nextAttempt);
+            }, 3000);
+          } else {
+            // Failed 3 times - redirect to user dashboard
+            console.error('❌ API failed 3 times. Redirecting to dashboard...');
+            toast({
+              variant: "error",
+              title: "Verification Failed",
+              description: "Unable to complete verification. Redirecting to dashboard..."
+            });
+            setFinfactorSuccess(false);
+            setConsentLoading(false);
+            breFinFactorCalledRef.current = false;
+
+            setTimeout(() => {
+              router.push('/user');
+            }, 2000);
+          }
+        }
+      } catch (error) {
+        console.error('Error processing balance check:', error);
+
+        if (retryAttempt < 2) {
+          // Retry
+          const nextAttempt = retryAttempt + 1;
+          console.log(`🔄 Retrying after error in 3 seconds... (Attempt ${nextAttempt + 1}/3)`);
+          toast({
+            variant: "error",
+            title: "Network Error",
+            description: `Connection failed. Retrying (${nextAttempt + 1}/3)...`
+          });
+          setConsentLoading(false);
+
+          setTimeout(() => {
+            fetchBreFinfactorResult(nextAttempt);
+          }, 3000);
+        } else {
+          // Failed 3 times - redirect to user dashboard
+          console.error('❌ API failed 3 times due to errors. Redirecting to dashboard...');
+          toast({
+            variant: "error",
+            title: "Verification Failed",
+            description: "Unable to complete verification. Redirecting to dashboard..."
+          });
+          setFinfactorSuccess(false);
+          setConsentLoading(false);
+          breFinFactorCalledRef.current = false;
+
+          setTimeout(() => {
+            router.push('/user');
+          }, 2000);
+        }
+      }
+    };
+
+    fetchBreFinfactorResult(0);
+  }, [searchParams, consentLoading, approvalData, toast, router]);
 
   // Check Aadhaar verification status when verified=true query param is present
   // Only calls API after user profile data is loaded AND if isAadhaarVerify !== true
@@ -1087,6 +1152,74 @@ export default function QuickLoanApplication() {
 
   // Track if BRE API has been called to prevent infinite loops
   const breApiCalledRef = useRef(false);
+
+  // Track if customer/get has been called on Step 4
+  const customerDataFetchedOnStep4Ref = useRef(false);
+
+  // Fetch latest customer data when Step 4 loads
+  useEffect(() => {
+    const fetchLatestCustomerData = async () => {
+      // Only run on Step 4
+      if (currentStep !== 4) {
+        customerDataFetchedOnStep4Ref.current = false; // Reset when leaving Step 4
+        return;
+      }
+
+      // Skip if already fetched for this Step 4 session
+      if (customerDataFetchedOnStep4Ref.current) {
+        console.log('[Step 4] Customer data already fetched, skipping duplicate call');
+        return;
+      }
+
+      console.log('[Step 4] Fetching latest customer data...');
+      customerDataFetchedOnStep4Ref.current = true;
+
+      try {
+        // Using Redux for customer/get API
+        const customerResult = await getCustomer();
+
+        if (customerResult.success && customerResult.data) {
+          const profileData = customerResult.data;
+          console.log('[Step 4] ✅ Customer data fetched successfully');
+
+          // Update verification statuses
+          if (toBoolean(profileData.isPanVerify)) {
+            setPanVerified(true);
+          }
+          if (toBoolean(profileData.isAadhaarVerify)) {
+            setAadhaarVerified(true);
+          }
+
+          // Helper to mask Aadhaar (show only last 4 digits)
+          const maskAadhaarNumber = (aadhaar: string) => {
+            if (!aadhaar || aadhaar.length !== 12) return aadhaar;
+            return 'XXXXXXXX' + aadhaar.slice(-4);
+          };
+
+          // Update form data with latest customer info
+          setFormData(prev => ({
+            ...prev,
+            fullName: profileData.fullName || prev.fullName,
+            pan: profileData.panCard || prev.pan,
+            aadhaar: profileData.isAadhaarVerify ? maskAadhaarNumber(profileData.aadhaarNumber) : (profileData.aadhaarNumber || prev.aadhaar),
+            dob: profileData.dateOfBirth ? formatDateForInput(profileData.dateOfBirth) : prev.dob,
+            monthlyIncome: profileData.monthlyIncome || prev.monthlyIncome,
+            employmentType: profileData.employmentType || prev.employmentType,
+            companyName: profileData.companyName || prev.companyName,
+          }));
+
+          console.log('[Step 4] Form data updated with latest customer info');
+        } else {
+          console.log('[Step 4] ⚠️ Customer API returned no data');
+        }
+      } catch (error) {
+        console.error('[Step 4] ❌ Error fetching customer data:', error);
+        // Non-blocking error - continue with existing data
+      }
+    };
+
+    fetchLatestCustomerData();
+  }, [currentStep, getCustomer]);
 
   // Auto-call BRE API when Step 4 is reached (including on hard refresh)
   useEffect(() => {
@@ -1657,18 +1790,13 @@ export default function QuickLoanApplication() {
         });
 
         // Auto-fill form with customer data after successful OTP verification
-        const token = accessToken ||
-          localStorage.getItem('accessToken') ||
-          localStorage.getItem('token') ||
-          localStorage.getItem('authToken');
+        // Cookie token will be used automatically by the API
+        try {
+          console.log('🔵 Fetching customer data after OTP verification...');
+          // Using Redux for customer/get API (uses cookie token automatically)
+          const customerResult = await getCustomer();
 
-        if (token) {
-          try {
-            console.log('🔵 Fetching customer data after OTP verification...');
-            // Using Redux for customer/get API
-            const customerResult = await getCustomer();
-
-            if (customerResult.success && customerResult.data) {
+          if (customerResult.success && customerResult.data) {
               const profileData = customerResult.data;
               console.log('✅ Customer data fetched successfully');
 
@@ -1876,7 +2004,6 @@ export default function QuickLoanApplication() {
             console.error('❌ Error fetching customer data:', error);
             // Non-blocking error - user can continue filling form manually
           }
-        }
       } else {
         toast({
           variant: "error",
@@ -2647,13 +2774,26 @@ export default function QuickLoanApplication() {
       // Store IDs if this is first save
       if (result.data) {
         if (result.data.customerId) localStorage.setItem('userId', result.data.customerId);
+
+        // Store MongoDB _id as applicationId (internal ID)
         if (result.data._id) {
-          console.log('✅ Setting applicationId in localStorage:', result.data._id);
+          console.log('✅ Setting applicationId (MongoDB _id):', result.data._id);
           localStorage.setItem('applicationId', result.data._id);
         } else {
           console.warn('⚠️ No _id found in result.data');
         }
-        if (result.data.loanNumber) localStorage.setItem('loanNumber', result.data.loanNumber);
+
+        // Store application number separately (user-friendly number)
+        if (result.data.applicationNumber) {
+          console.log('✅ Setting applicationNumber:', result.data.applicationNumber);
+          localStorage.setItem('applicationNumber', result.data.applicationNumber);
+        }
+
+        // Store loan number (if available)
+        if (result.data.loanNumber) {
+          console.log('✅ Setting loanNumber:', result.data.loanNumber);
+          localStorage.setItem('loanNumber', result.data.loanNumber);
+        }
       }
 
       if (response.ok && result.success) {
@@ -2741,7 +2881,8 @@ export default function QuickLoanApplication() {
     }
 
     // Get application ID and customer ID
-    const applicationId = approvalData?.applicationId || approvalData?._id;
+    // IMPORTANT: Use MongoDB _id, NOT applicationId (which is application number)
+    const applicationId = approvalData?._id || localStorage.getItem('applicationId');
     const customerId = reduxCustomer?.data?._id || reduxCustomer?.data?.id || approvalData?.customerId;
 
     if (!applicationId) {
@@ -3064,8 +3205,8 @@ export default function QuickLoanApplication() {
       // Step 2: Aadhaar & PAN Verification
 
       // Check if Aadhaar is already verified (from user profile)
-      const isMaskedAadhaar = formData.aadhaar && formData.aadhaar.startsWith('XXXX');
-      const isAadhaarAlreadyVerified = aadhaarVerified || isMaskedAadhaar;
+      // IMPORTANT: Only check aadhaarVerified boolean (from isAadhaarVerify), NOT aadhaar data
+      const isAadhaarAlreadyVerified = aadhaarVerified;
 
       // Aadhaar validation
       if (!formData.aadhaar) {
@@ -3231,10 +3372,33 @@ export default function QuickLoanApplication() {
 
         // Store BRE data for Step 4 (Approval)
         if (breResponse && breResponse.success && breResponse.data) {
-          // Store applicationId for balance check later
-          if (breResponse.data.applicationId) {
-            localStorage.setItem('applicationMongoId', breResponse.data.applicationId);
-            console.log('✅ Stored applicationId for balance check:', breResponse.data.applicationId);
+          console.log('🔍 BRE Response data:', breResponse.data);
+
+          // Try to find MongoDB ObjectID from multiple possible fields
+          let mongoId = breResponse.data._id || breResponse.data.id;
+
+          // If _id/id not found, check if applicationId looks like MongoDB ObjectID (24 hex chars)
+          if (!mongoId && breResponse.data.applicationId && /^[a-f0-9]{24}$/i.test(breResponse.data.applicationId)) {
+            mongoId = breResponse.data.applicationId;
+            console.log('✅ Using applicationId as MongoDB _id (looks like ObjectID):', mongoId);
+          }
+
+          if (mongoId) {
+            localStorage.setItem('applicationId', mongoId);
+            localStorage.setItem('applicationMongoId', mongoId);
+            console.log('✅ Stored MongoDB _id for application:', mongoId);
+          } else {
+            console.warn('⚠️ No MongoDB _id found in BRE response');
+          }
+
+          // Store application number separately (if it's not a MongoDB ObjectID)
+          if (breResponse.data.applicationNumber) {
+            localStorage.setItem('applicationNumber', breResponse.data.applicationNumber);
+            console.log('✅ Stored applicationNumber:', breResponse.data.applicationNumber);
+          } else if (breResponse.data.applicationId && !/^[a-f0-9]{24}$/i.test(breResponse.data.applicationId)) {
+            // If applicationId doesn't look like ObjectID, it's probably application number
+            localStorage.setItem('applicationNumber', breResponse.data.applicationId);
+            console.log('✅ Stored applicationId as applicationNumber:', breResponse.data.applicationId);
           }
 
           setApprovalData({
@@ -3312,13 +3476,26 @@ export default function QuickLoanApplication() {
           // Store IDs from response
           if (result.data) {
             if (result.data.customerId) localStorage.setItem('userId', result.data.customerId);
+
+            // Store MongoDB _id as applicationId (internal ID)
             if (result.data._id) {
-              console.log('✅ Setting applicationId in localStorage:', result.data._id);
+              console.log('✅ Setting applicationId (MongoDB _id):', result.data._id);
               localStorage.setItem('applicationId', result.data._id);
             } else {
               console.warn('⚠️ No _id found in result.data');
             }
-            if (result.data.loanNumber) localStorage.setItem('loanNumber', result.data.loanNumber);
+
+            // Store application number separately (user-friendly number)
+            if (result.data.applicationNumber) {
+              console.log('✅ Setting applicationNumber:', result.data.applicationNumber);
+              localStorage.setItem('applicationNumber', result.data.applicationNumber);
+            }
+
+            // Store loan number (if available)
+            if (result.data.loanNumber) {
+              console.log('✅ Setting loanNumber:', result.data.loanNumber);
+              localStorage.setItem('loanNumber', result.data.loanNumber);
+            }
           }
 
           // Show success toast
@@ -3329,9 +3506,11 @@ export default function QuickLoanApplication() {
           });
 
           // Store data for application-status page
+          // Use loanNumber if available, fallback to applicationNumber
+          const displayNumber = result.data?.loanNumber || result.data?.applicationNumber || approvalData?.applicationNumber || '';
           localStorage.setItem('applicationStatusData', JSON.stringify({
             status: 'approved',
-            loanNumber: result.data?.applicationNumber || result.data?.loanNumber || approvalData?.applicationNumber || '',
+            loanNumber: displayNumber,
             amount: calculatedLoanDetails?.loanAmount || userDesiredAmount || approvalData?.loanAmount || ''
           }));
 
@@ -3653,6 +3832,18 @@ export default function QuickLoanApplication() {
       </div>
     );
   }
+
+
+  // ----- Above return -----
+const tenureUnit =
+  calculatedLoanDetails?.tenureUnit || approvalData?.tenureUnit;
+
+const interestRate =
+  calculatedLoanDetails?.interestRate || approvalData?.interestRate || 0;
+
+const apr =
+  calculatedLoanDetails?.apr || approvalData?.apr || interestRate; // fallback
+
 
   return (
     <>
@@ -4525,8 +4716,8 @@ export default function QuickLoanApplication() {
                           name="aadhaar"
                           value={formData.aadhaar.replace(/([X\d]{4})(?=[X\d])/g, '$1 ')}
                           onChange={(e) => {
-                            // Don't allow editing if masked (already verified)
-                            if (formData.aadhaar.startsWith('XXXX')) return;
+                            // Don't allow editing if verified (check isAadhaarVerify boolean)
+                            if (aadhaarVerified) return;
 
                             const rawValue = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
                             const syntheticEvent = {
@@ -4543,16 +4734,16 @@ export default function QuickLoanApplication() {
                             }
                             if (aadhaarError) setAadhaarError("");
                           }}
-                          disabled={aadhaarVerified || aadhaarOtpSent || formData.aadhaar.startsWith('XXXX')}
+                          disabled={aadhaarVerified || aadhaarOtpSent}
                           maxLength={14}
                           className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 disabled:cursor-not-allowed tracking-widest ${
-                            (aadhaarVerified || formData.aadhaar.startsWith('XXXX'))
+                            aadhaarVerified
                               ? 'bg-green-50 border-green-300'
                               : (fieldErrors.aadhaar || aadhaarError ? 'border-red-500' : 'border-gray-300')
                           }`}
                           placeholder="1234 5678 9012"
                         />
-                        {!aadhaarVerified && !formData.aadhaar.startsWith('XXXX') && (
+                        {!aadhaarVerified && (
                           <button
                             type="button"
                             onClick={sendAadhaarOTP}
@@ -4562,7 +4753,7 @@ export default function QuickLoanApplication() {
                             {aadhaarVerifying ? "Sending..." : aadhaarOtpSent ? (aadhaarOtpTimer > 0 ? `Resend (${aadhaarOtpTimer}s)` : "Resend OTP") : "Verify"}
                           </button>
                         )}
-                        {(aadhaarVerified || formData.aadhaar.startsWith('XXXX')) && (
+                        {aadhaarVerified && (
                           <div className="px-6 py-3 bg-green-100 border border-green-300 rounded-lg flex items-center gap-2 whitespace-nowrap">
                             <CheckCircle className="w-5 h-5 text-green-600" />
                             <span className="text-sm font-medium text-green-700">Verified</span>
@@ -4870,26 +5061,39 @@ export default function QuickLoanApplication() {
                                 let applicationId = localStorage.getItem('applicationId');
                                 console.log('🔍 Account Aggregator - customerId:', user?.id);
                                 console.log('🔍 Account Aggregator - applicationId from localStorage:', applicationId);
+                                console.log('🔍 Account Aggregator - approvalData:', approvalData);
 
-                                // If applicationId is not in localStorage, try to get from approvalData
-                                if (!applicationId && approvalData?.applicationId) {
-                                  const fromApprovalData = approvalData.applicationId;
-                                  applicationId = fromApprovalData;
-                                  console.log('✅ Using applicationId from approvalData:', fromApprovalData);
-                                  localStorage.setItem('applicationId', fromApprovalData);
-                                }
-
-                                // If still not found, try to get from API response _id if available
-                                if (!applicationId && approvalData?._id) {
-                                  const fromApprovalId = approvalData._id;
-                                  applicationId = fromApprovalId;
-                                  console.log('✅ Using _id from approvalData:', fromApprovalId);
-                                  localStorage.setItem('applicationId', fromApprovalId);
+                                // Try multiple sources to get the application ID
+                                if (!applicationId) {
+                                  // Try _id first (MongoDB ObjectID)
+                                  if (approvalData?._id) {
+                                    applicationId = approvalData._id;
+                                    console.log('✅ Using _id from approvalData:', applicationId);
+                                    localStorage.setItem('applicationId', applicationId as string);
+                                  }
+                                  // Try applicationMongoId from localStorage
+                                  else if (localStorage.getItem('applicationMongoId')) {
+                                    applicationId = localStorage.getItem('applicationMongoId');
+                                    console.log('✅ Using applicationMongoId from localStorage:', applicationId);
+                                    localStorage.setItem('applicationId', applicationId as string);
+                                  }
+                                  // Fallback: Check if approvalData.applicationId looks like a MongoDB ObjectID (24 hex chars)
+                                  else if (approvalData?.applicationId && /^[a-f0-9]{24}$/i.test(approvalData.applicationId)) {
+                                    applicationId = approvalData.applicationId;
+                                    console.log('✅ Using applicationId from approvalData (looks like MongoDB _id):', applicationId);
+                                    localStorage.setItem('applicationId', applicationId as string);
+                                  }
                                 }
 
                                 // Final check - if still no applicationId, show error
                                 if (!applicationId) {
                                   console.error('❌ No applicationId found');
+                                  console.error('Available data:', {
+                                    localStorage_applicationId: localStorage.getItem('applicationId'),
+                                    localStorage_applicationMongoId: localStorage.getItem('applicationMongoId'),
+                                    approvalData_id: approvalData?._id,
+                                    approvalData_applicationId: approvalData?.applicationId,
+                                  });
                                   toast({
                                     variant: "error",
                                     title: "Application ID Missing",
@@ -4981,60 +5185,104 @@ export default function QuickLoanApplication() {
                       </div>
 
                       {/* Loan Details Grid */}
-                      <div className="bg-gray-50 rounded-xl p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                          <IndianRupee className="w-5 h-5 text-[#25B181]" />
-                          Loan Details
-                          {calculatedLoanDetails && (
-                            <span className="text-xs font-normal text-gray-500 ml-2">(Based on your selected amount)</span>
-                          )}
-                        </h3>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">Your Loan Amount</p>
-                            <p className="text-xl font-bold text-[#25B181]">
-                              ₹{((calculatedLoanDetails?.loanAmount || userDesiredAmount || approvalData.loanAmount) || 0).toLocaleString('en-IN')}
-                            </p>
-                          </div>
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">Tenure</p>
-                            <p className="text-xl font-bold text-gray-900">
-                              {(calculatedLoanDetails?.tenure || approvalData.tenure) || 0} {(calculatedLoanDetails?.tenureUnit || approvalData.tenureUnit) === 'Days' ? 'Days' : 'Months'}
-                            </p>
-                          </div>
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">Interest Rate</p>
-                            <p className="text-xl font-bold text-gray-900">{(calculatedLoanDetails?.interestRate || approvalData.interestRate) || 0}%</p>
-                          </div>
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">Interest Amount</p>
-                            <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.totalInterest ?? approvalData.totalInterest) || 0).toLocaleString('en-IN')}</p>
-                          </div>
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">Platform Fee</p>
-                            <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.processingFee ?? approvalData.processingFee) || 0).toLocaleString('en-IN')}</p>
-                          </div>
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">GST on Platform Fee</p>
-                            <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.gstOnProcessingFee ?? approvalData.gstOnProcessingFee) || 0).toLocaleString('en-IN')}</p>
-                          </div>
-                          <div className="bg-white rounded-lg p-4 border border-gray-200 col-span-2">
-                            <p className="text-sm text-gray-500 mb-1">Total Repayment</p>
-                            <p className="text-xl font-bold text-gray-900">₹{((calculatedLoanDetails?.totalRepayment ?? approvalData.totalRepayment) || 0).toLocaleString('en-IN')}</p>
-                          </div>
-                        </div>
+                   <div className="bg-gray-50 rounded-xl p-6">
+  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+    <IndianRupee className="w-5 h-5 text-[#25B181]" />
+    Loan Details
+    {calculatedLoanDetails && (
+      <span className="text-xs font-normal text-gray-500 ml-2">
+        (Based on your selected amount)
+      </span>
+    )}
+  </h3>
 
-                        {/* Net Disbursal Highlight */}
-                        <div className="mt-4 bg-green-50 border-2 border-green-500 rounded-xl p-4">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="text-sm text-green-600 font-medium">You Will Receive</p>
-                              <p className="text-xs text-green-500">Net Disbursal Amount</p>
-                            </div>
-                            <p className="text-2xl font-bold text-green-600">₹{((calculatedLoanDetails?.netDisbursalAmount ?? approvalData.netDisbursalAmount) || 0).toLocaleString('en-IN')}</p>
-                          </div>
-                        </div>
-                      </div>
+  <div className="grid grid-cols-2 gap-4">
+
+    {/* Loan Amount */}
+    <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <p className="text-sm text-gray-500 mb-1">Your Loan Amount</p>
+      <p className="text-xl font-bold text-[#25B181]">
+        ₹{((calculatedLoanDetails?.loanAmount ||
+          userDesiredAmount ||
+          approvalData.loanAmount) || 0).toLocaleString("en-IN")}
+      </p>
+    </div>
+
+    {/* Tenure */}
+    <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <p className="text-sm text-gray-500 mb-1">Tenure</p>
+      <p className="text-xl font-bold text-gray-900">
+        {(calculatedLoanDetails?.tenure || approvalData.tenure) || 0}{" "}
+        {tenureUnit === "Days" ? "Days" : "Months"}
+      </p>
+    </div>
+
+    {/* INTEREST / APR (UPDATED FEATURE) */}
+    <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <p className="text-sm text-gray-500 mb-1">
+        {tenureUnit === "Months" ? "APR" : "Interest Rate"}
+      </p>
+      <p className="text-xl font-bold text-gray-900">
+        {tenureUnit === "Months" ? apr : interestRate}%
+      </p>
+    </div>
+
+    {/* Interest Amount */}
+    <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <p className="text-sm text-gray-500 mb-1">Interest Amount</p>
+      <p className="text-xl font-bold text-gray-900">
+        ₹{((calculatedLoanDetails?.totalInterest ??
+          approvalData.totalInterest) || 0).toLocaleString("en-IN")}
+      </p>
+    </div>
+
+    {/* Platform Fee */}
+    <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <p className="text-sm text-gray-500 mb-1">Platform Fee</p>
+      <p className="text-xl font-bold text-gray-900">
+        ₹{((calculatedLoanDetails?.processingFee ??
+          approvalData.processingFee) || 0).toLocaleString("en-IN")}
+      </p>
+    </div>
+
+    {/* GST */}
+    <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <p className="text-sm text-gray-500 mb-1">GST on Platform Fee</p>
+      <p className="text-xl font-bold text-gray-900">
+        ₹{((calculatedLoanDetails?.gstOnProcessingFee ??
+          approvalData.gstOnProcessingFee) || 0).toLocaleString("en-IN")}
+      </p>
+    </div>
+
+    {/* Total Repayment */}
+    <div className="bg-white rounded-lg p-4 border border-gray-200 col-span-2">
+      <p className="text-sm text-gray-500 mb-1">Total Repayment</p>
+      <p className="text-xl font-bold text-gray-900">
+        ₹{((calculatedLoanDetails?.totalRepayment ??
+          approvalData.totalRepayment) || 0).toLocaleString("en-IN")}
+      </p>
+    </div>
+  </div>
+
+  {/* Net Disbursal */}
+  <div className="mt-4 bg-green-50 border-2 border-green-500 rounded-xl p-4">
+    <div className="flex justify-between items-center">
+      <div>
+        <p className="text-sm text-green-600 font-medium">
+          You Will Receive
+        </p>
+        <p className="text-xs text-green-500">
+          Net Disbursal Amount
+        </p>
+      </div>
+      <p className="text-2xl font-bold text-green-600">
+        ₹{((calculatedLoanDetails?.netDisbursalAmount ??
+          approvalData.netDisbursalAmount) || 0).toLocaleString("en-IN")}
+      </p>
+    </div>
+  </div>
+</div>
+
 
                       {/* User Details Summary */}
                       <div className="bg-gray-50 rounded-xl p-6">
@@ -5315,7 +5563,7 @@ export default function QuickLoanApplication() {
                   </div>
 
                   {/* Account Aggregator Button */}
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+                  {/* <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
                     <div className="flex items-start gap-3 mb-4">
                       <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                         <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -5411,7 +5659,7 @@ export default function QuickLoanApplication() {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
 
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                     <div className="flex items-start gap-3">

@@ -107,7 +107,7 @@ const ApplicationSuccess = ({
                             <DetailRow
                                 icon={<Clock className="w-3.5 h-3.5" />}
                                 label="Interest Rate"
-                                value={`${formData?.interestRate}% p.a`}
+                                value={`${formData?.interestRate}% per day`}
                             />
                             <DetailRow
                                 icon={<IndianRupee className="w-3.5 h-3.5" />}
@@ -136,10 +136,10 @@ const ApplicationSuccess = ({
                             <div className="flex-1 min-w-0">
                                 <p className="text-xs font-medium text-gray-500 mb-0.5">Disbursement Account</p>
                                 <p className="text-sm font-bold text-gray-900 truncate">
-                                    {application.disbursementBankAccount.bankName}
+                                    {application?.disbursementBankAccount?.bankName}
                                 </p>
                                 <p className="text-xs text-gray-500 font-mono">
-                                    •••• {application.disbursementBankAccount.accountNumber.slice(-4)}
+                                    •••• {application?.disbursementBankAccount?.accountNumber?.slice(-4)}
                                 </p>
                             </div>
                             {isDisbursed ? (

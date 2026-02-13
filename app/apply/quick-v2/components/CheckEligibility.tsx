@@ -18,6 +18,7 @@ import EmployeeDetails from './ui/EmployeeDetails';
 import { useApplication } from '@/contexts/ApplicationContext';
 import { AlertCircle, ArrowRight, Landmark, Loader2 } from 'lucide-react'; // 1. Import Icon
 import MissingField from './ui/MissingField';
+import useLocation from '@/hooks/useLocation';
 
 interface CheckEligibilityProps {
     formData: QuickApplyV2FormData;
@@ -43,6 +44,7 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
     const searchParams = useSearchParams();
     const [isLoading, setLoading] = useState(false);
     const [ptbLoading, setPtbLoading] = useState(false);
+    const { location, getLocation } = useLocation();
 
     // 2. Destructure 'application' to check status
     const { getApplication, application, getCustomer } = useApplication();
@@ -74,13 +76,13 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
 
             if (response.status === 200 || response.status === 201) {
                 console.log('✅ BRE finFactor result:', result.data);
-                getCustomer();
-                getApplication();
+                // getApplication();
                 setFinFactorDetails({
                     visibility: true,
                     loading: false,
                     data: result.data
                 });
+                // getCustomer();
                 toast({ variant: "success", title: "Success", description: "Analysis completed." });
                 // Clean up URL params
                 const cleanUrl = window.location.pathname;
@@ -136,6 +138,9 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
         // 5. Employment details check
         const isWorkDetailsValid = formData.companyName?.trim() !== "";
 
+        // 6. product required
+        const product = !!formData.productId && !!formData.selectedProduct;
+
         // Final result
         return (
             isContactVerified &&
@@ -144,7 +149,8 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
             isBreValid &&
             income > 0 &&
             isWorkDetailsValid &&
-            (loanAmount >= 5000 && loanAmount <= 25000)
+            (loanAmount >= 5000 && loanAmount <= 25000) &&
+            product
         );
     }, [formData]);
 
@@ -209,7 +215,19 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
             return;
         }
 
+        if (!formData.productId || !formData.selectedProduct) {
+            toast({
+                variant: "warning",
+                title: "Product Selection Required",
+                description: "Please select a loan product to continue.",
+            });
+            return;
+        }
+
         const isBasicDetailsFilled = true;
+
+        const selectedProduct = formData.selectedProduct || null;
+        const locationData = location || (await getLocation()); // Use existing location from context or fetch if not available
 
         const basicDetails = {
             employmentType: formData.employmentType,
@@ -225,6 +243,29 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
         }
         const loanDetails = {
             requestedLoanAmount: formData.loanAmount,
+            productId: formData.productId,
+            purpose: formData.purpose,
+            // Auto tenure based on product type
+            // Personal Loan = 15, Salary Advance = 0
+            tenure: selectedProduct
+                ? (selectedProduct.category?.toLowerCase().includes('salary') ? 0 : 15)
+                : 15,
+            // Selected product complete details
+            product: selectedProduct ? {
+                id: selectedProduct._id,
+                name: selectedProduct.productName,
+                category: selectedProduct.category,
+                dailyInterestRate: selectedProduct.dailyInterestRate,
+                ...(selectedProduct.description && { description: selectedProduct.description }),
+                ...(selectedProduct.minAmount && { minAmount: selectedProduct.minAmount }),
+                ...(selectedProduct.maxAmount && { maxAmount: selectedProduct.maxAmount }),
+            } : null,
+            ...(locationData && {
+                location: {
+                    latitude: locationData.latitude,
+                    longitude: locationData.longitude
+                }
+            })
         }
 
         // const kycDetails = {
@@ -243,6 +284,7 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
                 setLoading(false);
                 console.log("basic response:", basicResponse.data);
                 // storage.set("applicationId", basicResponse?.data?.data?.applicationNumber);
+
                 updateKycStatusState({ loading: true, visibility: true });
 
                 try {
@@ -270,7 +312,10 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
                                 data: response.data?.data,
                                 title: response.data?.message || "BRE checked successfully",
                                 description: response?.data?.data?.reason || "Your application does not meet eligibility criteria",
-                                onSuccess: () => onNext()
+                                onSuccess: () => {
+                                    onNext();
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }
                             });
                         }
                     }
@@ -303,6 +348,10 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
                 visibility={finFactorDetails.visibility}
                 loading={finFactorDetails.loading}
                 data={finFactorDetails.data}
+                onContinue={() => {
+                    getCustomer();
+                    getApplication();
+                }}
             />
             <h2 className="text-lg sm:text-xl font-bold text-gray-900">Get Instant Cash</h2>
 

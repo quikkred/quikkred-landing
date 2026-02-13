@@ -11,6 +11,7 @@ import { useSearchParams } from "next/navigation";
 import { getSession, signIn } from "next-auth/react";
 import { toast } from "@/components/ui/toast";
 import { useAuth } from "@/contexts/AuthContext";
+import EmailVerify from "./EmailVerify";
 
 const CustomerLogin = () => {
     const { getCustomer, getApplication } = useApplication();
@@ -171,11 +172,16 @@ const CustomerLogin = () => {
                             </div>
                         </div>
 
-                    {/* Standard Mobile Verification */}
-                    <div className="space-y-4">
-                        <div className="[&_input]:w-full [&_input]:border-gray-300 [&_input]:rounded-lg [&_input]:focus:ring-emerald-500 [&_input]:focus:border-emerald-500">
-                            <MobileVerify />
-                        </div>
+                        {/* Standard Mobile Verification */}
+                        <div className="space-y-4">
+                            <div className="[&_input]:w-full [&_input]:border-gray-300 [&_input]:rounded-lg [&_input]:focus:ring-emerald-500 [&_input]:focus:border-emerald-500">
+                                {/* <MobileVerify callback={() => {
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }} /> */}
+                                <EmailVerify callback={() => {
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }} />
+                            </div>
 
                             {/* Trust Footer inside card */}
                             <div className="bg-green-100/50 rounded-lg p-3 mt-4 border border-green-200">
