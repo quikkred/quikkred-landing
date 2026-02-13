@@ -9,8 +9,6 @@ import FaceLiveness from "@/components/camera/FaceLivenessDetector";
 import { configureAmplify } from "@/lib/aws-amplify-config";
 
 // Standard Hooks & Utils
-import tracking from "@/lib/tracking";
-import { TRACKING_EVENTS } from "@/lib/constants/quickApplyV2";
 import { toast } from "@/components/ui/toast";
 
 interface SelfieVerifyModalProps {
@@ -47,16 +45,8 @@ export default function SelfieVerifyModal({ isOpen, onClose, onCapture }: Selfie
         }
     }, [isOpen, initialized]);
 
-    // Track modal open event
-    useEffect(() => {
-        if (isOpen) {
-            tracking.track(TRACKING_EVENTS.SELFIE_MODAL_OPENED);
-        }
-    }, [isOpen]);
-
     const handleSuccess = async (result: any) => {
         console.log('✅ Face liveness verified:', result);
-        tracking.track(TRACKING_EVENTS.SELFIE_CAPTURE_SUCCESS);
 
         // If backend returns photo URL, we need to convert it to File
         if (result.photoUrl) {
@@ -97,7 +87,6 @@ export default function SelfieVerifyModal({ isOpen, onClose, onCapture }: Selfie
 
     const handleError = (error: string) => {
         console.error('❌ Face liveness failed:', error);
-        tracking.track(TRACKING_EVENTS.SELFIE_CAPTURE_FAILED, { reason: error });
 
         toast({
             variant: "error",
