@@ -67,12 +67,12 @@ const UserLayout = ({ children }: UserLayoutProps) => {
       href: "/user/applications",
       color: "text-purple-400"
     },
-    // {
-    //   title: "Write Review",
-    //   icon: Star,
-    //   href: "/user/review",
-    //   color: "text-yellow-400"
-    // },
+    {
+      title: "Write Review",
+      icon: Star,
+      href: "/user/review",
+      color: "text-yellow-400"
+    },
     {
       title: "Support",
       icon: HelpCircle,
