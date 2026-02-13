@@ -72,10 +72,10 @@ const FormSteps = ({
 
             {/* Main Flow */}
             {!ipLoading && !ipBlocked && (
-                user?.isSubmit ? <ApplicationSuccess 
+                user?.isSubmit ? <ApplicationSuccess
                     formData={formData}
                     setFormData={setFormData}
-                />: <>
+                /> : <>
                     {/* Step Indicator */}
                     <StepIndicator currentStep={currentStep} />
 
@@ -85,7 +85,7 @@ const FormSteps = ({
                     <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl p-3 sm:p-6">
                         <AnimatePresence mode="wait">
                             {step === 'login' && (
-                                <CustomerLogin 
+                                <CustomerLogin
                                     key={"login"}
                                 />
                             )}
@@ -116,7 +116,9 @@ const FormSteps = ({
 
 const RejectMessage = () => {
     const { application } = useApplication();
-    return (application && application.status === "REJECTED" && (
+    const isRejected = application?.status === "REJECTED" || application?.breHistory?.bsaBreStatus === "REJECTED";
+
+    return (application && isRejected && (
         <div className="mb-5 bg-red-100/50 border border-red-200 rounded-xl px-4 py-3 shadow-sm animate-in fade-in slide-in-from-top-2">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
 
