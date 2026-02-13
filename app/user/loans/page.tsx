@@ -657,8 +657,6 @@ export default function MyLoansPage() {
         if (response.data.isEligible === false) {
           setReapplyEligibility({
             eligible: false,
-            maxAmount: 0,
-            minAmount: 0,
             reason: response.data.reason,
             message: response.data.message,
             daysRemaining: response.data.daysRemaining,
