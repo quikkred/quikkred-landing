@@ -217,14 +217,6 @@ export default function FaceLiveness({ onSuccess, onError, onClose }: FaceLivene
           region="ap-south-1"
           onAnalysisComplete={handleAnalysisComplete}
           onError={handleError}
-          components={{
-            Header: () => (
-              <div className="text-center p-4 bg-gray-50 rounded-t-lg">
-                <h3 className="text-lg font-semibold">Face Verification</h3>
-                <p className="text-sm text-gray-600">Position your face in the oval</p>
-              </div>
-            )
-          }}
         />
       )}
     </div>
