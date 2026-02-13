@@ -94,7 +94,7 @@ const FinFactorStatus = ({ visibility, loading, data, onContinue }: FinFactorSta
                 </div>
                 <h3 className="text-xl font-bold text-gray-900">Verifying Banking Data</h3>
                 <p className="text-sm text-gray-500 mt-2">
-                  We are analyzing your FinFactor report with our BRE engine...
+                  Please wait while we securely verify your banking details. This will only take a few seconds.
                 </p>
               </div>
             )}
