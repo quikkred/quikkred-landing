@@ -46,6 +46,10 @@ export interface User {
   } | null,
   upiAutoPayStatus?: boolean,
   isSubmit?: boolean,
+  bsaInitiated?: boolean,
+  bsaCompleted?: boolean,
+  bsaToBreInitiated?: boolean;
+  bsaToBreCompleted?: boolean;
 }
 
 interface LoginProps { apiData?: any; email?: string; mobile?: string; }
@@ -94,6 +98,7 @@ export const userInitializer = ({ apiData, currentUser }: { apiData: any, curren
       isPanVerify: apiData.isPanVerify || false,
       isAadhaarVerify: apiData.isAadhaarVerify || false,
       brePulled: apiData.brePulled || false,
+      bsaInitiated: apiData.bsaInitiated || false,
 
       // dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
       pan: apiData.panCard || null,
