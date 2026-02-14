@@ -222,6 +222,11 @@ export const getInitialFormData = (): QuickApplyV2FormData => ({
     reference2Name: '',
     reference2Mobile: '',
     reference2Relationship: '',
+
+    // Detail-filled flags
+    isBasicDetailsFilled: false,
+    isKycDetailsFilled: false,
+    isBankDetailsFilled: false,
 });
 
 // ============================================
