@@ -42,8 +42,8 @@ const FinFactorStatus = ({ visibility, loading, data, onContinue }: FinFactorSta
     };
   }, [visibility]);
 
-  // Handle Logic based on status
-  const isApproved = data?.status?.toLowerCase() === "approve";
+  const statusLower = data?.status?.toLowerCase();
+  const isApproved = statusLower === "approve" || statusLower === "approved";
   // const isRejected = data?.status?.toLowerCase() === "reject"; // unused but available
 
   // Actions
@@ -67,7 +67,7 @@ const FinFactorStatus = ({ visibility, loading, data, onContinue }: FinFactorSta
     <AnimatePresence>
       {visibility && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-          
+
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -107,13 +107,13 @@ const FinFactorStatus = ({ visibility, loading, data, onContinue }: FinFactorSta
                   ${isApproved ? "bg-emerald-50" : "bg-red-50"}`}
                 >
                   {/* Background Pattern */}
-                  <div className="absolute inset-0 opacity-10" 
-                       style={{backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '16px 16px'}} 
+                  <div className="absolute inset-0 opacity-10"
+                    style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '16px 16px' }}
                   />
-                  
-                  <motion.div 
-                    initial={{ scale: 0 }} 
-                    animate={{ scale: 1 }} 
+
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
                     transition={{ type: "spring", stiffness: 200, damping: 15 }}
                     className={`relative z-10 p-4 rounded-full shadow-lg border-4 border-white
                       ${isApproved ? "bg-emerald-100 text-emerald-600" : "bg-red-100 text-red-600"}`}
@@ -131,10 +131,10 @@ const FinFactorStatus = ({ visibility, loading, data, onContinue }: FinFactorSta
                   <h2 className={`text-2xl font-bold mb-2 ${isApproved ? "text-emerald-950" : "text-gray-900"}`}>
                     {isApproved ? "Application Approved!" : "Application Rejected"}
                   </h2>
-                  
+
                   <p className="text-gray-600 mb-6 text-sm leading-relaxed">
-                    {data.reason || (isApproved 
-                      ? "Your banking analysis meets our criteria. Please proceed to the next step." 
+                    {data.reason || (isApproved
+                      ? "Your banking analysis meets our criteria. Please proceed to the next step."
                       : "Unfortunately, your profile does not meet our current eligibility criteria.")}
                   </p>
 
