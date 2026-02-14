@@ -137,12 +137,12 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             setFinFactorDetails(prev => ({ ...prev, loading: false, visibility: false }));
         } finally {
             // Refresh application and customer data
-            getApplication();
-            getCustomer();
+            // getApplication();
+            // getCustomer();
 
             // Clean up URL params
-            const cleanUrl = window.location.pathname;
-            window.history.replaceState({}, '', cleanUrl);
+            // const cleanUrl = window.location.pathname;
+            // window.history.replaceState({}, '', cleanUrl);
         }
     };
 
@@ -210,7 +210,7 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             return;
         }
 
-        if (user?.bsaInitiated) {
+        if (user && user?.bsaInitiated) {
             if (bsaInitiatedCalled.current) return;
             bsaInitiatedCalled.current = true;
 
@@ -239,6 +239,8 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             onContinue={async () => {
                 // Close the modal
                 setFinFactorDetails({ visibility: false, loading: false, data: null });
+                getApplication();
+                getCustomer();
 
                 // If approved, scroll to top and show next step
                 if (finFactorDetails.data?.status === "Approve" || finFactorDetails.data?.status === "APPROVED") {
