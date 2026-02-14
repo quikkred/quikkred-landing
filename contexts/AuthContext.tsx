@@ -46,6 +46,14 @@ export interface User {
   } | null,
   upiAutoPayStatus?: boolean,
   isSubmit?: boolean,
+  bsaInitiated?: boolean,
+  bsaCompleted?: boolean,
+  bsaToBreInitiated?: boolean;
+  bsaToBreCompleted?: boolean;
+  isBasicDetailsFilled?: boolean;
+  isKycDetailsFilled?: boolean;
+  isBankDetailsFilled?: boolean;
+  isProfileVerified?: boolean;
 }
 
 interface LoginProps { apiData?: any; email?: string; mobile?: string; }
@@ -94,6 +102,14 @@ export const userInitializer = ({ apiData, currentUser }: { apiData: any, curren
       isPanVerify: apiData.isPanVerify || false,
       isAadhaarVerify: apiData.isAadhaarVerify || false,
       brePulled: apiData.brePulled || false,
+      bsaInitiated: apiData.bsaInitiated || false,
+      bsaCompleted: apiData.bsaCompleted || false,
+      bsaToBreInitiated: apiData.bsaToBreInitiated || false,
+      bsaToBreCompleted: apiData.bsaToBreCompleted || false,
+      isBasicDetailsFilled: apiData.isBasicDetailsFilled || false,
+      isKycDetailsFilled: apiData.isKycDetailsFilled || false,
+      isBankDetailsFilled: apiData.isBankDetailsFilled || false,
+      isProfileVerified: apiData.profile?.status === "VERIFIED",
 
       // dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
       pan: apiData.panCard || null,
@@ -122,35 +138,35 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
 
-  // useEffect(() => {
-  //   // Check for existing session
-  //   const token = localStorage.getItem('token') ||
-  //                 localStorage.getItem('authToken') ||
-  //                 localStorage.getItem('accessToken');
-  //   const storedUserId = localStorage.getItem('userId');
-  //   const storedUserName = localStorage.getItem('userName');
-  //   const storedUserEmail = localStorage.getItem('userEmail') || localStorage.getItem('email');
-  //   const storedUserMobile = localStorage.getItem('userMobile');
+  useEffect(() => {
+    // Check for existing session
+    const token = localStorage.getItem('token') ||
+      localStorage.getItem('authToken') ||
+      localStorage.getItem('accessToken');
+    const storedUserId = localStorage.getItem('userId');
+    const storedUserName = localStorage.getItem('userName');
+    const storedUserEmail = localStorage.getItem('userEmail') || localStorage.getItem('email');
+    const storedUserMobile = localStorage.getItem('userMobile');
 
-  //   if (token && storedUserId) {
-  //     // Create user object from stored data
-  //     const userData: User = {
-  //       id: storedUserId,
-  //       name: storedUserName || 'User',
-  //       email: storedUserEmail || '',
-  //       mobile: storedUserMobile || undefined,
-  //     };
+    if (token && storedUserId) {
+      // Create user object from stored data
+      const userData: User = {
+        id: storedUserId,
+        name: storedUserName || 'User',
+        email: storedUserEmail || '',
+        mobile: storedUserMobile || undefined,
+      };
 
-  //     setUser(userData);
+      setUser(userData);
 
-  //     // Fetch real user profile if we have a real token (not mock)
-  //     if (token && !token.startsWith('mock_token_')) {
-  //       fetchUserProfile(token, userData);
-  //     }
-  //   }
+      // Fetch real user profile if we have a real token (not mock)
+      if (token && !token.startsWith('mock_token_')) {
+        fetchUserProfile(token, userData);
+      }
+    }
 
-  //   setIsLoading(false);
-  // }, []);
+    setIsLoading(false);
+  }, []);
 
   const fetchUserProfile = async (token: string, currentUser: User) => {
     // console.log('🔵 Fetching user profile from API...');
@@ -208,26 +224,26 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
         };
 
         // Store session in localStorage
-        // localStorage.setItem('token', authToken);
-        // localStorage.setItem('authToken', authToken);
-        // localStorage.setItem('accessToken', authToken);
-        // localStorage.setItem('userEmail', userData.email);
-        // localStorage.setItem('userName', userData.name);
-        // localStorage.setItem('userId', apiData.userId);
+        localStorage.setItem('token', authToken);
+        localStorage.setItem('authToken', authToken);
+        localStorage.setItem('accessToken', authToken);
+        localStorage.setItem('userEmail', userData.email);
+        localStorage.setItem('userName', userData.name);
+        localStorage.setItem('userId', apiData.userId);
 
-        // // Add login timestamp for grace period handling in api-client
-        // localStorage.setItem('loginTimestamp', Date.now().toString());
-        // if (userData.mobile) {
-        //   localStorage.setItem('userMobile', userData.mobile);
-        // }
-        // if (apiData.role) {
-        //   localStorage.setItem('role', apiData.role);
-        // }
+        // Add login timestamp for grace period handling in api-client
+        localStorage.setItem('loginTimestamp', Date.now().toString());
+        if (userData.mobile) {
+          localStorage.setItem('userMobile', userData.mobile);
+        }
+        if (apiData.role) {
+          localStorage.setItem('role', apiData.role);
+        }
 
-        // // Set cookies for middleware to access
-        // document.cookie = `auth-token=${authToken}; path=/; max-age=2592000`;
+        // Set cookies for middleware to access
+        document.cookie = `auth-token=${authToken}; path=/; max-age=2592000`;
 
-        // setUser(userData);
+        setUser(userData);
 
         // Fetch real user profile and wait for it
         await fetchUserProfile(authToken, userData);
