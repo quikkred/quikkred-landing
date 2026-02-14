@@ -4022,7 +4022,10 @@ const apr =
                       </>
                   )}
 
-                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Basic Details</h2>
+                   <h2 className="text-2xl font-bold text-gray-900 mb-3">Basic Details</h2>
+                  <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-6">
+                    Please fill all details exactly as per your Aadhaar card to avoid verification issues.
+                  </p>
 
                   {/* Email Verification - Only show for non-logged in users */}
                   {!user && verificationMethod === 'email' && (
