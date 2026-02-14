@@ -11,7 +11,7 @@ import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
 import tracking from "@/lib/tracking";
 import { TRACKING_EVENTS } from "@/lib/constants/quickApplyV2";
 import { useApplication } from "@/contexts/ApplicationContext";
-import { AlertCircle, Ban } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import BankVerification from "../BankVerification";
 import ApplicationSuccess from "./ApplicationSuccess";
 
@@ -42,7 +42,14 @@ const FormSteps = ({
     performIPCheck,
 }: FormStepsProps) => {
     const { user } = useAuth();
-    const currentStep = useMemo(() => (step === "eligibility" ? 2 : step === "bank" ? 3 : 1), [step]);
+    const { application } = useApplication();
+    const currentStep = useMemo(() => {
+        if (step === "bank") return 3;
+        if (step === "eligibility") return 2;
+        // If basic+kyc details are filled (from API), show step 2 indicator
+        if (formData?.isBasicDetailsFilled && formData?.isKycDetailsFilled) return 2;
+        return 1;
+    }, [step, formData?.isBasicDetailsFilled, formData?.isKycDetailsFilled]);
 
     const handleChangeStep = (nextStep: FormStepsType) => {
         if (nextStep === "eligibility") {
@@ -72,20 +79,20 @@ const FormSteps = ({
 
             {/* Main Flow */}
             {!ipLoading && !ipBlocked && (
-                user?.isSubmit ? <ApplicationSuccess 
+                user?.isSubmit ? <ApplicationSuccess
                     formData={formData}
                     setFormData={setFormData}
-                />: <>
+                /> : <>
                     {/* Step Indicator */}
                     <StepIndicator currentStep={currentStep} />
 
-                    <RejectMessage />
+                    <RejectMessage application={application} />
 
                     {/* Form Card - Compact padding on mobile */}
                     <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl p-3 sm:p-6">
                         <AnimatePresence mode="wait">
                             {step === 'login' && (
-                                <CustomerLogin 
+                                <CustomerLogin
                                     key={"login"}
                                 />
                             )}
@@ -114,9 +121,14 @@ const FormSteps = ({
     </>
 }
 
-const RejectMessage = () => {
-    const { application } = useApplication();
-    return (application && application.status === "REJECTED" && (
+const RejectMessage = ({ application }: { application: any }) => {
+    const bsaApproved = application?.breHistory?.bsaBreStatus === "APPROVED";
+    const isRejected = !bsaApproved && (application?.status === "REJECTED" || application?.breHistory?.bsaBreStatus === "REJECTED");
+    const rejectReason = application?.breHistory?.bsaBreStatus === "REJECTED"
+        ? "Bank statement verification was not approved."
+        : "Your application does not meet eligibility criteria.";
+
+    return (application && isRejected && (
         <div className="mb-5 bg-red-100/50 border border-red-200 rounded-xl px-4 py-3 shadow-sm animate-in fade-in slide-in-from-top-2">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
 
@@ -130,6 +142,9 @@ const RejectMessage = () => {
                             Application Rejected
                         </h3>
                         <p className="text-[11px] text-red-600 font-medium mt-1">
+                            {rejectReason}
+                        </p>
+                        <p className="text-[11px] text-red-600 font-medium mt-0.5">
                             Eligible to reapply after <span className="font-bold underline decoration-red-300 underline-offset-2">60 days</span>.
                         </p>
                     </div>

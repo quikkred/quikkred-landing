@@ -27,6 +27,8 @@ import CustomerLogin from './components/ui/CustomerLogin';
 // setps
 import CheckEligibility from './components/CheckEligibility';
 import FormSteps, { FormStepsType } from './components/ui/FormSteps';
+import Link from 'next/link';
+import { LayoutDashboard, LogOut } from 'lucide-react';
 
 // Main Page Component
 export default function QuickApplyV2Page() {
@@ -38,8 +40,8 @@ export default function QuickApplyV2Page() {
     // const storage = useStorage();
     // const breForm = useMemo<StorageApplicationForm | null>(() => ((storage.data?.breForm as StorageApplicationForm) || null), [storage]);
     const { application } = useApplication();
-    // console.log("application:", application);
-    // console.log("user", user);
+    console.log("application:", application);
+    console.log("user", user);
 
     // Form Data
     const [formData, setFormData] = useState<QuickApplyV2FormData>(getInitialFormData);
@@ -93,6 +95,9 @@ export default function QuickApplyV2Page() {
                 selfie: (user?.profile?.s3URL as string) || "",
                 selfieVerified: user?.profile?.status === "VERIFIED",
                 brePulled: application?.breHistory?.brePulled || user?.brePulled || false,
+                bsaInitiated: user?.bsaInitiated || false,
+                bsaBreStatus: application?.breHistory?.bsaBreStatus || "",
+                bsaStatus: application?.breHistory?.bsaStatus || "",
                 companyName: user?.companyName || "",
                 breStatus: application?.status || "PENDING",
                 productId: application?.productId || "",
@@ -116,16 +121,28 @@ export default function QuickApplyV2Page() {
                 totalRepayment: totalRepayment || application?.totalRepayment || 0,
                 gstOnProcessingFee: gstOnProcessingFee || application?.gstOnProcessingFee || 0,
                 interestAmount,
+
+                // Detail-filled flags from API
+                isBasicDetailsFilled: user?.isBasicDetailsFilled || false,
+                isKycDetailsFilled: user?.isKycDetailsFilled || false,
+                isBankDetailsFilled: user?.isBankDetailsFilled || false,
             }));
 
-            // const isLogin = user?.isEmailVerified || user?.isMobileVerified;
-            const isLogin = user?.isMobileVerified;
+            const isLogin = user?.isEmailVerified || user?.isMobileVerified;
+            // const isLogin = user?.isMobileVerified;
             const brePulled = application?.breHistory?.brePulled || user?.brePulled || false;
-            const eligibilityStep = isLogin && brePulled && application && application?.status !== "REJECTED" && application?.status !== "PROCEED TO BANK";
-            // const eligibilityStep = isLogin && application && application?.status !== "REJECTED";
+            const basicAndKycFilled = user?.isBasicDetailsFilled && user?.isKycDetailsFilled;
 
-            if (eligibilityStep) {
+            // Allow progression if:
+            // 1. User is logged in and verified/bank details filled -> Bank
+            // 2. User is logged in and basic/KYC filled -> Eligibility
+            // 3. User is logged in -> Eligibility (default)
+
+            if (isLogin && (user?.isProfileVerified || user?.isBankDetailsFilled)) {
                 setStep("bank");
+            } else if (isLogin && basicAndKycFilled) {
+                // If basic + KYC details are filled, skip to eligibility
+                setStep("eligibility");
             } else if (isLogin) {
                 setStep("eligibility");
             }
@@ -239,15 +256,33 @@ export default function QuickApplyV2Page() {
                             />
                             <span className="hidden font-bold text-[#25B181] text-base">QuikKred</span>
                         </a>
-                        <a
-                            href="tel:+919311913854"
-                            className="text-xs sm:text-sm text-gray-500 hover:text-[#25B181] flex items-center gap-1"
-                        >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                            </svg>
-                            <span className="hidden sm:inline">Help</span>
-                        </a>
+
+                        <div className="w-auto flex jusitfy-center items-center gap-2.5">
+                            <a
+                                href="tel:+919311913854"
+                                className="text-xs sm:text-sm text-gray-500 hover:text-[#25B181] flex items-center gap-1"
+                            >
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                </svg>
+                                <span className="hidden sm:inline">Help</span>
+                            </a>
+                            {
+                                !!user && (
+                                    <>
+                                        <div className='w-[1px] h-[16px] bg-neutral-400' />
+                                        <Link
+                                            href={"/user"}
+                                            className="text-xs sm:text-sm text-gray-500 hover:text-[#25B181] flex items-center gap-1"
+                                            aria-label='dashboard-button'
+                                        >
+                                            <LayoutDashboard className='w-3.5 h-3.5' />
+                                            <span className="hidden sm:inline">Dashboard</span>
+                                        </Link>
+                                    </>
+                                )
+                            }
+                        </div>
                     </div>
                 </div>
             </header>
