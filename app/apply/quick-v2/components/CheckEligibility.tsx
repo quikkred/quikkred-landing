@@ -9,10 +9,8 @@ import useAxios from '@/hooks/useAxios';
 import PanVerify from './ui/PanVerify';
 import { useKycStatus } from '@/lib/contexts/KycStatusContext';
 import { toast } from '@/components/ui/toast';
-import useStorage from '@/hooks/useStorage';
 import { useQuickApplyTracking } from '@/lib/hooks/useQuickApplyTracking';
-import { useSearchParams } from 'next/navigation';
-import FinFactorStatus from './ui/FinFactorStatus';
+
 import AadhaarVerify from './ui/AadhaarVerify';
 import EmployeeDetails from './ui/EmployeeDetails';
 import { useApplication } from '@/contexts/ApplicationContext';
@@ -31,15 +29,7 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
     console.log("formData", formData);
     // OTP States
     const [otpTimer, setOtpTimer] = useState(0);
-    const [finFactorDetails, setFinFactorDetails] = useState<{
-        visibility: boolean;
-        loading: boolean;
-        data: any;
-    }>({
-        visibility: false,
-        loading: false,
-        data: null,
-    });
+
     const { user } = useAuth();
     const axios = useAxios();
     const [isLoading, setLoading] = useState(false);
@@ -118,44 +108,6 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
     }, [formData]);
 
     const handleProceedToBankApi = async () => {
-        if (formData?.bsaInitiated) {
-            setFinFactorDetails({
-                visibility: true,
-                loading: true,
-                // statusMessage: "Analyzing FinFactor Report...",
-                data: null
-            });
-
-            try {
-                const response = await axios.get(`/api/v2/bre/finFactor`);
-                const result = response.data;
-
-                if (response.status === 200 || response.status === 201) {
-                    // Check BSA-BRE result from finFactor response
-                    const bsaBreResult = result.data?.status === "Reject" || result.data?.status === "REJECTED" ? "REJECTED" : result.data?.status;
-                    console.log('📊 handleProceedToBankApi BSA-BRE status:', bsaBreResult);
-
-                    // Update formData with BSA-BRE result
-                    setFormData(prev => ({
-                        ...prev,
-                        bsaBreStatus: bsaBreResult,
-                        breStatus: bsaBreResult === "REJECTED" ? "REJECTED" : prev.breStatus,
-                    }));
-
-                    // Refresh application and customer data
-                    getApplication();
-                    getCustomer();
-                } else {
-                    throw new Error(result.message || "Analysis failed");
-                }
-            } catch (error: any) {
-                const errorMsg = error.response?.data?.message || "Something went wrong";
-                toast({ variant: "error", title: "Error", description: errorMsg });
-                setFinFactorDetails(prev => ({ ...prev, loading: false, visibility: false }));
-            }
-            return;
-        }
-
         setPtbLoading(true);
         try {
             const response = await axios.get(`/api/v2/finfactorConsentRequest`);
@@ -289,37 +241,38 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
                 updateKycStatusState({ loading: true, visibility: true });
 
                 try {
-                    const response = await axios.get("/api/v2/bre/initialize");
-                    if (response.status === 200 || response.status === 201) {
-                        console.log(response.data)
-                        // const eligibilityStep = isLogin && user?.brePulled && application && application?.status !== "REJECTED";
+                    //                 const response = await axios.get("/api/v2/bre/initialize");
+                    //                 if (response.status === 200 || response.status === 201) {
+                    //                     console.log(response.data)
+                    //                     // const eligibilityStep = isLogin && user?.brePulled && application && application?.status !== "REJECTED";
 
-                        /*
-                         "data": {
-        "applicationNumber": "APP20261770280936508",
-        "applicationId": "698457e864cf957cd5376479",
-        "status": "Reject",
-        "reason": "Your credit profile does not meet eligibility criteria"
-    }
-                        */
+                    //                     /*
+                    //                      "data": {
+                    //     "applicationNumber": "APP20261770280936508",
+                    //     "applicationId": "698457e864cf957cd5376479",
+                    //     "status": "Reject",
+                    //     "reason": "Your credit profile does not meet eligibility criteria"
+                    // }
+                    //                     */
 
-                        if (response.data?.data) {
-                            getCustomer();
-                            getApplication();
-                            setFormData((prev) => ({ ...prev, breStatus: response.data?.data?.status }));
-                            updateKycStatusState({
-                                loading: false,
-                                status: response.data?.data?.status === "Approve" ? "approved" : response.data?.data?.status === "Proceed to Bank" ? "proceed-to-bank" : "rejected",
-                                data: response.data?.data,
-                                title: response.data?.message || "BRE checked successfully",
-                                description: response?.data?.data?.reason || "Your application does not meet eligibility criteria",
-                                onSuccess: () => {
-                                    onNext();
-                                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                                }
-                            });
-                        }
-                    }
+                    //                     if (response.data?.data) {
+                    //                         getCustomer();
+                    //                         getApplication();
+                    //                         setFormData((prev) => ({ ...prev, breStatus: response.data?.data?.status }));
+                    //                         updateKycStatusState({
+                    //                             loading: false,
+                    //                             status: response.data?.data?.status === "Approve" ? "approved" : response.data?.data?.status === "Proceed to Bank" ? "proceed-to-bank" : "rejected",
+                    //                             data: response.data?.data,
+                    //                             title: response.data?.message || "BRE checked successfully",
+                    //                             description: response?.data?.data?.reason || "Your application does not meet eligibility criteria",
+                    //                             onSuccess: () => {
+                    //                                 onNext();
+                    //                                 window.scrollTo({ top: 0, behavior: 'smooth' });
+                    //                             }
+                    //                         });
+                    //                     }
+                    //                 }
+                    handleProceedToBankApi();
                 } catch (error: unknown) {
                     if (error instanceof AxiosError) {
                         toast({ variant: "error", title: error?.response?.data?.message || "Kyc Failed", description: "User denied request." });
@@ -345,7 +298,7 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
             exit={{ opacity: 0 }}
             className="space-y-3 sm:space-y-4"
         >
-            <FinFactorVerify 
+            <FinFactorVerify
                 formData={formData}
                 setFormData={setFormData}
                 onNext={onNext}
@@ -368,10 +321,9 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
             </div>
 
             {/* 3. Conditional Rendering: Reject Message vs Button */}
-            {(formData?.breStatus === "REJECTED" || formData?.breStatus === "Rejected" || formData?.bsaBreStatus === "REJECTED") ? (
+            {/* {(formData?.breStatus === "REJECTED" || formData?.breStatus === "Rejected" || formData?.bsaBreStatus === "REJECTED") ? (
                 <div className="mb-5 bg-red-100/50 border border-red-200 rounded-xl px-4 py-3 shadow-sm animate-in fade-in slide-in-from-top-2">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
-                        {/* LEFT SIDE: Status & Message */}
                         <div className="flex items-center gap-3">
                             <div className="shrink-0">
                                 <AlertCircle className="h-5 w-5 text-red-600" />
@@ -386,7 +338,6 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
                             </div>
                         </div>
 
-                        {/* RIGHT SIDE: Application Number */}
                         <div className="flex flex-col items-start sm:items-end border-t sm:border-t-0 border-red-100 pt-2 sm:pt-0 pl-8 sm:pl-0">
                             <span className="font-mono text-sm font-bold text-red-900 tracking-tight leading-none break-all">
                                 {application?.applicationNumber}
@@ -399,7 +350,6 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
                 </div>
             ) : (formData?.breStatus === "PROCEED TO BANK" || formData?.breStatus === "Proceed to Bank" || formData?.breStatus === "PROCEED_TO_BANK") ? (
                 <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-                    {/* Status Box */}
                     <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 shadow-sm">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
                             <div className="flex items-center gap-3">
@@ -426,7 +376,6 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
                         </div>
                     </div>
 
-                    {/* Action Button */}
                     <button
                         onClick={handleProceedToBankApi}
                         disabled={ptbLoading}
@@ -467,7 +416,26 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
                         </>
                     )}
                 </button>
-            )}
+            )} */}
+            <button
+                onClick={handleContinue}
+                disabled={isLoading || !canProceed}
+                className="w-full py-2 text-sm bg-gradient-to-r disabled:cursor-not-allowed from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-xl font-semibold sm:text-base shadow-lg shadow-[#25B181]/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+            >
+                {isLoading ? (
+                    <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span className="text-sm">Submitting...</span>
+                    </>
+                ) : (
+                    <>
+                        <span>Check Eligibility</span>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                        </svg>
+                    </>
+                )}
+            </button>
         </motion.div>
     );
 }

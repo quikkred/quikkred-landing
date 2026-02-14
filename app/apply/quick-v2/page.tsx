@@ -119,11 +119,17 @@ export default function QuickApplyV2Page() {
                 totalRepayment: totalRepayment || application?.totalRepayment || 0,
                 gstOnProcessingFee: gstOnProcessingFee || application?.gstOnProcessingFee || 0,
                 interestAmount,
+
+                // Detail-filled flags from API
+                isBasicDetailsFilled: user?.isBasicDetailsFilled || false,
+                isKycDetailsFilled: user?.isKycDetailsFilled || false,
+                isBankDetailsFilled: user?.isBankDetailsFilled || false,
             }));
 
             const isLogin = user?.isEmailVerified || user?.isMobileVerified;
             // const isLogin = user?.isMobileVerified;
             const brePulled = application?.breHistory?.brePulled || user?.brePulled || false;
+            const basicAndKycFilled = user?.isBasicDetailsFilled && user?.isKycDetailsFilled;
 
             // Allow progression if:
             // 1. User is logged in
@@ -131,18 +137,29 @@ export default function QuickApplyV2Page() {
             // 3. Application exists
             // 4. Status is NOT rejected
             // 5. If status is "PROCEED TO BANK", only allow if it's approved (handled after FinFactor)
-            const isApproved = application?.status === "APPROVED" || application?.status === "Approve";
+            const statusLower = application?.status?.toLowerCase();
+            const isApproved = statusLower === "approved" || statusLower === "approve";
             const bsaBreApproved = application?.breHistory?.bsaBreStatus === "APPROVED";
-            const isProceedToBank = application?.status === "PROCEED TO BANK" || application?.status === "Proceed to Bank" || application?.status === "PROCEED_TO_BANK";
+            const isProceedToBank = statusLower === "proceed to bank" || statusLower === "proceed_to_bank";
             const bsaBreRejected = application?.breHistory?.bsaBreStatus === "REJECTED";
-            const isRejected = application?.status === "REJECTED" || application?.status === "Reject" || bsaBreRejected;
+            const isRejected = statusLower === "rejected" || statusLower === "reject" || bsaBreRejected;
 
             // Navigate to bank step if approved OR if FinFactor was completed and status updated
             const eligibilityStep = isLogin && brePulled && application && !isRejected && !isProceedToBank;
 
-            if (eligibilityStep || isApproved || bsaBreApproved) {
-                setStep("bank");
-            } else if (isLogin) {
+            // if(!isLogin){
+            //     setStep("login");
+            //     return;
+            // }
+
+            // if (eligibilityStep || isApproved || bsaBreApproved) {
+            //     // setStep("bank");
+            //     setStep("eligibility");
+            // } else 
+            if (isLogin && basicAndKycFilled) {
+                // If basic + KYC details are filled, skip to eligibility
+                setStep("eligibility");
+            } else if(isLogin){
                 setStep("eligibility");
             }
         }

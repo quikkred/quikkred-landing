@@ -435,20 +435,20 @@ const BankVerification = ({
             </div> */}
 
             {/* Loan Summary */}
-            <div className="bg-gradient-to-r from-[#25B181]/10 to-[#51C9AF]/10 rounded-lg sm:rounded-xl p-3 sm:p-4 space-y-1.5 sm:space-y-2">
+            {/* <div className="bg-gradient-to-r from-[#25B181]/10 to-[#51C9AF]/10 rounded-lg sm:rounded-xl p-3 sm:p-4 space-y-1.5 sm:space-y-2">
                 <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-gray-600">You&apos;ll receive (Net Disbursal Amount)</span>
                     <span className="font-semibold text-green-600">{formatCurrency(formData?.netDisbursalAmount)}</span>
                 </div>
                 <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-gray-600">Processing Fee (10% + GST)</span>
-                    <span className="text-gray-700">{formData?.processingFee + formData?.gstOnProcessingFee}</span>
+                    <span className="text-gray-700">{formatCurrency(formData?.processingFee + formData?.gstOnProcessingFee)}</span>
                 </div>
                 <div className="flex justify-between text-xs sm:text-sm border-t pt-1.5 sm:pt-2">
                     <span className="text-gray-600">Total Repayment</span>
                     <span className="font-semibold text-gray-900">₹{((formData?.totalRepayment) || 0).toLocaleString('en-IN')}</span>
                 </div>
-            </div>
+            </div> */}
 
             {/* Navigation */}
             <button

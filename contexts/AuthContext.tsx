@@ -50,6 +50,9 @@ export interface User {
   bsaCompleted?: boolean,
   bsaToBreInitiated?: boolean;
   bsaToBreCompleted?: boolean;
+  isBasicDetailsFilled?: boolean;
+  isKycDetailsFilled?: boolean;
+  isBankDetailsFilled?: boolean;
 }
 
 interface LoginProps { apiData?: any; email?: string; mobile?: string; }
@@ -102,6 +105,9 @@ export const userInitializer = ({ apiData, currentUser }: { apiData: any, curren
       bsaCompleted: apiData.bsaCompleted || false,
       bsaToBreInitiated: apiData.bsaToBreInitiated || false,
       bsaToBreCompleted: apiData.bsaToBreCompleted || false,
+      isBasicDetailsFilled: apiData.isBasicDetailsFilled || false,
+      isKycDetailsFilled: apiData.isKycDetailsFilled || false,
+      isBankDetailsFilled: apiData.isBankDetailsFilled || false,
 
       // dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
       pan: apiData.panCard || null,

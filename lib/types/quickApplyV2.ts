@@ -87,6 +87,11 @@ export interface QuickApplyV2FormData {
     reference2Name: string;
     reference2Mobile: string;
     reference2Relationship: string;
+
+    // Detail-filled flags from API
+    isBasicDetailsFilled?: boolean;
+    isKycDetailsFilled?: boolean;
+    isBankDetailsFilled?: boolean;
 }
 
 export interface IPData {
