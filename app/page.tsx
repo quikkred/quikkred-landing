@@ -31,8 +31,8 @@ export default function Home() {
   useEffect(() => {
     const envVars: Record<string, string | undefined> = {
       NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-      NEXT_PUBLIC_AWS_IDENTITY_POOL_ID: process.env.NEXT_PUBLIC_AWS_IDENTITY_POOL_ID,
-      NEXT_PUBLIC_AWS_REGION: process.env.NEXT_PUBLIC_AWS_REGION,
+      NEXT_PUBLIC_AWS_IDENTITY_POOL_ID: process?.env?.NEXT_PUBLIC_AWS_IDENTITY_POOL_ID,
+      NEXT_PUBLIC_AWS_REGION: process?.env?.NEXT_PUBLIC_AWS_REGION,
       NEXT_PUBLIC_TRUECALLER_PARTNER_KEY: process.env.NEXT_PUBLIC_TRUECALLER_PARTNER_KEY,
       NEXT_PUBLIC_TRUECALLER_APP_NAME: process.env.NEXT_PUBLIC_TRUECALLER_APP_NAME,
     };
