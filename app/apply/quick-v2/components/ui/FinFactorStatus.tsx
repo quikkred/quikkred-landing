@@ -11,6 +11,11 @@ interface BreData {
   applicationId: string;
   status: string; // "Approve" | "Reject"
   reason: string;
+  loanAmount?: number;
+  tenure?: number;
+  tenureUnit?: string;
+  gstOnProcessingFee?: number;
+  netDisbursalAmount?: number;
 }
 
 interface FinFactorStatusProps {
@@ -42,8 +47,8 @@ const FinFactorStatus = ({ visibility, loading, data, onContinue }: FinFactorSta
     };
   }, [visibility]);
 
-  // Handle Logic based on status
-  const isApproved = data?.status?.toLowerCase() === "approve";
+  const statusLower = data?.status?.toLowerCase();
+  const isApproved = statusLower === "approve" || statusLower === "approved";
   // const isRejected = data?.status?.toLowerCase() === "reject"; // unused but available
 
   // Actions
@@ -67,7 +72,7 @@ const FinFactorStatus = ({ visibility, loading, data, onContinue }: FinFactorSta
     <AnimatePresence>
       {visibility && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-          
+
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -107,13 +112,13 @@ const FinFactorStatus = ({ visibility, loading, data, onContinue }: FinFactorSta
                   ${isApproved ? "bg-emerald-50" : "bg-red-50"}`}
                 >
                   {/* Background Pattern */}
-                  <div className="absolute inset-0 opacity-10" 
-                       style={{backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '16px 16px'}} 
+                  <div className="absolute inset-0 opacity-10"
+                    style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '16px 16px' }}
                   />
-                  
-                  <motion.div 
-                    initial={{ scale: 0 }} 
-                    animate={{ scale: 1 }} 
+
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
                     transition={{ type: "spring", stiffness: 200, damping: 15 }}
                     className={`relative z-10 p-4 rounded-full shadow-lg border-4 border-white
                       ${isApproved ? "bg-emerald-100 text-emerald-600" : "bg-red-100 text-red-600"}`}
@@ -131,12 +136,47 @@ const FinFactorStatus = ({ visibility, loading, data, onContinue }: FinFactorSta
                   <h2 className={`text-2xl font-bold mb-2 ${isApproved ? "text-emerald-950" : "text-gray-900"}`}>
                     {isApproved ? "Application Approved!" : "Application Rejected"}
                   </h2>
-                  
+
                   <p className="text-gray-600 mb-6 text-sm leading-relaxed">
-                    {data.reason || (isApproved 
-                      ? "Your banking analysis meets our criteria. Please proceed to the next step." 
+                    {data.reason || (isApproved
+                      ? "Your banking analysis meets our criteria. Please proceed to the next step."
                       : "Unfortunately, your profile does not meet our current eligibility criteria.")}
                   </p>
+
+                  {/* Loan Details Card */}
+                  {isApproved && data.loanAmount && (
+                    <div className="bg-emerald-50/50 rounded-xl p-4 border border-emerald-100 mb-6 space-y-3">
+                      {/* Loan Amount */}
+                      <div className="flex justify-between items-center pb-3 border-b border-emerald-200/60">
+                        <span className="text-xs text-emerald-600 font-medium uppercase tracking-wide">Approved Amount</span>
+                        <span className="text-lg font-bold text-emerald-950">
+                          {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(data.loanAmount)}
+                        </span>
+                      </div>
+
+                      {/* Grid for details */}
+                      <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-xs">
+                        <div>
+                          <span className="text-emerald-600/70 block mb-0.5 font-medium">Tenure</span>
+                          <span className="font-bold text-emerald-900">{data.tenure} {data.tenureUnit}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-emerald-600/70 block mb-0.5 font-medium">Net Disbursal</span>
+                          <span className="font-bold text-emerald-900">
+                            {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(data.netDisbursalAmount || 0)}
+                          </span>
+                        </div>
+                        {data.gstOnProcessingFee ? (
+                          <div className="col-span-2 flex justify-between pt-2 border-t border-emerald-200/60 border-dashed">
+                            <span className="text-emerald-600/70 font-medium"> GST on Processing Fee</span>
+                            <span className="font-bold text-emerald-900">
+                              {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(data.gstOnProcessingFee)}
+                            </span>
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Application Number Badge */}
                   <div className="bg-gray-50 rounded-lg p-3 border border-gray-100 mb-8 inline-flex items-center gap-3 w-full justify-center">

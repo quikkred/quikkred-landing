@@ -19,7 +19,7 @@ export interface DisbursementBankAccount {
     accountNumber: string;
     ifscCode: string;
     accountHolderName: string;
-    status: "PENDING" | "VERIFIED" | "REJECTED";
+    status: "PENDING" | "VERIFIED" | "REJECTED" | "FAILED";
 }
 
 /* -------------------- VERIFICATION CHECKLIST -------------------- */
@@ -42,6 +42,13 @@ export interface BreHistory {
     brePulled: boolean;
     brePulledAt: string;
     breStatus: "APPROVED" | "REJECTED" | "PENDING";
+    bsaInitiated?: boolean;
+    bsaInitiatedAt?: string;
+    bsaStatus?: "COMPLETED" | "PENDING" | "FAILED";
+    bsaBrePulled?: boolean;
+    bsaBrePulledAt?: string;
+    bsaBreStatus?: "APPROVED" | "REJECTED" | "PENDING" | "PROCEED TO BANK";
+    manuallyBreStatus?: string;
 }
 
 /* -------------------- FINFACTOR -------------------- */
