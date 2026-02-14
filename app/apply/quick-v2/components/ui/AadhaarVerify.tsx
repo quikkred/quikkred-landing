@@ -61,6 +61,10 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
                     aadhaarVerified: true,
                     fullName: user?.fullName || prev.fullName,
                     dob: user?.dateOfBirth || prev.dob,
+                    email: user?.email || "",
+                    emailVerified: user?.isEmailVerified || false,
+                    mobile: user?.mobile || "",
+                    mobileVerified: user?.isMobileVerified || false,
                 }));
                 toast({
                     variant: "success",
@@ -79,7 +83,6 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
                     aadhaarVerified: false,
                 }));
                 // Show info toast if verification failed/pending
-
             }
         } catch (error: any) {
             if (error instanceof AxiosError) {
