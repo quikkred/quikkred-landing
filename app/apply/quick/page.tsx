@@ -5035,14 +5035,14 @@ const apr =
                         </button>
 
                         {/* OR Divider */}
-                        <div className="flex items-center gap-4 max-w-md mx-auto">
+                        {/* <div className="flex items-center gap-4 max-w-md mx-auto">
                           <div className="flex-1 h-px bg-gray-300"></div>
                           <span className="text-sm text-gray-500 font-medium">OR</span>
                           <div className="flex-1 h-px bg-gray-300"></div>
-                        </div>
+                        </div> */}
 
                         {/* Account Aggregator Button */}
-                        <div className="max-w-md mx-auto">
+                        {/* <div className="max-w-md mx-auto">
                           <button
                             onClick={async () => {
                               try {
@@ -5167,7 +5167,7 @@ const apr =
                           <p className="mt-2 text-xs text-center text-gray-500">
                             Secure bank statement fetch via RBI approved Account Aggregator
                           </p>
-                        </div>
+                        </div> */}
                       </div>
                     </div>
                   ) : approvalData ? (
