@@ -193,8 +193,8 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
         }
         finally {
             // Refresh application and customer data
-            getApplication();
-            getCustomer();
+            // getApplication();
+            // getCustomer();
         }
     }
 
@@ -237,6 +237,9 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             loading={finFactorDetails.loading}
             data={finFactorDetails.data}
             onContinue={async () => {
+                getApplication();
+                getCustomer();
+                
                 // Close the modal
                 setFinFactorDetails({ visibility: false, loading: false, data: null });
                 getApplication();
