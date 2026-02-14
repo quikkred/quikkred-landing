@@ -11,6 +11,11 @@ interface BreData {
   applicationId: string;
   status: string; // "Approve" | "Reject"
   reason: string;
+  loanAmount?: number;
+  tenure?: number;
+  tenureUnit?: string;
+  gstOnProcessingFee?: number;
+  netDisbursalAmount?: number;
 }
 
 interface FinFactorStatusProps {
@@ -137,6 +142,41 @@ const FinFactorStatus = ({ visibility, loading, data, onContinue }: FinFactorSta
                       ? "Your banking analysis meets our criteria. Please proceed to the next step."
                       : "Unfortunately, your profile does not meet our current eligibility criteria.")}
                   </p>
+
+                  {/* Loan Details Card */}
+                  {isApproved && data.loanAmount && (
+                    <div className="bg-emerald-50/50 rounded-xl p-4 border border-emerald-100 mb-6 space-y-3">
+                      {/* Loan Amount */}
+                      <div className="flex justify-between items-center pb-3 border-b border-emerald-200/60">
+                        <span className="text-xs text-emerald-600 font-medium uppercase tracking-wide">Approved Amount</span>
+                        <span className="text-lg font-bold text-emerald-950">
+                          {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(data.loanAmount)}
+                        </span>
+                      </div>
+
+                      {/* Grid for details */}
+                      <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-xs">
+                        <div>
+                          <span className="text-emerald-600/70 block mb-0.5 font-medium">Tenure</span>
+                          <span className="font-bold text-emerald-900">{data.tenure} {data.tenureUnit}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-emerald-600/70 block mb-0.5 font-medium">Net Disbursal</span>
+                          <span className="font-bold text-emerald-900">
+                            {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(data.netDisbursalAmount || 0)}
+                          </span>
+                        </div>
+                        {data.gstOnProcessingFee ? (
+                          <div className="col-span-2 flex justify-between pt-2 border-t border-emerald-200/60 border-dashed">
+                            <span className="text-emerald-600/70 font-medium"> GST on Processing Fee</span>
+                            <span className="font-bold text-emerald-900">
+                              {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(data.gstOnProcessingFee)}
+                            </span>
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Application Number Badge */}
                   <div className="bg-gray-50 rounded-lg p-3 border border-gray-100 mb-8 inline-flex items-center gap-3 w-full justify-center">
