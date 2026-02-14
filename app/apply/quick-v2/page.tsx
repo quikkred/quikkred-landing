@@ -38,8 +38,8 @@ export default function QuickApplyV2Page() {
     // const storage = useStorage();
     // const breForm = useMemo<StorageApplicationForm | null>(() => ((storage.data?.breForm as StorageApplicationForm) || null), [storage]);
     const { application } = useApplication();
-    // console.log("application:", application);
-    // console.log("user", user);
+    console.log("application:", application);
+    console.log("user", user);
 
     // Form Data
     const [formData, setFormData] = useState<QuickApplyV2FormData>(getInitialFormData);
@@ -94,6 +94,8 @@ export default function QuickApplyV2Page() {
                 selfieVerified: user?.profile?.status === "VERIFIED",
                 brePulled: application?.breHistory?.brePulled || user?.brePulled || false,
                 bsaInitiated: user?.bsaInitiated || false,
+                bsaBreStatus: application?.breHistory?.bsaBreStatus || "",
+                bsaStatus: application?.breHistory?.bsaStatus || "",
                 companyName: user?.companyName || "",
                 breStatus: application?.status || "PENDING",
                 productId: application?.productId || "",
@@ -117,27 +119,28 @@ export default function QuickApplyV2Page() {
                 totalRepayment: totalRepayment || application?.totalRepayment || 0,
                 gstOnProcessingFee: gstOnProcessingFee || application?.gstOnProcessingFee || 0,
                 interestAmount,
+
+                // Detail-filled flags from API
+                isBasicDetailsFilled: user?.isBasicDetailsFilled || false,
+                isKycDetailsFilled: user?.isKycDetailsFilled || false,
+                isBankDetailsFilled: user?.isBankDetailsFilled || false,
             }));
 
             const isLogin = user?.isEmailVerified || user?.isMobileVerified;
             // const isLogin = user?.isMobileVerified;
             const brePulled = application?.breHistory?.brePulled || user?.brePulled || false;
+            const basicAndKycFilled = user?.isBasicDetailsFilled && user?.isKycDetailsFilled;
 
             // Allow progression if:
-            // 1. User is logged in
-            // 2. BRE has been pulled
-            // 3. Application exists
-            // 4. Status is NOT rejected
-            // 5. If status is "PROCEED TO BANK", only allow if it's approved (handled after FinFactor)
-            const isApproved = application?.status === "APPROVED" || application?.status === "Approve";
-            const isProceedToBank = application?.status === "PROCEED TO BANK" || application?.status === "Proceed to Bank" || application?.status === "PROCEED_TO_BANK";
-            const isRejected = application?.status === "REJECTED" || application?.status === "Reject";
+            // 1. User is logged in and verified/bank details filled -> Bank
+            // 2. User is logged in and basic/KYC filled -> Eligibility
+            // 3. User is logged in -> Eligibility (default)
 
-            // Navigate to bank step if approved OR if FinFactor was completed and status updated
-            const eligibilityStep = isLogin && brePulled && application && !isRejected && !isProceedToBank;
-
-            if (eligibilityStep || isApproved) {
+            if (isLogin && (user?.isProfileVerified || user?.isBankDetailsFilled)) {
                 setStep("bank");
+            } else if (isLogin && basicAndKycFilled) {
+                // If basic + KYC details are filled, skip to eligibility
+                setStep("eligibility");
             } else if (isLogin) {
                 setStep("eligibility");
             }
