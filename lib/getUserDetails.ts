@@ -74,6 +74,8 @@ export default async function getUserDetails(): Promise<User | null> {
         s3Key: apiData.profile.s3Key || "",
         s3URL: apiData.profile.s3URL || "",
       } : null,
+      isProfileVerified: apiData?.profile?.status === "VERIFIED",
+      isBankDetailsFilled: apiData?.isBankDetailsFilled || false,
       isSubmit: apiData?.isSubmit || false,
 
       // verified

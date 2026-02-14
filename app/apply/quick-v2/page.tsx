@@ -132,34 +132,16 @@ export default function QuickApplyV2Page() {
             const basicAndKycFilled = user?.isBasicDetailsFilled && user?.isKycDetailsFilled;
 
             // Allow progression if:
-            // 1. User is logged in
-            // 2. BRE has been pulled
-            // 3. Application exists
-            // 4. Status is NOT rejected
-            // 5. If status is "PROCEED TO BANK", only allow if it's approved (handled after FinFactor)
-            const statusLower = application?.status?.toLowerCase();
-            const isApproved = statusLower === "approved" || statusLower === "approve";
-            const bsaBreApproved = application?.breHistory?.bsaBreStatus === "APPROVED";
-            const isProceedToBank = statusLower === "proceed to bank" || statusLower === "proceed_to_bank";
-            const bsaBreRejected = application?.breHistory?.bsaBreStatus === "REJECTED";
-            const isRejected = statusLower === "rejected" || statusLower === "reject" || bsaBreRejected;
+            // 1. User is logged in and verified/bank details filled -> Bank
+            // 2. User is logged in and basic/KYC filled -> Eligibility
+            // 3. User is logged in -> Eligibility (default)
 
-            // Navigate to bank step if approved OR if FinFactor was completed and status updated
-            const eligibilityStep = isLogin && brePulled && application && !isRejected && !isProceedToBank;
-
-            // if(!isLogin){
-            //     setStep("login");
-            //     return;
-            // }
-
-            // if (eligibilityStep || isApproved || bsaBreApproved) {
-            //     // setStep("bank");
-            //     setStep("eligibility");
-            // } else 
-            if (isLogin && basicAndKycFilled) {
+            if (isLogin && (user?.isProfileVerified || user?.isBankDetailsFilled)) {
+                setStep("bank");
+            } else if (isLogin && basicAndKycFilled) {
                 // If basic + KYC details are filled, skip to eligibility
                 setStep("eligibility");
-            } else if(isLogin){
+            } else if (isLogin) {
                 setStep("eligibility");
             }
         }
