@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, CheckCircle2, XCircle, LayoutDashboard, ArrowRight, FileText } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 
 interface BreData {
   applicationNumber: string;
@@ -28,12 +28,30 @@ interface FinFactorStatusProps {
 const FinFactorStatus = ({ visibility, loading, data, onContinue }: FinFactorStatusProps) => {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const [countdown, setCountdown] = useState(60);
 
   // 1. Handle Client-side hydration
   useEffect(() => {
     setMounted(true);
     return () => setMounted(false);
   }, []);
+
+  // Reset timer when modal opens
+  useEffect(() => {
+    if (visibility && loading) {
+      setCountdown(60);
+    }
+  }, [visibility, loading]);
+
+  // Timer logic
+  useEffect(() => {
+    if (loading && visibility && countdown > 0) {
+      const timer = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [loading, visibility, countdown]);
 
   // 2. Prevent background scrolling when modal is open
   useEffect(() => {
@@ -92,15 +110,24 @@ const FinFactorStatus = ({ visibility, loading, data, onContinue }: FinFactorSta
             {loading && (
               <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
                 <div className="relative mb-6">
+                  {/* Outer glow/pulse */}
                   <div className="absolute inset-0 bg-blue-100 rounded-full animate-ping opacity-75" />
-                  <div className="relative bg-white p-4 rounded-full shadow-lg ring-1 ring-blue-50">
-                    <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+
+                  {/* Loader Container */}
+                  <div className="relative bg-white p-4 rounded-full shadow-lg ring-1 ring-blue-50 flex items-center justify-center">
+                    <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-xs font-bold text-blue-600">{countdown}s</span>
+                    </div>
                   </div>
                 </div>
                 <h3 className="text-xl font-bold text-gray-900">Verifying Banking Data</h3>
                 <p className="text-sm text-gray-500 mt-2">
-                  Please wait while we securely verify your banking details. This will only take a few seconds.
+                  {countdown > 0
+                    ? "Please wait while we securely verify your banking details."
+                    : "Still verifying... Please wait while we securely verify your banking details."}
                 </p>
+                {countdown > 0 && <p className="text-xs text-slate-400 mt-1">This may take up to a minute.</p>}
               </div>
             )}
 
