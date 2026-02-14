@@ -239,7 +239,8 @@ const BankVerification = ({
             //     console.log(response.data);
             // }
             const response = await axios.post("/api/v2/application/loan/create", {
-                basicDetails
+                // basicDetails
+                isSubmit: true,
             });
             if (response.status === 200 || response.status === 201) {
                 toast({
