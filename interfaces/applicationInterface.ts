@@ -19,7 +19,7 @@ export interface DisbursementBankAccount {
     accountNumber: string;
     ifscCode: string;
     accountHolderName: string;
-    status: "PENDING" | "VERIFIED" | "REJECTED";
+    status: "PENDING" | "VERIFIED" | "REJECTED" | "FAILED";
 }
 
 /* -------------------- VERIFICATION CHECKLIST -------------------- */
