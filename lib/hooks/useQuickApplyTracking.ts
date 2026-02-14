@@ -595,7 +595,7 @@ export function useFieldHesitationTracking(fieldName: string, step: number, thre
  * Hook for tracking verification friction
  * Measures time and attempts for verification steps
  */
-export function useVerificationFrictionTracking(verificationType: 'pan' | 'aadhaar' | 'bank' | 'esign' | 'selfie' | 'mobile') {
+export function useVerificationFrictionTracking(verificationType: 'pan' | 'aadhaar' | 'bank' | 'esign' | 'selfie' | 'mobile' | 'email') {
   const startTimeRef = useRef<number | null>(null);
   const attemptsRef = useRef<number>(0);
 
