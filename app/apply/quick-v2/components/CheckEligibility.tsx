@@ -238,7 +238,7 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
                 console.log("basic response:", basicResponse.data);
                 // storage.set("applicationId", basicResponse?.data?.data?.applicationNumber);
 
-                updateKycStatusState({ loading: true, visibility: true });
+                // updateKycStatusState({ loading: true, visibility: true });
 
                 try {
                     //                 const response = await axios.get("/api/v2/bre/initialize");
