@@ -80,13 +80,13 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
 
         // 4. BRE check - Allow if not pulled yet, OR if status is "PROCEED TO BANK" (FinFactor flow)
         // This allows re-checking after FinFactor completion
-        const isBreValid = !formData.brePulled ||
-            formData.breStatus === "PROCEED TO BANK" ||
-            formData.breStatus === "Proceed to Bank";
+        // const isBreValid = !formData.brePulled ||
+        //     formData.breStatus === "PROCEED TO BANK" ||
+        //     formData.breStatus === "Proceed to Bank";
 
         // 4b. If BSA-BRE returned REJECTED, block progression
-        const isBsaBreRejected = formData.bsaBreStatus === "REJECTED";
-        if (isBsaBreRejected) return false;
+        // const isBsaBreRejected = formData.bsaBreStatus === "REJECTED";
+        // if (isBsaBreRejected) return false;
 
         // 5. Employment details check
         const isWorkDetailsValid = formData.companyName?.trim() !== "";
@@ -99,7 +99,7 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
             isContactVerified &&
             isPanVerified &&
             isAadhaarVerify &&
-            isBreValid &&
+            // isBreValid &&
             income > 0 &&
             isWorkDetailsValid &&
             (loanAmount >= 5000 && loanAmount <= 25000) &&
@@ -272,6 +272,7 @@ export default function CheckEligibility({ formData, setFormData, onNext }: Chec
                     //                         });
                     //                     }
                     //                 }
+
                     handleProceedToBankApi();
                 } catch (error: unknown) {
                     if (error instanceof AxiosError) {
