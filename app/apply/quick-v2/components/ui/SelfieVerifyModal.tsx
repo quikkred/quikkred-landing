@@ -1,507 +1,171 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Camera, X, RotateCw, Check, AlertCircle, Loader2, ScanFace } from "lucide-react";
-import useAxios from "@/hooks/useAxios";
-import { toast } from "@/components/ui/toast";
-import getToken from "@/lib/getToken";
-import tracking from "@/lib/tracking";
-import { TRACKING_EVENTS } from "@/lib/constants/quickApplyV2";
+import { useState, useCallback } from "react";
+import { X, ScanFace, CheckCircle, ShieldCheck } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import dynamic from "next/dynamic";
+
+// Dynamically import FaceLivenessDetector to avoid SSR issues with AWS Amplify
+const FaceLiveness = dynamic(() => import("@/components/camera/FaceLivenessDetector"), {
+    ssr: false,
+    loading: () => (
+        <div className="flex flex-col items-center justify-center py-12 sm:py-16">
+            <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-3" />
+            <p className="text-gray-600 font-medium text-sm">Loading face verification...</p>
+        </div>
+    ),
+});
 
 interface SelfieCaptureProps {
     isOpen: boolean;
     onClose: () => void;
     onCapture: (imageFile: File) => void;
+    customerId?: string;
 }
 
-export default function SelfieVerifyModal({ isOpen, onClose, onCapture }: SelfieCaptureProps) {
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const containerRef = useRef<HTMLDivElement>(null); // Visual container for aspect ratio calculation
-    const streamRef = useRef<MediaStream | null>(null);
+/**
+ * Generate a placeholder selfie file after AWS Liveness verification.
+ * The actual reference image is saved server-side by the backend.
+ */
+function generateVerifiedPlaceholder(): File {
+    const canvas = document.createElement("canvas");
+    canvas.width = 400;
+    canvas.height = 400;
+    const ctx = canvas.getContext("2d")!;
 
-    const [isStreaming, setIsStreaming] = useState(false);
-    const [capturedImage, setCapturedImage] = useState<string | null>(null);
-    const [error, setError] = useState<string>("");
-    const [faceDetected, setFaceDetected] = useState(false);
-    const [detectionMessage, setDetectionMessage] = useState<string>("Position your face in the frame");
-    const [isVerifying, setIsVerifying] = useState(false);
-    const [verificationStatus, setVerificationStatus] = useState<'idle' | 'success' | 'failed'>('idle');
-    const [capturedFile, setCapturedFile] = useState<File | null>(null);
-    const axios = useAxios();
+    const gradient = ctx.createRadialGradient(200, 200, 50, 200, 200, 200);
+    gradient.addColorStop(0, "#10b981");
+    gradient.addColorStop(1, "#059669");
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(200, 200, 200, 0, Math.PI * 2);
+    ctx.fill();
 
-    // 1. Scroll Locking
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-        return () => {
-            document.body.style.overflow = 'unset';
-        };
-    }, [isOpen]);
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 24;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(120, 210);
+    ctx.lineTo(180, 270);
+    ctx.lineTo(290, 140);
+    ctx.stroke();
 
-    // 2. Camera Lifecycle
-    useEffect(() => {
-        if (isOpen && !isStreaming) {
-            startCamera();
-        }
-        return () => {
-            stopCamera();
-        };
-    }, [isOpen]);
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+    const byteString = atob(dataUrl.split(",")[1]);
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+    return new File([ab], `selfie-verified-${Date.now()}.jpg`, {
+        type: "image/jpeg",
+    });
+}
 
-    // 3. Face Detection Mock Logic
-    useEffect(() => {
-        if (!isStreaming || !videoRef.current) return;
-        const detectInterval = setInterval(() => {
-            if (videoRef.current && videoRef.current.readyState === 4) {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                if (ctx && videoRef.current) {
-                    // Use a small canvas for performance
-                    canvas.width = videoRef.current.videoWidth / 4;
-                    canvas.height = videoRef.current.videoHeight / 4;
-                    ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-                    
-                    const imageData = ctx.getImageData(canvas.width / 4, canvas.height / 4, canvas.width / 2, canvas.height / 2);
-                    let brightness = 0;
-                    for (let i = 0; i < imageData.data.length; i += 4) {
-                        brightness += (imageData.data[i] + imageData.data[i + 1] + imageData.data[i + 2]) / 3;
-                    }
-                    brightness = brightness / (imageData.data.length / 4);
+export default function SelfieVerifyModal({ isOpen, onClose, onCapture, customerId }: SelfieCaptureProps) {
+    const [verified, setVerified] = useState(false);
 
-                    if (brightness > 60 && brightness < 200) {
-                        setFaceDetected(true);
-                        setDetectionMessage("Face detected");
-                    } else if (brightness <= 60) {
-                        setFaceDetected(false);
-                        setDetectionMessage("Lighting is too dark");
-                    } else {
-                        setFaceDetected(false);
-                        setDetectionMessage("Adjust your position");
-                    }
-                }
-            }
-        }, 500);
-        return () => clearInterval(detectInterval);
-    }, [isStreaming]);
+    const handleSuccess = useCallback(() => {
+        setVerified(true);
+        const placeholderFile = generateVerifiedPlaceholder();
 
-    const startCamera = async () => {
-        setError("");
-        setIsStreaming(false);
+        setTimeout(() => {
+            onCapture(placeholderFile);
+            handleClose();
+        }, 1200);
+    }, [onCapture]);
 
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            setError("Your browser does not support camera access.");
-            return;
-        }
+    const handleError = useCallback((error: string) => {
+        console.error("Face liveness error:", error);
+    }, []);
 
-        try {
-            // Attempt High Res First
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    width: { ideal: 1920 },
-                    height: { ideal: 1080 },
-                    facingMode: "user"
-                },
-                audio: false
-            });
-            handleStreamSuccess(stream);
-        } catch (err: any) {
-            console.warn("High-quality constraint failed, trying basic config...", err);
-            try {
-                // Fallback to basic
-                const fallbackStream = await navigator.mediaDevices.getUserMedia({
-                    video: true,
-                    audio: false
-                });
-                handleStreamSuccess(fallbackStream);
-            } catch (fallbackErr: any) {
-                console.error("Camera Error:", fallbackErr);
-                handleCameraError(fallbackErr);
-            }
-        }
-    };
-
-    const handleStreamSuccess = (stream: MediaStream) => {
-        if (videoRef.current) {
-            videoRef.current.srcObject = stream;
-            streamRef.current = stream;
-            setIsStreaming(true);
-        }
-    };
-
-    const handleCameraError = (err: any) => {
-        let message = "Unable to access camera.";
-        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-            message = "Permission denied. Allow camera access.";
-        } else if (err.name === 'NotFoundError') {
-            message = "No camera device found.";
-        } else if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
-            message = "Camera access requires HTTPS.";
-        }
-        setError(message);
-        setIsStreaming(false);
-    };
-
-    const stopCamera = () => {
-        if (streamRef.current) {
-            streamRef.current.getTracks().forEach(track => track.stop());
-            streamRef.current = null;
-        }
-        if (videoRef.current) {
-            videoRef.current.srcObject = null;
-        }
-        setIsStreaming(false);
-    };
-
-    // --- 4. SMART CROP LOGIC (The Fix for Aspect Ratio) ---
-    const capturePhoto = () => {
-        if (!videoRef.current || !canvasRef.current || !containerRef.current) return;
-
-        const video = videoRef.current;
-        const canvas = canvasRef.current;
-        const container = containerRef.current;
-        const ctx = canvas.getContext('2d');
-
-        if (!ctx) return;
-
-        // A. Get Real Dimensions
-        const videoW = video.videoWidth;
-        const videoH = video.videoHeight;
-        const containerW = container.clientWidth;
-        const containerH = container.clientHeight;
-
-        // B. Calculate Ratios
-        const videoAspect = videoW / videoH;
-        const containerAspect = containerW / containerH;
-
-        // C. Calculate Crop Area (Source Rectangle)
-        let sWidth, sHeight, sx, sy;
-
-        if (containerAspect > videoAspect) {
-            // Container is wider than video (Crop Top/Bottom)
-            sWidth = videoW;
-            sHeight = videoW / containerAspect;
-            sx = 0;
-            sy = (videoH - sHeight) / 2;
-        } else {
-            // Container is taller than video (Crop Left/Right)
-            sHeight = videoH;
-            sWidth = videoH * containerAspect;
-            sx = (videoW - sWidth) / 2;
-            sy = 0;
-        }
-
-        // D. Set Canvas to match capture resolution
-        canvas.width = sWidth;
-        canvas.height = sHeight;
-
-        // E. Draw & Mirror
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
-
-        ctx.drawImage(
-            video,
-            sx, sy, sWidth, sHeight, // Source Crop
-            0, 0, canvas.width, canvas.height // Destination
-        );
-
-        canvas.toBlob((blob) => {
-            if (blob) {
-                const imageUrl = canvas.toDataURL('image/jpeg', 0.95);
-                setCapturedImage(imageUrl);
-                const file = new File([blob], `selfie-${Date.now()}.jpg`, { type: 'image/jpeg' });
-                setCapturedFile(file);
-                stopCamera();
-            }
-        }, 'image/jpeg', 0.95);
-    };
-
-    const retakePhoto = () => {
-        setCapturedImage(null);
-        setCapturedFile(null);
-        setVerificationStatus('idle');
-        setError('');
-        startCamera();
-    };
-
-    const verifyFaceLiveness = async (file: File): Promise<boolean> => {
-        try {
-            const token = await getToken();
-            if (!token) {
-                setError('Session expired. Please login again.');
-                return false;
-            }
-
-            const formData = new FormData();
-            formData.append('photo', file);
-
-            const response = await axios.postForm(`/api/v2/face/verification`, formData);
-            
-            if (response.status === 200 || response.status === 201) {
-                toast({ variant: "success", title: "Verified", description: "Identity verified successfully." });
-                tracking.trackEvent('CUSTOM_EVENT', { event: TRACKING_EVENTS.SELFIE_CAPTURED });
-                return true;
-            } else {
-                setError(response.data?.message || 'Verification failed.');
-                return false;
-            }
-        } catch (err) {
-            console.error('Face verification error:', err);
-            setError('Verification failed. Please try again.');
-            return false;
-        }
-    };
-
-    const confirmCapture = async () => {
-        if (!capturedImage || !capturedFile) return;
-        setIsVerifying(true);
-        setError('');
-        
-        const isLive = await verifyFaceLiveness(capturedFile);
-
-        if (isLive) {
-            setVerificationStatus('success');
-            setTimeout(() => {
-                onCapture(capturedFile);
-                handleClose();
-            }, 1000);
-        } else {
-            setVerificationStatus('failed');
-            setIsVerifying(false);
-        }
-    };
-
-    const handleClose = () => {
-        stopCamera();
-        setCapturedImage(null);
-        setCapturedFile(null);
-        setError("");
-        setIsVerifying(false);
-        setVerificationStatus('idle');
+    const handleClose = useCallback(() => {
+        setVerified(false);
         onClose();
-    };
+    }, [onClose]);
 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[9999] h-screen w-full top-0 left-0 !m-0 flex items-center justify-center p-4">
-            
-            {/* Backdrop with Fade In */}
-            <div 
-                className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in"
-                onClick={handleClose}
-            ></div>
+        <AnimatePresence>
+            {/* Full-screen overlay */}
+            <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center">
+                {/* Backdrop */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 bg-black/75 backdrop-blur-[2px]"
+                    onClick={handleClose}
+                />
 
-            {/* Modal Container */}
-            <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up max-h-[90vh] h-[85vh]">
-                
-                {/* Header */}
-                <div className="px-5 py-4 flex items-center justify-between border-b border-gray-100 bg-white z-10">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-emerald-50 text-emerald-600 rounded-full">
-                            <ScanFace className="w-5 h-5" />
+                {/* Modal — slides up from bottom on mobile, centered on desktop */}
+                <motion.div
+                    initial={{ opacity: 0, y: 40, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 40, scale: 0.98 }}
+                    transition={{ type: "spring", damping: 28, stiffness: 300 }}
+                    className="relative w-full sm:max-w-lg bg-white sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[100dvh] sm:max-h-[90vh] sm:my-4"
+                    style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+                >
+                    {/* Header */}
+                    <div className="px-4 py-3 sm:py-3.5 flex items-center justify-between border-b border-gray-100 bg-white z-10 flex-shrink-0">
+                        <div className="flex items-center gap-2.5">
+                            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-full">
+                                <ScanFace className="w-4.5 h-4.5" />
+                            </div>
+                            <div>
+                                <h2 className="text-base sm:text-lg font-bold text-gray-900 leading-tight">Face Verification</h2>
+                                <p className="text-[10px] sm:text-xs text-gray-500">Quick 3D liveness check</p>
+                            </div>
                         </div>
-                        <div>
-                            <h2 className="text-lg font-bold text-gray-900">Identity Check</h2>
-                            <p className="text-xs text-gray-500">Align your face within the frame</p>
-                        </div>
+                        <button
+                            onClick={handleClose}
+                            className="min-w-[40px] min-h-[40px] flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors active:scale-95 touch-manipulation"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
                     </div>
-                    <button
-                        onClick={handleClose}
-                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
 
-                {/* Main Content (Camera View) */}
-                <div className="flex-1 p-5 flex flex-col bg-gray-50 overflow-hidden relative">
-                    
-                    {error && (
-                        <div className="mb-4 bg-red-50 border border-red-100 text-red-700 p-3 rounded-lg text-sm flex gap-2 items-center animate-fade-in">
-                            <AlertCircle className="w-4 h-4 shrink-0" />
-                            {error}
-                        </div>
-                    )}
-
-                    {/* Camera Visual Container */}
-                    <div 
-                        ref={containerRef}
-                        className="relative w-full flex-1 bg-black rounded-xl overflow-hidden shadow-inner ring-1 ring-black/10 isolate"
-                    >
-                        {!capturedImage ? (
-                            <>
-                                <video
-                                    ref={videoRef}
-                                    autoPlay
-                                    playsInline
-                                    muted
-                                    className="absolute inset-0 w-full h-full object-cover scale-x-[-1]"
-                                />
-                                
-                                {isStreaming && (
-                                    <div className="absolute inset-0 pointer-events-none z-20">
-                                        {/* Scanner Line Animation */}
-                                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-500/10 to-transparent animate-scan" />
-                                        
-                                        {/* Guide Frame */}
-                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] border-2 border-white/40 rounded-[2rem] shadow-[0_0_0_9999px_rgba(0,0,0,0.4)]">
-                                            {/* Corner Markers */}
-                                            <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-emerald-400 rounded-tl-xl -mt-[2px] -ml-[2px]" />
-                                            <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-emerald-400 rounded-tr-xl -mt-[2px] -mr-[2px]" />
-                                            <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-emerald-400 rounded-bl-xl -mb-[2px] -ml-[2px]" />
-                                            <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-emerald-400 rounded-br-xl -mb-[2px] -mr-[2px]" />
-                                        </div>
-
-                                        {/* Status Badge */}
-                                        <div className="absolute top-4 left-0 right-0 flex justify-center">
-                                            <div className={`px-4 py-1.5 rounded-full text-xs font-semibold backdrop-blur-md shadow-sm transition-colors duration-300 ${
-                                                faceDetected ? 'bg-emerald-500/90 text-white' : 'bg-black/60 text-white/90'
-                                            }`}>
-                                                {detectionMessage}
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </>
+                    {/* Content — scrollable */}
+                    <div className="flex-1 overflow-y-auto overscroll-contain bg-gray-50">
+                        {verified ? (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="flex flex-col items-center justify-center py-12 sm:py-16 px-4"
+                            >
+                                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
+                                    <CheckCircle className="w-9 h-9 sm:w-11 sm:h-11 text-emerald-600" />
+                                </div>
+                                <p className="text-emerald-700 font-bold text-lg sm:text-xl mb-1">Face Verified!</p>
+                                <p className="text-gray-500 text-xs sm:text-sm">Liveness check passed</p>
+                                <div className="mt-4 flex items-center gap-1.5 text-emerald-600">
+                                    <ShieldCheck className="w-4 h-4" />
+                                    <span className="text-xs font-medium">Secured by AWS Rekognition</span>
+                                </div>
+                            </motion.div>
                         ) : (
-                            <div className="relative w-full h-full bg-black">
-                                <img
-                                    src={capturedImage}
-                                    alt="Captured selfie"
-                                    className="w-full h-full object-contain"
-                                />
-                                
-                                {/* Overlay States */}
-                                {(isVerifying || verificationStatus !== 'idle') && (
-                                    <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px] flex flex-col items-center justify-center text-center p-6 z-30 animate-fade-in">
-                                        {verificationStatus === 'idle' && (
-                                            <>
-                                                <Loader2 className="w-10 h-10 text-white animate-spin mb-3" />
-                                                <p className="text-white font-medium">Verifying Liveness...</p>
-                                            </>
-                                        )}
-                                        {verificationStatus === 'success' && (
-                                            <div className="animate-pop-in">
-                                                <div className="w-14 h-14 bg-emerald-500 rounded-full flex items-center justify-center mb-3 mx-auto shadow-lg shadow-emerald-500/30">
-                                                    <Check className="w-7 h-7 text-white" />
-                                                </div>
-                                                <p className="text-white font-bold text-lg">Verified!</p>
-                                            </div>
-                                        )}
-                                        {verificationStatus === 'failed' && (
-                                            <div className="animate-pop-in">
-                                                <div className="w-14 h-14 bg-red-500 rounded-full flex items-center justify-center mb-3 mx-auto shadow-lg shadow-red-500/30">
-                                                    <X className="w-7 h-7 text-white" />
-                                                </div>
-                                                <p className="text-white font-bold text-lg">Verification Failed</p>
-                                                <p className="text-white/80 text-sm mt-1">Please try again with better lighting.</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
+                            <div className="p-3 sm:p-4">
+                                <div className="mb-3 bg-blue-50/80 border border-blue-100 rounded-lg px-3 py-2 sm:py-2.5">
+                                    <p className="text-[11px] sm:text-xs text-blue-700 leading-relaxed">
+                                        Position your face in the oval guide and hold still. A colored light will flash briefly.
+                                    </p>
+                                </div>
+                                <div className="rounded-lg sm:rounded-xl overflow-hidden border border-gray-200 bg-black">
+                                    <FaceLiveness
+                                        onSuccess={handleSuccess}
+                                        onError={handleError}
+                                        onCancel={handleClose}
+                                        customerId={customerId}
+                                    />
+                                </div>
                             </div>
                         )}
                     </div>
-                    
-                    <canvas ref={canvasRef} className="hidden" />
-
-                    {!capturedImage && (
-                        <div className="mt-3 flex justify-center">
-                             <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider font-semibold text-gray-400 bg-white px-3 py-1 rounded-full shadow-sm border border-gray-100">
-                                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                                Live Feed
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Footer Controls */}
-                <div className="p-5 bg-white border-t border-gray-100 z-10">
-                    <div className="flex gap-3">
-                        {!capturedImage ? (
-                            <>
-                                <button
-                                    onClick={handleClose}
-                                    className="flex-1 py-3 text-sm font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-all active:scale-95"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={capturePhoto}
-                                    disabled={!isStreaming}
-                                    className={`flex-1 py-3 text-sm font-semibold text-white rounded-xl shadow-md transition-all flex items-center justify-center gap-2 active:scale-95 ${
-                                        faceDetected
-                                            ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20'
-                                            : 'bg-gray-900 hover:bg-gray-800'
-                                    }`}
-                                >
-                                    <Camera className="w-4 h-4" />
-                                    Capture
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <button
-                                    onClick={retakePhoto}
-                                    disabled={isVerifying || verificationStatus === 'success'}
-                                    className="flex-1 py-3 text-sm font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95"
-                                >
-                                    <RotateCw className="w-4 h-4" />
-                                    Retake
-                                </button>
-                                <button
-                                    onClick={confirmCapture}
-                                    disabled={isVerifying || verificationStatus === 'failed'}
-                                    className="flex-1 py-3 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed active:scale-95"
-                                >
-                                    {isVerifying ? (
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                    ) : (
-                                        <Check className="w-4 h-4" />
-                                    )}
-                                    {isVerifying ? 'Processing...' : 'Use Photo'}
-                                </button>
-                            </>
-                        )}
-                    </div>
-                </div>
+                </motion.div>
             </div>
-
-            {/* Custom Tailwind Animations */}
-            <style jsx global>{`
-                @keyframes scan {
-                    0% { transform: translateY(-100%); }
-                    100% { transform: translateY(100%); }
-                }
-                .animate-scan {
-                    animation: scan 3s linear infinite;
-                }
-                @keyframes fadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
-                .animate-fade-in {
-                    animation: fadeIn 0.2s ease-out forwards;
-                }
-                @keyframes slideUp {
-                    from { opacity: 0; transform: translateY(10px) scale(0.98); }
-                    to { opacity: 1; transform: translateY(0) scale(1); }
-                }
-                .animate-slide-up {
-                    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-                }
-                @keyframes popIn {
-                    from { opacity: 0; transform: scale(0.9); }
-                    to { opacity: 1; transform: scale(1); }
-                }
-                .animate-pop-in {
-                    animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-                }
-            `}</style>
-        </div>
+        </AnimatePresence>
     );
 }

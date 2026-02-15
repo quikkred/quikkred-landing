@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@aws-amplify/ui-react": "^6.15.0",
+    "@aws-amplify/ui-react-liveness": "^3.6.0",
     "@hookform/resolvers": "^5.2.2",
     "@lottiefiles/dotlottie-react": "^0.17.14",
     "@mediapipe/camera_utils": "^0.3.1675466862",
@@ -24,6 +26,7 @@
     "@tanstack/react-query": "^5.89.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/file-saver": "^2.0.7",
+    "aws-amplify": "^6.16.2",
     "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
     "chart.js": "^4.5.0",
