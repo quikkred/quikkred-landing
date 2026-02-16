@@ -437,6 +437,7 @@ export default function QuickLoanApplication() {
               // STEP 2: Find first pending step based on completion flags
               // Priority: Respect completed steps, go to first incomplete step
               let firstPendingStep = 1;
+              const isBREPulled = toBoolean(profileData.brePulled);
 
               if (!isBasicDetailsFilled) {
                 // Step 1 not complete - check email verification requirement
@@ -444,6 +445,9 @@ export default function QuickLoanApplication() {
               } else if (!isKycDetailsFilled) {
                 // Step 1 COMPLETE - go to Step 2 (don't force back to Step 1)
                 firstPendingStep = 2;
+              } else if (!isBankDetailsFilled && isBREPulled) {
+                // BRE already pulled (status is "Proceed to Bank") - go to Step 4 for FinFactor
+                firstPendingStep = 4;
               } else if (!isBankDetailsFilled) {
                 // Step 1 & 2 COMPLETE - go to Step 3
                 firstPendingStep = 3;
@@ -768,148 +772,67 @@ export default function QuickLoanApplication() {
   const breFinFactorCalledRef = useRef(false);
 
   useEffect(() => {
-    const fetchBreFinfactorResult = async (retryAttempt = 0) => {
-      const finfactorParam = searchParams.get('finfactor');
+    const finfactorParam = searchParams.get('finfactor');
 
-      // Only proceed if:
-      // 1. finfactor=success is in URL
-      // 2. Not already loading
-      // 3. Not already called (or retrying)
-      // 4. No approvalData yet
-      if (finfactorParam !== 'success' || (consentLoading && retryAttempt === 0) || (breFinFactorCalledRef.current && retryAttempt === 0) || approvalData) {
-        return;
-      }
+    if (finfactorParam !== 'success' || breFinFactorCalledRef.current || approvalData) {
+      return;
+    }
 
-      console.log(`📊 finfactor=success detected, calling BRE finFactor API (Attempt ${retryAttempt + 1}/3)...`);
-
-      const token = await getToken();
-      if (!token) {
-        console.error('No auth token found for BRE finFactor');
-        return;
-      }
-
-      if (retryAttempt === 0) {
-        breFinFactorCalledRef.current = true;
-      }
+    const fetchBreFinfactorResult = async () => {
+      console.log('📊 finfactor=success detected, calling BRE finFactor API...');
+      breFinFactorCalledRef.current = true;
       setConsentLoading(true);
-      setCurrentStep(4); // Ensure we're on Step 4
-      setFinfactorSuccess(true); // Show loading UI with 60 second countdown
+      setCurrentStep(4);
+      setFinfactorSuccess(true); // Show 60 sec countdown UI
 
       try {
-        // Get MongoDB _id from localStorage (NOT application number)
-        let applicationId = localStorage.getItem('applicationId') || localStorage.getItem('applicationMongoId');
-
-        // Fallback: Try to get from approvalData._id
-        if (!applicationId && approvalData?._id) {
-          applicationId = approvalData._id;
-        }
-
-        if (!applicationId) {
-          console.error('No applicationId available for balance check');
-          toast({ variant: "error", title: "Error", description: "Application ID not found. Please try again." });
-          breFinFactorCalledRef.current = false;
+        const token = await getToken();
+        if (!token) {
+          console.error('No auth token found for BRE finFactor');
+          toast({ variant: "error", title: "Authentication Error", description: "Please login again." });
           setFinfactorSuccess(false);
+          breFinFactorCalledRef.current = false;
           setConsentLoading(false);
           return;
         }
 
-        console.log('🔄 Starting complete balance check flow with applicationId:', applicationId);
-
-        // Call complete balance check flow (consent → FI data → balance check → BRE with BSA)
-        // This takes 30-60 seconds (countdown will show progress)
-        const response = await fetch(`${API_BASE_URL}/api/balance-check/complete`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ applicationId })
+        const response = await fetch(`${API_BASE_URL}/api/kyc/bre/finFactor`, {
+          method: 'GET',
+          headers: { 'Authorization': `Bearer ${token}` },
         });
 
         const result = await response.json();
 
-        if (response.ok && result.success) {
-          console.log('✅ Balance check with BRE completed successfully:', result.data);
-          toast({ variant: "success", title: "Success", description: result.message || "Loan verification completed successfully." });
-
-          if (result.data) {
-            setApprovalData(result.data);
-          }
+        if (response.ok && result?.success && result?.data) {
+          console.log('✅ BRE finFactor result:', result.data);
+          toast({ variant: "success", title: "Success", description: result.message || "Analysis completed." });
+          setApprovalData(result.data);
           setFinfactorSuccess(false);
-          setConsentLoading(false);
+
+          // Refresh customer data
+          await getCustomer();
+
+          // Clean up URL params
+          const cleanUrl = window.location.pathname;
+          window.history.replaceState({}, '', cleanUrl);
         } else {
-          // API returned error
-          console.error('Balance check failed:', result.message);
-
-          if (retryAttempt < 2) {
-            // Retry (attempt 0, 1 can retry. After 2 attempts total = 3 tries)
-            const nextAttempt = retryAttempt + 1;
-            console.log(`🔄 Retrying in 3 seconds... (Attempt ${nextAttempt + 1}/3)`);
-            toast({
-              variant: "error",
-              title: "Retrying",
-              description: `Verification failed. Retrying (${nextAttempt + 1}/3)...`
-            });
-            setConsentLoading(false);
-
-            setTimeout(() => {
-              fetchBreFinfactorResult(nextAttempt);
-            }, 3000);
-          } else {
-            // Failed 3 times - redirect to user dashboard
-            console.error('❌ API failed 3 times. Redirecting to dashboard...');
-            toast({
-              variant: "error",
-              title: "Verification Failed",
-              description: "Unable to complete verification. Redirecting to dashboard..."
-            });
-            setFinfactorSuccess(false);
-            setConsentLoading(false);
-            breFinFactorCalledRef.current = false;
-
-            setTimeout(() => {
-              router.push('/user');
-            }, 2000);
-          }
-        }
-      } catch (error) {
-        console.error('Error processing balance check:', error);
-
-        if (retryAttempt < 2) {
-          // Retry
-          const nextAttempt = retryAttempt + 1;
-          console.log(`🔄 Retrying after error in 3 seconds... (Attempt ${nextAttempt + 1}/3)`);
-          toast({
-            variant: "error",
-            title: "Network Error",
-            description: `Connection failed. Retrying (${nextAttempt + 1}/3)...`
-          });
-          setConsentLoading(false);
-
-          setTimeout(() => {
-            fetchBreFinfactorResult(nextAttempt);
-          }, 3000);
-        } else {
-          // Failed 3 times - redirect to user dashboard
-          console.error('❌ API failed 3 times due to errors. Redirecting to dashboard...');
-          toast({
-            variant: "error",
-            title: "Verification Failed",
-            description: "Unable to complete verification. Redirecting to dashboard..."
-          });
+          console.error('BRE finFactor failed:', result?.message);
+          toast({ variant: "error", title: "Error", description: result?.message || "Verification failed. Please try again." });
           setFinfactorSuccess(false);
-          setConsentLoading(false);
           breFinFactorCalledRef.current = false;
-
-          setTimeout(() => {
-            router.push('/user');
-          }, 2000);
         }
+      } catch (error: any) {
+        console.error('BRE finFactor error:', error);
+        toast({ variant: "error", title: "Error", description: error?.message || "Something went wrong. Please try again." });
+        setFinfactorSuccess(false);
+        breFinFactorCalledRef.current = false;
+      } finally {
+        setConsentLoading(false);
       }
     };
 
-    fetchBreFinfactorResult(0);
-  }, [searchParams, consentLoading, approvalData, toast, router]);
+    fetchBreFinfactorResult();
+  }, [searchParams, approvalData]);
 
   // Check Aadhaar verification status when verified=true query param is present
   // Only calls API after user profile data is loaded AND if isAadhaarVerify !== true
