@@ -495,7 +495,7 @@ export default function UserDashboard() {
 
       // Step 3: Open Razorpay checkout with order details from API response
       const options = {
-        key: "rzp_test_RudM9P8MHGIuf2",
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || "rzp_live_S4tgUkVdbPaFdo",
         amount: amountInPaise,
         currency: "INR",
         order_id: orderId,

@@ -2941,7 +2941,7 @@ export default function QuickLoanApplication() {
         if (subscriptionId) {
           // Open Razorpay checkout with subscription
           const options = {
-            key: "rzp_live_S4tgUkVdbPaFdo",
+            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || "rzp_live_S4tgUkVdbPaFdo",
             subscription_id: subscriptionId,
             name: "Quikkred",
             description: "UPI AutoPay Mandate Approval",
