@@ -105,14 +105,14 @@ const SelectProduct = ({ formData, setFormData }: SelectProductProps) => {
                     </option>
                 ))}
             </select>
-            {formData?.selectedProduct && (
+            {/* {formData?.selectedProduct && (
                 <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                     <p className="text-sm text-blue-800">
                         <span className="font-semibold">Category:</span> {formData?.selectedProduct.category} |
                         <span className="font-semibold ml-2">Tenure:</span> {formData?.selectedProduct.category?.toLowerCase().includes('salary') ? '0 days (Pay on salary)' : '15 days'}
                     </p>
                 </div>
-            )}
+            )} */}
         </div>
     )
 }
