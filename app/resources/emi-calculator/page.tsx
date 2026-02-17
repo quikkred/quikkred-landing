@@ -34,7 +34,7 @@ interface AmortizationEntry {
 
 export default function EMICalculatorPage() {
   const { t } = useLanguage();
-  const [loanAmount, setLoanAmount] = useState(500000);
+  const [loanAmount, setLoanAmount] = useState(25000);
   const [interestRate, setInterestRate] = useState(12);
   const [tenure, setTenure] = useState(24);
   const [showAmortization, setShowAmortization] = useState(false);
