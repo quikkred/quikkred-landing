@@ -253,12 +253,15 @@ export default function MyLoansPage() {
   // Reapply State
   const [reapplyEligibility, setReapplyEligibility] = useState<{
     eligible: boolean;
+    maxAmount?: number;
+    minAmount?: number;
     reason?: string;
     message?: string;
     daysRemaining?: number;
     cooldownEndsAt?: string;
   } | null>(null);
   const [reapplyForm, setReapplyForm] = useState({
+    loanAmount: '',
     tenure: '30',
     purpose: ''
   });
@@ -657,6 +660,8 @@ export default function MyLoansPage() {
         if (response.data.isEligible === false) {
           setReapplyEligibility({
             eligible: false,
+            maxAmount: 0,
+            minAmount: 0,
             reason: response.data.reason,
             message: response.data.message,
             daysRemaining: response.data.daysRemaining,
@@ -669,16 +674,21 @@ export default function MyLoansPage() {
 
         setReapplyEligibility({
           eligible: response.data.eligible ?? response.data.isEligible ?? true,
+          maxAmount: response.data.maxAmount ?? 500000,
+          minAmount: response.data.minAmount ?? 10000,
           reason: response.data.reason
         });
+        if (response.data.maxAmount) {
+          setReapplyForm(prev => ({ ...prev, loanAmount: String(response.data.maxAmount / 2) }));
+        }
         setIsReapplyModalOpen(true);
       } else {
-        setReapplyEligibility({ eligible: true });
+        setReapplyEligibility({ eligible: true, maxAmount: 500000, minAmount: 10000 });
         setIsReapplyModalOpen(true);
       }
     } catch (error: any) {
       console.error('Error checking reapply eligibility:', error);
-      setReapplyEligibility({ eligible: true });
+      setReapplyEligibility({ eligible: true, maxAmount: 500000, minAmount: 10000 });
       setIsReapplyModalOpen(true);
     } finally {
       setReapplyLoading(false);
@@ -691,12 +701,23 @@ export default function MyLoansPage() {
       return;
     }
 
+    const amount = Number(reapplyForm.loanAmount);
+    if (!amount || amount < 10000) {
+      setReapplyError('Please enter a valid loan amount (minimum Rs. 10,000)');
+      return;
+    }
+    if (amount > 500000) {
+      setReapplyError('Maximum loan amount is Rs. 5,00,000');
+      return;
+    }
+
     setReapplyLoading(true);
     setReapplyError(null);
 
     try {
       const response = await loansService.submitReapplication({
         customerId: selectedLoanForReapply.customerId,
+        loanAmount: amount,
         tenure: Number(reapplyForm.tenure),
         purpose: reapplyForm.purpose || 'Repeat Loan',
         notes: 'Reapplication from customer dashboard'
@@ -725,7 +746,7 @@ export default function MyLoansPage() {
     setReapplyEligibility(null);
     setReapplyError(null);
     setReapplySuccess(null);
-    setReapplyForm({ tenure: '30', purpose: '' });
+    setReapplyForm({ loanAmount: '', tenure: '30', purpose: '' });
   };
 
   // ============ UPI AUTOPAY HANDLERS ============
@@ -2371,6 +2392,28 @@ export default function MyLoansPage() {
                         <p className="text-sm text-red-700">{reapplyError}</p>
                       </div>
                     )}
+
+                    {/* Loan Amount */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Loan Amount <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type="number"
+                          min={reapplyEligibility?.minAmount || 10000}
+                          max={reapplyEligibility?.maxAmount || 500000}
+                          value={reapplyForm.loanAmount}
+                          onChange={(e) => setReapplyForm({ ...reapplyForm, loanAmount: e.target.value })}
+                          className="w-full pl-12 pr-4 py-3 bg-[#FAFAFA] border-2 border-[#E0E0E0] rounded-xl focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-lg font-semibold"
+                          placeholder="Enter amount"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Min: {formatCurrency(reapplyEligibility?.minAmount || 10000)} | Max: {formatCurrency(reapplyEligibility?.maxAmount || 500000)}
+                      </p>
+                    </div>
 
                     {/* Tenure */}
                     <div>

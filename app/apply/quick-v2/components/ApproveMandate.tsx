@@ -46,24 +46,6 @@ const ApproveMandate = ({
         };
     }, []);
 
-    // Fetch updated customer data
-    const refreshCustomerData = async () => {
-        try {
-            const response = await axios.get('/api/customer/get');
-            if (response.data?.success && response.data?.data) {
-                const customerData = response.data.data;
-                // Update formData with the latest upiAutoPayStatus from backend
-                setFormData((prev) => ({
-                    ...prev,
-                    upiAutoPayStatus: customerData.upiAutoPayStatus || false
-                }));
-                console.log("Customer data refreshed, upiAutoPayStatus:", customerData.upiAutoPayStatus);
-            }
-        } catch (error) {
-            console.error("Error refreshing customer data:", error);
-        }
-    };
-
     // Check UPI Autopay status after Razorpay closes (success or dismiss)
     const checkUpiAutoPayStatus = async (subscriptionId: string) => {
         try {
@@ -75,10 +57,11 @@ const ApproveMandate = ({
             console.log("UPI AutoPay Status Response:", statusResult);
 
             // After status API call, refresh customer data to get updated upiAutoPayStatus
-            await refreshCustomerData();
+            // await getCustomer();
 
             // Set checkbox based on status from API response
             if (statusResult.success && (statusResult.status === 'active' || statusResult.status === "authenticated")) {
+                // setUpiAutopayConsent(true);
                 setFormData((prev) => ({ ...prev, upiAutopayConsent: true }));
                 toast({
                     variant: "success",
@@ -87,6 +70,7 @@ const ApproveMandate = ({
                 });
             } else {
                 // Status is inactive - keep checkbox unchecked
+                // setUpiAutopayConsent(false);
                 toast({
                     variant: "info",
                     title: "UPI Autopay Pending",
@@ -95,9 +79,11 @@ const ApproveMandate = ({
             }
         } catch (error) {
             console.error("Error checking UPI AutoPay status:", error);
+            // On error, keep checkbox unchecked
+            // setUpiAutopayConsent(false);
             // Try to refresh customer data anyway
             try {
-                await refreshCustomerData();
+                // await getCustomer();
             } catch (e) {
                 console.error("Error refreshing customer data:", e);
             }
