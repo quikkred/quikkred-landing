@@ -28,29 +28,6 @@ export function Providers({ language, initialData, children }: { language: strin
       })
   );
 
-  // Log environment variables on initial load for debugging
-  useEffect(() => {
-    const envVars: Record<string, string | undefined> = {
-      NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-      NEXT_PUBLIC_AWS_IDENTITY_POOL_ID: process.env.NEXT_PUBLIC_AWS_IDENTITY_POOL_ID,
-      NEXT_PUBLIC_AWS_REGION: process.env.NEXT_PUBLIC_AWS_REGION,
-      NEXT_PUBLIC_TRUECALLER_PARTNER_KEY: process.env.NEXT_PUBLIC_TRUECALLER_PARTNER_KEY,
-      NEXT_PUBLIC_TRUECALLER_APP_NAME: process.env.NEXT_PUBLIC_TRUECALLER_APP_NAME,
-    };
-
-    console.group('🔧 Environment Variables');
-    Object.entries(envVars).forEach(([key, value]) => {
-      if (value) {
-        // Mask sensitive values, show first 8 chars
-        const masked = value.length > 12 ? value.slice(0, 8) + '...' : value;
-        console.log(`✅ ${key}: ${masked}`);
-      } else {
-        console.warn(`❌ ${key}: NOT SET`);
-      }
-    });
-    console.groupEnd();
-  }, []);
-
   // Clear temporary localStorage data on hard refresh
   useEffect(() => {
     // Check if this is a hard refresh using performance navigation API
