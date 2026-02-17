@@ -121,19 +121,19 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
     }, [searchParams, user]);
 
     const handleProceedToBankApi = async () => {
-        const finfactorParam = searchParams.get('finfactor');
-        if (finfactorParam === "success") {
-            // This one usually doesn't need a ref because URL params change, 
-            // but effectively it redirects/cleans up anyway.
-            fetchBreFinfactorResult();
-            return;
-        }
+        // const finfactorParam = searchParams.get('finfactor');
+        // if (finfactorParam === "success") {
+        //     // This one usually doesn't need a ref because URL params change, 
+        //     // but effectively it redirects/cleans up anyway.
+        //     fetchBreFinfactorResult();
+        //     return;
+        // }
 
-        if (user && user?.bsaInitiated) {
-            console.log("bsa initial...!");
-            fetchBreFinfactorResult();
-            return;
-        }
+        // if (user && user?.bsaInitiated) {
+        //     console.log("bsa initial...!");
+        //     fetchBreFinfactorResult();
+        //     return;
+        // }
 
         setPtbLoading(true);
         try {
