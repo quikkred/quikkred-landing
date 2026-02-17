@@ -24,7 +24,7 @@ export default async function getUserDetails(): Promise<User | null> {
   // @ts-ignore
   const accessToken: string | undefined = session.accessToken;
 
-  // console.log("access-token:", accessToken);
+  console.log("access-token:", accessToken);
 
   if (!accessToken) return baseUser; // logged in but no backend token
 
