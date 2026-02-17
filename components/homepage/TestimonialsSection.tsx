@@ -337,11 +337,20 @@ const VideoCard = ({
         className="relative h-36 sm:h-44 lg:h-48 bg-gray-900 cursor-pointer group"
         onClick={onPlay}
       >
-        <img
-          src={`https://img.youtube.com/vi/${testimonial.videoUrl.split("/embed/")[1]?.split("?")[0]}/hqdefault.jpg`}
-          alt={testimonial.title}
-          className="w-full h-full object-cover"
-        />
+        {testimonial.videoUrl.startsWith("/") ? (
+          <video
+            src={testimonial.videoUrl}
+            className="w-full h-full object-cover"
+            preload="metadata"
+            muted
+          />
+        ) : (
+          <img
+            src={`https://img.youtube.com/vi/${testimonial.videoUrl.split("/embed/")[1]?.split("?")[0]}/hqdefault.jpg`}
+            alt={testimonial.title}
+            className="w-full h-full object-cover"
+          />
+        )}
         <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
           <div className="w-11 h-11 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-white/90 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
             <Play className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-[#25B181] ml-0.5 sm:ml-1" />
