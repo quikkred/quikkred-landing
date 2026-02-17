@@ -261,7 +261,6 @@ export default function MyLoansPage() {
     cooldownEndsAt?: string;
   } | null>(null);
   const [reapplyForm, setReapplyForm] = useState({
-    loanAmount: '',
     tenure: '30',
     purpose: ''
   });
@@ -531,12 +530,12 @@ export default function MyLoansPage() {
   const handleProceedToBank = () => {
     setNewLoanError(null);
     const amount = Number(newLoanForm.loanAmount);
-    if (!amount || amount < 1000) {
-      setNewLoanError('Please enter a valid loan amount (minimum ₹1,000)');
+    if (!amount || amount < 3000) {
+      setNewLoanError('Please enter a valid loan amount (minimum ₹3,000)');
       return;
     }
-    if (amount > 500000) {
-      setNewLoanError('Maximum loan amount is ₹5,00,000');
+    if (amount > 25000) {
+      setNewLoanError('Maximum loan amount is ₹25,000');
       return;
     }
     setNewLoanStep('bank');
@@ -674,21 +673,19 @@ export default function MyLoansPage() {
 
         setReapplyEligibility({
           eligible: response.data.eligible ?? response.data.isEligible ?? true,
-          maxAmount: response.data.maxAmount ?? 500000,
-          minAmount: response.data.minAmount ?? 10000,
+          maxAmount: response.data.maxAmount ?? 0,
+          minAmount: response.data.minAmount ?? 0,
           reason: response.data.reason
         });
-        if (response.data.maxAmount) {
-          setReapplyForm(prev => ({ ...prev, loanAmount: String(response.data.maxAmount / 2) }));
-        }
+        // maxAmount available from eligibility response
         setIsReapplyModalOpen(true);
       } else {
-        setReapplyEligibility({ eligible: true, maxAmount: 500000, minAmount: 10000 });
+        setReapplyEligibility({ eligible: true, maxAmount: 25000, minAmount: 3000 });
         setIsReapplyModalOpen(true);
       }
     } catch (error: any) {
       console.error('Error checking reapply eligibility:', error);
-      setReapplyEligibility({ eligible: true, maxAmount: 500000, minAmount: 10000 });
+      setReapplyEligibility({ eligible: true, maxAmount: 25000, minAmount: 3000 });
       setIsReapplyModalOpen(true);
     } finally {
       setReapplyLoading(false);
@@ -701,23 +698,13 @@ export default function MyLoansPage() {
       return;
     }
 
-    const amount = Number(reapplyForm.loanAmount);
-    if (!amount || amount < 10000) {
-      setReapplyError('Please enter a valid loan amount (minimum Rs. 10,000)');
-      return;
-    }
-    if (amount > 500000) {
-      setReapplyError('Maximum loan amount is Rs. 5,00,000');
-      return;
-    }
-
     setReapplyLoading(true);
     setReapplyError(null);
 
     try {
       const response = await loansService.submitReapplication({
         customerId: selectedLoanForReapply.customerId,
-        loanAmount: amount,
+        loanAmount: reapplyEligibility?.maxAmount || 0,
         tenure: Number(reapplyForm.tenure),
         purpose: reapplyForm.purpose || 'Repeat Loan',
         notes: 'Reapplication from customer dashboard'
@@ -746,7 +733,7 @@ export default function MyLoansPage() {
     setReapplyEligibility(null);
     setReapplyError(null);
     setReapplySuccess(null);
-    setReapplyForm({ loanAmount: '', tenure: '30', purpose: '' });
+    setReapplyForm({ tenure: '30', purpose: '' });
   };
 
   // ============ UPI AUTOPAY HANDLERS ============
@@ -1467,15 +1454,15 @@ export default function MyLoansPage() {
                         <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <input
                           type="number"
-                          min="1000"
-                          max="500000"
+                          min="3000"
+                          max="25000"
                           value={newLoanForm.loanAmount}
                           onChange={(e) => setNewLoanForm({ ...newLoanForm, loanAmount: e.target.value })}
                           className="w-full pl-12 pr-4 py-4 bg-[#FAFAFA] border-2 border-[#E0E0E0] rounded-xl focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-lg font-semibold"
                           placeholder="Enter loan amount"
                         />
                       </div>
-                      <p className="text-xs text-gray-500 mt-2">Min: ₹1,000 | Max: ₹5,00,000</p>
+                      <p className="text-xs text-gray-500 mt-2">Min: ₹3,000 | Max: ₹25,000</p>
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-3 mt-6">
@@ -2392,28 +2379,6 @@ export default function MyLoansPage() {
                         <p className="text-sm text-red-700">{reapplyError}</p>
                       </div>
                     )}
-
-                    {/* Loan Amount */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Loan Amount <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <input
-                          type="number"
-                          min={reapplyEligibility?.minAmount || 10000}
-                          max={reapplyEligibility?.maxAmount || 500000}
-                          value={reapplyForm.loanAmount}
-                          onChange={(e) => setReapplyForm({ ...reapplyForm, loanAmount: e.target.value })}
-                          className="w-full pl-12 pr-4 py-3 bg-[#FAFAFA] border-2 border-[#E0E0E0] rounded-xl focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-lg font-semibold"
-                          placeholder="Enter amount"
-                        />
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Min: {formatCurrency(reapplyEligibility?.minAmount || 10000)} | Max: {formatCurrency(reapplyEligibility?.maxAmount || 500000)}
-                      </p>
-                    </div>
 
                     {/* Tenure */}
                     <div>

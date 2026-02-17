@@ -64,7 +64,10 @@ export default function QuickApplyV2Page() {
         // A. Wait for IP check to finish
         if (ipLoading || ipBlocked) return;
 
-        // B. Handle User Data Population
+        // B. Only auto-route on initial load, not on subsequent state changes
+        if (hasAutoRouted.current) return;
+
+        // C. Handle User Data Population
         if (user || application) {
             const rate = ((typeof application?.interestRate === "string" ? parseFloat(application?.interestRate) : (application?.interestRate || 1)) / 100) || 0.01; // 1% per day
             const approvedLoanAmount = (typeof application?.approvedLoanAmount === "string" ? parseInt(application?.approvedLoanAmount) : application?.approvedLoanAmount) || 0;
@@ -140,11 +143,14 @@ export default function QuickApplyV2Page() {
 
             if (isLogin && (user?.isProfileVerified || user?.isBankDetailsFilled)) {
                 setStep("bank");
+                hasAutoRouted.current = true;
             } else if (isLogin && basicAndKycFilled) {
                 // If basic + KYC details are filled, skip to eligibility
                 setStep("eligibility");
+                hasAutoRouted.current = true;
             } else if (isLogin) {
                 setStep("eligibility");
+                hasAutoRouted.current = true;
             }
         }
 
@@ -155,7 +161,7 @@ export default function QuickApplyV2Page() {
         //     hasAutoRouted.current = true;
         //     return;
         // }
-    }, [user, ipLoading, ipBlocked, stage, application]);
+    }, [user, ipLoading, ipBlocked, application]);
 
     // Initialize tracking and check IP on mount
     useEffect(() => {
