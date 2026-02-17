@@ -66,9 +66,9 @@ devIndicators: false,
   },
 
   // Compiler optimizations
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
-  },
+  // compiler: {
+  //   removeConsole: process.env.NODE_ENV === 'production',
+  // },
 
   // Reduce payload size
   productionBrowserSourceMaps: false,

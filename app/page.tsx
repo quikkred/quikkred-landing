@@ -27,6 +27,7 @@ export default function Home() {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const containerRef = useRef(null);
 
+
   // Removed scroll animations for better initial load performance
 
   // Data arrays using translations
