@@ -45,6 +45,21 @@ interface VideoTestimonial {
   title: string;
 }
 
+interface ApiReview {
+  _id: string;
+  customerId?: {
+    _id: string;
+    fullName?: string;
+    state?: string;
+  };
+  rating: number;
+  loanType: string;
+  loanAmount: number;
+  description: string;
+  createdAt: string;
+  link?: string;
+}
+
 type Testimonial = TextTestimonial | VideoTestimonial;
 
 // Sample Data
@@ -148,6 +163,68 @@ const testimonialsData: Testimonial[] = [
   //     "Got loan for daughter's higher education. Minimal documentation and smooth process. Quikkred is truly customer-friendly!",
   // },
 ];
+
+const getYoutubeEmbedUrl = (url: string): string => {
+  const watchMatch = url.match(/youtube\.com\/watch\?v=([^&\s]+)/);
+  if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`;
+  const shortMatch = url.match(/youtu\.be\/([^?\s]+)/);
+  if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`;
+  return url; // fallback
+};
+
+const mapApiReview = (review: ApiReview): Testimonial => {
+  const base = {
+    id: `api-${review._id}`,
+    name: review.customerId?.fullName || "Verified Customer",
+    location: review.customerId?.state || "",
+    rating: review.rating,
+    loanAmount: review.loanAmount.toLocaleString("en-IN"),
+    loanType: review.loanType,
+    date: new Date(review.createdAt).toLocaleDateString("en-IN", {
+      month: "short",
+      year: "numeric",
+    }),
+  };
+
+  if (review.link) {
+    return {
+      ...base,
+      type: "video",
+      videoUrl: getYoutubeEmbedUrl(review.link),
+      title: review.description,
+      duration: "",
+    };
+  }
+
+  return {
+    ...base,
+    type: "text",
+    content: review.description,
+  };
+};
+
+const useApiTestimonials = () => {
+  const [apiTestimonials, setApiTestimonials] = useState<Testimonial[]>([]);
+  useEffect(() => {
+    fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/review/getAllTestimonialReviews`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    )
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && Array.isArray(json.data)) {
+          setApiTestimonials(json.data.map(mapApiReview));
+        }
+      })
+      .catch((err) => console.error("❌ Failed to fetch testimonials:", err));
+  }, []);
+
+  return apiTestimonials;
+};
 
 // Filter type
 type FilterType = "all" | "text" | "video";
@@ -260,11 +337,10 @@ const VideoCard = ({
         className="relative h-36 sm:h-44 lg:h-48 bg-gray-900 cursor-pointer group"
         onClick={onPlay}
       >
-        <video
-          src={testimonial.videoUrl}
+        <img
+          src={`https://img.youtube.com/vi/${testimonial.videoUrl.split("/embed/")[1]?.split("?")[0]}/hqdefault.jpg`}
+          alt={testimonial.title}
           className="w-full h-full object-cover"
-          preload="metadata"
-          muted
         />
         <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
           <div className="w-11 h-11 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-white/90 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
@@ -398,8 +474,9 @@ export default function TestimonialsSection() {
   const { t } = useLanguage();
   const [filter, setFilter] = useState<FilterType>("all");
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
-
-  const filteredTestimonials = testimonialsData.filter((item) => {
+  const apiTestimonials = useApiTestimonials();
+  const allTestimonials = [...testimonialsData, ...apiTestimonials];
+  const filteredTestimonials = allTestimonials.filter((item) => {
     if (filter === "all") return true;
     return item.type === filter;
   });
