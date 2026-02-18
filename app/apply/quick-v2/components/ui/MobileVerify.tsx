@@ -128,6 +128,9 @@ const MobileVerify = ({
 
   return (
     <div className="w-full">
+      <p className="text-[10px] sm:text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1.5 mb-3">
+        Enter the mobile number linked to your Aadhaar.
+      </p>
       {/* Input Group */}
       <div className="space-y-4">
 
