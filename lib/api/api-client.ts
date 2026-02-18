@@ -13,6 +13,7 @@ interface ApiResponse<T = any> {
 class ApiClient {
   private baseURL: string;
   private externalBaseURL: string;
+  static isLoggingOut = false;
 
   constructor() {
     // In Next.js, we use relative URLs for API routes
@@ -70,6 +71,12 @@ class ApiClient {
             (Date.now() - parseInt(loginTimestamp, 10)) < 10000; // 10 second grace period
 
           if (!isLoginPage && !justLoggedIn) {
+            // ✅ Guard: prevent multiple 401 handlers from firing simultaneously
+            if (ApiClient.isLoggingOut) {
+              return { success: false, error: 'Session expired' } as ApiResponse<T>;
+            }
+            ApiClient.isLoggingOut = true;
+
             // Clear all authentication tokens
             localStorage.removeItem('token');
             localStorage.removeItem('authToken');
@@ -87,13 +94,27 @@ class ApiClient {
             localStorage.removeItem('userMobile');
             localStorage.removeItem('customerUniqueId');
 
-            // Clear cookies
+            // Clear custom cookies
             document.cookie = 'auth-token=; path=/; max-age=0';
             document.cookie = 'user-role=; path=/; max-age=0';
 
-            // Redirect to login
-            await signOut({ redirect: true, callbackUrl: "/login" });
+            // ✅ Clear NextAuth non-HttpOnly cookies (callback-url causes redirect back to /user)
+            document.cookie = 'next-auth.callback-url=; path=/; max-age=0';
+            document.cookie = 'next-auth.csrf-token=; path=/; max-age=0';
+
+            try {
+              // Use redirect: false so WE control the timing
+              // signOut will POST to /api/auth/signout which clears the HttpOnly session cookie
+              await signOut({ redirect: false });
+            } catch (e) {
+              console.error('signOut error:', e);
+            }
+
+            // Now the HttpOnly cookie is cleared on the server - safe to redirect
             window.location.href = '/login';
+
+            // Return instead of throw — prevents component re-renders that trigger re-fetches
+            return { success: false, error: 'Session expired' } as ApiResponse<T>;
           }
         }
         throw new Error('Session expired. Please login again.');
