@@ -409,7 +409,7 @@ export default function UserDashboard() {
 
       // Step 3: Open Razorpay checkout with order details from API response
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || "rzp_live_S4tgUkVdbPaFdo",
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || "rzp_test_RudM9P8MHGIuf2",
         amount: amountInPaise,
         currency: "INR",
         order_id: orderId,
@@ -1400,8 +1400,8 @@ export default function UserDashboard() {
                         <button
                           onClick={() => handlePaymentTypeChange('FULL_CLOSURE')}
                           className={`p-4 rounded-xl border-2 transition-all ${paymentType === 'FULL_CLOSURE'
-                              ? 'bg-gradient-to-br from-green-500 to-emerald-600 border-green-600 text-white shadow-lg'
-                              : 'bg-white border-gray-200 text-gray-700 hover:border-green-300 hover:bg-green-50'
+                            ? 'bg-gradient-to-br from-green-500 to-emerald-600 border-green-600 text-white shadow-lg'
+                            : 'bg-white border-gray-200 text-gray-700 hover:border-green-300 hover:bg-green-50'
                             }`}
                         >
                           <div className="flex flex-col items-center gap-2">
@@ -1416,8 +1416,8 @@ export default function UserDashboard() {
                         <button
                           onClick={() => handlePaymentTypeChange('PART_PAYMENT')}
                           className={`p-4 rounded-xl border-2 transition-all ${paymentType === 'PART_PAYMENT'
-                              ? 'bg-gradient-to-br from-blue-500 to-indigo-600 border-blue-600 text-white shadow-lg'
-                              : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50'
+                            ? 'bg-gradient-to-br from-blue-500 to-indigo-600 border-blue-600 text-white shadow-lg'
+                            : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50'
                             }`}
                         >
                           <div className="flex flex-col items-center gap-2">
@@ -1618,7 +1618,7 @@ export default function UserDashboard() {
                       </div>
                     </div>
 
-                   {/* -------------------------------------------------------->UPI */}
+                    {/* -------------------------------------------------------->UPI */}
 
                     {/* Help Section */}
                     <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -1800,8 +1800,8 @@ export default function UserDashboard() {
                               <div
                                 key={proof._id}
                                 className={`p-4 rounded-lg border ${proof.status === 'VERIFIED' ? 'bg-green-50 border-green-200' :
-                                    proof.status === 'REJECTED' ? 'bg-red-50 border-red-200' :
-                                      'bg-yellow-50 border-yellow-200'
+                                  proof.status === 'REJECTED' ? 'bg-red-50 border-red-200' :
+                                    'bg-yellow-50 border-yellow-200'
                                   }`}
                               >
                                 <div className="flex items-start justify-between gap-3">
@@ -1866,8 +1866,8 @@ export default function UserDashboard() {
 
 
 
- {/* UPI Payment Option */}
-                    {/* <div className="mt-4 bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl p-4 border-2 border-purple-200">
+{/* UPI Payment Option */ }
+{/* <div className="mt-4 bg-gradient-to-br from-purple-50 to-violet-50 rounded-xl p-4 border-2 border-purple-200">
                       <div className="flex items-center gap-2 mb-3">
                         <Smartphone className="w-5 h-5 text-purple-700" />
                         <h4 className="text-base font-semibold text-purple-900">Pay via UPI</h4>
