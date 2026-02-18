@@ -1,37 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 
-function isLoggedIn(request: NextRequest) {
-  // NextAuth JWT cookie names (dev vs prod)
-  const token =
-    request.cookies.get("next-auth.session-token")?.value ||
-    request.cookies.get("__Secure-next-auth.session-token")?.value;
-
-  return Boolean(token);
-}
-
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const loggedIn = isLoggedIn(request);
+
+  // ✅ Securely verify the session token (checks signature & expiration)
+  const token = await getToken({
+    req: request,
+    secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+  });
+
+  const loggedIn = !!token;
 
   // -------------------------
-  // 1) Language cookie logic
-  // -------------------------
-  // const languageSelected = request.cookies.get("languageSelected");
-
-  // if (!languageSelected) {
-  //   const res = NextResponse.next();
-  //   res.cookies.set("languageSelected", "true", {
-  //     path: "/",
-  //     maxAge: 31536000,
-  //   });
-  //   return res;
-  // }
-
-  // -------------------------
-  // 2) Auth redirects
+  // Auth redirects
   // -------------------------
 
-  // ✅ If user is already logged in and tries to open /login => send to /user
+  // ✅ If user is logged (valid token) and tries to open /login => send to /user
   if (pathname === "/login" && loggedIn) {
     return NextResponse.redirect(new URL("/user", request.url));
   }
@@ -47,8 +32,6 @@ export function middleware(request: NextRequest) {
 
   if (isProtected && !loggedIn) {
     const loginUrl = new URL("/login", request.url);
-    // optional: store callback
-    // loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
