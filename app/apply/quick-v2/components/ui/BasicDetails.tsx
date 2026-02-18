@@ -25,10 +25,13 @@ const BasicDetails = ({
 
     return (
         <div className="bg-white rounded-xl p-3 sm:p-4 border border-gray-200 shadow-sm space-y-4">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-1">
                 <User className="w-4 h-4 text-[#25B181]" />
                 <h3 className="text-sm font-bold text-gray-900">Personal Details</h3>
             </div>
+            <p className="text-[10px] sm:text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1.5 mb-1">
+                Please fill all details exactly as per your Aadhaar card.
+            </p>
 
             <div className="grid grid-cols-1 gap-4">
                 {/* Full Name Field */}
