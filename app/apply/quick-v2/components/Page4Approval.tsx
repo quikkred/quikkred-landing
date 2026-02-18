@@ -146,7 +146,7 @@ const Page4Approval = ({
         if (subscriptionId) {
           // Open Razorpay checkout with subscription
           const options = {
-            key: "rzp_test_S4tgUkVdbPaFdo",
+            key: "rzp_test_RudM9P8MHGIuf2",
             subscription_id: subscriptionId,
             name: "Quikkred",
             description: "UPI AutoPay Mandate Approval",
