@@ -248,8 +248,6 @@ const BankVerification = ({
                     title: "Application submitted successfully",
                     description: "Your application has been received and is being reviewed. We’ll notify you of the next steps shortly."
                 });
-                getApplication();
-                getCustomer();
                 console.log("data", response.data);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
@@ -259,6 +257,8 @@ const BankVerification = ({
                 toast({ variant: "error", title: error.response?.data?.message || "Internal server error" });
             }
         } finally {
+            getApplication();
+            getCustomer();
             setSubmitLoading(false);
         }
     };
