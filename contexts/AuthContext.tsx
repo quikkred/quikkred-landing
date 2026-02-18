@@ -288,18 +288,23 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
       document.cookie = 'auth-token=; path=/; max-age=0';
       document.cookie = 'user-role=; path=/; max-age=0';
 
-      // Clear NextAuth session cookies explicitly (safety net)
-      document.cookie = 'next-auth.session-token=; path=/; max-age=0';
-      document.cookie = '__Secure-next-auth.session-token=; path=/; max-age=0; secure';
-      document.cookie = 'next-auth.csrf-token=; path=/; max-age=0';
+      // ✅ Clear NextAuth non-HttpOnly cookies (callback-url causes redirect back to /user)
       document.cookie = 'next-auth.callback-url=; path=/; max-age=0';
+      document.cookie = 'next-auth.csrf-token=; path=/; max-age=0';
 
-      // ✅ Let NextAuth clear its cookies and handle the redirect
-      // Do NOT add any manual redirect after this — signOut handles it
-      await signOut({ redirect: true, callbackUrl: "/login" });
+      // Use redirect: false — let signOut clear the HttpOnly session cookie on the server
+      // Then WE redirect manually to avoid stale callback-url interference
+      try {
+        await signOut({ redirect: false });
+      } catch (e) {
+        console.error('signOut error:', e);
+      }
+
+      // Session cookie cleared on server — now safe to redirect
+      window.location.href = '/login';
     } catch (er) {
       console.log("logout error", er);
-      // Fallback: if signOut fails, force redirect
+      // Fallback: if anything fails, force navigate
       window.location.href = '/login';
     }
   };
