@@ -38,6 +38,9 @@ interface Loan {
   customerId?: string;
   dpd?: number;
   nextDueDate?: string;
+  totalInterest: number;
+  lateCharges: number;
+  lateChargeInterest: number;
 }
 
 interface PaymentHistoryItem {
@@ -423,7 +426,10 @@ export default function MyLoansPage() {
           customerEmail: loan.customerId?.email,
           customerId: loan.customerId?._id,
           dpd: loan.dpd || 0,
-          nextDueDate: loan.nextDueDate
+          nextDueDate: loan.nextDueDate,
+          totalInterest: loan.totalInterest || 0,
+          lateCharges: loan.lateCharges || 0,
+          lateChargeInterest: loan.lateChargeInterest || 0
         }));
 
         setLoans(mappedLoans);
@@ -1196,9 +1202,9 @@ export default function MyLoansPage() {
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Loan Number</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Principal</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Total Repayment</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Interest</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Total Interest</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Penalty</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Total Repayment</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
                 </tr>
@@ -1220,21 +1226,21 @@ export default function MyLoansPage() {
                       <div className="text-xs text-gray-500">Disbursed: {formatCurrency(loan.disbursementAmount)}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{formatCurrency(loan.totalRepayment)}</div>
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{formatCurrency(loan.principalAmount * loan.interestRate / 100)}</div>
+                      <div className="text-sm text-gray-900">{formatCurrency(loan.totalInterest)}</div>
                       <div className="text-xs text-gray-500">{loan.interestRate}%</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      {loan.status === 'OVERDUE' && loan.dpd && loan.dpd > 0 ? (
+                      {(loan.lateCharges + loan.lateChargeInterest) > 0 ? (
                         <div>
-                          <div className="text-sm font-medium text-red-600">{formatCurrency(loan.dpd * 50)}</div>
-                          <div className="text-xs text-gray-500">{loan.dpd} days overdue</div>
+                          <div className="text-sm font-medium text-red-600">{formatCurrency(loan.lateCharges + loan.lateChargeInterest)}</div>
+                          <div className="text-xs text-gray-500">{loan.dpd ? `${loan.dpd} days overdue` : ''}</div>
                         </div>
                       ) : (
                         <div className="text-sm text-gray-400">-</div>
                       )}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{formatCurrency(loan.totalRepayment)}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(loan.status)}`}>
@@ -1927,23 +1933,23 @@ export default function MyLoansPage() {
                         <p className="text-sm text-gray-600">Total Repayment</p>
                         <p className="text-lg font-bold text-green-700">{formatCurrency(detailedLoan.totalRepayment)}</p>
                       </div>
-                    {Number(detailedLoan?.lateCharges) > 0 && (
-  <div>
-    <p className="text-sm text-gray-600">Late Charges</p>
-    <p className="font-semibold text-red-600">
-      {formatCurrency(Number(detailedLoan.lateCharges))}
-    </p>
-  </div>
-)}
+                      {Number(detailedLoan?.lateCharges) > 0 && (
+                        <div>
+                          <p className="text-sm text-gray-600">Late Charges</p>
+                          <p className="font-semibold text-red-600">
+                            {formatCurrency(Number(detailedLoan.lateCharges))}
+                          </p>
+                        </div>
+                      )}
 
-{Number(detailedLoan?.lateChargeInterest) > 0 && (
-  <div>
-    <p className="text-sm text-gray-600">Late Charge Interest</p>
-    <p className="font-semibold text-red-600">
-      {formatCurrency(Number(detailedLoan.lateChargeInterest))}
-    </p>
-  </div>
-)}
+                      {Number(detailedLoan?.lateChargeInterest) > 0 && (
+                        <div>
+                          <p className="text-sm text-gray-600">Late Charge Interest</p>
+                          <p className="font-semibold text-red-600">
+                            {formatCurrency(Number(detailedLoan.lateChargeInterest))}
+                          </p>
+                        </div>
+                      )}
 
                     </div>
                   </div>
