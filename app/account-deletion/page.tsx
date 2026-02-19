@@ -1,24 +1,34 @@
 "use client";
 
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 import { useState } from "react";
+import { AxiosError } from "axios";
+import { Loader2 } from "lucide-react";
+import useAxios from "@/hooks/useAxios";
+import { toast } from "@/components/ui/toast";
 
-type FormData = {
-  fullName: string;
-  mobile: string;
-  email: string;
-  reason: string;
-  comments: string;
-  confirmNoLoan: boolean;
-};
+// Validation Schema
+const schema = yup.object().shape({
+  fullName: yup.string().required("Full name is required").defined(""),
+  mobile: yup
+    .string()
+    .matches(/^[0-9]{10}$/, "Enter a valid 10-digit mobile number")
+    .required("Mobile number is required").defined(""),
+  email: yup
+    .string()
+    .email("Enter a valid email address")
+    .required("Email is required").defined(""),
+  reason: yup.string().required("Please select a reason").defined(""),
+  comments: yup.string().defined(""),
+  confirmNoLoan: yup
+    .boolean()
+    .oneOf([true], "Confirmation is required")
+    .required("Confirmation is required").defined(),
+});
 
-type FormErrors = {
-  fullName?: string;
-  mobile?: string;
-  email?: string;
-  reason?: string;
-  confirmNoLoan?: string;
-};
-
+type FormData = yup.InferType<typeof schema>;
 
 const reasons = [
   "No longer need the service",
@@ -30,91 +40,64 @@ const reasons = [
 ];
 
 const AccountDeletion = () => {
-  const [formData, setFormData] = useState<FormData>({
-    fullName: "",
-    mobile: "",
-    email: "",
-    reason: "",
-    comments: "",
-    confirmNoLoan: false,
-  });
-
-  const [errors, setErrors] = useState<FormErrors>({});
+  const axios = useAxios();
   const [submitted, setSubmitted] = useState(false);
   const [referenceId, setReferenceId] = useState("");
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value, type } = e.target;
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<FormData>({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      fullName: "",
+      mobile: "",
+      email: "",
+      reason: "",
+      comments: "",
+      confirmNoLoan: false,
+    },
+  });
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
-    }));
-  };
-
-  const validate = () => {
-    const newErrors: FormErrors = {};
-
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = "Full name is required";
-    }
-
-    if (!/^[0-9]{10}$/.test(formData.mobile)) {
-      newErrors.mobile = "Enter a valid 10-digit mobile number";
-    }
-
-    if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
-      newErrors.email = "Enter a valid email address";
-    }
-
-    if (!formData.reason) {
-      newErrors.reason = "Please select a reason";
-    }
-
-    if (!formData.confirmNoLoan) {
-      newErrors.confirmNoLoan = "Confirmation is required";
-    }
-
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!validate()) return;
-
+  const onSubmit = async (data: FormData) => {
     try {
-      const response = await fetch("/api/user/account-deletion-request", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await axios.post("/api/account-deletion-request/create", data);
+      const responseData = response.data;
 
-      if (!response.ok) {
-        throw new Error("Failed to submit request");
+      if (response.status === 200 || response.status === 201) {
+        const ref =
+          responseData?.referenceId ||
+          `QRK-${Math.random().toString(36).slice(2, 10).toUpperCase()}`;
+
+        setReferenceId(ref);
+        setSubmitted(true);
+        toast({
+          variant: "success",
+          title: "Request submitted",
+          description: "Your account deletion request has been received.",
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        reset();
       }
-
-      const data = await response.json();
-
-      const ref =
-        data?.referenceId ||
-        `QRK-${Math.random().toString(36).slice(2, 10).toUpperCase()}`;
-
-      setReferenceId(ref);
-      setSubmitted(true);
-
-      console.log("Account deletion request:", formData);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Account deletion request failed:", error);
-      alert("Something went wrong. Please try again later.");
+      if (error instanceof AxiosError) {
+        toast({
+          variant: "error",
+          title: error.response?.data?.message || "Request Failed",
+          description: "Something went wrong. Please try again later.",
+        });
+      } else {
+        toast({
+          variant: "error",
+          title: "Error",
+          description: "Something went wrong. Please try again later.",
+        });
+      }
     }
   };
-
 
   if (submitted) {
     return (
@@ -152,14 +135,12 @@ const AccountDeletion = () => {
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 mb-4">
               Account Deletion Request
             </h1>
-            <p className="text-slate-600">We're sorry to see you go. Please fill out the form below to request account deletion.</p>
+            <p className="text-slate-600">
+              We're sorry to see you go. Please fill out the form below to request account deletion.
+            </p>
           </div>
           <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 lg:p-10">
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-6"
-            >
-
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Full Name */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -168,15 +149,13 @@ const AccountDeletion = () => {
                 <input
                   type="text"
                   id="fullName"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleChange}
                   placeholder="Enter your full name"
-                  required
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all"
+                  className={`w-full px-4 py-3 rounded-xl border ${errors.fullName ? "border-red-500" : "border-slate-200"
+                    } focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all`}
+                  {...register("fullName")}
                 />
                 {errors.fullName && (
-                  <p className="text-xs text-red-500 mt-1">{errors.fullName}</p>
+                  <p className="text-xs text-red-500 mt-1">{errors.fullName.message}</p>
                 )}
               </div>
 
@@ -188,16 +167,18 @@ const AccountDeletion = () => {
                 <input
                   type="tel"
                   id="mobile"
-                  name="mobile"
                   maxLength={10}
-                  value={formData.mobile}
-                  onChange={handleChange}
-                  required
                   placeholder="10-digit mobile number"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all"
+                  className={`w-full px-4 py-3 rounded-xl border ${errors.mobile ? "border-red-500" : "border-slate-200"
+                    } focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all`}
+                  {...register("mobile")}
+                  onInput={(e) => {
+                    const target = e.target as HTMLInputElement;
+                    target.value = target.value.replace(/\D/g, "");
+                  }}
                 />
                 {errors.mobile && (
-                  <p className="text-xs text-red-500 mt-1">{errors.mobile}</p>
+                  <p className="text-xs text-red-500 mt-1">{errors.mobile.message}</p>
                 )}
               </div>
 
@@ -209,15 +190,13 @@ const AccountDeletion = () => {
                 <input
                   type="email"
                   id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
                   placeholder="Enter your email address"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all"
+                  className={`w-full px-4 py-3 rounded-xl border ${errors.email ? "border-red-500" : "border-slate-200"
+                    } focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all`}
+                  {...register("email")}
                 />
                 {errors.email && (
-                  <p className="text-xs text-red-500 mt-1">{errors.email}</p>
+                  <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>
                 )}
               </div>
 
@@ -228,11 +207,9 @@ const AccountDeletion = () => {
                 </label>
                 <select
                   id="reason"
-                  name="reason"
-                  value={formData.reason}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all bg-white"
+                  className={`w-full px-4 py-3 rounded-xl border ${errors.reason ? "border-red-500" : "border-slate-200"
+                    } focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all bg-white`}
+                  {...register("reason")}
                 >
                   <option value="">Select a reason</option>
                   {reasons.map((r) => (
@@ -242,7 +219,7 @@ const AccountDeletion = () => {
                   ))}
                 </select>
                 {errors.reason && (
-                  <p className="text-xs text-red-500 mt-1">{errors.reason}</p>
+                  <p className="text-xs text-red-500 mt-1">{errors.reason.message}</p>
                 )}
               </div>
 
@@ -252,26 +229,37 @@ const AccountDeletion = () => {
                   Additional Comments (Optional)
                 </label>
                 <textarea
-                  name="comments"
                   rows={3}
                   placeholder="Any additional feedback..."
-                  value={formData.comments}
-                  onChange={handleChange}
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all resize-none"
+                  {...register("comments")}
                 />
               </div>
 
               {/* RBI Notice */}
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                 <div className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
-                    </path>
+                  <svg
+                    className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    ></path>
                   </svg>
                   <div>
-                    <p className="text-sm font-medium text-amber-800">RBI Compliance Notice</p>
+                    <p className="text-sm font-medium text-amber-800">
+                      RBI Compliance Notice
+                    </p>
                     <p className="text-xs text-amber-700 mt-1">
-                      As per RBI guidelines, certain financial data must be retained for a minimum of 7 years for regulatory compliance. This data will be securely stored and not used for any other purpose.
+                      As per RBI guidelines, certain financial data must be retained
+                      for a minimum of 7 years for regulatory compliance. This data
+                      will be securely stored and not used for any other purpose.
                     </p>
                   </div>
                 </div>
@@ -282,42 +270,58 @@ const AccountDeletion = () => {
                 <input
                   type="checkbox"
                   id="confirmNoLoan"
-                  name="confirmNoLoan"
-                  checked={formData.confirmNoLoan}
-                  onChange={handleChange}
                   className="mt-1 w-4 h-4 text-teal-500 border-slate-300 rounded focus:ring-teal-500"
+                  {...register("confirmNoLoan")}
                 />
-                <label className="text-sm text-slate-600">
+                <label htmlFor="confirmNoLoan" className="text-sm text-slate-600">
                   I confirm that I do not have any active loan or outstanding balance
                   with Quikkred.<span className="text-red-500">*</span>
                 </label>
-                {errors.confirmNoLoan && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {errors.confirmNoLoan}
-                  </p>
-                )}
               </div>
+              {errors.confirmNoLoan && (
+                <p className="text-xs text-red-500 ml-7 mt-1">
+                  {errors.confirmNoLoan.message}
+                </p>
+              )}
 
               {/* Submit */}
               <button
                 type="submit"
-                className="w-full py-4 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 text-base"
+                disabled={isSubmitting}
+                className="w-full py-4 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 text-base disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                Submit Deletion Request
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit Deletion Request"
+                )}
               </button>
             </form>
           </div>
           <div className="mt-8 text-center">
             <p className="text-slate-600 text-sm">Need help? Contact us at</p>
             <p className="mt-2">
-              <a className="text-teal-600 hover:text-teal-700 font-medium" href="mailto:support@quikkred.com">support@quikkred.com</a>
+              <a
+                className="text-teal-600 hover:text-teal-700 font-medium"
+                href="mailto:support@quikkred.com"
+              >
+                support@quikkred.com
+              </a>
               <span className="text-slate-400 mx-2">|</span>
-              <a className="text-teal-600 hover:text-teal-700 font-medium" href="tel: +91 93119 13854">+91 93119 13854</a>
+              <a
+                className="text-teal-600 hover:text-teal-700 font-medium"
+                href="tel: +91 93119 13854"
+              >
+                +91 93119 13854
+              </a>
             </p>
           </div>
         </div>
       </div>
-    </main >
+    </main>
   );
 };
 
