@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Mail, AlertCircle, Loader2, ArrowRight, CheckCircle2, Edit2, Timer } from "lucide-react";
+import OTPField from "./OTPField";
 import { signIn, getSession } from "next-auth/react";
 import { useAuth } from "@/contexts/AuthContext";
 import { TIMERS } from "@/lib/constants/quickApplyV2";
@@ -32,7 +33,7 @@ const EmailVerify = ({
   const { login } = useAuth();
   const { getApplication } = useApplication();
   const axios = useAxios();
-  const otpInputRef = useRef<HTMLInputElement>(null);
+
 
   // Form
   const {
@@ -69,11 +70,7 @@ const EmailVerify = ({
   }, [otpTimer]);
 
   // Focus OTP input when sent
-  useEffect(() => {
-    if (otpSent && otpInputRef.current) {
-      otpInputRef.current.focus();
-    }
-  }, [otpSent]);
+
 
   /* ---------------- SEND OTP ---------------- */
   const onSendOTP = async (data: FormData) => {
@@ -126,11 +123,11 @@ const EmailVerify = ({
         if (session?.user) {
           trackOTPVerified(normalizedEmail);
           emailFriction.completeTracking(true);
+          getApplication();
           await login({
             email: normalizedEmail,
             apiData: session,
           });
-          getApplication();
           callback?.();
         }
       } else {
@@ -222,28 +219,20 @@ const EmailVerify = ({
         {/* Phase 2: OTP Verification Area */}
         {otpSent && (
           <div className="animate-in fade-in slide-in-from-top-2 duration-300 space-y-4">
-            <div className="relative">
-              <input
-                ref={otpInputRef}
-                type="tel"
-                inputMode="numeric"
-                value={otp}
-                onChange={(e) => {
-                  setOtp(e.target.value.replace(/\D/g, "").slice(0, 6));
-                  setOtpError("");
-                }}
-                maxLength={6}
-                className={`
-                  w-full py-3 text-center text-xl tracking-[0.75em] font-bold text-gray-800
-                  border-2 rounded-xl outline-none transition-all
-                  placeholder:text-gray-300 placeholder:tracking-normal placeholder:font-normal placeholder:text-sm
-                  ${otpError
-                    ? "border-red-300 bg-red-50/50 focus:border-red-500"
-                    : "border-emerald-500/30 bg-emerald-50/30 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"}
-                `}
-                placeholder="• • • • • •"
-              />
+            <div className="text-center sm:text-left">
+              <label className="text-sm font-medium text-gray-700">Enter verification code</label>
+              <p className="text-xs text-gray-500 mt-1">We've sent a 6-digit code to your email</p>
             </div>
+            <OTPField
+              value={otp}
+              onChange={(val) => {
+                setOtp(val);
+                setOtpError("");
+              }}
+              length={6}
+              error={!!otpError}
+              autoFocus={otpSent}
+            />
 
             <div className="flex items-center justify-between text-xs px-1">
               <div className="flex items-center gap-1.5 text-gray-500">
