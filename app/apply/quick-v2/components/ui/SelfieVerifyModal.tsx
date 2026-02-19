@@ -179,7 +179,8 @@ export default function AdvancedFaceCam({ isOpen, onClose, onCapture }: SelfieVe
             formData.append('photo', file);
 
             // const response = await axios.postForm(`/api/v2/face/verification`, formData);
-            const response = await axios.postForm(`/api/kyc/face/rekognition/verify`, formData);
+            // const response = await axios.postForm(`/api/kyc/face/rekognition/verify`, formData);
+            const response = await axios.postForm(`/api/kyc/face/verification`, formData);
 
             if (response.data?.success && (response.status === 200 || response.status === 201)) {
                 setStatusMsg({ type: 'success', text: "Identity Verified Successfully!" });
