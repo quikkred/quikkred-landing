@@ -19,6 +19,7 @@ export interface ActiveLoanDetails {
     status: string;
     overdueCount: number;
     lateCharges: number;
+    lateChargeInterest: number;
     paidAmount: number;
     totalEMIsPaid: number;
     installment: number;
