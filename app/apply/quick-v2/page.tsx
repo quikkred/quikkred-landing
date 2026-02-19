@@ -129,6 +129,8 @@ export default function QuickApplyV2Page() {
                 isBasicDetailsFilled: user?.isBasicDetailsFilled || false,
                 isKycDetailsFilled: user?.isKycDetailsFilled || false,
                 isBankDetailsFilled: user?.isBankDetailsFilled || false,
+
+                upiAutoPayStatus: user?.upiAutoPayStatus || false,
             }));
 
             const isLogin = user?.isEmailVerified || user?.isMobileVerified;
