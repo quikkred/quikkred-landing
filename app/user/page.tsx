@@ -244,7 +244,8 @@ export default function UserDashboard() {
 
   const getTotalLoanAmount = () => {
     if (!activeLoanDetails) return 0;
-    return activeLoanDetails.emiAmount; // emiAmount is the total loan amount
+    // Total Loan Amount = EMI Amount + Late Charges + Late Interest
+    return activeLoanDetails.emiAmount + (activeLoanDetails.lateCharges || 0) + (activeLoanDetails.lateChargeInterest || 0);
   };
 
   const getPaidAmount = () => {
@@ -269,20 +270,19 @@ export default function UserDashboard() {
     return activeLoanDetails.installment || 1;
   };
 
-  // Get outstanding breakdown for display
   const getOutstandingBreakdown = () => {
-    if (!activeLoanDetails) return { principal: 0, interest: 0, lateCharges: 0, total: 0 };
+    if (!activeLoanDetails) return { principal: 0, interest: 0, penalty: 0, total: 0 };
 
     const total = getRemainingAmount();
-    const lateCharges = activeLoanDetails.lateCharges || 0;
-    // For payday loans: remaining = principal + interest
-    // Estimate: if total includes late charges, subtract them
-    const principalAndInterest = total - lateCharges;
+    const penalty = (activeLoanDetails.lateCharges || 0) + (activeLoanDetails.lateChargeInterest || 0);
+
+    // For payday loans: remaining = principal + interest + penalty
+    const principalAndInterest = total - penalty;
 
     return {
       principal: principalAndInterest > 0 ? principalAndInterest : total,
       interest: 0, // Backend should provide this breakdown
-      lateCharges: lateCharges,
+      penalty: penalty,
       total: total
     };
   };
@@ -1367,21 +1367,21 @@ export default function UserDashboard() {
                         <Calculator className="w-4 h-4" />
                         Outstanding Breakdown
                       </h4>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div className="text-center p-3 bg-white rounded-lg border border-slate-200">
                           <p className="text-xs text-slate-600 mb-1">Principal + Interest</p>
                           <p className="text-base font-bold text-slate-900">₹{activeLoanDetails.emiAmount.toLocaleString()}</p>
                         </div>
                         <div className="text-center p-3 bg-white rounded-lg border border-slate-200">
-                          <p className="text-xs text-slate-600 mb-1">Late Charges</p>
-                          <p className="text-base font-bold text-red-600">₹{getOutstandingBreakdown().lateCharges.toLocaleString()}</p>
+                          <p className="text-xs text-slate-600 mb-1">Penalty</p>
+                          <p className="text-base font-bold text-red-600">₹{getOutstandingBreakdown().penalty.toLocaleString()}</p>
                         </div>
-                        <p className="text-xl font-bold text-green-800">
-                          ₹{(
-                            activeLoanDetails.emiAmount +
-                            getOutstandingBreakdown().lateCharges
-                          ).toLocaleString()}
-                        </p>
+                        <div className="text-center p-3 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                          <p className="text-xs text-green-700 mb-1">Total Outstanding</p>
+                          <p className="text-xl font-bold text-green-800">
+                            ₹{(activeLoanDetails.emiAmount + getOutstandingBreakdown().penalty).toLocaleString()}
+                          </p>
+                        </div>
                       </div>
                       <p className="text-xs text-slate-500 mt-3 text-center">
                         Due Date: {formatDate(activeLoanDetails.nextDueDate)}
