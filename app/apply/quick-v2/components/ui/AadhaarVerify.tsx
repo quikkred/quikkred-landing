@@ -303,7 +303,7 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
                         <div className="flex justify-center">
                             <OTPField
                                 value={otp}
-                                onChange={(val) => {
+                                onChange={(val: string) => {
                                     setOtp(val);
                                     if (error) setError("");
                                 }}
