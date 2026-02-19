@@ -13,6 +13,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast, Toaster } from "@/components/ui/toast";
 import SelfieCapture from "@/components/camera/SelfieCapture";
+import SelfieVerifyModal from "../quick-v2/components/ui/SelfieVerifyModal";
 import { useCustomer } from "@/store/hooks/useCustomer";
 import { QuickApplyFormData, FieldErrors } from "@/lib/types/quickApply";
 import { getInitialFormData, initialFieldErrors, INDIAN_STATES, BLACKLISTED_STATES } from "@/lib/constants/quickApply";
@@ -3774,7 +3775,12 @@ export default function QuickLoanApplication() {
         <Toaster />
 
         {/* Selfie Capture Modal */}
-        <SelfieCapture
+        {/* <SelfieCapture
+          isOpen={selfieCapture}
+          onClose={handleCloseSelfieModal}
+          onCapture={handleSelfieCapture}
+        /> */}
+        <SelfieVerifyModal
           isOpen={selfieCapture}
           onClose={handleCloseSelfieModal}
           onCapture={handleSelfieCapture}
