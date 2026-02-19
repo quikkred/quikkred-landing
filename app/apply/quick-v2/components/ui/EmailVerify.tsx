@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { Mail, AlertCircle, Loader2, ArrowRight, CheckCircle2, Edit2, Timer } from "lucide-react";
-import OTPField from "./OTPField";
 import { signIn, getSession } from "next-auth/react";
 import { useAuth } from "@/contexts/AuthContext";
 import { TIMERS } from "@/lib/constants/quickApplyV2";
@@ -12,6 +11,7 @@ import { useApplication } from "@/contexts/ApplicationContext";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import OTPField from "./OTPField";
 
 const schema = yup.object().shape({
   email: yup
@@ -225,7 +225,7 @@ const EmailVerify = ({
             </div>
             <OTPField
               value={otp}
-              onChange={(val) => {
+              onChange={(val: string) => {
                 setOtp(val);
                 setOtpError("");
               }}

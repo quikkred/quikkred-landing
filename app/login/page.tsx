@@ -600,7 +600,7 @@ export default function LoginPage() {
                           <div className="flex justify-center py-2">
                             <OTPField
                               value={otp}
-                              onChange={(val) => {
+                              onChange={(val: string) => {
                                 setOtp(val);
                                 if (error) setError(null);
                               }}
