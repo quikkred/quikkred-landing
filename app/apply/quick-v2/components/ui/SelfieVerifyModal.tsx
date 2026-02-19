@@ -39,11 +39,12 @@ export const preloadFaceDetector = async () => {
 
 interface SelfieVerifyModalProps {
     isOpen: boolean;
+    apiType?: "verify" | "verification";
     onClose: () => void;
     onCapture: (file: File) => void;
 }
 
-export default function AdvancedFaceCam({ isOpen, onClose, onCapture }: SelfieVerifyModalProps) {
+export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, onCapture }: SelfieVerifyModalProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
@@ -180,7 +181,7 @@ export default function AdvancedFaceCam({ isOpen, onClose, onCapture }: SelfieVe
 
             // const response = await axios.postForm(`/api/v2/face/verification`, formData);
             // const response = await axios.postForm(`/api/kyc/face/rekognition/verify`, formData);
-            const response = await axios.postForm(`/api/kyc/face/verification`, formData);
+            const response = await axios.postForm(apiType === "verification" ? `/api/kyc/face/verification`: `/api/kyc/face/rekognition/verify`, formData);
 
             if (response.data?.success && (response.status === 200 || response.status === 201)) {
                 setStatusMsg({ type: 'success', text: "Identity Verified Successfully!" });

@@ -1,3 +1,6 @@
+/* -------------------- STATUS ---------------------- */
+export type ApplicationStatus = "PENDING" | "PROCESSING" | "PENDING_APPLICATION" | "APPROVED" | "REJECTED" | "PENDING_DISBURSED" | "DISBURSED" | "HOLD" | "CLOSED" | "PROCEED TO BANK";
+
 /* -------------------- DOCUMENT -------------------- */
 export interface ApplicationDocument {
     documentId: string;
