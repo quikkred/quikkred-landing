@@ -1,3 +1,5 @@
+import { ApplicationStatus } from "./applicationInterface";
+
 export interface LoanSummary {
     productName: string;
     _id: string;
@@ -31,6 +33,7 @@ export interface DashboardData {
     oldApplication: boolean;
     oldApplicationNumber: string | null;
     oldApplicationDate: string | null;
+    applicationStatus: ApplicationStatus;
     isBasicDetailsFilled: boolean;
     isKycDetailsFilled: boolean;
     isBankDetailsFilled: boolean;
