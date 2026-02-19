@@ -79,7 +79,7 @@ const FormSteps = ({
 
             {/* Main Flow */}
             {!ipLoading && !ipBlocked && (
-                user?.isSubmit ? <ApplicationSuccess
+                (user?.isSubmit || application?.isSubmit) ? <ApplicationSuccess
                     formData={formData}
                     setFormData={setFormData}
                 /> : <>
