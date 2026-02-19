@@ -3782,6 +3782,7 @@ export default function QuickLoanApplication() {
         /> */}
         <SelfieVerifyModal
           isOpen={selfieCapture}
+          apiType="verification"
           onClose={handleCloseSelfieModal}
           onCapture={handleSelfieCapture}
         />
