@@ -3,6 +3,7 @@
 import { toast } from "@/components/ui/toast";
 import { useApplication } from "@/contexts/ApplicationContext";
 import useAxios from "@/hooks/useAxios";
+import { RAZORPAY_KEY } from "@/lib/config";
 import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
 import { CheckCircle, Shield } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -130,7 +131,6 @@ const EMandateVerify = ({
             if (response.status === 200 || response.status === 201) {
                 // Store mandate data
                 // setMandateData(result);
-                console.log("result:", result)
 
                 // Get subscriptionId from response
                 const subscriptionId = result.subscriptionId;
@@ -138,7 +138,8 @@ const EMandateVerify = ({
                 if (subscriptionId) {
                     // Open Razorpay checkout with subscription
                     const options = {
-                        key: "rzp_test_RudM9P8MHGIuf2",
+                        // key: "rzp_test_RudM9P8MHGIuf2",
+                        key: RAZORPAY_KEY,
                         subscription_id: subscriptionId,
                         name: "Quikkred",
                         description: "UPI AutoPay Mandate Approval",
