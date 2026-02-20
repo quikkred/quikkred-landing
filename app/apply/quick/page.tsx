@@ -4075,7 +4075,7 @@ export default function QuickLoanApplication() {
                       <>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Mobile Number *
+                            Mobile Number  <b>(Linked with Aadhaar)</b>*
                           </label>
                           <div className="flex flex-col sm:flex-row gap-2">
                             <input
@@ -4186,7 +4186,7 @@ export default function QuickLoanApplication() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Mobile Number *
+                              Mobile Number  <b>(Linked with Aadhaar)</b>*
                             </label>
                             <input
                               type="tel"
@@ -4237,7 +4237,7 @@ export default function QuickLoanApplication() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                  Mobile Number *
+                                  Mobile Number  <b>(Linked with Aadhaar)</b>*
                                 </label>
                                 <input
                                   type="tel"
