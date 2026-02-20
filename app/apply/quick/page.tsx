@@ -13,7 +13,6 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast, Toaster } from "@/components/ui/toast";
 import SelfieCapture from "@/components/camera/SelfieCapture";
-import SelfieVerifyModal from "../quick-v2/components/ui/SelfieVerifyModal";
 import { useCustomer } from "@/store/hooks/useCustomer";
 import { QuickApplyFormData, FieldErrors } from "@/lib/types/quickApply";
 import { getInitialFormData, initialFieldErrors, INDIAN_STATES, BLACKLISTED_STATES } from "@/lib/constants/quickApply";
@@ -318,7 +317,7 @@ export default function QuickLoanApplication() {
                 mobile: prev.mobile || profileData.mobile || user.mobile,
                 email: profileData.email || user.email || prev.email,
                 pan: profileData.panCard || prev.pan,
-                aadhaar: profileData.aadhaarNumber ? aadhaarToSet : prev.aadhaar,
+                aadhaar: profileData.aadhaarNumber ? aadhaarToSet: prev.aadhaar,
                 dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
                 state: profileData.state ? profileData.state.toLowerCase() : prev.state,
                 employmentType: profileData.employmentType || prev.employmentType,
@@ -1238,7 +1237,7 @@ export default function QuickLoanApplication() {
     }
   }, [user]);
 
-
+  
   // Fetch loan products on mount
   useEffect(() => {
     const fetchLoanProducts = async () => {
@@ -1721,213 +1720,213 @@ export default function QuickLoanApplication() {
           const customerResult = await getCustomer();
 
           if (customerResult.success && customerResult.data) {
-            const profileData = customerResult.data;
-            console.log('✅ Customer data fetched successfully');
+              const profileData = customerResult.data;
+              console.log('✅ Customer data fetched successfully');
 
-            // Store user info in localStorage for AuthContext
-            console.log('📝 Storing user info in localStorage:', {
-              fullName: profileData.fullName,
-              email: profileData.email,
-              mobile: profileData.mobile,
-              _id: profileData._id
-            });
-            if (profileData.fullName) {
-              localStorage.setItem('userName', profileData.fullName);
-              console.log('✅ userName stored:', profileData.fullName);
-            } else {
-              console.warn('⚠️ fullName is empty, not storing userName');
-            }
-            if (profileData.email) {
-              localStorage.setItem('userEmail', profileData.email);
-            }
-            if (profileData.mobile) {
-              localStorage.setItem('userMobile', profileData.mobile);
-            }
-            if (profileData._id) {
-              localStorage.setItem('userId', profileData._id);
-            }
-
-            // Auto-fill form data (using imported formatDateForInput)
-            setFormData(prev => ({
-              ...prev,
-              fullName: profileData.fullName || prev.fullName,
-              mobile: profileData.mobile || prev.mobile,
-              email: profileData.email || prev.email,
-              pan: profileData.panCard || prev.pan,
-              aadhaar: profileData.aadhaarNumber || prev.aadhaar,
-              dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
-              state: profileData.state ? profileData.state.toLowerCase() : prev.state,
-              employmentType: profileData.employmentType || prev.employmentType,
-              monthlyIncome: profileData.monthlyIncome?.toString() || prev.monthlyIncome,
-              companyName: profileData.companyName || prev.companyName,
-              bankName: profileData.banks?.[0]?.bankName || prev.bankName,
-              accountHolderName: profileData.banks?.[0]?.accountHolderName || prev.accountHolderName,
-              accountNumber: profileData.banks?.[0]?.accountNumber || prev.accountNumber,
-              ifsc: profileData.banks?.[0]?.ifscCode || prev.ifsc,
-              loanAmount: profileData.requestedLoanAmount?.toString() || prev.loanAmount,
-            }));
-
-            // Set bank verified flag if bank has been verified via penny drop
-            if (profileData.banks?.[0]?.pennyDropStatus === 'VERIFIED') {
-              setBankVerified(true);
-              console.log('✅ Bank already verified (penny drop)');
-            }
-
-            // Set detected bank if IFSC and bank name are pre-filled
-            if (profileData.banks?.[0]?.ifscCode && profileData.banks?.[0]?.bankName) {
-              setIfscDetectedBank(profileData.banks[0].bankName);
-              console.log('✅ Bank name pre-filled from profile:', profileData.banks[0].bankName);
-            }
-
-            // Set verification flags from API if available
-            if (profileData.isPanVerify) {
-              setPanVerified(true);
-              console.log('✅ PAN already verified');
-            }
-            if (profileData.isAadhaarVerify) {
-              setAadhaarVerified(true);
-              console.log('✅ Aadhaar already verified');
-            }
-
-            // Load selfie preview from profile if available
-            if (profileData.profile?.s3URL) {
-              setSelfiePreview(profileData.profile.s3URL);
-              setSelfieCaptured(true);
-              console.log('✅ Selfie loaded from profile:', profileData.profile.s3URL);
-
-              // Check if selfie/profile is verified - disable retake if verified
-              if (profileData.profile?.status === 'VERIFIED') {
-                setSelfieVerified(true);
-                console.log('✅ Selfie already verified - retake disabled');
+              // Store user info in localStorage for AuthContext
+              console.log('📝 Storing user info in localStorage:', {
+                fullName: profileData.fullName,
+                email: profileData.email,
+                mobile: profileData.mobile,
+                _id: profileData._id
+              });
+              if (profileData.fullName) {
+                localStorage.setItem('userName', profileData.fullName);
+                console.log('✅ userName stored:', profileData.fullName);
+              } else {
+                console.warn('⚠️ fullName is empty, not storing userName');
               }
-            }
+              if (profileData.email) {
+                localStorage.setItem('userEmail', profileData.email);
+              }
+              if (profileData.mobile) {
+                localStorage.setItem('userMobile', profileData.mobile);
+              }
+              if (profileData._id) {
+                localStorage.setItem('userId', profileData._id);
+              }
 
-            // Check eSign status from profile
-            // Handle both formats: eSign: true (boolean) or eSign: { status: 'SUCCESS' } (object)
-            if (profileData.eSign === true) {
-              setUserESignStatus('SUCCESS');
-              setESignVerified(true);
-              console.log('✅ eSign already completed (boolean: true)');
-            } else if (profileData.eSign?.status) {
-              setUserESignStatus(profileData.eSign.status);
-              console.log('📝 eSign status from profile:', profileData.eSign.status);
-              if (profileData.eSign.status === 'SUCCESS') {
+              // Auto-fill form data (using imported formatDateForInput)
+              setFormData(prev => ({
+                ...prev,
+                fullName: profileData.fullName || prev.fullName,
+                mobile: profileData.mobile || prev.mobile,
+                email: profileData.email || prev.email,
+                pan: profileData.panCard || prev.pan,
+                aadhaar: profileData.aadhaarNumber || prev.aadhaar,
+                dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
+                state: profileData.state ? profileData.state.toLowerCase() : prev.state,
+                employmentType: profileData.employmentType || prev.employmentType,
+                monthlyIncome: profileData.monthlyIncome?.toString() || prev.monthlyIncome,
+                companyName: profileData.companyName || prev.companyName,
+                bankName: profileData.banks?.[0]?.bankName || prev.bankName,
+                accountHolderName: profileData.banks?.[0]?.accountHolderName || prev.accountHolderName,
+                accountNumber: profileData.banks?.[0]?.accountNumber || prev.accountNumber,
+                ifsc: profileData.banks?.[0]?.ifscCode || prev.ifsc,
+                loanAmount: profileData.requestedLoanAmount?.toString() || prev.loanAmount,
+              }));
+
+              // Set bank verified flag if bank has been verified via penny drop
+              if (profileData.banks?.[0]?.pennyDropStatus === 'VERIFIED') {
+                setBankVerified(true);
+                console.log('✅ Bank already verified (penny drop)');
+              }
+
+              // Set detected bank if IFSC and bank name are pre-filled
+              if (profileData.banks?.[0]?.ifscCode && profileData.banks?.[0]?.bankName) {
+                setIfscDetectedBank(profileData.banks[0].bankName);
+                console.log('✅ Bank name pre-filled from profile:', profileData.banks[0].bankName);
+              }
+
+              // Set verification flags from API if available
+              if (profileData.isPanVerify) {
+                setPanVerified(true);
+                console.log('✅ PAN already verified');
+              }
+              if (profileData.isAadhaarVerify) {
+                setAadhaarVerified(true);
+                console.log('✅ Aadhaar already verified');
+              }
+
+              // Load selfie preview from profile if available
+              if (profileData.profile?.s3URL) {
+                setSelfiePreview(profileData.profile.s3URL);
+                setSelfieCaptured(true);
+                console.log('✅ Selfie loaded from profile:', profileData.profile.s3URL);
+
+                // Check if selfie/profile is verified - disable retake if verified
+                if (profileData.profile?.status === 'VERIFIED') {
+                  setSelfieVerified(true);
+                  console.log('✅ Selfie already verified - retake disabled');
+                }
+              }
+
+              // Check eSign status from profile
+              // Handle both formats: eSign: true (boolean) or eSign: { status: 'SUCCESS' } (object)
+              if (profileData.eSign === true) {
+                setUserESignStatus('SUCCESS');
                 setESignVerified(true);
-                console.log('✅ eSign already completed (status: SUCCESS)');
-              }
-            }
-
-            // Auto-fill references if available
-            if (profileData.references && profileData.references.length > 0) {
-              const ref1 = profileData.references[0];
-              const ref2 = profileData.references[1];
-
-              if (ref1) {
-                setFormData(prev => ({
-                  ...prev,
-                  reference1Name: ref1.name || prev.reference1Name,
-                  reference1Mobile: ref1.mobile || prev.reference1Mobile,
-                  reference1Relationship: ref1.relationship || prev.reference1Relationship,
-                }));
+                console.log('✅ eSign already completed (boolean: true)');
+              } else if (profileData.eSign?.status) {
+                setUserESignStatus(profileData.eSign.status);
+                console.log('📝 eSign status from profile:', profileData.eSign.status);
+                if (profileData.eSign.status === 'SUCCESS') {
+                  setESignVerified(true);
+                  console.log('✅ eSign already completed (status: SUCCESS)');
+                }
               }
 
-              if (ref2) {
-                setFormData(prev => ({
-                  ...prev,
-                  reference2Name: ref2.name || prev.reference2Name,
-                  reference2Mobile: ref2.mobile || prev.reference2Mobile,
-                  reference2Relationship: ref2.relationship || prev.reference2Relationship,
-                }));
+              // Auto-fill references if available
+              if (profileData.references && profileData.references.length > 0) {
+                const ref1 = profileData.references[0];
+                const ref2 = profileData.references[1];
+
+                if (ref1) {
+                  setFormData(prev => ({
+                    ...prev,
+                    reference1Name: ref1.name || prev.reference1Name,
+                    reference1Mobile: ref1.mobile || prev.reference1Mobile,
+                    reference1Relationship: ref1.relationship || prev.reference1Relationship,
+                  }));
+                }
+
+                if (ref2) {
+                  setFormData(prev => ({
+                    ...prev,
+                    reference2Name: ref2.name || prev.reference2Name,
+                    reference2Mobile: ref2.mobile || prev.reference2Mobile,
+                    reference2Relationship: ref2.relationship || prev.reference2Relationship,
+                  }));
+                }
+                console.log('✅ References auto-filled');
               }
-              console.log('✅ References auto-filled');
-            }
 
-            console.log('🟢 Form auto-filled with customer data');
+              console.log('🟢 Form auto-filled with customer data');
 
-            // ============================================
-            // CHECKLIST-BASED REDIRECT LOGIC (after OTP verification)
-            // If all onboarding steps are complete, redirect to Dashboard
-            // (using imported toBoolean)
-            // ============================================
-            const isBasicDetailsFilled = toBoolean(profileData.isBasicDetailsFilled);
-            const isKycDetailsFilled = toBoolean(profileData.isKycDetailsFilled);
-            const isBankDetailsFilled = toBoolean(profileData.isBankDetailsFilled);
-            const isSubmit = toBoolean(profileData.isSubmit);
+              // ============================================
+              // CHECKLIST-BASED REDIRECT LOGIC (after OTP verification)
+              // If all onboarding steps are complete, redirect to Dashboard
+              // (using imported toBoolean)
+              // ============================================
+              const isBasicDetailsFilled = toBoolean(profileData.isBasicDetailsFilled);
+              const isKycDetailsFilled = toBoolean(profileData.isKycDetailsFilled);
+              const isBankDetailsFilled = toBoolean(profileData.isBankDetailsFilled);
+              const isSubmit = toBoolean(profileData.isSubmit);
 
-            // If PAN is verified from API AND mobile is already filled, disable basic details editing
-            // This prevents disabling fields when user hasn't entered mobile yet
-            if (toBoolean(profileData.isPanVerify) && profileData.mobile) {
-              setBasicDetailsFilled(true);
-            }
+              // If PAN is verified from API AND mobile is already filled, disable basic details editing
+              // This prevents disabling fields when user hasn't entered mobile yet
+              if (toBoolean(profileData.isPanVerify) && profileData.mobile) {
+                setBasicDetailsFilled(true);
+              }
 
-            console.log('📋 Checklist after OTP:', {
-              isBasicDetailsFilled,
-              isKycDetailsFilled,
-              isBankDetailsFilled,
-              isSubmit
-            });
-
-            const allChecklistComplete = isBasicDetailsFilled && isKycDetailsFilled && isBankDetailsFilled && isSubmit;
-
-            if (allChecklistComplete) {
-              console.log('✅ All checklist items complete - redirecting to Dashboard');
-              toast({
-                variant: "success",
-                title: "Welcome Back!",
-                description: "Your application is complete. Redirecting to dashboard...",
+              console.log('📋 Checklist after OTP:', {
+                isBasicDetailsFilled,
+                isKycDetailsFilled,
+                isBankDetailsFilled,
+                isSubmit
               });
-              // Use full page reload to ensure AuthContext reinitializes with updated localStorage
-              window.location.href = '/user';
-              return;
+
+              const allChecklistComplete = isBasicDetailsFilled && isKycDetailsFilled && isBankDetailsFilled && isSubmit;
+
+              if (allChecklistComplete) {
+                console.log('✅ All checklist items complete - redirecting to Dashboard');
+                toast({
+                  variant: "success",
+                  title: "Welcome Back!",
+                  description: "Your application is complete. Redirecting to dashboard...",
+                });
+                // Use full page reload to ensure AuthContext reinitializes with updated localStorage
+                window.location.href = '/user';
+                return;
+              }
+
+              // Determine which step to go to based on completion flags
+              let targetStep = 1;
+              if (!isBasicDetailsFilled) {
+                targetStep = 1;
+              } else if (!isKycDetailsFilled) {
+                targetStep = 2;
+              } else if (!isBankDetailsFilled) {
+                targetStep = 3;
+              } else if (!isSubmit) {
+                targetStep = 4;
+              }
+
+              console.log('📍 Redirecting to step:', targetStep);
+
+              // Check if any meaningful data was auto-filled (not just email/mobile from verification)
+              const hasAutoFilledData = !!(
+                profileData.fullName ||
+                profileData.panCard ||
+                profileData.aadhaarNumber ||
+                profileData.dateOfBirth ||
+                profileData.monthlyIncome ||
+                profileData.companyName ||
+                profileData.banks?.[0]?.accountNumber
+              );
+
+              if (targetStep > 1) {
+                setCurrentStep(targetStep);
+                toast({
+                  variant: "success",
+                  title: "Welcome Back!",
+                  description: `Your progress has been saved. Continue from Step ${targetStep}.`,
+                });
+              } else if (hasAutoFilledData) {
+                // Only show "Data Loaded!" toast if there's actual profile data auto-filled
+                toast({
+                  variant: "success",
+                  title: "Data Loaded!",
+                  description: "Your profile information has been auto-filled. Please review and proceed.",
+                });
+              }
+            } else {
+              console.log('⚠️ Customer API returned no data');
             }
-
-            // Determine which step to go to based on completion flags
-            let targetStep = 1;
-            if (!isBasicDetailsFilled) {
-              targetStep = 1;
-            } else if (!isKycDetailsFilled) {
-              targetStep = 2;
-            } else if (!isBankDetailsFilled) {
-              targetStep = 3;
-            } else if (!isSubmit) {
-              targetStep = 4;
-            }
-
-            console.log('📍 Redirecting to step:', targetStep);
-
-            // Check if any meaningful data was auto-filled (not just email/mobile from verification)
-            const hasAutoFilledData = !!(
-              profileData.fullName ||
-              profileData.panCard ||
-              profileData.aadhaarNumber ||
-              profileData.dateOfBirth ||
-              profileData.monthlyIncome ||
-              profileData.companyName ||
-              profileData.banks?.[0]?.accountNumber
-            );
-
-            if (targetStep > 1) {
-              setCurrentStep(targetStep);
-              toast({
-                variant: "success",
-                title: "Welcome Back!",
-                description: `Your progress has been saved. Continue from Step ${targetStep}.`,
-              });
-            } else if (hasAutoFilledData) {
-              // Only show "Data Loaded!" toast if there's actual profile data auto-filled
-              toast({
-                variant: "success",
-                title: "Data Loaded!",
-                description: "Your profile information has been auto-filled. Please review and proceed.",
-              });
-            }
-          } else {
-            console.log('⚠️ Customer API returned no data');
+          } catch (error) {
+            console.error('❌ Error fetching customer data:', error);
+            // Non-blocking error - user can continue filling form manually
           }
-        } catch (error) {
-          console.error('❌ Error fetching customer data:', error);
-          // Non-blocking error - user can continue filling form manually
-        }
       } else {
         toast({
           variant: "error",
@@ -3759,14 +3758,14 @@ export default function QuickLoanApplication() {
 
 
   // ----- Above return -----
-  const tenureUnit =
-    calculatedLoanDetails?.tenureUnit || approvalData?.tenureUnit;
+const tenureUnit =
+  calculatedLoanDetails?.tenureUnit || approvalData?.tenureUnit;
 
-  const interestRate =
-    calculatedLoanDetails?.interestRate || approvalData?.interestRate || 0;
+const interestRate =
+  calculatedLoanDetails?.interestRate || approvalData?.interestRate || 0;
 
-  const apr =
-    calculatedLoanDetails?.apr || approvalData?.apr || interestRate; // fallback
+const apr =
+  calculatedLoanDetails?.apr || approvalData?.apr || interestRate; // fallback
 
 
   return (
@@ -3775,20 +3774,14 @@ export default function QuickLoanApplication() {
         <Toaster />
 
         {/* Selfie Capture Modal */}
-        {/* <SelfieCapture
+        <SelfieCapture
           isOpen={selfieCapture}
-          onClose={handleCloseSelfieModal}
-          onCapture={handleSelfieCapture}
-        /> */}
-        <SelfieVerifyModal
-          isOpen={selfieCapture}
-          apiType="verification"
           onClose={handleCloseSelfieModal}
           onCapture={handleSelfieCapture}
         />
 
         {/* Aadhaar Mobile Verification Modal */}
-
+        
         {/* <AadhaarMobileVerificationModal
           isOpen={showAadhaarMobileModal}
           onClose={() => {
@@ -3803,21 +3796,21 @@ export default function QuickLoanApplication() {
         <div className="max-w-3xl mx-auto">
           {/* Close button - Hide when landing page is showing */}
           {/* {!(showLandingPage && !user && currentStep === 1) && ( */}
-          <div className="flex justify-end mb-4">
-            <button
-              onClick={() => {
-                if (user) {
-                  router.push('/user'); // Redirect to dashboard if logged in
-                } else {
-                  router.push('/login'); // Redirect to login if not logged in
-                }
-              }}
-              className="flex items-center bg-white gap-2 px-4 py-2 text-gray-600 hover:text-white hover:bg-[#25b181] rounded-lg transition-all shadow-sm"
-            >
-              <X className="w-5 h-5" />
-              <span className="text-sm font-medium">Close</span>
-            </button>
-          </div>
+            <div className="flex justify-end mb-4">
+              <button
+                onClick={() => {
+                  if (user) {
+                    router.push('/user'); // Redirect to dashboard if logged in
+                  } else {
+                    router.push('/login'); // Redirect to login if not logged in
+                  }
+                }}
+                className="flex items-center bg-white gap-2 px-4 py-2 text-gray-600 hover:text-white hover:bg-[#25b181] rounded-lg transition-all shadow-sm"
+              >
+                <X className="w-5 h-5" />
+                <span className="text-sm font-medium">Close</span>
+              </button>
+            </div>
           {/* )} */}
 
           {/* Header - Hide when landing page is showing */}
@@ -3854,7 +3847,7 @@ export default function QuickLoanApplication() {
             </div>
           )}
 
-
+         
 
           {/* Form Card */}
           <motion.div
@@ -3878,7 +3871,7 @@ export default function QuickLoanApplication() {
                   {/* ============================================ */}
                   {/* LIVEMINT-STYLE LANDING PAGE - Shows first */}
                   {/* ============================================ */}
-                  {/* ----------------------------------------------------------------------------------------------------------- */}
+                 {/* ----------------------------------------------------------------------------------------------------------- */}
 
                   {/* ============================================ */}
                   {/* ORIGINAL FORM - Shows after landing page */}
@@ -3886,31 +3879,31 @@ export default function QuickLoanApplication() {
                   {/* {(!showLandingPage || user) && ( */}
 
 
-                  <>
+       <>
+       
+                     
 
-
-
-                    {/* Logged in user notice - Show instead of verification */}
-                    {user && userDataLoaded && (formData.emailVerified || formData.mobileVerified) ? (
-                      <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
-                        <div className="flex items-start gap-3">
-                          <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <h3 className="font-semibold text-green-800">Welcome back, {formData.fullName}!</h3>
-                            <p className="text-sm text-green-700 mt-1">
-                              Your account is already verified. Your details have been pre-filled from your profile. Please review and proceed to the next step.
-                            </p>
-                          </div>
+                      {/* Logged in user notice - Show instead of verification */}
+                  {user && userDataLoaded && (formData.emailVerified || formData.mobileVerified) ? (
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <h3 className="font-semibold text-green-800">Welcome back, {formData.fullName}!</h3>
+                          <p className="text-sm text-green-700 mt-1">
+                            Your account is already verified. Your details have been pre-filled from your profile. Please review and proceed to the next step.
+                          </p>
                         </div>
                       </div>
-                    ) : (
-                      <>
+                    </div>
+                  ) : (
+                    <>
                         <div className="grid grid-cols-2 sm:grid-cols-1 gap-2">
-                          <GoogleVerify buttonText="Continue with google" callbackURL="/apply/quick" />
-                          <TruecallerVerify buttonText="Continue with truecaller" callbackURL="/apply/quick" />
-                          <DigiLockerVerify buttonText="Continue with DigiLocker" extraParams={{ apply: "true" }} />
-                        </div>
-                        {/* <div className="bg-gray-50 rounded-xl p-4 mb-6">     
+                              <GoogleVerify buttonText="Continue with google" callbackURL="/apply/quick"/>
+                              <TruecallerVerify buttonText="Continue with truecaller" callbackURL="/apply/quick"/>
+                              <DigiLockerVerify buttonText="Continue with DigiLocker" extraParams={{ apply: "true" }} />
+                            </div>
+                      {/* <div className="bg-gray-50 rounded-xl p-4 mb-6">     
                       <label className="block text-sm font-medium text-gray-700 mb-3">
                         Choose Verification Method *
                       </label>
@@ -3950,213 +3943,213 @@ export default function QuickLoanApplication() {
                       </div>
                     </div> */}
                       </>
-                    )}
+                  )}
 
-                    <h2 className="text-2xl font-bold text-gray-900 mb-3">Basic Details</h2>
-                    <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-6">
-                      Please fill all details exactly as per your Aadhaar card to avoid verification issues.
-                    </p>
+                   <h2 className="text-2xl font-bold text-gray-900 mb-3">Basic Details</h2>
+                  <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-6">
+                    Please fill all details exactly as per your Aadhaar card to avoid verification issues.
+                  </p>
 
-                    {/* Email Verification - Only show for non-logged in users */}
-                    {!user && verificationMethod === 'email' && (
-                      <>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Email Address *
-                          </label>
+                  {/* Email Verification - Only show for non-logged in users */}
+                  {!user && verificationMethod === 'email' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Email Address *
+                        </label>
 
-                          <div className="flex flex-col sm:flex-row gap-2">
-                            <input
-                              type="email"
-                              name="email"
-                              value={formData.email}
-                              onChange={(e) => {
-                                const value = e.target.value;
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={(e) => {
+                              const value = e.target.value;
 
-                                setFormData((prev) => ({ ...prev, email: value }));
+                              setFormData((prev) => ({ ...prev, email: value }));
 
-                                // Email validation
+                              // Email validation
+                              const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                              if (!regex.test(value)) {
+                                setFieldErrors((prev) => ({
+                                  ...prev,
+                                  email: "Please enter a valid email address",
+                                }));
+                              } else {
+                                setFieldErrors((prev) => ({ ...prev, email: "" }));
+                              }
+                            }}
+                            disabled={formData.emailVerified || basicDetailsFilled}
+                            className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${fieldErrors.email ? "border-red-500" : "border-gray-300"
+                              }`}
+                            placeholder="your@email.com"
+                          />
+
+                          {/* Send/Resend OTP button (only if not verified) */}
+                          {!formData.emailVerified && !basicDetailsFilled && (
+                            <button
+                              onClick={async () => {
+                                const email = formData.email;
                                 const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                                if (!regex.test(value)) {
+
+                                // Validate email before sending OTP
+                                if (!regex.test(email)) {
                                   setFieldErrors((prev) => ({
                                     ...prev,
                                     email: "Please enter a valid email address",
                                   }));
-                                } else {
-                                  setFieldErrors((prev) => ({ ...prev, email: "" }));
+                                  return;
+                                }
+
+                                // Clear error
+                                setFieldErrors((prev) => ({ ...prev, email: "" }));
+
+                                setLoading(true);
+                                try {
+                                  await sendOTP(); // call your API
+                                } finally {
+                                  setLoading(false);
                                 }
                               }}
-                              disabled={formData.emailVerified || basicDetailsFilled}
-                              className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${fieldErrors.email ? "border-red-500" : "border-gray-300"
-                                }`}
-                              placeholder="your@email.com"
-                            />
+                              disabled={!formData.email || !!fieldErrors.email || loading || (otpSent && emailOtpTimer > 0)}
+                              className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
+                            >
+                              {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Verify"}
+                            </button>
+                          )}
 
-                            {/* Send/Resend OTP button (only if not verified) */}
-                            {!formData.emailVerified && !basicDetailsFilled && (
-                              <button
-                                onClick={async () => {
-                                  const email = formData.email;
-                                  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-                                  // Validate email before sending OTP
-                                  if (!regex.test(email)) {
-                                    setFieldErrors((prev) => ({
-                                      ...prev,
-                                      email: "Please enter a valid email address",
-                                    }));
-                                    return;
-                                  }
-
-                                  // Clear error
-                                  setFieldErrors((prev) => ({ ...prev, email: "" }));
-
-                                  setLoading(true);
-                                  try {
-                                    await sendOTP(); // call your API
-                                  } finally {
-                                    setLoading(false);
-                                  }
-                                }}
-                                disabled={!formData.email || !!fieldErrors.email || loading || (otpSent && emailOtpTimer > 0)}
-                                className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
-                              >
-                                {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Verify"}
-                              </button>
-                            )}
-
-                            {/* If email verified show green check */}
-                            {(formData.emailVerified || basicDetailsFilled) && (
-                              <CheckCircle className="w-10 h-10 text-green-600" />
-                            )}
-                          </div>
-
-                          {/* Error or helper text */}
-                          {fieldErrors.email ? (
-                            <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
-                          ) : (
-                            <p className="mt-1 text-xs text-gray-500">
-                              We'll use this email for all loan communication
-                            </p>
+                          {/* If email verified show green check */}
+                          {(formData.emailVerified || basicDetailsFilled) && (
+                            <CheckCircle className="w-10 h-10 text-green-600" />
                           )}
                         </div>
 
-
-                        {!formData.emailVerified && otpSent && (
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Enter OTP *
-                            </label>
-                            <div className="flex flex-col sm:flex-row gap-2">
-                              <input
-                                type="text"
-                                name="otp"
-                                value={formData.otp}
-                                onChange={handleChange}
-                                maxLength={6}
-                                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                                placeholder="Enter 6-digit OTP"
-                              />
-                              <button
-                                onClick={verifyOTP}
-                                disabled={formData.otp.length !== 6 || loading}
-                                className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
-                              >
-                                Verify
-                              </button>
-                            </div>
-                          </div>
+                        {/* Error or helper text */}
+                        {fieldErrors.email ? (
+                          <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+                        ) : (
+                          <p className="mt-1 text-xs text-gray-500">
+                            We'll use this email for all loan communication
+                          </p>
                         )}
-                      </>
-                    )}
+                      </div>
 
-                    {/* Mobile Verification - Only show for non-logged in users */}
-                    {!user && verificationMethod === 'mobile' && (
-                      <>
+
+                      {!formData.emailVerified && otpSent && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Mobile Number  <b>(Linked with Aadhaar)</b>*
+                            Enter OTP *
                           </label>
                           <div className="flex flex-col sm:flex-row gap-2">
                             <input
-                              type="tel"
-                              name="mobile"
-                              value={formData.mobile}
+                              type="text"
+                              name="otp"
+                              value={formData.otp}
                               onChange={handleChange}
-                              onBlur={handleMobileBlur}
-                              disabled={formData.mobileVerified || basicDetailsFilled}
-                              maxLength={10}
-                              className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
-                                }`}
-                              placeholder="enter mobile number"
+                              maxLength={6}
+                              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                              placeholder="Enter 6-digit OTP"
                             />
-                            {!formData.mobileVerified && !basicDetailsFilled && (
-                              <button
-                                onClick={sendOTP}
-                                disabled={!formData.mobile || loading || (otpSent && emailOtpTimer > 0)}
-                                className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
-                              >
-                                {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Verify"}
-                              </button>
-                            )}
-                            {(formData.mobileVerified || basicDetailsFilled) && (
-                              <CheckCircle className="w-10 h-10 text-green-600" />
-                            )}
+                            <button
+                              onClick={verifyOTP}
+                              disabled={formData.otp.length !== 6 || loading}
+                              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
+                            >
+                              Verify
+                            </button>
                           </div>
-                          {fieldErrors.mobile && (
-                            <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* Mobile Verification - Only show for non-logged in users */}
+                  {!user && verificationMethod === 'mobile' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Mobile Number *
+                        </label>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <input
+                            type="tel"
+                            name="mobile"
+                            value={formData.mobile}
+                            onChange={handleChange}
+                            onBlur={handleMobileBlur}
+                            disabled={formData.mobileVerified || basicDetailsFilled}
+                            maxLength={10}
+                            className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 ${fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
+                              }`}
+                            placeholder="enter mobile number"
+                          />
+                          {!formData.mobileVerified && !basicDetailsFilled && (
+                            <button
+                              onClick={sendOTP}
+                              disabled={!formData.mobile || loading || (otpSent && emailOtpTimer > 0)}
+                              className="px-6 py-3 bg-[#25B181] text-white rounded-lg hover:bg-[#1d8f6a] disabled:opacity-50 whitespace-nowrap"
+                            >
+                              {loading ? "Sending..." : otpSent ? (emailOtpTimer > 0 ? `Resend (${emailOtpTimer}s)` : "Resend OTP") : "Verify"}
+                            </button>
+                          )}
+                          {(formData.mobileVerified || basicDetailsFilled) && (
+                            <CheckCircle className="w-10 h-10 text-green-600" />
                           )}
                         </div>
-
-                        {!formData.mobileVerified && !basicDetailsFilled && otpSent && (
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Enter OTP *
-                            </label>
-                            <div className="flex flex-col sm:flex-row gap-2">
-                              <input
-                                type="text"
-                                name="otp"
-                                value={formData.otp}
-                                onChange={handleChange}
-                                maxLength={6}
-                                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                                placeholder="Enter 6-digit OTP"
-                              />
-                              <button
-                                onClick={verifyOTP}
-                                disabled={formData.otp.length !== 6 || loading}
-                                className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
-                              >
-                                Verify
-                              </button>
-                            </div>
-                          </div>
+                        {fieldErrors.mobile && (
+                          <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
                         )}
-                      </>
-                    )}
+                      </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Full Name *
-                      </label>
-                      <input
-                        type="text"
-                        name="fullName"
-                        value={formData.fullName}
-                        onChange={handleChange}
-                        disabled={basicDetailsFilled}
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.fullName ? 'border-red-500' : 'border-gray-300'
-                          } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                        placeholder="Enter your full name"
-                      />
-                      {fieldErrors.fullName && (
-                        <p className="mt-1 text-xs text-red-600">{fieldErrors.fullName}</p>
+                      {!formData.mobileVerified && !basicDetailsFilled && otpSent && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Enter OTP *
+                          </label>
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <input
+                              type="text"
+                              name="otp"
+                              value={formData.otp}
+                              onChange={handleChange}
+                              maxLength={6}
+                              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                              placeholder="Enter 6-digit OTP"
+                            />
+                            <button
+                              onClick={verifyOTP}
+                              disabled={formData.otp.length !== 6 || loading}
+                              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 whitespace-nowrap"
+                            >
+                              Verify
+                            </button>
+                          </div>
+                        </div>
                       )}
-                    </div>
+                    </>
+                  )}
 
-                    {/* Show additional fields - always show both for logged-in users */}
-                    {/* {user ? (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      name="fullName"
+                      value={formData.fullName}
+                      onChange={handleChange}
+                      disabled={basicDetailsFilled}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.fullName ? 'border-red-500' : 'border-gray-300'
+                        } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                      placeholder="Enter your full name"
+                    />
+                    {fieldErrors.fullName && (
+                      <p className="mt-1 text-xs text-red-600">{fieldErrors.fullName}</p>
+                    )}
+                  </div>
+
+                  {/* Show additional fields - always show both for logged-in users */}
+                  {/* {user ? (
                     <>
                           <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -4179,132 +4172,82 @@ export default function QuickLoanApplication() {
                   </>
                   ):(<>N/A</>)} */}
 
-                    {/* Show additional fields - always show both for logged-in users */}
-                    {user ? (
-                      <>
-                        {/* Mobile + DOB side by side for logged-in user */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Mobile Number  <b>(Linked with Aadhaar)</b>*
-                            </label>
-                            <input
-                              type="tel"
-                              name="mobile"
-                              value={formData.mobile}
-                              onChange={handleChange}
-                              onBlur={handleMobileBlur}
-                              disabled={formData.mobileVerified || basicDetailsFilled}
-                              maxLength={10}
-                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
-                                } ${(formData.mobileVerified || basicDetailsFilled) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                              placeholder="9876543210"
-                            />
-                            {fieldErrors.mobile && (
-                              <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
-                            )}
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Date of Birth *
-                            </label>
-                            <input
-                              type="date"
-                              name="dob"
-                              value={formData.dob}
-                              onChange={handleChange}
-                              disabled={basicDetailsFilled}
-                              max={(() => {
-                                const date = new Date();
-                                date.setFullYear(date.getFullYear() - 18);
-                                return date.toISOString().split('T')[0];
-                              })()}
-                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
-                                } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                              required
-                            />
-                            {fieldErrors.dob && (
-                              <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
-                            )}
-                          </div>
+                  {/* Show additional fields - always show both for logged-in users */}
+                  {user ? (
+                    <>
+                      {/* Mobile + DOB side by side for logged-in user */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Mobile Number *
+                          </label>
+                          <input
+                            type="tel"
+                            name="mobile"
+                            value={formData.mobile}
+                            onChange={handleChange}
+                            onBlur={handleMobileBlur}
+                            disabled={formData.mobileVerified || basicDetailsFilled}
+                            maxLength={10}
+                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
+                              } ${(formData.mobileVerified || basicDetailsFilled) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                            placeholder="9876543210"
+                          />
+                          {fieldErrors.mobile && (
+                            <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
+                          )}
                         </div>
-                      </>
-                    ) : (
-                      <>
-                        {verificationMethod === 'email' && (
-                          <>
-                            {/* Mobile + DOB side by side for email verification */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                  Mobile Number  <b>(Linked with Aadhaar)</b>*
-                                </label>
-                                <input
-                                  type="tel"
-                                  name="mobile"
-                                  value={formData.mobile}
-                                  onChange={handleChange}
-                                  onBlur={handleMobileBlur}
-                                  disabled={basicDetailsFilled}
-                                  maxLength={10}
-                                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
-                                    } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                                  placeholder="9876543210"
-                                />
-                                {fieldErrors.mobile && (
-                                  <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
-                                )}
-                              </div>
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                  Date of Birth *
-                                </label>
-                                <input
-                                  type="date"
-                                  name="dob"
-                                  value={formData.dob}
-                                  onChange={handleChange}
-                                  disabled={basicDetailsFilled}
-                                  max={(() => {
-                                    const date = new Date();
-                                    date.setFullYear(date.getFullYear() - 18);
-                                    return date.toISOString().split('T')[0];
-                                  })()}
-                                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
-                                    } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                                  required
-                                />
-                                {fieldErrors.dob && (
-                                  <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
-                                )}
-                              </div>
-                            </div>
-                          </>
-                        )}
-
-                        {verificationMethod === 'mobile' && (
-                          <>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Date of Birth *
+                          </label>
+                          <input
+                            type="date"
+                            name="dob"
+                            value={formData.dob}
+                            onChange={handleChange}
+                            disabled={basicDetailsFilled}
+                            max={(() => {
+                              const date = new Date();
+                              date.setFullYear(date.getFullYear() - 18);
+                              return date.toISOString().split('T')[0];
+                            })()}
+                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
+                              } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                            required
+                          />
+                          {fieldErrors.dob && (
+                            <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {verificationMethod === 'email' && (
+                        <>
+                          {/* Mobile + DOB side by side for email verification */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Email Address *
+                                Mobile Number *
                               </label>
                               <input
-                                type="email"
-                                name="email"
-                                value={formData.email}
+                                type="tel"
+                                name="mobile"
+                                value={formData.mobile}
                                 onChange={handleChange}
-                                disabled={formData.emailVerified || basicDetailsFilled}
-                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'
-                                  } ${(formData.emailVerified || basicDetailsFilled) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                                placeholder="your@email.com"
+                                onBlur={handleMobileBlur}
+                                disabled={basicDetailsFilled}
+                                maxLength={10}
+                                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.mobile ? 'border-red-500' : 'border-gray-300'
+                                  } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                                placeholder="9876543210"
                               />
-                              {fieldErrors.email ? (
-                                <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
-                              ) : (
-                                <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
+                              {fieldErrors.mobile && (
+                                <p className="mt-1 text-xs text-red-600">{fieldErrors.mobile}</p>
                               )}
                             </div>
-                            {/* DOB for mobile verification */}
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Date of Birth *
@@ -4328,214 +4271,264 @@ export default function QuickLoanApplication() {
                                 <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
                               )}
                             </div>
-                          </>
-                        )}
-                      </>
-                    )}
-
-                    {/* State Selection with Search */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        State *
-                      </label>
-                      <div className="relative state-dropdown-container">
-                        <button
-                          type="button"
-                          onClick={() => !basicDetailsFilled && setStateDropdownOpen(!stateDropdownOpen)}
-                          disabled={basicDetailsFilled}
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] text-left flex justify-between items-center ${fieldErrors.state ? 'border-red-500' : 'border-gray-300'
-                            } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
-                        >
-                          <span className={formData.state ? 'text-gray-900' : 'text-gray-500'}>
-                            {formData.state
-                              ? INDIAN_STATES.find(s => s.value === formData.state)?.label || formData.state
-                              : 'Select State'}
-                          </span>
-                          <svg className={`w-5 h-5 text-gray-400 transition-transform ${stateDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </button>
-
-                        {stateDropdownOpen && (
-                          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
-                            {/* Search Input */}
-                            <div className="p-2 border-b border-gray-200">
-                              <input
-                                type="text"
-                                placeholder="Search state..."
-                                value={stateSearchTerm}
-                                onChange={(e) => setStateSearchTerm(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#25B181] focus:border-transparent text-sm"
-                                autoFocus
-                              />
-                            </div>
-                            {/* States List */}
-                            <div className="max-h-48 overflow-y-auto">
-                              {INDIAN_STATES
-                                .filter(state =>
-                                  state.value === '' ||
-                                  state.label.toLowerCase().includes(stateSearchTerm.toLowerCase())
-                                )
-                                .map((state) => (
-                                  <div
-                                    key={state.value}
-                                    className={`px-4 py-2 hover:bg-[#25B181] hover:text-white cursor-pointer ${formData.state === state.value ? 'bg-[#25B181] text-white' : ''
-                                      } ${state.value === '' ? 'text-gray-500' : ''}`}
-                                    onClick={() => {
-                                      const selectedState = state.value.toLowerCase();
-                                      setFormData(prev => ({ ...prev, state: selectedState }));
-                                      setStateDropdownOpen(false);
-                                      setStateSearchTerm('');
-
-                                      // Check if state is blacklisted
-                                      if (BLACKLISTED_STATES.includes(selectedState)) {
-                                        setFieldErrors(prev => ({
-                                          ...prev,
-                                          state: "Sorry, our services are currently not available in this state/region."
-                                        }));
-                                      } else {
-                                        setFieldErrors(prev => ({ ...prev, state: '' }));
-                                      }
-                                    }}
-                                  >
-                                    {state.label}
-                                  </div>
-                                ))}
-                              {INDIAN_STATES.filter(state =>
-                                state.value === '' ||
-                                state.label.toLowerCase().includes(stateSearchTerm.toLowerCase())
-                              ).length === 0 && (
-                                  <div className="px-4 py-3 text-gray-500 text-sm text-center">
-                                    No states found
-                                  </div>
-                                )}
-                            </div>
                           </div>
-                        )}
-                      </div>
-                      {fieldErrors.state && (
-                        <p className="mt-1 text-xs text-red-600">{fieldErrors.state}</p>
+                        </>
                       )}
-                    </div>
 
-                    {/* Employment Details - Added to Step 1 */}
-                    <div className="border-t border-gray-200 pt-6 mt-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Employment Details</h3>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Employment Type *
-                          </label>
-                          <select
-                            name="employmentType"
-                            value={formData.employmentType}
-                            onChange={handleChange}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                          >
-                            <option value="SALARIED">SALARIED</option>
-                            <option value="SELF-EMPLOYED">SELF-EMPLOYED</option>
-                            {/* <option value="UNEMPLOYED">UNEMPLOYED</option>
-                        <option value="STUDENT">STUDENT</option>
-                         <option value="RETIRED">RETIRED</option> */}
-                            {/* "SALARIED", "SELF-EMPLOYED", "UNEMPLOYED", "STUDENT", "RETIRED" */}
-                          </select>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {verificationMethod === 'mobile' && (
+                        <>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Monthly Income *
+                              Email Address *
                             </label>
                             <input
-                              type="text"
-                              name="monthlyIncome"
-                              value={
-                                formData.monthlyIncome
-                                  ? parseFloat(formData.monthlyIncome.replace(/,/g, '')).toLocaleString('en-IN')
-                                  : ''
-                              }
-                              onChange={(e) => {
-                                const value = e.target.value.replace(/,/g, '');
-                                if (/^\d*$/.test(value)) {
-                                  handleChange({
-                                    ...e,
-                                    target: {
-                                      ...e.target,
-                                      name: 'monthlyIncome',
-                                      value: value
-                                    }
-                                  });
-                                }
-                              }}
-                              onWheel={(e) => e.currentTarget.blur()}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                              placeholder="₹ 50,000"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              {formData.employmentType === "SALARIED" ? "Company Name" : "Income Source"} *
-                            </label>
-                            <input
-                              type="text"
-                              name="companyName"
-                              value={formData.companyName}
+                              type="email"
+                              name="email"
+                              value={formData.email}
                               onChange={handleChange}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
-                              placeholder={formData.employmentType === "SALARIED" ? "Your Company" : "Your Income Source"}
+                              disabled={formData.emailVerified || basicDetailsFilled}
+                              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'
+                                } ${(formData.emailVerified || basicDetailsFilled) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                              placeholder="your@email.com"
                             />
+                            {fieldErrors.email ? (
+                              <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>
+                            ) : (
+                              <p className="mt-1 text-xs text-gray-500">For email notifications and loan documents</p>
+                            )}
                           </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Loan Amount */}
-                    <div className="border-t border-gray-200 pt-6 mt-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Loan Requirement</h3>
+                      {/* DOB for mobile verification */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          How much loan do you need? *
+                          Date of Birth *
                         </label>
                         <input
-                          type="text"
-                          name="loanAmount"
-                          value={
-                            formData.loanAmount
-                              ? parseFloat(formData.loanAmount.replace(/,/g, "")).toLocaleString("en-IN")
-                              : ""
-                          }
-                          onChange={(e) => {
-                            const raw = e.target.value.replace(/,/g, "");
-                            if (!/^\d*$/.test(raw)) return;
-                            handleChange({
-                              ...e,
-                              target: {
-                                ...e.target,
-                                name: "loanAmount",
-                                value: raw,
-                              },
-                            } as any);
-                          }}
-                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${formData.loanAmount && (parseFloat(formData.loanAmount.replace(/,/g, "")) < 5000 || parseFloat(formData.loanAmount.replace(/,/g, "")) > 25000)
-                            ? "border-red-500"
-                            : "border-gray-300"
-                            }`}
-                          placeholder="₹ 2,000 - ₹ 25,000"
+                          type="date"
+                          name="dob"
+                          value={formData.dob}
+                          onChange={handleChange}
+                          disabled={basicDetailsFilled}
+                          max={(() => {
+                            const date = new Date();
+                            date.setFullYear(date.getFullYear() - 18);
+                            return date.toISOString().split('T')[0];
+                          })()}
+                          className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${fieldErrors.dob ? 'border-red-500' : 'border-gray-300'
+                            } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                          required
                         />
-                        {formData.loanAmount && parseFloat(formData.loanAmount.replace(/,/g, "")) < 5000 && (
-                          <p className="mt-1 text-xs text-red-500">Minimum loan amount is ₹5,000</p>
-                        )}
-                        {formData.loanAmount && parseFloat(formData.loanAmount.replace(/,/g, "")) > 25000 && (
-                          <p className="mt-1 text-xs text-red-500">Maximum loan amount is ₹25,000</p>
-                        )}
-                        {(!formData.loanAmount || (parseFloat(formData.loanAmount.replace(/,/g, "")) >= 5000 && parseFloat(formData.loanAmount.replace(/,/g, "")) <= 25000)) && (
-                          <p className="mt-1 text-xs text-gray-500">Enter the approximate loan amount you require</p>
+                        {fieldErrors.dob && (
+                          <p className="mt-1 text-xs text-red-600">{fieldErrors.dob}</p>
                         )}
                       </div>
-                    </div>
+                        </>
+                      )}
+                    </>
+                  )}
 
-                    {/* Loan Product Selection */}
-                    {/* <div className="mt-6">
+                  {/* State Selection with Search */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      State *
+                    </label>
+                    <div className="relative state-dropdown-container">
+                      <button
+                        type="button"
+                        onClick={() => !basicDetailsFilled && setStateDropdownOpen(!stateDropdownOpen)}
+                        disabled={basicDetailsFilled}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] text-left flex justify-between items-center ${fieldErrors.state ? 'border-red-500' : 'border-gray-300'
+                          } ${basicDetailsFilled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                      >
+                        <span className={formData.state ? 'text-gray-900' : 'text-gray-500'}>
+                          {formData.state
+                            ? INDIAN_STATES.find(s => s.value === formData.state)?.label || formData.state
+                            : 'Select State'}
+                        </span>
+                        <svg className={`w-5 h-5 text-gray-400 transition-transform ${stateDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+
+                      {stateDropdownOpen && (
+                        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+                          {/* Search Input */}
+                          <div className="p-2 border-b border-gray-200">
+                            <input
+                              type="text"
+                              placeholder="Search state..."
+                              value={stateSearchTerm}
+                              onChange={(e) => setStateSearchTerm(e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#25B181] focus:border-transparent text-sm"
+                              autoFocus
+                            />
+                          </div>
+                          {/* States List */}
+                          <div className="max-h-48 overflow-y-auto">
+                            {INDIAN_STATES
+                              .filter(state =>
+                                state.value === '' ||
+                                state.label.toLowerCase().includes(stateSearchTerm.toLowerCase())
+                              )
+                              .map((state) => (
+                                <div
+                                  key={state.value}
+                                  className={`px-4 py-2 hover:bg-[#25B181] hover:text-white cursor-pointer ${formData.state === state.value ? 'bg-[#25B181] text-white' : ''
+                                    } ${state.value === '' ? 'text-gray-500' : ''}`}
+                                  onClick={() => {
+                                    const selectedState = state.value.toLowerCase();
+                                    setFormData(prev => ({ ...prev, state: selectedState }));
+                                    setStateDropdownOpen(false);
+                                    setStateSearchTerm('');
+
+                                    // Check if state is blacklisted
+                                    if (BLACKLISTED_STATES.includes(selectedState)) {
+                                      setFieldErrors(prev => ({
+                                        ...prev,
+                                        state: "Sorry, our services are currently not available in this state/region."
+                                      }));
+                                    } else {
+                                      setFieldErrors(prev => ({ ...prev, state: '' }));
+                                    }
+                                  }}
+                                >
+                                  {state.label}
+                                </div>
+                              ))}
+                            {INDIAN_STATES.filter(state =>
+                              state.value === '' ||
+                              state.label.toLowerCase().includes(stateSearchTerm.toLowerCase())
+                            ).length === 0 && (
+                                <div className="px-4 py-3 text-gray-500 text-sm text-center">
+                                  No states found
+                                </div>
+                              )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    {fieldErrors.state && (
+                      <p className="mt-1 text-xs text-red-600">{fieldErrors.state}</p>
+                    )}
+                  </div>
+
+                  {/* Employment Details - Added to Step 1 */}
+                  <div className="border-t border-gray-200 pt-6 mt-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Employment Details</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Employment Type *
+                        </label>
+                        <select
+                          name="employmentType"
+                          value={formData.employmentType}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                        >
+                          <option value="SALARIED">SALARIED</option>
+                          <option value="SELF-EMPLOYED">SELF-EMPLOYED</option>
+                          {/* <option value="UNEMPLOYED">UNEMPLOYED</option>
+                        <option value="STUDENT">STUDENT</option>
+                         <option value="RETIRED">RETIRED</option> */}
+                          {/* "SALARIED", "SELF-EMPLOYED", "UNEMPLOYED", "STUDENT", "RETIRED" */}
+                        </select>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Monthly Income *
+                          </label>
+                          <input
+                            type="text"
+                            name="monthlyIncome"
+                            value={
+                              formData.monthlyIncome
+                                ? parseFloat(formData.monthlyIncome.replace(/,/g, '')).toLocaleString('en-IN')
+                                : ''
+                            }
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/,/g, '');
+                              if (/^\d*$/.test(value)) {
+                                handleChange({
+                                  ...e,
+                                  target: {
+                                    ...e.target,
+                                    name: 'monthlyIncome',
+                                    value: value
+                                  }
+                                });
+                              }
+                            }}
+                            onWheel={(e) => e.currentTarget.blur()}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                            placeholder="₹ 50,000"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            {formData.employmentType === "SALARIED" ? "Company Name" : "Income Source"} *
+                          </label>
+                          <input
+                            type="text"
+                            name="companyName"
+                            value={formData.companyName}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181]"
+                            placeholder={formData.employmentType === "SALARIED" ? "Your Company" : "Your Income Source"}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Loan Amount */}
+                  <div className="border-t border-gray-200 pt-6 mt-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Loan Requirement</h3>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        How much loan do you need? *
+                      </label>
+                      <input
+                        type="text"
+                        name="loanAmount"
+                        value={
+                          formData.loanAmount
+                            ? parseFloat(formData.loanAmount.replace(/,/g, "")).toLocaleString("en-IN")
+                            : ""
+                        }
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/,/g, "");
+                          if (!/^\d*$/.test(raw)) return;
+                          handleChange({
+                            ...e,
+                            target: {
+                              ...e.target,
+                              name: "loanAmount",
+                              value: raw,
+                            },
+                          } as any);
+                        }}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${formData.loanAmount && (parseFloat(formData.loanAmount.replace(/,/g, "")) < 5000 || parseFloat(formData.loanAmount.replace(/,/g, "")) > 25000)
+                          ? "border-red-500"
+                          : "border-gray-300"
+                          }`}
+                        placeholder="₹ 2,000 - ₹ 25,000"
+                      />
+                      {formData.loanAmount && parseFloat(formData.loanAmount.replace(/,/g, "")) < 5000 && (
+                        <p className="mt-1 text-xs text-red-500">Minimum loan amount is ₹5,000</p>
+                      )}
+                      {formData.loanAmount && parseFloat(formData.loanAmount.replace(/,/g, "")) > 25000 && (
+                        <p className="mt-1 text-xs text-red-500">Maximum loan amount is ₹25,000</p>
+                      )}
+                      {(!formData.loanAmount || (parseFloat(formData.loanAmount.replace(/,/g, "")) >= 5000 && parseFloat(formData.loanAmount.replace(/,/g, "")) <= 25000)) && (
+                        <p className="mt-1 text-xs text-gray-500">Enter the approximate loan amount you require</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Loan Product Selection */}
+                  {/* <div className="mt-6">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Select Loan Product *
                     </label>
@@ -4559,14 +4552,14 @@ export default function QuickLoanApplication() {
                       <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                         <p className="text-sm text-blue-800">
                           <span className="font-semibold">Category:</span> {selectedProduct.category} |
-                          <span className="font-semibold ml-2">Tenure:</span> {selectedProduct.category?.toLowerCase().includes('salary') ? '0 days (Pay on salary)' : '90 days'}
+                          <span className="font-semibold ml-2">Tenure:</span> {selectedProduct.category?.toLowerCase().includes('salary') ? '0 days (Pay on salary)' : '15 days'}
                         </p>
                       </div>
                     )}
                   </div> */}
 
-                  </>
-                  {/* )} */}
+                    </>
+                 {/* )} */}
                 </motion.div>
               )}
 
@@ -4669,10 +4662,11 @@ export default function QuickLoanApplication() {
                           }}
                           disabled={aadhaarVerified || aadhaarOtpSent}
                           maxLength={14}
-                          className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 disabled:cursor-not-allowed tracking-widest ${aadhaarVerified
-                            ? 'bg-green-50 border-green-300'
-                            : (fieldErrors.aadhaar || aadhaarError ? 'border-red-500' : 'border-gray-300')
-                            }`}
+                          className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 disabled:cursor-not-allowed tracking-widest ${
+                            aadhaarVerified
+                              ? 'bg-green-50 border-green-300'
+                              : (fieldErrors.aadhaar || aadhaarError ? 'border-red-500' : 'border-gray-300')
+                          }`}
                           placeholder="1234 5678 9012"
                         />
                         {!aadhaarVerified && (
@@ -5117,103 +5111,103 @@ export default function QuickLoanApplication() {
                       </div>
 
                       {/* Loan Details Grid */}
-                      <div className="bg-gray-50 rounded-xl p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                          <IndianRupee className="w-5 h-5 text-[#25B181]" />
-                          Loan Details
-                          {calculatedLoanDetails && (
-                            <span className="text-xs font-normal text-gray-500 ml-2">
-                              (Based on your selected amount)
-                            </span>
-                          )}
-                        </h3>
+                   <div className="bg-gray-50 rounded-xl p-6">
+  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+    <IndianRupee className="w-5 h-5 text-[#25B181]" />
+    Loan Details
+    {calculatedLoanDetails && (
+      <span className="text-xs font-normal text-gray-500 ml-2">
+        (Based on your selected amount)
+      </span>
+    )}
+  </h3>
 
-                        <div className="grid grid-cols-2 gap-4">
+  <div className="grid grid-cols-2 gap-4">
 
-                          {/* Loan Amount */}
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">Your Loan Amount</p>
-                            <p className="text-xl font-bold text-[#25B181]">
-                              ₹{((calculatedLoanDetails?.loanAmount ||
-                                userDesiredAmount ||
-                                approvalData.loanAmount) || 0).toLocaleString("en-IN")}
-                            </p>
-                          </div>
+    {/* Loan Amount */}
+    <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <p className="text-sm text-gray-500 mb-1">Your Loan Amount</p>
+      <p className="text-xl font-bold text-[#25B181]">
+        ₹{((calculatedLoanDetails?.loanAmount ||
+          userDesiredAmount ||
+          approvalData.loanAmount) || 0).toLocaleString("en-IN")}
+      </p>
+    </div>
 
-                          {/* Tenure */}
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">Tenure</p>
-                            <p className="text-xl font-bold text-gray-900">
-                              {(calculatedLoanDetails?.tenure || approvalData.tenure) || 0}{" "}
-                              {tenureUnit === "Days" ? "Days" : "Months"}
-                            </p>
-                          </div>
+    {/* Tenure */}
+    <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <p className="text-sm text-gray-500 mb-1">Tenure</p>
+      <p className="text-xl font-bold text-gray-900">
+        {(calculatedLoanDetails?.tenure || approvalData.tenure) || 0}{" "}
+        {tenureUnit === "Days" ? "Days" : "Months"}
+      </p>
+    </div>
 
-                          {/* INTEREST / APR (UPDATED FEATURE) */}
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">
-                              {tenureUnit === "Months" ? "APR" : "Interest Rate"}
-                            </p>
-                            <p className="text-xl font-bold text-gray-900">
-                              {tenureUnit === "Months" ? apr : interestRate}%
-                            </p>
-                          </div>
+    {/* INTEREST / APR (UPDATED FEATURE) */}
+    <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <p className="text-sm text-gray-500 mb-1">
+        {tenureUnit === "Months" ? "APR" : "Interest Rate"}
+      </p>
+      <p className="text-xl font-bold text-gray-900">
+        {tenureUnit === "Months" ? apr : interestRate}%
+      </p>
+    </div>
 
-                          {/* Interest Amount */}
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">Interest Amount</p>
-                            <p className="text-xl font-bold text-gray-900">
-                              ₹{((calculatedLoanDetails?.totalInterest ??
-                                approvalData.totalInterest) || 0).toLocaleString("en-IN")}
-                            </p>
-                          </div>
+    {/* Interest Amount */}
+    <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <p className="text-sm text-gray-500 mb-1">Interest Amount</p>
+      <p className="text-xl font-bold text-gray-900">
+        ₹{((calculatedLoanDetails?.totalInterest ??
+          approvalData.totalInterest) || 0).toLocaleString("en-IN")}
+      </p>
+    </div>
 
-                          {/* Platform Fee */}
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">Platform Fee</p>
-                            <p className="text-xl font-bold text-gray-900">
-                              ₹{((calculatedLoanDetails?.processingFee ??
-                                approvalData.processingFee) || 0).toLocaleString("en-IN")}
-                            </p>
-                          </div>
+    {/* Platform Fee */}
+    <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <p className="text-sm text-gray-500 mb-1">Platform Fee</p>
+      <p className="text-xl font-bold text-gray-900">
+        ₹{((calculatedLoanDetails?.processingFee ??
+          approvalData.processingFee) || 0).toLocaleString("en-IN")}
+      </p>
+    </div>
 
-                          {/* GST */}
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-500 mb-1">GST on Platform Fee</p>
-                            <p className="text-xl font-bold text-gray-900">
-                              ₹{((calculatedLoanDetails?.gstOnProcessingFee ??
-                                approvalData.gstOnProcessingFee) || 0).toLocaleString("en-IN")}
-                            </p>
-                          </div>
+    {/* GST */}
+    <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <p className="text-sm text-gray-500 mb-1">GST on Platform Fee</p>
+      <p className="text-xl font-bold text-gray-900">
+        ₹{((calculatedLoanDetails?.gstOnProcessingFee ??
+          approvalData.gstOnProcessingFee) || 0).toLocaleString("en-IN")}
+      </p>
+    </div>
 
-                          {/* Total Repayment */}
-                          <div className="bg-white rounded-lg p-4 border border-gray-200 col-span-2">
-                            <p className="text-sm text-gray-500 mb-1">Total Repayment</p>
-                            <p className="text-xl font-bold text-gray-900">
-                              ₹{((calculatedLoanDetails?.totalRepayment ??
-                                approvalData.totalRepayment) || 0).toLocaleString("en-IN")}
-                            </p>
-                          </div>
-                        </div>
+    {/* Total Repayment */}
+    <div className="bg-white rounded-lg p-4 border border-gray-200 col-span-2">
+      <p className="text-sm text-gray-500 mb-1">Total Repayment</p>
+      <p className="text-xl font-bold text-gray-900">
+        ₹{((calculatedLoanDetails?.totalRepayment ??
+          approvalData.totalRepayment) || 0).toLocaleString("en-IN")}
+      </p>
+    </div>
+  </div>
 
-                        {/* Net Disbursal */}
-                        <div className="mt-4 bg-green-50 border-2 border-green-500 rounded-xl p-4">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="text-sm text-green-600 font-medium">
-                                You Will Receive
-                              </p>
-                              <p className="text-xs text-green-500">
-                                Net Disbursal Amount
-                              </p>
-                            </div>
-                            <p className="text-2xl font-bold text-green-600">
-                              ₹{((calculatedLoanDetails?.netDisbursalAmount ??
-                                approvalData.netDisbursalAmount) || 0).toLocaleString("en-IN")}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+  {/* Net Disbursal */}
+  <div className="mt-4 bg-green-50 border-2 border-green-500 rounded-xl p-4">
+    <div className="flex justify-between items-center">
+      <div>
+        <p className="text-sm text-green-600 font-medium">
+          You Will Receive
+        </p>
+        <p className="text-xs text-green-500">
+          Net Disbursal Amount
+        </p>
+      </div>
+      <p className="text-2xl font-bold text-green-600">
+        ₹{((calculatedLoanDetails?.netDisbursalAmount ??
+          approvalData.netDisbursalAmount) || 0).toLocaleString("en-IN")}
+      </p>
+    </div>
+  </div>
+</div>
 
 
                       {/* User Details Summary */}
@@ -5777,7 +5771,7 @@ export default function QuickLoanApplication() {
 
 
 
-{/* {showLandingPage && !user && (
+ {/* {showLandingPage && !user && (
                     <div className="-m-4 sm:-m-8">
                       
                       <div className="bg-gradient-to-br from-amber-50 via-orange-50 to-white relative overflow-hidden rounded-t-2xl">
