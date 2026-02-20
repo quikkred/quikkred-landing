@@ -1303,7 +1303,8 @@ export default function UserDashboard() {
                       <IndianRupee className="w-3 h-3" />
                       Total Loan Amount
                     </p>
-                    <p className="text-sm sm:text-base font-semibold text-green-900">₹{activeLoanDetails.emiAmount.toLocaleString()}</p>
+                    {/* <p className="text-sm sm:text-base font-semibold text-green-900">₹{activeLoanDetails.emiAmount.toLocaleString()}</p> */}
+                    <p className="text-sm sm:text-base font-semibold text-green-900">₹{getTotalLoanAmount().toLocaleString()}</p>
                   </div>
 
                   {/* <div className="p-4 bg-gradient-to-br from-purple-50 to-violet-50 rounded-lg border border-purple-200">
