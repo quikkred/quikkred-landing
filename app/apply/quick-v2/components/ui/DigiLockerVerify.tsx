@@ -184,6 +184,12 @@ const DigiLockerVerify = ({
                                     </div>
                                 </div>
 
+                                {/* Helper Text with Highlight */}
+                                <div className="my-2 text-xs font-medium bg-amber-50 text-amber-700 px-3 py-2 rounded-lg border border-amber-100 flex items-start gap-2">
+                                    <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                                    <span>Make sure your mobile number or Email id is linked to Aadhaar</span>
+                                </div>
+
                                 <form onSubmit={handleSubmit(onSubmit)}>
                                     {/* Mobile Input */}
                                     <div className="mb-4">
@@ -195,20 +201,13 @@ const DigiLockerVerify = ({
                                             {...register("mobile")}
                                             maxLength={10}
                                             placeholder="Enter 10-digit mobile number"
-                                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#2B63B5] focus:border-[#2B63B5] bg-white transition-all ${
-                                                errors.mobile ? "border-red-500" : "border-gray-200"
-                                            }`}
+                                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#2B63B5] focus:border-[#2B63B5] bg-white transition-all ${errors.mobile ? "border-red-500" : "border-gray-200"
+                                                }`}
                                             disabled={loading}
                                             onInput={(e) => {
                                                 e.currentTarget.value = e.currentTarget.value.replace(/\D/g, '').slice(0, 10);
                                             }}
                                         />
-                                        
-                                        {/* Helper Text with Highlight */}
-                                        <div className="mt-2 text-xs font-medium bg-amber-50 text-amber-700 px-3 py-2 rounded-lg border border-amber-100 flex items-start gap-2">
-                                           <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-                                           <span>Make sure your mobile number is linked to Aadhaar</span>
-                                        </div>
 
                                         {errors.mobile && (
                                             <p className="mt-1 text-xs text-red-600 pl-1">{errors.mobile.message}</p>
@@ -224,9 +223,8 @@ const DigiLockerVerify = ({
                                             type="email"
                                             {...register("email")}
                                             placeholder="Enter your email"
-                                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#2B63B5] focus:border-[#2B63B5] bg-white transition-all ${
-                                                errors.email ? "border-red-500" : "border-gray-200"
-                                            }`}
+                                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#2B63B5] focus:border-[#2B63B5] bg-white transition-all ${errors.email ? "border-red-500" : "border-gray-200"
+                                                }`}
                                             disabled={loading}
                                         />
                                         {errors.email && (
@@ -249,7 +247,7 @@ const DigiLockerVerify = ({
                                             "Continue to DigiLocker"
                                         )}
                                     </button>
-                                    
+
                                     <p className="mt-3 sm:mt-4 text-xs text-center text-gray-400">
                                         You will be redirected to DigiLocker for secure authentication
                                     </p>
