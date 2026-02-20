@@ -56,106 +56,97 @@ export default function QuickApplyV2Page() {
     const [approvalDetails, setApprovalDetails] = useState<ApprovalDetails | null>(null);
     const formatDOB = (isoDate?: string) => isoDate ? isoDate.split("T")[0] : "";
 
-    // Combined Logic for Routing and Form Population
-    // 1. Add this at the top of your component
+    // ── Data Population: Always sync user/application data into formData ──
+    useEffect(() => {
+        if (!user && !application) return;
+
+        const rate = ((typeof application?.interestRate === "string" ? parseFloat(application?.interestRate) : (application?.interestRate || 1)) / 100) || 0.01;
+        const approvedLoanAmount = (typeof application?.approvedLoanAmount === "string" ? parseInt(application?.approvedLoanAmount) : application?.approvedLoanAmount) || 0;
+        const tenure = (typeof application?.tenure === "string" ? parseInt(application?.tenure) : application?.tenure) || 15;
+        const interestAmount = rate * approvedLoanAmount * tenure;
+        const processingFee = (approvedLoanAmount * 0.1) || 0;
+        const gstOnProcessingFee = (processingFee * 0.18) || 0;
+        const netDisbursal = approvedLoanAmount - (processingFee + gstOnProcessingFee);
+        const totalRepayment = approvedLoanAmount + interestAmount;
+
+        setFormData((prev) => ({
+            ...prev,
+            customerId: user?.id || "",
+            firstName: user?.firstName || "",
+            lastName: user?.lastName || "",
+            fullName: user?.fullName || "",
+            email: user?.email || "",
+            emailVerified: user?.isEmailVerified || false,
+            mobile: user?.mobile || "",
+            mobileVerified: user?.isMobileVerified || false,
+            pan: user?.pan || "",
+            aadhaar: user?.aadhaar || "",
+            dob: formatDOB(user?.dateOfBirth) || "",
+            panVerified: user?.isPanVerify || false,
+            aadhaarVerified: user?.isAadhaarVerify || false,
+            monthlyIncome: user?.monthlyIncome || "",
+            employmentType: (user?.employmentType as "SALARIED" | "SELF-EMPLOYED") || "SALARIED",
+            selfie: (user?.profile?.s3URL as string) || "",
+            selfieVerified: user?.profile?.status === "VERIFIED",
+            brePulled: application?.breHistory?.brePulled || user?.brePulled || false,
+            bsaInitiated: user?.bsaInitiated || false,
+            bsaBreStatus: application?.breHistory?.bsaBreStatus || "",
+            bsaStatus: application?.breHistory?.bsaStatus || "",
+            companyName: user?.companyName || "",
+            breStatus: application?.status || "PENDING",
+            productId: application?.productId || "",
+
+            // bank
+            bankName: user?.bankName || "",
+            accountHolderName: user?.accountHolderName || "",
+            accountNumber: user?.accountNumber || "",
+            ifsc: user?.ifsc || "",
+            bankVerified: user?.bankVerified || false,
+
+            // bre form
+            loanAmount: application?.requestedLoanAmount || 0,
+            approvedLoanAmount,
+            tenure: application?.tenure || 0,
+            tenureUnit: application?.tenureUnit || "Days",
+            netDisbursalAmount: netDisbursal || application?.netDisbursalAmount || 0,
+            interestRate: application?.interestRate || 0,
+            totalInterest: application?.totalInterest || 0,
+            processingFee: processingFee || application?.processingFee || 0,
+            totalRepayment: totalRepayment || application?.totalRepayment || 0,
+            gstOnProcessingFee: gstOnProcessingFee || application?.gstOnProcessingFee || 0,
+            interestAmount,
+
+            // Detail-filled flags from API
+            isBasicDetailsFilled: user?.isBasicDetailsFilled || false,
+            isKycDetailsFilled: user?.isKycDetailsFilled || false,
+            isBankDetailsFilled: user?.isBankDetailsFilled || false,
+
+            upiAutoPayStatus: user?.upiAutoPayStatus || false,
+        }));
+    }, [user, application]);
+
+    // ── Routing: Decide initial step (runs once) ──
     const hasAutoRouted = useRef(false);
 
     useEffect(() => {
-        // A. Wait for IP check to finish
         if (ipLoading || ipBlocked) return;
+        if (hasAutoRouted.current) return;
+        if (!user) return;
 
-        // B. Handle User Data Population
-        if (user || application) {
-            const rate = ((typeof application?.interestRate === "string" ? parseFloat(application?.interestRate) : (application?.interestRate || 1)) / 100) || 0.01; // 1% per day
-            const approvedLoanAmount = (typeof application?.approvedLoanAmount === "string" ? parseInt(application?.approvedLoanAmount) : application?.approvedLoanAmount) || 0;
-            const tenure = (typeof application?.tenure === "string" ? parseInt(application?.tenure) : application?.tenure) || 15;
-            const interestAmount = rate * approvedLoanAmount * tenure;
-            const processingFee = (approvedLoanAmount * 0.1) || 0;
-            const gstOnProcessingFee = (processingFee * 0.18) || 0;
-            const netDisbursal = approvedLoanAmount - (processingFee + gstOnProcessingFee);
-            const totalRepayment = approvedLoanAmount + interestAmount;
+        const isLogin = user?.isEmailVerified || user?.isMobileVerified;
+        const basicAndKycFilled = user?.isBasicDetailsFilled && user?.isKycDetailsFilled;
 
-            setFormData((prev) => ({
-                ...prev,
-                customerId: user?.id || "",
-                firstName: user?.firstName || "",
-                lastName: user?.lastName || "",
-                fullName: user?.fullName || "",
-                email: user?.email || "",
-                emailVerified: user?.isEmailVerified || false,
-                mobile: user?.mobile || "",
-                mobileVerified: user?.isMobileVerified || false,
-                pan: user?.pan || "",
-                aadhaar: user?.aadhaar || "",
-                dob: formatDOB(user?.dateOfBirth) || "",
-                panVerified: user?.isPanVerify || false,
-                aadhaarVerified: user?.isAadhaarVerify || false,
-                monthlyIncome: user?.monthlyIncome || "",
-                employmentType: (user?.employmentType as "SALARIED" | "SELF-EMPLOYED") || "SALARIED",
-                selfie: (user?.profile?.s3URL as string) || "",
-                selfieVerified: user?.profile?.status === "VERIFIED",
-                brePulled: application?.breHistory?.brePulled || user?.brePulled || false,
-                bsaInitiated: user?.bsaInitiated || false,
-                bsaBreStatus: application?.breHistory?.bsaBreStatus || "",
-                bsaStatus: application?.breHistory?.bsaStatus || "",
-                companyName: user?.companyName || "",
-                breStatus: application?.status || "PENDING",
-                productId: application?.productId || "",
-
-                // bank
-                bankName: user?.bankName || "",
-                accountHolderName: user?.accountHolderName || "",
-                accountNumber: user?.accountNumber || "",
-                ifsc: user?.ifsc || "",
-                bankVerified: user?.bankVerified || false,
-
-                // bre form
-                loanAmount: application?.requestedLoanAmount || 0,
-                approvedLoanAmount,
-                tenure: application?.tenure || 0,
-                tenureUnit: application?.tenureUnit || "Days",
-                netDisbursalAmount: netDisbursal || application?.netDisbursalAmount || 0,
-                interestRate: application?.interestRate || 0,
-                totalInterest: application?.totalInterest || 0,
-                processingFee: processingFee || application?.processingFee || 0,
-                totalRepayment: totalRepayment || application?.totalRepayment || 0,
-                gstOnProcessingFee: gstOnProcessingFee || application?.gstOnProcessingFee || 0,
-                interestAmount,
-
-                // Detail-filled flags from API
-                isBasicDetailsFilled: user?.isBasicDetailsFilled || false,
-                isKycDetailsFilled: user?.isKycDetailsFilled || false,
-                isBankDetailsFilled: user?.isBankDetailsFilled || false,
-            }));
-
-            const isLogin = user?.isEmailVerified || user?.isMobileVerified;
-            // const isLogin = user?.isMobileVerified;
-            const brePulled = application?.breHistory?.brePulled || user?.brePulled || false;
-            const basicAndKycFilled = user?.isBasicDetailsFilled && user?.isKycDetailsFilled;
-
-            // Allow progression if:
-            // 1. User is logged in and verified/bank details filled -> Bank
-            // 2. User is logged in and basic/KYC filled -> Eligibility
-            // 3. User is logged in -> Eligibility (default)
-
-            if (isLogin && (user?.isProfileVerified || user?.isBankDetailsFilled)) {
-                setStep("bank");
-            } else if (isLogin && basicAndKycFilled) {
-                // If basic + KYC details are filled, skip to eligibility
-                setStep("eligibility");
-            } else if (isLogin) {
-                setStep("eligibility");
-            }
+        if (isLogin && (user?.isProfileVerified || user?.isBankDetailsFilled)) {
+            setStep("bank");
+            hasAutoRouted.current = true;
+        } else if (isLogin && basicAndKycFilled) {
+            setStep("eligibility");
+            hasAutoRouted.current = true;
+        } else if (isLogin) {
+            setStep("eligibility");
+            hasAutoRouted.current = true;
         }
-
-        // D. GUEST FLOW: If no user and still stuck in IP_CHECK, move to Page 1
-        // if (!user && stage === 'IP_CHECK' && !hasAutoRouted.current) {
-        //     setStage('PAGE_1');
-        //     setCurrentStep(1);
-        //     hasAutoRouted.current = true;
-        //     return;
-        // }
-    }, [user, ipLoading, ipBlocked, stage, application]);
+    }, [user, ipLoading, ipBlocked, application]);
 
     // Initialize tracking and check IP on mount
     useEffect(() => {

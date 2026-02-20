@@ -332,9 +332,9 @@ const UserLayout = ({ children }: UserLayoutProps) => {
         </nav>
 
         {/* Quick Actions */}
-        {sidebarOpen && (
+        {/* {sidebarOpen && (
           <div className="p-4 border-t border-[#E5E5E5]">
-            <div className="space-y-2">
+            <div className="space-y-2"> */}
               {/* <motion.button
                 whileHover={{ scale: 1.02 }}
                 onClick={() => router.push('/apply')}
@@ -351,9 +351,9 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                 <Send className="w-5 h-5" />
                 Pay EMI
               </motion.button> */}
-            </div>
+            {/* </div>
           </div>
-        )}
+        )} */}
 
         {/* Sidebar Footer */}
         <div className={`p-4 border-t border-[#E5E5E5] ${!sidebarOpen ? 'px-2' : ''}`}>

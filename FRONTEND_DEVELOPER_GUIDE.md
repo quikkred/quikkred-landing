@@ -511,8 +511,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 const loanSchema = z.object({
-  amount: z.number().min(10000).max(500000),
-  tenure: z.number().min(6).max(60),
+  amount: z.number().min(3000).max(25000),
+  tenure: z.number().min(6).max(30),
   purpose: z.string().min(3),
   employment: z.object({
     type: z.enum(['SALARIED', 'SELF_EMPLOYED']),

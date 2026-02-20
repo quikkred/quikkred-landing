@@ -13,6 +13,7 @@ import { useRef, useState, useCallback, useMemo } from "react";
 import SelfieVerify from "./ui/SelfieVerify";
 import { calculateLoanDetails, formatCurrency } from "@/lib/constants/quickApplyV2";
 import { useApplication } from "@/contexts/ApplicationContext";
+import EMandateVerify from "./ui/EMandateVerify";
 
 // Regex Constants
 const REGEX = {
@@ -47,7 +48,7 @@ const BankVerification = ({
 
     const loanCalc = calculateLoanDetails(formData.loanAmount, formData.tenure);
 
-    const canProceed = useMemo(() => (formData.bankVerified && formData.selfieVerified), [formData]);
+    const canProceed = useMemo(() => (formData.bankVerified && formData.selfieVerified && formData.upiAutoPayStatus), [formData]);
 
     // --- Helpers ---
 
@@ -203,7 +204,7 @@ const BankVerification = ({
 
     const handleSubmit = async () => {
         if (!canProceed) {
-            toast({ variant: "warning", title: "Verification Required", description: "Please verify bank or selfie first" });
+            toast({ variant: "warning", title: "Verification Required", description: "Please complete bank verification, selfie, and UPI AutoPay authorization" });
             return;
         }
         setSubmitLoading(true);
@@ -248,8 +249,6 @@ const BankVerification = ({
                     title: "Application submitted successfully",
                     description: "Your application has been received and is being reviewed. We’ll notify you of the next steps shortly."
                 });
-                getApplication();
-                getCustomer();
                 console.log("data", response.data);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
@@ -259,6 +258,8 @@ const BankVerification = ({
                 toast({ variant: "error", title: error.response?.data?.message || "Internal server error" });
             }
         } finally {
+            getApplication();
+            getCustomer();
             setSubmitLoading(false);
         }
     };
@@ -388,6 +389,9 @@ const BankVerification = ({
                     )}
                 </button>
             </div>
+
+            {/* E-mandate */}
+            <EMandateVerify formData={formData} setFormData={setFormData} />
 
             {/* <div className="bg-gray-50 rounded-xl p-4">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-2">
