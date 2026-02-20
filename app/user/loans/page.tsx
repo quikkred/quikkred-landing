@@ -38,6 +38,9 @@ interface Loan {
   customerId?: string;
   dpd?: number;
   nextDueDate?: string;
+  totalInterest: number;
+  lateCharges: number;
+  lateChargeInterest: number;
 }
 
 interface PaymentHistoryItem {
@@ -253,6 +256,8 @@ export default function MyLoansPage() {
   // Reapply State
   const [reapplyEligibility, setReapplyEligibility] = useState<{
     eligible: boolean;
+    maxAmount?: number;
+    minAmount?: number;
     reason?: string;
     message?: string;
     daysRemaining?: number;
@@ -421,7 +426,10 @@ export default function MyLoansPage() {
           customerEmail: loan.customerId?.email,
           customerId: loan.customerId?._id,
           dpd: loan.dpd || 0,
-          nextDueDate: loan.nextDueDate
+          nextDueDate: loan.nextDueDate,
+          totalInterest: loan.totalInterest || 0,
+          lateCharges: loan.lateCharges || 0,
+          lateChargeInterest: loan.lateChargeInterest || 0
         }));
 
         setLoans(mappedLoans);
@@ -528,12 +536,12 @@ export default function MyLoansPage() {
   const handleProceedToBank = () => {
     setNewLoanError(null);
     const amount = Number(newLoanForm.loanAmount);
-    if (!amount || amount < 1000) {
-      setNewLoanError('Please enter a valid loan amount (minimum ₹1,000)');
+    if (!amount || amount < 3000) {
+      setNewLoanError('Please enter a valid loan amount (minimum ₹3,000)');
       return;
     }
-    if (amount > 500000) {
-      setNewLoanError('Maximum loan amount is ₹5,00,000');
+    if (amount > 25000) {
+      setNewLoanError('Maximum loan amount is ₹25,000');
       return;
     }
     setNewLoanStep('bank');
@@ -657,6 +665,8 @@ export default function MyLoansPage() {
         if (response.data.isEligible === false) {
           setReapplyEligibility({
             eligible: false,
+            maxAmount: 0,
+            minAmount: 0,
             reason: response.data.reason,
             message: response.data.message,
             daysRemaining: response.data.daysRemaining,
@@ -669,16 +679,19 @@ export default function MyLoansPage() {
 
         setReapplyEligibility({
           eligible: response.data.eligible ?? response.data.isEligible ?? true,
+          maxAmount: response.data.maxAmount ?? 0,
+          minAmount: response.data.minAmount ?? 0,
           reason: response.data.reason
         });
+        // maxAmount available from eligibility response
         setIsReapplyModalOpen(true);
       } else {
-        setReapplyEligibility({ eligible: true });
+        setReapplyEligibility({ eligible: true, maxAmount: 25000, minAmount: 3000 });
         setIsReapplyModalOpen(true);
       }
     } catch (error: any) {
       console.error('Error checking reapply eligibility:', error);
-      setReapplyEligibility({ eligible: true });
+      setReapplyEligibility({ eligible: true, maxAmount: 25000, minAmount: 3000 });
       setIsReapplyModalOpen(true);
     } finally {
       setReapplyLoading(false);
@@ -697,6 +710,7 @@ export default function MyLoansPage() {
     try {
       const response = await loansService.submitReapplication({
         customerId: selectedLoanForReapply.customerId,
+        loanAmount: reapplyEligibility?.maxAmount || 0,
         tenure: Number(reapplyForm.tenure),
         purpose: reapplyForm.purpose || 'Repeat Loan',
         notes: 'Reapplication from customer dashboard'
@@ -1188,9 +1202,9 @@ export default function MyLoansPage() {
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Loan Number</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Principal</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Total Repayment</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Interest</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Total Interest</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Penalty</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Total Repayment</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
                 </tr>
@@ -1212,21 +1226,21 @@ export default function MyLoansPage() {
                       <div className="text-xs text-gray-500">Disbursed: {formatCurrency(loan.disbursementAmount)}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{formatCurrency(loan.totalRepayment)}</div>
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{formatCurrency(loan.principalAmount * loan.interestRate / 100)}</div>
+                      <div className="text-sm text-gray-900">{formatCurrency(loan.totalInterest)}</div>
                       <div className="text-xs text-gray-500">{loan.interestRate}%</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      {loan.status === 'OVERDUE' && loan.dpd && loan.dpd > 0 ? (
+                      {(loan.lateCharges + loan.lateChargeInterest) > 0 ? (
                         <div>
-                          <div className="text-sm font-medium text-red-600">{formatCurrency(loan.dpd * 50)}</div>
-                          <div className="text-xs text-gray-500">{loan.dpd} days overdue</div>
+                          <div className="text-sm font-medium text-red-600">{formatCurrency(loan.lateCharges + loan.lateChargeInterest)}</div>
+                          <div className="text-xs text-gray-500">{loan.dpd ? `${loan.dpd} days overdue` : ''}</div>
                         </div>
                       ) : (
                         <div className="text-sm text-gray-400">-</div>
                       )}
+                    </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{formatCurrency(loan.totalRepayment)}</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(loan.status)}`}>
@@ -1446,15 +1460,15 @@ export default function MyLoansPage() {
                         <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <input
                           type="number"
-                          min="1000"
-                          max="500000"
+                          min="3000"
+                          max="25000"
                           value={newLoanForm.loanAmount}
                           onChange={(e) => setNewLoanForm({ ...newLoanForm, loanAmount: e.target.value })}
                           className="w-full pl-12 pr-4 py-4 bg-[#FAFAFA] border-2 border-[#E0E0E0] rounded-xl focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-lg font-semibold"
                           placeholder="Enter loan amount"
                         />
                       </div>
-                      <p className="text-xs text-gray-500 mt-2">Min: ₹1,000 | Max: ₹5,00,000</p>
+                      <p className="text-xs text-gray-500 mt-2">Min: ₹3,000 | Max: ₹25,000</p>
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-3 mt-6">
@@ -1919,23 +1933,23 @@ export default function MyLoansPage() {
                         <p className="text-sm text-gray-600">Total Repayment</p>
                         <p className="text-lg font-bold text-green-700">{formatCurrency(detailedLoan.totalRepayment)}</p>
                       </div>
-                    {Number(detailedLoan?.lateCharges) > 0 && (
-  <div>
-    <p className="text-sm text-gray-600">Late Charges</p>
-    <p className="font-semibold text-red-600">
-      {formatCurrency(Number(detailedLoan.lateCharges))}
-    </p>
-  </div>
-)}
+                      {Number(detailedLoan?.lateCharges) > 0 && (
+                        <div>
+                          <p className="text-sm text-gray-600">Late Charges</p>
+                          <p className="font-semibold text-red-600">
+                            {formatCurrency(Number(detailedLoan.lateCharges))}
+                          </p>
+                        </div>
+                      )}
 
-{Number(detailedLoan?.lateChargeInterest) > 0 && (
-  <div>
-    <p className="text-sm text-gray-600">Late Charge Interest</p>
-    <p className="font-semibold text-red-600">
-      {formatCurrency(Number(detailedLoan.lateChargeInterest))}
-    </p>
-  </div>
-)}
+                      {Number(detailedLoan?.lateChargeInterest) > 0 && (
+                        <div>
+                          <p className="text-sm text-gray-600">Late Charge Interest</p>
+                          <p className="font-semibold text-red-600">
+                            {formatCurrency(Number(detailedLoan.lateChargeInterest))}
+                          </p>
+                        </div>
+                      )}
 
                     </div>
                   </div>

@@ -284,20 +284,28 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
       localStorage.removeItem('customerUniqueId');
       localStorage.removeItem('heroFormData');
 
-      // Clear cookies
+      // Clear custom cookies
       document.cookie = 'auth-token=; path=/; max-age=0';
       document.cookie = 'user-role=; path=/; max-age=0';
 
-      // ✅ IMPORTANT: let NextAuth clear its cookies
-      await signOut({ redirect: true, callbackUrl: "/login" });
-      console.log("Signed out from NextAuth");
+      // ✅ Clear NextAuth non-HttpOnly cookies (callback-url causes redirect back to /user)
+      document.cookie = 'next-auth.callback-url=; path=/; max-age=0';
+      document.cookie = 'next-auth.csrf-token=; path=/; max-age=0';
 
-      // Use setTimeout to ensure state is updated before redirect
-      setTimeout(() => {
-        window.location.href = '/login';
-      }, 0);
+      // Use redirect: false — let signOut clear the HttpOnly session cookie on the server
+      // Then WE redirect manually to avoid stale callback-url interference
+      try {
+        await signOut({ redirect: false });
+      } catch (e) {
+        console.error('signOut error:', e);
+      }
+
+      // Session cookie cleared on server — now safe to redirect
+      window.location.href = '/login';
     } catch (er) {
-      console.log("logout error", er)
+      console.log("logout error", er);
+      // Fallback: if anything fails, force navigate
+      window.location.href = '/login';
     }
   };
 

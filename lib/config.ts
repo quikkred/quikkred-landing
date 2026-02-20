@@ -5,9 +5,10 @@ export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://alpha.qu
 export const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'wss://alpha.quikkred.in';
 
 
+// export const RAZORPAY_KEY = process.env.NEXT_PUBLIC_RAZORPAY_KEY || "rzp_test_RudM9P8MHGIuf2"
+export const RAZORPAY_KEY = process.env.NEXT_PUBLIC_RAZORPAY_KEY || "rzp_live_S4tgUkVdbPaFdo"
+
 // Helper function to build API URLs
-
-
 
 export const getApiUrl = (endpoint: string): string => {
   const base = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;

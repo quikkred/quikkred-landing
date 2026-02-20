@@ -1,13 +1,29 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Mail, AlertCircle, Loader2, ArrowRight, CheckCircle2, Edit2, Timer } from "lucide-react";
 import { signIn, getSession } from "next-auth/react";
 import { useAuth } from "@/contexts/AuthContext";
-import { VALIDATION, TIMERS } from "@/lib/constants/quickApplyV2";
+import { TIMERS } from "@/lib/constants/quickApplyV2";
 import useAxios from "@/hooks/useAxios";
 import { useQuickApplyTracking, useVerificationFrictionTracking } from "@/lib/hooks";
 import { useApplication } from "@/contexts/ApplicationContext";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import OTPField from "./OTPField";
+
+const schema = yup.object().shape({
+  email: yup
+    .string()
+    .required("Email is required")
+    .email("Please enter a valid email address")
+    .matches(/^[a-zA-Z0-9._%+-]+@gmail\.com$/, "Only @gmail.com addresses are allowed"),
+});
+
+type FormData = {
+  email: string;
+};
 
 const EmailVerify = ({
   callback,
@@ -17,10 +33,24 @@ const EmailVerify = ({
   const { login } = useAuth();
   const { getApplication } = useApplication();
   const axios = useAxios();
-  const otpInputRef = useRef<HTMLInputElement>(null);
+
+
+  // Form
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    trigger,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: yupResolver(schema),
+    mode: "onChange",
+  });
+
+  const email = watch("email");
 
   // State
-  const [email, setEmail] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpVerifying, setOtpVerifying] = useState(false);
@@ -40,27 +70,17 @@ const EmailVerify = ({
   }, [otpTimer]);
 
   // Focus OTP input when sent
-  useEffect(() => {
-    if (otpSent && otpInputRef.current) {
-      otpInputRef.current.focus();
-    }
-  }, [otpSent]);
+
 
   /* ---------------- SEND OTP ---------------- */
-  const sendOTP = async () => {
-    const emailRegex = VALIDATION?.EMAIL || /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailRegex.test(email)) {
-      setOtpError("Please enter a valid email address");
-      return;
-    }
-
+  const onSendOTP = async (data: FormData) => {
     setOtpLoading(true);
     setOtpError("");
+    const normalizedEmail = data.email.toLowerCase();
 
     try {
       const response = await axios.post("/api/auth/customer/create", {
-        email,
+        email: normalizedEmail,
         type: "email_verification",
       });
 
@@ -87,10 +107,12 @@ const EmailVerify = ({
     setOtpVerifying(true);
     setOtpError("");
 
+    const normalizedEmail = email?.toLowerCase() || "";
+
     try {
       const res = await signIn("otp", {
         redirect: false,
-        emailOrPhone: email,
+        emailOrPhone: normalizedEmail,
         otp,
         loginMethod: "email",
         callbackUrl: "/apply/quick-v2",
@@ -99,13 +121,13 @@ const EmailVerify = ({
       if (res?.ok) {
         const session = await getSession();
         if (session?.user) {
-          trackOTPVerified(email);
+          trackOTPVerified(normalizedEmail);
           emailFriction.completeTracking(true);
+          getApplication();
           await login({
-            email: email,
+            email: normalizedEmail,
             apiData: session,
           });
-          getApplication();
           callback?.();
         }
       } else {
@@ -139,17 +161,13 @@ const EmailVerify = ({
 
           <input
             type="email"
-            value={email}
+            {...register("email")}
             disabled={otpSent || otpLoading}
-            onChange={(e) => {
-              setEmail(e.target.value.toLowerCase());
-              setOtpError("");
-            }}
             className={`
               w-full pl-12 pr-12 py-3.5 
               text-base font-medium text-gray-900 
               bg-white border rounded-xl outline-none transition-all
-              ${otpError ? "border-red-300 focus:ring-red-100" : "border-gray-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"}
+              ${errors.email || otpError ? "border-red-300 focus:ring-red-100" : "border-gray-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"}
               disabled:bg-gray-50 disabled:text-gray-500
             `}
             placeholder="Enter email address"
@@ -167,14 +185,19 @@ const EmailVerify = ({
           )}
         </div>
 
+        {/* Validation Error Message */}
+        {errors.email && (
+          <p className="text-xs text-red-500 pl-1">{errors.email.message}</p>
+        )}
+
         {/* Phase 1: Get OTP Button */}
         {!otpSent && (
           <button
-            onClick={sendOTP}
-            disabled={!email || otpLoading}
+            onClick={handleSubmit(onSendOTP)}
+            disabled={otpLoading}
             className={`
               w-full py-3.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2
-              ${email.includes('@')
+              ${!errors.email && email
                 ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20"
                 : "bg-gray-100 text-gray-400 cursor-not-allowed"}
             `}
@@ -196,28 +219,20 @@ const EmailVerify = ({
         {/* Phase 2: OTP Verification Area */}
         {otpSent && (
           <div className="animate-in fade-in slide-in-from-top-2 duration-300 space-y-4">
-            <div className="relative">
-              <input
-                ref={otpInputRef}
-                type="tel"
-                inputMode="numeric"
-                value={otp}
-                onChange={(e) => {
-                  setOtp(e.target.value.replace(/\D/g, "").slice(0, 6));
-                  setOtpError("");
-                }}
-                maxLength={6}
-                className={`
-                  w-full py-3 text-center text-xl tracking-[0.75em] font-bold text-gray-800
-                  border-2 rounded-xl outline-none transition-all
-                  placeholder:text-gray-300 placeholder:tracking-normal placeholder:font-normal placeholder:text-sm
-                  ${otpError
-                    ? "border-red-300 bg-red-50/50 focus:border-red-500"
-                    : "border-emerald-500/30 bg-emerald-50/30 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"}
-                `}
-                placeholder="• • • • • •"
-              />
+            <div className="text-center sm:text-left">
+              <label className="text-sm font-medium text-gray-700">Enter verification code</label>
+              <p className="text-xs text-gray-500 mt-1">We've sent a 6-digit code to your email</p>
             </div>
+            <OTPField
+              value={otp}
+              onChange={(val: string) => {
+                setOtp(val);
+                setOtpError("");
+              }}
+              length={6}
+              error={!!otpError}
+              autoFocus={otpSent}
+            />
 
             <div className="flex items-center justify-between text-xs px-1">
               <div className="flex items-center gap-1.5 text-gray-500">
@@ -230,7 +245,7 @@ const EmailVerify = ({
               </div>
 
               <button
-                onClick={sendOTP}
+                onClick={handleSubmit(onSendOTP)}
                 disabled={otpTimer > 0 || otpLoading}
                 className={`
                   font-semibold transition-colors

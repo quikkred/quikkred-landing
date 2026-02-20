@@ -41,7 +41,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: false,
 
   // Disable dev indicators
-devIndicators: false,
+  devIndicators: false,
 
   // Environment variables exposed to browser
   env: {
@@ -66,9 +66,9 @@ devIndicators: false,
   },
 
   // Compiler optimizations
-  // compiler: {
-  //   removeConsole: process.env.NODE_ENV === 'production',
-  // },
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
 
   // Reduce payload size
   productionBrowserSourceMaps: false,
