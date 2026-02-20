@@ -13,6 +13,7 @@ import { useRef, useState, useCallback, useMemo } from "react";
 import SelfieVerify from "./ui/SelfieVerify";
 import { calculateLoanDetails, formatCurrency } from "@/lib/constants/quickApplyV2";
 import { useApplication } from "@/contexts/ApplicationContext";
+import EMandateVerify from "./ui/EMandateVerify";
 
 // Regex Constants
 const REGEX = {
@@ -47,7 +48,7 @@ const BankVerification = ({
 
     const loanCalc = calculateLoanDetails(formData.loanAmount, formData.tenure);
 
-    const canProceed = useMemo(() => (formData.bankVerified && formData.selfieVerified), [formData]);
+    const canProceed = useMemo(() => (formData.bankVerified && formData.selfieVerified && formData.upiAutoPayStatus), [formData]);
 
     // --- Helpers ---
 
@@ -203,7 +204,7 @@ const BankVerification = ({
 
     const handleSubmit = async () => {
         if (!canProceed) {
-            toast({ variant: "warning", title: "Verification Required", description: "Please verify bank or selfie first" });
+            toast({ variant: "warning", title: "Verification Required", description: "Please complete bank verification, selfie, and UPI AutoPay authorization" });
             return;
         }
         setSubmitLoading(true);
@@ -239,7 +240,8 @@ const BankVerification = ({
             //     console.log(response.data);
             // }
             const response = await axios.post("/api/v2/application/loan/create", {
-                basicDetails
+                // basicDetails
+                isSubmit: true,
             });
             if (response.status === 200 || response.status === 201) {
                 toast({
@@ -247,8 +249,6 @@ const BankVerification = ({
                     title: "Application submitted successfully",
                     description: "Your application has been received and is being reviewed. We’ll notify you of the next steps shortly."
                 });
-                getApplication();
-                getCustomer();
                 console.log("data", response.data);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
@@ -258,6 +258,8 @@ const BankVerification = ({
                 toast({ variant: "error", title: error.response?.data?.message || "Internal server error" });
             }
         } finally {
+            getApplication();
+            getCustomer();
             setSubmitLoading(false);
         }
     };
@@ -388,17 +390,8 @@ const BankVerification = ({
                 </button>
             </div>
 
-            {/* Trust Badge */}
-
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                    <Shield className="w-5 h-5 text-green-600 mt-0.5" />
-                    <div className="text-sm text-green-800">
-                        <p className="font-semibold mb-1">Your data is secure</p>
-                        <p>256-bit encryption • RBI guidelines compliant • No hidden charges</p>
-                    </div>
-                </div>
-            </div>
+            {/* E-mandate */}
+            <EMandateVerify formData={formData} setFormData={setFormData} />
 
             {/* <div className="bg-gray-50 rounded-xl p-4">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-2">
@@ -447,20 +440,20 @@ const BankVerification = ({
             </div> */}
 
             {/* Loan Summary */}
-            <div className="bg-gradient-to-r from-[#25B181]/10 to-[#51C9AF]/10 rounded-lg sm:rounded-xl p-3 sm:p-4 space-y-1.5 sm:space-y-2">
+            {/* <div className="bg-gradient-to-r from-[#25B181]/10 to-[#51C9AF]/10 rounded-lg sm:rounded-xl p-3 sm:p-4 space-y-1.5 sm:space-y-2">
                 <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-gray-600">You&apos;ll receive (Net Disbursal Amount)</span>
                     <span className="font-semibold text-green-600">{formatCurrency(formData?.netDisbursalAmount)}</span>
                 </div>
                 <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-gray-600">Processing Fee (10% + GST)</span>
-                    <span className="text-gray-700">{formData?.processingFee + formData?.gstOnProcessingFee}</span>
+                    <span className="text-gray-700">{formatCurrency(formData?.processingFee + formData?.gstOnProcessingFee)}</span>
                 </div>
                 <div className="flex justify-between text-xs sm:text-sm border-t pt-1.5 sm:pt-2">
                     <span className="text-gray-600">Total Repayment</span>
                     <span className="font-semibold text-gray-900">₹{((formData?.totalRepayment) || 0).toLocaleString('en-IN')}</span>
                 </div>
-            </div>
+            </div> */}
 
             {/* Navigation */}
             <button
@@ -482,6 +475,17 @@ const BankVerification = ({
                     </>
                 )}
             </button>
+
+            {/* Trust Badge */}
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                    <Shield className="w-5 h-5 text-green-600 mt-0.5" />
+                    <div className="text-sm text-green-800">
+                        <p className="font-semibold mb-1">Your data is secure</p>
+                        <p>256-bit encryption • RBI guidelines compliant • No hidden charges</p>
+                    </div>
+                </div>
+            </div>
         </motion.div>
     );
 }

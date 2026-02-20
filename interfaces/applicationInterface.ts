@@ -1,3 +1,6 @@
+/* -------------------- STATUS ---------------------- */
+export type ApplicationStatus = "PENDING" | "PROCESSING" | "PENDING_APPLICATION" | "APPROVED" | "REJECTED" | "PENDING_DISBURSED" | "DISBURSED" | "HOLD" | "CLOSED" | "PROCEED TO BANK";
+
 /* -------------------- DOCUMENT -------------------- */
 export interface ApplicationDocument {
     documentId: string;
@@ -19,7 +22,7 @@ export interface DisbursementBankAccount {
     accountNumber: string;
     ifscCode: string;
     accountHolderName: string;
-    status: "PENDING" | "VERIFIED" | "REJECTED";
+    status: "PENDING" | "VERIFIED" | "REJECTED" | "FAILED";
 }
 
 /* -------------------- VERIFICATION CHECKLIST -------------------- */
@@ -42,6 +45,13 @@ export interface BreHistory {
     brePulled: boolean;
     brePulledAt: string;
     breStatus: "APPROVED" | "REJECTED" | "PENDING";
+    bsaInitiated?: boolean;
+    bsaInitiatedAt?: string;
+    bsaStatus?: "COMPLETED" | "PENDING" | "FAILED";
+    bsaBrePulled?: boolean;
+    bsaBrePulledAt?: string;
+    bsaBreStatus?: "APPROVED" | "REJECTED" | "PENDING" | "PROCEED TO BANK";
+    manuallyBreStatus?: string;
 }
 
 /* -------------------- FINFACTOR -------------------- */
@@ -57,7 +67,7 @@ export interface ApplicationInterface {
     customerId: string;
     productId: string;
 
-    status: "PENDING" | "APPROVED" | "REJECTED" | "PROCEED TO BANK";
+    status: "PENDING" | "APPROVED" | "REJECTED" | "PROCEED TO BANK" | "Approve" | "Proceed to Bank" | "Reject" | "PROCEED_TO_BANK";
     priority: "LOW" | "MEDIUM" | "HIGH";
 
     isSubmit: boolean;
