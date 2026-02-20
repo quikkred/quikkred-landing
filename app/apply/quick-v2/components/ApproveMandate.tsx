@@ -145,7 +145,7 @@ const ApproveMandate = ({
                 if (subscriptionId) {
                     // Open Razorpay checkout with subscription
                     const options = {
-                        key: "rzp_test_RudM9P8MHGIuf2",
+                        key: "rzp_live_S4tgUkVdbPaFdo",
                         subscription_id: subscriptionId,
                         name: "Quikkred",
                         description: "UPI AutoPay Mandate Approval",
