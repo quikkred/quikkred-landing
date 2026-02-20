@@ -409,7 +409,7 @@ export default function UserDashboard() {
 
       // Step 3: Open Razorpay checkout with order details from API response
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || "rzp_test_RudM9P8MHGIuf2",
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || "rzp_live_S4tgUkVdbPaFdo",
         amount: amountInPaise,
         currency: "INR",
         order_id: orderId,
@@ -1303,7 +1303,8 @@ export default function UserDashboard() {
                       <IndianRupee className="w-3 h-3" />
                       Total Loan Amount
                     </p>
-                    <p className="text-sm sm:text-base font-semibold text-green-900">₹{activeLoanDetails.emiAmount.toLocaleString()}</p>
+                    {/* <p className="text-sm sm:text-base font-semibold text-green-900">₹{activeLoanDetails.emiAmount.toLocaleString()}</p> */}
+                    <p className="text-sm sm:text-base font-semibold text-green-900">₹{getTotalLoanAmount().toLocaleString()}</p>
                   </div>
 
                   {/* <div className="p-4 bg-gradient-to-br from-purple-50 to-violet-50 rounded-lg border border-purple-200">

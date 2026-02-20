@@ -1227,7 +1227,7 @@ export default function MyLoansPage() {
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{formatCurrency(loan.totalInterest)}</div>
-                      <div className="text-xs text-gray-500">{loan.interestRate}%</div>
+                      <div className="text-xs text-gray-500">{loan.interestRate}% per day</div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       {(loan.lateCharges + loan.lateChargeInterest) > 0 ? (
