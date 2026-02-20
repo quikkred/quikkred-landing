@@ -2865,7 +2865,7 @@ export default function QuickLoanApplication() {
         if (subscriptionId) {
           // Open Razorpay checkout with subscription
           const options = {
-            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || "rzp_test_RudM9P8MHGIuf2",
+            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || "rzp_live_S4tgUkVdbPaFdo",
             subscription_id: subscriptionId,
             name: "Quikkred",
             description: "UPI AutoPay Mandate Approval",
@@ -4670,8 +4670,8 @@ export default function QuickLoanApplication() {
                           disabled={aadhaarVerified || aadhaarOtpSent}
                           maxLength={14}
                           className={`flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-100 disabled:cursor-not-allowed tracking-widest ${aadhaarVerified
-                              ? 'bg-green-50 border-green-300'
-                              : (fieldErrors.aadhaar || aadhaarError ? 'border-red-500' : 'border-gray-300')
+                            ? 'bg-green-50 border-green-300'
+                            : (fieldErrors.aadhaar || aadhaarError ? 'border-red-500' : 'border-gray-300')
                             }`}
                           placeholder="1234 5678 9012"
                         />
@@ -6194,7 +6194,7 @@ export default function QuickLoanApplication() {
                         <div className="text-center space-y-2">
                           <p className="text-xs text-gray-700 font-semibold">Satsai Finlease Private Limited</p>
                           <p className="text-[10px] text-gray-500">
-                            1008, 10th floor, Vikrant Tower, Rajendra Place, New Delhi - 110005
+                            1008, 10th floor, Vikrant Tower, Rajendra Place, New Delhi - 110008
                           </p>
                           <div className="flex items-center justify-center gap-4 text-[10px] text-gray-500">
                             <a href="tel:+919311913854" className="flex items-center gap-1 hover:text-emerald-600">

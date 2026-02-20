@@ -39,22 +39,26 @@ const EMandateVerify = ({
         };
     }, []);
 
-    // Check UPI Autopay status after Razorpay closes (success or dismiss)
-    const checkUpiAutoPayStatus = async (subscriptionId: string) => {
+    // Check UPI Autopay status via emandate checkout API
+    const checkUpiAutoPayStatus = async () => {
+        const customerId = application?.customerId;
+        if (!customerId) {
+            console.error("Customer ID not available for emandate checkout");
+            return;
+        }
+
         try {
-            console.log("Calling UPI AutoPay status API for subscriptionId:", subscriptionId);
+            console.log("Calling emandate checkout API for customerId:", customerId);
 
-            const statusResponse = await axios.get(`/api/upi/upiAutopay/status/${subscriptionId}`);
+            const statusResponse = await axios.get(`/api/upi/emandate/checkout/${customerId}`);
+            const result = statusResponse.data;
+            console.log("E-Mandate Checkout Response:", result);
 
-            const statusResult = statusResponse.data;
-            console.log("UPI AutoPay Status Response:", statusResult);
-
-            // After status API call, refresh customer data to get updated upiAutoPayStatus
+            // Refresh customer data to get updated upiAutoPayStatus
             await getCustomer();
 
-            // Set checkbox based on status from API response
-            if (statusResult.success && (statusResult.status === 'active' || statusResult.status === "authenticated")) {
-                // setUpiAutopayConsent(true);
+            // Check isAuthorized from the checkout API response
+            if (result.success && result.isAuthorized) {
                 setFormData((prev) => ({ ...prev, upiAutoPayStatus: true }));
                 toast({
                     variant: "success",
@@ -62,8 +66,6 @@ const EMandateVerify = ({
                     description: "Your UPI Autopay has been authorized successfully.",
                 });
             } else {
-                // Status is inactive - keep checkbox unchecked
-                // setUpiAutopayConsent(false);
                 toast({
                     variant: "info",
                     title: "UPI Autopay Pending",
@@ -71,10 +73,7 @@ const EMandateVerify = ({
                 });
             }
         } catch (error) {
-            console.error("Error checking UPI AutoPay status:", error);
-            // On error, keep checkbox unchecked
-            // setUpiAutopayConsent(false);
-            // Try to refresh customer data anyway
+            console.error("Error checking E-Mandate status:", error);
             try {
                 await getCustomer();
             } catch (e) {
@@ -150,7 +149,7 @@ const EMandateVerify = ({
                             console.log("Waiting 10 seconds before checking status...");
                             setMandateVerifying(true);
                             await new Promise(resolve => setTimeout(resolve, 10000));
-                            await checkUpiAutoPayStatus(subscriptionId);
+                            await checkUpiAutoPayStatus();
                             setMandateVerifying(false);
                             setMandateLoading(false);
                         },
