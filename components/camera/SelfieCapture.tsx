@@ -165,6 +165,8 @@ export default function SelfieCapture({ isOpen, onClose, onCapture }: SelfieCapt
         return false;
       }
 
+      console.log("file", file);
+
       const formData = new FormData();
       formData.append('photo', file);
 

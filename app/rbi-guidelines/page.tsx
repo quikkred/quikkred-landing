@@ -1,5 +1,4 @@
 'use client';
-
 import { motion } from "framer-motion";
 import { Shield, BookOpen, FileCheck, AlertCircle, Scale, Users, Building, BadgeCheck } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";

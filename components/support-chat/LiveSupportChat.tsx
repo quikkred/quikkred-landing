@@ -161,10 +161,11 @@ export default function LiveSupportChat({
     initAgent();
   }, []);
 
-  // Scroll to bottom when new messages arrive
+  // Scroll to bottom when new messages arrive (use parent scrollTop to avoid page scroll)
   const scrollToBottom = useCallback(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    const container = messagesEndRef.current?.parentElement;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
     }
   }, []);
 
@@ -190,7 +191,7 @@ export default function LiveSupportChat({
   // Focus input when chat opens
   useEffect(() => {
     if (isOpen && !isMinimized) {
-      setTimeout(() => inputRef.current?.focus(), 300);
+      setTimeout(() => inputRef.current?.focus({ preventScroll: true }), 300);
     }
   }, [isOpen, isMinimized]);
 
@@ -365,186 +366,188 @@ export default function LiveSupportChat({
       </ChatPortal>
 
       {/* Chat Window - Full screen on mobile, floating on desktop */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            ref={chatContainerRef}
-            initial={{ opacity: 0, y: isMobile ? '100%' : 20, scale: isMobile ? 1 : 0.95 }}
-            animate={{
-              opacity: 1,
-              y: 0,
-              scale: 1,
-              height: isMinimized ? 'auto' : (isMobile ? '100%' : '500px')
-            }}
-            exit={{ opacity: 0, y: isMobile ? '100%' : 20, scale: isMobile ? 1 : 0.95 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className={`fixed z-50 bg-white overflow-hidden flex flex-col
+      <ChatPortal>
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              ref={chatContainerRef}
+              initial={{ opacity: 0, y: isMobile ? '100%' : 20, scale: isMobile ? 1 : 0.95 }}
+              animate={{
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                height: isMinimized ? 'auto' : (isMobile ? '100%' : '500px')
+              }}
+              exit={{ opacity: 0, y: isMobile ? '100%' : 20, scale: isMobile ? 1 : 0.95 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className={`fixed z-50 bg-white overflow-hidden flex flex-col
               ${isMobile
-                ? 'inset-0 rounded-none'
-                : 'bottom-24 right-6 w-[380px] max-w-[calc(100vw-3rem)] rounded-2xl shadow-2xl'
-              }
+                  ? 'inset-0 rounded-none'
+                  : 'bottom-24 right-6 w-[380px] max-w-[calc(100vw-3rem)] rounded-2xl shadow-2xl'
+                }
             `}
-            style={{
-              paddingTop: isMobile ? 'env(safe-area-inset-top, 0px)' : '0',
-              paddingBottom: isMobile ? 'env(safe-area-inset-bottom, 0px)' : '0',
-            }}
-          >
-            {/* Header */}
-            <div className={`bg-gradient-to-r from-[#25B181] to-[#1F8F68] ${isMobile ? 'p-4 pt-2' : 'p-4'}`}
-              style={{ paddingTop: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 8px)' : '16px' }}
+              style={{
+                paddingTop: isMobile ? 'env(safe-area-inset-top, 0px)' : '0',
+                paddingBottom: isMobile ? 'env(safe-area-inset-bottom, 0px)' : '0',
+              }}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {/* Agent Avatar */}
-                  <div className="relative">
-                    <div className={`bg-white/20 rounded-full flex items-center justify-center ${isMobile ? 'w-10 h-10' : 'w-10 h-10'}`}>
-                      <User className={`text-white ${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />
+              {/* Header */}
+              <div className={`bg-gradient-to-r from-[#25B181] to-[#1F8F68] ${isMobile ? 'p-4 pt-2' : 'p-4'}`}
+                style={{ paddingTop: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 8px)' : '16px' }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {/* Agent Avatar */}
+                    <div className="relative">
+                      <div className={`bg-white/20 rounded-full flex items-center justify-center ${isMobile ? 'w-10 h-10' : 'w-10 h-10'}`}>
+                        <User className={`text-white ${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />
+                      </div>
+                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></span>
                     </div>
-                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></span>
+                    <div>
+                      <h3 className={`text-white font-semibold ${isMobile ? 'text-base' : 'text-base'}`}>
+                        {agent?.name || 'Support'}
+                      </h3>
+                      <p className="text-white/80 text-xs flex items-center gap-1">
+                        <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                        Online • Support Agent
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className={`text-white font-semibold ${isMobile ? 'text-base' : 'text-base'}`}>
-                      {agent?.name || 'Support'}
-                    </h3>
-                    <p className="text-white/80 text-xs flex items-center gap-1">
-                      <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                      Online • Support Agent
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1">
-                  {!isMobile && (
-                    <button
-                      onClick={() => setIsMinimized(!isMinimized)}
-                      className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-                      aria-label="Minimize chat"
-                    >
-                      <Minimize2 className="w-5 h-5 text-white" />
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setIsOpen(false)}
-                    className={`hover:bg-white/20 rounded-lg transition-colors ${isMobile ? 'p-2' : 'p-2'}`}
-                    aria-label="Close chat"
-                  >
-                    {isMobile ? (
-                      <ChevronDown className="w-6 h-6 text-white" />
-                    ) : (
-                      <X className="w-5 h-5 text-white" />
+                  <div className="flex items-center gap-1">
+                    {!isMobile && (
+                      <button
+                        onClick={() => setIsMinimized(!isMinimized)}
+                        className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                        aria-label="Minimize chat"
+                      >
+                        <Minimize2 className="w-5 h-5 text-white" />
+                      </button>
                     )}
-                  </button>
+                    <button
+                      onClick={() => setIsOpen(false)}
+                      className={`hover:bg-white/20 rounded-lg transition-colors ${isMobile ? 'p-2' : 'p-2'}`}
+                      aria-label="Close chat"
+                    >
+                      {isMobile ? (
+                        <ChevronDown className="w-6 h-6 text-white" />
+                      ) : (
+                        <X className="w-5 h-5 text-white" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Messages Area */}
-            {!isMinimized && (
-              <>
-                <div
-                  className={`flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 ${isMobile ? 'pb-4' : ''}`}
-                  style={{
-                    WebkitOverflowScrolling: 'touch',
-                    minHeight: isMobile ? '0' : 'auto'
-                  }}
-                >
-                  {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div className={`max-w-[85%] sm:max-w-[80%] ${message.sender === 'user' ? 'order-1' : ''}`}>
-                        {message.sender === 'agent' && (
-                          <p className="text-xs text-gray-500 mb-1 ml-1">{message.agentName}</p>
-                        )}
-                        <div
-                          className={`rounded-2xl px-4 py-3 ${message.sender === 'user'
+              {/* Messages Area */}
+              {!isMinimized && (
+                <>
+                  <div
+                    className={`flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 ${isMobile ? 'pb-4' : ''}`}
+                    style={{
+                      WebkitOverflowScrolling: 'touch',
+                      minHeight: isMobile ? '0' : 'auto'
+                    }}
+                  >
+                    {messages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div className={`max-w-[85%] sm:max-w-[80%] ${message.sender === 'user' ? 'order-1' : ''}`}>
+                          {message.sender === 'agent' && (
+                            <p className="text-xs text-gray-500 mb-1 ml-1">{message.agentName}</p>
+                          )}
+                          <div
+                            className={`rounded-2xl px-4 py-3 ${message.sender === 'user'
                               ? 'bg-gradient-to-r from-[#25B181] to-[#1F8F68] text-white rounded-br-md'
                               : 'bg-white text-gray-800 shadow-sm border border-gray-100 rounded-bl-md'
-                            }`}
-                        >
-                          <p className={`leading-relaxed whitespace-pre-wrap ${isMobile ? 'text-[15px]' : 'text-sm'}`}>
-                            {message.content}
+                              }`}
+                          >
+                            <p className={`leading-relaxed whitespace-pre-wrap ${isMobile ? 'text-[15px]' : 'text-sm'}`}>
+                              {message.content}
+                            </p>
+                          </div>
+                          <p className={`text-[10px] text-gray-400 mt-1 ${message.sender === 'user' ? 'text-right mr-1' : 'ml-1'}`}>
+                            {formatTime(message.timestamp)}
                           </p>
                         </div>
-                        <p className={`text-[10px] text-gray-400 mt-1 ${message.sender === 'user' ? 'text-right mr-1' : 'ml-1'}`}>
-                          {formatTime(message.timestamp)}
-                        </p>
                       </div>
-                    </div>
-                  ))}
+                    ))}
 
-                  {/* Typing Indicator */}
-                  {isAgentTyping && (
-                    <div className="flex justify-start">
-                      <div className="max-w-[85%] sm:max-w-[80%]">
-                        <p className="text-xs text-gray-500 mb-1 ml-1">{agent?.name || 'Support'}</p>
-                        <div className="bg-white rounded-2xl rounded-bl-md px-4 py-3 shadow-sm border border-gray-100">
-                          <div className="flex items-center gap-1.5">
-                            <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                            <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                            <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                    {/* Typing Indicator */}
+                    {isAgentTyping && (
+                      <div className="flex justify-start">
+                        <div className="max-w-[85%] sm:max-w-[80%]">
+                          <p className="text-xs text-gray-500 mb-1 ml-1">{agent?.name || 'Support'}</p>
+                          <div className="bg-white rounded-2xl rounded-bl-md px-4 py-3 shadow-sm border border-gray-100">
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                              <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  <div ref={messagesEndRef} />
-                </div>
+                    <div ref={messagesEndRef} />
+                  </div>
 
-                {/* Input Area - Keyboard aware */}
-                <div
-                  className={`bg-white border-t border-gray-100 ${isMobile ? 'p-3' : 'p-4'}`}
-                  style={{
-                    paddingBottom: isMobile
-                      ? `calc(env(safe-area-inset-bottom, 0px) + ${keyboardVisible ? '8px' : '12px'})`
-                      : '16px'
-                  }}
-                >
-                  <div className="flex items-center gap-2">
-                    <input
-                      ref={inputRef}
-                      type="text"
-                      value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="Type your message..."
-                      className={`flex-1 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-[#25B181]/50 focus:bg-white transition-all
+                  {/* Input Area - Keyboard aware */}
+                  <div
+                    className={`bg-white border-t border-gray-100 ${isMobile ? 'p-3' : 'p-4'}`}
+                    style={{
+                      paddingBottom: isMobile
+                        ? `calc(env(safe-area-inset-bottom, 0px) + ${keyboardVisible ? '8px' : '12px'})`
+                        : '16px'
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <input
+                        ref={inputRef}
+                        type="text"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Type your message..."
+                        className={`flex-1 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-[#25B181]/50 focus:bg-white transition-all
                         ${isMobile ? 'px-4 py-3 text-[16px]' : 'px-4 py-2.5 text-sm'}
                       `}
-                      style={{ fontSize: isMobile ? '16px' : '14px' }} // Prevent zoom on iOS
-                      autoComplete="off"
-                      autoCorrect="on"
-                      spellCheck="true"
-                    />
-                    <motion.button
-                      onClick={handleSendMessage}
-                      disabled={!inputValue.trim() || isAgentTyping}
-                      className={`bg-gradient-to-r from-[#25B181] to-[#1F8F68] rounded-full flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed
+                        style={{ fontSize: isMobile ? '16px' : '14px' }} // Prevent zoom on iOS
+                        autoComplete="off"
+                        autoCorrect="on"
+                        spellCheck="true"
+                      />
+                      <motion.button
+                        onClick={handleSendMessage}
+                        disabled={!inputValue.trim() || isAgentTyping}
+                        className={`bg-gradient-to-r from-[#25B181] to-[#1F8F68] rounded-full flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed
                         ${isMobile ? 'w-12 h-12 min-w-[48px]' : 'w-10 h-10'}
                       `}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      aria-label="Send message"
-                    >
-                      {isAgentTyping ? (
-                        <Loader2 className={`animate-spin ${isMobile ? 'w-5 h-5' : 'w-5 h-5'}`} />
-                      ) : (
-                        <Send className={`${isMobile ? 'w-5 h-5' : 'w-5 h-5'}`} />
-                      )}
-                    </motion.button>
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        aria-label="Send message"
+                      >
+                        {isAgentTyping ? (
+                          <Loader2 className={`animate-spin ${isMobile ? 'w-5 h-5' : 'w-5 h-5'}`} />
+                        ) : (
+                          <Send className={`${isMobile ? 'w-5 h-5' : 'w-5 h-5'}`} />
+                        )}
+                      </motion.button>
+                    </div>
+                    {!isMobile && (
+                      <p className="text-[10px] text-gray-400 text-center mt-2">
+                        Typically replies within a minute
+                      </p>
+                    )}
                   </div>
-                  {!isMobile && (
-                    <p className="text-[10px] text-gray-400 text-center mt-2">
-                      Typically replies within a minute
-                    </p>
-                  )}
-                </div>
-              </>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+                </>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </ChatPortal>
     </>
   );
 }
