@@ -41,7 +41,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: false,
 
   // Disable dev indicators
-devIndicators: false,
+  devIndicators: false,
 
   // Environment variables exposed to browser
   env: {
