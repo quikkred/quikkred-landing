@@ -87,7 +87,7 @@ const testimonialsData: Testimonial[] = [
     loanAmount: "1,00,000",
     loanType: "Emergency Loan",
     date: "Jan 2025",
-    content: "Good process and fast and best experience.!",
+    content: "Good process and fast and best experience.",
   },
   {
     type: "video",

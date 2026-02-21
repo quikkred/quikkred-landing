@@ -74,6 +74,8 @@ export default async function getUserDetails(): Promise<User | null> {
         s3Key: apiData.profile.s3Key || "",
         s3URL: apiData.profile.s3URL || "",
       } : null,
+      isProfileVerified: apiData?.profile?.status === "VERIFIED",
+      isBankDetailsFilled: apiData?.isBankDetailsFilled || false,
       isSubmit: apiData?.isSubmit || false,
 
       // verified
@@ -82,6 +84,7 @@ export default async function getUserDetails(): Promise<User | null> {
       isPanVerify: apiData.isPanVerify || false,
       isAadhaarVerify: apiData.isAadhaarVerify || false,
       brePulled: apiData.brePulled || false,
+      bsaInitiated: apiData.bsaInitiated || false,
 
       // dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
       pan: apiData.panCard || null,

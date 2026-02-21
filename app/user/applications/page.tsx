@@ -286,6 +286,9 @@ export default function MyApplicationsPage() {
       case 'APPROVED':
       case 'DISBURSED':
         return 'text-green-600 bg-green-100';
+      case 'PROCEED TO BANK':
+      case 'PROCEED_TO_BANK':
+        return 'text-emerald-600 bg-emerald-100';
       case 'REJECTED':
       case 'CANCELLED':
         return 'text-red-600 bg-red-100';
@@ -490,13 +493,24 @@ export default function MyApplicationsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-center">
-                      <button
-                        onClick={() => handleViewDetails(app)}
-                        className="inline-flex items-center px-3 py-1.5 bg-[#4A66FF] text-white text-xs font-medium rounded-lg hover:bg-[#4A66FF]/90 transition-colors"
-                      >
-                        <Eye className="w-3.5 h-3.5 mr-1" />
-                        View Details
-                      </button>
+                      <div className="flex items-center justify-center gap-2">
+                        {app.status?.toUpperCase().trim() === 'PROCEED TO BANK' && (
+                          <button
+                            onClick={() => router.push('/apply/quick')}
+                            className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-medium rounded-lg hover:shadow-md transition-all"
+                          >
+                            <Building className="w-3.5 h-3.5 mr-1" />
+                            Proceed to Bank
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleViewDetails(app)}
+                          className="inline-flex items-center px-3 py-1.5 bg-[#4A66FF] text-white text-xs font-medium rounded-lg hover:bg-[#4A66FF]/90 transition-colors"
+                        >
+                          <Eye className="w-3.5 h-3.5 mr-1" />
+                          View Details
+                        </button>
+                      </div>
                     </td>
                   </motion.tr>
                 ))}
@@ -840,7 +854,16 @@ export default function MyApplicationsPage() {
               )}
 
               {/* Modal Footer */}
-              <div className="sticky bottom-0 px-4 sm:px-6 py-3 sm:py-4 bg-[#FAFAFA] border-t border-[#E0E0E0]">
+              <div className="sticky bottom-0 px-4 sm:px-6 py-3 sm:py-4 bg-[#FAFAFA] border-t border-[#E0E0E0] space-y-2">
+                {detailedApplication && detailedApplication.status?.toUpperCase().trim() === 'PROCEED TO BANK' && (
+                  <button
+                    onClick={() => router.push('/apply/quick')}
+                    className="w-full px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all text-sm sm:text-base font-semibold flex items-center justify-center gap-2"
+                  >
+                    <Building className="w-4 h-4" />
+                    Proceed to Bank
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     setIsDetailModalOpen(false);
