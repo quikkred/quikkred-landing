@@ -22,7 +22,8 @@ const MissingField = ({
     };
 
     // 1. If Email is NOT verified, show Email Input
-    if (!formData.emailVerified) {
+    // if (!formData.emailVerified) {
+    if (!formData.email || formData.email !== "") {
         return (
             <div className="w-full space-y-2 animate-in fade-in slide-in-from-top-1">
                 <label className="text-sm font-semibold text-gray-700 ml-1">
@@ -49,7 +50,8 @@ const MissingField = ({
     }
 
     // 2. If Email IS verified, but Mobile is NOT, show Mobile Input
-    if (!formData.mobileVerified) {
+    // if (!formData.mobileVerified) {
+    if (!formData.mobile || formData.mobile !== "") {
         return (
             <div className="w-full space-y-2 animate-in fade-in slide-in-from-top-1">
                 <label className="text-sm font-semibold text-gray-700 ml-1">
