@@ -4,6 +4,28 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "@/components/ui/toast";
 import useAxios from "@/hooks/useAxios";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { motion, AnimatePresence } from "framer-motion";
+import { AlertTriangle, X } from "lucide-react";
+
+const schema = yup.object().shape({
+    mobile: yup
+        .string()
+        .required("Mobile number is required")
+        .matches(/^[6-9]\d{9}$/, "Enter a valid 10-digit mobile number"),
+    email: yup
+        .string()
+        .required("Email is required")
+        .email("Enter a valid email address")
+        .matches(/^[a-zA-Z0-9._%+-]+@gmail\.com$/, "Only @gmail.com addresses are allowed"),
+});
+
+type FormData = {
+    mobile: string;
+    email: string;
+};
 
 const DigiLockerVerify = ({
     buttonText = "DigiLocker",
@@ -17,80 +39,56 @@ const DigiLockerVerify = ({
     extraParams?: Record<string, string>;
 }) => {
     const [showModal, setShowModal] = useState(false);
-    const [mobile, setMobile] = useState("");
-    const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
-    const [mobileError, setMobileError] = useState("");
-    const [emailError, setEmailError] = useState("");
     const axios = useAxios();
 
-    const validateMobile = (value: string) => {
-        if (!value) {
-            setMobileError("Mobile number is required");
-            return false;
-        }
-        if (!/^\d{10}$/.test(value)) {
-            setMobileError("Enter a valid 10-digit mobile number");
-            return false;
-        }
-        if (!/^[6-9]/.test(value)) {
-            setMobileError("Mobile number must start with 6, 7, 8, or 9");
-            return false;
-        }
-        setMobileError("");
-        return true;
-    };
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        reset,
+        watch,
+    } = useForm<FormData>({
+        resolver: yupResolver(schema),
+        mode: "onChange",
+    });
 
-    const validateEmail = (value: string) => {
-        if (!value) {
-            setEmailError("Email is required");
-            return false;
+    const mobile = watch("mobile");
+
+    // Scroll Locking
+    useEffect(() => {
+        if (showModal) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "";
         }
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-            setEmailError("Enter a valid email address");
-            return false;
-        }
-        setEmailError("");
-        return true;
-    };
+        return () => {
+            document.body.style.overflow = "";
+        };
+    }, [showModal]);
 
-    const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value.replace(/\D/g, "").slice(0, 10);
-        setMobile(value);
-        if (mobileError) validateMobile(value);
-    };
-
-    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setEmail(e.target.value);
-        if (emailError) validateEmail(e.target.value);
-    };
-
-    const handleSubmit = async () => {
-        const isMobileValid = validateMobile(mobile);
-        const isEmailValid = validateEmail(email);
-        if (!isMobileValid || !isEmailValid) return;
-
+    const onSubmit = async (data: FormData) => {
         setLoading(true);
         try {
-            const response = await axios.post(type === "v2" ? "/api/v2/customer/digilocker/login": "/api/auth/customer/digilocker/login", {
-                mobile,
-                email,
+            const response = await axios.post(type === "v2" ? "/api/v2/customer/digilocker/login" : "/api/auth/customer/digilocker/login", {
+                mobile: data.mobile,
+                email: data.email.toLowerCase(),
                 ...extraParams,
             });
-            const data = response.data;
+            const resData = response.data;
 
-            if (data?.success && data?.data?.url) {
+            if (resData?.success && resData?.data?.url) {
                 toast({
                     variant: "success",
                     title: "Redirecting to DigiLocker",
                     description: "Please complete authentication on DigiLocker.",
                 });
-                window.location.href = data.data.url;
+                window.location.href = resData.data.url;
             } else {
                 toast({
                     variant: "error",
                     title: "DigiLocker Error",
-                    description: data?.message || "Failed to initiate DigiLocker login.",
+                    description: resData?.message || "Failed to initiate DigiLocker login.",
                 });
                 setLoading(false);
             }
@@ -122,114 +120,12 @@ const DigiLockerVerify = ({
         setPortalRoot(document.body);
     }, []);
 
-    const modalContent = showModal ? (
-        <div
-            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 overflow-y-auto p-4"
-            style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0 }}
-            onClick={(e) => {
-                if (e.target === e.currentTarget && !loading) {
-                    setShowModal(false);
-                    setMobileError("");
-                    setEmailError("");
-                }
-            }}
-        >
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-5 sm:p-6 relative my-auto mx-auto">
-                {/* Close button */}
-                <button
-                    type="button"
-                    onClick={() => {
-                        if (!loading) {
-                            setShowModal(false);
-                            setMobileError("");
-                            setEmailError("");
-                        }
-                    }}
-                    className="absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-400 hover:text-gray-600 text-2xl leading-none w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
-                >
-                    &times;
-                </button>
-
-                {/* Header */}
-                <div className="flex items-center gap-3 mb-5 sm:mb-6">
-                    <div className="w-10 h-10 bg-[#2B63B5] rounded-lg flex items-center justify-center flex-shrink-0">
-                        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
-                            <path
-                                d="M6 8h12v8H6V8zm2 2v4h8v-4H8zm1 1h2v2H9v-2zm3 0h2v2h-2v-2z"
-                                fill="white"
-                            />
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 className="text-base sm:text-lg font-bold text-gray-900">Continue with DigiLocker</h3>
-                        <p className="text-xs sm:text-sm text-gray-500">Enter your details to proceed</p>
-                    </div>
-                </div>
-
-                {/* Mobile Input */}
-                <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Mobile Number
-                    </label>
-                    <input
-                        type="tel"
-                        value={mobile}
-                        onChange={handleMobileChange}
-                        maxLength={10}
-                        placeholder="Enter 10-digit mobile number"
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#2B63B5] focus:border-[#2B63B5] bg-white ${
-                            mobileError ? "border-red-500" : "border-gray-300"
-                        }`}
-                        disabled={loading}
-                    />
-                    {mobileError && (
-                        <p className="mt-1 text-xs text-red-600">{mobileError}</p>
-                    )}
-                </div>
-
-                {/* Email Input */}
-                <div className="mb-5 sm:mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Email Address
-                    </label>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={handleEmailChange}
-                        placeholder="Enter your email"
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#2B63B5] focus:border-[#2B63B5] bg-white ${
-                            emailError ? "border-red-500" : "border-gray-300"
-                        }`}
-                        disabled={loading}
-                    />
-                    {emailError && (
-                        <p className="mt-1 text-xs text-red-600">{emailError}</p>
-                    )}
-                </div>
-
-                {/* Submit Button */}
-                <button
-                    type="button"
-                    onClick={handleSubmit}
-                    disabled={loading}
-                    className="w-full py-3 bg-[#2B63B5] text-white rounded-lg font-semibold hover:bg-[#234f94] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                    {loading ? (
-                        <>
-                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            Redirecting...
-                        </>
-                    ) : (
-                        "Continue to DigiLocker"
-                    )}
-                </button>
-
-                <p className="mt-3 sm:mt-4 text-xs text-center text-gray-400">
-                    You will be redirected to DigiLocker for secure authentication
-                </p>
-            </div>
-        </div>
-    ) : null;
+    const handleClose = () => {
+        if (!loading) {
+            setShowModal(false);
+            reset();
+        }
+    };
 
     return (
         <>
@@ -243,7 +139,125 @@ const DigiLockerVerify = ({
                 <span className="inline-block sm:hidden">{smButtonText}</span>
             </button>
 
-            {portalRoot && modalContent && createPortal(modalContent, portalRoot)}
+            {portalRoot && createPortal(
+                <AnimatePresence>
+                    {showModal && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 overflow-y-auto p-4 backdrop-blur-sm"
+                            style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0 }}
+                            onClick={(e) => {
+                                if (e.target === e.currentTarget) handleClose();
+                            }}
+                        >
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                                transition={{ duration: 0.2 }}
+                                className="bg-white rounded-2xl shadow-xl w-full max-w-md p-5 sm:p-6 relative my-auto mx-auto"
+                            >
+                                {/* Close button */}
+                                <button
+                                    type="button"
+                                    onClick={handleClose}
+                                    className="absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-400 hover:text-gray-600 text-2xl leading-none w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+
+                                {/* Header */}
+                                <div className="flex items-center gap-3 mb-5 sm:mb-6">
+                                    <div className="w-10 h-10 bg-[#2B63B5] rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-900/10">
+                                        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none">
+                                            <path
+                                                d="M6 8h12v8H6V8zm2 2v4h8v-4H8zm1 1h2v2H9v-2zm3 0h2v2h-2v-2z"
+                                                fill="white"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-base sm:text-lg font-bold text-gray-900">Continue with DigiLocker</h3>
+                                        <p className="text-xs sm:text-sm text-gray-500">Enter your details to proceed</p>
+                                    </div>
+                                </div>
+
+                                {/* Helper Text with Highlight */}
+                                <div className="my-2 text-xs font-medium bg-amber-50 text-amber-700 px-3 py-2 rounded-lg border border-amber-100 flex items-start gap-2">
+                                    <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                                    <span>Make sure your mobile number or Email id is linked to Aadhaar</span>
+                                </div>
+
+                                <form onSubmit={handleSubmit(onSubmit)}>
+                                    {/* Mobile Input */}
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Mobile Number
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            {...register("mobile")}
+                                            maxLength={10}
+                                            placeholder="Enter 10-digit mobile number"
+                                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#2B63B5] focus:border-[#2B63B5] bg-white transition-all ${errors.mobile ? "border-red-500" : "border-gray-200"
+                                                }`}
+                                            disabled={loading}
+                                            onInput={(e) => {
+                                                e.currentTarget.value = e.currentTarget.value.replace(/\D/g, '').slice(0, 10);
+                                            }}
+                                        />
+
+                                        {errors.mobile && (
+                                            <p className="mt-1 text-xs text-red-600 pl-1">{errors.mobile.message}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Email Input */}
+                                    <div className="mb-5 sm:mb-6">
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Email Address
+                                        </label>
+                                        <input
+                                            type="email"
+                                            {...register("email")}
+                                            placeholder="Enter your email"
+                                            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#2B63B5] focus:border-[#2B63B5] bg-white transition-all ${errors.email ? "border-red-500" : "border-gray-200"
+                                                }`}
+                                            disabled={loading}
+                                        />
+                                        {errors.email && (
+                                            <p className="mt-1 text-xs text-red-600 pl-1">{errors.email.message}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Submit Button */}
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full py-3 bg-[#2B63B5] text-white rounded-lg font-semibold hover:bg-[#234f94] transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 active:scale-[0.99]"
+                                    >
+                                        {loading ? (
+                                            <>
+                                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                <span>Redirecting...</span>
+                                            </>
+                                        ) : (
+                                            "Continue to DigiLocker"
+                                        )}
+                                    </button>
+
+                                    <p className="mt-3 sm:mt-4 text-xs text-center text-gray-400">
+                                        You will be redirected to DigiLocker for secure authentication
+                                    </p>
+                                </form>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>,
+                portalRoot
+            )}
         </>
     );
 };

@@ -107,7 +107,7 @@ const ApplicationSuccess = ({
                             <DetailRow
                                 icon={<Clock className="w-3.5 h-3.5" />}
                                 label="Interest Rate"
-                                value={`${formData?.interestRate}% p.a`}
+                                value={`${formData?.interestRate}% per day`}
                             />
                             <DetailRow
                                 icon={<IndianRupee className="w-3.5 h-3.5" />}
@@ -142,13 +142,17 @@ const ApplicationSuccess = ({
                                     •••• {application?.disbursementBankAccount?.accountNumber?.slice(-4)}
                                 </p>
                             </div>
-                            {isDisbursed ? (
+                            {application?.disbursementBankAccount?.status === "VERIFIED" ? (
                                 <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">
-                                    PAID
+                                    VERIFIED
+                                </span>
+                            ) : application?.disbursementBankAccount?.status === "FAILED" || application?.disbursementBankAccount?.status === "REJECTED" ? (
+                                <span className="text-[10px] font-bold bg-red-100 text-red-700 px-2 py-1 rounded-full">
+                                    {application?.disbursementBankAccount?.status || "FAILED"}
                                 </span>
                             ) : (
                                 <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-1 rounded-full">
-                                    PENDING
+                                    {application?.disbursementBankAccount?.status || "PENDING"}
                                 </span>
                             )}
                         </div>

@@ -4,7 +4,7 @@ import useAxios from "@/hooks/useAxios";
 import { ApplicationInterface } from "@/interfaces/applicationInterface";
 import LayoutInterface from "@/interfaces/layoutInterface";
 import { AxiosError } from "axios";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { useAuth, User, userInitializer } from "./AuthContext";
 
 interface ApplicationContextStateInterface {
@@ -38,9 +38,23 @@ const ApplicationContext = createContext<ApplicationContextInterface>({
 const ApplicationProvider = ({ children, payload }: LayoutInterface & { payload: ApplicationInterface | null }) => {
     const axios = useAxios();
     const [state, setState] = useState<ApplicationContextStateInterface>({ ...initialState, data: payload });
-    const { updateUser } = useAuth();
+    const { updateUser, user } = useAuth();
 
     const updateState = (state: Partial<ApplicationContextStateInterface>) => setState((prev) => ({ ...prev, ...state }));
+
+    // Sync payload from server component if it updates
+    useEffect(() => {
+        if (payload) {
+            updateState({ data: payload });
+        }
+    }, [payload]);
+
+    // If user is logged in but application data is missing (e.g. client navigation), fetch it
+    useEffect(() => {
+        if (user?.id && !state.data && !state.loading) {
+            getApplication();
+        }
+    }, [user?.id]);
 
     const getApplication = async () => {
         try {

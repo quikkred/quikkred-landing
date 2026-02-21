@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { Lock, CheckCircle, AlertCircle, Loader2, Smartphone } from "lucide-react";
+import OTPField from "./OTPField";
 import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
 import useAxios from "@/hooks/useAxios";
 import { AxiosError } from "axios";
@@ -61,6 +62,10 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
                     aadhaarVerified: true,
                     fullName: user?.fullName || prev.fullName,
                     dob: user?.dateOfBirth || prev.dob,
+                    email: user?.email || "",
+                    emailVerified: user?.isEmailVerified || false,
+                    mobile: user?.mobile || "",
+                    mobileVerified: user?.isMobileVerified || false,
                 }));
                 toast({
                     variant: "success",
@@ -79,7 +84,6 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
                     aadhaarVerified: false,
                 }));
                 // Show info toast if verification failed/pending
-
             }
         } catch (error: any) {
             if (error instanceof AxiosError) {
@@ -295,21 +299,18 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
                         </div>
                     </div>
 
-                    <div className="w-full grid grid-cols-[2fr_0.5fr] gap-2">
-                        <div className="relative">
-                            <input
-                                type="text"
+                    <div className="space-y-4">
+                        <div className="flex justify-center">
+                            <OTPField
                                 value={otp}
-                                onChange={(e) => {
-                                    const val = e.target.value.replace(/\D/g, "");
+                                onChange={(val: string) => {
                                     setOtp(val);
                                     if (error) setError("");
                                 }}
-                                placeholder="Enter 6-digit OTP"
-                                maxLength={6}
-                                className="w-full px-3 py-2.5 pl-9 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#25B181]/20 focus:border-[#25B181] transition-all tracking-widest"
+                                length={6}
+                                error={!!error}
+                                autoFocus={true}
                             />
-                            <Smartphone className="absolute left-2.5 top-2.5 w-4 h-4 text-gray-400" />
                         </div>
 
                         <button
@@ -318,7 +319,7 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
                             disabled={loading || otp.length < 6}
                             className="w-full py-2.5 bg-[#25B181] text-white rounded-xl font-bold text-sm hover:bg-[#1d8f6a] disabled:opacity-50 disabled:hover:bg-[#25B181] transition-all flex items-center justify-center gap-2 shadow-md shadow-[#25B181]/20 active:scale-[0.98]"
                         >
-                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify"}
+                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify OTP"}
                         </button>
                     </div>
                 </div>
