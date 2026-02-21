@@ -140,8 +140,14 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             const response = await axios.get(`/api/v2/finfactorConsentRequest`);
             const result = response.data;
 
+            if (result?.data?.transactionFetched || result?.transactionFetched) {
+                fetchBreFinfactorResult();
+                return;
+            }
+
             if (response.status === 200 || response.status === 201) {
                 toast({ variant: "success", title: "Success", description: result.message || "Bank verification initiated successfully." });
+
                 if (result.data?.url) {
                     window.location.href = result.data.url;
                 } else {
