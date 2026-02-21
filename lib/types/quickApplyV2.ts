@@ -71,6 +71,8 @@ export interface QuickApplyV2FormData {
     selfieData: SelfieData | null;
     eSignCompleted: boolean;
     bsaInitiated?: boolean; // Bank Statement Analysis initiated
+    bsaBreStatus?: string; // BSA-BRE decision status (APPROVED/REJECTED)
+    bsaStatus?: string; // BSA processing status (COMPLETED/PENDING/FAILED)
 
     // Balance Check (AA Consent + BSA)
     applicationId?: string; // Application ID after submission
@@ -85,6 +87,11 @@ export interface QuickApplyV2FormData {
     reference2Name: string;
     reference2Mobile: string;
     reference2Relationship: string;
+
+    // Detail-filled flags from API
+    isBasicDetailsFilled?: boolean;
+    isKycDetailsFilled?: boolean;
+    isBankDetailsFilled?: boolean;
 }
 
 export interface IPData {

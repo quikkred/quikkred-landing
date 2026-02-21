@@ -27,6 +27,8 @@ import CustomerLogin from './components/ui/CustomerLogin';
 // setps
 import CheckEligibility from './components/CheckEligibility';
 import FormSteps, { FormStepsType } from './components/ui/FormSteps';
+import Link from 'next/link';
+import { LayoutDashboard, LogOut } from 'lucide-react';
 
 // Main Page Component
 export default function QuickApplyV2Page() {
@@ -38,8 +40,8 @@ export default function QuickApplyV2Page() {
     // const storage = useStorage();
     // const breForm = useMemo<StorageApplicationForm | null>(() => ((storage.data?.breForm as StorageApplicationForm) || null), [storage]);
     const { application } = useApplication();
-    // console.log("application:", application);
-    // console.log("user", user);
+    console.log("application:", application);
+    console.log("user", user);
 
     // Form Data
     const [formData, setFormData] = useState<QuickApplyV2FormData>(getInitialFormData);
@@ -54,91 +56,97 @@ export default function QuickApplyV2Page() {
     const [approvalDetails, setApprovalDetails] = useState<ApprovalDetails | null>(null);
     const formatDOB = (isoDate?: string) => isoDate ? isoDate.split("T")[0] : "";
 
-    // Combined Logic for Routing and Form Population
-    // 1. Add this at the top of your component
+    // ── Data Population: Always sync user/application data into formData ──
+    useEffect(() => {
+        if (!user && !application) return;
+
+        const rate = ((typeof application?.interestRate === "string" ? parseFloat(application?.interestRate) : (application?.interestRate || 1)) / 100) || 0.01;
+        const approvedLoanAmount = (typeof application?.approvedLoanAmount === "string" ? parseInt(application?.approvedLoanAmount) : application?.approvedLoanAmount) || 0;
+        const tenure = (typeof application?.tenure === "string" ? parseInt(application?.tenure) : application?.tenure) || 15;
+        const interestAmount = rate * approvedLoanAmount * tenure;
+        const processingFee = (approvedLoanAmount * 0.1) || 0;
+        const gstOnProcessingFee = (processingFee * 0.18) || 0;
+        const netDisbursal = approvedLoanAmount - (processingFee + gstOnProcessingFee);
+        const totalRepayment = approvedLoanAmount + interestAmount;
+
+        setFormData((prev) => ({
+            ...prev,
+            customerId: user?.id || "",
+            firstName: user?.firstName || "",
+            lastName: user?.lastName || "",
+            fullName: user?.fullName || "",
+            email: user?.email || "",
+            emailVerified: user?.isEmailVerified || false,
+            mobile: user?.mobile || "",
+            mobileVerified: user?.isMobileVerified || false,
+            pan: user?.pan || "",
+            aadhaar: user?.aadhaar || "",
+            dob: formatDOB(user?.dateOfBirth) || "",
+            panVerified: user?.isPanVerify || false,
+            aadhaarVerified: user?.isAadhaarVerify || false,
+            monthlyIncome: user?.monthlyIncome || "",
+            employmentType: (user?.employmentType as "SALARIED" | "SELF-EMPLOYED") || "SALARIED",
+            selfie: (user?.profile?.s3URL as string) || "",
+            selfieVerified: user?.profile?.status === "VERIFIED",
+            brePulled: application?.breHistory?.brePulled || user?.brePulled || false,
+            bsaInitiated: user?.bsaInitiated || false,
+            bsaBreStatus: application?.breHistory?.bsaBreStatus || "",
+            bsaStatus: application?.breHistory?.bsaStatus || "",
+            companyName: user?.companyName || "",
+            breStatus: application?.status || "PENDING",
+            productId: application?.productId || "",
+
+            // bank
+            bankName: user?.bankName || "",
+            accountHolderName: user?.accountHolderName || "",
+            accountNumber: user?.accountNumber || "",
+            ifsc: user?.ifsc || "",
+            bankVerified: user?.bankVerified || false,
+
+            // bre form
+            loanAmount: application?.requestedLoanAmount || 0,
+            approvedLoanAmount,
+            tenure: application?.tenure || 0,
+            tenureUnit: application?.tenureUnit || "Days",
+            netDisbursalAmount: netDisbursal || application?.netDisbursalAmount || 0,
+            interestRate: application?.interestRate || 0,
+            totalInterest: application?.totalInterest || 0,
+            processingFee: processingFee || application?.processingFee || 0,
+            totalRepayment: totalRepayment || application?.totalRepayment || 0,
+            gstOnProcessingFee: gstOnProcessingFee || application?.gstOnProcessingFee || 0,
+            interestAmount,
+
+            // Detail-filled flags from API
+            isBasicDetailsFilled: user?.isBasicDetailsFilled || false,
+            isKycDetailsFilled: user?.isKycDetailsFilled || false,
+            isBankDetailsFilled: user?.isBankDetailsFilled || false,
+
+            upiAutoPayStatus: user?.upiAutoPayStatus || false,
+        }));
+    }, [user, application]);
+
+    // ── Routing: Decide initial step (runs once) ──
     const hasAutoRouted = useRef(false);
 
     useEffect(() => {
-        // A. Wait for IP check to finish
         if (ipLoading || ipBlocked) return;
+        if (hasAutoRouted.current) return;
+        if (!user) return;
 
-        // B. Handle User Data Population
-        if (user || application) {
-            const rate = ((typeof application?.interestRate === "string" ? parseFloat(application?.interestRate) : (application?.interestRate || 1)) / 100) || 0.01; // 1% per day
-            const approvedLoanAmount = (typeof application?.approvedLoanAmount === "string" ? parseInt(application?.approvedLoanAmount) : application?.approvedLoanAmount) || 0;
-            const tenure = (typeof application?.tenure === "string" ? parseInt(application?.tenure) : application?.tenure) || 15;
-            const interestAmount = rate * approvedLoanAmount * tenure;
-            const processingFee = (approvedLoanAmount * 0.1) || 0;
-            const gstOnProcessingFee = (processingFee * 0.18) || 0;
-            const netDisbursal = approvedLoanAmount - (processingFee + gstOnProcessingFee);
-            const totalRepayment = approvedLoanAmount + interestAmount;
+        const isLogin = user?.isEmailVerified || user?.isMobileVerified;
+        const basicAndKycFilled = user?.isBasicDetailsFilled && user?.isKycDetailsFilled;
 
-            setFormData((prev) => ({
-                ...prev,
-                customerId: user?.id || "",
-                firstName: user?.firstName || "",
-                lastName: user?.lastName || "",
-                fullName: user?.fullName || "",
-                email: user?.email || "",
-                emailVerified: user?.isEmailVerified || false,
-                mobile: user?.mobile || "",
-                mobileVerified: user?.isMobileVerified || false,
-                pan: user?.pan || "",
-                aadhaar: user?.aadhaar || "",
-                dob: formatDOB(user?.dateOfBirth) || "",
-                panVerified: user?.isPanVerify || false,
-                aadhaarVerified: user?.isAadhaarVerify || false,
-                monthlyIncome: user?.monthlyIncome || "",
-                employmentType: (user?.employmentType as "SALARIED" | "SELF-EMPLOYED") || "SALARIED",
-                selfie: (user?.profile?.s3URL as string) || "",
-                selfieVerified: user?.profile?.status === "VERIFIED",
-                brePulled: application?.breHistory?.brePulled || user?.brePulled || false,
-                companyName: user?.companyName || "",
-                breStatus: application?.status || "PENDING",
-                productId: application?.productId || "",
-
-                // bank
-                bankName: user?.bankName || "",
-                accountHolderName: user?.accountHolderName || "",
-                accountNumber: user?.accountNumber || "",
-                ifsc: user?.ifsc || "",
-                bankVerified: user?.bankVerified || false,
-
-                // bre form
-                loanAmount: application?.requestedLoanAmount || 0,
-                approvedLoanAmount,
-                tenure: application?.tenure || 0,
-                tenureUnit: application?.tenureUnit || "Days",
-                netDisbursalAmount: netDisbursal || application?.netDisbursalAmount || 0,
-                interestRate: application?.interestRate || 0,
-                totalInterest: application?.totalInterest || 0,
-                processingFee: processingFee || application?.processingFee || 0,
-                totalRepayment: totalRepayment || application?.totalRepayment || 0,
-                gstOnProcessingFee: gstOnProcessingFee || application?.gstOnProcessingFee || 0,
-                interestAmount,
-            }));
-
-            // const isLogin = user?.isEmailVerified || user?.isMobileVerified;
-            const isLogin = user?.isMobileVerified;
-            const brePulled = application?.breHistory?.brePulled || user?.brePulled || false;
-            const eligibilityStep = isLogin && brePulled && application && application?.status !== "REJECTED" && application?.status !== "PROCEED TO BANK";
-            // const eligibilityStep = isLogin && application && application?.status !== "REJECTED";
-
-            if (eligibilityStep) {
-                setStep("bank");
-            } else if (isLogin) {
-                setStep("eligibility");
-            }
+        if (isLogin && (user?.isProfileVerified || user?.isBankDetailsFilled)) {
+            setStep("bank");
+            hasAutoRouted.current = true;
+        } else if (isLogin && basicAndKycFilled) {
+            setStep("eligibility");
+            hasAutoRouted.current = true;
+        } else if (isLogin) {
+            setStep("eligibility");
+            hasAutoRouted.current = true;
         }
-
-        // D. GUEST FLOW: If no user and still stuck in IP_CHECK, move to Page 1
-        // if (!user && stage === 'IP_CHECK' && !hasAutoRouted.current) {
-        //     setStage('PAGE_1');
-        //     setCurrentStep(1);
-        //     hasAutoRouted.current = true;
-        //     return;
-        // }
-    }, [user, ipLoading, ipBlocked, stage, application]);
+    }, [user, ipLoading, ipBlocked, application]);
 
     // Initialize tracking and check IP on mount
     useEffect(() => {
@@ -239,15 +247,33 @@ export default function QuickApplyV2Page() {
                             />
                             <span className="hidden font-bold text-[#25B181] text-base">QuikKred</span>
                         </a>
-                        <a
-                            href="tel:+919311913854"
-                            className="text-xs sm:text-sm text-gray-500 hover:text-[#25B181] flex items-center gap-1"
-                        >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                            </svg>
-                            <span className="hidden sm:inline">Help</span>
-                        </a>
+
+                        <div className="w-auto flex jusitfy-center items-center gap-2.5">
+                            <a
+                                href="tel:+919311913854"
+                                className="text-xs sm:text-sm text-gray-500 hover:text-[#25B181] flex items-center gap-1"
+                            >
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                </svg>
+                                <span className="hidden sm:inline">Help</span>
+                            </a>
+                            {
+                                !!user && (
+                                    <>
+                                        <div className='w-[1px] h-[16px] bg-neutral-400' />
+                                        <Link
+                                            href={"/user"}
+                                            className="text-xs sm:text-sm text-gray-500 hover:text-[#25B181] flex items-center gap-1"
+                                            aria-label='dashboard-button'
+                                        >
+                                            <LayoutDashboard className='w-3.5 h-3.5' />
+                                            <span className="hidden sm:inline">Dashboard</span>
+                                        </Link>
+                                    </>
+                                )
+                            }
+                        </div>
                     </div>
                 </div>
             </header>
