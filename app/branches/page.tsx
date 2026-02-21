@@ -14,7 +14,7 @@ export default function BranchesPage() {
     {
       city: "Delhi",
       name: "New Delhi Head Office",
-      address: "1008, 10th floor, Vikrant tower, Rajendra Place, New Delhi, Delhi, Pin Code 110005",
+      address: "1008, 10th floor, Vikrant tower, Rajendra Place, New Delhi, Delhi, Pin Code 110008",
       phone: "+91-11-4567-8900",
       email: "delhi@Quikkred.com",
       hours: "Mon-Sat: 9:00 AM - 6:00 PM",
@@ -135,11 +135,10 @@ export default function BranchesPage() {
                 <button
                   key={city}
                   onClick={() => setSelectedCity(city)}
-                  className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                    selectedCity === city
+                  className={`px-6 py-2 rounded-lg font-semibold transition-all ${selectedCity === city
                       ? "bg-gradient-to-r from-[#25B181] to-[#1F8F68] text-white shadow-lg"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                    }`}
                 >
                   {city === "all" ? "All Branches" : city}
                 </button>
