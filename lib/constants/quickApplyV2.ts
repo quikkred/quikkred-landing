@@ -61,7 +61,7 @@ export const VALIDATION = {
 // ============================================
 
 export const TIMERS = {
-    OTP_RESEND: 60, // seconds
+    OTP_RESEND: 30, // seconds
     OTP_EXPIRY: 300, // 5 minutes
     REVERIFY_COOLDOWN: 30, // seconds
     BRE_POLL_INTERVAL: 3000, // 3 seconds
@@ -222,6 +222,11 @@ export const getInitialFormData = (): QuickApplyV2FormData => ({
     reference2Name: '',
     reference2Mobile: '',
     reference2Relationship: '',
+
+    // Detail-filled flags
+    isBasicDetailsFilled: false,
+    isKycDetailsFilled: false,
+    isBankDetailsFilled: false,
 });
 
 // ============================================
