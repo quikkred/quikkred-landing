@@ -12,6 +12,7 @@ import { getSession, signIn } from "next-auth/react";
 import { toast } from "@/components/ui/toast";
 import { useAuth } from "@/contexts/AuthContext";
 import EmailVerify from "./EmailVerify";
+import GoogleVerify from "./GoogleVerify";
 
 const CustomerLogin = () => {
     const { getCustomer, getApplication } = useApplication();
@@ -145,6 +146,7 @@ const CustomerLogin = () => {
                                         <h3 className="text-sm font-bold text-gray-800">
                                             One-Tap Verification
                                         </h3>
+                                        <GoogleVerify buttonText="Continue with google" callbackURL="/apply/quick-v2" />
                                         {
                                             !isIOS && (
                                                 <div className="flex justify-center w-full md:hidden">
