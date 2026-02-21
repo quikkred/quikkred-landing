@@ -1180,7 +1180,7 @@ export default function UserDashboard() {
                       onChange={(e) => setSelectedLoanNumber(e.target.value)}
                       className="w-full sm:w-auto appearance-none bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg px-4 py-2 pr-10 text-sm font-medium text-blue-900 focus:ring-2 focus:ring-[#10B4A3] focus:border-transparent outline-none cursor-pointer"
                     >
-                      {data.loans.map((loan) => (
+                      {data.loans.map((loan: any) => (
                         <option key={loan._id} value={loan.loanNumber}>
                           {loan.productName}{" "}{loan.loanNumber} (₹{loan.principalAmount.toLocaleString()})
                         </option>
