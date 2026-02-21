@@ -99,30 +99,6 @@ const ApplicationStatus = ({
                     </div>
                 </div>
             </div>
-
-            {/* Proceed to Bank CTA - Show when there's an ongoing application that's not fully submitted */}
-            {/* {data?.oldApplication && !data?.isSubmit && (
-                <div className="mt-4 sm:mt-6 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 border border-emerald-200">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-emerald-100 rounded-lg">
-                                <Building className="w-5 h-5 text-emerald-600" />
-                            </div>
-                            <div>
-                                <p className="font-semibold text-emerald-900 text-sm">Bank Verification Required</p>
-                                <p className="text-xs text-emerald-700 mt-0.5">Complete bank statement verification to proceed</p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={() => router.push('/apply/quick')}
-                            className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all font-medium text-sm"
-                        >
-                            <span>Proceed to Bank</span>
-                            <ChevronRight className="w-4 h-4" />
-                        </button>
-                    </div>
-                </div>
-            )} */}
         </motion.div>
     )
 }
