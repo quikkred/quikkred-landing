@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from "nextjs-toploader/app";
 import { API_BASE_URL } from '@/lib/config';
-import { signOut } from 'next-auth/react';
+import { clearSession } from '@/lib/auth-utils';
 
 export interface User {
   id: string;
@@ -224,9 +224,9 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
         };
 
         // Store session in localStorage
-        localStorage.setItem('token', authToken);
-        localStorage.setItem('authToken', authToken);
-        localStorage.setItem('accessToken', authToken);
+        // localStorage.setItem('token', authToken);
+        // localStorage.setItem('authToken', authToken);
+        // localStorage.setItem('accessToken', authToken);
         localStorage.setItem('userEmail', userData.email);
         localStorage.setItem('userName', userData.name);
         localStorage.setItem('userId', apiData.userId);
@@ -268,40 +268,8 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
       setIsLoggingOut(true);
       setUser(null);
 
-      // Clear all localStorage items
-      localStorage.removeItem('token');
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('loginTimestamp');
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('role');
-      localStorage.removeItem('userEmail');
-      localStorage.removeItem('email');
-      localStorage.removeItem('userName');
-      localStorage.removeItem('userId');
-      localStorage.removeItem('userMobile');
-      localStorage.removeItem('customerUniqueId');
-      localStorage.removeItem('heroFormData');
-
-      // Clear custom cookies
-      document.cookie = 'auth-token=; path=/; max-age=0';
-      document.cookie = 'user-role=; path=/; max-age=0';
-
-      // ✅ Clear NextAuth non-HttpOnly cookies (callback-url causes redirect back to /user)
-      document.cookie = 'next-auth.callback-url=; path=/; max-age=0';
-      document.cookie = 'next-auth.csrf-token=; path=/; max-age=0';
-
-      // Use redirect: false — let signOut clear the HttpOnly session cookie on the server
-      // Then WE redirect manually to avoid stale callback-url interference
-      try {
-        await signOut({ redirect: false });
-      } catch (e) {
-        console.error('signOut error:', e);
-      }
-
-      // Session cookie cleared on server — now safe to redirect
-      window.location.href = '/login';
+      // ✅ Use central utility for consistent cleanup across the platform
+      await clearSession('/login');
     } catch (er) {
       console.log("logout error", er);
       // Fallback: if anything fails, force navigate
