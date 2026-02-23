@@ -69,6 +69,9 @@ export default function QuickApplyV2Page() {
         const netDisbursal = approvedLoanAmount - (processingFee + gstOnProcessingFee);
         const totalRepayment = approvedLoanAmount + interestAmount;
 
+        const isMobileVerify = !user?.mobile && user?.mobile === "";
+        const isEmailVerify = !user?.email && user?.email === "";
+
         setFormData((prev) => ({
             ...prev,
             customerId: user?.id || "",
@@ -76,9 +79,9 @@ export default function QuickApplyV2Page() {
             lastName: user?.lastName || "",
             fullName: user?.fullName || "",
             email: user?.email || "",
-            emailVerified: user?.isEmailVerified || false,
             mobile: user?.mobile || "",
-            mobileVerified: user?.isMobileVerified || false,
+            emailVerified: isMobileVerify || user?.isEmailVerified || false,
+            mobileVerified: isEmailVerify || user?.isMobileVerified || false,
             pan: user?.pan || "",
             aadhaar: user?.aadhaar || "",
             dob: formatDOB(user?.dateOfBirth) || "",
