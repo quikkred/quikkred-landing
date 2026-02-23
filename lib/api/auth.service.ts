@@ -46,7 +46,7 @@ class AuthService {
     }
 
     // Send login request with device data
-    const response = await apiClient.post<LoginResponse>('/api/auth/mock-login', {
+    const response = await apiClient.post<LoginResponse>('/api/auth/customer/login', {
       ...data,
       deviceFingerprint: fp
     });

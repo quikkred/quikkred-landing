@@ -12,7 +12,6 @@ const MissingField = ({
     formData,
     setFormData
 }: MissingFieldProps) => {
-
     // Helper to update specific fields
     const handleChange = (field: 'email' | 'mobile', value: string) => {
         setFormData((prev) => ({
@@ -22,12 +21,12 @@ const MissingField = ({
     };
 
     // 1. If Email is NOT verified, show Email Input
-    // if (!formData.emailVerified) {
-    if (!formData.email || formData.email !== "") {
+    if (!formData.emailVerified) {
+    // if (!formData.email && formData.email === "") {
         return (
             <div className="w-full space-y-2 animate-in fade-in slide-in-from-top-1">
                 <label className="text-sm font-semibold text-gray-700 ml-1">
-                    Enter Email Address <span className="text-red-500">*</span>
+                    Email Address <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -50,12 +49,12 @@ const MissingField = ({
     }
 
     // 2. If Email IS verified, but Mobile is NOT, show Mobile Input
-    // if (!formData.mobileVerified) {
-    if (!formData.mobile || formData.mobile !== "") {
+    if (!formData.mobileVerified) {
+    // if (!formData.mobile && formData.mobile === "") {
         return (
             <div className="w-full space-y-2 animate-in fade-in slide-in-from-top-1">
                 <label className="text-sm font-semibold text-gray-700 ml-1">
-                    Enter Mobile Number <span className="text-red-500">*</span>
+                    Mobile Number (Linked with Bank)<span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -79,7 +78,7 @@ const MissingField = ({
                     />
                 </div>
                 <p className="text-[11px] text-gray-500 ml-1">
-                    Enter the mobile number linked to your Aadhaar.
+                    Enter the mobile number linked to your Bank Account.
                 </p>
             </div>
         );
