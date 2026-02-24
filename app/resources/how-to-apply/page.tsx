@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
-import { QUICK_FORM_URL } from "@/lib/config";
+
 
 interface Step {
   number: number;
@@ -429,7 +429,7 @@ export default function HowToApplyPage() {
               <p className="text-sm text-gray-600 mb-4">
                 Apply through our website with instant approval
               </p>
-              <Link href={QUICK_FORM_URL as string}>
+              <Link href={"/apply/quick"}>
                 <button className="w-full px-4 py-2 bg-[#4A66FF] text-white rounded-lg font-semibold hover:bg-[var(--royal-blue-dark)] transition-colors">
                   Apply Now
                 </button>
@@ -487,7 +487,7 @@ export default function HowToApplyPage() {
                   Check Eligibility First
                 </button>
               </Link>
-              <Link href={QUICK_FORM_URL as string}>
+              <Link href={"/apply/quick"}>
                 <button className="px-8 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-[#4A66FF] transition-all">
                   Start Application
                 </button>
