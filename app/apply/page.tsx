@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { QUICK_FORM_URL } from "@/lib/config";
 
+
 export default function ApplyPage() {
   const router = useRouter();
   const { user } = useAuth();
