@@ -6,7 +6,11 @@ export const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'wss://alpha.quikkred.in
 
 
 // export const RAZORPAY_KEY = process.env.NEXT_PUBLIC_RAZORPAY_KEY || "rzp_test_RudM9P8MHGIuf2"
-export const RAZORPAY_KEY = process.env.NEXT_PUBLIC_RAZORPAY_KEY || "rzp_live_S4tgUkVdbPaFdo"
+export const RAZORPAY_KEY = process.env.NEXT_PUBLIC_RAZORPAY_KEY || "rzp_live_S4tgUkVdbPaFdo";
+
+// quick link
+// export const QUICK_FORM_URL = "/apply/quick";
+export const QUICK_FORM_URL = "/apply/quick-v2";
 
 // Helper function to build API URLs
 

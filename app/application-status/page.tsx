@@ -23,6 +23,7 @@ import { useRouter } from "nextjs-toploader/app";
 import { Suspense } from "react";
 import { getSession } from "next-auth/react";
 import getToken from "@/lib/getToken";
+import { QUICK_FORM_URL } from "@/lib/config";
 
 // Declare global types for tracking
 declare global {
@@ -179,7 +180,7 @@ function ApplicationStatusContent() {
                 We couldn&apos;t find any recent application status. This could happen if you&apos;ve already viewed it or accessed this page directly.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Link href="/apply/quick">
+                <Link href={QUICK_FORM_URL as string}>
                   <button className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[#25B181] to-[#1F8F68] text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center">
                     <FileText className="w-5 h-5 mr-2" />
                     Apply for Loan
