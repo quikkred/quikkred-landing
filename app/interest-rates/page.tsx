@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
-import { QUICK_FORM_URL } from "@/lib/config";
+
 
 interface LoanProduct {
   id: string;
@@ -455,7 +455,7 @@ export default function InterestRatesPage() {
 
                     {/* CTA Buttons */}
                     <div className="flex gap-3">
-                      <Link href={QUICK_FORM_URL as string} className="flex-1">
+                      <Link href={"/apply/quick"} className="flex-1">
                         <button className="w-full px-4 py-2 bg-[#4A66FF] text-white rounded-lg text-sm font-semibold hover:bg-[var(--brand-green)] transition-colors duration-300">
                           Apply Now
                         </button>
@@ -571,7 +571,7 @@ export default function InterestRatesPage() {
                   Check Eligibility
                 </button>
               </Link>
-              <Link href={QUICK_FORM_URL as string}>
+              <Link href={"/apply/quick"}>
                 <button className="px-8 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-[#4A66FF] duration-300 transition-all w-full">
                   Apply Now
                 </button>
