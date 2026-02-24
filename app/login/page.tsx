@@ -28,7 +28,7 @@ import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast, Toaster } from "@/components/ui/toast";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
-import { API_BASE_URL } from '@/lib/config';
+import { API_BASE_URL, QUICK_FORM_URL } from '@/lib/config';
 import { getSession, signIn } from "next-auth/react";
 import useAxios from "@/hooks/useAxios";
 import GoogleVerify from "../apply/quick/components/ui/GoogleVerify";
@@ -684,7 +684,7 @@ export default function LoginPage() {
                     </button>
 
                     {/* Apply Now Button */}
-                    <Link href="/apply/quick" className="block">
+                    <Link href={QUICK_FORM_URL as string} className="block">
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
@@ -734,7 +734,7 @@ export default function LoginPage() {
                   <p className="text-gray-700 mb-6">
                     Join thousands who have already transformed their financial journey with instant AI-powered loans.
                   </p>
-                  <Link href="/apply/quick">
+                  <Link href={QUICK_FORM_URL as string}>
                     <button className="w-full bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white py-3 px-6 rounded-xl font-semibold hover:shadow-lg transition-all mb-4">
                       Start Your Application
                     </button>
