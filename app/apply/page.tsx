@@ -10,6 +10,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 
+
 export default function ApplyPage() {
   const router = useRouter();
   const { user } = useAuth();
