@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { BookOpen, Home, ArrowRight, Wallet, TrendingUp, PiggyBank, Shield, Target, CreditCard, LineChart, Calculator, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { QUICK_FORM_URL } from "@/lib/config";
 
 export default function FinancialLiteracyPage() {
   const { t } = useLanguage();
@@ -342,7 +343,7 @@ export default function FinancialLiteracyPage() {
               Our financial experts are here to guide you. Get personalized advice and smart loan solutions.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Link href="/apply/quick">
+              <Link href={QUICK_FORM_URL as string}>
                 <button
                   className="px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all"
                   style={{ backgroundColor: '#FFFFFF', color: '#145214' }}
