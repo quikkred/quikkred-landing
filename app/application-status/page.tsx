@@ -23,6 +23,7 @@ import { useRouter } from "nextjs-toploader/app";
 import { Suspense } from "react";
 import { getSession } from "next-auth/react";
 import getToken from "@/lib/getToken";
+import { QUICK_FORM_URL } from "@/lib/config";
 
 // Declare global types for tracking
 declare global {
