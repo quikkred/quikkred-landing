@@ -4,7 +4,7 @@ import { DashboardData } from "@/interfaces/dashboardInterface";
 import { ChevronRight, History, RefreshCw, Building } from "lucide-react";
 import { motion } from "framer-motion";
 import { useRouter } from "nextjs-toploader/app";
-import { QUICK_FORM_URL } from "@/lib/config";
+
 
 const PreviousApplicationStatus = ({
     data
@@ -79,7 +79,7 @@ const PreviousApplicationStatus = ({
                     )}
 
                     <button
-                        onClick={() => router.push(QUICK_FORM_URL as string)}
+                        onClick={() => router.push("/apply/quick")}
                         className={`w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 text-white rounded-lg hover:shadow-lg transition-all font-medium text-sm sm:text-base ${isProceedToBank
                             ? "bg-gradient-to-r from-emerald-600 to-teal-600"
                             : "bg-gradient-to-r from-amber-600 to-orange-600"
