@@ -1,43 +1,48 @@
 import type { Metadata } from "next";
 import LayoutInterface from "@/interfaces/layoutInterface";
+import { KycStatusProvider } from "@/lib/contexts/KycStatusContext";
+import ApplicationProvider from "@/contexts/ApplicationContext";
+import getApplicationDetails from "@/lib/getApplicationDetails";
 
 const SITE_NAME = "Quikkred";
 const SITE_URL = "https://quikkred.in";
-const PAGE_URL = `${SITE_URL}/apply/quick`;
+const PAGE_URL = `${SITE_URL}/apply`;
 const OG_IMAGE = `${SITE_URL}/Aboutus_hero_image.jpg`;
 
 export const metadata: Metadata = {
     metadataBase: new URL(SITE_URL),
 
     title: {
-        default: "Quick Loan Application",
+        default: "Apply Quick v2",
         template: `%s | ${SITE_NAME}`,
     },
 
     description:
-        "Apply for a loan in minutes with Quikkred’s Quick Loan Application. Submit basic details, verify your identity, check eligibility, and track your application status securely and seamlessly.",
+        "Apply for a short-term loan online with Quikkred. Get instant approval experience, transparent fees (interest, platform fee & GST), minimal documents (PAN & Aadhaar), and quick disbursal directly to your bank account.",
 
     applicationName: SITE_NAME,
     category: "Finance",
 
     keywords: [
-        "quick loan application",
-        "apply loan online",
-        "instant loan application",
-        "personal loan application",
-        "payday loan application",
-        "EMI loan application",
-        "loan eligibility check",
-        "loan verification",
+        "apply for loan",
+        "loan apply online",
+        "short-term loan",
+        "urgent loan",
+        "instant approval loan",
+        "quick disbursal",
+        "digital loan application",
+        "loan application India",
+        "PAN Aadhaar loan",
         "KYC verification",
-        "PAN Aadhaar verification",
-        "loan application status",
-        "digital lending",
-        "NBFC loan application",
+        "loan eligibility",
+        "personal loan apply",
+        "short tenure loan",
+        "one-time repayment loan",
+        "transparent fees",
+        "platform fee",
+        "GST on fees",
         "Quikkred apply",
-        "Quikkred quick apply",
-        "online loan India",
-        "fast loan approval",
+        "Quikkred loan application",
     ],
 
     alternates: {
@@ -59,9 +64,9 @@ export const metadata: Metadata = {
     openGraph: {
         type: "website",
         url: PAGE_URL,
-        title: `Quick Loan Application | ${SITE_NAME}`,
+        title: `Apply for a Loan | ${SITE_NAME}`,
         description:
-            "Start your Quick Loan Application on Quikkred. Share basic details, complete verification, view eligibility, and track your loan request securely.",
+            "Apply online for a short-term loan with Quikkred. Instant approval experience, PAN & Aadhaar KYC, transparent fees, and direct bank disbursal.",
         siteName: SITE_NAME,
         locale: "en_IN",
         images: [
@@ -69,16 +74,16 @@ export const metadata: Metadata = {
                 url: OG_IMAGE,
                 width: 1200,
                 height: 630,
-                alt: "Quikkred Quick Loan Application",
+                alt: "Quikkred Apply for a Loan",
             },
         ],
     },
 
     twitter: {
         card: "summary_large_image",
-        title: `Quick Loan Application | ${SITE_NAME}`,
+        title: `Apply for a Loan | ${SITE_NAME}`,
         description:
-            "Apply for a loan in minutes with Quikkred’s Quick Loan Application. Simple steps, secure verification, and real-time tracking.",
+            "Apply online for a short-term loan with Quikkred. Transparent charges, minimal documents, and quick disbursal to your bank.",
         images: [OG_IMAGE],
     },
 
@@ -101,5 +106,15 @@ export const metadata: Metadata = {
     },
 };
 
-const QuickLoanApplicationLayout = ({ children }: LayoutInterface) => children;
-export default QuickLoanApplicationLayout;
+const ApplyQuickV2 = async ({ children }: LayoutInterface) => {
+    const applicationDetails = await getApplicationDetails();
+
+    return <>
+        <ApplicationProvider payload={applicationDetails || null}>
+            <KycStatusProvider>
+                {children}
+            </KycStatusProvider>
+        </ApplicationProvider>
+    </>
+};
+export default ApplyQuickV2;
