@@ -140,8 +140,14 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             const response = await axios.get(`/api/v2/finfactorConsentRequest`);
             const result = response.data;
 
+            if (result?.data?.transactionFetched || result?.transactionFetched) {
+                fetchBreFinfactorResult();
+                return;
+            }
+
             if (response.status === 200 || response.status === 201) {
                 toast({ variant: "success", title: "Success", description: result.message || "Bank verification initiated successfully." });
+
                 if (result.data?.url) {
                     window.location.href = result.data.url;
                 } else {
@@ -327,7 +333,10 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
         const income = Number(formData.monthlyIncome) || 0;
 
         // 3. Verification check (Needs at least one verified contact + PAN)
-        const isContactVerified = !!(formData.emailVerified || formData.mobileVerified);
+        const isMobileVerify = formData?.mobile && formData?.mobile !== "";
+        const isEmailVerify = formData?.email && formData?.email !== "";
+        console.log("mobile or email", isMobileVerify, isEmailVerify)
+        const isContactVerified = !!(isEmailVerify && isMobileVerify);
         const isPanVerified = !!formData.panVerified;
         const isAadhaarVerify = !!formData.aadhaarVerified;
 
@@ -344,7 +353,7 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             isAadhaarVerify &&
             income > 0 &&
             isWorkDetailsValid &&
-            (loanAmount >= 5000 && loanAmount <= 25000) &&
+            // (loanAmount >= 5000 && loanAmount <= 25000) &&
             product
         );
     }, [formData]);
