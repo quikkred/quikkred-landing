@@ -10,7 +10,7 @@ export const RAZORPAY_KEY = process.env.NEXT_PUBLIC_RAZORPAY_KEY || "rzp_live_S4
 
 // quick link
 // export const QUICK_FORM_URL = "/apply/quick";
-export const QUICK_FORM_URL = "/apply/quick-v2";
+export const QUICK_FORM_URL = "/apply/quick";
 
 // Helper function to build API URLs
 
