@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X, Clock, Sparkles } from "lucide-react";
-import { QUICK_FORM_URL } from "@/lib/config";
+
 
 interface SalaryAdvanceProps {
   title?: string;
@@ -29,7 +29,7 @@ export default function Products({
   buttonSecondaryText,
   buttonPrimaryLink = "/emi-calculator",
   // buttonSecondaryLink = "/apply/quick",
-  buttonSecondaryLink = QUICK_FORM_URL as string,
+  buttonSecondaryLink = "/apply/quick",
   quickAccessAmount,
   timeText,
   imageSrc = "/salary-advance.jpg",

@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { QUICK_FORM_URL } from "@/lib/config";
+
 
 export default function ApplyPage() {
   const router = useRouter();
@@ -55,7 +55,7 @@ export default function ApplyPage() {
     // Store mobile in localStorage for apply/quick page
     localStorage.setItem('applyMobile', mobile);
     // router.push('/apply/quick');
-    router.push(QUICK_FORM_URL as string);
+    router.push("/apply/quick");
   };
 
   return (
