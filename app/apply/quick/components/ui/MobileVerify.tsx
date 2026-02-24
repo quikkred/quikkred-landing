@@ -1,31 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Mail, AlertCircle, Loader2, ArrowRight, CheckCircle2, Edit2, Timer } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Phone, AlertCircle, Loader2, ArrowRight, CheckCircle2, Edit2, Timer } from "lucide-react";
 import { signIn, getSession } from "next-auth/react";
 import { useAuth } from "@/contexts/AuthContext";
-import { TIMERS } from "@/lib/constants/quickApplyV2";
+import { VALIDATION, TIMERS } from "@/lib/constants/quickApplyV2";
 import useAxios from "@/hooks/useAxios";
 import { useQuickApplyTracking, useVerificationFrictionTracking } from "@/lib/hooks";
 import { useApplication } from "@/contexts/ApplicationContext";
-import { useForm } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
-import OTPField from "./OTPField";
 
-const schema = yup.object().shape({
-  email: yup
-    .string()
-    .required("Email is required")
-    .email("Please enter a valid email address")
-    .matches(/^[a-zA-Z0-9._%+-]+@gmail\.com$/, "Only @gmail.com addresses are allowed"),
-});
-
-type FormData = {
-  email: string;
-};
-
-const EmailVerify = ({
+const MobileVerify = ({
   callback,
 }: {
   callback?: () => void;
@@ -33,24 +17,10 @@ const EmailVerify = ({
   const { login } = useAuth();
   const { getApplication } = useApplication();
   const axios = useAxios();
-
-
-  // Form
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    trigger,
-    formState: { errors },
-  } = useForm<FormData>({
-    resolver: yupResolver(schema),
-    mode: "onChange",
-  });
-
-  const email = watch("email");
+  const otpInputRef = useRef<HTMLInputElement>(null);
 
   // State
+  const [mobile, setMobile] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpVerifying, setOtpVerifying] = useState(false);
@@ -59,7 +29,7 @@ const EmailVerify = ({
   const [otpTimer, setOtpTimer] = useState(0);
 
   const { trackOTPVerified } = useQuickApplyTracking();
-  const emailFriction = useVerificationFrictionTracking('email');
+  const mobileFriction = useVerificationFrictionTracking('mobile');
 
   // Timer Logic
   useEffect(() => {
@@ -70,18 +40,28 @@ const EmailVerify = ({
   }, [otpTimer]);
 
   // Focus OTP input when sent
-
+  useEffect(() => {
+    if (otpSent && otpInputRef.current) {
+      otpInputRef.current.focus();
+    }
+  }, [otpSent]);
 
   /* ---------------- SEND OTP ---------------- */
-  const onSendOTP = async (data: FormData) => {
+  const sendOTP = async () => {
+    const mobileRegex = VALIDATION?.MOBILE || /^[6-9]\d{9}$/;
+
+    if (!mobileRegex.test(mobile)) {
+      setOtpError("Please enter a valid 10-digit mobile number");
+      return;
+    }
+
     setOtpLoading(true);
     setOtpError("");
-    const normalizedEmail = data.email.toLowerCase();
 
     try {
       const response = await axios.post("/api/auth/customer/create", {
-        email: normalizedEmail,
-        type: "email_verification",
+        mobile,
+        type: "mobile_verification",
       });
 
       if (response.status === 200 || response.status === 201) {
@@ -107,27 +87,25 @@ const EmailVerify = ({
     setOtpVerifying(true);
     setOtpError("");
 
-    const normalizedEmail = email?.toLowerCase() || "";
-
     try {
       const res = await signIn("otp", {
         redirect: false,
-        emailOrPhone: normalizedEmail,
+        emailOrPhone: mobile,
         otp,
-        loginMethod: "email",
-        callbackUrl: "/apply/quick-v2",
+        loginMethod: "mobile",
+        callbackUrl: "/apply/quick",
       });
 
       if (res?.ok) {
         const session = await getSession();
         if (session?.user) {
-          trackOTPVerified(normalizedEmail);
-          emailFriction.completeTracking(true);
-          getApplication();
+          trackOTPVerified(mobile);
+          mobileFriction.completeTracking(true);
           await login({
-            email: normalizedEmail,
+            mobile: mobile,
             apiData: session,
           });
+          getApplication();
           callback?.();
         }
       } else {
@@ -141,7 +119,7 @@ const EmailVerify = ({
   };
 
   /* ---------------- RESET ---------------- */
-  const handleEditEmail = () => {
+  const handleEditNumber = () => {
     setOtpSent(false);
     setOtp("");
     setOtpError("");
@@ -150,54 +128,58 @@ const EmailVerify = ({
 
   return (
     <div className="w-full">
+      <p className="text-[10px] sm:text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-2.5 py-1.5 mb-3">
+        Enter the mobile number linked to your Aadhaar.
+      </p>
       {/* Input Group */}
       <div className="space-y-4">
 
-        {/* Email Input Field */}
+        {/* Mobile Input Field */}
         <div className={`relative transition-all duration-300 ${otpSent ? "opacity-75" : "opacity-100"}`}>
           <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-            {otpSent ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <Mail className="w-5 h-5" />}
+            {otpSent ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <Phone className="w-5 h-5" />}
           </div>
 
           <input
-            type="email"
-            {...register("email")}
+            type="tel"
+            inputMode="numeric"
+            value={mobile}
+            maxLength={10}
             disabled={otpSent || otpLoading}
+            onChange={(e) => {
+              setMobile(e.target.value.replace(/\D/g, ""));
+              setOtpError("");
+            }}
             className={`
               w-full pl-12 pr-12 py-3.5 
               text-base font-medium text-gray-900 
               bg-white border rounded-xl outline-none transition-all
-              ${errors.email || otpError ? "border-red-300 focus:ring-red-100" : "border-gray-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"}
+              ${otpError ? "border-red-300 focus:ring-red-100" : "border-gray-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"}
               disabled:bg-gray-50 disabled:text-gray-500
             `}
-            placeholder="Enter email address"
+            placeholder="Enter 10-digit number"
           />
 
-          {/* Edit Button */}
+          {/* Edit Button (Only visible when OTP is sent) */}
           {otpSent && (
             <button
-              onClick={handleEditEmail}
+              onClick={handleEditNumber}
               className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 hover:bg-gray-100 rounded-lg text-emerald-600 transition-colors"
-              title="Change email"
+              title="Change number"
             >
               <Edit2 className="w-4 h-4" />
             </button>
           )}
         </div>
 
-        {/* Validation Error Message */}
-        {errors.email && (
-          <p className="text-xs text-red-500 pl-1">{errors.email.message}</p>
-        )}
-
         {/* Phase 1: Get OTP Button */}
         {!otpSent && (
           <button
-            onClick={handleSubmit(onSendOTP)}
-            disabled={otpLoading}
+            onClick={sendOTP}
+            disabled={mobile.length !== 10 || otpLoading}
             className={`
               w-full py-3.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2
-              ${!errors.email && email
+              ${mobile.length === 10
                 ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20"
                 : "bg-gray-100 text-gray-400 cursor-not-allowed"}
             `}
@@ -219,20 +201,29 @@ const EmailVerify = ({
         {/* Phase 2: OTP Verification Area */}
         {otpSent && (
           <div className="animate-in fade-in slide-in-from-top-2 duration-300 space-y-4">
-            <div className="text-center sm:text-left">
-              <label className="text-sm font-medium text-gray-700">Enter verification code</label>
-              <p className="text-xs text-gray-500 mt-1">We've sent a 6-digit code to your email</p>
+
+            <div className="relative">
+              <input
+                ref={otpInputRef}
+                type="tel"
+                inputMode="numeric"
+                value={otp}
+                onChange={(e) => {
+                  setOtp(e.target.value.replace(/\D/g, "").slice(0, 6));
+                  setOtpError("");
+                }}
+                maxLength={6}
+                className={`
+                  w-full py-3 text-center text-xl tracking-[0.75em] font-bold text-gray-800
+                  border-2 rounded-xl outline-none transition-all
+                  placeholder:text-gray-300 placeholder:tracking-normal placeholder:font-normal placeholder:text-sm
+                  ${otpError
+                    ? "border-red-300 bg-red-50/50 focus:border-red-500"
+                    : "border-emerald-500/30 bg-emerald-50/30 focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"}
+                `}
+                placeholder="• • • • • •"
+              />
             </div>
-            <OTPField
-              value={otp}
-              onChange={(val: string) => {
-                setOtp(val);
-                setOtpError("");
-              }}
-              length={6}
-              error={!!otpError}
-              autoFocus={otpSent}
-            />
 
             <div className="flex items-center justify-between text-xs px-1">
               <div className="flex items-center gap-1.5 text-gray-500">
@@ -245,7 +236,7 @@ const EmailVerify = ({
               </div>
 
               <button
-                onClick={handleSubmit(onSendOTP)}
+                onClick={sendOTP}
                 disabled={otpTimer > 0 || otpLoading}
                 className={`
                   font-semibold transition-colors
@@ -264,7 +255,7 @@ const EmailVerify = ({
               className={`
                 w-full py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2
                 ${otp.length === 6
-                  ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20"
+                  ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 translate-y-0"
                   : "bg-gray-200 text-gray-400 cursor-not-allowed"}
               `}
             >
@@ -292,4 +283,4 @@ const EmailVerify = ({
   );
 };
 
-export default EmailVerify;
+export default MobileVerify;
