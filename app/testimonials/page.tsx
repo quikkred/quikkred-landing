@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { MessageCircle, Home, ArrowRight, Star, Quote, ThumbsUp, User, MapPin } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
-import { QUICK_FORM_URL } from "@/lib/config";
+
 
 export default function TestimonialsPage() {
   const { t } = useLanguage();
@@ -298,7 +298,7 @@ export default function TestimonialsPage() {
               Experience fast, transparent, and reliable loan services. Apply now and see why we're rated 4.9/5!
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Link href={QUICK_FORM_URL as string}>
+              <Link href={"/apply/quick"}>
                 <button
                   className="px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all"
                   style={{ backgroundColor: '#FFD600', color: '#145214' }}

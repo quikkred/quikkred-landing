@@ -146,11 +146,11 @@ const CustomerLogin = () => {
                                         <h3 className="text-sm font-bold text-gray-800">
                                             One-Tap Verification
                                         </h3>
-                                        <GoogleVerify buttonText="Continue with google" callbackURL="/apply/quick-v2" />
+                                        <GoogleVerify buttonText="Continue with google" callbackURL="/apply/quick" />
                                         {
                                             !isIOS && (
                                                 <div className="flex justify-center w-full md:hidden">
-                                                    <TruecallerVerify callbackURL="/apply/quick-v2" />
+                                                    <TruecallerVerify callbackURL="/apply/quick" />
                                                 </div>
                                             )
                                         }

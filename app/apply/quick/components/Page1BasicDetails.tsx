@@ -263,8 +263,8 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
                         </div>
 
                         <div className="flex gap-2">
-                            <TruecallerVerify callbackURL="/apply/quick-v2" />
-                            <GoogleVerify callbackURL="/apply/quick-v2" />
+                            <TruecallerVerify callbackURL="/apply/quick" />
+                            <GoogleVerify callbackURL="/apply/quick" />
                         </div>
 
                         <div className="flex items-center gap-2 mt-3">
