@@ -2,9 +2,10 @@
 
 import { useEffect } from "react";
 import axios, { AxiosError } from "axios";
-import { useSession, getSession, signOut } from "next-auth/react";
+import { useSession, getSession } from "next-auth/react";
 import { API_BASE_URL } from "@/lib/config";
 import { toast } from "@/components/ui/toast";
+import { clearSession } from "@/lib/auth-utils";
 
 // 1. Create the instance outside to keep it stable
 const axiosClient = axios.create({
@@ -50,17 +51,19 @@ export default function useAxios() {
 
                 // If 401 Unauthorized
                 if (status === 401) {
-                    // Prevent infinite loops (don't retry auth endpoints)
-                    // if (prevRequest && !prevRequest.url?.includes("/api/auth")) {
-                        toast({
-                            variant: "error",
-                            title: "Signed out",
-                            description: "Please log in again to continue.",
-                        });
+                    // ✅ Prevent logout loop if login attempt itself fails with 401
+                    if (prevRequest && (prevRequest.url?.includes("/api/auth") || prevRequest.url?.includes("/auth/login"))) {
+                        return Promise.reject(error);
+                    }
 
-                        // Force signout and redirect
-                        await signOut({ redirect: true, callbackUrl: "/login" });
-                    // }
+                    toast({
+                        variant: "error",
+                        title: "Signed out",
+                        description: "Please log in again to continue.",
+                    });
+
+                    // ✅ Use central utility to ensure localStorage is also cleared
+                    await clearSession('/login');
                 }
                 return Promise.reject(error);
             }

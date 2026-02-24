@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { useLanguage } from "@/lib/contexts/LanguageContext"
 import { Globe, ChevronDown, ArrowRight, Shield, Clock, CheckCircle2 } from "lucide-react"
-import { API_BASE_URL } from '@/lib/config'
+import { API_BASE_URL, QUICK_FORM_URL } from '@/lib/config'
 
 export default function Hero() {
   const router = useRouter()
@@ -202,7 +202,7 @@ export default function Hero() {
 
     // Save to localStorage and navigate (regardless of API success)
     localStorage.setItem('heroFormData', JSON.stringify(formPayload))
-    router.push('/apply/quick')
+    router.push(QUICK_FORM_URL as string)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '@/lib/config';
 import getToken from '../getToken';
-import { signOut } from 'next-auth/react';
+import { clearSession } from '../auth-utils';
 
 // Core API Client with type-safe methods for all backend endpoints
 interface ApiResponse<T = any> {
@@ -77,41 +77,8 @@ class ApiClient {
             }
             ApiClient.isLoggingOut = true;
 
-            // Clear all authentication tokens
-            localStorage.removeItem('token');
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-            localStorage.removeItem('loginTimestamp');
-
-            // Clear user data
-            localStorage.removeItem('userRole');
-            localStorage.removeItem('role');
-            localStorage.removeItem('userEmail');
-            localStorage.removeItem('email');
-            localStorage.removeItem('userName');
-            localStorage.removeItem('userId');
-            localStorage.removeItem('userMobile');
-            localStorage.removeItem('customerUniqueId');
-
-            // Clear custom cookies
-            document.cookie = 'auth-token=; path=/; max-age=0';
-            document.cookie = 'user-role=; path=/; max-age=0';
-
-            // ✅ Clear NextAuth non-HttpOnly cookies (callback-url causes redirect back to /user)
-            document.cookie = 'next-auth.callback-url=; path=/; max-age=0';
-            document.cookie = 'next-auth.csrf-token=; path=/; max-age=0';
-
-            try {
-              // Use redirect: false so WE control the timing
-              // signOut will POST to /api/auth/signout which clears the HttpOnly session cookie
-              await signOut({ redirect: false });
-            } catch (e) {
-              console.error('signOut error:', e);
-            }
-
-            // Now the HttpOnly cookie is cleared on the server - safe to redirect
-            window.location.href = '/login';
+            // ✅ Use central utility for consistent cleanup
+            await clearSession('/login');
 
             // Return instead of throw — prevents component re-renders that trigger re-fetches
             return { success: false, error: 'Session expired' } as ApiResponse<T>;
