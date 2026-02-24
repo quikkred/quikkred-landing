@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { QUICK_FORM_URL } from "@/lib/config";
+
 
 export function Header() {
   const { t } = useLanguage();
@@ -214,7 +214,7 @@ export function Header() {
                 </motion.button>
               </Link>
             ) : (
-              <Link href={isHomePage ? "/login" : (QUICK_FORM_URL as string)} className="sm:hidden">
+              <Link href={isHomePage ? "/login" : ("/apply/quick")} className="sm:hidden">
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   className="px-3 py-2 bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-xs font-semibold rounded-lg shadow-md min-h-[36px]"
@@ -248,7 +248,7 @@ export function Header() {
                 </motion.button>
               </Link>
             ) : (
-              <Link href={QUICK_FORM_URL as string}>
+              <Link href={"/apply/quick"}>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -381,7 +381,7 @@ export function Header() {
                   </Link>
                 ) : (
                   <Link
-                    href={QUICK_FORM_URL as string}
+                    href={"/apply/quick"}
                     onClick={() => setMobileMenuOpen(false)}
                     className="block mt-2"
                   >

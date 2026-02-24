@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Award, Home, ArrowRight, Trophy, Star, Shield, Medal, Target } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
-import { QUICK_FORM_URL } from "@/lib/config";
+
 
 export default function AwardsPage() {
   const { t } = useLanguage();
@@ -267,7 +267,7 @@ export default function AwardsPage() {
               Join thousands of satisfied customers who trust Quikkred for their financial needs
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Link href={QUICK_FORM_URL as string}>
+              <Link href={"/apply/quick"}>
                 <button
                   className="px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all"
                   style={{ backgroundColor: '#FFD600', color: '#145214' }}
