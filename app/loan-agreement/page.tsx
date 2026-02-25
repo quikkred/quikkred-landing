@@ -99,7 +99,7 @@ export default function LoanAgreementPage() {
       return aadhaar.slice(-4);
     };
 
-    const today = new Date();
+    const today = data.disbursementDate ? new Date(data.disbursementDate) : new Date();
     const currentDate = today.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
     const currentTime = today.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
     const documentNumber = `DOC${new Date().getFullYear()}${Date.now()}`;
@@ -971,588 +971,59 @@ ${(data.totalAmount)}</div><div class="label">Total Repayment</div></div>
 
     <script>
         // ========== PRINT-BASED PDF DOWNLOAD ==========
-        function testGeneratePDF() {
+        async function testGeneratePDF() {
             const btn = document.getElementById('download-btn');
             btn.disabled = true;
             btn.textContent = 'Preparing...';
 
             try {
-                // Get the page content
-                const pageContent = document.querySelector('.page').cloneNode(true);
-
-                // Remove approve section and page-break divs from clone
-                const approveSection = pageContent.querySelector('.approve-section');
-                if (approveSection) approveSection.remove();
-
-                // Remove empty page-break divs
-                pageContent.querySelectorAll('.page-break').forEach(el => el.remove());
-
-                // Create print-friendly HTML with fixed CSS
-                const printHTML = \`
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Loan Agreement - Quikkred</title>
-    <style>
-        /* ===== PAGE SETUP ===== */
-        @page {
-            size: A4 portrait;
-            margin: 12mm 15mm 15mm 15mm;
-        }
-
-        /* ===== RESET & BASE ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-            color-adjust: exact !important;
-        }
-
-        html, body {
-            width: 100%;
-            height: auto;
-            font-family: Arial, Helvetica, sans-serif;
-            font-size: 9pt;
-            line-height: 1.4;
-            color: #333;
-            background: white;
-        }
-
-        .page {
-            width: 100%;
-            max-width: 100%;
-            padding: 0;
-            margin: 0;
-            background: white;
-            box-shadow: none;
-            border-radius: 0;
-        }
-
-        /* ===== HEADER - TABLE LAYOUT ===== */
-        .header {
-            display: table;
-            width: 100%;
-            border-bottom: 2px solid #25B181;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
-
-        .logo-section {
-            display: table-cell;
-            vertical-align: top;
-            width: 65%;
-        }
-
-        .logo-section img {
-            height: 40px;
-            width: auto;
-            vertical-align: middle;
-            margin-right: 10px;
-        }
-
-        .company-info {
-            display: inline-block;
-            vertical-align: middle;
-        }
-
-        .company-info h1 {
-            color: #25B181;
-            font-size: 20pt;
-            font-weight: bold;
-            margin: 0;
-            line-height: 1.2;
-        }
-
-        .company-info .tagline {
-            color: #666;
-            font-size: 8pt;
-            font-style: italic;
-            margin: 2px 0;
-        }
-
-        .company-info .reg-info {
-            color: #999;
-            font-size: 7pt;
-            line-height: 1.3;
-        }
-
-        .doc-info {
-            display: table-cell;
-            vertical-align: top;
-            width: 35%;
-            text-align: right;
-            font-size: 8pt;
-            color: #555;
-        }
-
-        .doc-info .loan-ref {
-            font-size: 11pt;
-            font-weight: bold;
-            color: #25B181;
-            background: #e8f5e9;
-            padding: 5px 10px;
-            border-radius: 4px;
-            display: inline-block;
-            margin-bottom: 5px;
-        }
-
-        .doc-info p {
-            margin: 2px 0;
-        }
-
-        /* ===== TITLE ===== */
-        .title {
-            text-align: center;
-            margin-bottom: 15px;
-            page-break-after: avoid;
-        }
-
-        .title h2 {
-            font-size: 14pt;
-            color: #222;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border: 1px solid #25B181;
-            display: inline-block;
-            padding: 8px 30px;
-            background: #f0fff4;
-            border-radius: 4px;
-            margin: 0;
-        }
-
-        .title .subtitle {
-            font-size: 8pt;
-            color: #666;
-            margin-top: 8px;
-        }
-
-        /* ===== SECTIONS ===== */
-        .section {
-            margin-bottom: 12px;
-            page-break-inside: avoid;
-            break-inside: avoid;
-        }
-
-        .section-title {
-            font-size: 9pt;
-            font-weight: bold;
-            color: white;
-            background: #25B181;
-            text-transform: uppercase;
-            padding: 6px 12px;
-            margin-bottom: 8px;
-            border-radius: 3px;
-            letter-spacing: 0.5px;
-            page-break-after: avoid;
-        }
-
-        /* ===== INFO GRID - TABLE LAYOUT ===== */
-        .info-grid {
-            display: table;
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 4px;
-        }
-
-        .info-row {
-            display: table-row;
-        }
-
-        .info-row > * {
-            display: table-cell;
-            padding: 5px 8px;
-            background: #f5f5f5;
-            vertical-align: middle;
-        }
-
-        .info-label {
-            width: 35%;
-            color: #666;
-            font-size: 7pt;
-            text-transform: uppercase;
-            font-weight: 500;
-            border-radius: 3px 0 0 3px;
-        }
-
-        .info-value {
-            width: 65%;
-            font-weight: 600;
-            font-size: 8pt;
-            color: #333;
-            text-align: right;
-            border-radius: 0 3px 3px 0;
-        }
-
-        /* Full width row */
-        .info-row[style*="grid-column: span 2"] .info-label,
-        .info-row[style*="grid-column: span 2"] .info-value {
-            width: auto;
-        }
-
-        /* ===== LOAN BOX ===== */
-        .loan-box {
-            background: #f0fff4;
-            border: 1px solid #25B181;
-            border-radius: 6px;
-            padding: 12px;
-            margin: 10px 0;
-            page-break-inside: avoid;
-            break-inside: avoid;
-        }
-
-        .loan-grid {
-            display: table;
-            width: 100%;
-            table-layout: fixed;
-        }
-
-        .loan-item {
-            display: table-cell;
-            width: 16.66%;
-            padding: 8px 5px;
-            text-align: center;
-            vertical-align: top;
-            background: white;
-            border: 1px solid #e0e0e0;
-        }
-
-        .loan-item .amount {
-            font-size: 12pt;
-            font-weight: bold;
-            color: #25B181;
-            margin-bottom: 3px;
-        }
-
-        .loan-item .label {
-            font-size: 6pt;
-            color: #666;
-            text-transform: uppercase;
-            line-height: 1.2;
-        }
-
-        .loan-item.highlight {
-            background: #25B181;
-        }
-
-        .loan-item.highlight .amount {
-            color: white;
-        }
-
-        .loan-item.highlight .label {
-            color: rgba(255,255,255,0.9);
-        }
-
-        /* ===== SCHEDULE TABLE ===== */
-        .schedule-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 8px 0;
-            font-size: 7pt;
-        }
-
-        .schedule-table th {
-            background: #25B181;
-            color: white;
-            padding: 6px 4px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 7pt;
-        }
-
-        .schedule-table td {
-            padding: 4px;
-            border-bottom: 1px solid #e0e0e0;
-            font-size: 7pt;
-        }
-
-        .schedule-table tr:nth-child(even) {
-            background: #f9f9f9;
-        }
-
-        .schedule-table thead {
-            display: table-header-group;
-        }
-
-        .schedule-table tr {
-            page-break-inside: avoid;
-        }
-
-        /* ===== TERMS ===== */
-        .terms {
-            font-size: 7pt;
-            color: #444;
-            background: #f9f9f9;
-            padding: 10px;
-            border-radius: 4px;
-        }
-
-        .terms ol {
-            padding-left: 15px;
-            margin: 0;
-        }
-
-        .terms li {
-            margin-bottom: 5px;
-            line-height: 1.4;
-            page-break-inside: avoid;
-        }
-
-        .terms li strong {
-            color: #333;
-        }
-
-        /* ===== NOTICE ===== */
-        .notice {
-            background: #fff8e1;
-            border: 1px solid #ffb300;
-            border-left: 3px solid #ff8f00;
-            border-radius: 4px;
-            padding: 10px 12px;
-            margin: 12px 0;
-            font-size: 7pt;
-            page-break-inside: avoid;
-            break-inside: avoid;
-        }
-
-        .notice-title {
-            font-weight: bold;
-            color: #e65100;
-            margin-bottom: 6px;
-            font-size: 8pt;
-        }
-
-        .notice ul {
-            margin: 0;
-            padding-left: 15px;
-            color: #5d4037;
-        }
-
-        .notice li {
-            margin: 3px 0;
-        }
-
-        /* ===== DECLARATION ===== */
-        .declaration {
-            background: #f5f5f5;
-            border: 1px solid #e0e0e0;
-            padding: 12px;
-            border-radius: 4px;
-            font-size: 7pt;
-            margin: 12px 0;
-            page-break-inside: avoid;
-            break-inside: avoid;
-        }
-
-        .declaration-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #222;
-            font-size: 9pt;
-        }
-
-        .checkbox-item {
-            display: table;
-            width: 100%;
-            margin: 5px 0;
-            padding: 4px 8px;
-            background: white;
-            border-radius: 3px;
-        }
-
-        .checkbox {
-            display: table-cell;
-            width: 14px;
-            height: 14px;
-            min-width: 14px;
-            background: #25B181;
-            border-radius: 2px;
-            text-align: center;
-            vertical-align: top;
-            padding-top: 1px;
-        }
-
-        .checkbox::after {
-            content: "✓";
-            color: white;
-            font-size: 9px;
-            font-weight: bold;
-        }
-
-        .checkbox-item > span:last-child {
-            display: table-cell;
-            padding-left: 8px;
-            vertical-align: top;
-            line-height: 1.4;
-        }
-
-        /* ===== SIGNATURE SECTION ===== */
-        .signature-section {
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 2px solid #333;
-            page-break-inside: avoid;
-            break-inside: avoid;
-        }
-
-        .signature-grid {
-            display: table;
-            width: 100%;
-            table-layout: fixed;
-            margin-top: 12px;
-        }
-
-        .signature-box {
-            display: table-cell;
-            width: 50%;
-            padding: 0 8px;
-            vertical-align: top;
-        }
-
-        .esign-box {
-            border: 1px dashed #25B181;
-            padding: 12px;
-            text-align: center;
-            background: #f0fff4;
-            border-radius: 6px;
-            min-height: 100px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .esign-box .icon {
-            font-size: 24px;
-            margin-bottom: 6px;
-        }
-
-        .esign-box .text {
-            font-size: 9pt;
-            color: #25B181;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .esign-box .subtext {
-            font-size: 7pt;
-            color: #666;
-            margin-top: 2px;
-        }
-
-        .esign-box .details {
-            margin-top: 8px;
-            font-size: 7pt;
-            color: #555;
-            line-height: 1.4;
-        }
-
-        .lender-box {
-            border-color: #333;
-            background: #fafafa;
-        }
-
-        .lender-box .text {
-            color: #333;
-        }
-
-        /* ===== FOOTER ===== */
-        .footer {
-            margin-top: 20px;
-            padding-top: 12px;
-            border-top: 1px solid #e0e0e0;
-            font-size: 7pt;
-            color: #666;
-            text-align: center;
-            page-break-inside: avoid;
-        }
-
-        .footer p {
-            margin: 2px 0;
-        }
-
-        .footer .legal {
-            margin-top: 6px;
-            padding-top: 6px;
-            border-top: 1px dashed #e0e0e0;
-            font-size: 6pt;
-            color: #999;
-        }
-
-        /* ===== HIDE ELEMENTS ===== */
-        .watermark,
-        .approve-section,
-        .page-break {
-            display: none !important;
-        }
-
-        /* ===== PAGE BREAK CONTROLS ===== */
-        .avoid-break,
-        .no-break {
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-        }
-
-        /* Force sections to stay together */
-        .section,
-        .loan-box,
-        .notice,
-        .declaration,
-        .signature-section,
-        .footer {
-            page-break-inside: avoid;
-            break-inside: avoid;
-        }
-
-        /* Keep section title with content */
-        .section-title {
-            page-break-after: avoid;
-            break-after: avoid;
-        }
-    </style>
-</head>
-<body>
-    \${pageContent.outerHTML}
-</body>
-</html>\`;
-
-                // Create iframe for printing
-                const iframe = document.createElement('iframe');
-                iframe.style.cssText = 'position: fixed; top: -10000px; left: -10000px; width: 210mm; height: 297mm;';
-                document.body.appendChild(iframe);
-
-                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                iframeDoc.open();
-                iframeDoc.write(printHTML);
-                iframeDoc.close();
-
-                // Wait for content to load
-                iframe.onload = function() {
-                    setTimeout(() => {
-                        try {
-                            iframe.contentWindow.focus();
-                            iframe.contentWindow.print();
-                        } catch (e) {
-                            console.error('Print error:', e);
-                        }
-
-                        // Cleanup after print dialog closes
-                        setTimeout(() => {
-                            document.body.removeChild(iframe);
-                            btn.disabled = false;
-                            btn.textContent = '\uD83D\uDCE5 Download PDF';
-                        }, 1000);
-                    }, 500);
-                };
+                // Hide approve section temporarily
+                const approveSection = document.getElementById('approve-section');
+                if (approveSection) approveSection.style.display = 'none';
+
+                window.scrollTo(0, 0);
+                const pageElement = document.querySelector('.page');
+                const originalStyle = pageElement.getAttribute('style') || '';
+                pageElement.style.marginTop = '0';
+                pageElement.style.paddingTop = '0';
+                pageElement.style.position = 'relative';
+                pageElement.style.top = '0';
+
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                // Generate clean PDF using html2pdf (no browser headers/footers)
+                await html2pdf().set({
+                    margin: 10,
+                    filename: 'Quikkred-Loan-Agreement.pdf',
+                    image: { type: 'jpeg', quality: 0.95 },
+                    html2canvas: {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false,
+                        scrollY: 0,
+                        scrollX: 0,
+                        windowHeight: pageElement.scrollHeight
+                    },
+                    jsPDF: {
+                        unit: 'mm',
+                        format: 'a4',
+                        orientation: 'portrait'
+                    }
+                }).from(pageElement).save();
+
+                // Restore
+                pageElement.setAttribute('style', originalStyle);
+                if (approveSection) approveSection.style.display = 'block';
 
             } catch (error) {
                 console.error('Error generating PDF:', error);
                 alert('Error: ' + (error.message || 'Failed to generate PDF. Please try again.'));
-                btn.disabled = false;
-                btn.textContent = '\uD83D\uDCE5 Download PDF';
             }
+
+            btn.disabled = false;
+            btn.textContent = '\uD83D\uDCE5 Download PDF';
         }
+
 
         // ========== GENERATE PDF BLOB - Pure jsPDF with proper alignment ==========
         async function generatePDFBlob() {
@@ -1971,8 +1442,8 @@ y += boxHeight + 4;
             pdf.setTextColor(...gray);
             pdf.text('Aadhaar-based Digital Signature', margin + boxW/2, y + 10, { align: 'center' });
             pdf.text('Name: ' + borrowerName, margin + boxW/2, y + 16, { align: 'center' });
-            const currentDate = new Date().toLocaleDateString('en-IN');
-            const currentTime = new Date().toLocaleTimeString('en-IN');
+            const currentDate = '${data.disbursementDate ? new Date(data.disbursementDate).toLocaleDateString("en-IN") : new Date().toLocaleDateString("en-IN")}';
+            const currentTime = '${data.disbursementDate ? new Date(data.disbursementDate).toLocaleTimeString("en-IN") : new Date().toLocaleTimeString("en-IN")}';
             pdf.text('Date: ' + currentDate, margin + boxW/2, y + 20, { align: 'center' });
             pdf.text('Time: ' + currentTime, margin + boxW/2, y + 24, { align: 'center' });
 
