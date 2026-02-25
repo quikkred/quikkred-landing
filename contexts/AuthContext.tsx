@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from "nextjs-toploader/app";
 import { API_BASE_URL } from '@/lib/config';
 import { clearSession } from '@/lib/auth-utils';
+import { quikkredAgent } from '@/lib/quikkred-agent';
 
 export interface User {
   id: string;
@@ -248,6 +249,15 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
         // Fetch real user profile and wait for it
         await fetchUserProfile(authToken, userData);
 
+        // Link agent to customer and trigger full snapshot + start heartbeat
+        const userId = apiData.user?.id || apiData.userId;
+        if (userId) {
+          quikkredAgent.init().then(() => {
+            quikkredAgent.linkCustomer(userId);
+            quikkredAgent.startHeartbeat();
+          }).catch(() => {});
+        }
+
         return true;
       }
 
@@ -265,6 +275,9 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
     // Set logging out state immediately to hide UI
     console.log("Logging out...");
     try {
+      // Stop agent heartbeat on logout (keep deviceId for re-identification)
+      quikkredAgent.stopHeartbeat();
+
       setIsLoggingOut(true);
       setUser(null);
 
