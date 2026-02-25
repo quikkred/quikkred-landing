@@ -75,6 +75,9 @@ export const metadata: Metadata = {
   verification: {
     google: 'rxE7gz_V_95e4yC26l0F5fS41P697rkQIZ9SQWaEDsQ',
   },
+  other: {
+    'trustpilot-one-time-domain-verification-id': '111ef8f9-ac82-42c6-a6ce-871625b68e95',
+  },
   alternates: {
     canonical: 'https://www.quikkred.in',
   },
