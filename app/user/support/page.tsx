@@ -210,11 +210,13 @@ export default function SupportPage() {
 
       if (createFiles.length > 0) {
         createFiles.forEach((file) => {
-          payload.append('attachment', file);
+          payload.append('photo', file);
         });
       }
 
-      const response = await axios.postForm("/api/supportTicket/create", payload);
+      const response = await axios.post("/api/supportTicket/create", payload, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       const result = response.data;
 
       if ((response.status === 200 || response.status === 201) && result.success) {
@@ -304,7 +306,7 @@ export default function SupportPage() {
 
       if (replyFiles.length > 0) {
         replyFiles.forEach((file) => {
-          payload.append('attachment', file);
+          payload.append('photo', file);
         });
       }
 
