@@ -1327,6 +1327,17 @@ export default function UserDashboard() {
                     {activeLoanDetails.status}
                   </span>
                 )}
+
+                {/* eSign Button */}
+                {activeLoanDetails && (
+                  <button
+                    onClick={() => router.push(`/loan-agreement?loanNumber=${selectedLoanNumber}`)}
+                    className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-[#25B181] to-[#10B4A3] text-white rounded-lg hover:shadow-lg transition-all font-medium text-xs sm:text-sm whitespace-nowrap"
+                  >
+                    <FileText className="w-4 h-4" />
+                    <span>eSign</span>
+                  </button>
+                )}
               </div>
             </div>
 
