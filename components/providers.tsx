@@ -1,7 +1,7 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactNode, useState, useEffect } from "react";
+import { ReactNode, useState, useEffect, lazy, Suspense } from "react";
 import { I18nextProvider } from "react-i18next";
 import i18n from "@/lib/i18n";
 import { NotificationProvider } from "@/contexts/NotificationContext";
@@ -14,6 +14,16 @@ import { SessionProvider } from "next-auth/react";
 import NextTopLoader from "nextjs-toploader";
 import { LanguageProvider } from "@/lib/contexts/LanguageContext";
 import { TranslationData } from "@/lib/getTranslation";
+
+// Lazy-loaded AgentInitializer — non-critical, deferred
+const AgentInitializer = lazy(() => import('@/lib/quikkred-agent').then(mod => {
+  // Return a minimal component that initializes the agent
+  const Component = () => {
+    mod.quikkredAgent.init().catch(() => {});
+    return null;
+  };
+  return { default: Component };
+}));
 
 export function Providers({ language, initialData, children }: { language: string; initialData: TranslationData; children: ReactNode; }) {
   const [queryClient] = useState(
@@ -79,6 +89,9 @@ export function Providers({ language, initialData, children }: { language: strin
                       <AnalyticsProvider>
                         <WebSocketProvider>
                           {children}
+                          <Suspense fallback={null}>
+                            <AgentInitializer />
+                          </Suspense>
                         </WebSocketProvider>
                       </AnalyticsProvider>
                     ) : (
