@@ -20,6 +20,7 @@ import { upiAutopayService } from '@/lib/api/upi-autopay.service';
 import { API_BASE_URL } from '@/lib/config';
 import getToken from '@/lib/getToken';
 import useAxios from '@/hooks/useAxios';
+import { useDashboard } from '@/store/hooks/useDashboard';
 
 interface Loan {
   id: string;
@@ -223,6 +224,7 @@ export default function MyLoansPage() {
   const { toast } = useToast();
   const axios = useAxios();
   const router = useRouter();
+  const { dashboardData, loading: dashboardLoading, fetchDashboard } = useDashboard();
   const [loans, setLoans] = useState<Loan[]>([]);
   const [loading, setLoading] = useState(true);
   const [showBalanceActive, setShowBalanceActive] = useState(false);
@@ -332,6 +334,9 @@ export default function MyLoansPage() {
   useEffect(() => {
     fetchLoans();
     fetchLoanCalculation();
+    if (!dashboardData) {
+      fetchDashboard();
+    }
   }, [pagination.page, pagination.limit]);
 
   const fetchLoanCalculation = async () => {
@@ -721,6 +726,7 @@ export default function MyLoansPage() {
         setTimeout(() => {
           resetReapplyModal();
           fetchLoans();
+          fetchDashboard();
         }, 3000);
       } else {
         setReapplyError(response.message || 'Failed to submit reapplication');
@@ -823,12 +829,23 @@ export default function MyLoansPage() {
     )[0];
   };
 
-  // Check if loan is eligible for reapply (CLOSED status AND is the most recent closed loan)
+  // Check if loan is eligible for reapply (CLOSED status AND is the most recent closed loan AND no active loan/application exists)
   const isEligibleForReapply = (loan: Loan) => {
     const status = loan.status.toUpperCase();
     const isClosed = status === 'CLOSED' || status === 'COMPLETED';
 
     if (!isClosed) return false;
+
+    // Don't show reapply until dashboard data is loaded
+    if (dashboardLoading || !dashboardData) return false;
+
+    // Don't show reapply if dashboard says there's an active loan or existing application
+    if (dashboardData.activeLoan || dashboardData.oldApplication) return false;
+
+    // Don't show reapply if any loan has a non-terminal status
+    const terminalStatuses = ['CLOSED', 'COMPLETED', 'REJECTED', 'CANCELLED'];
+    const hasActiveInLoans = loans.some(l => !terminalStatuses.includes(l.status.toUpperCase()));
+    if (hasActiveInLoans) return false;
 
     // Only show reapply button on the most recent closed loan
     const mostRecentClosedLoan = getMostRecentClosedLoan();
