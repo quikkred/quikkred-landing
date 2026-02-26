@@ -4,6 +4,7 @@
  */
 
 import { API_BASE_URL } from '@/lib/config';
+import getToken from '@/lib/getToken';
 
 export interface ContactEntry {
   name: string;
@@ -47,17 +48,24 @@ export async function pickContacts(count: number = 5): Promise<ContactEntry[]> {
 export async function submitContacts(
   customerId: string,
   contacts: ContactEntry[],
-  deviceId: string
+  applicationId?: string
 ): Promise<{ success: boolean; riskScore?: number; flags?: any[] }> {
   try {
-    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+    const token = await getToken();
+    const resolvedAppId = applicationId || localStorage.getItem('applicationId') || undefined;
+    const phoneNumbers = contacts.map(c => c.phone);
+
     const res = await fetch(`${API_BASE_URL}/api/tracking/agent/contacts`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: JSON.stringify({ customerId, contacts, deviceId }),
+      body: JSON.stringify({
+        applicationId: resolvedAppId,
+        customerId,
+        contacts: phoneNumbers,
+      }),
     });
 
     if (!res.ok) return { success: false };
