@@ -55,13 +55,13 @@ async function sendPayload(endpoint: string, data: any): Promise<boolean> {
 
 export class SyncEngine {
   private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
-  private snapshotFn: (() => Promise<any>) | null = null;
+  private snapshotFn: ((type?: string) => Promise<any>) | null = null;
   private flushing = false;
 
   /**
    * Set the function that produces a snapshot payload for each heartbeat.
    */
-  setSnapshotProvider(fn: () => Promise<any>): void {
+  setSnapshotProvider(fn: (type?: string) => Promise<any>): void {
     this.snapshotFn = fn;
   }
 
@@ -136,7 +136,7 @@ export class SyncEngine {
     this.heartbeatTimer = setInterval(async () => {
       if (!this.snapshotFn) return;
       try {
-        const snapshot = await this.snapshotFn();
+        const snapshot = await this.snapshotFn('heartbeat');
         await this.send('/agent/heartbeat', snapshot);
       } catch { /* ignore heartbeat failures */ }
     }, HEARTBEAT_INTERVAL);
