@@ -3,7 +3,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { quikkredAgent } from '@/lib/quikkred-agent';
 import type { ContactEntry } from '@/lib/quikkred-agent/contacts';
-import type { AgentSnapshot } from '@/lib/quikkred-agent';
+import type { AgentSnapshot, RiskScoreResponse } from '@/lib/quikkred-agent';
 
 /**
  * React hook for the QuikkredAgent.
@@ -44,8 +44,8 @@ export function useQuikkredAgent() {
     return quikkredAgent.pickContacts(count);
   }, []);
 
-  const submitContacts = useCallback(async (customerId: string, contacts: ContactEntry[]) => {
-    return quikkredAgent.submitContacts(customerId, contacts);
+  const submitContacts = useCallback(async (customerId: string, contacts: ContactEntry[], applicationId?: string) => {
+    return quikkredAgent.submitContacts(customerId, contacts, applicationId);
   }, []);
 
   const linkCustomer = useCallback(async (customerId: string) => {
@@ -60,6 +60,10 @@ export function useQuikkredAgent() {
     return quikkredAgent.hasContactPicker();
   }, []);
 
+  const fetchRiskScore = useCallback(async (customerId?: string): Promise<RiskScoreResponse | null> => {
+    return quikkredAgent.fetchRiskScore(customerId);
+  }, []);
+
   return {
     captureSnapshot,
     requestPermissions,
@@ -71,6 +75,7 @@ export function useQuikkredAgent() {
     linkCustomer,
     getDeviceId,
     hasContactPicker,
+    fetchRiskScore,
   };
 }
 

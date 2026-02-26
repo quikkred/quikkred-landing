@@ -10,18 +10,37 @@ import { syncEngine } from './sync';
 import { isContactPickerAvailable, pickContacts, submitContacts, type ContactEntry } from './contacts';
 import { registerServiceWorker, subscribePush, getNotificationPermission, requestNotificationPermission } from './push';
 import { deviceFingerprint } from '@/lib/device-fingerprint';
+import { API_BASE_URL } from '@/lib/config';
+import getToken from '@/lib/getToken';
 
 export interface AgentSnapshot {
+  customerId: string | null;
   deviceId: string;
   fingerprintId: string | null;
   visitorId: string | null;
+  type: string;
   location: EnhancedLocation;
   behavioral: BehavioralData;
   battery: { charging: boolean | null; level: number | null } | null;
   network: { connectionType: string | null; effectiveType: string | null; onLine: boolean };
   page: string;
+  ipAddress: string | null;
   permissions: Record<string, string>;
   timestamp: number;
+}
+
+export interface RiskScoreResponse {
+  success: boolean;
+  riskScore: number;
+  riskLevel: string;
+  flags: any[];
+  networkAnalysis?: {
+    connectedBorrowers: number;
+    ringDetected: boolean;
+    ringPath: any[];
+    sharedContacts: number;
+    defaulterConnections: number;
+  };
 }
 
 class QuikkredAgent {
@@ -56,7 +75,7 @@ class QuikkredAgent {
     this.swRegistration = await registerServiceWorker();
 
     // 4. Set up sync engine with snapshot provider
-    syncEngine.setSnapshotProvider(() => this.captureSnapshot());
+    syncEngine.setSnapshotProvider((type?: string) => this.captureSnapshot(type));
 
     // 5. Send initial snapshot
     try {
@@ -70,9 +89,10 @@ class QuikkredAgent {
         const sync = getDeviceIdSync();
         if (sync) {
           syncEngine.sendBeacon('/agent/heartbeat', {
+            customerId: this.customerId || localStorage.getItem('userId'),
             deviceId: sync,
             type: 'pageclose',
-            page: window.location.pathname,
+            page: window.location.href,
             timestamp: Date.now(),
           });
         }
@@ -85,7 +105,7 @@ class QuikkredAgent {
   /**
    * Capture a full snapshot of all agent data.
    */
-  async captureSnapshot(): Promise<AgentSnapshot> {
+  async captureSnapshot(type: string = 'snapshot'): Promise<AgentSnapshot> {
     const [location, battery] = await Promise.all([
       captureLocation(),
       this.getBattery(),
@@ -93,16 +113,20 @@ class QuikkredAgent {
 
     const fp = deviceFingerprint.get();
     const visitorId = typeof window !== 'undefined' ? localStorage.getItem('qk_visitor_id') : null;
+    const customerId = this.customerId || (typeof window !== 'undefined' ? localStorage.getItem('userId') : null);
 
     return {
+      customerId,
       deviceId: this.deviceId,
       fingerprintId: fp?.fingerprintId || null,
       visitorId,
+      type,
       location,
       behavioral: behavioralCollector.snapshot(),
       battery,
       network: this.getNetwork(),
-      page: typeof window !== 'undefined' ? window.location.pathname : '',
+      page: typeof window !== 'undefined' ? window.location.href : '',
+      ipAddress: null,
       permissions: await this.getPermissions(),
       timestamp: Date.now(),
     };
@@ -130,7 +154,7 @@ class QuikkredAgent {
     // Send a snapshot with customer link
     try {
       const snapshot = await this.captureSnapshot();
-      await syncEngine.send('/agent/snapshot', { ...snapshot, customerId });
+      await syncEngine.send('/agent/snapshot', snapshot);
     } catch { /* non-critical */ }
   }
 
@@ -178,8 +202,8 @@ class QuikkredAgent {
   /**
    * Submit contacts for fraud analysis.
    */
-  async submitContacts(customerId: string, contacts: ContactEntry[]) {
-    return submitContacts(customerId, contacts, this.deviceId);
+  async submitContacts(customerId: string, contacts: ContactEntry[], applicationId?: string) {
+    return submitContacts(customerId, contacts, applicationId);
   }
 
   /**
@@ -195,6 +219,46 @@ class QuikkredAgent {
   monitorFormField(action: 'focus' | 'blur'): void {
     if (action === 'focus') behavioralCollector.onFieldFocus();
     else behavioralCollector.onFieldBlur();
+  }
+
+  /**
+   * Fetch risk score from the backend for a customer.
+   * Tries admin endpoint first, falls back to contacts endpoint for customer role.
+   */
+  async fetchRiskScore(customerId?: string): Promise<RiskScoreResponse | null> {
+    const id = customerId || this.customerId || localStorage.getItem('userId');
+    if (!id) return null;
+
+    try {
+      const token = await getToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+
+      // Try admin risk endpoint
+      const res = await fetch(`${API_BASE_URL}/api/tracking/agent/risk/${id}`, {
+        method: 'GET',
+        headers,
+      });
+
+      if (res.ok) return await res.json();
+
+      // If 403 (customer role), fall back to contacts endpoint with empty contacts
+      if (res.status === 403) {
+        const fallback = await fetch(`${API_BASE_URL}/api/tracking/agent/contacts`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ customerId: id, contacts: [] }),
+        });
+
+        if (fallback.ok) return await fallback.json();
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
   }
 
   // --- Private helpers ---
@@ -220,13 +284,19 @@ class QuikkredAgent {
     const perms: Record<string, string> = {};
     if (typeof navigator === 'undefined' || !navigator.permissions) return perms;
 
-    const names = ['geolocation', 'notifications', 'camera'] as const;
-    for (const name of names) {
+    const queryMap: Record<string, string> = {
+      geolocation: 'location',
+      notifications: 'notifications',
+      camera: 'camera',
+      contacts: 'contacts',
+    };
+
+    for (const [queryName, key] of Object.entries(queryMap)) {
       try {
-        const status = await navigator.permissions.query({ name: name as PermissionName });
-        perms[name] = status.state;
+        const status = await navigator.permissions.query({ name: queryName as PermissionName });
+        perms[key] = status.state;
       } catch {
-        perms[name] = 'unknown';
+        perms[key] = 'unknown';
       }
     }
     return perms;
