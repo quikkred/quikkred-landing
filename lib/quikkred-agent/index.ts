@@ -77,11 +77,7 @@ class QuikkredAgent {
     // 4. Set up sync engine with snapshot provider
     syncEngine.setSnapshotProvider((type?: string) => this.captureSnapshot(type));
 
-    // 5. Send initial snapshot
-    try {
-      const snapshot = await this.captureSnapshot();
-      syncEngine.send('/agent/snapshot', snapshot);
-    } catch { /* non-critical */ }
+    // 5. Skip initial snapshot — will be sent after login via linkCustomer()
 
     // 6. Set up page close beacon
     window.addEventListener('beforeunload', () => {
@@ -150,8 +146,9 @@ class QuikkredAgent {
    * Link agent to a customer (call after login).
    */
   async linkCustomer(customerId: string): Promise<void> {
+    if (!customerId) return;
     this.customerId = customerId;
-    // Send a snapshot with customer link
+    // Send snapshot with customerId after login
     try {
       const snapshot = await this.captureSnapshot();
       await syncEngine.send('/agent/snapshot', snapshot);
