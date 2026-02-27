@@ -264,7 +264,7 @@ class QuikkredAgent {
     try {
       const batt = await (navigator as any).getBattery?.();
       if (!batt) return null;
-      return { charging: batt.charging, level: batt.level };
+      return { charging: batt.charging, level: batt.level != null ? Math.round(batt.level * 100) : null };
     } catch { return null; }
   }
 
