@@ -8,12 +8,15 @@ import {
   Edit2, Save, X, Camera, Shield, CheckCircle,
   AlertCircle, FileText, CreditCard, Briefcase,
   Home, Upload, Loader2, ArrowLeft, Clock,
-  CheckCircle2, XCircle, Globe, Users, RefreshCw
+  CheckCircle2, XCircle, Globe, Users, RefreshCw,
+  Plus, Trash2
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useApplication } from "@/contexts/ApplicationContext";
 import { API_BASE_URL } from '@/lib/config';
 import { useProfile } from '@/store/hooks/useProfile';
 import getToken from "@/lib/getToken";
+import { RELATIONSHIP_TYPES } from '@/lib/constants/quickApply';
 
 interface Address {
   street?: string;
@@ -46,6 +49,8 @@ interface Reference {
   name: string;
   mobile: string;
   relationship: string;
+  verified?: boolean;
+  verifiedAt?: string;
   _id: string;
 }
 interface Profile {
@@ -121,6 +126,7 @@ interface ProfileData {
 export default function ProfilePage() {
   const { user } = useAuth();
   const router = useRouter();
+  const { application } = useApplication();
 
   // Redux state for profile
   const {
@@ -144,6 +150,12 @@ export default function ProfilePage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // References state
+  const [references, setReferences] = useState<{ name: string; mobile: string; relationship: string }[]>([]);
+  const [isAddingReference, setIsAddingReference] = useState(false);
+  const [isSavingReferences, setIsSavingReferences] = useState(false);
+  const [referenceErrors, setReferenceErrors] = useState<{ [key: string]: string }>({});
 
   // Update local state from Redux
   useEffect(() => {
@@ -269,6 +281,114 @@ export default function ProfilePage() {
       setError(err.message || "Failed to update profile");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // References management
+  const handleAddReference = () => {
+    setReferences([...references, { name: '', mobile: '', relationship: '' }]);
+    setIsAddingReference(true);
+    setReferenceErrors({});
+  };
+
+  const handleRemoveReference = (index: number) => {
+    const updated = references.filter((_, i) => i !== index);
+    setReferences(updated);
+    setReferenceErrors({});
+    if (updated.length === 0) {
+      setIsAddingReference(false);
+    }
+  };
+
+  const handleReferenceChange = (index: number, field: string, value: string) => {
+    const updated = [...references];
+    updated[index] = { ...updated[index], [field]: value };
+    setReferences(updated);
+    // Clear error for this field
+    setReferenceErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[`${index}_${field}`];
+      return newErrors;
+    });
+  };
+
+  const validateReferences = (): boolean => {
+    const errors: { [key: string]: string } = {};
+    const mobilePattern = /^[6-9]\d{9}$/;
+
+    references.forEach((ref, index) => {
+      if (!ref.name.trim()) {
+        errors[`${index}_name`] = 'Name is required';
+      }
+      if (!ref.mobile.trim()) {
+        errors[`${index}_mobile`] = 'Mobile is required';
+      } else if (!mobilePattern.test(ref.mobile)) {
+        errors[`${index}_mobile`] = 'Invalid mobile number';
+      }
+      if (!ref.relationship) {
+        errors[`${index}_relationship`] = 'Relationship is required';
+      }
+    });
+
+    setReferenceErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSaveReferences = async () => {
+    if (references.length === 0) return;
+    if (!validateReferences()) return;
+
+    const applicationId = application?._id;
+    if (!applicationId) {
+      setError('No active loan application found to add references');
+      return;
+    }
+
+    try {
+      setIsSavingReferences(true);
+      setError(null);
+      setSuccessMessage(null);
+
+      const token = await getToken();
+      if (!token) {
+        setError('No authentication token found');
+        return;
+      }
+
+      // Combine existing references with new ones
+      const existingRefs = (profileData?.references || []).map(r => ({
+        name: r.name,
+        mobile: r.mobile,
+        relationship: r.relationship
+      }));
+      const allReferences = [...existingRefs, ...references];
+
+      const response = await fetch(`${API_BASE_URL}/api/application/loan/update/${applicationId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ references: allReferences })
+      });
+
+      const result = await response.json();
+
+      if (response.ok && (result.success || result.data)) {
+        setSuccessMessage('References added successfully');
+        setReferences([]);
+        setIsAddingReference(false);
+        // Refresh profile to show updated references
+        await fetchProfile();
+        setTimeout(() => setSuccessMessage(null), 3000);
+      } else {
+        setError(result.message || 'Failed to add references');
+      }
+    } catch (err: any) {
+      console.error('Failed to save references:', err);
+      setError(err.message || 'Failed to save references');
+    } finally {
+      setIsSavingReferences(false);
     }
   };
 
@@ -1252,50 +1372,186 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Divider */}
-                    {/* <div className="border-t border-[#E0E0E0]"></div> */}
+                    <div className="border-t border-[#E0E0E0]"></div>
 
                     {/* References Section */}
-                    {/* <div>
-                        <h3 className="text-base sm:text-lg font-semibold text-[#1F8F68] mb-4 sm:mb-6 flex items-center gap-2">
+                    <div>
+                      <div className="flex items-center justify-between mb-4 sm:mb-6">
+                        <h3 className="text-base sm:text-lg font-semibold text-[#1F8F68] flex items-center gap-2">
                           <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                           References
                         </h3>
+                        {!isAddingReference && (
+                          <button
+                            onClick={handleAddReference}
+                            className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-[#1F8F68] text-white text-xs sm:text-sm font-medium rounded-lg hover:bg-[#1a7a59] transition-colors"
+                          >
+                            <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            Add Reference
+                          </button>
+                        )}
+                      </div>
 
-                        {profileData.references && profileData.references.length > 0 ? (
-                          <div className="space-y-4 sm:space-y-6">
-                            {profileData.references.map((reference, index) => (
-                              <div key={reference._id} className="p-4 sm:p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg sm:rounded-xl border-2 border-purple-200">
-                                <h4 className="text-sm sm:text-md font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
-                                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                      {/* Existing References */}
+                      {profileData.references && profileData.references.length > 0 && (
+                        <div className="space-y-4 sm:space-y-6 mb-6">
+                          {profileData.references.map((reference, index) => (
+                            <div key={reference._id} className={`p-4 sm:p-6 bg-gradient-to-br ${reference.verified ? 'from-green-50 to-emerald-50 border-green-200' : 'from-purple-50 to-pink-50 border-purple-200'} rounded-lg sm:rounded-xl border-2`}>
+                              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                                <h4 className="text-sm sm:text-md font-semibold text-gray-800 flex items-center gap-2">
+                                  <Users className={`w-4 h-4 sm:w-5 sm:h-5 ${reference.verified ? 'text-green-600' : 'text-purple-600'}`} />
                                   Reference {index + 1}
                                 </h4>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                                  <InfoField
-                                    icon={<User className="w-5 h-5 text-purple-600" />}
-                                    label="Name"
-                                    value={reference.name}
+                                {reference.verified && (
+                                  <span className="flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-green-100 text-green-700 text-[10px] sm:text-xs font-semibold rounded-full">
+                                    <CheckCircle2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                                    Verified
+                                  </span>
+                                )}
+                              </div>
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                                <InfoField
+                                  icon={<User className={`w-5 h-5 ${reference.verified ? 'text-green-600' : 'text-purple-600'}`} />}
+                                  label="Name"
+                                  value={reference.name}
+                                />
+                                <InfoField
+                                  icon={<Phone className={`w-5 h-5 ${reference.verified ? 'text-green-600' : 'text-purple-600'}`} />}
+                                  label="Mobile"
+                                  value={reference.mobile}
+                                />
+                                <InfoField
+                                  icon={<Users className={`w-5 h-5 ${reference.verified ? 'text-green-600' : 'text-purple-600'}`} />}
+                                  label="Relationship"
+                                  value={reference.relationship}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Add New References Form */}
+                      {isAddingReference && (
+                        <div className="space-y-4">
+                          {references.map((ref, index) => (
+                            <div key={index} className="p-4 sm:p-6 bg-white rounded-lg sm:rounded-xl border-2 border-dashed border-purple-300">
+                              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                                <h4 className="text-sm sm:text-md font-semibold text-gray-800 flex items-center gap-2">
+                                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                                  New Reference {index + 1}
+                                </h4>
+                                <button
+                                  onClick={() => handleRemoveReference(index)}
+                                  className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                                <div>
+                                  <label className="text-xs text-gray-500 mb-1 block">Name</label>
+                                  <input
+                                    type="text"
+                                    value={ref.name}
+                                    onChange={(e) => handleReferenceChange(index, 'name', e.target.value)}
+                                    placeholder="Enter name"
+                                    className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 ${
+                                      referenceErrors[`${index}_name`] ? 'border-red-400' : 'border-gray-300'
+                                    }`}
                                   />
-                                  <InfoField
-                                    icon={<Phone className="w-5 h-5 text-purple-600" />}
-                                    label="Mobile"
-                                    value={reference.mobile}
+                                  {referenceErrors[`${index}_name`] && (
+                                    <p className="text-red-500 text-xs mt-1">{referenceErrors[`${index}_name`]}</p>
+                                  )}
+                                </div>
+                                <div>
+                                  <label className="text-xs text-gray-500 mb-1 block">Mobile</label>
+                                  <input
+                                    type="tel"
+                                    value={ref.mobile}
+                                    onChange={(e) => handleReferenceChange(index, 'mobile', e.target.value.replace(/\D/g, '').slice(0, 10))}
+                                    placeholder="Enter 10-digit mobile"
+                                    maxLength={10}
+                                    className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 ${
+                                      referenceErrors[`${index}_mobile`] ? 'border-red-400' : 'border-gray-300'
+                                    }`}
                                   />
-                                  <InfoField
-                                    icon={<Users className="w-5 h-5 text-purple-600" />}
-                                    label="Relationship"
-                                    value={reference.relationship}
-                                  />
+                                  {referenceErrors[`${index}_mobile`] && (
+                                    <p className="text-red-500 text-xs mt-1">{referenceErrors[`${index}_mobile`]}</p>
+                                  )}
+                                </div>
+                                <div>
+                                  <label className="text-xs text-gray-500 mb-1 block">Relationship</label>
+                                  <select
+                                    value={ref.relationship}
+                                    onChange={(e) => handleReferenceChange(index, 'relationship', e.target.value)}
+                                    className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 ${
+                                      referenceErrors[`${index}_relationship`] ? 'border-red-400' : 'border-gray-300'
+                                    }`}
+                                  >
+                                    <option value="">Select relationship</option>
+                                    {RELATIONSHIP_TYPES.map((type) => (
+                                      <option key={type.value} value={type.value}>{type.label}</option>
+                                    ))}
+                                  </select>
+                                  {referenceErrors[`${index}_relationship`] && (
+                                    <p className="text-red-500 text-xs mt-1">{referenceErrors[`${index}_relationship`]}</p>
+                                  )}
                                 </div>
                               </div>
-                            ))}
+                            </div>
+                          ))}
+
+                          {/* Action Buttons */}
+                          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                            <button
+                              onClick={handleAddReference}
+                              className="flex items-center justify-center gap-1.5 px-4 py-2 border-2 border-dashed border-purple-300 text-purple-600 text-sm font-medium rounded-lg hover:bg-purple-50 transition-colors"
+                            >
+                              <Plus className="w-4 h-4" />
+                              Add Another Reference
+                            </button>
+                            <div className="flex items-center gap-3 ml-auto">
+                              <button
+                                onClick={() => {
+                                  setReferences([]);
+                                  setIsAddingReference(false);
+                                  setReferenceErrors({});
+                                }}
+                                className="px-4 py-2 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-100 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={handleSaveReferences}
+                                disabled={isSavingReferences}
+                                className="flex items-center gap-2 px-6 py-2 bg-[#1F8F68] text-white text-sm font-medium rounded-lg hover:bg-[#1a7a59] disabled:opacity-50 transition-colors"
+                              >
+                                {isSavingReferences ? (
+                                  <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Saving...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Save className="w-4 h-4" />
+                                    Save References
+                                  </>
+                                )}
+                              </button>
+                            </div>
                           </div>
-                        ) : (
-                          <div className="text-center py-6 sm:py-8 bg-[#FAFAFA] rounded-lg">
-                            <Users className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mx-auto mb-2 sm:mb-3" />
-                            <p className="text-gray-500 text-sm sm:text-base">No references added yet</p>
-                          </div>
-                        )}
-                      </div> */}
+                        </div>
+                      )}
+
+                      {/* Empty State */}
+                      {(!profileData.references || profileData.references.length === 0) && !isAddingReference && (
+                        <div className="text-center py-6 sm:py-8 bg-[#FAFAFA] rounded-lg">
+                          <Users className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mx-auto mb-2 sm:mb-3" />
+                          <p className="text-gray-500 text-sm sm:text-base">No references added yet</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
