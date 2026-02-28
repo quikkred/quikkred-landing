@@ -220,7 +220,7 @@ interface PaginationInfo {
 }
 
 export default function MyLoansPage() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, updateUser } = useAuth();
   const { toast } = useToast();
   const axios = useAxios();
   const router = useRouter();
@@ -722,12 +722,13 @@ export default function MyLoansPage() {
       });
 
       if (response.success) {
-        setReapplySuccess('Your reapplication has been submitted successfully! We will process it shortly.');
+        setReapplySuccess('Reapplication submitted! Redirecting to continue your application...');
+        // Reset isSubmit so the form shows steps instead of success page
+        updateUser({ isSubmit: false });
         setTimeout(() => {
           resetReapplyModal();
-          fetchLoans();
-          fetchDashboard();
-        }, 3000);
+          router.push('/apply/quick');
+        }, 2000);
       } else {
         setReapplyError(response.message || 'Failed to submit reapplication');
       }
