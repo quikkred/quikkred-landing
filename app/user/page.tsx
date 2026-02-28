@@ -734,12 +734,23 @@ export default function UserDashboard() {
     }
   };
 
-  // Fetch Reapply Eligibility when no active loan
+  // Check if there's any active application or loan (non-terminal status)
+  const hasActiveApplication = (() => {
+    if (data?.activeLoan) return true;
+    if (data?.oldApplication) return true;
+    if (data?.applicationStatus) {
+      const terminalStatuses = ['REJECTED', 'CLOSED'];
+      return !terminalStatuses.includes(data.applicationStatus);
+    }
+    return false;
+  })();
+
+  // Fetch Reapply Eligibility when no active loan and no active application
   useEffect(() => {
-    if (data?.customerId && !data?.activeLoan) {
+    if (data?.customerId && !hasActiveApplication) {
       fetchReapplyEligibility();
     }
-  }, [data?.customerId, data?.activeLoan]);
+  }, [data?.customerId, hasActiveApplication]);
 
   // Authorize E-Mandate with Razorpay Checkout
   const handleAuthorizeEmandate = async () => {
@@ -1077,8 +1088,8 @@ export default function UserDashboard() {
           </motion.div>
         )}
 
-        {/* Quick Reapply Card - Show when eligible and no active loan */}
-        {reapplyEligibility?.isEligible && !data?.activeLoan && !reapplyEligibility?.isExpired && (
+        {/* Quick Reapply Card - Show when eligible, no active loan, and no active application */}
+        {reapplyEligibility?.isEligible && !hasActiveApplication && !reapplyEligibility?.isExpired && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
