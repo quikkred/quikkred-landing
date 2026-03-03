@@ -21,6 +21,7 @@ import { API_BASE_URL } from '@/lib/config';
 import getToken from '@/lib/getToken';
 import useAxios from '@/hooks/useAxios';
 import { useDashboard } from '@/store/hooks/useDashboard';
+import { useApplication } from '@/contexts/ApplicationContext';
 
 interface Loan {
   id: string;
@@ -220,6 +221,7 @@ interface PaginationInfo {
 }
 
 export default function MyLoansPage() {
+  const { getCustomer } = useApplication();
   const { user, isLoading, updateUser } = useAuth();
   const { toast } = useToast();
   const axios = useAxios();
@@ -700,6 +702,7 @@ export default function MyLoansPage() {
       setIsReapplyModalOpen(true);
     } finally {
       setReapplyLoading(false);
+      // getCustomer();
     }
   };
 
@@ -713,6 +716,7 @@ export default function MyLoansPage() {
     setReapplyError(null);
 
     try {
+       getCustomer();
       const response = await loansService.submitReapplication({
         customerId: selectedLoanForReapply.customerId,
         loanAmount: reapplyEligibility?.maxAmount || 0,
@@ -724,7 +728,7 @@ export default function MyLoansPage() {
       if (response.success) {
         setReapplySuccess('Reapplication submitted! Redirecting to continue your application...');
         // Reset isSubmit so the form shows steps instead of success page
-        updateUser({ isSubmit: false });
+        updateUser({ isSubmit: false, bsaInitiated: false });
         setTimeout(() => {
           resetReapplyModal();
           router.push('/apply/quick');
