@@ -49,6 +49,7 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, o
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
     const requestRef = useRef<number | null>(null);
+    const isActiveRef = useRef(false);
     const axios = useAxios();
 
     const [isModelReady, setIsModelReady] = useState(!!globalDetector);
@@ -61,21 +62,30 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, o
     const [statusMsg, setStatusMsg] = useState<{ type: 'error' | 'success' | null, text: string }>({ type: null, text: "" });
 
     useEffect(() => {
-        if (!isOpen) return;
+        if (!isOpen) {
+            isActiveRef.current = false;
+            stopCamera();
+            return;
+        }
+        
         document.body.style.overflow = "hidden";
+        isActiveRef.current = true;
 
         const startEngine = async () => {
             if (!globalDetector) {
                 await preloadFaceDetector();
             }
-            setIsModelReady(true);
-            startCamera();
+            if (isActiveRef.current) {
+                setIsModelReady(true);
+                startCamera();
+            }
         };
 
         startEngine();
 
         return () => {
             document.body.style.overflow = "unset";
+            isActiveRef.current = false;
             stopCamera();
         };
     }, [isOpen]);
@@ -85,22 +95,36 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, o
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
             });
-            if (videoRef.current) {
+            if (videoRef.current && isActiveRef.current) {
                 videoRef.current.srcObject = stream;
                 streamRef.current = stream;
                 videoRef.current.onloadeddata = () => {
-                    // Start detection loop
-                    requestRef.current = requestAnimationFrame(predictLoop);
+                    if (isActiveRef.current) {
+                        requestRef.current = requestAnimationFrame(predictLoop);
+                    }
                 };
+            } else {
+                // If it became inactive while waiting for stream
+                stream.getTracks().forEach(t => t.stop());
             }
         } catch (err) {
-            setStatusMsg({ type: 'error', text: "Camera access denied. Check your browser permissions." });
+            if (isActiveRef.current) {
+                setStatusMsg({ type: 'error', text: "Camera access denied. Check your browser permissions." });
+            }
         }
     };
 
     // FIXED: TypeScript recursion error fix using explicit function declaration
     function predictLoop() {
-        if (!videoRef.current || !globalDetector || videoRef.current.readyState !== 4) {
+        if (!isActiveRef.current || !videoRef.current || !globalDetector || capturedImage) {
+            if (requestRef.current) {
+                cancelAnimationFrame(requestRef.current);
+                requestRef.current = null;
+            }
+            return;
+        }
+
+        if (videoRef.current.readyState !== 4) {
             requestRef.current = requestAnimationFrame(predictLoop);
             return;
         }
@@ -134,7 +158,9 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, o
             }
         } catch (e) { /* silent frame drop */ }
 
-        requestRef.current = requestAnimationFrame(predictLoop);
+        if (isActiveRef.current && !capturedImage) {
+            requestRef.current = requestAnimationFrame(predictLoop);
+        }
     }
 
     const capturePhoto = () => {
@@ -148,8 +174,11 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, o
             ctx.translate(canvas.width, 0);
             ctx.scale(-1, 1);
             ctx.drawImage(videoRef.current, 0, 0);
-            setCapturedImage(canvas.toDataURL("image/jpeg", 0.95));
-            if (requestRef.current) cancelAnimationFrame(requestRef.current);
+            const dataUrl = canvas.toDataURL("image/jpeg", 0.95);
+            setCapturedImage(dataUrl);
+            
+            // ✅ Stop camera immediately after capture so the light turns off
+            stopCamera();
         }
     };
 
@@ -206,8 +235,17 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, o
     };
 
     const stopCamera = () => {
-        if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
-        if (requestRef.current) cancelAnimationFrame(requestRef.current);
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(t => t.stop());
+            streamRef.current = null;
+        }
+        if (videoRef.current) {
+            videoRef.current.srcObject = null;
+        }
+        if (requestRef.current) {
+            cancelAnimationFrame(requestRef.current);
+            requestRef.current = null;
+        }
     };
 
     if (!isOpen) return null;
