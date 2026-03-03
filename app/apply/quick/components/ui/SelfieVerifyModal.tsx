@@ -53,7 +53,7 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, o
     const axios = useAxios();
 
     const [isModelReady, setIsModelReady] = useState(!!globalDetector);
-    const [feedback, setFeedback] = useState<string>("Initializing...");
+    const [feedback, setFeedback] = useState<string>("Please wait, camera is getting ready...");
     const [faceQuality, setFaceQuality] = useState<number>(0);
     const [capturedImage, setCapturedImage] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -109,7 +109,7 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, o
             }
         } catch (err) {
             if (isActiveRef.current) {
-                setStatusMsg({ type: 'error', text: "Camera access denied. Check your browser permissions." });
+                setStatusMsg({ type: 'error', text: "Camera permission is blocked. Please allow camera access and try again." });
             }
         }
     };
@@ -133,10 +133,10 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, o
             const detections = globalDetector.detectForVideo(videoRef.current, performance.now()).detections;
 
             if (detections.length === 0) {
-                setFeedback("Position your face");
+                setFeedback("Show your full face in the frame");
                 setFaceQuality(0);
             } else if (detections.length > 1) {
-                setFeedback("Only one person allowed");
+                setFeedback("Only one face should be visible");
                 setFaceQuality(0);
             } else {
                 const box = detections[0].boundingBox;
@@ -145,13 +145,13 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, o
                     const centerX = (box.originX + box.width / 2) / videoRef.current.videoWidth;
 
                     if (faceSize < 0.26) {
-                        setFeedback("Move closer");
+                        setFeedback("Move your face a little closer");
                         setFaceQuality(30);
                     } else if (Math.abs(centerX - 0.5) > 0.12) {
-                        setFeedback("Center your face");
+                        setFeedback("Keep your face in the center");
                         setFaceQuality(60);
                     } else {
-                        setFeedback("Perfect, hold still");
+                        setFeedback("Great! Hold still and capture");
                         setFaceQuality(100);
                     }
                 }
@@ -272,7 +272,7 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, o
                     {!isModelReady ? (
                         <div className="flex flex-col items-center gap-3">
                             <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
-                            <p className="text-sm font-medium text-slate-500">Starting AI Engine...</p>
+                            <p className="text-sm font-medium text-slate-500">Preparing face verification...</p>
                         </div>
                     ) : (
                         <div className="relative w-full h-full">
@@ -316,6 +316,15 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, o
                             }`}>
                             {statusMsg.type === 'success' ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
                             <p className="text-xs font-semibold">{statusMsg.text}</p>
+                        </div>
+                    )}
+
+                    {!capturedImage && (
+                        <div className="mb-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                            <p className="text-[11px] font-semibold text-slate-700">For a clear selfie:</p>
+                            <p className="text-[11px] text-slate-600">Keep your face close and centered.</p>
+                            <p className="text-[11px] text-slate-600">Use good lighting and look straight at the camera.</p>
+                            <p className="text-[11px] text-slate-600">Make sure only your face is visible.</p>
                         </div>
                     )}
 
