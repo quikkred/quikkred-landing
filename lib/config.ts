@@ -10,6 +10,10 @@ if (!RAZORPAY_KEY) {
   console.warn("NEXT_PUBLIC_RAZORPAY_KEY is not set");
 }
 
+// quick link
+// export const QUICK_FORM_URL = "/apply/quick";
+export const QUICK_FORM_URL = "/apply/quick";
+
 // Helper function to build API URLs
 
 export const getApiUrl = (endpoint: string): string => {
