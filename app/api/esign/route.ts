@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // SurePass API Configuration
-const SUREPASS_BASE_URL = 'https://kyc-api.surepass.io/api/v1';
+const SUREPASS_BASE_URL = process.env.SUREPASS_BASE_URL || 'https://kyc-api.surepass.io/api/v1';
 const SUREPASS_API_KEY = process.env.SUREPASS_API_KEY || '';
 
 // ============================================
