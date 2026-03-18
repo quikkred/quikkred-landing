@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/toast';
-import { API_BASE_URL } from '@/lib/config';
+import { API_BASE_URL, RAZORPAY_KEY } from '@/lib/config';
 import { useDashboard } from '@/store/hooks/useDashboard';
 import { useLoans } from '@/store/hooks/useLoans';
 import { signOut } from 'next-auth/react';
@@ -409,7 +409,7 @@ export default function UserDashboard() {
 
       // Step 3: Open Razorpay checkout with order details from API response
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || "rzp_live_S4tgUkVdbPaFdo",
+        key: RAZORPAY_KEY,
         amount: amountInPaise,
         currency: "INR",
         order_id: orderId,

@@ -21,7 +21,7 @@ import {
   formatDateForInput,
   toBoolean,
 } from "@/lib/helpers/quickApply";
-import { API_BASE_URL } from "@/lib/config";
+import { API_BASE_URL, RAZORPAY_KEY } from "@/lib/config";
 import getToken from "@/lib/getToken";
 import { getSession, signIn } from "next-auth/react";
 import GoogleVerify from "../quick/components/ui/GoogleVerify";
@@ -2865,7 +2865,7 @@ export default function QuickLoanApplication() {
         if (subscriptionId) {
           // Open Razorpay checkout with subscription
           const options = {
-            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || "rzp_live_S4tgUkVdbPaFdo",
+            key: RAZORPAY_KEY,
             subscription_id: subscriptionId,
             name: "Quikkred",
             description: "UPI AutoPay Mandate Approval",

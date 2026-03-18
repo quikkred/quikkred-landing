@@ -89,7 +89,7 @@ export function ExportButton({
     } finally {
       setExporting(null);
     }
-  };   
+  };
 
   if (variant === 'icon') {
     return (
