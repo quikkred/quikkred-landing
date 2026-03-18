@@ -597,7 +597,7 @@ export default function LoginPage() {
                           animate={{ opacity: 1, y: 0 }}
                         >
                           <label className="block text-sm font-medium mb-2">Enter OTP</label>
-                          <div className="relative">
+                          {/* <div className="relative">
                             <KeyRound className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                             <input
                               type="text"
@@ -606,6 +606,18 @@ export default function LoginPage() {
                               maxLength={6}
                               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] focus:border-[#25B181] bg-white text-center text-2xl tracking-widest font-bold"
                               placeholder="000000"
+                            />
+                          </div> */}
+                          <div className="flex justify-center py-2">
+                            <OTPField
+                              value={otp}
+                              onChange={(val: string) => {
+                                setOtp(val);
+                                if (error) setError(null);
+                              }}
+                              length={6}
+                              error={!!error}
+                              autoFocus={true}
                             />
                           </div>
                           <div className="mt-3 flex justify-between items-center text-sm">
