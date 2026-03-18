@@ -16,7 +16,7 @@ interface RazorpayPayInProps {
 
 export default function RazorpayPayIn({
   amount = 1000, // Amount in paise (1000 = ₹10)
-  razorpayKey = "rzp_test_xxxxxxxxxxxxx", // Your Razorpay Key
+  razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY || "", // Your Razorpay Key
   name = "Quikkred",
   description = "EMI Payment",
   prefillName = "",
