@@ -506,11 +506,32 @@
         "disclaimer": "અસ્વીકરણ",
         "grievance": "ફરિયાદ નિવારણ",
         "cookiePolicy": "કુકી નીતિ",
+        "itSecurityPolicy": "IT સુરક્ષા નીતિ",
+        "disclaimerDisclosure": "અસ્વીકરણ અને જાહેરાત",
+        "refundCancellation": "પરત અને રદ્દીકરણ",
         "fairPracticeCode": "ન્યાયી પ્રથા કોડ",
         "interestRatePolicy": "વ્યાજ દર નીતિ",
         "kycPolicy": "KYC નીતિ",
         "rbiGuidelines": "RBI માર્ગદર્શિકા"
       }
+     },
+"policyLinks": {
+  "title": "નીતિ લિંક્સ",
+  "items": {
+    "fairPracticeCode": "ન્યાયી વ્યવહાર સંહિતા",
+    "interestRatePolicy": "વ્યાજ દર નીતિ",
+    "kycPolicy": "KYC / AML નીતિ",
+    "grievanceRedressal": "ફરિયાદ નિવારણ તંત્ર",
+    "collectionPolicy": "વસૂલાત નીતિ",
+    "privacyPolicy": "ગોપનીયતા નીતિ",
+    "itPolicy": "IT નીતિ",
+    "creditPolicy": "ક્રેડિટ નીતિ",
+    "lendingPolicy": "ધિરાણ નીતિ",
+    "refundCancellation": "પરત અને રદ્દીકરણ",
+    "disclaimerDisclosure": "અસ્વીકરણ અને જાહેરાત",
+    "settlementWriteoffPolicy": "સમાધાન અને રાઇટ-ઑફ નીતિ",
+    "investmentPolicy": "રોકાણ નીતિ"
+  }
     },
     "contact": {
       "title": "અમારો સંપર્ક કરો",
