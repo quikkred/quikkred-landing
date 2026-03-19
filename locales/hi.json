@@ -831,6 +831,7 @@
         "grievance": "शिकायत निवारण",
         "cookiePolicy": "कुकी नीति",
         "fairPracticeCode": "निष्पक्ष व्यवहार संहिता",
+        "itSecurityPolicy": "आईटी सुरक्षा नीति",
         "interestRatePolicy": "ब्याज दर नीति",
         "kycPolicy": "केवाईसी नीति",
         "rbiGuidelines": "आरबीआई दिशानिर्देश",
@@ -855,14 +856,16 @@
         "settlementWriteoffPolicy": "निपटान और राइट-ऑफ नीति",
         "investmentPolicy": "निवेश नीति"
       }
-    },
-    "contact": {
-      "title": "संपर्क करें",
-      "address": "1008, 10वीं मंजिल, विक्रांत टॉवर, राजेंद्र प्लेस, नई दिल्ली, दिल्ली, पिन कोड 110008",
-      "email": "support@quikkred.in",
-      "phone": "+91-9311913854",
-      "whatsapp": "+91-9311913848",
-      "hours": "सोम-शनि: सुबह 9 - शाम 6 बजे"
+   },
+"contact": {
+  "title": "संपर्क करें",
+  "address": "1008, 10वीं मंजिल, विक्रांत टॉवर, राजेंद्र प्लेस, नई दिल्ली, दिल्ली, पिन कोड 110008",
+  "email": "support@quikkred.in",
+  "phone": "+91-9311913854",
+  "whatsapp": "+91-9311913848",
+  "callLabel": "कॉल",
+  "whatsappLabel": "व्हाट्सएप",
+  "hours": "सोम-शनि: सुबह 9 - शाम 6 बजे"
     },
     "social": {
       "title": "हमें फ़ॉलो करें",
