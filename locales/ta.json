@@ -483,10 +483,26 @@
     "disclaimer": "மறுப்பு அறிவிப்பு",
     "grievance": "புகார் தீர்வு",
     "cookiePolicy": "குக்கீ கொள்கை",
+    "refundCancellation": "தொகை திரும்பல் மற்றும் ரத்து",
+    "disclaimerDisclosure": "மறுப்பு மற்றும் வெளிப்பாடு",
     "fairPracticeCode": "நீதிமான நடைமுறை குறியீடு",
+    "itSecurityPolicy": "IT பாதுகாப்பு கொள்கை",  
     "interestRatePolicy": "வட்டி விகிதக் கொள்கை",
     "kycPolicy": "KYC கொள்கை",
     "rbiGuidelines": "RBI வழிகாட்டுதல்கள்"
+  }
+},
+"policyLinks": {
+  "title": "கொள்கை இணைப்புகள்",
+  "items": {
+    "kycPolicy": "KYC / AML கொள்கை",
+    "grievanceRedressal": "குறை தீர்க்கும் பொறிமுறை",
+    "collectionPolicy": "வசூல் கொள்கை",
+    "privacyPolicy": "தனியுரிமை கொள்கை",
+    "creditPolicy": "கடன் கொள்கை",
+    "lendingPolicy": "கடன் வழங்கல் கொள்கை",
+    "interestRatePolicy": "வட்டி விகித கொள்கை",
+    "settlementWriteoffPolicy": "தீர்வு மற்றும் ரைட்-ஆஃப் "
   }
 },
 "contact": {
