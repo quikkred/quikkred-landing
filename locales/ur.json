@@ -501,11 +501,27 @@
         "grievance": "شکایات کا ازالہ",
         "cookiePolicy": "کوکی پالیسی",
         "fairPracticeCode": "منصفانہ عمل کوڈ",
+        "refundCancellation": "واپسی اور منسوخی",
+        "disclaimerDisclosure": "دستبرداری اور انکشاف",
+        "itSecurityPolicy": "IT سیکیورٹی پالیسی",
         "interestRatePolicy": "سود کی شرح کی پالیسی",
         "kycPolicy": "KYC پالیسی",
         "rbiGuidelines": "RBI رہنما خطوط"
       }
     },
+    "policyLinks": {
+  "title": "پالیسی لنکس",
+  "items": {
+    "kycPolicy": "KYC / AML پالیسی",
+    "grievanceRedressal": "شکایت ازالہ طریقہ کار",
+    "collectionPolicy": "وصولی پالیسی",
+    "privacyPolicy": "رازداری پالیسی",
+    "creditPolicy": "کریڈٹ پالیسی",
+    "lendingPolicy": "قرض پالیسی",
+    "interestRatePolicy": "شرح سود پالیسی",
+    "settlementWriteoffPolicy": "تصفیہ اور رائٹ-آف پالیسی"
+  }
+},
     "contact": {
       "title": "رابطہ کریں",
       "address": "ممبئی، مہاراشٹر",
