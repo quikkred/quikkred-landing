@@ -35,8 +35,7 @@ const nextConfig: NextConfig = {
   },
 
   async headers() {
-    const apiHost = process.env.NEXT_PUBLIC_API_URL || 'https://alpha.quikkred.in';
-    const apiDomain = new URL(apiHost).origin;
+    const apiDomain = process.env.NEXTAUTH_URL || "https://quikkred.in";
 
     return [
       {
