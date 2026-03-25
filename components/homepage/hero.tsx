@@ -262,7 +262,7 @@ export default function Hero() {
         <div className="container mx-auto">
           <div className="flex items-center justify-center gap-2 flex-wrap">
             <Globe className="w-4 h-4 text-teal-600" />
-            <span className="text-xs text-slate-500 mr-2">Available in:</span>
+            <span className="text-xs text-slate-500 mr-2">{t?.hero?.languageBar?.availableIn || "Available in:"}</span>
             {availableLanguages.slice(0, 8).map((lang, index) => (
               <motion.button
                 key={lang.code}
