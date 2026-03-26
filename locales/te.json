@@ -593,13 +593,28 @@
     "disclaimer": "నిరాకరణ",
     "grievance": "ఫిర్యాదుల పరిష్కారం",
     "cookiePolicy": "కుకీ పాలసీ",
+    "refundCancellation": "వాపసు మరియు రద్దు",
+    "disclaimerDisclosure": "నిరాకరణ మరియు వెల్లడింపు",
     "fairPracticeCode": "ఫెయిర్ ప్రాక్టీస్ కోడ్",
+    "itSecurityPolicy": "IT భద్రతా విధానం",
     "interestRatePolicy": "వడ్డీ రేటు విధానం",
     "kycPolicy": "KYC విధానం",
     "rbiGuidelines": "RBI మార్గదర్శకాలు"
   }
-}
-,
+},
+"policyLinks": {
+  "title": "విధాన లింక్లు",
+  "items": {
+    "kycPolicy": "KYC / AML విధానం",
+    "grievanceRedressal": "ఫిర్యాదు పరిష్కార యంత్రాంగం",
+    "collectionPolicy": "వసూలు విధానం",
+    "privacyPolicy": "గోప్యతా విధానం",
+    "creditPolicy": "క్రెడిట్ విధానం",
+    "lendingPolicy": "రుణ విధానం",
+    "interestRatePolicy": "వడ్డీ రేటు విధానం",
+    "settlementWriteoffPolicy": "పరిష్కారం మరియు రైట్-ఆఫ్ "
+  }
+},
     "contact": {
       "title": "మమ్మల్ని సంప్రదించండి",
       "address": "ముంబై, మహారాష్ట్ర",
