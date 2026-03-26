@@ -393,10 +393,26 @@
         "grievance": "ଅଭିଯୋଗ ନିବାରଣ",
         "cookiePolicy": "କୁକି ନୀତି",
         "fairPracticeCode": "ଉଚିତ୍ ଅଭ୍ୟାସ ସଂହିତା",
+        "refundCancellation": "ଫେରସ୍ତ ଏବଂ ବାତିଲ",
+        "disclaimerDisclosure": "ଅସ୍ୱୀକରଣ ଏବଂ ପ୍ରକାଶ",
+        "itSecurityPolicy": "IT ସୁରକ୍ଷା ନୀତି",
         "interestRatePolicy": "ସୁଧ ହାର ନୀତି",
         "kycPolicy": "କେୱାଇସି ନୀତି",
         "rbiGuidelines": "ଆରବିଆଇ ନିର୍ଦ୍ଦେଶାବଳୀ"
       }
+    },
+      "policyLinks": {
+  "title": "ନୀତି ଲିଙ୍କଗୁଡ଼ିକ",
+  "items": {
+    "kycPolicy": "KYC / AML ନୀତି",
+    "grievanceRedressal": "ଅଭିଯୋଗ ନିବାରଣ ଯନ୍ତ୍ରଣା",
+    "collectionPolicy": "ସଂଗ୍ରହ ନୀତି",
+    "privacyPolicy": "ଗୋପନୀୟତା ନୀତି",
+    "creditPolicy": "କ୍ରେଡ଼ିଟ ନୀତି",
+    "lendingPolicy": "ଋଣ ନୀତି",
+    "interestRatePolicy": "ସୁଧ ହାର ନୀତି",
+    "settlementWriteoffPolicy": "ସମାଧାନ ଏବଂ ରାଇଟ-ଅଫ ନୀତି"
+  }
     },
     "contact": {
       "title": "ସମ୍ପର୍କ କରନ୍ତୁ",
