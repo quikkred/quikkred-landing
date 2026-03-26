@@ -1129,7 +1129,7 @@
   "calculator": {
     "title": "EMI कॅल्क्युलेटर",
     "subtitle": "तुमचा मासिक हप्ते लगेच पहा",
-    "oanAmount": "कर्ज रक्कम",
+    "loanAmount": "कर्ज रक्कम",
     "tenure": "कालावधी",
     "interestRate": "व्याजदर (महिन्याला)",
     "months": "महिने",

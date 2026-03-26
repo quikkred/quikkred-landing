@@ -65,6 +65,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@netlify/plugin-nextjs": "^5.13.3",
+    "@playwright/test": "^1.58.2",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/react": "^19.2.14",
