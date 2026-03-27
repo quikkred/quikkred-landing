@@ -303,8 +303,9 @@ export default function Hero() {
                   onClick={() => setLanguageDropdownOpen(!languageDropdownOpen)}
                   className="text-xs text-[#25B181] hover:text-[#1F8F68] flex items-center gap-1 font-medium min-h-[32px] px-2"
                 >
-                  <span className="sm:hidden">+{availableLanguages.length - 4}</span>
-                  <span className="hidden sm:inline">+{availableLanguages.length - 8} {t?.hero?.languageBar?.more || "more"}</span>
+                  {/* <span className="sm:hidden">+{availableLanguages.length - 4}</span>
+                  <span className="hidden sm:inline">+{availableLanguages.length - 8} {t?.hero?.languageBar?.more || "more"}</span> */}
+                  <span className="inline">+{availableLanguages.length - 8} {t?.hero?.languageBar?.more || "more"}</span>
                   <ChevronDown className={`w-3 h-3 transition-transform ${languageDropdownOpen ? "rotate-180" : ""}`} />
                 </button>
                 <AnimatePresence>
