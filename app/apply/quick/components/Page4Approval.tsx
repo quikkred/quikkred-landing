@@ -5,6 +5,7 @@ import useAxios from "@/hooks/useAxios";
 import useStorage from "@/hooks/useStorage";
 import { StorageApplicationForm } from "@/interfaces/storageInterface";
 import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
+import { RAZORPAY_KEY } from "@/lib/config";
 import { AxiosError } from "axios";
 import { motion } from "framer-motion";
 import { CheckCircle, CreditCard, FileText, IndianRupee, Loader2, Mail, Phone, Shield, User } from "lucide-react";
@@ -142,7 +143,7 @@ const Page4Approval = ({
         if (subscriptionId) {
           // Open Razorpay checkout with subscription
           const options = {
-            key: "rzp_live_S4tgUkVdbPaFdo",
+            key: RAZORPAY_KEY,
             subscription_id: subscriptionId,
             name: "Quikkred",
             description: "UPI AutoPay Mandate Approval",
