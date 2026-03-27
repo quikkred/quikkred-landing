@@ -176,10 +176,6 @@ export default function ProfilePage() {
     //   router.push('/login');
     //   return;
     // }
-
-    if (result?.success) {
-      console.log('🟢 Profile data loaded successfully');
-    }
   };
 
   const updateProfile = async () => {
@@ -240,7 +236,6 @@ export default function ProfilePage() {
         profileImage: editedData.profileImage || ""
       };
 
-      console.log('🔵 Updating profile...', payload);
       const response = await fetch(`${API_BASE_URL}/api/customer/profile`, {
         method: 'POST',
         headers: {
@@ -251,7 +246,6 @@ export default function ProfilePage() {
       });
 
       const result = await response.json();
-      console.log('🟢 Update Profile Response:', result);
 
       if (response.ok && result.success) {
         // Re-fetch profile data from API instead of using editedData
@@ -424,7 +418,6 @@ export default function ProfilePage() {
       const formData = new FormData();
       formData.append('profileImage', selectedImage);
 
-      console.log('🔵 Uploading profile image...');
       const response = await fetch(`${API_BASE_URL}/api/customer/profile/update`, {
         method: 'PATCH',
         headers: {
@@ -434,7 +427,6 @@ export default function ProfilePage() {
       });
 
       const result = await response.json();
-      console.log('🟢 Upload Response:', result);
 
       if (response.ok && result.success) {
         setSuccessMessage(result.message || 'Profile image updated successfully!');

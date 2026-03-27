@@ -28,7 +28,6 @@ export default async function getUserDetails(): Promise<User | null> {
 
   // 4) Fetch profile from your API using backend token
   try {
-    // console.log("🔵 Fetching user profile from API...");
     const response = await fetch(`${API_BASE_URL}/api/customer/get`, {
       method: "GET",
       headers: {
@@ -39,7 +38,6 @@ export default async function getUserDetails(): Promise<User | null> {
     });
 
     const result = await response.json();
-    // console.log("🔵 User profile API response:", result);
 
     if (!response.ok || !result?.success || !result?.data) {
       return baseUser;

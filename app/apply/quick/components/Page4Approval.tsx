@@ -50,12 +50,9 @@ const Page4Approval = ({
   // Check UPI Autopay status after Razorpay closes (success or dismiss)
   const checkUpiAutoPayStatus = async (subscriptionId: string) => {
     try {
-      console.log("Calling UPI AutoPay status API for subscriptionId:", subscriptionId);
-
       const statusResponse = await axios.get(`/api/upi/upiAutopay/status/${subscriptionId}`);
 
       const statusResult = statusResponse.data;
-      console.log("UPI AutoPay Status Response:", statusResult);
 
       // After status API call, refresh customer data to get updated upiAutoPayStatus
       // await getCustomer();
@@ -138,7 +135,6 @@ const Page4Approval = ({
       if (response.status === 200 || response.status === 201) {
         // Store mandate data
         // setMandateData(result);
-        console.log("result:", result)
 
         // Get subscriptionId from response
         const subscriptionId = result.subscriptionId;
@@ -153,8 +149,6 @@ const Page4Approval = ({
             theme: { color: "#25B181" },
             handler: async function (razorpayResponse: any) {
               // Payment successful - wait 10 seconds for data to update, then call status API
-              console.log("Razorpay payment success:", razorpayResponse);
-              console.log("Waiting 10 seconds before checking status...");
               setMandateVerifying(true);
               await new Promise(resolve => setTimeout(resolve, 10000));
               await checkUpiAutoPayStatus(subscriptionId);
@@ -164,7 +158,6 @@ const Page4Approval = ({
             modal: {
               ondismiss: function () {
                 // User closed the modal without completing
-                console.log("Razorpay modal dismissed");
                 setMandateLoading(false);
                 // setUpiAutopayConsent(false);
               }
@@ -230,9 +223,6 @@ const Page4Approval = ({
 
       // Check if API call was successful
       if (response.status === 200 || response.status === 201) {
-        console.log('✅ Loan application submitted successfully');
-        console.log('📊 Response:', result);
-
         // Store IDs from response
         if (result.data) {
           if (result.data.customerId) localStorage.setItem('userId', result.data.customerId);

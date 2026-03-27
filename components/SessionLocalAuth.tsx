@@ -17,7 +17,6 @@ const SessionLocalAuth = () => {
     useEffect(() => {
         if (typeof window !== "undefined" && sessionData.data) {
             const data: any = sessionData.data;
-            // console.log("Session Data in Providers:", data);
             // ✅ Save important details in localStorage
             localStorage.setItem("userId", data?.user?.id);
             localStorage.setItem("role", data?.role);
