@@ -9,7 +9,6 @@ export default function RBIGuidelinesPage() {
 
   const rbi = t?.policies?.rbiGuidelines;
   const sections = t?.policies?.rbiGuidelines?.sections;
-  console.log(sections)
 
   return (
     <div className="min-h-screen">

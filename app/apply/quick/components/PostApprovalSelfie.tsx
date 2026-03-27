@@ -228,7 +228,6 @@ export default function PostApprovalSelfie({
             selfieFriction.completeTracking(true);
             trackStepCompleted(6, 'Selfie Verification');
 
-            console.log('✅ MOCK: Selfie verified');
             setTimeout(() => {
                 setCameraOpen(false);
                 onNext();

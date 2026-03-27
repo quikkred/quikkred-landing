@@ -8,7 +8,6 @@ import PoliciesLayout from "@/components/layouts/PoliciesLayout";
 export default function GrievanceRedressalPolicyPage() {
   const { t } = useLanguage();
   const grp = t?.policies?.grievanceRedressal;
-  console.log(grp)
 
   return (
     <div className="min-h-screen">
