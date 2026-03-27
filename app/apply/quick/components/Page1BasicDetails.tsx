@@ -47,7 +47,7 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
     const storage = useStorage();
     const searchParams = useSearchParams();
     const [isLoading, setLoading] = useState(false);
-    // console.log(storage);
+    
     const {
         updateKycStatusState
     } = useKycStatus();
@@ -62,8 +62,6 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
 
     // Inside your page component
     const fetchBreFinfactorResult = async () => {
-        console.log('📊 finfactor=success detected, auto-calling BRE finFactor API...');
-
         // 1. Show the modal and set loading to true
         setFinFactorDetails({
             visibility: true,
@@ -76,8 +74,6 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
             const result = response.data;
 
             if (response.status === 200 || response.status === 201) {
-                console.log('✅ BRE finFactor result:', result.data);
-
                 // 2. Set the data and stop loading (The modal stays visible to show the result)
                 setFinFactorDetails({
                     visibility: true, // Keep it visible
@@ -171,7 +167,6 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
             requestedLoanAmount: formData.loanAmount,
         }
 
-        // console.log("basicDetails", basicDetails);
         try {
             setLoading(true);
             const basicResponse = await axios.post("/api/v2/application/loan/create", {
@@ -186,7 +181,6 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
                 try {
                     const response = await axios.get("/api/v2/bre/initialize");
                     if (response.status === 200 || response.status === 201) {
-                        console.log(response.data)
                         if (response.data?.data) {
                             storage.set("breForm", response.data?.data);
                             updateKycStatusState({
@@ -202,7 +196,6 @@ export default function Page1BasicDetails({ formData, setFormData, onNext }: Pag
                     }
                 } catch (error: unknown) {
                     if (error instanceof AxiosError) {
-                        // console.log(error?.response?.data);
                         toast({ variant: "error", title: error?.response?.data?.message || "Kyc Failed", description: "User denied request." });
                         updateKycStatusState({ description: error?.response?.data?.message || "Your application does not meet eligibility criteria" });
                     }

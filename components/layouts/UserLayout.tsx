@@ -103,12 +103,10 @@ const UserLayout = ({ children }: UserLayoutProps) => {
       try {
         const token = await getToken();
         if (!token) {
-          console.log('No auth token found for notifications');
           clearTimeout(timeoutId);
           return;
         }
 
-        // console.log('Fetching notifications...');
         const response = await fetch(`${API_BASE_URL}/api/notification/getAll`, {
           method: 'GET',
           headers: {
@@ -121,11 +119,9 @@ const UserLayout = ({ children }: UserLayoutProps) => {
         clearTimeout(timeoutId);
 
         const result = await response.json();
-        // console.log('Notifications API Response:', result);
 
         // Handle 403 - Access denied for CUSTOMER role
         if (result.status === 403 || response.status === 403) {
-          console.log('Notifications not available for CUSTOMER role');
           setNotifications([]);
           setUserData(prevData => ({
             ...prevData,
@@ -135,14 +131,12 @@ const UserLayout = ({ children }: UserLayoutProps) => {
         }
 
         if (result.success && result.data) {
-          console.log('Notifications fetched:', result.data.length);
           setNotifications(result.data);
           setUserData(prevData => ({
             ...prevData,
             notifications: result.pagination?.total || result.data.length
           }));
         } else {
-          console.log('No notifications or API error:', result.message);
           setNotifications([]);
           setUserData(prevData => ({
             ...prevData,

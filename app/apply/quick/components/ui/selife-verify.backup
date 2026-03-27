@@ -248,29 +248,23 @@ export default function SelfieVerifyModal({ isOpen, onClose, onCapture }: Selfie
                 setError(response.data?.message || 'Verification failed.');
                 return false;
             }
-        } catch (err) {
-            console.error('Face verification error:', err);
-            setError('Verification failed. Please try again.');
-            return false;
+        } catch (err: any) {
+            if (err instanceof AxiosError) {
+                setStatusMsg({ type: 'error', text: err?.response?.data?.error || err?.response?.data?.message || "Server error. Please try again." });
+                resetToCamera();
+            }
+        } finally {
+            setIsProcessing(false);
         }
     };
 
-    const confirmCapture = async () => {
-        if (!capturedImage || !capturedFile) return;
-        setIsVerifying(true);
-        setError('');
-        
-        const isLive = await verifyFaceLiveness(capturedFile);
-
-        if (isLive) {
-            setVerificationStatus('success');
-            setTimeout(() => {
-                onCapture(capturedFile);
-                handleClose();
-            }, 1000);
-        } else {
-            setVerificationStatus('failed');
-            setIsVerifying(false);
+    const stopCamera = () => {
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(t => t.stop());
+            streamRef.current = null;
+        }
+        if (videoRef.current) {
+            videoRef.current.srcObject = null;
         }
     };
 

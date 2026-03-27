@@ -53,8 +53,6 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
 
             // STEP 7: Handle API response
             if ((response.status === 200 || response.status === 201) && result.data?.isAadhaarVerify === true) {
-                console.log('✅ Aadhaar verified successfully from status API');
-                console.log('📝 Backend has updated isAadhaarVerify = true in database');
                 const user = await fetchUserData();
 
                 setFormData((prev) => ({
@@ -77,7 +75,6 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
                 window.history.replaceState({}, '', cleanUrl);
                 tracking.trackEvent('CUSTOM_EVENT', { event: TRACKING_EVENTS.AADHAAR_VERIFIED });
             } else {
-                console.log('ℹ️ Aadhaar not verified:', result.message || 'Verification pending or failed');
                 // setAadhaarVerified(false);
                 setFormData((prev) => ({
                     ...prev,
@@ -186,7 +183,7 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
 
             if (data.success) {
                 const user = await fetchUserData();
-                // console.log("aadhaar user response:", user);
+                
                 // ✅ Auto-fill Name & DOB on success
                 const formattedDOB = user?.dateOfBirth || data.data?.date_of_birth || data.data?.dob;
 
