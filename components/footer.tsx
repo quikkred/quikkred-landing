@@ -292,7 +292,7 @@ export function Footer() {
                     className="text-slate-400 hover:text-[#25B181] transition-colors flex items-center gap-1.5 text-sm"
                   >
                     <ChevronRight className="w-3 h-3 flex-shrink-0" />
-                    <span className="truncate">{link.name}</span>
+                    <span>{link.name}</span>
                   </Link>
                 </li>
               ))}
