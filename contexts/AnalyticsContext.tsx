@@ -188,10 +188,6 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     };
 
     setSession(newSession);
-
-    if (debugMode) {
-      // console.log('Analytics: Session started', newSession);
-    }
   }, [user, debugMode]);
 
   const endSession = useCallback(() => {
@@ -213,10 +209,6 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     // Send session data to analytics service
     if (isEnabled) {
       sendAnalyticsData('session_end', updatedSession);
-    }
-
-    if (debugMode) {
-      // console.log('Analytics: Session ended', updatedSession);
     }
   }, [session, pageViews, userActions, isEnabled, debugMode]);
 
@@ -260,10 +252,6 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
     if (isEnabled) {
       sendAnalyticsData('page_view', pageView);
     }
-
-    if (debugMode) {
-      // console.log('Analytics: Page view tracked', pageView);
-    }
   }, [isEnabled, user, session, pageViews, debugMode, currentPageStart]);
 
   const trackAction = useCallback((
@@ -289,10 +277,6 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
 
     if (isEnabled) {
       sendAnalyticsData('user_action', userAction);
-    }
-
-    if (debugMode) {
-      // console.log('Analytics: Action tracked', userAction);
     }
   }, [isEnabled, user, session, debugMode]);
 
@@ -393,11 +377,6 @@ export function AnalyticsProvider({ children }: { children: React.ReactNode }) {
   }, [pageViews, userActions]);
 
   const sendAnalyticsData = useCallback((event: string, data: any) => {
-    // In a real app, send to analytics service
-    if (debugMode) {
-      // console.log(`Analytics Event: ${event}`, data);
-    }
-
     // Mock API call
     fetch('/api/analytics', {
       method: 'POST',

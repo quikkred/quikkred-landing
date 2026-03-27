@@ -106,7 +106,6 @@ export default function PostApprovalBank({
             const bankCode = ifsc.slice(0, 4);
             const bankName = mockBanks[bankCode] || 'Test Bank';
             setFormData((prev: any) => ({ ...prev, bankName }));
-            console.log('✅ MOCK: IFSC lookup -', ifsc, bankName);
             setIfscLoading(false);
             return;
         }
@@ -170,7 +169,6 @@ export default function PostApprovalBank({
         // MOCK MODE
         if (MOCK_MODE) {
             await new Promise(resolve => setTimeout(resolve, 1000));
-            console.log('✅ MOCK: Bank details saved');
 
             // Track success
             trackBankVerifySuccess(formData.bankName);

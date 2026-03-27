@@ -18,7 +18,6 @@ export async function POST(req: NextRequest) {
 
     if (!profileRes.ok) return NextResponse.json({ error: "Truecaller fetch failed" }, { status: 401 });
     const profileData = await profileRes.json();
-    console.log("profile data", profileData)
 
     // 2. FORWARD TO MAIN BACKEND (Crucial Step)
     // const backendRes = await fetch(`${API_BASE_URL}/api/test2/truecaller/callback`, {
@@ -51,9 +50,8 @@ export async function GET(req: NextRequest) {
   const requestId = req.nextUrl.searchParams.get("requestId");
   if (!requestId) return NextResponse.json({ error: "No ID" }, { status: 400 });
 
-  console.log("Polling status for requestId:", requestId);
   const record = tcStorage.get(requestId);
-  console.log("Current record:", record);
+  
   if (record?.status === 'VERIFIED') {
     return NextResponse.json({ status: "VERIFIED" });
   }

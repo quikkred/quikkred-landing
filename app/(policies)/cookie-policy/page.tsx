@@ -8,7 +8,6 @@ export default function CookiePolicyPage() {
   const { t } = useLanguage();
 
   const c = t?.policies?.cookie;
-  // console.log(c)
   const sections = c?.sections;
 
   return (

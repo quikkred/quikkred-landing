@@ -551,7 +551,6 @@ export function useAuditLog() {
     };
 
     // In production, send to API
-    console.log('Audit log:', log);
     setLogs(prev => [log, ...prev].slice(0, 100)); // Keep last 100 logs
 
     return log;

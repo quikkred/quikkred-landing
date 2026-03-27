@@ -55,7 +55,6 @@ export default function FaceLiveness({ onSuccess, onError, onClose }: FaceLivene
                 throw new Error(data.message || 'Failed to create liveness session');
             }
 
-            console.log('✅ Liveness session created:', data.data.sessionId);
             setSessionId(data.data.sessionId);
             setLoading(false);
         } catch (err: any) {
@@ -76,7 +75,6 @@ export default function FaceLiveness({ onSuccess, onError, onClose }: FaceLivene
         if (!sessionId) return;
 
         setAnalysisComplete(true);
-        console.log('📊 Liveness check complete, fetching results...');
 
         try {
             const token = await getToken();
@@ -99,8 +97,6 @@ export default function FaceLiveness({ onSuccess, onError, onClose }: FaceLivene
             if (!response.ok || !data.success) {
                 throw new Error(data.message || 'Liveness check failed');
             }
-
-            console.log('✅ Liveness check passed:', data.data);
 
             // Show success message
             toast({

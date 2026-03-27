@@ -71,7 +71,7 @@ const ApplicationProvider = ({ children, payload }: LayoutInterface & { payload:
             if (response.status === 200 || response.status === 201) {
                 const result = response.data;
                 const data = (result?.data?.[0] || result?.data) as ApplicationInterface;
-                // console.log("application get to func", result, data)
+                
                 if (Array.isArray(data) && data.length === 0) {
                     // toast({ variant: "error", title: "Application not Found." });
                     return updateState({ data: null });
