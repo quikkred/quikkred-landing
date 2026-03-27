@@ -13,7 +13,6 @@ const getApplicationDetails = async (): Promise<ApplicationInterface | null> => 
         // 3) Get backend access token from session (you set this in callbacks)
         // @ts-ignore
         const accessToken: string | undefined = session.accessToken;
-        // console.log("token", accessToken);
 
         const response = await fetch(`${API_BASE_URL}/api/v2/applicationByCustomerToken`, {
             method: "GET",
@@ -25,7 +24,6 @@ const getApplicationDetails = async (): Promise<ApplicationInterface | null> => 
         });
 
         const result = await response.json();
-        // console.log("application result:", result);
 
         if (!response.ok || !result?.success || !result?.data) {
             return null;

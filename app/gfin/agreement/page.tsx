@@ -110,7 +110,6 @@ export default function GfinAgreementPage() {
       if ((response.status === 200 || response.status === 201) && result.success && result.data) {
         setCustomerData(result.data);
         setShowAgreement(true);
-        console.log('Customer data fetched successfully:', result.data);
       } else {
         setError(result.message || 'Failed to fetch customer data');
       }
