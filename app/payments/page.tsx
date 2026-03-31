@@ -176,7 +176,6 @@ export default function PaymentsPage() {
         // Handle Razorpay payment
         if (response.data.razorpayOrderId) {
           // In production, open Razorpay checkout
-          console.log("Razorpay Order ID:", response.data.razorpayOrderId);
 
           // Simulate payment success
           setTimeout(() => {

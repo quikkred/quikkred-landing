@@ -132,7 +132,6 @@ export default function CorporateTieupsPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Corporate tie-up application:", formData);
     alert("Thank you for your interest! Our corporate relations team will contact you within 24 hours.");
   };
 
