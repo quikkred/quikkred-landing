@@ -271,7 +271,7 @@ export function Notifications({ userId, userRole = 'CUSTOMER', className = '' }:
       };
 
       ws.onclose = (event) => {
-        console.log('WebSocket disconnected:', event.code, event.reason);
+        console.log('WebSocket disconnected...!');
         wsRef.current = null;
 
         // Attempt to reconnect if not a normal closure
@@ -335,7 +335,6 @@ export function Notifications({ userId, userRole = 'CUSTOMER', className = '' }:
   const showToastNotification = (notification: Notification) => {
     // This would integrate with your toast notification system
     // For now, we'll just log it
-    console.log('Toast notification:', notification.title, notification.message);
   };
 
   // Initialize WebSocket connection

@@ -63,7 +63,6 @@ export default function RazorpayPayIn({
       },
       handler: (response: any) => {
         // Payment successful - Razorpay returns payment details
-        console.log("Payment Success:", response);
         alert(`Payment Successful!\nPayment ID: ${response.razorpay_payment_id}`);
         onSuccess?.(response);
         setIsLoading(false);
@@ -71,7 +70,6 @@ export default function RazorpayPayIn({
       },
       modal: {
         ondismiss: () => {
-          console.log("Payment cancelled");
           setIsLoading(false);
           isProcessingRef.current = false;
         },
@@ -82,7 +80,6 @@ export default function RazorpayPayIn({
     const rzp = new window.Razorpay(options);
 
     rzp.on("payment.failed", (response: any) => {
-      console.log("Payment Failed:", response.error);
       alert(`Payment Failed: ${response.error.description}`);
       onFailure?.(response.error);
       setIsLoading(false);

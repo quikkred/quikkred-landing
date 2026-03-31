@@ -252,7 +252,7 @@ export default function LoginPage() {
       // NextAuth returns { ok, error, status, url }
       if (res?.ok) {
         const userData = await getSession();
-        // console.log("user data", userData)
+        
         toast({
           variant: "success",
           title: "Login Successful!",
