@@ -83,7 +83,7 @@ export function Header() {
         },
         {
           name: t.navigation.investorRelations,
-          href: "/investor-relations",
+          href: "/our-partners/investor-relations",
           description: t.navigation.investorRelationsDesc,
         },
       ],
