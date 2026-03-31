@@ -50,8 +50,6 @@ export function Footer() {
     setError("");
 
     try {
-      console.log('Subscribing with email:', email);
-
       const response = await fetch(`${API_BASE_URL}/api/subscribe/create`, {
         method: 'POST',
         headers: {
@@ -60,9 +58,7 @@ export function Footer() {
         body: JSON.stringify({ email: email.trim() })
       });
 
-      console.log('Response status:', response.status);
       const data = await response.json();
-      console.log('Response data:', data);
 
       if (data.success) {
         setShowSuccessPopup(true);

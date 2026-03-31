@@ -188,8 +188,6 @@ function AuthorizeMandateContent() {
 
     const verifyPayment = async (response: any, mandateId: string) => {
         try {
-            console.log(mandateId, "data")
-
             const verifyResponse = await fetch(`${API_URL}/api/mandate-checkout/verify`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -203,7 +201,6 @@ function AuthorizeMandateContent() {
             });
 
             const data = await verifyResponse.json();
-            console.log("jbdcjdbcjhbdjh",data)
 
             if (data.success) {
                 setSuccess(true);
@@ -211,7 +208,6 @@ function AuthorizeMandateContent() {
                 setError(data.message || 'Verification failed');
             }
         } catch (err) {
-            console.log(err,"error")
             setError('Payment verification failed. Please contact support.');
         } finally {
             setProcessing(false);

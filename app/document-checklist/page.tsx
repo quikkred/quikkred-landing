@@ -228,7 +228,6 @@ export default function DocumentsPage() {
 
   const handleDownload = (docId: string, docTitle: string) => {
     // Implement download functionality
-    console.log(`Downloading document: ${docTitle}`);
     alert(`Download started for: ${docTitle}\n\nNote: This is a demo. Actual download functionality would be implemented here.`);
   };
 

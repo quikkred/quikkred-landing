@@ -9,7 +9,6 @@ export default function TermsPage() {
   const { t } = useLanguage();
 
   const terms = t?.policies?.terms;
-  console.log(terms)
   const sections = terms?.sections;
 
   return (

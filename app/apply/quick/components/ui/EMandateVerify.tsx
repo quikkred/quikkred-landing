@@ -48,11 +48,8 @@ const EMandateVerify = ({
         }
 
         try {
-            console.log("Calling emandate checkout API for customerId:", customerId);
-
             const statusResponse = await axios.get(`/api/upi/emandate/checkout/${customerId}`);
             const result = statusResponse.data;
-            console.log("E-Mandate Checkout Response:", result);
 
             // Refresh customer data to get updated upiAutoPayStatus
             await getCustomer();
@@ -145,8 +142,6 @@ const EMandateVerify = ({
                         theme: { color: "#25B181" },
                         handler: async function (razorpayResponse: any) {
                             // Payment successful - wait 10 seconds for data to update, then call status API
-                            console.log("Razorpay payment success:", razorpayResponse);
-                            console.log("Waiting 10 seconds before checking status...");
                             setMandateVerifying(true);
                             await new Promise(resolve => setTimeout(resolve, 10000));
                             await checkUpiAutoPayStatus();
@@ -156,7 +151,6 @@ const EMandateVerify = ({
                         modal: {
                             ondismiss: function () {
                                 // User closed the modal without completing
-                                console.log("Razorpay modal dismissed");
                                 setMandateLoading(false);
                                 // setUpiAutopayConsent(false);
                             }
