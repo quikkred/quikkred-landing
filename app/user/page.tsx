@@ -405,8 +405,6 @@ export default function UserDashboard() {
         throw new Error('Order ID not received from server');
       }
 
-      console.log('Payin initiated successfully, Order ID:', orderId, 'Amount:', amountInPaise, 'paise');
-
       // Step 3: Open Razorpay checkout with order details from API response
       const options = {
         key: RAZORPAY_KEY,
@@ -422,7 +420,6 @@ export default function UserDashboard() {
         },
         handler: async (response: any) => {
           // Payment completed - Razorpay returns payment details
-          console.log("Payment completed:", response);
 
           // Step 4: Call verify API
           try {
@@ -508,7 +505,6 @@ export default function UserDashboard() {
       const rzp = new window.Razorpay(options);
 
       rzp.on("payment.failed", (response: any) => {
-        console.log("Payment Failed:", response.error);
         toast({
           variant: "error",
           title: "Payment Failed",
@@ -777,7 +773,6 @@ export default function UserDashboard() {
           contact: user?.mobile || "",
         },
         handler: async (response: any) => {
-          console.log("E-Mandate Authorization Success:", response);
           toast({
             variant: "success",
             title: "E-Mandate Authorized!",
@@ -789,7 +784,6 @@ export default function UserDashboard() {
         },
         modal: {
           ondismiss: () => {
-            console.log("E-Mandate authorization cancelled");
             toast({
               variant: "default",
               title: "Authorization Cancelled",

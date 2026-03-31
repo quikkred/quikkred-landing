@@ -69,7 +69,6 @@ const BankVerification = ({
             const response = await fetch(`https://ifsc.razorpay.com/${ifscCode}`);
             if (response.ok) {
                 const data = await response.json();
-                // console.log("bank razorpay", data)
                 updateFormData({
                     bankName: data.BANK,
                     // If you have a branch field in formData, set it here too
@@ -249,12 +248,10 @@ const BankVerification = ({
                     title: "Application submitted successfully",
                     description: "Your application has been received and is being reviewed. We’ll notify you of the next steps shortly."
                 });
-                console.log("data", response.data);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
-                console.log(error.response?.data);
                 toast({ variant: "error", title: error.response?.data?.message || "Internal server error" });
             }
         } finally {

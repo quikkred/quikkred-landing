@@ -52,13 +52,8 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             const result = response.data;
 
             if (response.status === 200 || response.status === 201) {
-                console.log('✅ BRE finFactor result:', result.data);
-
-                // ⚠️ CRITICAL: Only re-initialize BRE if bsaInitiated is FALSE
-                console.log('✅ bsaInitiated is TRUE, skipping BRE re-initialization');
                 // Determine bsaBreStatus from finFactor result
                 const bsaBreResult = result.data?.status === "Reject" || result.data?.status === "REJECTED" ? "REJECTED" : result.data?.status;
-                console.log('📊 BSA-BRE status from finFactor:', bsaBreResult);
 
                 // Update formData with finFactor result directly
                 setFormData((prev) => ({
@@ -87,14 +82,12 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
 
                 toast({ variant: "success", title: "Success", description: "Bank verification completed successfully." });
             } else if (response.status === 202 || result.status === "PENDING") {
-                console.log('⏳ FinFactor verification pending:', result.message);
                 toast({ variant: "default", title: "Processing", description: result.message || "Verification is still processing." });
                 setFinFactorDetails(prev => ({ ...prev, loading: false, visibility: false }));
             } else {
                 throw new Error(result.message || "Analysis failed");
             }
         } catch (error: any) {
-            console.error('BRE finFactor failed:', error);
             const errorMsg = error.response?.data?.message || "Something went wrong";
             toast({ variant: "error", title: "Error", description: errorMsg });
             setFinFactorDetails(prev => ({ ...prev, loading: false, visibility: false }));
@@ -114,7 +107,6 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             if (bsaInitiatedCalled.current) return;
             bsaInitiatedCalled.current = true;
 
-            console.log("bsa initial...!");
             fetchBreFinfactorResult();
             return;
         }
@@ -268,7 +260,6 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
 
             if (basicResponse.status === 200 || basicResponse.status === 201) {
                 setLoading(false);
-                console.log("basic response:", basicResponse.data);
                 // storage.set("applicationId", basicResponse?.data?.data?.applicationNumber);
 
                 // updateKycStatusState({ loading: true, visibility: true });
@@ -335,7 +326,6 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
         // 3. Verification check (Needs at least one verified contact + PAN)
         const isMobileVerify = formData?.mobile && formData?.mobile !== "";
         const isEmailVerify = formData?.email && formData?.email !== "";
-        console.log("mobile or email", isMobileVerify, isEmailVerify)
         const isContactVerified = !!(isEmailVerify && isMobileVerify);
         const isPanVerified = !!formData.panVerified;
         const isAadhaarVerify = !!formData.aadhaarVerified;

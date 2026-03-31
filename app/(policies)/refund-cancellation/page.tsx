@@ -9,10 +9,10 @@ export default function RefundCancellationPage() {
   const { t } = useLanguage();
   // title >> sections >> documentDetails >> fields
   const refund = t?.policies?.refund;
-  console.log(refund)
   const sections = refund?.sections.documentDetails.fields;
   const p = refund?.sections.refundPolicy;
   const b = refund?.sections.boardApproval;
+  
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
