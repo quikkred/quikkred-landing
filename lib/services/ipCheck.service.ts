@@ -83,7 +83,7 @@ class IPCheckService {
     async checkIP(): Promise<IPCheckResponse> {
         // MOCK MODE - Bypass all checks
         if (MOCK_MODE) {
-            console.log('✅ MOCK: IP check bypassed');
+
             const mockData = {
                 ip: '127.0.0.1',
                 pincode: '110001',

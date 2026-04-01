@@ -273,7 +273,7 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
 
   const logout = async () => {
     // Set logging out state immediately to hide UI
-    console.log("Logging out...");
+
     try {
       // Stop agent heartbeat on logout (keep deviceId for re-identification)
       quikkredAgent.stopHeartbeat();
@@ -284,7 +284,7 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
       // ✅ Use central utility for consistent cleanup across the platform
       await clearSession('/login');
     } catch (er) {
-      console.log("logout error", er);
+      console.error("logout error", er);
       // Fallback: if anything fails, force navigate
       window.location.href = '/login';
     }

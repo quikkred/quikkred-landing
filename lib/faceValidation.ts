@@ -24,7 +24,7 @@ export const loadFaceModels = async (): Promise<boolean> => {
       faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
     ]);
     modelsLoaded = true;
-    console.log('✅ Face detection models loaded');
+
     return true;
   } catch (error) {
     console.error('❌ Failed to load face detection models:', error);

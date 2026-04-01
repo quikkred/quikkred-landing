@@ -63,7 +63,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   private reportError = (error: Error, errorInfo: React.ErrorInfo) => {
     // In a real app, send to error monitoring service
-    const errorReport = {
+    // TODO: Send to error monitoring service
+    const _errorReport = {
       message: error.message,
       stack: error.stack,
       componentStack: errorInfo.componentStack,
@@ -72,9 +73,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       url: window.location.href,
       errorId: this.state.errorId
     };
-
-    // Mock error reporting
-    console.log('Error reported:', errorReport);
   };
 
   private handleRetry = () => {

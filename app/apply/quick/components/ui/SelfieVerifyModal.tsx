@@ -225,7 +225,7 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, o
             }
         } catch (err: any) {
             if (err instanceof AxiosError) {
-                console.log("API Error:", err);
+                console.error("API Error:", err);
                 setStatusMsg({ type: 'error', text: err?.response?.data?.error || err?.response?.data?.message || "Server error. Please try again." });
                 resetToCamera();
             }

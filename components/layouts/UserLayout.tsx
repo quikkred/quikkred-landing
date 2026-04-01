@@ -147,7 +147,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
         clearTimeout(timeoutId);
 
         if (error.name === 'AbortError') {
-          console.log('Notification fetch timeout - request cancelled');
+          // timeout - request cancelled silently
         } else {
           console.error('Error fetching notifications:', error);
         }
@@ -641,7 +641,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                           console.error('Failed to load profile image in navbar');
                           setImageLoadError(true);
                         }}
-                        onLoad={() => console.log('✅ Navbar profile image loaded')}
+                        onLoad={() => {}}
                       />
                     </div>
                   ) : (

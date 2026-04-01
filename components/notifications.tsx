@@ -230,7 +230,7 @@ export function Notifications({ userId, userRole = 'CUSTOMER', className = '' }:
       wsRef.current = ws;
 
       ws.onopen = () => {
-        console.log('WebSocket connected');
+
         reconnectAttempts.current = 0;
 
         // Request initial notifications
@@ -271,7 +271,7 @@ export function Notifications({ userId, userRole = 'CUSTOMER', className = '' }:
       };
 
       ws.onclose = (event) => {
-        console.log('WebSocket disconnected...!');
+
         wsRef.current = null;
 
         // Attempt to reconnect if not a normal closure

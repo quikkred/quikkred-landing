@@ -724,7 +724,7 @@ export default function ProfilePage() {
                         console.error('❌ Failed to load profile image');
                         setImageLoadError(true);
                       }}
-                      onLoad={() => console.log('✅ Profile image loaded successfully')}
+                      onLoad={() => {}}
                     />
                   )}
 

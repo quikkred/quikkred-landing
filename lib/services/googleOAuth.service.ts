@@ -43,7 +43,7 @@ class GoogleOAuthService {
         // });
 
         this.initialized = true;
-        console.log('[GoogleOAuth] Initialized with client ID:', clientId);
+
     }
 
     /**
@@ -66,7 +66,6 @@ class GoogleOAuthService {
         //   });
         // });
 
-        console.log('[GoogleOAuth] Sign-in triggered - implement with actual Google OAuth');
 
         return {
             success: false,
@@ -107,7 +106,7 @@ class GoogleOAuthService {
     async signOut(): Promise<void> {
         // TODO: Implement sign out
         // google.accounts.id.disableAutoSelect();
-        console.log('[GoogleOAuth] Sign-out triggered');
+
     }
 
     /**

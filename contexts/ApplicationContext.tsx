@@ -80,7 +80,7 @@ const ApplicationProvider = ({ children, payload }: LayoutInterface & { payload:
             }
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
-                console.log("get application error:", error.response?.data?.message);
+                console.error("get application error:", error.response?.data?.message);
             }
         } finally {
             updateState({ loading: false });
@@ -99,7 +99,7 @@ const ApplicationProvider = ({ children, payload }: LayoutInterface & { payload:
             }
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
-                console.log("get customer error:", error.response?.data?.message);
+                console.error("get customer error:", error.response?.data?.message);
             }
         }
     }
@@ -115,7 +115,7 @@ const ApplicationProvider = ({ children, payload }: LayoutInterface & { payload:
             }
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
-                console.log("fetch user error:", error.response?.data?.message);
+                console.error("fetch user error:", error.response?.data?.message);
             }
         }
         return null;
