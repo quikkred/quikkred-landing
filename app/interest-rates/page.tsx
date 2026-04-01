@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { QUICK_FORM_URL } from "@/lib/config";
 
 
 interface LoanProduct {
@@ -67,27 +68,27 @@ export default function InterestRatesPage() {
   ];
 
   const loanProducts: LoanProduct[] = [
-    {
-      id: "1",
-      name: "Payday Loan",
-      category: "personal",
-      minRate: 1,
-      maxRate: 1,
-      minAmount: 3000,
-      maxAmount: 25000,
-      minTenure: 7,
-      maxTenure: 90,
-      processingFee: "Platform Fee 10% + GST 18%",
-      icon: Award,
-      description: "Quick cash before your payday with transparent fees",
-      features: [
-        "30-second AI approval",
-        "Money in 30 minutes",
-        "No collateral required",
-        "No prepayment penalty"
-      ],
-      idealFor: "Salaried professionals aged 21-60 years"
-    },
+    // {
+    //   id: "1",
+    //   name: "Payday Loan",
+    //   category: "personal",
+    //   minRate: 1,
+    //   maxRate: 1,
+    //   minAmount: 3000,
+    //   maxAmount: 25000,
+    //   minTenure: 7,
+    //   maxTenure: 90,
+    //   processingFee: "Platform Fee 10% + GST 18%",
+    //   icon: Award,
+    //   description: "Quick cash before your payday with transparent fees",
+    //   features: [
+    //     "30-second AI approval",
+    //     "Money in 30 minutes",
+    //     "No collateral required",
+    //     "No prepayment penalty"
+    //   ],
+    //   idealFor: "Salaried professionals aged 21-60 years"
+    // },
     {
       id: "2",
       name: "Salary Advance",
@@ -109,48 +110,174 @@ export default function InterestRatesPage() {
       ],
       idealFor: "Salaried employees with regular income"
     },
-    {
-      id: "3",
-      name: "Emergency Fund",
-      category: "emergency",
-      minRate: 1,
-      maxRate: 1,
-      minAmount: 10000,
-      maxAmount: 200000,
-      minTenure: 7,
-      maxTenure: 90,
-      processingFee: "Platform Fee 10% + GST 18%",
-      icon: AlertCircle,
-      description: "24/7 support for urgent financial needs",
-      features: [
-        "Round the clock availability",
-        "Instant disbursal",
-        "Minimal documentation",
-        "Medical emergencies covered"
-      ],
-      idealFor: "Anyone with urgent cash requirements"
-    },
-    {
-      id: "4",
-      name: "Festival Advance",
-      category: "special",
-      minRate: 1,
-      maxRate: 1,
-      minAmount: 10000,
-      maxAmount: 100000,
-      minTenure: 15,
-      maxTenure: 60,
-      processingFee: "Platform Fee 10% + GST 18%",
-      icon: Target,
-      description: "Celebrate every festival without financial worry",
-      features: [
-        "Quick approval",
-        "Flexible repayment",
-        "All festivals covered",
-        "No prepayment charges"
-      ],
-      idealFor: "Everyone during festival season"
-    }
+    // {
+    //   id: "3",
+    //   name: "Emergency Fund",
+    //   category: "emergency",
+    //   minRate: 1,
+    //   maxRate: 1,
+    //   minAmount: 10000,
+    //   maxAmount: 200000,
+    //   minTenure: 7,
+    //   maxTenure: 90,
+    //   processingFee: "Platform Fee 10% + GST 18%",
+    //   icon: AlertCircle,
+    //   description: "24/7 support for urgent financial needs",
+    //   features: [
+    //     "Round the clock availability",
+    //     "Instant disbursal",
+    //     "Minimal documentation",
+    //     "Medical emergencies covered"
+    //   ],
+    //   idealFor: "Anyone with urgent cash requirements"
+    // },
+    // {
+    //   id: "4",
+    //   name: "Festival Advance",
+    //   category: "special",
+    //   minRate: 1,
+    //   maxRate: 1,
+    //   minAmount: 10000,
+    //   maxAmount: 100000,
+    //   minTenure: 15,
+    //   maxTenure: 60,
+    //   processingFee: "Platform Fee 10% + GST 18%",
+    //   icon: Target,
+    //   description: "Celebrate every festival without financial worry",
+    //   features: [
+    //     "Quick approval",
+    //     "Flexible repayment",
+    //     "All festivals covered",
+    //     "No prepayment charges"
+    //   ],
+    //   idealFor: "Everyone during festival season"
+    // }
+    //     {
+    //   id: "1",
+    //   name: "Personal Loan - Premium",
+    //   category: "personal",
+    //   minRate: 8.99,
+    //   maxRate: 12.99,
+    //   minAmount: 100000,
+    //   maxAmount: 5000000,
+    //   minTenure: 12,
+    //   maxTenure: 60,
+    //   processingFee: "2% (Min ₹1,000)",
+    //   icon: Award,
+    //   description: "Best rates for customers with excellent credit profiles",
+    //   features: [
+    //     "No collateral required",
+    //     "Flexible repayment options",
+    //     "Quick approval in 30 seconds",
+    //     "Part-prepayment allowed"
+    //   ],
+    //   idealFor: "Salaried professionals with CIBIL score 750+"
+    // },
+    // {
+    //   id: "2",
+    //   name: "Personal Loan - Standard",
+    //   category: "personal",
+    //   minRate: 12.99,
+    //   maxRate: 18.99,
+    //   minAmount: 50000,
+    //   maxAmount: 3000000,
+    //   minTenure: 12,
+    //   maxTenure: 48,
+    //   processingFee: "2% (Min ₹1,000)",
+    //   icon: Users,
+    //   description: "Competitive rates for all eligible customers",
+    //   features: [
+    //     "Simple documentation",
+    //     "Instant approval",
+    //     "No hidden charges",
+    //     "Digital process"
+    //   ],
+    //   idealFor: "Salaried/Self-employed with CIBIL score 650+"
+    // },
+    // {
+    //   id: "3",
+    //   name: "Emergency Loan",
+    //   category: "emergency",
+    //   minRate: 15.99,
+    //   maxRate: 21.99,
+    //   minAmount: 10000,
+    //   maxAmount: 500000,
+    //   minTenure: 6,
+    //   maxTenure: 24,
+    //   processingFee: "1.5% (Min ₹500)",
+    //   icon: AlertCircle,
+    //   description: "Quick funds for urgent financial needs",
+    //   features: [
+    //     "Instant disbursal",
+    //     "Minimal documentation",
+    //     "24/7 availability",
+    //     "No usage restrictions"
+    //   ],
+    //   idealFor: "Anyone with urgent cash requirements"
+    // },
+    // {
+    //   id: "4",
+    //   name: "Business Loan - SME",
+    //   category: "business",
+    //   minRate: 11.99,
+    //   maxRate: 16.99,
+    //   minAmount: 200000,
+    //   maxAmount: 10000000,
+    //   minTenure: 12,
+    //   maxTenure: 60,
+    //   processingFee: "2.5% (Min ₹2,000)",
+    //   icon: Briefcase,
+    //   description: "Fuel your business growth with competitive rates",
+    //   features: [
+    //     "Working capital support",
+    //     "Equipment financing",
+    //     "Business expansion loans",
+    //     "Flexible repayment"
+    //   ],
+    //   idealFor: "Established businesses with 2+ years of operation"
+    // },
+    // {
+    //   id: "5",
+    //   name: "Salary Advance",
+    //   category: "special",
+    //   minRate: 9.99,
+    //   maxRate: 14.99,
+    //   minAmount: 10000,
+    //   maxAmount: 200000,
+    //   minTenure: 3,
+    //   maxTenure: 12,
+    //   processingFee: "1% (Min ₹300)",
+    //   icon: DollarSign,
+    //   description: "Get advance on your salary at attractive rates",
+    //   features: [
+    //     "Instant approval",
+    //     "Same-day disbursal",
+    //     "Repay on salary date",
+    //     "No prepayment charges"
+    //   ],
+    //   idealFor: "Salaried employees of partner companies"
+    // },
+    // {
+    //   id: "6",
+    //   name: "Festival Special Loan",
+    //   category: "special",
+    //   minRate: 10.49,
+    //   maxRate: 15.49,
+    //   minAmount: 25000,
+    //   maxAmount: 1000000,
+    //   minTenure: 6,
+    //   maxTenure: 36,
+    //   processingFee: "1.5% (Min ₹750)",
+    //   icon: Target,
+    //   description: "Limited period special rates for festive season",
+    //   features: [
+    //     "Special discount rates",
+    //     "Zero processing fee waiver available",
+    //     "Quick approval",
+    //     "Flexible tenure"
+    //   ],
+    //   idealFor: "All eligible customers during festive periods"
+    // }
   ];
 
   const rateFactors: RateFactors[] = [
@@ -266,7 +393,7 @@ export default function InterestRatesPage() {
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12">
 
         {/* Rate Highlight Banner */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -296,7 +423,7 @@ export default function InterestRatesPage() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </motion.div> */}
 
         {/* Search and Filter */}
         <motion.div
@@ -455,7 +582,7 @@ export default function InterestRatesPage() {
 
                     {/* CTA Buttons */}
                     <div className="flex gap-3">
-                      <Link href={"/apply/quick"} className="flex-1">
+                      <Link href={QUICK_FORM_URL as string} className="flex-1">
                         <button className="w-full px-4 py-2 bg-[#4A66FF] text-white rounded-lg text-sm font-semibold hover:bg-[var(--brand-green)] transition-colors duration-300">
                           Apply Now
                         </button>
@@ -571,7 +698,7 @@ export default function InterestRatesPage() {
                   Check Eligibility
                 </button>
               </Link>
-              <Link href={"/apply/quick"}>
+              <Link href={QUICK_FORM_URL as string}>
                 <button className="px-8 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-[#4A66FF] duration-300 transition-all w-full">
                   Apply Now
                 </button>

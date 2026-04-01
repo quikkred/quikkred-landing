@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { QUICK_FORM_URL } from "@/lib/config";
 
 
 interface EligibilityResult {
@@ -639,7 +640,7 @@ export default function EligibilityCheckPage() {
             <div className="flex flex-col sm:flex-row gap-4">
               {result?.isEligible ? (
                 <>
-                  <Link href={"/apply/quick"} className="flex-1">
+                  <Link href={QUICK_FORM_URL as string} className="flex-1">
                     <button className="w-full px-8 py-4 bg-[#4A66FF] text-white rounded-lg font-semibold hover:bg-[var(--royal-blue-dark)] transition-colors">
                       Apply for Loan Now
                     </button>
