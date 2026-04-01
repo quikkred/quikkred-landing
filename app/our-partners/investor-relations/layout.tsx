@@ -3,7 +3,7 @@ import LayoutInterface from "@/interfaces/layoutInterface";
 
 const SITE_NAME = "Quikkred";
 const SITE_URL = "https://quikkred.in";
-const PAGE_PATH = "/investor-relations";
+const PAGE_PATH = "/our-partners/investor-relations";
 const PAGE_URL = `${SITE_URL}${PAGE_PATH}`;
 
 // ✅ If you create a dedicated OG image for investors, use it.

@@ -109,7 +109,7 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, o
             }
         } catch (err) {
             if (isActiveRef.current) {
-                setStatusMsg({ type: 'error', text: "Camera permission is blocked. Please allow camera access and try again." });
+                setStatusMsg({ type: 'error', text: "Camera access denied. Check your browser permissions." });
             }
         }
     };

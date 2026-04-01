@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { QUICK_FORM_URL } from "@/lib/config";
 
 
 interface FAQ {
@@ -517,7 +518,7 @@ export default function FAQsPage() {
               </div>
             </Link>
 
-            <Link href={"/apply/quick"} className="h-full">
+            <Link href={QUICK_FORM_URL as string} className="h-full">
               <div className="bg-white rounded-2xl p-6 h-full shadow-sm hover:shadow-lg transition-shadow cursor-pointer">
                 <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
                   <Bookmark className="w-6 h-6 text-purple-600" />

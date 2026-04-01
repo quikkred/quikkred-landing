@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useLanguage } from "@/lib/contexts/LanguageContext"
+import { QUICK_FORM_URL } from "@/lib/config"
 
 const Button: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({ children, className, ...props }) => (
   <button
@@ -164,7 +165,7 @@ export default function LoanCalculatorAll() {
           </div>
 
           <Button
-            onClick={() => router.push("/apply/quick")}
+            onClick={() => router.push(QUICK_FORM_URL as string)}
             className="w-full bg-[#25B181] hover:bg-[#1F8F68] text-white font-bold py-2.5 sm:py-3 rounded-xl mb-1.5 transition-all duration-300 text-xs sm:text-sm shadow-lg hover:shadow-xl"
           >
             {t?.calculator?.applyButton}
