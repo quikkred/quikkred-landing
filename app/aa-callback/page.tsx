@@ -27,14 +27,12 @@ export default function AccountAggregatorCallback() {
                     const urlApplicationId = searchParams.get('applicationId');
                     if (urlApplicationId) {
                         applicationId = urlApplicationId;
-                        console.log('✅ Using applicationId from URL params:', urlApplicationId);
                         localStorage.setItem('applicationId', urlApplicationId);
                     }
                 }
 
                 // If still not found, try to fetch from API
                 if (!applicationId && customerId) {
-                    console.log('⚠️ ApplicationId not found, trying to fetch from API...');
                     const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
                     if (token) {
                         try {
@@ -48,7 +46,6 @@ export default function AccountAggregatorCallback() {
                             if (result.success && result.data?._id) {
                                 const fetchedId = result.data._id;
                                 applicationId = fetchedId;
-                                console.log('✅ Fetched applicationId from API:', fetchedId);
                                 localStorage.setItem('applicationId', fetchedId);
                             }
                         } catch (apiError) {
@@ -84,7 +81,6 @@ export default function AccountAggregatorCallback() {
                 const result = await response.json();
 
                 if (response.ok && result.success) {
-                    console.log('✅ Data stored successfully:', result);
                     setStatus('success');
                     setMessage(result.message || 'Bank statement data saved successfully!');
 

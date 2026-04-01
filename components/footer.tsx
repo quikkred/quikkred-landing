@@ -50,8 +50,6 @@ export function Footer() {
     setError("");
 
     try {
-      console.log('Subscribing with email:', email);
-
       const response = await fetch(`${API_BASE_URL}/api/subscribe/create`, {
         method: 'POST',
         headers: {
@@ -60,9 +58,7 @@ export function Footer() {
         body: JSON.stringify({ email: email.trim() })
       });
 
-      console.log('Response status:', response.status);
       const data = await response.json();
-      console.log('Response data:', data);
 
       if (data.success) {
         setShowSuccessPopup(true);
@@ -296,7 +292,7 @@ export function Footer() {
                     className="text-slate-400 hover:text-[#25B181] transition-colors flex items-center gap-1.5 text-sm"
                   >
                     <ChevronRight className="w-3 h-3 flex-shrink-0" />
-                    <span className="truncate">{link.name}</span>
+                    <span>{link.name}</span>
                   </Link>
                 </li>
               ))}

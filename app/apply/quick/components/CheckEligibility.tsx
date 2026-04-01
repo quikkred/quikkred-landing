@@ -18,7 +18,6 @@ interface CheckEligibilityProps {
 }
 
 export default function CheckEligibility({ formData, setFormData, onNext }: CheckEligibilityProps) {
-    console.log("formData", formData);
     // OTP States
     const [otpTimer, setOtpTimer] = useState(0);
 

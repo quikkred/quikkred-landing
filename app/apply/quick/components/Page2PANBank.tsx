@@ -37,7 +37,6 @@ export default function Page2PANBank({
 }: Page2Props) {
     // hooks
     const axios = useAxios();
-    // console.log("formData updated:", formData);
 
     // Submit Loading
     const [submitLoading, setSubmitLoading] = useState(false);

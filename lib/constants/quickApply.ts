@@ -141,7 +141,6 @@ export const getInitialFormData = (): QuickApplyFormData => {
       const heroData = localStorage.getItem('heroFormData');
       if (heroData) {
         const data = JSON.parse(heroData);
-        console.log('Loading hero data into initial state:', data);
         initialData.fullName = data.name || initialData.fullName;
         initialData.mobile = data.mobile || initialData.mobile;
         initialData.loanAmount = data.amount || initialData.loanAmount;

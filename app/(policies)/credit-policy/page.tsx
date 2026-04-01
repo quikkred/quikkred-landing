@@ -9,8 +9,7 @@ export default function CreditPolicyPage() {
   const { t } = useLanguage();
   const cp = t?.policies?.creditPolicy
   const sections = t?.policies?.creditPolicy
-  console.log(sections?.sections)
-  // console.log(sections)
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}

@@ -152,7 +152,6 @@ export default function ReferralsPage() {
 
   const handleSendInvite = () => {
     // Send invite logic here
-    console.log('Sending invite:', inviteMethod, inviteData);
     setShowInviteModal(false);
     setInviteData({ email: '', phone: '', message: '' });
   };

@@ -8,8 +8,6 @@ import PoliciesLayout from "@/components/layouts/PoliciesLayout";
 export default function DisclaimerDisclosurePage() {
   const { t } = useLanguage();
   const d = t?.policies?.disclaimerDisclosure
-  console.log(d)
-  // console.log(sections)
 
   return (
     <div className="min-h-screen">
