@@ -170,7 +170,6 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
   }, []);
 
   const fetchUserProfile = async (token: string, currentUser: User) => {
-    // console.log('🔵 Fetching user profile from API...');
     try {
       const response = await fetch(`${API_BASE_URL}/api/customer/get`, {
         method: 'GET',
@@ -181,15 +180,11 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
       });
 
       const result = await response.json();
-      // console.log('🟢 Profile API Response:', result.success ? 'Success' : 'Failed');
-
       if (response.ok && result.success && result.data) {
         const apiData = result.data;
 
         // Use fullName directly from API
         // const fullName = apiData.fullName || currentUser.name;
-
-        // console.log('✅ Profile fetched successfully. Name:', fullName);
 
         // Update user with real profile data from API
         const updatedUser: User = userInitializer({ apiData, currentUser })
