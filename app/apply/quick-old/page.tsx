@@ -889,8 +889,7 @@ export default function QuickLoanApplication() {
 
         // STEP 7: Handle API response
         if (result.success && result.data?.isAadhaarVerify === true) {
-          console.log('✅ Aadhaar verified successfully from status API');
-          console.log('📝 Backend has updated isAadhaarVerify = true in database');
+
           setAadhaarVerified(true);
           toast({
             variant: "success",
@@ -1104,8 +1103,7 @@ export default function QuickLoanApplication() {
 
         if (customerResult.success && customerResult.data) {
           const profileData = customerResult.data;
-          console.log('[Step 4] ✅ Customer data fetched successfully');
-
+         
           // Update verification statuses
           if (toBoolean(profileData.isPanVerify)) {
             setPanVerified(true);
@@ -1157,7 +1155,6 @@ export default function QuickLoanApplication() {
       // Skip if finfactor=success is in URL (will call /api/kyc/bre/finFactor instead)
       const finfactorParam = searchParams.get('finfactor');
       if (finfactorParam === 'success') {
-        console.log('[Step 4] finfactor=success detected, skipping bre/initialize (will call bre/finFactor)');
         return;
       }
 
