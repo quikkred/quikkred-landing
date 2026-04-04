@@ -379,12 +379,14 @@ const VideoModal = ({
               className="relative bg-black rounded-lg sm:rounded-xl overflow-hidden shadow-2xl"
               style={{ paddingBottom: "56.25%" }}
             >
-              <iframe
-                src={`${videoUrl}?autoplay=1`}
-                className="absolute top-0 left-0 w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+              <video
+               className="absolute top-0 left-0 w-full h-full"
+                controls
+                 autoPlay
+                playsInline
+                >
+           <source src={videoUrl} type="video/mp4" />
+          </video>
             </div>
           </motion.div>
         </motion.div>,
