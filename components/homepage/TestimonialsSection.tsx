@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import VideoModal from "./VideoModal";
 
 // Types
 interface TextTestimonial {
@@ -99,7 +100,7 @@ const testimonialsData: Testimonial[] = [
     loanAmount: "3,00,000",
     loanType: "Personal Loan",
     date: "Oct 2024",
-    videoUrl: "/videos/shubham khanna.mp4",
+    videoUrl: "/videos/shubham-khanna.mp4",
     // thumbnail: "/videos/shubham-thumb.jpg",
     duration: "09sec",
     title: "This time I'm getting a higher loan , Quikkred has my trust.",
@@ -115,7 +116,7 @@ const testimonialsData: Testimonial[] = [
     loanType: "Business Loan",
     date: "Jan 2025",
 
-    videoUrl: "/videos/Amul King.mp4",
+    videoUrl: "/videos/amul-king.mp4",
     // thumbnail: "/videos/amul-thumb.jpg", // optional
 
     duration: "15sec",
@@ -326,71 +327,6 @@ const VideoCard = ({
       </div>
     </motion.div>
   );
-};
-
-// Video Modal
-const VideoModal = ({
-  videoUrl,
-  onClose,
-}: {
-  videoUrl: string;
-  onClose: () => void;
-}) => {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", handleEscape);
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = "unset";
-    };
-  }, [onClose]);
-
-  if (!mounted) return null;
-
-  return typeof document !== "undefined"
-    ? require("react-dom").createPortal(
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[99999] bg-black/95 flex items-center justify-center p-4"
-          onClick={onClose}
-        >
-          <button
-            onClick={onClose}
-            className="absolute top-3 right-3 sm:top-4 sm:right-4 lg:top-6 lg:right-6 p-2 sm:p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors z-10"
-          >
-            <X className="w-5 h-5 sm:w-6 sm:h-6" />
-          </button>
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            className="w-full sm:w-[90vw] md:w-[85vw] lg:w-[80vw] max-w-5xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div
-              className="relative bg-black rounded-lg sm:rounded-xl overflow-hidden shadow-2xl"
-              style={{ paddingBottom: "56.25%" }}
-            >
-              <iframe
-                src={`${videoUrl}?autoplay=1`}
-                className="absolute top-0 left-0 w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-          </motion.div>
-        </motion.div>,
-        document.body,
-      )
-    : null;
 };
 
 // Main Component
