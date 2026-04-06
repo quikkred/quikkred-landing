@@ -127,7 +127,7 @@ const nextConfig: NextConfig = {
             style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
             img-src 'self' data: https: blob:;
             font-src 'self' data: https://fonts.gstatic.com;
-            connect-src 'self' ${apiDomain} ${appDomain} https://api.quikkred.in https://www.google-analytics.com https://stats.g.doubleclick.net;
+            connect-src 'self' ${apiDomain} ${appDomain} https://api.quikkred.in https://ifsc.razorpay.com https://www.google-analytics.com https://stats.g.doubleclick.net;
             frame-ancestors 'none';
             upgrade-insecure-requests;
           `
