@@ -179,7 +179,7 @@ All 3 `.env` files currently point to **beta** instead of **production**:
 **`.env.local`** (for local development):
 ```env
 NEXTAUTH_URL=http://localhost:3000
-NEXT_PUBLIC_API_URL=https://api.quikkred.in
+NEXT_PUBLIC_API_URL=https://alpha.quikkred.in
 
 # production truecaller
 NEXT_PUBLIC_TRUECALLER_PARTNER_KEY=jKals7364aeff7733491a900303975143e31b
@@ -208,7 +208,7 @@ NEXT_PUBLIC_TRUECALLER_APP_NAME="quikkred-beta"
 
 **Also fix `lib/config.ts`** — change fallback from `alpha` to production:
 ```typescript
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.quikkred.in';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://alpha.quikkred.in';
 export const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'wss://api.quikkred.in';
 ```
 
@@ -364,7 +364,7 @@ quikkred-landing/
 
 ## Checklist
 
-- [ ] Fix `.env.local` — point to `https://api.quikkred.in`
+- [ ] Fix `.env.local` — point to `https://alpha.quikkred.in`
 - [ ] Fix `.env.production` — point to `https://api.quikkred.in`
 - [ ] Fix `lib/config.ts` fallback URL
 - [ ] Test `/apply/quick` selfie flow end-to-end (local backend)
