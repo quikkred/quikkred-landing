@@ -425,8 +425,7 @@ export default function Hero() {
             <h1 className="text-2xl xs:text-[26px] sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-slate-900 leading-tight mb-4 sm:mb-6 md:mb-8">
               {t?.hero?.form?.heading || "Get"}{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-emerald-500">
-                {/* {t?.hero?.form?.headingHighlight || "Instant Cash"} */}
-                {"Alpha Cash"}
+                {t?.hero?.form?.headingHighlight || "Instant Cash"}
               </span>
               <br />
               {t?.hero?.form?.headingLine2 || "When You Need It"}
