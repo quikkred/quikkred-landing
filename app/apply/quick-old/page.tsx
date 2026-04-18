@@ -3905,7 +3905,7 @@ export default function QuickLoanApplication() {
                         <div className="grid grid-cols-2 sm:grid-cols-1 gap-2">
                           <GoogleVerify buttonText="Continue with google" callbackURL="/apply/quick" />
                           <TruecallerVerify buttonText="Continue with truecaller" callbackURL="/apply/quick" />
-                          <DigiLockerVerify buttonText="Continue with DigiLocker" extraParams={{ apply: "true" }} />
+                          <DigiLockerVerify buttonText="Continue with DigiLocker" extraParams={{ apply: true }} />
                         </div>
                         {/* <div className="bg-gray-50 rounded-xl p-4 mb-6">     
                       <label className="block text-sm font-medium text-gray-700 mb-3">

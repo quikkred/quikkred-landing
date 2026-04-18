@@ -155,7 +155,7 @@ const CustomerLogin = () => {
                                             )
                                         }
                                         <div className="flex justify-center w-full">
-                                            <DigiLockerVerify type="v2" buttonText="Continue with DigiLocker" extraParams={{ apply: "true" }} />
+                                            <DigiLockerVerify type="v2" buttonText="Continue with DigiLocker" extraParams={{ apply: true }} />
                                         </div>
                                     </div>
                                 </div>
