@@ -17,248 +17,240 @@
     "success": "यशस्वी",
     "warning": "चेतावणी",
     "info": "माहिती",
-    "language": "Select Language",
-    "support": "Support"
+    "language": "भाषा निवडा",
+    "support": "सहाय्य"
   },
-"navigation": {
-  "home": "मुखपृष्ठ",
-  "about": "आमच्याबद्दल",
-  "products": "उत्पादने",
-  "services": "सेवा",
-  "apply": "अर्ज करा",
-  "track": "अर्ज ट्रॅक करा",
-  "contact": "संपर्क",
-  "login": "लॉगिन",
-  "register": "नोंदणी करा",
-  "dashboard": "डॅशबोर्ड",
-  "profile": "प्रोफाइल",
-  "logout": "लॉगआउट",
-  "partners": "भागीदार",
-  "resources": "संसाधने",
-  "faqs": "वारंवार विचारले जाणारे प्रश्न",
-  "emiCalculator": "EMI कॅल्क्युलेटर",
-  "emiCalculatorDesc": "आपली EMI मोजा",
-  "blog": "ब्लॉग",
-  "blogDesc": "आर्थिक माहिती",
-  "careers": "करिअर",
-  "privacy": "गोपनीयता धोरण",
-  "terms": "नियम आणि अटी",
-  "channelPartners": "चॅनेल पार्टनर्स",
-  "channelPartnersDesc": "आमच्या नेटवर्कमध्ये सामील व्हा",
-  "corporateTieups": "कॉर्पोरेट टाय-अप्स",
-  "corporateTieupsDesc": "व्यवसाय भागीदारी",
-  "apiIntegration": "API एकत्रीकरण",
-  "apiIntegrationDesc": "डेव्हलपर संसाधने",
-  "investorRelations": "गुंतवणूकदार संबंध",
-  "investorRelationsDesc": "गुंतवणूकदारांसाठी"
-}
-,
- "hero": {
-      "title": "तत्काळ वैयक्तिक कर्ज मिळवा",
-      "subtitle": "किमान कागदपत्रांसह ₹5,00,000 पर्यंत",
-      "description": "वेगवान मंजुरी, कमी कागदपत्रे आणि पारदर्शक प्रक्रिया. तुमच्या सर्व आर्थिक गरजांसाठी विश्वासू भागीदार.",
-      "cta": {
-        "primary": "तत्काळ मंजुरी मिळवा",
-        "secondary": "पात्रता तपासा"
+  "navigation": {
+    "home": "मुखपृष्ठ",
+    "about": "आमच्याबद्दल",
+    "products": "उत्पादने",
+    "services": "सेवा",
+    "apply": "अर्ज करा",
+    "track": "अर्ज ट्रॅक करा",
+    "contact": "संपर्क",
+    "login": "लॉगिन",
+    "register": "नोंदणी करा",
+    "dashboard": "डॅशबोर्ड",
+    "profile": "प्रोफाइल",
+    "logout": "लॉगआउट",
+    "partners": "भागीदार",
+    "resources": "संसाधने",
+    "faqs": "वारंवार विचारले जाणारे प्रश्न",
+    "emiCalculator": "EMI कॅल्क्युलेटर",
+    "emiCalculatorDesc": "आपली EMI मोजा",
+    "blog": "ब्लॉग",
+    "blogDesc": "आर्थिक माहिती",
+    "careers": "करिअर",
+    "privacy": "गोपनीयता धोरण",
+    "terms": "नियम आणि अटी",
+    "channelPartners": "चॅनेल पार्टनर्स",
+    "channelPartnersDesc": "आमच्या नेटवर्कमध्ये सामील व्हा",
+    "corporateTieups": "कॉर्पोरेट टाय-अप्स",
+    "corporateTieupsDesc": "व्यवसाय भागीदारी",
+    "apiIntegration": "API एकत्रीकरण",
+    "apiIntegrationDesc": "डेव्हलपर संसाधने",
+    "investorRelations": "गुंतवणूकदार संबंध",
+    "investorRelationsDesc": "गुंतवणूकदारांसाठी"
+  },
+  "hero": {
+    "title": "तत्काळ वैयक्तिक कर्ज मिळवा",
+    "subtitle": "किमान कागदपत्रांसह ₹5,00,000 पर्यंत",
+    "description": "वेगवान मंजुरी, कमी कागदपत्रे आणि पारदर्शक प्रक्रिया. तुमच्या सर्व आर्थिक गरजांसाठी विश्वासू भागीदार.",
+    "cta": {
+      "primary": "तत्काळ मंजुरी मिळवा",
+      "secondary": "पात्रता तपासा"
+    },
+    "badge": "RBI मान्यताप्राप्त NBFC",
+    "stats": {
+      "customers": "+ समाधानी ग्राहक",
+      "disbursed": "+ वितरित",
+      "rating": " रेटिंग",
+      "branches": "+ भागीदार शाखा"
+    },
+    "benefits": {
+      "quick": "जलद मंजुरी",
+      "secure": "100% सुरक्षित",
+      "paperless": "कागदविरहित प्रक्रिया"
+    },
+    "dataProtected": "डेटा संरक्षित",
+    "rbiCompliant": "RBI अनुपालित NBFC",
+    "languageBar": {
+      "availableIn": "उपलब्ध भाषा:",
+      "more": "अधिक"
+    },
+    "form": {
+      "heading": "मिळवा",
+      "headingHighlight": "तत्काळ रोख",
+      "headingLine2": "जेव्हा तुम्हाला गरज असेल",
+      "getStarted": "सुरू करा",
+      "getInstantLoan": "तत्काळ कर्ज मिळवा →",
+      "cta": "पात्रता तपासा",
+      "errors": {
+        "numbersOnly": "मोबाइल नंबरमध्ये फक्त अंक असू शकतात",
+        "tenDigits": "मोबाइल नंबर 10 अंकांचा असणे आवश्यक आहे",
+        "validStart": "मोबाइल नंबर 6, 7, 8 किंवा 9 ने सुरू व्हायला हवा",
+        "nameNoNumbers": "नावात अंक असू शकत नाहीत",
+        "nameRequired": "नाव आवश्यक आहे"
       },
-      "badge": "RBI मान्यताप्राप्त NBFC",
-      "stats": {
-        "customers": "+ समाधानी ग्राहक",
-        "disbursed": "+ वितरित",
-        "rating": " रेटिंग",
-        "branches": "+ भागीदार शाखा"
+      "step1": {
+        "question": "तुमचा मोबाइल नंबर टाका?",
+        "placeholder": "मोबाइल नंबर टाका"
       },
-      "benefits": {
-        "quick": "जलद मंजुरी",
+      "step2": {
+        "question": "तुमचे नाव काय आहे?",
+        "placeholder": "तुमचे नाव टाका"
+      },
+      "step3": {
+        "question": "तुम्हाला किती रक्कम हवी आहे?",
+        "placeholder": "₹ मध्ये रक्कम टाका"
+      },
+      "step4": {
+        "question": "ईमेल पत्ता टाका?",
+        "placeholder": "तुमचा ईमेल टाका"
+      },
+      "next": "पुढे →",
+      "submit": "सबमिट करा",
+      "thankYou": "धन्यवाद!",
+      "successMessage": "तुमचा अर्ज यशस्वीरीत्या सबमिट झाला आहे. आम्ही लवकरच तुमच्याशी संपर्क करू.",
+      "submitAnother": "नवीन अर्ज सबमिट करा",
+      "trustBadge": "RBI नोंदणीकृत NBFC • 100% सुरक्षित",
+      "headingHighlight1": "मंजुरी",
+      "description": "काहीही कागदपत्रांची गरज नाही. कोणतीही प्रतीक्षा नाही. फक्त तत्काळ मंजुरी आणि जलद वितरण. तुमची आर्थिक अडचण काही मिनिटांत सुटते.",
+      "features": {
+        "instantApproval": "तत्काळ मंजुरी",
         "secure": "100% सुरक्षित",
-        "paperless": "कागदविरहित प्रक्रिया"
+        "sameDayDisbursal": "त्याच दिवशी वितरण"
       },
-      "dataProtected": "डेटा संरक्षित",
-      "rbiCompliant": "RBI अनुपालित NBFC",
-      "languageBar": {
-        "availableIn": "उपलब्ध भाषा:",
-        "more": "अधिक"
+      "buttons": {
+        "applyNow": "आता अर्ज करा",
+        "talkToExpert": "तज्ञाशी बोला"
       },
-      "form": {
-        "heading": "मिळवा",
-        "headingHighlight": "तत्काळ रोख",
-        "headingLine2": "जेव्हा तुम्हाला गरज असेल",
-        "getStarted": "सुरू करा",
-        "getInstantLoan": "तत्काळ कर्ज मिळवा →",
-        "cta": "पात्रता तपासा",
-        "errors": {
-          "numbersOnly": "मोबाइल नंबरमध्ये फक्त अंक असू शकतात",
-          "tenDigits": "मोबाइल नंबर 10 अंकांचा असणे आवश्यक आहे",
-          "validStart": "मोबाइल नंबर 6, 7, 8 किंवा 9 ने सुरू व्हायला हवा",
-          "nameNoNumbers": "नावात अंक असू शकत नाहीत",
-          "nameRequired": "नाव आवश्यक आहे"
-        },
-        "step1": {
-          "question": "तुमचा मोबाइल नंबर टाका?",
-          "placeholder": "मोबाइल नंबर टाका"
-        },
-        "step2": {
-          "question": "तुमचे नाव काय आहे?",
-          "placeholder": "तुमचे नाव टाका"
-        },
-        "step3": {
-          "question": "तुम्हाला किती रक्कम हवी आहे?",
-          "placeholder": "₹ मध्ये रक्कम टाका"
-        },
-        "step4": {
-          "question": "ईमेल पत्ता टाका?",
-          "placeholder": "तुमचा ईमेल टाका"
-        },
-        "next": "पुढे →",
-        "submit": "सबमिट करा",
-        "thankYou": "धन्यवाद!",
-        "successMessage": "तुमचा अर्ज यशस्वीरीत्या सबमिट झाला आहे. आम्ही लवकरच तुमच्याशी संपर्क करू.",
-        "submitAnother": "नवीन अर्ज सबमिट करा",
-        "trustBadge": "RBI नोंदणीकृत NBFC • 100% सुरक्षित",
-        "headingHighlight1": "मंजुरी",
-        "description": "काहीही कागदपत्रांची गरज नाही. कोणतीही प्रतीक्षा नाही. फक्त तत्काळ मंजुरी आणि जलद वितरण. तुमची आर्थिक अडचण काही मिनिटांत सुटते.",
-        "features": {
-          "instantApproval": "तत्काळ मंजुरी",
-          "secure": "100% सुरक्षित",
-          "sameDayDisbursal": "त्याच दिवशी वितरण"
-        },
-        "buttons": {
-          "applyNow": "आता अर्ज करा",
-          "talkToExpert": "तज्ञाशी बोला"
-        },
-        "steps": [
-          {
-            "number": "1",
-            "title": "तपशील भरा",
-            "description": "60 सेकंदांत मूलभूत माहिती"
-          },
-          {
-            "number": "2",
-            "title": "मंजुरी मिळवा",
-            "description": "स्क्रीनवर त्वरित निर्णय"
-          },
-          {
-            "number": "3",
-            "title": "रक्कम मिळवा",
-            "description": "थेट तुमच्या बँक खात्यात"
-          }
-        ]
-      }
-    },
-
-    "loansGrid": {
-      "badge": "आमची उत्पादने",
-      "title": "कर्जे तयार केलेली",
-      "titleHighlight": "प्रत्येक गरजेसाठी",
-      "subtitle": "तुमच्या गरजेनुसार लवचिक कर्ज उत्पादने निवडा",
-      "loans": [
-        {
-          "title": "पगार आगाऊ",
-          "amount": "₹5,000 - ₹5,00,000",
-          "description": "तुमच्या मासिक पगाराच्या 2 पट रक्कम तत्काळ मिळवा"
-        },
-        {
-          "title": "वैयक्तिक कर्ज",
-          "amount": "₹10,000 - ₹50,00,000",
-          "description": "तुमच्या सर्व वैयक्तिक गरजांसाठी त्वरित रक्कम"
-        },
-        {
-          "title": "आपत्कालीन निधी",
-          "amount": "₹10,000 - ₹2,00,000",
-          "description": "वैद्यकीय आणि आपत्कालीन गरजांसाठी 24 तास मदत"
-        },
-        {
-          "title": "सणासुदीचे आगाऊ",
-          "amount": "₹5,000 - ₹1,00,000",
-          "description": "प्रत्येक सणाचा आनंद आर्थिक ताणाशिवाय घ्या"
-        },
-        {
-          "title": "वैद्यकीय कर्ज",
-          "amount": "₹25,000 - ₹10,00,000",
-          "description": "नियोजित उपचारांसाठी वित्तपुरवठा"
-        },
-        {
-          "title": "ट्रॅव्हल नाऊ पे लेटर",
-          "amount": "₹25,000 - ₹3,00,000",
-          "description": "तुमची स्वप्नातील सहल आजच बुक करा, पेमेंट पुढील महिन्यात करा"
-        }
-      ],
-      "button": "अधिक जाणून घ्या"
-    },
-
-    "featuresSection": {
-      "heading": "उधार घेण्याचा अधिक चांगला, स्मार्ट",
-      "headingHighlight": "मार्ग",
-      "subtitle": "आमच्या आधुनिक कर्ज प्रक्रियेचा अनुभव घ्या",
-      "features": [
-        {
-          "title": "ऑनलाइन अर्ज",
-          "description": "दर्शवलेली किंमत हीच अंतिम किंमत — कोणतेही लपवलेले शुल्क नाही"
-        },
-        {
-          "title": "लवचिक परतफेड",
-          "description": "तुमच्या जीवनशैलीनुसार आणि बजेटनुसार परतफेड योजना निवडा."
-        },
-        {
-          "title": "100% सुरक्षित",
-          "description": "बँक-स्तरीय सुरक्षा तुमची वैयक्तिक आणि आर्थिक माहिती सुरक्षित ठेवते."
-        },
-        {
-          "title": "अतिवेगवान",
-          "description": "काही मिनिटांत मंजुरी आणि 24 तासांत रक्कम जमा."
-        }
-      ]
-    },
-
-    "stepsSection": {
-      "badge": "कसे कार्य करते",
-      "heading": "तुमचे कर्ज मिळवा",
-      "headingHighlight": "या सोप्या टप्प्यांमध्ये",
-      "subtitle": "सर्वात जलद आणि पारदर्शक कर्ज प्रक्रियेचा अनुभव घ्या",
       "steps": [
         {
           "number": "1",
-          "title": "ऑनलाइन अर्ज करा",
-          "description": "नोकरीचे तपशील भरा आणि पगार स्लिप अपलोड करा"
+          "title": "तपशील भरा",
+          "description": "60 सेकंदांत मूलभूत माहिती"
         },
         {
           "number": "2",
-          "title": "तत्काळ पडताळणी",
-          "description": "आमचा AI तुमचे तपशील पडताळतो आणि काही सेकंदांत मंजुरी देतो"
+          "title": "मंजुरी मिळवा",
+          "description": "स्क्रीनवर त्वरित निर्णय"
         },
         {
           "number": "3",
           "title": "रक्कम मिळवा",
-          "description": "5 मिनिटांत तुमच्या बँक खात्यात पैसे जमा"
+          "description": "थेट तुमच्या बँक खात्यात"
         }
       ]
-    },
-
-    "testimonials": {
-      "heading": "फक्त आमच्या बोलण्यावर",
-      "headingHighlight": "विश्वास ठेऊ नका",
-      "subheading": "स्वतः अनुभव घ्या",
-      "items": [
-        {
-          "name": "राजेश कुमार",
-          "text": "बुलेट लोनमुळे मी सणासुदीसाठी माल साठवू शकलो. विक्री झाल्यावर सहज परतफेड केली. खरंच गेम-चेंजर.",
-          "image": "https://randomuser.me/api/portraits/men/32.jpg"
-        },
-        {
-          "name": "प्रिया शर्मा",
-          "text": "शेवटी फ्रीलान्सर्सना समजणारे कर्ज! मासिक EMI चा ताण नाही, प्रोजेक्टचे पेमेंट येताच एकदाच परतफेड.",
-          "image": "https://randomuser.me/api/portraits/women/44.jpg"
-        },
-        {
-          "name": "अमित पटेल",
-          "text": "आपत्कालीन वैद्यकीय कर्जाने माझ्या वडिलांचे प्राण वाचवले. जलद वितरण आणि त्रासमुक्त प्रक्रिया खूपच मदतीची ठरली.",
-          "image": "https://randomuser.me/api/portraits/men/40.jpg"
-        }
-      ]
-    },
-
-
-    
+    }
+  },
+  "loansGrid": {
+    "badge": "आमची उत्पादने",
+    "title": "कर्जे तयार केलेली",
+    "titleHighlight": "प्रत्येक गरजेसाठी",
+    "subtitle": "तुमच्या गरजेनुसार लवचिक कर्ज उत्पादने निवडा",
+    "loans": [
+      {
+        "title": "पगार आगाऊ",
+        "amount": "₹5,000 - ₹5,00,000",
+        "description": "तुमच्या मासिक पगाराच्या 2 पट रक्कम तत्काळ मिळवा"
+      },
+      {
+        "title": "वैयक्तिक कर्ज",
+        "amount": "₹10,000 - ₹50,00,000",
+        "description": "तुमच्या सर्व वैयक्तिक गरजांसाठी त्वरित रक्कम"
+      },
+      {
+        "title": "आपत्कालीन निधी",
+        "amount": "₹10,000 - ₹2,00,000",
+        "description": "वैद्यकीय आणि आपत्कालीन गरजांसाठी 24 तास मदत"
+      },
+      {
+        "title": "सणासुदीचे आगाऊ",
+        "amount": "₹5,000 - ₹1,00,000",
+        "description": "प्रत्येक सणाचा आनंद आर्थिक ताणाशिवाय घ्या"
+      },
+      {
+        "title": "वैद्यकीय कर्ज",
+        "amount": "₹25,000 - ₹10,00,000",
+        "description": "नियोजित उपचारांसाठी वित्तपुरवठा"
+      },
+      {
+        "title": "ट्रॅव्हल नाऊ पे लेटर",
+        "amount": "₹25,000 - ₹3,00,000",
+        "description": "तुमची स्वप्नातील सहल आजच बुक करा, पेमेंट पुढील महिन्यात करा"
+      }
+    ],
+    "button": "अधिक जाणून घ्या"
+  },
+  "featuresSection": {
+    "heading": "उधार घेण्याचा अधिक चांगला, स्मार्ट",
+    "headingHighlight": "मार्ग",
+    "subtitle": "आमच्या आधुनिक कर्ज प्रक्रियेचा अनुभव घ्या",
+    "features": [
+      {
+        "title": "ऑनलाइन अर्ज",
+        "description": "दर्शवलेली किंमत हीच अंतिम किंमत — कोणतेही लपवलेले शुल्क नाही"
+      },
+      {
+        "title": "लवचिक परतफेड",
+        "description": "तुमच्या जीवनशैलीनुसार आणि बजेटनुसार परतफेड योजना निवडा."
+      },
+      {
+        "title": "100% सुरक्षित",
+        "description": "बँक-स्तरीय सुरक्षा तुमची वैयक्तिक आणि आर्थिक माहिती सुरक्षित ठेवते."
+      },
+      {
+        "title": "अतिवेगवान",
+        "description": "काही मिनिटांत मंजुरी आणि 24 तासांत रक्कम जमा."
+      }
+    ]
+  },
+  "stepsSection": {
+    "badge": "कसे कार्य करते",
+    "heading": "तुमचे कर्ज मिळवा",
+    "headingHighlight": "या सोप्या टप्प्यांमध्ये",
+    "subtitle": "सर्वात जलद आणि पारदर्शक कर्ज प्रक्रियेचा अनुभव घ्या",
+    "steps": [
+      {
+        "number": "1",
+        "title": "ऑनलाइन अर्ज करा",
+        "description": "नोकरीचे तपशील भरा आणि पगार स्लिप अपलोड करा"
+      },
+      {
+        "number": "2",
+        "title": "तत्काळ पडताळणी",
+        "description": "आमचा AI तुमचे तपशील पडताळतो आणि काही सेकंदांत मंजुरी देतो"
+      },
+      {
+        "number": "3",
+        "title": "रक्कम मिळवा",
+        "description": "5 मिनिटांत तुमच्या बँक खात्यात पैसे जमा"
+      }
+    ]
+  },
+  "testimonials": {
+    "heading": "फक्त आमच्या बोलण्यावर",
+    "headingHighlight": "विश्वास ठेऊ नका",
+    "subheading": "स्वतः अनुभव घ्या",
+    "items": [
+      {
+        "name": "राजेश कुमार",
+        "text": "बुलेट लोनमुळे मी सणासुदीसाठी माल साठवू शकलो. विक्री झाल्यावर सहज परतफेड केली. खरंच गेम-चेंजर.",
+        "image": "https://randomuser.me/api/portraits/men/32.jpg"
+      },
+      {
+        "name": "प्रिया शर्मा",
+        "text": "शेवटी फ्रीलान्सर्सना समजणारे कर्ज! मासिक EMI चा ताण नाही, प्रोजेक्टचे पेमेंट येताच एकदाच परतफेड.",
+        "image": "https://randomuser.me/api/portraits/women/44.jpg"
+      },
+      {
+        "name": "अमित पटेल",
+        "text": "आपत्कालीन वैद्यकीय कर्जाने माझ्या वडिलांचे प्राण वाचवले. जलद वितरण आणि त्रासमुक्त प्रक्रिया खूपच मदतीची ठरली.",
+        "image": "https://randomuser.me/api/portraits/men/40.jpg"
+      }
+    ]
+  },
   "products": {
     "title": "आमची कर्ज उत्पादने",
     "subtitle": "तुमच्या गरजेनुसार योग्य कर्ज निवडा",
@@ -555,70 +547,90 @@
       "title": "लक्ष्मीवन बद्दल",
       "description": "कमीतकमी कागदपत्रे आणि जलद मंजुरीसह त्वरित वैयक्तिक कर्जासाठी तुमचा विश्वसनीय भागीदार."
     },
-"quickLinks": {
-  "title": "जलद दुवे",
-  "items": {
-    "about": "आमच्याबद्दल",
-    "products": "आमची उत्पादने",
-    "partners": "भागीदार",
-    "careers": "करिअर",
-    "contact": "आमच्याशी संपर्क साधा",
-    "ourStory": "आमची कथा",
-    "leadershipTeam": "लीडरशिप टीम",
-    "pressMedia": "माध्यम आणि प्रेस",
-    "awardsRecognition": "पुरस्कार आणि गौरव",
-    "csrInitiatives": "CSR उपक्रम",
-    "testimonials": "ग्राहक प्रतिक्रिया"
-  }
-}
-,
-"products": {
-  "title": "उत्पादने",
-  "items": {
-    "personal": "वैयक्तिक कर्ज",
-    "salary": "पगार आगाऊ",
-    "emergency": "आपत्कालीन निधी",
-    "medical": "वैद्यकीय कर्ज",
-    "travel": "प्रवास कर्ज",
-    "festival": "सणपूर्व कर्ज"
-  }
-},
-"resources": {
-  "title": "संसाधने",
-  "items": {
-    "eligibilityCheck": "पात्रता तपासा",
-    "interestRates": "व्याज दर",
-    "documentChecklist": "कागदपत्रांची यादी",
-    "howToApply": "कसे अर्ज करावे",
-    "financialLiteracy": "आर्थिक साक्षरता"
-  }
-}
-,
-"support": {
-  "title": "सहाय्य",
-  "items": {
-    "customerSupport": "ग्राहक सहाय्य",
-    "grievanceRedressal": "तक्रार निवारण",
-    "nodalOfficer": "नोडल अधिकारी",
-    "locateBranch": "शाखा शोधा",
-    "downloadForms": "फॉर्म डाउनलोड करा",
-    "reportFraud": "फसवणूक रिपोर्ट करा"
-  }
-}
-,
+    "quickLinks": {
+      "title": "जलद दुवे",
+      "items": {
+        "about": "आमच्याबद्दल",
+        "products": "आमची उत्पादने",
+        "partners": "भागीदार",
+        "careers": "करिअर",
+        "complaint": "तक्रार",
+        "contact": "आमच्याशी संपर्क साधा",
+        "ourStory": "आमची कथा",
+        "leadershipTeam": "लीडरशिप टीम",
+        "pressMedia": "माध्यम आणि प्रेस",
+        "awardsRecognition": "पुरस्कार आणि गौरव",
+        "csrInitiatives": "CSR उपक्रम",
+        "testimonials": "ग्राहक प्रतिक्रिया"
+      }
+    },
+    "products": {
+      "title": "उत्पादने",
+      "items": {
+        "personal": "वैयक्तिक कर्ज",
+        "salary": "पगार आगाऊ",
+        "emergency": "आपत्कालीन निधी",
+        "medical": "वैद्यकीय कर्ज",
+        "travel": "प्रवास कर्ज",
+        "festival": "सणपूर्व कर्ज"
+      }
+    },
+    "resources": {
+      "title": "संसाधने",
+      "items": {
+        "eligibilityCheck": "पात्रता तपासा",
+        "interestRates": "व्याज दर",
+        "documentChecklist": "कागदपत्रांची यादी",
+        "interestRatePolicy": "व्याज दर धोरण",
+        "howToApply": "कसे अर्ज करावे",
+        "financialLiteracy": "आर्थिक साक्षरता"
+      }
+    },
+    "support": {
+      "title": "सहाय्य",
+      "items": {
+        "customerSupport": "ग्राहक सहाय्य",
+        "grievanceRedressal": "तक्रार निवारण",
+        "nodalOfficer": "नोडल अधिकारी",
+        "locateBranch": "शाखा शोधा",
+        "downloadForms": "फॉर्म डाउनलोड करा",
+        "reportFraud": "फसवणूक रिपोर्ट करा"
+      }
+    },
     "legal": {
       "title": "कायदेशीर",
-"items": {
-  "privacy": "गोपनीयता धोरण",
-  "terms": "नियम आणि अटी",
-  "disclaimer": "अस्वीकरण",
-  "grievance": "तक्रार निवारण",
-  "cookiePolicy": "कुकी धोरण",
-  "fairPracticeCode": "योग्य व्यवहाराचा कोड",
-  "interestRatePolicy": "व्याज दर धोरण",
-  "kycPolicy": "KYC धोरण",
-  "rbiGuidelines": "RBI मार्गदर्शक तत्त्वे"
-}
+      "items": {
+        "privacy": "गोपनीयता धोरण",
+        "terms": "नियम आणि अटी",
+        "disclaimer": "अस्वीकरण",
+        "grievance": "तक्रार निवारण",
+        "itSecurityPolicy": "आयटी सुरक्षा धोरण",
+        "disclaimerDisclosure": "अस्वीकरण आणि प्रकटीकरण",
+        "refundCancellation": "परतावा आणि रद्दीकरण",
+        "cookiePolicy": "कुकी धोरण",
+        "fairPracticeCode": "योग्य व्यवहाराचा कोड",
+        "interestRatePolicy": "व्याज दर धोरण",
+        "kycPolicy": "KYC धोरण",
+        "rbiGuidelines": "RBI मार्गदर्शक तत्त्वे"
+      }
+    },
+    "policyLinks": {
+      "title": "धोरण दुवे",
+      "items": {
+        "fairPracticeCode": "न्याय्य व्यवहार संहिता",
+        "interestRatePolicy": "व्याज दर धोरण",
+        "kycPolicy": "KYC / AML धोरण",
+        "grievanceRedressal": "तक्रार निवारण यंत्रणा",
+        "collectionPolicy": "वसुली धोरण",
+        "privacyPolicy": "गोपनीयता धोरण",
+        "itPolicy": "IT धोरण",
+        "creditPolicy": "क्रेडिट धोरण",
+        "lendingPolicy": "कर्ज धोरण",
+        "refundCancellation": "परतावा आणि रद्दीकरण",
+        "disclaimerDisclosure": "अस्वीकरण आणि प्रकटीकरण",
+        "settlementWriteoffPolicy": "तडजोड आणि राइट-ऑफ धोरण",
+        "investmentPolicy": "गुंतवणूक धोरण"
+      }
     },
     "contact": {
       "title": "आमच्याशी संपर्क साधा",
@@ -627,20 +639,20 @@
       "email": "support@quikkred.com",
       "hours": "सोम-शनि: सकाळी ९ - संध्याकाळी ६"
     },
-"social": {
-  "title": "आमचे सोशल मीडिया अनुसरण करा",
-  "facebook": "फेसबुक",
-  "twitter": "ट्विटर",
-  "linkedin": "लिंक्डइन",
-  "instagram": "इंस्टाग्राम"
-},
-"mobileApp": {
-  "title": "आमचे मोबाइल अॅप डाउनलोड करा",
-  "appStore": "ऍप स्टोअर",
-  "playStore": "प्ले स्टोअर",
-  "comingSoon": "लवकरच येत आहे!",
-  "comingSoonMessage": "आमचे मोबाइल अॅप लवकरच उपलब्ध होईल. अद्ययावत राहा!"
-},
+    "social": {
+      "title": "आमचे सोशल मीडिया अनुसरण करा",
+      "facebook": "फेसबुक",
+      "twitter": "ट्विटर",
+      "linkedin": "लिंक्डइन",
+      "instagram": "इंस्टाग्राम"
+    },
+    "mobileApp": {
+      "title": "आमचे मोबाइल अॅप डाउनलोड करा",
+      "appStore": "ऍप स्टोअर",
+      "playStore": "प्ले स्टोअर",
+      "comingSoon": "लवकरच येत आहे!",
+      "comingSoonMessage": "आमचे मोबाइल अॅप लवकरच उपलब्ध होईल. अद्ययावत राहा!"
+    },
     "copyright": "© २०२४ लक्ष्मीवन. सर्व हक्क राखीव.",
     "disclaimer": "लक्ष्मीवन RBI द्वारे नियंत्रित नोंदणीकृत NBFC आहे"
   },
@@ -671,17 +683,16 @@
   "about": {
     "title": "लक्ष्मीवन बद्दल",
     "subtitle": "आर्थिक स्वातंत्र्यासाठी तुमचे प्रवेशद्वार",
-"ourStory": "आमची गोष्ट",
-"ourStoryDesc": "नवीनतेच्या प्रवासाची कहाणी",
-"leadershipTeam": "नेतृत्व टीम",
-"leadershipDesc": "आमच्या नेत्यांची ओळख",
-"missionVision": "ध्येय आणि दृष्टी",
-"missionVisionDesc": "आमचा उद्देश",
-"timeline": "कालरेषा",
-"timelineDesc": "आमच्या प्रवासाचा मार्ग",
-"values": "मूल्ये",
-"valuesDesc": "सामाजिक जबाबदारी"
-,
+    "ourStory": "आमची गोष्ट",
+    "ourStoryDesc": "नवीनतेच्या प्रवासाची कहाणी",
+    "leadershipTeam": "नेतृत्व टीम",
+    "leadershipDesc": "आमच्या नेत्यांची ओळख",
+    "missionVision": "ध्येय आणि दृष्टी",
+    "missionVisionDesc": "आमचा उद्देश",
+    "timeline": "कालरेषा",
+    "timelineDesc": "आमच्या प्रवासाचा मार्ग",
+    "values": "मूल्ये",
+    "valuesDesc": "सामाजिक जबाबदारी",
     "mission": {
       "title": "आमचे ध्येय",
       "description": "प्रत्येक भारतीयासाठी आर्थिक सेवा सुलभ, परवडणारी आणि पारदर्शक बनवणे, स्वप्नांना सक्षम करणे आणि समृद्धीला शक्य करणे."
@@ -704,21 +715,20 @@
       "team": "टीम सदस्य"
     }
   },
-"eligibility": {
-  "title": "पात्रता निकष",
-  "check": "पात्रता तपासा",
-  "checkDesc": "कर्जासाठी पात्रता तपासा",
-  "age": "वय: २१-६० वर्षे",
-  "income": "मासिक उत्पन्न: ₹१५,०००+",
-  "employment": "रोजगार: पगारदार/स्वयंरोजगार",
-  "credit": "CIBIL स्कोअर: ६५०+",
-  "documents": "वैध KYC कागदपत्रे",
-  "documentGuide": "कागदपत्र मार्गदर्शक",
-  "documentGuideDesc": "आवश्यक कागदपत्रे",
-  "interestRates": "व्याजदर",
-  "interestRatesDesc": "सध्याचे दर"
-}
-,
+  "eligibility": {
+    "title": "पात्रता निकष",
+    "check": "पात्रता तपासा",
+    "checkDesc": "कर्जासाठी पात्रता तपासा",
+    "age": "वय: २१-६० वर्षे",
+    "income": "मासिक उत्पन्न: ₹१५,०००+",
+    "employment": "रोजगार: पगारदार/स्वयंरोजगार",
+    "credit": "CIBIL स्कोअर: ६५०+",
+    "documents": "वैध KYC कागदपत्रे",
+    "documentGuide": "कागदपत्र मार्गदर्शक",
+    "documentGuideDesc": "आवश्यक कागदपत्रे",
+    "interestRates": "व्याजदर",
+    "interestRatesDesc": "सध्याचे दर"
+  },
   "process": {
     "title": "हे कसे कार्य करते",
     "steps": {
@@ -747,7 +757,7 @@
   "faqs": {
     "title": "वारंवार विचारले जाणारे प्रश्न",
     "subtitle": "तुम्हाला माहित असणे आवश्यक असलेली सर्व गोष्टी",
-    "description": "Common questions",
+    "description": "सामान्य प्रश्न",
     "categories": {
       "general": "सामान्य",
       "eligibility": "पात्रता",
@@ -1040,7 +1050,7 @@
         "time": "त्वरित"
       }
     },
-      "faq": {
+    "faq": {
       "heading": "काही प्रश्न आहेत?",
       "headingHighlight": "आमच्याकडे उत्तरं आहेत.",
       "subtitle": "आमच्या कर्ज उत्पादनांबद्दल आणि प्रक्रियेबद्दल सामान्य प्रश्नांची उत्तरे मिळवा",
@@ -1117,71 +1127,78 @@
     }
   },
   "calculator": {
-  "title": "EMI कॅल्क्युलेटर",
-  "subtitle": "तुमचा मासिक हप्ते लगेच पहा",
-  "loanAmount": "कर्ज रक्कम",
-  "tenure": "कालावधी",
-  "interestRate": "व्याजदर (महिन्याला)",
-  "months": "महिने",
-  "month": "महिना",
-  "processingFee": "प्रक्रिया शुल्क",
-  "totalInterest": "एकूण व्याज",
-  "totalPayable": "एकूण देय",
-  "monthlyEMI": "तुमचा मासिक EMI",
-  "for": "साठी",
-  "applyNowFor": "आता अर्ज करा",
-  "trustMessages": {
-    "noHiddenCharges": "लपलेले शुल्क नाहीत",
-    "flexibleRepayment": "लवचिक परतफेडीचे पर्याय",
-    "instantDisbursal": "मान्यतेनंतर त्वरित रक्कम वितरित"
-  },
-  "footer": "30 सेकंदांत मंजुरी मिळवा • मिनिटांत बँकेत पैसे"
-},
-"error404": {
-  "title": "पृष्ठ सापडले नाही",
-  "description": "अरेरे! तुम्ही शोधत असलेले पृष्ठ अस्तित्वात नाही किंवा हलवले गेले आहे.",
-  "suggestion": "काळजी करू नका, तुम्ही मुख्यपृष्ठावर परत जाऊ शकता किंवा आमच्या सेवा पाहू शकता.",
-  "backHome": "मुख्यपृष्ठावर परत जा",
-  "goBack": "मागे जा",
-  "quickLinks": "जलद दुवे",
-  "exploreProducts": "उत्पादने पहा",
-  "helpCenter": "मदत केंद्र",
-  "contactUs": "आमच्याशी संपर्क साधा",
-  "funFact": "मजेशीर तथ्य: 404 त्रुटीचे नाव CERN च्या रूम 404 वरून आले जिथे पहिला वेब सर्व्हर होता!"
-},
-"loanCalculator": {
-  "heading": "कर्ज कॅल्क्युलेटर",
-  "subtitle": "तुमची एकूण परतफेड रक्कम मोजा",
-  "labels": {
-    "loanPurpose": "कर्जाचा हेतू निवडा",
+    "title": "EMI कॅल्क्युलेटर",
+    "subtitle": "तुमचा मासिक हप्ते लगेच पहा",
     "loanAmount": "कर्ज रक्कम",
-    "loanTenure": "कर्ज कालावधी",
-    "dailyInterestRate": "दैनिक व्याजदर",
+    "tenure": "कालावधी",
+    "tenureDays": "दिवस",
+    "interestRate": "व्याजदर (महिन्याला)",
+   "dailyInterestRate": "दैनिक व्याजदर",
+   "perDay": "प्रति दिवस",
+    "months": "महिने",
+    "month": "महिना",
     "processingFee": "प्रक्रिया शुल्क",
-    "principalAmount": "मूळ रक्कम",
+    "principalAmount": "मूळ कर्ज रक्कम",
     "interest": "व्याज",
-    "totalRepayment": "एकूण परतफेड"
+    "totalInterest": "एकूण व्याज",
+    "totalPayable": "एकूण देय",
+    "monthlyEMI": "तुमचा मासिक EMI",
+    "for": "साठी",
+    "applyNowFor": "आता अर्ज करा",
+    "totalRepayment": "एकूण परतफेड रक्कम",
+    "applyButton": "आत्ता अर्ज करा",
+    "trustMessages": {
+      "noHiddenCharges": "लपलेले शुल्क नाहीत",
+      "flexibleRepayment": "लवचिक परतफेडीचे पर्याय",
+      "instantDisbursal": "मान्यतेनंतर त्वरित रक्कम वितरित"
+    },
+    "footer": "30 सेकंदांत मंजुरी मिळवा • मिनिटांत बँकेत पैसे"
   },
-  "purposes": ["वैयक्तिक", "वैद्यकीय", "शिक्षण", "व्यवसाय", "प्रवास", "लग्न"],
-  "button": "या कर्जासाठी अर्ज करा",
-  "disclaimer": "त्वरित मंजुरी मिळवा • मिनिटांत बँकेत पैसे",
-  "units": {
-    "perDay": "दररोज",
-    "days": "दिवस"
+  "error404": {
+    "title": "पृष्ठ सापडले नाही",
+    "description": "अरेरे! तुम्ही शोधत असलेले पृष्ठ अस्तित्वात नाही किंवा हलवले गेले आहे.",
+    "suggestion": "काळजी करू नका, तुम्ही मुख्यपृष्ठावर परत जाऊ शकता किंवा आमच्या सेवा पाहू शकता.",
+    "backHome": "मुख्यपृष्ठावर परत जा",
+    "goBack": "मागे जा",
+    "quickLinks": "जलद दुवे",
+    "exploreProducts": "उत्पादने पहा",
+    "helpCenter": "मदत केंद्र",
+    "contactUs": "आमच्याशी संपर्क साधा",
+    "funFact": "मजेशीर तथ्य: 404 त्रुटीचे नाव CERN च्या रूम 404 वरून आले जिथे पहिला वेब सर्व्हर होता!"
+  },
+  "loanCalculator": {
+    "heading": "कर्ज कॅल्क्युलेटर",
+    "subtitle": "तुमची एकूण परतफेड रक्कम मोजा",
+    "labels": {
+      "loanPurpose": "कर्जाचा हेतू निवडा",
+      "loanAmount": "कर्ज रक्कम",
+      "loanTenure": "कर्ज कालावधी",
+      "dailyInterestRate": "दैनिक व्याजदर",
+      "processingFee": "प्रक्रिया शुल्क",
+      "principalAmount": "मूळ रक्कम",
+      "interest": "व्याज",
+      "totalRepayment": "एकूण परतफेड"
+    },
+    "purposes": ["वैयक्तिक", "वैद्यकीय", "शिक्षण", "व्यवसाय", "प्रवास", "लग्न"],
+    "button": "या कर्जासाठी अर्ज करा",
+    "disclaimer": "त्वरित मंजुरी मिळवा • मिनिटांत बँकेत पैसे",
+    "units": {
+      "perDay": "दररोज",
+      "days": "दिवस"
+    }
+  },
+  "newsletter": {
+    "title": "लक्ष्मीबरोबर अपडेट रहा",
+    "subtitle": "विशेष ऑफर, आर्थिक टिप्स आणि नवीन कर्ज उत्पादनांची माहिती मिळवा",
+    "placeholder": "तुमचा ईमेल टाका",
+    "button": "सदस्यता घ्या",
+    "subscribing": "सदस्यता घेत आहे...",
+    "successTitle": "यशस्वीरित्या सदस्यता घेतली!",
+    "successMessage": "आमच्या न्यूजलेटरची सदस्यता घेतल्याबद्दल धन्यवाद.",
+    "errors": {
+      "required": "ईमेल आवश्यक आहे",
+      "invalid": "कृपया वैध ईमेल प्रविष्ट करा",
+      "failed": "सदस्यता घेण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा."
+    }
   }
-},
-"newsletter": {
-  "title": "लक्ष्मीबरोबर अपडेट रहा",
-  "subtitle": "विशेष ऑफर, आर्थिक टिप्स आणि नवीन कर्ज उत्पादनांची माहिती मिळवा",
-  "placeholder": "तुमचा ईमेल टाका",
-  "button": "सदस्यता घ्या",
-  "subscribing": "सदस्यता घेत आहे...",
-  "successTitle": "यशस्वीरित्या सदस्यता घेतली!",
-  "successMessage": "आमच्या न्यूजलेटरची सदस्यता घेतल्याबद्दल धन्यवाद.",
-  "errors": {
-    "required": "ईमेल आवश्यक आहे",
-    "invalid": "कृपया वैध ईमेल प्रविष्ट करा",
-    "failed": "सदस्यता घेण्यात अयशस्वी. कृपया पुन्हा प्रयत्न करा."
-  }
-}
 }

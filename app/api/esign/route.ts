@@ -278,7 +278,6 @@ async function storeDocumentReference(
     }
   });
   */
-  // console.log(`Stored document reference: ${loanId} -> ${documentId}`);
 }
 
 // ============================================

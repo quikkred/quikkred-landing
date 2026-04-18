@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { X, Clock, Sparkles } from "lucide-react";
 import { QUICK_FORM_URL } from "@/lib/config";
 
+
 interface SalaryAdvanceProps {
   title?: string;
   highlightWord?: string;

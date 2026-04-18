@@ -53,10 +53,11 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, o
     const axios = useAxios();
 
     const [isModelReady, setIsModelReady] = useState(!!globalDetector);
-    const [feedback, setFeedback] = useState<string>("Initializing...");
+    const [feedback, setFeedback] = useState<string>("Please wait, camera is getting ready...");
     const [faceQuality, setFaceQuality] = useState<number>(0);
     const [capturedImage, setCapturedImage] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [cameraPermissionDenied, setCameraPermissionDenied] = useState(false);
 
     // Status message for inline Red/Green alerts above buttons
     const [statusMsg, setStatusMsg] = useState<{ type: 'error' | 'success' | null, text: string }>({ type: null, text: "" });
@@ -67,9 +68,11 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, o
             stopCamera();
             return;
         }
-        
+
         document.body.style.overflow = "hidden";
         isActiveRef.current = true;
+        setCameraPermissionDenied(false);
+        setStatusMsg({ type: null, text: "" });
 
         const startEngine = async () => {
             if (!globalDetector) {
@@ -91,13 +94,21 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, o
     }, [isOpen]);
 
     const startCamera = async () => {
+        setCameraPermissionDenied(false);
+        setStatusMsg({ type: null, text: "" });
+
         try {
+            // Always attempt getUserMedia — this is the only way to trigger the
+            // browser's permission prompt.  If the user previously denied access,
+            // some browsers (Chrome) will reject instantly without a prompt, while
+            // others (Firefox) will re-prompt.  Either way we handle the error below.
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
             });
             if (videoRef.current && isActiveRef.current) {
                 videoRef.current.srcObject = stream;
                 streamRef.current = stream;
+                setCameraPermissionDenied(false);
                 videoRef.current.onloadeddata = () => {
                     if (isActiveRef.current) {
                         requestRef.current = requestAnimationFrame(predictLoop);
@@ -107,9 +118,16 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, o
                 // If it became inactive while waiting for stream
                 stream.getTracks().forEach(t => t.stop());
             }
-        } catch (err) {
+        } catch (err: any) {
             if (isActiveRef.current) {
-                setStatusMsg({ type: 'error', text: "Camera access denied. Check your browser permissions." });
+                setCameraPermissionDenied(true);
+                if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
+                    setStatusMsg({ type: 'error', text: "Camera access denied. Please allow camera access in your browser settings and try again." });
+                } else if (err?.name === 'NotFoundError' || err?.name === 'DevicesNotFoundError') {
+                    setStatusMsg({ type: 'error', text: "No camera found. Please connect a camera and try again." });
+                } else {
+                    setStatusMsg({ type: 'error', text: "Unable to access camera. Please check your browser permissions and try again." });
+                }
             }
         }
     };
@@ -133,10 +151,10 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, o
             const detections = globalDetector.detectForVideo(videoRef.current, performance.now()).detections;
 
             if (detections.length === 0) {
-                setFeedback("Position your face");
+                setFeedback("Show your full face in the frame");
                 setFaceQuality(0);
             } else if (detections.length > 1) {
-                setFeedback("Only one person allowed");
+                setFeedback("Only one face should be visible");
                 setFaceQuality(0);
             } else {
                 const box = detections[0].boundingBox;
@@ -145,13 +163,13 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, o
                     const centerX = (box.originX + box.width / 2) / videoRef.current.videoWidth;
 
                     if (faceSize < 0.26) {
-                        setFeedback("Move closer");
+                        setFeedback("Move your face a little closer");
                         setFaceQuality(30);
                     } else if (Math.abs(centerX - 0.5) > 0.12) {
-                        setFeedback("Center your face");
+                        setFeedback("Keep your face in the center");
                         setFaceQuality(60);
                     } else {
-                        setFeedback("Perfect, hold still");
+                        setFeedback("Great! Hold still and capture");
                         setFaceQuality(100);
                     }
                 }
@@ -269,10 +287,42 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, o
 
                 {/* Camera Area */}
                 <div className="relative flex-1 bg-slate-100 overflow-hidden flex flex-col items-center justify-center">
-                    {!isModelReady ? (
+                    {cameraPermissionDenied ? (
+                        <div className="flex flex-col items-center gap-4 px-6 text-center">
+                            <div className="p-4 bg-red-50 rounded-full">
+                                <Camera className="w-10 h-10 text-red-400" />
+                            </div>
+                            <div>
+                                <p className="text-base font-semibold text-slate-800 mb-2">Camera Access Required</p>
+                                <p className="text-sm text-slate-500 mb-3">
+                                    Camera permission is blocked for this site. To enable it:
+                                </p>
+                                <ol className="text-xs text-slate-500 text-left space-y-1.5 max-w-[280px] mx-auto">
+                                    <li><span className="font-semibold text-slate-700">1.</span> Click the <span className="font-semibold text-slate-700">lock / camera icon</span> in your browser&apos;s address bar</li>
+                                    <li><span className="font-semibold text-slate-700">2.</span> Set <span className="font-semibold text-slate-700">Camera</span> to <span className="font-semibold text-emerald-600">Allow</span></li>
+                                    <li><span className="font-semibold text-slate-700">3.</span> Tap <span className="font-semibold text-slate-700">&quot;Try Again&quot;</span> below</li>
+                                </ol>
+                            </div>
+                            <div className="flex gap-3 mt-2">
+                                <button
+                                    onClick={onClose}
+                                    className="px-5 py-2.5 rounded-xl font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50 transition-all text-sm"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={startCamera}
+                                    className="px-5 py-2.5 rounded-xl font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-all text-sm flex items-center gap-2"
+                                >
+                                    <RotateCw className="w-4 h-4" />
+                                    Try Again
+                                </button>
+                            </div>
+                        </div>
+                    ) : !isModelReady ? (
                         <div className="flex flex-col items-center gap-3">
                             <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
-                            <p className="text-sm font-medium text-slate-500">Starting AI Engine...</p>
+                            <p className="text-sm font-medium text-slate-500">Preparing face verification...</p>
                         </div>
                     ) : (
                         <div className="relative w-full h-full">
@@ -316,6 +366,15 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, o
                             }`}>
                             {statusMsg.type === 'success' ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
                             <p className="text-xs font-semibold">{statusMsg.text}</p>
+                        </div>
+                    )}
+
+                    {!capturedImage && (
+                        <div className="mb-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                            <p className="text-[11px] font-semibold text-slate-700">For a clear selfie:</p>
+                            <p className="text-[11px] text-slate-600">Keep your face close and centered.</p>
+                            <p className="text-[11px] text-slate-600">Use good lighting and look straight at the camera.</p>
+                            <p className="text-[11px] text-slate-600">Make sure only your face is visible.</p>
                         </div>
                     )}
 

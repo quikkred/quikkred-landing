@@ -343,6 +343,7 @@
         "products": "ನಮ್ಮ ಉತ್ಪನ್ನಗಳು",
         "partners": "ಪಾಲುದಾರರು",
         "careers": "ವೃತ್ತಿಗಳು",
+        "complaint": "ದೂರು",
         "contact": "ನಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಿ",
         "ourStory": "ನಮ್ಮ ಕಥೆ",
         "leadershipTeam": "ನಾಯಕತ್ವ ತಂಡ",
@@ -394,10 +395,26 @@
         "cookiePolicy": "ಕುಕಿ ನೀತಿ",
         "fairPracticeCode": "ನ್ಯಾಯಯುತ ಅಭ್ಯಾಸ ಸಂಹಿತೆ",
         "interestRatePolicy": "ಬಡ್ಡಿ ದರ ನೀತಿ",
+        "refundCancellation": "ಮರುಪಾವತಿ ಮತ್ತು ರದ್ದತಿ",
+        "disclaimerDisclosure": "ಹಕ್ಕುತ್ಯಾಗ ಮತ್ತು ಬಹಿರಂಗಪಡಿಸುವಿಕೆ",
+        "itSecurityPolicy": "IT ಭದ್ರತಾ ನೀತಿ",
         "kycPolicy": "ಕೆವೈಸಿ ನೀತಿ",
         "rbiGuidelines": "ಆರ್‌ಬಿಐ ಮಾರ್ಗಸೂಚಿಗಳು"
       }
     },
+    "policyLinks": {
+  "title": "ನೀತಿ ಲಿಂಕ್‌ಗಳು",
+  "items": {
+    "kycPolicy": "KYC / AML ನೀತಿ",
+    "grievanceRedressal": "ದೂರು ನಿವಾರಣಾ ಕಾರ್ಯವಿಧಾನ",
+    "collectionPolicy": "ಸಂಗ್ರಹಣಾ ನೀತಿ",
+    "privacyPolicy": "ಗೌಪ್ಯತಾ ನೀತಿ",
+    "creditPolicy": "ಕ್ರೆಡಿಟ್ ನೀತಿ",
+    "lendingPolicy": "ಸಾಲ ನೀತಿ",
+    "interestRatePolicy": "ಬಡ್ಡಿ ದರ ನೀತಿ",
+    "settlementWriteoffPolicy": "ಇತ್ಯರ್ಥ ಮತ್ತು ರೈಟ್-ಆಫ್ ನೀತಿ"
+  }
+},
     "contact": {
       "title": "ನಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಿ",
       "address": "ಮುಂಬೈ, ಮಹಾರಾಷ್ಟ್ರ",

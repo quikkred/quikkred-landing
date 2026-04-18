@@ -25,6 +25,7 @@ import Link from "next/link";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { QUICK_FORM_URL } from "@/lib/config";
 
+
 interface EligibilityResult {
   isEligible: boolean;
   score: number;

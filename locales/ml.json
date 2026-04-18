@@ -343,6 +343,7 @@
         "products": "ഞങ്ങളുടെ ഉൽപ്പന്നങ്ങൾ",
         "partners": "പങ്കാളികൾ",
         "careers": "തൊഴിലവസരങ്ങൾ",
+        "complaint": "പരാതി",
         "contact": "ബന്ധപ്പെടുക",
         "ourStory": "ഞങ്ങളുടെ കഥ",
         "leadershipTeam": "നേതൃത്വനിര",
@@ -392,12 +393,28 @@
         "disclaimer": "നിരാകരണം",
         "grievance": "പരാതി പരിഹാരം",
         "cookiePolicy": "കുക്കി നയം",
+        "refundCancellation": "തുക തിരിച്ചടവും റദ്ദാക്കലും",
+        "disclaimerDisclosure": "നിരാകരണവും വെളിപ്പെടുത്തലും",
+        "itSecurityPolicy": "IT സുരക്ഷാ നയം",
         "fairPracticeCode": "ന്യായമായ നടപടിക്രമ സംഹിത",
         "interestRatePolicy": "പലിശ നിരക്ക് നയം",
         "kycPolicy": "കെവൈസി നയം",
         "rbiGuidelines": "ആർബിഐ മാർഗ്ഗനിർദ്ദേശങ്ങൾ"
       }
     },
+    "policyLinks": {
+  "title": "നയ ലിങ്കുകൾ",
+  "items": {
+    "kycPolicy": "KYC / AML നയം",
+    "grievanceRedressal": "പരാതി പരിഹാര സംവിധാനം",
+    "collectionPolicy": "ശേഖരണ നയം",
+    "privacyPolicy": "സ്വകാര്യതാ നയം",
+    "creditPolicy": "ക്രെഡിറ്റ് നയം",
+    "lendingPolicy": "വായ്പ നയം",
+    "interestRatePolicy": "പലിശ നിരക്ക് നയം",
+    "settlementWriteoffPolicy": "തീർപ്പും റൈറ്റ്-ഓഫ് "
+  }
+},
     "contact": {
       "title": "ബന്ധപ്പെടുക",
       "address": "മുംബൈ, മഹാരാഷ്ട്ര",

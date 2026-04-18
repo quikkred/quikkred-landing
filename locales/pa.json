@@ -343,6 +343,7 @@
         "products": "ਸਾਡੇ ਉਤਪਾਦ",
         "partners": "ਭਾਗੀਦਾਰ",
         "careers": "ਕਰੀਅਰ",
+        "complaint": "ਸ਼ਿਕਾਇਤ",
         "contact": "ਸੰਪਰਕ ਕਰੋ",
         "ourStory": "ਸਾਡੀ ਕਹਾਣੀ",
         "leadershipTeam": "ਲੀਡਰਸ਼ਿਪ ਟੀਮ",
@@ -395,9 +396,26 @@
         "fairPracticeCode": "ਨਿਰਪੱਖ ਅਭਿਆਸ ਕੋਡ",
         "interestRatePolicy": "ਵਿਆਜ ਦਰ ਨੀਤੀ",
         "kycPolicy": "ਕੇਵਾਈਸੀ ਨੀਤੀ",
-        "rbiGuidelines": "ਆਰਬੀਆਈ ਦਿਸ਼ਾ-ਨਿਰਦੇਸ਼"
+        "rbiGuidelines": "ਆਰਬੀਆਈ ਦਿਸ਼ਾ-ਨਿਰਦੇਸ਼",
+       "itSecurityPolicy": "IT ਸੁਰੱਖਿਆ ਨੀਤੀ",
+        "refundCancellation": "ਵਾਪਸੀ ਅਤੇ ਰੱਦ ਕਰਨਾ",
+        "disclaimerDisclosure": "ਅਸਵੀਕਰਨ ਅਤੇ ਖੁਲਾਸਾ"
       }
+      },
+ "policyLinks": {
+  "title": "ਨੀਤੀ ਲਿੰਕਸ",
+  "items": {
+    "kycPolicy": "KYC / AML ਨੀਤੀ",
+    "grievanceRedressal": "ਸ਼ਿਕਾਇਤ ਨਿਵਾਰਣ ਤੰਤਰ",
+    "collectionPolicy": "ਵਸੂਲੀ ਨੀਤੀ",
+    "privacyPolicy": "ਗੋਪਨੀਯਤਾ ਨੀਤੀ",
+    "creditPolicy": "ਕ੍ਰੈਡਿਟ ਨੀਤੀ",
+    "lendingPolicy": "ਕਰਜ਼ਾ ਨੀਤੀ",
+    "settlementWriteoffPolicy": "ਸਮਝੌਤਾ ਅਤੇ ਰਾਈਟ-ਆਫ ਨੀਤੀ",
+    "interestRatePolicy": "ਵਿਆਜ ਦਰ ਨੀਤੀ"
+  }
     },
+  
     "contact": {
       "title": "ਸੰਪਰਕ ਕਰੋ",
       "address": "ਮੁੰਬਈ, ਮਹਾਰਾਸ਼ਟਰ",
