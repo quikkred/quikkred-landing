@@ -18,6 +18,7 @@ import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { QUICK_FORM_URL } from "@/lib/config";
 
+
 export function Header() {
   const { t } = useLanguage();
   const { user } = useAuth();

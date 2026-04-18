@@ -384,7 +384,7 @@ export default function CollectPartnerPage() {
                       </div>
                     </div>
                     {/* App Header */}
-                    <div className="bg-[#1a5f4a] px-5 pb-5 text-white">
+                    <div className="bg-[#1a5f4a] px-5 pb-5 text-white select-none">
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2.5">
                           <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center overflow-hidden">
@@ -410,7 +410,7 @@ export default function CollectPartnerPage() {
                     </div>
 
                     {/* App Content */}
-                    <div className="p-4 space-y-3 bg-gray-50 h-full">
+                    <div className="p-4 space-y-3 bg-gray-50 h-full select-none">
                       {/* Stats Row */}
                       <div className="grid grid-cols-2 gap-2.5">
                         <div className="bg-white rounded-xl p-3 shadow-sm">

@@ -13,6 +13,7 @@ import Link from "next/link";
 import LoanCalculatorAll from "@/components/homepage/loan-calculator";
 import { QUICK_FORM_URL } from "@/lib/config";
 
+
 export default function EMICalculatorPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">

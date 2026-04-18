@@ -451,6 +451,7 @@
         "products": "আমাৰ পণ্যসমূহ",
         "partners": "অংশীদাৰসকল",
         "careers": "কেৰিয়াৰ",
+        "complaint": "অভিযোগ",
       "contact": "আমাৰ লগত যোগাযোগ",
 "ourStory": "আমাৰ কাহিনী",
 "leadershipTeam": "নেতৃত্ব দল",
@@ -480,12 +481,28 @@
         "grievance": "অভিযোগ নিস্পত্তি",
        "cookiePolicy": "কুকি নীতি",
 "fairPracticeCode": "ন্যায্য অনুশীলন ক'ড",
+"refundCancellation": "ঘূৰাই দিয়া আৰু বাতিল",
+"disclaimerDisclosure": "অস্বীকৃতি আৰু প্ৰকাশ",
+"itSecurityPolicy": "IT সুৰক্ষা নীতি",
 "interestRatePolicy": "সুতৰ হাৰ নীতি",
 "kycPolicy": "KYC নীতি",
 "rbiGuidelines": "RBI নিৰ্দেশনা"
 
       }
     },
+    "policyLinks": {
+  "title": "নীতি লিংকসমূহ",
+  "items": {
+    "kycPolicy": "KYC / AML নীতি",
+    "grievanceRedressal": "অভিযোগ নিষ্পত্তি ব্যৱস্থা",
+    "collectionPolicy": "সংগ্ৰহ নীতি",
+    "privacyPolicy": "গোপনীয়তা নীতি",
+    "creditPolicy": "ক্ৰেডিট নীতি",
+    "lendingPolicy": "ঋণ নীতি",
+    "interestRatePolicy": "সুদৰ হাৰ নীতি",
+    "settlementWriteoffPolicy": "নিষ্পত্তি আৰু ৰাইট-অফ নীতি"
+  }
+},
     "contact": {
       "title": "আমাৰ লগত যোগাযোগ কৰক",
       "address": "মুম্বাই, মহাৰাষ্ট্ৰ",

@@ -565,6 +565,7 @@
     "products": "మా ఉత్పాదనలు",
     "partners": "భాగస్వాములు",
     "careers": "కెరీర్లు",
+    "complaint": "ఫిర్యాదు",
     "contact": "మమ్మల్ని సంప్రదించండి",
     "ourStory": "మా కథ",
     "leadershipTeam": "నాయకత్వ బృందం",
@@ -593,13 +594,28 @@
     "disclaimer": "నిరాకరణ",
     "grievance": "ఫిర్యాదుల పరిష్కారం",
     "cookiePolicy": "కుకీ పాలసీ",
+    "refundCancellation": "వాపసు మరియు రద్దు",
+    "disclaimerDisclosure": "నిరాకరణ మరియు వెల్లడింపు",
     "fairPracticeCode": "ఫెయిర్ ప్రాక్టీస్ కోడ్",
+    "itSecurityPolicy": "IT భద్రతా విధానం",
     "interestRatePolicy": "వడ్డీ రేటు విధానం",
     "kycPolicy": "KYC విధానం",
     "rbiGuidelines": "RBI మార్గదర్శకాలు"
   }
-}
-,
+},
+"policyLinks": {
+  "title": "విధాన లింక్లు",
+  "items": {
+    "kycPolicy": "KYC / AML విధానం",
+    "grievanceRedressal": "ఫిర్యాదు పరిష్కార యంత్రాంగం",
+    "collectionPolicy": "వసూలు విధానం",
+    "privacyPolicy": "గోప్యతా విధానం",
+    "creditPolicy": "క్రెడిట్ విధానం",
+    "lendingPolicy": "రుణ విధానం",
+    "interestRatePolicy": "వడ్డీ రేటు విధానం",
+    "settlementWriteoffPolicy": "పరిష్కారం మరియు రైట్-ఆఫ్ "
+  }
+},
     "contact": {
       "title": "మమ్మల్ని సంప్రదించండి",
       "address": "ముంబై, మహారాష్ట్ర",
@@ -1120,15 +1136,21 @@
   "subtitle": "మీ నెలవారీ చెల్లింపును వెంటనే చూడండి",
   "loanAmount": "రుణ మొత్తం",
   "tenure": "కాలవ్యవధి",
+  "tenureDays": "రోజులు",
+  "dailyInterestRate": "రోజువారీ వడ్డీ రేటు",
+  "perDay": "ప్రతి రోజు",
   "interestRate": "వడ్డీ రేటు (ప్రతి నెల)",
   "months": "నెలలు",
   "month": "నెల",
   "processingFee": "ప్రాసెసింగ్ ఫీ",
+  "principalAmount": "అసలు మొత్తం",
   "totalInterest": "మొత్తం వడ్డీ",
+  "totalRepayment": "మొత్తం చెల్లింపు",
   "totalPayable": "మొత్తం చెల్లించవలసిన మొత్తం",
   "monthlyEMI": "మీ నెలవారీ EMI",
   "for": "కొరకు",
   "applyNowFor": "ఇప్పుడు దరఖాస్తు చేయండి",
+  "applyButton": "ఈ రుణం కోసం దరఖాస్తు చేయండి",
   "trustMessages": {
     "noHiddenCharges": "దాచిన ఛార్జీలు లేవు",
     "flexibleRepayment": "సౌకర్యవంతమైన తిరిగి చెల్లింపు ఎంపికలు",

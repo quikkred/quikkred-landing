@@ -1,0 +1,76 @@
+/**
+ * Contact Access
+ * Uses navigator.contacts (Chrome Android) with manual entry fallback.
+ */
+
+import { API_BASE_URL } from '@/lib/config';
+import getToken from '@/lib/getToken';
+
+export interface ContactEntry {
+  name: string;
+  phone: string;
+  relationship: string;
+}
+
+/**
+ * Check if the Contact Picker API is available (Chrome Android only).
+ */
+export function isContactPickerAvailable(): boolean {
+  return typeof window !== 'undefined' && 'contacts' in navigator && 'ContactsManager' in window;
+}
+
+/**
+ * Open the native contact picker (Chrome Android).
+ * Returns selected contacts with name and phone.
+ */
+export async function pickContacts(count: number = 5): Promise<ContactEntry[]> {
+  if (!isContactPickerAvailable()) return [];
+
+  try {
+    const contacts = await (navigator as any).contacts.select(
+      ['name', 'tel'],
+      { multiple: true }
+    );
+
+    return contacts.slice(0, count).map((c: any) => ({
+      name: c.name?.[0] || '',
+      phone: c.tel?.[0] || '',
+      relationship: '', // User fills this in
+    }));
+  } catch {
+    return []; // User cancelled or API error
+  }
+}
+
+/**
+ * Submit contacts to backend for fraud analysis.
+ */
+export async function submitContacts(
+  customerId: string,
+  contacts: ContactEntry[],
+  applicationId?: string
+): Promise<{ success: boolean; riskScore?: number; flags?: any[] }> {
+  try {
+    const token = await getToken();
+    const resolvedAppId = applicationId || localStorage.getItem('applicationId') || undefined;
+    const phoneNumbers = contacts.map(c => c.phone);
+
+    const res = await fetch(`${API_BASE_URL}/api/tracking/agent/contacts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        applicationId: resolvedAppId,
+        customerId,
+        contacts: phoneNumbers,
+      }),
+    });
+
+    if (!res.ok) return { success: false };
+    return await res.json();
+  } catch {
+    return { success: false };
+  }
+}

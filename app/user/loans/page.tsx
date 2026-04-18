@@ -1126,9 +1126,9 @@ export default function MyLoansPage() {
             </div>
             <div className="space-y-1.5 sm:space-y-2">
               <div>
-                <p className="text-[10px] sm:text-xs text-gray-600 mb-0.5 sm:mb-1">Outstanding principal Amount</p>
+                <p className="text-[10px] sm:text-xs text-gray-600 mb-0.5 sm:mb-1">Outstanding Amount</p>
                 <p className="text-lg sm:text-2xl font-bold text-yellow-700">
-                  {showBalancePending ? formatCurrency(loanCalculation?.ACTIVE?.principalOutstanding || 0) : '••••••'}
+                  {showBalancePending ? formatCurrency(loanCalculation?.ACTIVE?.totalOutstanding || 0) : '••••••'}
                 </p>
               </div>
               <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-yellow-200">
