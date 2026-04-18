@@ -11,7 +11,7 @@ declare global {
     }
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://alpha.quikkred.in';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.quikkred.in';
 
 // Quikkred Brand Colors
 const BRAND = {
