@@ -123,12 +123,13 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: `
             default-src 'self';
-            script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.jsdelivr.net;
+            script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.jsdelivr.net https://checkout.razorpay.com;
             style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
             img-src 'self' data: https: blob:;
             font-src 'self' data: https://fonts.gstatic.com;
             worker-src 'self' blob:;
-            connect-src 'self' ${apiDomain} ${appDomain} https://alpha.quikkred.in https://ifsc.razorpay.com https://www.google-analytics.com https://stats.g.doubleclick.net https://cdn.jsdelivr.net https://storage.googleapis.com;
+            connect-src 'self' ${apiDomain} ${appDomain} https://alpha.quikkred.in https://ifsc.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com https://www.google-analytics.com https://stats.g.doubleclick.net https://cdn.jsdelivr.net https://storage.googleapis.com;
+            frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com;
             frame-ancestors 'none';
             upgrade-insecure-requests;
           `
