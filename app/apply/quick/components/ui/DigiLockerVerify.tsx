@@ -36,7 +36,7 @@ const DigiLockerVerify = ({
     buttonText?: string;
     smButtonText?: string;
     type?: "v1" | "v2";
-    extraParams?: Record<string, string>;
+    extraParams?: Record<string, string | boolean>;
 }) => {
     const [showModal, setShowModal] = useState(false);
     const [loading, setLoading] = useState(false);
