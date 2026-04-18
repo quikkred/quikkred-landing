@@ -21,7 +21,7 @@ COPY . .
 RUN if [ -f .env.beta ]; then cp .env.beta .env.production; fi
 
 # Accept build argument for API URL
-ARG NEXT_PUBLIC_API_URL=https://alpha.quikkred.in
+ARG NEXT_PUBLIC_API_URL=https://api.quikkred.in
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
 # Set environment variables for build
