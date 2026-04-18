@@ -14,6 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { loansService } from '@/lib/api/loans.service';
 import { API_BASE_URL } from '@/lib/config';
 import { useApplications } from '@/store/hooks/useApplications';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 interface Application {
   _id: string;
@@ -315,8 +316,49 @@ export default function MyApplicationsPage() {
 
   if (isLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <RefreshCw className="w-8 h-8 text-[#25B181] animate-spin" />
+      <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+        {/* Header skeleton */}
+        <div className="bg-white rounded-xl border border-[#E0E0E0] shadow-sm p-4 sm:p-6">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-56" />
+              <Skeleton className="h-4 w-72" />
+            </div>
+            <Skeleton className="h-10 w-28" rounded="lg" />
+          </div>
+        </div>
+
+        {/* Filter skeleton */}
+        <div className="bg-white rounded-xl border border-[#E0E0E0] shadow-sm p-4 space-y-3">
+          <Skeleton className="h-10 w-full" rounded="lg" />
+          <div className="flex gap-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-9 w-24" rounded="lg" />
+            ))}
+          </div>
+        </div>
+
+        {/* Cards skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-xl border border-[#E0E0E0] shadow-sm p-4 sm:p-5 space-y-3">
+              <div className="flex items-start justify-between">
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-40" />
+                  <Skeleton className="h-3 w-28" />
+                </div>
+                <Skeleton className="h-6 w-20" rounded="full" />
+              </div>
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-2/3" />
+              </div>
+              <Skeleton className="h-9 w-full" rounded="lg" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

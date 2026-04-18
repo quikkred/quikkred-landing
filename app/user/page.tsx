@@ -27,6 +27,7 @@ import useAxios from '@/hooks/useAxios';
 import ApplicationStatus from './_components/ApplicationStatus';
 import { DashboardData, ActiveLoanDetails, PaymentResponse, PaymentProof, ReapplyEligibility } from "@/interfaces/dashboardInterface";
 import PreviousApplicationStatus from './_components/PreviousApplicationStatus';
+import { Skeleton, SkeletonCircle } from '@/components/ui/Skeleton';
 
 declare global {
   interface Window {
@@ -829,14 +830,49 @@ export default function UserDashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
-        <div className="text-center">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="w-16 h-16 border-4 border-[#10B4A3] border-t-transparent rounded-full mx-auto"
-          />
-          <p className="mt-4 text-[#737373]">Checking authorization...</p>
+      <div className="min-h-screen bg-[#FAFAFA] p-4 sm:p-6 space-y-5">
+        {/* Greeting */}
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-4 w-80" />
+        </div>
+
+        {/* KPI cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <SkeletonCircle size={32} />
+                <Skeleton className="h-3 w-20" />
+              </div>
+              <Skeleton className="h-7 w-28" />
+            </div>
+          ))}
+        </div>
+
+        {/* Main content: two columns */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-5 space-y-4">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-32 w-full" rounded="lg" />
+            <div className="grid grid-cols-3 gap-3">
+              <Skeleton className="h-16 w-full" rounded="lg" />
+              <Skeleton className="h-16 w-full" rounded="lg" />
+              <Skeleton className="h-16 w-full" rounded="lg" />
+            </div>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 space-y-3">
+            <Skeleton className="h-5 w-32" />
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 py-2">
+                <SkeletonCircle size={36} />
+                <div className="flex-1 space-y-1.5">
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-2.5 w-2/3" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -854,18 +890,51 @@ export default function UserDashboard() {
 
   if (loading) {
     return (
-      <>
-        <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center">
-          <div className="text-center">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              className="w-16 h-16 border-4 border-[#10B4A3] border-t-transparent rounded-full mx-auto"
-            />
-            <p className="mt-4 text-[#737373]">Loading your dashboard...</p>
+      <div className="min-h-screen bg-[#FAFAFA] p-4 sm:p-6 space-y-5">
+        {/* Greeting */}
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-4 w-80" />
+        </div>
+
+        {/* KPI cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-2">
+              <div className="flex items-center gap-2">
+                <SkeletonCircle size={32} />
+                <Skeleton className="h-3 w-20" />
+              </div>
+              <Skeleton className="h-7 w-28" />
+            </div>
+          ))}
+        </div>
+
+        {/* Main content: two columns */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-5 space-y-4">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-32 w-full" rounded="lg" />
+            <div className="grid grid-cols-3 gap-3">
+              <Skeleton className="h-16 w-full" rounded="lg" />
+              <Skeleton className="h-16 w-full" rounded="lg" />
+              <Skeleton className="h-16 w-full" rounded="lg" />
+            </div>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 space-y-3">
+            <Skeleton className="h-5 w-32" />
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 py-2">
+                <SkeletonCircle size={36} />
+                <div className="flex-1 space-y-1.5">
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-2.5 w-2/3" />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      </>
+      </div>
     );
   }
 
