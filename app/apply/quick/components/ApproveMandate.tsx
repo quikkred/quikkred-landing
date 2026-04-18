@@ -30,7 +30,7 @@ const ApproveMandate = ({
     const router = useRouter();
     const storage = useStorage();
     const axios = useAxios();
-    const { application } = useApplication();
+    const { application, getCustomer } = useApplication();
     const upiAutopayConsent = useMemo<boolean>(() => (formData?.upiAutoPayStatus === true), [formData]);
 
     // Load Razorpay script for UPI Autopay
@@ -55,12 +55,11 @@ const ApproveMandate = ({
             const statusResult = statusResponse.data;
 
             // After status API call, refresh customer data to get updated upiAutoPayStatus
-            // await getCustomer();
+            getCustomer();
 
             // Set checkbox based on status from API response
             if (statusResult.success && (statusResult.status === 'active' || statusResult.status === "authenticated")) {
-                // setUpiAutopayConsent(true);
-                setFormData((prev) => ({ ...prev, upiAutopayConsent: true }));
+                setFormData((prev) => ({ ...prev, upiAutoPayStatus: true }));
                 toast({
                     variant: "success",
                     title: "UPI Autopay Authorized",
@@ -68,7 +67,7 @@ const ApproveMandate = ({
                 });
             } else {
                 // Status is inactive - keep checkbox unchecked
-                // setUpiAutopayConsent(false);
+                setFormData((prev) => ({ ...prev, upiAutoPayStatus: false }));
                 toast({
                     variant: "info",
                     title: "UPI Autopay Pending",
@@ -78,10 +77,10 @@ const ApproveMandate = ({
         } catch (error) {
             console.error("Error checking UPI AutoPay status:", error);
             // On error, keep checkbox unchecked
-            // setUpiAutopayConsent(false);
+            setFormData((prev) => ({ ...prev, upiAutoPayStatus: false }));
             // Try to refresh customer data anyway
             try {
-                // await getCustomer();
+                await getCustomer();
             } catch (e) {
                 console.error("Error refreshing customer data:", e);
             }
@@ -95,7 +94,7 @@ const ApproveMandate = ({
         }
 
         if (!checked) {
-            // setUpiAutopayConsent(false);
+            setFormData((prev) => ({ ...prev, upiAutoPayStatus: false }));
             return;
         }
 
@@ -159,7 +158,7 @@ const ApproveMandate = ({
                             ondismiss: function () {
                                 // User closed the modal without completing
                                 setMandateLoading(false);
-                                // setUpiAutopayConsent(false);
+                                setFormData((prev) => ({ ...prev, upiAutoPayStatus: false }));
                             }
                         }
                     };
@@ -173,7 +172,7 @@ const ApproveMandate = ({
                             description: razorpayResponse.error?.description || "UPI Autopay setup failed. Please try again.",
                         });
                         setMandateLoading(false);
-                        // setUpiAutopayConsent(false);
+                        setFormData((prev) => ({ ...prev, upiAutoPayStatus: false }));
                     });
                     rzp.open();
                 } else {
@@ -182,7 +181,7 @@ const ApproveMandate = ({
                         title: "Failed",
                         description: "Subscription ID not received. Please try again.",
                     });
-                    // setUpiAutopayConsent(false);
+                    setFormData((prev) => ({ ...prev, upiAutoPayStatus: false }));
                     setMandateLoading(false);
                 }
             } else {
@@ -191,7 +190,7 @@ const ApproveMandate = ({
                     title: "Failed",
                     description: result.message || "Failed to setup UPI Autopay. Please try again.",
                 });
-                // setUpiAutopayConsent(false);
+                setFormData((prev) => ({ ...prev, upiAutoPayStatus: false }));
                 setMandateLoading(false);
             }
         } catch (error: any) {
@@ -201,7 +200,7 @@ const ApproveMandate = ({
                 title: "Error",
                 description: "Something went wrong. Please try again.",
             });
-            // setUpiAutopayConsent(false);
+            setFormData((prev) => ({ ...prev, upiAutoPayStatus: false }));
             setMandateLoading(false);
         }
     };
