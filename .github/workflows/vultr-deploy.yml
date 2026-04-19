@@ -33,4 +33,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          command: pages deploy .next --project-name=quikkred-landing --branch=production
+          command: pages deploy .next --project-name=quikkred --branch=main --commit-dirty=true
