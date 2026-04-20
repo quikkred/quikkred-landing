@@ -219,7 +219,7 @@ function AuthorizeMandateContent() {
         return (
             <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center">
                 <div className="text-center">
-                    <Image src="/logo.png" alt="Quikkred" width={120} height={40} className="mx-auto mb-4" />
+                    <Image src="/quikkred-logo.png" alt="Quikkred" width={120} height={40} className="mx-auto mb-4" />
                     <Loader2 className="w-10 h-10 text-[#25B181] animate-spin mx-auto" />
                     <p className="mt-3 text-gray-600 font-medium">Loading...</p>
                 </div>
@@ -232,7 +232,7 @@ function AuthorizeMandateContent() {
         return (
             <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center p-4">
                 <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
-                    <Image src="/logo.png" alt="Quikkred" width={100} height={32} className="mx-auto mb-6" />
+                    <Image src="/quikkred-logo.png" alt="Quikkred" width={100} height={32} className="mx-auto mb-6" />
                     <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <AlertCircle className="w-8 h-8 text-red-500" />
                     </div>
@@ -251,7 +251,7 @@ function AuthorizeMandateContent() {
         return (
             <div className="min-h-screen bg-gradient-to-b from-[#E8F7F1] to-gray-100 flex items-center justify-center p-4">
                 <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
-                    <Image src="/logo.png" alt="Quikkred" width={100} height={32} className="mx-auto mb-6" />
+                    <Image src="/quikkred-logo.png" alt="Quikkred" width={100} height={32} className="mx-auto mb-6" />
                     <div className="w-20 h-20 bg-[#E8F7F1] rounded-full flex items-center justify-center mx-auto mb-6">
                         <CheckCircle className="w-12 h-12 text-[#25B181]" />
                     </div>
@@ -283,7 +283,7 @@ function AuthorizeMandateContent() {
             {/* Header */}
             <header className="bg-white shadow-sm sticky top-0 z-10">
                 <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-                    <Image src="/logo.png" alt="Quikkred" width={100} height={32} className="h-8 w-auto" />
+                    <Image src="/quikkred-logo.png" alt="Quikkred" width={100} height={32} className="h-8 w-auto" />
                     <div className="flex items-center gap-1.5 text-xs text-gray-500">
                         <Shield className="w-3.5 h-3.5 text-[#25B181]" />
                         <span>Secure</span>

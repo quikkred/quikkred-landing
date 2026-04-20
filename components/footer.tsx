@@ -187,12 +187,13 @@ export function Footer() {
               className="flex items-center justify-center sm:items-start sm:justify-start mb-4 sm:mb-6"
             >
               <Image
-                src="https://quikkred.in/QuikkredLogoWhite.svg"
+                src="/quikkred-logo.png"
                 alt={t.common.appName}
-                style={{ imageRendering: '-webkit-optimize-contrast', maxHeight: '45px' }}
-                className="h-auto object-contain mx-auto sm:mx-0 brightness-110"
-                width={180}
-                height={45}
+                style={{ imageRendering: '-webkit-optimize-contrast', maxHeight: '42px', filter: 'brightness(0) invert(1)' }}
+                className="h-auto object-contain mx-auto sm:mx-0"
+                width={170}
+                height={42}
+                unoptimized
               />
             </Link>
 
