@@ -94,7 +94,7 @@ class TruecallerService {
         //     skipOption: 'Skip',
         //     ctaTextPrefix: 'Use ',
         //     partnerLogo: '/logo.svg',
-        //     partnerName: 'QuikKred',
+        //     partnerName: 'Quikkred',
         //     lang: 'en',
         //     onSuccess: (profile) => {
         //       resolve({

@@ -196,7 +196,7 @@ export default function TermsPage() {
             <p className="text-gray-600">
               {t?.policies?.common?.email || "Email"}: {sections?.contact?.email || "support@quikkred.in"}<br />
               {t?.policies?.common?.phone || "Phone"}: {sections?.contact?.phone || "+91-9311913854"}<br />
-              {sections?.contact?.address || "1008, 10th Floor, Vikrant Tower, Rajendra Place, New Delhi - 110008"}
+              {sections?.contact?.address || "1008, 10th Floor, Vikrant Tower, Rajendra Place, New Delhi - 110005"}
             </p>
           </div>
         </div>

@@ -270,7 +270,7 @@ export default function ChannelPartnersPage() {
                 Have Questions?
               </h2>
               <p className="text-base sm:text-lg lg:text-xl mb-8 opacity-95 max-w-xl mx-auto">
-                Speak with our partnership team to learn more about becoming a QuikKred Channel Partner
+                Speak with our partnership team to learn more about becoming a Quikkred Channel Partner
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a href="tel:+918888882222">

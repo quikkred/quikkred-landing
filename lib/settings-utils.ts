@@ -185,7 +185,7 @@ export const DEFAULT_SETTINGS: SystemSettings = {
     companyName: 'Quikkred (Fluxusforge Pvt. Ltd.)',
     companyEmail: 'contact@quikkred.in',
     companyPhone: '+91-9311913854',
-    companyAddress: '1008, 10th Floor, Vikrant Tower, Rajendra Place, New Delhi - 110008',
+    companyAddress: '1008, 10th Floor, Vikrant Tower, Rajendra Place, New Delhi - 110005',
     timezone: 'Asia/Kolkata',
     currency: 'INR',
     dateFormat: 'DD/MM/YYYY',
