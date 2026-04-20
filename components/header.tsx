@@ -73,6 +73,18 @@ export function Header() {
       icon: Users,
       submenu: [
         {
+          name: "Lending Partner Program",
+          href: "/partners",
+          description:
+            "B2B2C partnership on Satsai's NBFC stack — your brand, your capital, our compliance.",
+        },
+        {
+          name: "Proprietor Network",
+          href: "/partners/proprietor",
+          description:
+            "Deploy a sub-agent network — retail outlets, market aggregators, transport hubs — under DLD 2025.",
+        },
+        {
           name: t.navigation.channelPartners,
           href: "/channel-partner",
           description: t.navigation.channelPartnersDesc,
