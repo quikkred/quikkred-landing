@@ -32,7 +32,7 @@ export default function CookiePolicyPage() {
             {sections?.introduction?.title || "Introduction"}
           </h2>
           <p className="text-gray-600 leading-relaxed mb-4">
-            {sections?.introduction?.content1 || "QuikkRed is a digital lending platform operated by Fluxusforge Private Limited (Loan Service Provider). Throughout this Cookie Policy, \"QuikkRed\", \"we\", \"us\", or \"our\" refers to Fluxusforge Private Limited. We use cookies and similar tracking technologies on our website and mobile application. This Cookie Policy explains what cookies are, how we use them, and your choices regarding their use."}
+            {sections?.introduction?.content1 || "Quikkred is a digital lending platform operated by Fluxusforge Private Limited (Loan Service Provider). Throughout this Cookie Policy, \"Quikkred\", \"we\", \"us\", or \"our\" refers to Fluxusforge Private Limited. We use cookies and similar tracking technologies on our website and mobile application. This Cookie Policy explains what cookies are, how we use them, and your choices regarding their use."}
           </p>
           <p className="text-gray-600 leading-relaxed">
             {sections?.introduction?.content2 || "By continuing to use our website, you consent to the use of cookies in accordance with this Cookie Policy."}
@@ -259,7 +259,7 @@ export default function CookiePolicyPage() {
       <footer className="w-full bg-gray-200 py-6">
         <div className="container mx-auto px-4 text-center">
           <p className="text-gray-600">
-            &copy; 2025 QuikkRed |{' '}
+            &copy; 2025 Quikkred |{' '}
             <Link
               href="/fair-practice"
               className="text-[#2BB89A] hover:text-[#239b82] font-medium transition-colors"
