@@ -113,7 +113,7 @@ export default function NodalOfficerPage() {
                   <p className="text-sm text-gray-600">
                     Quikkred (Fluxusforge Pvt. Ltd.)<br />
                     1008, 10th Floor, Vikrant Tower,<br />
-                    Rajendra Place, New Delhi - 110008
+                    Rajendra Place, New Delhi - 110005
                   </p>
                 </div>
               </div>

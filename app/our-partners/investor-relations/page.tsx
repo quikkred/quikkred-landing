@@ -171,7 +171,7 @@ export default function InvestorRelationsPage() {
                 Investment Highlights
               </h2>
               <p className="text-gray-500 text-sm sm:text-lg max-w-2xl mx-auto leading-relaxed">
-                Discover what makes QuikKred a compelling investment opportunity in India's fintech landscape.
+                Discover what makes Quikkred a compelling investment opportunity in India's fintech landscape.
               </p>
             </div>
 
@@ -335,7 +335,7 @@ export default function InvestorRelationsPage() {
                 Ready to Enhance Your Employee Benefits?
               </h2>
               <p className="text-white/90 text-sm sm:text-lg lg:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-                Schedule a demo to see how QuikKred can transform your employee financial wellness program.
+                Schedule a demo to see how Quikkred can transform your employee financial wellness program.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/contact">
