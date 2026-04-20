@@ -301,7 +301,7 @@ export default function CollectPartnerPage() {
             >
               <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold mb-6">
                 <Image
-                  src="/QuikkredLogoWhite.svg"
+                  src="/quikkred-mark.png"
                   alt="Quikkred"
                   width={20}
                   height={20}
@@ -389,7 +389,7 @@ export default function CollectPartnerPage() {
                         <div className="flex items-center gap-2.5">
                           <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center overflow-hidden">
                             <Image
-                              src="/QuikkredLogoWhite.svg"
+                              src="/quikkred-mark.png"
                               alt="Quikkred"
                               width={26}
                               height={26}
