@@ -50,10 +50,10 @@ export default function ITSecurityPolicyPage() {
             {i.title || "1. Introduction and Scope"}
           </h2>
           <p className="text-[#2b2b2b] leading-[1.7] mb-4">
-            {i.content || "This policy sets out the rules and guidelines for the secure and appropriate use of QuikkRed's Information Technology (IT) resources. It applies to all employees, contractors, vendors, and any third parties who have access to QuikkRed's IT infrastructure, systems, applications, and data."}
+            {i.content || "This policy sets out the rules and guidelines for the secure and appropriate use of Quikkred's Information Technology (IT) resources. It applies to all employees, contractors, vendors, and any third parties who have access to Quikkred's IT infrastructure, systems, applications, and data."}
           </p>
           <p className="text-[#2b2b2b] leading-[1.7]">
-            <strong>{i.objectiveLabel || "Objective"}</strong> {i.objective || "To protect QuikkRed's sensitive data, systems, and assets from unauthorized access, misuse, disclosure, disruption, modification, or destruction, while ensuring compliance with applicable laws and regulatory requirements including RBI guidelines for NBFCs."}
+            <strong>{i.objectiveLabel || "Objective"}</strong> {i.objective || "To protect Quikkred's sensitive data, systems, and assets from unauthorized access, misuse, disclosure, disruption, modification, or destruction, while ensuring compliance with applicable laws and regulatory requirements including RBI guidelines for NBFCs."}
           </p>
         </div>
 
@@ -68,7 +68,7 @@ export default function ITSecurityPolicyPage() {
           <div className="mb-6 bg-gray-50 rounded-lg p-6">
             <h3 className="text-lg font-medium mb-3 text-[#2b2b2b]">{sm[0]?.dataClassification.title || "2.1 Data Classification"}</h3>
             <p className="text-[#2b2b2b] leading-[1.7] mb-3">
-              {sm[0]?.dataClassification.intro || "All data handled by QuikkRed shall be classified into the following categories:"}
+              {sm[0]?.dataClassification.intro || "All data handled by Quikkred shall be classified into the following categories:"}
             </p>
             <ul className="space-y-3 text-[#2b2b2b] leading-[1.7]">
               {(sm[0]?.dataClassification.items || [
@@ -195,7 +195,7 @@ export default function ITSecurityPolicyPage() {
             <h3 className="text-lg font-medium mb-3 text-[#2b2b2b]">{isp?.sections?.remoteAccess?.vpn?.title || "4.1 Remote Access (VPN)"}</h3>
             <ul className="space-y-3 text-[#2b2b2b] leading-[1.7]">
               {(isp?.sections?.remoteAccess?.vpn?.items || [
-                "All remote access to QuikkRed's internal network must be conducted via a secure Virtual Private Network (VPN) connection.",
+                "All remote access to Quikkred's internal network must be conducted via a secure Virtual Private Network (VPN) connection.",
                 "VPN access requires multi-factor authentication and is subject to logging and monitoring.",
                 "Users must ensure their home networks are secure and not use public Wi-Fi for accessing sensitive company data."
               ]).map((item: string, index: number) => (
@@ -214,7 +214,7 @@ export default function ITSecurityPolicyPage() {
               {(isp?.sections?.remoteAccess?.byod?.items || [
                 "Personal devices used for work purposes must be registered with and governed by the Mobile Device Management (MDM) solution.",
                 "BYOD devices must have up-to-date antivirus software, screen lock enabled, and encryption activated.",
-                "QuikkRed reserves the right to remotely wipe company data from personal devices in case of loss, theft, or employment termination."
+                "Quikkred reserves the right to remotely wipe company data from personal devices in case of loss, theft, or employment termination."
               ]).map((item: string, index: number) => (
                 <li key={index} className="flex items-start gap-2">
                   <span className="text-[#25B181] mt-1">•</span>

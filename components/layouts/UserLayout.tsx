@@ -250,7 +250,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                 >
                   <Link href="/" className="w-auto">
                     <Image
-                      src="/logo.svg"
+                      src="/quikkred-logo.png"
                       alt="Quikkred Logo"
                       width={160}
                       height={80}
@@ -376,7 +376,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
             <div className="border-b border-[#E0E0E0]">
               <div className="flex items-center justify-between p-4">
                 <Image
-                  src="/logo.svg"
+                  src="/quikkred-logo.png"
                   alt="Quikkred Logo"
                   width={140}
                   height={70}

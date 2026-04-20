@@ -23,7 +23,7 @@ export default function CollectionPolicyPage() {
           >
             <Shield className="w-16 h-16 mx-auto mb-4" />
             <h1 className="text-4xl md:text-5xl font-bold mb-4 font-sora">
-              {cp?.title || "QuikkRed Debt Collection Policy"}
+              {cp?.title || "Quikkred Debt Collection Policy"}
             </h1>
             <p className="text-xl">{cp?.subtitle || "Fair and Ethical Debt Recovery Practices"}</p>
           </motion.div>
@@ -42,7 +42,7 @@ export default function CollectionPolicyPage() {
                 {cp?.sections?.objective?.title || "1. Objective and Principles"}
               </h2>
               <p className="text-[#2b2b2b] leading-[1.7]">
-                {cp?.sections?.objective?.content || "This policy outlines the ethical and fair procedures QuikkRed (the \"Company\") follows for the collection of outstanding debts from borrowers. All collection activities must strictly adhere to the Reserve Bank of India (RBI) Fair Practices Code and must be conducted professionally, courteously, and with respect for the borrower's privacy."}
+                {cp?.sections?.objective?.content || "This policy outlines the ethical and fair procedures Quikkred (the \"Company\") follows for the collection of outstanding debts from borrowers. All collection activities must strictly adhere to the Reserve Bank of India (RBI) Fair Practices Code and must be conducted professionally, courteously, and with respect for the borrower's privacy."}
               </p>
             </div>
 

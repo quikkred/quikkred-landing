@@ -48,7 +48,7 @@ export default function RBIGuidelinesPage() {
               </>
             ) : (
               <>
-                QuikkRed is a digital lending platform powered by{" "}
+                Quikkred is a digital lending platform powered by{" "}
                 <strong>Fluxusforge Private Limited</strong> (Loan Service Provider). All
                 loans on our platform are disbursed by{" "}
                 <strong>Satsai Finlease Private Limited</strong>, an RBI-registered
@@ -111,7 +111,7 @@ export default function RBIGuidelinesPage() {
             <ul className="space-y-3 text-gray-600">
               <li className="flex items-start gap-2">
                 <span className="text-[#25B181] mt-1">•</span>
-                <span><strong>{sections?.lendingPartner?.partner2.highlightLabel[0] || "Role:"}</strong> {sections?.lendingPartner?.partner2.highlightItems[0] || "Loan Service Provider (LSP) and Technology Partner operating the QuikkRed platform."}</span>
+                <span><strong>{sections?.lendingPartner?.partner2.highlightLabel[0] || "Role:"}</strong> {sections?.lendingPartner?.partner2.highlightItems[0] || "Loan Service Provider (LSP) and Technology Partner operating the Quikkred platform."}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-[#25B181] mt-1">•</span>
@@ -493,7 +493,7 @@ export default function RBIGuidelinesPage() {
               </>
             ) : (
               <>
-                QuikkRed is a digital lending platform powered by Fluxusforge Private
+                Quikkred is a digital lending platform powered by Fluxusforge Private
                 Limited (LSP). All loans are disbursed by Satsai Finlease Private Limited,
                 an RBI-registered NBFC. This page provides a summary of key RBI guidelines
                 applicable to our platform and lending partner&apos;s operations. For

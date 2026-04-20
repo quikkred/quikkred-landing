@@ -237,7 +237,7 @@ export default function QuickApplyV2Page() {
                     <div className="flex items-center justify-between">
                         <a href="/" className="flex items-center">
                             <img
-                                src="/logo.svg"
+                                src="/quikkred-logo.png"
                                 alt="QuikKred"
                                 className="h-7 sm:h-8"
                                 onError={(e) => {

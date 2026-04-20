@@ -7,9 +7,9 @@
     {
       "introduction": {
         "title": "1. Introduction and Scope",
-        "content": "This policy sets out the rules and guidelines for the secure and appropriate use of QuikkRed's Information Technology (IT) resources. It applies to all employees, contractors, vendors, and any third parties who have access to QuikkRed's IT infrastructure, systems, applications, and data.",
+        "content": "This policy sets out the rules and guidelines for the secure and appropriate use of Quikkred's Information Technology (IT) resources. It applies to all employees, contractors, vendors, and any third parties who have access to Quikkred's IT infrastructure, systems, applications, and data.",
         "objectiveLabel": "Objective:",
-        "objective": "To protect QuikkRed's sensitive data, systems, and assets from unauthorized access, misuse, disclosure, disruption, modification, or destruction, while ensuring compliance with applicable laws and regulatory requirements including RBI guidelines for NBFCs."
+        "objective": "To protect Quikkred's sensitive data, systems, and assets from unauthorized access, misuse, disclosure, disruption, modification, or destruction, while ensuring compliance with applicable laws and regulatory requirements including RBI guidelines for NBFCs."
       }
     },
     {
@@ -18,7 +18,7 @@
           "title": "2. Information Security Management",
           "dataClassification": {
             "title": "2.1 Data Classification",
-            "intro": "All data handled by QuikkRed shall be classified into the following categories:",
+            "intro": "All data handled by Quikkred shall be classified into the following categories:",
             "items": [
               {
                 "label": "Confidential",
@@ -106,7 +106,7 @@
           "vpn": {
             "title": "4.1 Remote Access (VPN)",
             "items": [
-              "All remote access to QuikkRed's internal network must be conducted via a secure Virtual Private Network (VPN) connection.",
+              "All remote access to Quikkred's internal network must be conducted via a secure Virtual Private Network (VPN) connection.",
               "VPN access requires multi-factor authentication and is subject to logging and monitoring.",
               "Users must ensure their home networks are secure and not use public Wi-Fi for accessing sensitive company data."
             ]
@@ -118,7 +118,7 @@
             "items": [
               "Personal devices used for work purposes must be registered with and governed by the Mobile Device Management (MDM) solution.",
               "BYOD devices must have up-to-date antivirus software, screen lock enabled, and encryption activated.",
-              "QuikkRed reserves the right to remotely wipe company data from personal devices in case of loss, theft, or employment termination."
+              "Quikkred reserves the right to remotely wipe company data from personal devices in case of loss, theft, or employment termination."
             ]
           }
         }
