@@ -11,6 +11,12 @@ import {
 import useAxios from '@/hooks/useAxios';
 import { useSupport } from '@/store/hooks/useSupport';
 import { Skeleton, SkeletonCircle, SkeletonText } from '@/components/ui/Skeleton';
+import { getSocket } from '@/lib/socket';
+import {
+  playNotificationSound,
+  requestNotificationPermission,
+  showBrowserNotification,
+} from '@/lib/notificationSound';
 
 interface SupportTicketDetail {
   _id: string;
@@ -101,6 +107,14 @@ export default function SupportTicketDetailPage({ params }: { params: Promise<{ 
   // Lightbox
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [lightboxName, setLightboxName] = useState('');
+
+  // Socket — other party typing indicator
+  const [otherTyping, setOtherTyping] = useState<{ name?: string; role?: string } | null>(null);
+  const typingEmittedRef = useRef(false);
+  const typingStopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Notification: only alert for messages received AFTER this page mounted.
+  const notifySinceRef = useRef<number>(Date.now());
 
   // Scroll refs
   const messagesScrollRef = useRef<HTMLDivElement>(null);
@@ -198,7 +212,124 @@ export default function SupportTicketDetailPage({ params }: { params: Promise<{ 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // Auto-scroll to bottom when messages change
+  // ===== Socket: real-time ticket events =====
+  useEffect(() => {
+    if (!id) return;
+    const s = getSocket();
+
+    const joinAck = (ack: any) => {
+      if (ack && ack.ok === false && process.env.NODE_ENV !== 'production') {
+        console.warn('[ticket-socket] join rejected:', ack.error);
+      }
+    };
+
+    s.emit('ticket:join', { ticketId: id }, joinAck);
+
+    const onMessage = ({ ticketId: tid, message }: any) => {
+      if (tid !== id || !message) return;
+      let appended = false;
+      setTicket((prev) => {
+        if (!prev) return prev;
+        if (message._id && prev.chatDetails.some((m) => m._id === message._id)) return prev;
+        appended = true;
+        return { ...prev, chatDetails: [...prev.chatDetails, message] };
+      });
+
+      // Notify only for messages that (a) got appended just now, (b) came from the OTHER side,
+      // and (c) were authored after we opened the page (avoids backfill noise).
+      if (!appended) return;
+      const fromCustomer =
+        message.addedBy?.role?.toUpperCase() === 'CUSTOMER' ||
+        message.addedByModel?.toLowerCase() === 'customer';
+      if (fromCustomer) return;
+      const sentAt = message.addedAt ? new Date(message.addedAt).getTime() : Date.now();
+      if (sentAt < notifySinceRef.current - 1000) return;
+
+      playNotificationSound();
+      if (typeof document !== 'undefined' && document.hidden) {
+        const senderName = message.addedBy?.fullName || 'Support';
+        showBrowserNotification(
+          `${senderName} replied`,
+          (message.message || '').slice(0, 140) || 'New message on your ticket',
+          `ticket-${id}`
+        );
+      }
+    };
+
+    const onStatus = ({ ticketId: tid, status, closedAt, closedReason }: any) => {
+      if (tid !== id) return;
+      setTicket((prev) => (prev ? { ...prev, status, closedAt, closedReason } : prev));
+      fetchSupportTickets();
+    };
+
+    const onAssigned = ({ ticketId: tid, assignedDetail }: any) => {
+      if (tid !== id || !assignedDetail) return;
+      setTicket((prev) => {
+        if (!prev) return prev;
+        const existing = prev.assignedDetails || [];
+        if (assignedDetail._id && existing.some((a) => a._id === assignedDetail._id)) return prev;
+        return { ...prev, assignedDetails: [...existing, assignedDetail] };
+      });
+    };
+
+    const onTyping = ({ ticketId: tid, role, isTyping, fullName }: any) => {
+      if (tid !== id) return;
+      setOtherTyping(isTyping ? { name: fullName, role } : null);
+    };
+
+    // Re-join and refetch after a reconnect so we don't miss messages sent while offline.
+    const onReconnect = () => {
+      s.emit('ticket:join', { ticketId: id }, joinAck);
+      fetchTicket(true);
+    };
+
+    s.on('ticket:message', onMessage);
+    s.on('ticket:status', onStatus);
+    s.on('ticket:assigned', onAssigned);
+    s.on('ticket:typing', onTyping);
+    s.on('connect', onReconnect);
+
+    return () => {
+      s.emit('ticket:leave', { ticketId: id });
+      s.off('ticket:message', onMessage);
+      s.off('ticket:status', onStatus);
+      s.off('ticket:assigned', onAssigned);
+      s.off('ticket:typing', onTyping);
+      s.off('connect', onReconnect);
+      if (typingStopTimerRef.current) clearTimeout(typingStopTimerRef.current);
+      if (typingEmittedRef.current) {
+        s.emit('ticket:typing', { ticketId: id, isTyping: false });
+        typingEmittedRef.current = false;
+      }
+      setOtherTyping(null);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  // Emit typing signal (debounced stop) whenever the user types.
+  const emitTyping = (isTyping: boolean) => {
+    if (!id) return;
+    const s = getSocket();
+    if (!s.connected) return;
+    if (isTyping === typingEmittedRef.current) return;
+    s.emit('ticket:typing', { ticketId: id, isTyping });
+    typingEmittedRef.current = isTyping;
+  };
+
+  const handleReplyTextChange = (value: string) => {
+    setReplyText(value);
+    if (!canReply(ticket?.status || '')) return;
+    emitTyping(true);
+    if (typingStopTimerRef.current) clearTimeout(typingStopTimerRef.current);
+    typingStopTimerRef.current = setTimeout(() => emitTyping(false), 2500);
+  };
+
+  // Ask for Notification permission once when the user opens the chat.
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
+
+  // Auto-scroll to bottom when messages change or typing bubble toggles
   const chatCount = ticket?.chatDetails?.length || 0;
   useEffect(() => {
     const el = messagesScrollRef.current;
@@ -206,7 +337,7 @@ export default function SupportTicketDetailPage({ params }: { params: Promise<{ 
     requestAnimationFrame(() => {
       el.scrollTop = el.scrollHeight;
     });
-  }, [chatCount, ticket?._id]);
+  }, [chatCount, ticket?._id, otherTyping]);
 
   // Lightbox Escape
   useEffect(() => {
@@ -299,6 +430,8 @@ export default function SupportTicketDetailPage({ params }: { params: Promise<{ 
       if ((response.status === 200 || response.status === 201) && result.success) {
         setReplyText('');
         setReplyFiles([]);
+        if (typingStopTimerRef.current) clearTimeout(typingStopTimerRef.current);
+        emitTyping(false);
         await fetchTicket(true);
         fetchSupportTickets();
       } else {
@@ -667,11 +800,24 @@ export default function SupportTicketDetailPage({ params }: { params: Promise<{ 
                 <div className="min-w-0">
                   <h4 className="text-sm font-semibold text-gray-900 leading-tight truncate">Support Team</h4>
                   <p className="text-[11px] text-gray-500">
-                    {`${ticket.chatDetails.length} ${ticket.chatDetails.length === 1 ? 'message' : 'messages'}`}
-                    {refreshing && (
-                      <span className="ml-1.5 inline-flex items-center gap-1 text-gray-400">
-                        · <span className="inline-block w-2.5 h-2.5 border border-gray-400 border-t-transparent rounded-full animate-spin" /> refreshing
+                    {otherTyping ? (
+                      <span className="inline-flex items-center gap-1 text-[#1F8F68] font-medium">
+                        <span className="inline-flex gap-0.5">
+                          <span className="w-1 h-1 rounded-full bg-[#25B181] animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <span className="w-1 h-1 rounded-full bg-[#25B181] animate-bounce" style={{ animationDelay: '120ms' }} />
+                          <span className="w-1 h-1 rounded-full bg-[#25B181] animate-bounce" style={{ animationDelay: '240ms' }} />
+                        </span>
+                        {otherTyping.name ? `${otherTyping.name} is typing…` : 'typing…'}
                       </span>
+                    ) : (
+                      <>
+                        {`${ticket.chatDetails.length} ${ticket.chatDetails.length === 1 ? 'message' : 'messages'}`}
+                        {refreshing && (
+                          <span className="ml-1.5 inline-flex items-center gap-1 text-gray-400">
+                            · <span className="inline-block w-2.5 h-2.5 border border-gray-400 border-t-transparent rounded-full animate-spin" /> refreshing
+                          </span>
+                        )}
+                      </>
                     )}
                   </p>
                 </div>
@@ -887,6 +1033,43 @@ export default function SupportTicketDetailPage({ params }: { params: Promise<{ 
                     <p className="text-xs text-gray-500 mt-0.5">Your conversation will appear here.</p>
                   </div>
                 )}
+
+                {/* WhatsApp-style typing bubble */}
+                {otherTyping && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 6 }}
+                    className="flex justify-end"
+                  >
+                    <div className="flex flex-row-reverse items-end gap-1.5 sm:gap-2 max-w-[88%] sm:max-w-[76%]">
+                      <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-white text-[11px] sm:text-xs font-bold shadow-sm bg-gradient-to-br from-[#25B181] to-[#1F8F68]">
+                        {otherTyping.name?.charAt(0).toUpperCase() || 'S'}
+                      </div>
+                      <div className="flex flex-col items-end min-w-0">
+                        <span className="text-[10px] sm:text-[11px] font-semibold mb-0.5 px-1 text-[#1F8F68]">
+                          {otherTyping.name || 'Support'}
+                        </span>
+                        <div className="relative shadow-sm px-3 py-2.5 bg-gradient-to-br from-[#25B181] to-[#1F8F68] text-white rounded-2xl rounded-br-sm">
+                          <span className="inline-flex items-center gap-1">
+                            <span
+                              className="block w-1.5 h-1.5 rounded-full bg-white/90 animate-bounce"
+                              style={{ animationDelay: '0ms', animationDuration: '900ms' }}
+                            />
+                            <span
+                              className="block w-1.5 h-1.5 rounded-full bg-white/90 animate-bounce"
+                              style={{ animationDelay: '150ms', animationDuration: '900ms' }}
+                            />
+                            <span
+                              className="block w-1.5 h-1.5 rounded-full bg-white/90 animate-bounce"
+                              style={{ animationDelay: '300ms', animationDuration: '900ms' }}
+                            />
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
               </div>
             </div>
 
@@ -949,7 +1132,7 @@ export default function SupportTicketDetailPage({ params }: { params: Promise<{ 
                     </label>
                     <textarea
                       value={replyText}
-                      onChange={(e) => setReplyText(e.target.value)}
+                      onChange={(e) => handleReplyTextChange(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
                           e.preventDefault();
