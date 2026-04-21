@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSupport } from '@/store/hooks/useSupport';
 import useAxios from '@/hooks/useAxios';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { getSocket } from '@/lib/socket';
 
 interface SupportTicket {
   _id: string;
@@ -142,6 +143,24 @@ export default function SupportPage() {
   useEffect(() => {
     fetchTickets();
   }, []);
+
+  // Socket: refetch the list on any ticket mutation the server broadcasts.
+  // Admins/support are auto-joined to `crm_all`; regular users receive updates
+  // for their own tickets — either way we just refresh the list.
+  useEffect(() => {
+    const s = getSocket();
+    const onListUpdate = () => {
+      reduxFetchTickets();
+    };
+    s.on('ticket:list_update', onListUpdate);
+    s.on('ticket:status', onListUpdate);
+    s.on('ticket:assigned', onListUpdate);
+    return () => {
+      s.off('ticket:list_update', onListUpdate);
+      s.off('ticket:status', onListUpdate);
+      s.off('ticket:assigned', onListUpdate);
+    };
+  }, [reduxFetchTickets]);
 
   const fetchTickets = async () => {
     const result = await reduxFetchTickets();

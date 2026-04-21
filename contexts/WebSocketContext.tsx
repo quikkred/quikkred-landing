@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { WS_EVENTS, WSMessage, DEFAULT_WS_OPTIONS } from '@/lib/websocket-client';
 import { useSession } from 'next-auth/react';
+import { WS_URL } from '@/lib/config';
 
 
 interface WebSocketContextType {
@@ -60,7 +61,7 @@ export function WebSocketProvider({ children, url }: WebSocketProviderProps) {
       return;
     }
 
-    const socketUrl = url || process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3000';
+    const socketUrl = url || WS_URL;
     setConnecting(true);
     setError(null);
 
@@ -103,7 +104,10 @@ export function WebSocketProvider({ children, url }: WebSocketProviderProps) {
     });
 
     newSocket.on('connect_error', (err) => {
-      console.error('WebSocket connection error:', err);
+      // Log only the first failure to avoid flooding the console on every retry.
+      if (reconnectAttempt.current === 0) {
+        console.warn('WebSocket connection error:', err?.message || err);
+      }
       setConnecting(false);
       setError(`Connection error: ${err.message}`);
       reconnectAttempt.current++;
