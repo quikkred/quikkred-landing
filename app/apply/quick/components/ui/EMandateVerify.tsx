@@ -6,12 +6,31 @@ import useAxios from "@/hooks/useAxios";
 import { RAZORPAY_KEY } from "@/lib/config";
 import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
 import { CheckCircle, Shield } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 interface EMandateVerifyProps {
     formData: QuickApplyV2FormData;
     setFormData: React.Dispatch<React.SetStateAction<QuickApplyV2FormData>>;
 }
+
+const RAZORPAY_SRC = "https://checkout.razorpay.com/v1/checkout.js";
+
+const loadRazorpay = () => new Promise<void>((resolve, reject) => {
+    if (typeof window === "undefined") return reject(new Error("No window"));
+    if ((window as any).Razorpay) return resolve();
+    const existing = document.querySelector<HTMLScriptElement>(`script[src="${RAZORPAY_SRC}"]`);
+    if (existing) {
+        existing.addEventListener("load", () => resolve(), { once: true });
+        existing.addEventListener("error", () => reject(new Error("Razorpay load failed")), { once: true });
+        return;
+    }
+    const script = document.createElement("script");
+    script.src = RAZORPAY_SRC;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Razorpay load failed"));
+    document.body.appendChild(script);
+});
 
 const EMandateVerify = ({
     formData,
@@ -24,20 +43,6 @@ const EMandateVerify = ({
     const { application, getCustomer } = useApplication();
     const axios = useAxios();
     const upiAutopayConsent = useMemo<boolean>(() => (formData?.upiAutoPayStatus === true), [formData]);
-
-    // Load Razorpay script for UPI Autopay
-    useEffect(() => {
-        const script = document.createElement('script');
-        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-        script.async = true;
-        document.body.appendChild(script);
-
-        return () => {
-            if (document.body.contains(script)) {
-                document.body.removeChild(script);
-            }
-        };
-    }, []);
 
     // Check UPI Autopay status via emandate checkout API
     const checkUpiAutoPayStatus = async () => {
@@ -132,6 +137,9 @@ const EMandateVerify = ({
                 const subscriptionId = result.subscriptionId;
 
                 if (subscriptionId) {
+                    // Ensure Razorpay SDK is loaded before constructing
+                    await loadRazorpay();
+
                     // Open Razorpay checkout with subscription
                     const options = {
                         // key: "rzp_test_RudM9P8MHGIuf2",

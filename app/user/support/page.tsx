@@ -5,15 +5,13 @@ import { motion } from 'framer-motion';
 import { useRouter } from "nextjs-toploader/app";
 import {
   MessageSquare, Plus, RefreshCw, Send, AlertCircle,
-  CheckCircle, Clock, X, Eye, Filter, Search,
-  FileText, User, Calendar, Tag, AlertTriangle, Mail, Phone,
-  Upload, File as FileIcon
+  X, Eye, Search, Upload, File as FileIcon
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { API_BASE_URL } from '@/lib/config';
 import { useSupport } from '@/store/hooks/useSupport';
-import getToken from '@/lib/getToken';
 import useAxios from '@/hooks/useAxios';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { getSocket } from '@/lib/socket';
 
 interface SupportTicket {
   _id: string;
@@ -32,6 +30,7 @@ interface SupportTicket {
       fullName: string;
       email: string;
       mobile?: string;
+      role?: string;
     };
     addedByModel?: string;
     addedAt: string;
@@ -44,6 +43,16 @@ interface SupportTicket {
     assignedAt?: string;
     remarkedAt?: string;
     remarks?: string;
+    attachments?: Array<{
+      s3Key?: string;
+      s3URL: string;
+      originalName?: string;
+      mimeType?: string;
+      size?: number;
+      uploadedAt?: string;
+      _id?: string;
+    }>;
+    statusAtReply?: string;
     _id: string;
   }>;
   status: string;
@@ -82,12 +91,6 @@ export default function SupportPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [filterStatus, setFilterStatus] = useState<'all' | 'open' | 'closed'>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [showReopenForm, setShowReopenForm] = useState(false);
-  const [reopenDescription, setReopenDescription] = useState('');
-  const [reopenLoading, setReopenLoading] = useState(false);
-  const [reopenError, setReopenError] = useState('');
 
   // Form state
   const [formData, setFormData] = useState({
@@ -102,11 +105,6 @@ export default function SupportPage() {
   const [createFiles, setCreateFiles] = useState<File[]>([]);
   const [createDragging, setCreateDragging] = useState(false);
   const [showCreateUpload, setShowCreateUpload] = useState(false);
-
-  // File upload state - Reply
-  const [replyFiles, setReplyFiles] = useState<File[]>([]);
-  const [replyDragging, setReplyDragging] = useState(false);
-  const [showReplyUpload, setShowReplyUpload] = useState(false);
 
   // --- File Handling Logic ---
   const handleFileValidation = (files: File[], existingFiles: File[]): File[] => {
@@ -132,12 +130,6 @@ export default function SupportPage() {
     e.target.value = '';
   };
 
-  const handleReplyFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    setReplyFiles(handleFileValidation(files, replyFiles));
-    e.target.value = '';
-  };
-
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => { e.preventDefault(); e.stopPropagation(); };
   const handleCreateDragEnter = (e: DragEvent<HTMLDivElement>) => { e.preventDefault(); e.stopPropagation(); setCreateDragging(true); };
   const handleCreateDragLeave = (e: DragEvent<HTMLDivElement>) => { e.preventDefault(); e.stopPropagation(); setCreateDragging(false); };
@@ -146,24 +138,39 @@ export default function SupportPage() {
     const files = Array.from(e.dataTransfer.files);
     setCreateFiles(handleFileValidation(files, createFiles));
   };
-  const handleReplyDragEnter = (e: DragEvent<HTMLDivElement>) => { e.preventDefault(); e.stopPropagation(); setReplyDragging(true); };
-  const handleReplyDragLeave = (e: DragEvent<HTMLDivElement>) => { e.preventDefault(); e.stopPropagation(); setReplyDragging(false); };
-  const handleReplyDrop = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault(); e.stopPropagation(); setReplyDragging(false);
-    const files = Array.from(e.dataTransfer.files);
-    setReplyFiles(handleFileValidation(files, replyFiles));
-  };
 
   // Fetch tickets on mount
   useEffect(() => {
     fetchTickets();
   }, []);
 
+  // Socket: refetch the list on any ticket mutation the server broadcasts.
+  // Admins/support are auto-joined to `crm_all`; regular users receive updates
+  // for their own tickets — either way we just refresh the list.
+  useEffect(() => {
+    const s = getSocket();
+    const onListUpdate = () => {
+      reduxFetchTickets();
+    };
+    s.on('ticket:list_update', onListUpdate);
+    s.on('ticket:status', onListUpdate);
+    s.on('ticket:assigned', onListUpdate);
+    return () => {
+      s.off('ticket:list_update', onListUpdate);
+      s.off('ticket:status', onListUpdate);
+      s.off('ticket:assigned', onListUpdate);
+    };
+  }, [reduxFetchTickets]);
+
   const fetchTickets = async () => {
     const result = await reduxFetchTickets();
     if (result?.requiresAuth) {
       router.push('/login');
     }
+  };
+
+  const openTicketDetail = (ticket: SupportTicket) => {
+    router.push(`/user/support/${ticket._id}`);
   };
 
   const handleCreateTicket = async (e: React.FormEvent) => {
@@ -241,100 +248,6 @@ export default function SupportPage() {
     }
   };
 
-  // Check if ticket allows reply (OPEN or REOPENED)
-  const canReplyToTicket = (status: string) => {
-    const upperStatus = status?.toUpperCase();
-    return upperStatus === 'OPEN' || upperStatus === 'REOPENED' || upperStatus === 'IN_PROGRESS' || upperStatus === 'PENDING';
-  };
-
-  // Check if ticket is closed
-  const isTicketClosed = (status: string) => {
-    const upperStatus = status?.toUpperCase();
-    return upperStatus === 'CLOSED' || upperStatus === 'RESOLVED';
-  };
-
-  // Reopen ticket - just update status to REOPENED
-  const handleReopenTicket = async () => {
-    if (!selectedTicket) return;
-
-    setReopenError('');
-    setReopenLoading(true);
-
-    try {
-      const token = await getToken();
-
-      const response = await fetch(`${API_BASE_URL}/api/supportTicket/update/${selectedTicket._id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ status: 'REOPENED' })
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        // Update selected ticket with new data
-        setSelectedTicket(result.data);
-        // Refresh tickets list
-        fetchTickets();
-      } else {
-        setReopenError(result.message || 'Failed to reopen ticket');
-      }
-    } catch (error: any) {
-      setReopenError(error.message || 'Something went wrong. Please try again.');
-    } finally {
-      setReopenLoading(false);
-    }
-  };
-
-  // Send reply to ticket
-  const handleSendReply = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedTicket || !reopenDescription.trim()) {
-      setReopenError('Please enter a message');
-      return;
-    }
-
-    setReopenError('');
-    setReopenLoading(true);
-
-    try {
-      const payload = new FormData();
-      payload.append('description', reopenDescription.trim());
-
-      if (replyFiles.length > 0) {
-        replyFiles.forEach((file) => {
-          payload.append('photo', file);
-        });
-      }
-
-      const response = await axios.patch(`/api/supportTicket/update/${selectedTicket._id}`, payload, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      const result = response.data;
-
-      if ((response.status === 200 || response.status === 201) && result.success) {
-        // Update selected ticket with new data
-        setSelectedTicket(result.data);
-        // Reset form
-        setReopenDescription('');
-        setReplyFiles([]);
-        setShowReplyUpload(false);
-        setShowReopenForm(false);
-        // Refresh tickets list
-        fetchTickets();
-      } else {
-        setReopenError(result.message || 'Failed to send reply');
-      }
-    } catch (error: any) {
-      setReopenError(error.message || 'Something went wrong. Please try again.');
-    } finally {
-      setReopenLoading(false);
-    }
-  };
-
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'LOAN_INQUIRY':
@@ -397,14 +310,43 @@ export default function SupportPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-12">
-        <div className="text-center">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="w-16 h-16 border-4 border-[#25B181] border-t-transparent rounded-full mx-auto"
-          />
-          <p className="mt-4 text-gray-600">Loading support tickets...</p>
+      <div className="p-4 sm:p-6">
+        {/* Header skeleton */}
+        <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-56" />
+            <Skeleton className="h-4 w-72" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-10 sm:w-24" rounded="lg" />
+            <Skeleton className="h-10 w-28 sm:w-32" rounded="lg" />
+          </div>
+        </div>
+
+        {/* Filter bar skeleton */}
+        <div className="bg-white rounded-xl p-4 border border-[#E0E0E0] mb-5 space-y-3">
+          <Skeleton className="h-10 w-full" rounded="lg" />
+          <div className="flex gap-2">
+            <Skeleton className="h-9 w-20" rounded="lg" />
+            <Skeleton className="h-9 w-20" rounded="lg" />
+            <Skeleton className="h-9 w-24" rounded="lg" />
+          </div>
+        </div>
+
+        {/* Table skeleton */}
+        <div className="bg-white rounded-xl border border-[#E0E0E0] overflow-hidden">
+          <div className="bg-[#FAFAFA] border-b border-[#E0E0E0] h-12" />
+          <div className="divide-y divide-[#E0E0E0]">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="grid grid-cols-6 gap-4 px-4 py-4 items-center">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-40 col-span-2" />
+                <Skeleton className="h-6 w-24" rounded="full" />
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-8 w-16 ml-auto" rounded="lg" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -770,10 +712,7 @@ export default function SupportPage() {
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-center">
                       <button
-                        onClick={() => {
-                          setSelectedTicket(ticket);
-                          setIsDetailModalOpen(true);
-                        }}
+                        onClick={() => openTicketDetail(ticket)}
                         className="inline-flex items-center px-3 py-1.5 bg-[#4A66FF] text-white text-xs font-medium rounded-lg hover:bg-[#4A66FF]/90 transition-colors"
                       >
                         <Eye className="w-3.5 h-3.5 mr-1" />
@@ -788,504 +727,6 @@ export default function SupportPage() {
         )}
       </motion.div>
 
-      {/* Ticket Detail Modal */}
-      {isDetailModalOpen && selectedTicket && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-screen px-2 sm:px-4 pt-4 pb-20 text-center sm:p-0">
-            {/* Background overlay */}
-            <div
-              className="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity"
-              onClick={() => setIsDetailModalOpen(false)}
-            />
-
-            {/* Modal panel */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative inline-block align-bottom bg-white rounded-xl sm:rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-full max-w-[calc(100vw-1rem)] sm:max-w-3xl"
-            >
-              {/* Header */}
-              <div className="bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] px-4 sm:px-6 py-3 sm:py-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-base sm:text-xl font-bold text-white">Ticket Details</h3>
-                    <p className="text-xs sm:text-sm text-white/80">
-                      ID: {selectedTicket.ticketNumber || selectedTicket._id.slice(-8).toUpperCase()}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setIsDetailModalOpen(false)}
-                    className="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg transition-colors"
-                  >
-                    <X className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="px-3 sm:px-6 py-3 sm:py-4 max-h-[70vh] overflow-y-auto">
-                {/* Status Badges */}
-                <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-4 sm:mb-6">
-                  <span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium ${getStatusColor(selectedTicket.status)}`}>
-                    {selectedTicket.status || 'OPEN'}
-                  </span>
-                  <span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium ${getCategoryColor(selectedTicket.category)}`}>
-                    {selectedTicket.category.replace(/_/g, ' ')}
-                  </span>
-                </div>
-
-                {/* Subject */}
-                <div className="mb-4 sm:mb-6">
-                  <h4 className="text-xs sm:text-sm font-medium text-gray-600 mb-1 sm:mb-2">Subject</h4>
-                  <p className="text-base sm:text-lg font-semibold text-[#1F8F68]">{selectedTicket.subject}</p>
-                </div>
-
-                {/* Conversation History */}
-                <div className="mb-4 sm:mb-6">
-                  <h4 className="text-xs sm:text-sm font-medium text-gray-600 mb-2 sm:mb-3 flex items-center gap-2">
-                    <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#4A66FF]" />
-                    Support Conversation
-                    {Array.isArray(selectedTicket.chatDetails) && (
-                      <span className="ml-auto text-[10px] sm:text-xs text-gray-500">
-                        {selectedTicket.chatDetails.length} messages
-                      </span>
-                    )}
-                  </h4>
-                  <div className="space-y-3 sm:space-y-4 max-h-[300px] sm:max-h-[400px] overflow-y-auto bg-gradient-to-b from-gray-50 to-white rounded-lg p-2 sm:p-4 border border-gray-200">
-                    {Array.isArray(selectedTicket.chatDetails) ? (
-                      selectedTicket.chatDetails?.map((chat, index) => {
-                        // Check if message is from customer (case-insensitive check or by comparing IDs)
-                        const customerId = typeof selectedTicket.customerId === 'object' ? selectedTicket.customerId._id : selectedTicket.customerId;
-                        const isCustomer = chat.addedByModel?.toLowerCase() === 'customer' ||
-                          chat.addedBy?._id === customerId;
-
-                        return (
-                          <div key={chat._id} className="space-y-2 sm:space-y-3">
-                            {/* Customer/User Message */}
-                            <div className={`flex ${isCustomer ? 'justify-start' : 'justify-end'}`}>
-                              <div className={`flex ${isCustomer ? 'flex-row' : 'flex-row-reverse'} items-end gap-1.5 sm:gap-2 max-w-[90%] sm:max-w-[80%]`}>
-                                {/* Avatar */}
-                                <div className={`flex-shrink-0 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-bold shadow-md ${isCustomer
-                                    ? 'bg-gradient-to-br from-blue-500 to-blue-600'
-                                    : 'bg-gradient-to-br from-[#25B181] to-[#1F8F68]'
-                                  }`}>
-                                  {isCustomer ? 'You' : (chat.addedBy?.fullName?.charAt(0).toUpperCase() || 'S')}
-                                </div>
-
-                                {/* Message Bubble */}
-                                <div className={`flex flex-col ${isCustomer ? 'items-start' : 'items-end'}`}>
-                                  {/* Sender Label */}
-                                  <div className={`flex items-center gap-1 sm:gap-2 mb-0.5 sm:mb-1 px-1 sm:px-2 text-[10px] sm:text-xs font-semibold ${isCustomer ? 'text-blue-600' : 'text-[#25B181]'
-                                    }`}>
-                                    <span className="truncate max-w-[150px] sm:max-w-none">
-                                      {isCustomer ? 'Your Query' : `${chat.addedBy?.fullName || chat.assignedTo?.fullName || 'Support'}`}
-                                    </span>
-                                  </div>
-
-                                  <div className={`rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 shadow-md ${isCustomer
-                                      ? 'bg-white border-2 border-blue-200 rounded-bl-none'
-                                      : 'bg-gradient-to-br from-[#25B181] to-[#1F8F68] text-white rounded-br-none'
-                                    }`}>
-                                    <p className={`text-xs sm:text-sm leading-relaxed ${isCustomer ? 'text-gray-800' : 'text-white'}`}>
-                                      {chat.message}
-                                    </p>
-                                  </div>
-
-                                  {/* Timestamp */}
-                                  <div className="mt-0.5 sm:mt-1 px-1 sm:px-2 text-[10px] sm:text-xs text-gray-500">
-                                    {new Date(chat.addedAt).toLocaleString('en-IN', {
-                                      month: 'short',
-                                      day: 'numeric',
-                                      hour: '2-digit',
-                                      minute: '2-digit'
-                                    })}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Support Agent Response (if remarks exist) */}
-                            {chat.remarks && (
-                              <div className="flex justify-end">
-                                <div className="flex flex-row-reverse items-end gap-1.5 sm:gap-2 max-w-[90%] sm:max-w-[80%]">
-                                  {/* Avatar */}
-                                  <div className="flex-shrink-0 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-bold shadow-md bg-gradient-to-br from-[#25B181] to-[#1F8F68]">
-                                    {chat.assignedTo?.fullName?.charAt(0).toUpperCase() || 'S'}
-                                  </div>
-
-                                  {/* Message Bubble */}
-                                  <div className="flex flex-col items-end">
-                                    {/* Sender Label */}
-                                    <div className="flex items-center gap-1 sm:gap-2 mb-0.5 sm:mb-1 px-1 sm:px-2 text-[10px] sm:text-xs font-semibold text-[#25B181]">
-                                      <span className="truncate max-w-[150px] sm:max-w-none">{chat.assignedTo?.fullName || 'Support'}</span>
-                                    </div>
-
-                                    <div className="rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-3 shadow-md bg-gradient-to-br from-[#25B181] to-[#1F8F68] text-white rounded-br-none">
-                                      <p className="text-xs sm:text-sm leading-relaxed text-white">
-                                        {chat.remarks}
-                                      </p>
-                                    </div>
-
-                                    {/* Timestamp and Agent Info */}
-                                    <div className="mt-0.5 sm:mt-1 px-1 sm:px-2 text-[10px] sm:text-xs text-gray-500">
-                                      {chat.remarkedAt && new Date(chat.remarkedAt).toLocaleString('en-IN', {
-                                        month: 'short',
-                                        day: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                      })}
-                                    </div>
-
-                                    {/* Agent Contact Info - Hidden on mobile */}
-                                    {chat.assignedTo && (
-                                      <div className="hidden sm:flex flex-wrap items-center gap-2 mt-2 px-2 text-xs text-gray-600">
-                                        <div className="flex items-center gap-1">
-                                          <Mail className="w-3 h-3" />
-                                          <span>{chat.assignedTo.email}</span>
-                                        </div>
-                                        {chat.assignedTo.mobile && (
-                                          <div className="flex items-center gap-1">
-                                            <Phone className="w-3 h-3" />
-                                            <span>{chat.assignedTo.mobile}</span>
-                                          </div>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })
-                    ) : (
-                      <div className="bg-white rounded-lg p-4 border border-gray-200">
-                        <p className="text-gray-700 whitespace-pre-wrap">{selectedTicket.chatDetails}</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Conversation Legend */}
-                  {Array.isArray(selectedTicket.chatDetails) && (
-                    <div className="mt-3 pt-3 border-t border-gray-200">
-                      <div className="flex items-center gap-4 text-xs text-gray-600">
-                        <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 rounded-full bg-gradient-to-br from-blue-500 to-blue-600"></div>
-                          <span>Your messages</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 rounded-full bg-gradient-to-br from-[#25B181] to-[#1F8F68]"></div>
-                          <span>Support team responses</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Reply Section - Show for OPEN/REOPENED tickets */}
-                {canReplyToTicket(selectedTicket.status) && (
-                  <>
-                    {!showReopenForm && (
-                      <div className="mb-6">
-                        <button
-                          onClick={() => setShowReopenForm(true)}
-                          className="w-full px-4 py-3 bg-gradient-to-r from-[#4A66FF] to-[#6C63FF] text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 font-semibold"
-                        >
-                          <Send className="w-5 h-5" />
-                          Reply to Ticket
-                        </button>
-                      </div>
-                    )}
-
-                    {showReopenForm && (
-                      <div className="mb-6">
-                        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-                          <div className="flex items-center justify-between mb-3">
-                            <h4 className="text-sm font-semibold text-blue-800 flex items-center gap-2">
-                              <MessageSquare className="w-4 h-4" />
-                              Send Reply
-                            </h4>
-                            <button
-                              onClick={() => {
-                                setShowReopenForm(false);
-                                setReopenDescription('');
-                                setReopenError('');
-                              }}
-                              className="p-1 hover:bg-blue-100 rounded transition-colors"
-                            >
-                              <X className="w-4 h-4 text-blue-600" />
-                            </button>
-                          </div>
-                          <p className="text-xs text-blue-700 mb-3">
-                            Add more details or ask follow-up questions about your ticket.
-                          </p>
-                          <form onSubmit={handleSendReply}>
-                            <textarea
-                              value={reopenDescription}
-                              onChange={(e) => setReopenDescription(e.target.value)}
-                              required
-                              rows={4}
-                              placeholder="Type your message here..."
-                              className="w-full px-4 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none resize-none mb-3"
-                            />
-
-                            {/* Document Upload for Reply */}
-                            <div className="mb-3">
-                              <div className="flex items-center gap-2 mb-2">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setShowReplyUpload(!showReplyUpload);
-                                    if (showReplyUpload) setReplyFiles([]);
-                                  }}
-                                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-300 ${showReplyUpload ? 'bg-blue-500' : 'bg-gray-300'}`}
-                                >
-                                  <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform duration-300 ${showReplyUpload ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
-                                </button>
-                                <span className="text-xs text-blue-700">Attach documents</span>
-                              </div>
-
-                              {showReplyUpload && (
-                                <>
-                                  <div
-                                    className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-all duration-300 ${replyDragging
-                                      ? 'border-blue-500 bg-blue-100'
-                                      : 'border-blue-300 bg-blue-50/50 hover:border-blue-500 hover:bg-blue-100'
-                                    }`}
-                                    onDragEnter={handleReplyDragEnter}
-                                    onDragOver={handleDragOver}
-                                    onDragLeave={handleReplyDragLeave}
-                                    onDrop={handleReplyDrop}
-                                  >
-                                    <input
-                                      type="file"
-                                      id="replyFileInput"
-                                      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                                      multiple
-                                      onChange={handleReplyFileChange}
-                                      className="hidden"
-                                    />
-                                    <label htmlFor="replyFileInput" className="cursor-pointer">
-                                      <Upload className="w-5 h-5 mx-auto text-blue-400 mb-1" />
-                                      <p className="text-xs text-blue-700"><strong>Click to upload</strong> or drag and drop</p>
-                                      <span className="text-[10px] text-blue-500">PDF, JPG, PNG, DOC (Max 5MB)</span>
-                                    </label>
-                                  </div>
-                                  {replyFiles.length > 0 && (
-                                    <div className="mt-1.5 space-y-1">
-                                      {replyFiles.map((file, index) => (
-                                        <div key={index} className="flex items-center justify-between p-1.5 px-2.5 bg-white rounded text-xs border border-blue-100">
-                                          <div className="flex items-center gap-1.5">
-                                            <FileIcon size={12} className="text-blue-500" />
-                                            <span className="truncate max-w-[180px]">{file.name}</span>
-                                            <span className="text-[10px] text-gray-400">({(file.size / 1024).toFixed(0)} KB)</span>
-                                          </div>
-                                          <button
-                                            type="button"
-                                            onClick={() => setReplyFiles(replyFiles.filter((_, i) => i !== index))}
-                                            className="text-red-500 hover:text-red-700 text-sm leading-none p-0.5"
-                                          >
-                                            &times;
-                                          </button>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                                </>
-                              )}
-                            </div>
-
-                            {reopenError && (
-                              <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700 flex items-center gap-2">
-                                <AlertCircle className="w-4 h-4" />
-                                {reopenError}
-                              </div>
-                            )}
-                            <button
-                              type="submit"
-                              disabled={reopenLoading}
-                              className="w-full px-4 py-2 bg-[#4A66FF] text-white rounded-lg hover:bg-[#4A66FF]/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 font-semibold"
-                            >
-                              {reopenLoading ? (
-                                <>
-                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                  Sending...
-                                </>
-                              ) : (
-                                <>
-                                  <Send className="w-4 h-4" />
-                                  Send Reply
-                                </>
-                              )}
-                            </button>
-                          </form>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {/* Closed Ticket Section - Show "Reopen Ticket" button */}
-                {isTicketClosed(selectedTicket.status) && (
-                  <div className="mb-6">
-                    {/* Closed Message */}
-                    <div className="bg-gray-100 border border-gray-300 rounded-lg p-4 mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                          <CheckCircle className="w-5 h-5 text-green-600" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-gray-800">This ticket is closed</p>
-                          <p className="text-sm text-gray-600">Click &quot;Reopen Ticket&quot; if you need further assistance.</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Error Message */}
-                    {reopenError && (
-                      <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-700 flex items-center gap-2">
-                        <AlertCircle className="w-4 h-4" />
-                        {reopenError}
-                      </div>
-                    )}
-
-                    {/* Reopen Button - Direct action, no form */}
-                    <button
-                      onClick={handleReopenTicket}
-                      disabled={reopenLoading}
-                      className="w-full px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 font-semibold disabled:opacity-50"
-                    >
-                      {reopenLoading ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          Reopening...
-                        </>
-                      ) : (
-                        <>
-                          <RefreshCw className="w-5 h-5" />
-                          Reopen Ticket
-                        </>
-                      )}
-                    </button>
-                  </div>
-                )}
-
-                {/* Assigned To */}
-                {/* {selectedTicket.assignedDetails && selectedTicket.assignedDetails.length > 0 && (
-                  <div className="mb-6">
-                    <h4 className="text-sm font-medium text-gray-600 mb-3 flex items-center gap-2">
-                      <User className="w-4 h-4 text-[#4A66FF]" />
-                      Assigned To
-                    </h4>
-                    <div className="space-y-3">
-                      {selectedTicket.assignedDetails.map((assignment) => (
-                        <div key={assignment._id} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <p className="font-semibold text-gray-900">{assignment.assignedTo.fullName}</p>
-                              <p className="text-sm text-gray-600">{assignment.assignedTo.email}</p>
-                            </div>
-                            <span className="text-xs text-gray-500">
-                              {new Date(assignment.assignedAt).toLocaleDateString('en-IN', {
-                                day: '2-digit',
-                                month: 'short',
-                                year: 'numeric'
-                              })}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )} */}
-
-                {/* Additional Remarks (Global ticket remarks not tied to specific messages) */}
-                {selectedTicket.remarks && selectedTicket.remarks.length > 0 && (
-                  <div className="mb-6">
-                    <h4 className="text-sm font-medium text-gray-600 mb-3 flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-[#4A66FF]" />
-                      Additional Notes ({selectedTicket.remarks.length})
-                    </h4>
-                    <p className="text-xs text-gray-600 mb-3">General remarks and notes added to this ticket</p>
-                    <div className="space-y-3">
-                      {selectedTicket.remarks.map((remark) => (
-                        <div key={remark._id} className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200">
-                          <p className="text-gray-800 mb-2 font-medium">{remark.text}</p>
-                          <div className="flex items-center gap-2 text-xs text-gray-500">
-                            <Clock className="w-3 h-3" />
-                            <span>
-                              {new Date(remark.remarkedAt).toLocaleString('en-IN', {
-                                day: '2-digit',
-                                month: 'short',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
-                            </span>
-                            {remark.addedBy && (
-                              <>
-                                <span className="mx-1">•</span>
-                                <User className="w-3 h-3" />
-                                <span>Agent ID: {remark.addedBy.slice(-8)}</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Timeline */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-[#FAFAFA] rounded-lg p-4 border border-[#E0E0E0]">
-                    <div className="flex items-center mb-2">
-                      <Calendar className="w-4 h-4 text-[#4A66FF] mr-2" />
-                      <span className="text-sm font-medium text-gray-600">Created</span>
-                    </div>
-                    <p className="text-sm text-[#1F8F68] font-semibold">
-                      {new Date(selectedTicket.createdAt).toLocaleDateString('en-IN', {
-                        day: '2-digit',
-                        month: 'long',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </p>
-                  </div>
-
-                  {/* <div className="bg-[#FAFAFA] rounded-lg p-4 border border-[#E0E0E0]">
-                    <div className="flex items-center mb-2">
-                      <Clock className="w-4 h-4 text-[#4A66FF] mr-2" />
-                      <span className="text-sm font-medium text-gray-600">Last Updated</span>
-                    </div>
-                    <p className="text-sm text-[#1F8F68] font-semibold">
-                      {new Date(selectedTicket.updatedAt).toLocaleDateString('en-IN', {
-                        day: '2-digit',
-                        month: 'long',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </p>
-                  </div> */}
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="bg-[#FAFAFA] px-6 py-4 border-t border-[#E0E0E0] flex justify-end">
-                <button
-                  onClick={() => setIsDetailModalOpen(false)}
-                  className="px-4 py-2 bg-white border border-[#E0E0E0] text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Close
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

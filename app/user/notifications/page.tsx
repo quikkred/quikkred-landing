@@ -9,6 +9,7 @@ import {
 import { useRouter } from "nextjs-toploader/app";
 import { API_BASE_URL } from '@/lib/config';
 import { useNotifications } from '@/store/hooks/useNotifications';
+import { Skeleton, SkeletonCircle } from '@/components/ui/Skeleton';
 
 interface Notification {
   _id: string;
@@ -87,10 +88,31 @@ export default function NotificationsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA]">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-[#25B181] mx-auto mb-4" />
-          <p className="text-gray-600">Loading notifications...</p>
+      <div className="p-4 sm:p-6 space-y-5">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-56" />
+            <Skeleton className="h-4 w-72" />
+          </div>
+          <Skeleton className="h-10 w-32" rounded="lg" />
+        </div>
+
+        {/* Notification items */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm divide-y divide-gray-100 overflow-hidden">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div key={i} className="flex items-start gap-3 p-4">
+              <SkeletonCircle size={40} />
+              <div className="flex-1 space-y-2">
+                <div className="flex items-start justify-between gap-3">
+                  <Skeleton className="h-4 w-2/5" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-4/5" />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
