@@ -44,7 +44,7 @@ interface SelfieVerifyModalProps {
     onCapture: (file: File) => void;
 }
 
-export default function AdvancedFaceCam({ isOpen, apiType = "verify", onClose, onCapture }: SelfieVerifyModalProps) {
+export default function AdvancedFaceCam({ isOpen, apiType = "verification", onClose, onCapture }: SelfieVerifyModalProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
