@@ -368,7 +368,7 @@ export default function LoginPage() {
                   <span className="bg-gradient-to-r from-[#25B181] to-[#1F8F68] bg-clip-text text-transparent">Welcome Back</span>
                 </h1>
                 <p className="text-xl text-gray-700">
-                  Access your Quikkred account and continue your financial journey!
+                  Access your Quikkred account and continue your financial journey!!
                 </p>
               </div>
 
