@@ -140,8 +140,7 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
+    e.preventDefault();
     if (!validateForm()) {
       return;
     }
@@ -314,31 +313,37 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
                     <div className="space-y-2">
                       <label className="text-sm font-bold text-slate-700 ml-1">Email Address *</label>
                       <div className="relative group">
-                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-[#25B181] transition-colors" />
+                        <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${formErrors.email ? 'text-red-400' : 'text-slate-400 group-focus-within:text-[#25B181]'}`} />
                         <input
                           type="email"
                           name="email"
                           value={formData.email}
                           onChange={handleChange}
-                          className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:outline-none focus:border-[#25B181] focus:bg-white transition-all"
+                          className={`w-full pl-12 pr-4 py-4 bg-slate-50 border-2 rounded-2xl focus:outline-none transition-all ${formErrors.email
+                            ? 'border-red-100 focus:border-red-500'
+                            : 'border-transparent focus:border-[#25B181] focus:bg-white'}`}
                           placeholder="john@example.com"
                         />
                       </div>
+                      {formErrors.email && <p className="text-xs text-red-500 ml-1">{formErrors.email}</p>}
                     </div>
 
                     <div className="space-y-2">
                       <label className="text-sm font-bold text-slate-700 ml-1">Phone Number *</label>
                       <div className="relative group">
-                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-[#25B181] transition-colors" />
+                        <Phone className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${formErrors.phone ? 'text-red-400' : 'text-slate-400 group-focus-within:text-[#25B181]'}`} />
                         <input
                           type="tel"
                           name="phone"
                           value={formData.phone}
                           onChange={handleChange}
-                          className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:outline-none focus:border-[#25B181] focus:bg-white transition-all"
+                          className={`w-full pl-12 pr-4 py-4 bg-slate-50 border-2 rounded-2xl focus:outline-none transition-all ${formErrors.phone
+                            ? 'border-red-100 focus:border-red-500'
+                            : 'border-transparent focus:border-[#25B181] focus:bg-white'}`}
                           placeholder="+91 00000 00000"
                         />
                       </div>
+                      {formErrors.phone && <p className="text-xs text-red-500 ml-1">{formErrors.phone}</p>}
                     </div>
 
                     {/* Subject Field */}
@@ -370,9 +375,13 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
                         value={formData.message}
                         onChange={handleChange}
                         rows={4}
-                        className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-2xl focus:outline-none focus:border-[#25B181] focus:bg-white transition-all resize-none"
+                        maxLength={500}
+                        className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-2xl focus:outline-none transition-all resize-none ${formErrors.message
+                          ? 'border-red-100 focus:border-red-500'
+                          : 'border-transparent focus:border-[#25B181] focus:bg-white'}`}
                         placeholder="Tell us how we can help..."
                       />
+                      {formErrors.message && <p className="text-xs text-red-500 ml-1">{formErrors.message}</p>}
                     </div>
 
                     {/* Actions */}

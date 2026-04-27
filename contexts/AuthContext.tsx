@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from "nextjs-toploader/app";
 import { API_BASE_URL } from '@/lib/config';
 import { clearSession } from '@/lib/auth-utils';
+import { quikkredAgent } from '@/lib/quikkred-agent';
 
 export interface User {
   id: string;
@@ -169,7 +170,6 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
   }, []);
 
   const fetchUserProfile = async (token: string, currentUser: User) => {
-    // console.log('🔵 Fetching user profile from API...');
     try {
       const response = await fetch(`${API_BASE_URL}/api/customer/get`, {
         method: 'GET',
@@ -180,15 +180,11 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
       });
 
       const result = await response.json();
-      // console.log('🟢 Profile API Response:', result.success ? 'Success' : 'Failed');
-
       if (response.ok && result.success && result.data) {
         const apiData = result.data;
 
         // Use fullName directly from API
         // const fullName = apiData.fullName || currentUser.name;
-
-        // console.log('✅ Profile fetched successfully. Name:', fullName);
 
         // Update user with real profile data from API
         const updatedUser: User = userInitializer({ apiData, currentUser })
@@ -248,6 +244,15 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
         // Fetch real user profile and wait for it
         await fetchUserProfile(authToken, userData);
 
+        // Link agent to customer and trigger full snapshot + start heartbeat
+        const userId = apiData.user?.id || apiData.userId;
+        if (userId) {
+          quikkredAgent.init().then(() => {
+            quikkredAgent.linkCustomer(userId);
+            quikkredAgent.startHeartbeat();
+          }).catch(() => {});
+        }
+
         return true;
       }
 
@@ -265,6 +270,9 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
     // Set logging out state immediately to hide UI
     console.log("Logging out...");
     try {
+      // Stop agent heartbeat on logout (keep deviceId for re-identification)
+      quikkredAgent.stopHeartbeat();
+
       setIsLoggingOut(true);
       setUser(null);
 

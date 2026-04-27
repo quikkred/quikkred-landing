@@ -6,7 +6,7 @@ const CodeOfConduct: React.FC = () => {
       {/* INTRODUCTION */}
       <h2 className="text-2xl font-bold mb-4">INTRODUCTION</h2>
       <p className="mb-8">
-        QuikKred adheres to the guidelines issued by the Reserve Bank of India
+        Quikkred adheres to the guidelines issued by the Reserve Bank of India
         (RBI) for Non-Banking Financial Companies (NBFCs). Our Fair Practices
         Code outlines the framework under which we provide loans with fairness
         and transparency for our customers. It represents our commitment to
@@ -34,7 +34,7 @@ const CodeOfConduct: React.FC = () => {
           necessary documents.
         </li>
         <li>
-          QuikKred will assist customers with complete information regarding
+          Quikkred will assist customers with complete information regarding
           fees, processing charges, and repayment terms before the loan
           application.
         </li>
@@ -54,7 +54,7 @@ const CodeOfConduct: React.FC = () => {
       </h3>
       <ul className="list-disc pl-6 mb-6 space-y-2">
         <li>
-          Loan approvals will be carried out based on QuikKred’s internal credit
+          Loan approvals will be carried out based on Quikkred’s internal credit
           evaluation systems, risk parameters, and borrower repayment capacity.
         </li>
         <li>
@@ -86,7 +86,7 @@ const CodeOfConduct: React.FC = () => {
           clearly in advance.
         </li>
         <li>
-          In case of defaults, QuikKred will follow fair and transparent
+          In case of defaults, Quikkred will follow fair and transparent
           recovery processes.
         </li>
       </ul>
@@ -102,14 +102,14 @@ const CodeOfConduct: React.FC = () => {
           Information will not be shared with third parties without customer
           permission, except for regulatory or legal requirements.
         </li>
-        <li>QuikKred will not engage in unethical sharing of customer data.</li>
+        <li>Quikkred will not engage in unethical sharing of customer data.</li>
       </ul>
 
       {/* GENERAL */}
       <h2 className="text-2xl font-bold mb-4">GENERAL</h2>
       <ul className="list-disc pl-6 mb-10 space-y-2">
         <li>
-          QuikKred will not force a borrower into loans except for purposes
+          Quikkred will not force a borrower into loans except for purposes
           permitted under the loan agreement.
         </li>
         <li>
@@ -156,7 +156,7 @@ const CodeOfConduct: React.FC = () => {
       {/* Monitoring */}
       <h3 className="text-xl font-semibold mb-3">Monitoring</h3>
       <p className="mb-8">
-        QuikKred holds a designated Compliance Officer to ensure adherence to
+        Quikkred holds a designated Compliance Officer to ensure adherence to
         the Fair Practices Code and other regulatory guidelines. Periodic
         reviews will be carried out to ensure full compliance and to improve
         customer service standards.
@@ -165,7 +165,7 @@ const CodeOfConduct: React.FC = () => {
       {/* Availability */}
       <h3 className="text-xl font-semibold mb-3">Availability of the Code</h3>
       <p>
-        This Fair Practices Code will be available on the QuikKred website.
+        This Fair Practices Code will be available on the Quikkred website.
         Printed copies will be provided on request.
       </p>
     </section>

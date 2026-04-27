@@ -13,6 +13,7 @@ import { useDocuments } from '@/store/hooks/useDocuments';
 import getToken from '@/lib/getToken';
 import { useAuth } from '@/contexts/AuthContext';
 import useAxios from '@/hooks/useAxios';
+import { Skeleton, SkeletonCircle } from '@/components/ui/Skeleton';
 
 interface Document {
   id: string;
@@ -445,10 +446,46 @@ export default function DocumentsPage() {
   // Loading state
   if (loading && documents.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2E7D32] mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading documents...</p>
+      <div className="p-4 sm:p-6 space-y-5">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-56" />
+            <Skeleton className="h-4 w-72" />
+          </div>
+          <Skeleton className="h-10 w-36" rounded="lg" />
+        </div>
+
+        {/* Summary tiles */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-2">
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-7 w-12" />
+            </div>
+          ))}
+        </div>
+
+        {/* Document cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 space-y-3">
+              <div className="flex items-start gap-3">
+                <SkeletonCircle size={40} />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+                <Skeleton className="h-6 w-16" rounded="full" />
+              </div>
+              <Skeleton className="h-24 w-full" rounded="lg" />
+              <div className="flex gap-2">
+                <Skeleton className="h-8 flex-1" rounded="lg" />
+                <Skeleton className="h-8 w-8" rounded="lg" />
+                <Skeleton className="h-8 w-8" rounded="lg" />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );

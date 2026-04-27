@@ -14,6 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { loansService } from '@/lib/api/loans.service';
 import { API_BASE_URL } from '@/lib/config';
 import { useApplications } from '@/store/hooks/useApplications';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 interface Application {
   _id: string;
@@ -286,6 +287,9 @@ export default function MyApplicationsPage() {
       case 'APPROVED':
       case 'DISBURSED':
         return 'text-green-600 bg-green-100';
+      case 'PROCEED TO BANK':
+      case 'PROCEED_TO_BANK':
+        return 'text-emerald-600 bg-emerald-100';
       case 'REJECTED':
       case 'CANCELLED':
         return 'text-red-600 bg-red-100';
@@ -312,8 +316,49 @@ export default function MyApplicationsPage() {
 
   if (isLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <RefreshCw className="w-8 h-8 text-[#25B181] animate-spin" />
+      <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+        {/* Header skeleton */}
+        <div className="bg-white rounded-xl border border-[#E0E0E0] shadow-sm p-4 sm:p-6">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-56" />
+              <Skeleton className="h-4 w-72" />
+            </div>
+            <Skeleton className="h-10 w-28" rounded="lg" />
+          </div>
+        </div>
+
+        {/* Filter skeleton */}
+        <div className="bg-white rounded-xl border border-[#E0E0E0] shadow-sm p-4 space-y-3">
+          <Skeleton className="h-10 w-full" rounded="lg" />
+          <div className="flex gap-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-9 w-24" rounded="lg" />
+            ))}
+          </div>
+        </div>
+
+        {/* Cards skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-xl border border-[#E0E0E0] shadow-sm p-4 sm:p-5 space-y-3">
+              <div className="flex items-start justify-between">
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-40" />
+                  <Skeleton className="h-3 w-28" />
+                </div>
+                <Skeleton className="h-6 w-20" rounded="full" />
+              </div>
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-2/3" />
+              </div>
+              <Skeleton className="h-9 w-full" rounded="lg" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -490,13 +535,24 @@ export default function MyApplicationsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-center">
-                      <button
-                        onClick={() => handleViewDetails(app)}
-                        className="inline-flex items-center px-3 py-1.5 bg-[#4A66FF] text-white text-xs font-medium rounded-lg hover:bg-[#4A66FF]/90 transition-colors"
-                      >
-                        <Eye className="w-3.5 h-3.5 mr-1" />
-                        View Details
-                      </button>
+                      <div className="flex items-center justify-center gap-2">
+                        {app.status?.toUpperCase().trim() === 'PROCEED TO BANK' && (
+                          <button
+                            onClick={() => router.push('/apply/quick')}
+                            className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-medium rounded-lg hover:shadow-md transition-all"
+                          >
+                            <Building className="w-3.5 h-3.5 mr-1" />
+                            Proceed to Bank
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleViewDetails(app)}
+                          className="inline-flex items-center px-3 py-1.5 bg-[#4A66FF] text-white text-xs font-medium rounded-lg hover:bg-[#4A66FF]/90 transition-colors"
+                        >
+                          <Eye className="w-3.5 h-3.5 mr-1" />
+                          View Details
+                        </button>
+                      </div>
                     </td>
                   </motion.tr>
                 ))}
@@ -840,7 +896,16 @@ export default function MyApplicationsPage() {
               )}
 
               {/* Modal Footer */}
-              <div className="sticky bottom-0 px-4 sm:px-6 py-3 sm:py-4 bg-[#FAFAFA] border-t border-[#E0E0E0]">
+              <div className="sticky bottom-0 px-4 sm:px-6 py-3 sm:py-4 bg-[#FAFAFA] border-t border-[#E0E0E0] space-y-2">
+                {detailedApplication && detailedApplication.status?.toUpperCase().trim() === 'PROCEED TO BANK' && (
+                  <button
+                    onClick={() => router.push('/apply/quick')}
+                    className="w-full px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all text-sm sm:text-base font-semibold flex items-center justify-center gap-2"
+                  >
+                    <Building className="w-4 h-4" />
+                    Proceed to Bank
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     setIsDetailModalOpen(false);

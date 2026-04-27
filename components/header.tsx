@@ -18,6 +18,7 @@ import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { QUICK_FORM_URL } from "@/lib/config";
 
+
 export function Header() {
   const { t } = useLanguage();
   const { user } = useAuth();
@@ -135,9 +136,9 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center group">
             <img
-              src="/logo.svg"
+              src="/quikkred-logo.png"
               alt={t.common.appName}
-              className="h-10 lg:h-11 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+              className="h-9 lg:h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
             />
           </Link>
 

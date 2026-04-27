@@ -135,11 +135,10 @@ export default function BranchesPage() {
                 <button
                   key={city}
                   onClick={() => setSelectedCity(city)}
-                  className={`px-6 py-2 rounded-lg font-semibold transition-all ${
-                    selectedCity === city
+                  className={`px-6 py-2 rounded-lg font-semibold transition-all ${selectedCity === city
                       ? "bg-gradient-to-r from-[#25B181] to-[#1F8F68] text-white shadow-lg"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                    }`}
                 >
                   {city === "all" ? "All Branches" : city}
                 </button>

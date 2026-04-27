@@ -303,8 +303,8 @@ export default function LoginPage() {
     } else {
       try {
         const success = await login({
-            email: formData.emailOrPhone || "",
-          });
+          email: formData.emailOrPhone || "",
+        });
 
         if (success) {
           toast({
@@ -368,7 +368,7 @@ export default function LoginPage() {
                   <span className="bg-gradient-to-r from-[#25B181] to-[#1F8F68] bg-clip-text text-transparent">Welcome Back</span>
                 </h1>
                 <p className="text-xl text-gray-700">
-                  Access your Quikkred account and continue your financial journey!!
+                  Access your Quikkred account and continue your financial journey!
                 </p>
               </div>
 
@@ -503,7 +503,7 @@ export default function LoginPage() {
                     <GoogleVerify buttonText="Continue with google" />
                     {
                       !isIOS && <TruecallerVerify buttonText="Continue with truecaller" />
-                    
+
                     }
 
                     <DigiLockerVerify buttonText="Continue with DigiLocker" />
@@ -602,10 +602,13 @@ export default function LoginPage() {
                             <input
                               type="text"
                               value={otp}
-                              onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                              maxLength={6}
-                              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#25B181] focus:border-[#25B181] bg-white text-center text-2xl tracking-widest font-bold"
-                              placeholder="000000"
+                              onChange={(val: string) => {
+                                setOtp(val);
+                                if (error) setError(null);
+                              }}
+                              length={6}
+                              error={!!error}
+                              autoFocus={true}
                             />
                           </div> */}
                           <div className="flex justify-center py-2">

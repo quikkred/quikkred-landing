@@ -208,7 +208,7 @@ gtag('config', 'AW-17796230994');`,
         />
 
         {/* Meta Pixel Code - Beta & Production only (exclude Alpha & Beta) */}
-        {process.env.NEXT_PUBLIC_API_URL == 'https://api.quikkred.in' && (
+        {process.env.NEXT_PUBLIC_API_URL == 'https://alpha.quikkred.in' && (
           <Script
             id="fb-pixel"
             strategy="afterInteractive"
@@ -228,7 +228,7 @@ fbq('track', 'PageView');`,
           />
         )}
         {/* Meta Pixel (noscript) - Production only (exclude Alpha & Beta) */}
-        {process.env.NEXT_PUBLIC_API_URL == 'https://api.quikkred.in' && (
+        {process.env.NEXT_PUBLIC_API_URL == 'https://alpha.quikkred.in' && (
           <noscript>
             <img
               height="1"

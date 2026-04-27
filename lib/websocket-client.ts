@@ -38,6 +38,11 @@ export const WS_EVENTS = {
   // Support
   TICKET_ASSIGNED: 'ticket:assigned',
   TICKET_UPDATED: 'ticket:updated',
+  TICKET_JOIN: 'ticket:join',
+  TICKET_LEAVE: 'ticket:leave',
+  TICKET_MESSAGE: 'ticket:message',
+  TICKET_TYPING_START: 'ticket:typing:start',
+  TICKET_TYPING_STOP: 'ticket:typing:stop',
 } as const;
 
 // WebSocket Message Interface

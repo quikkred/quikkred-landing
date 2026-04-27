@@ -237,8 +237,8 @@ export default function QuickApplyV2Page() {
                     <div className="flex items-center justify-between">
                         <a href="/" className="flex items-center">
                             <img
-                                src="/logo.svg"
-                                alt="QuikKred"
+                                src="/quikkred-logo.png"
+                                alt="Quikkred"
                                 className="h-7 sm:h-8"
                                 onError={(e) => {
                                     e.currentTarget.style.display = 'none';
@@ -246,7 +246,7 @@ export default function QuickApplyV2Page() {
                                     if (fallback) (fallback as HTMLElement).style.display = 'block';
                                 }}
                             />
-                            <span className="hidden font-bold text-[#25B181] text-base">QuikKred</span>
+                            <span className="hidden font-bold text-[#25B181] text-base">Quikkred</span>
                         </a>
 
                         <div className="w-auto flex jusitfy-center items-center gap-2.5">

@@ -301,7 +301,7 @@ export default function CollectPartnerPage() {
             >
               <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold mb-6">
                 <Image
-                  src="/QuikkredLogoWhite.svg"
+                  src="/quikkred-mark.png"
                   alt="Quikkred"
                   width={20}
                   height={20}
@@ -384,12 +384,12 @@ export default function CollectPartnerPage() {
                       </div>
                     </div>
                     {/* App Header */}
-                    <div className="bg-[#1a5f4a] px-5 pb-5 text-white">
+                    <div className="bg-[#1a5f4a] px-5 pb-5 text-white select-none">
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2.5">
                           <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center overflow-hidden">
                             <Image
-                              src="/QuikkredLogoWhite.svg"
+                              src="/quikkred-mark.png"
                               alt="Quikkred"
                               width={26}
                               height={26}
@@ -410,7 +410,7 @@ export default function CollectPartnerPage() {
                     </div>
 
                     {/* App Content */}
-                    <div className="p-4 space-y-3 bg-gray-50 h-full">
+                    <div className="p-4 space-y-3 bg-gray-50 h-full select-none">
                       {/* Stats Row */}
                       <div className="grid grid-cols-2 gap-2.5">
                         <div className="bg-white rounded-xl p-3 shadow-sm">
