@@ -28,9 +28,6 @@ export default function Products({
   buttonPrimaryText,
   buttonSecondaryText,
   buttonPrimaryLink = "/emi-calculator",
-  // buttonSecondaryLink = "/apply/quick",
-  buttonSecondaryLink = QUICK_FORM_URL as string,
-  // buttonSecondaryLink = "/apply/quick",
   buttonSecondaryLink = QUICK_FORM_URL as string,
   quickAccessAmount,
   timeText,
@@ -88,17 +85,9 @@ export default function Products({
             position: 'absolute',
             top: '12px',
             right: '12px',
-            top: '12px',
-            right: '12px',
             background: 'none',
             border: 'none',
             cursor: 'pointer',
-            color: '#9ca3af',
-            minWidth: '44px',
-            minHeight: '44px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
             color: '#9ca3af',
             minWidth: '44px',
             minHeight: '44px',
@@ -153,15 +142,11 @@ export default function Products({
               width: '100%',
               padding: '14px 24px',
               minHeight: '48px',
-              padding: '14px 24px',
-              minHeight: '48px',
               background: 'linear-gradient(to right, #25B181, #1F8F68)',
               color: 'white',
               borderRadius: '8px',
               fontWeight: '600',
               border: 'none',
-              cursor: 'pointer',
-              fontSize: '16px'
               cursor: 'pointer',
               fontSize: '16px'
             }}>
@@ -179,12 +164,9 @@ export default function Products({
       {mounted && showComingSoon && createPortal(<ComingSoonPopup />, document.body)}
 
       <div className="w-full bg-white py-6 sm:py-8 md:py-12 px-4 sm:px-6 md:px-16 flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8 md:gap-10">
-      <div className="w-full bg-white py-6 sm:py-8 md:py-12 px-4 sm:px-6 md:px-16 flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8 md:gap-10">
         {/* Left Section */}
         <div className="md:w-1/2 space-y-4 sm:space-y-5 md:space-y-6">
-        <div className="md:w-1/2 space-y-4 sm:space-y-5 md:space-y-6">
           {/* Title */}
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-snug">
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-snug">
             {title}{" "}
             {highlightWord && <span className={primary}>{highlightWord}</span>}{" "}
@@ -192,16 +174,13 @@ export default function Products({
 
           {/* Subtitle (optional) */}
           {subtitle && <p className="text-gray-600 text-base sm:text-lg">{subtitle}</p>}
-          {subtitle && <p className="text-gray-600 text-base sm:text-lg">{subtitle}</p>}
 
           {/* Buttons (only render if at least one exists) */}
           {(buttonPrimaryText || buttonSecondaryText) && (
             <div className="flex flex-wrap gap-3 sm:gap-4 pt-2">
-            <div className="flex flex-wrap gap-3 sm:gap-4 pt-2">
               {buttonPrimaryText && (
                 <button
                   onClick={() => setShowComingSoon(true)}
-                  className={`${primaryBg} ${primaryBgHover} text-white font-semibold px-4 sm:px-6 py-3 min-h-[44px] rounded-md transition text-sm sm:text-base`}
                   className={`${primaryBg} ${primaryBgHover} text-white font-semibold px-4 sm:px-6 py-3 min-h-[44px] rounded-md transition text-sm sm:text-base`}
                 >
                   {buttonPrimaryText}
@@ -209,9 +188,7 @@ export default function Products({
               )}
               {buttonSecondaryText && (
                 <Link href={buttonSecondaryLink} className="w-full md:w-auto">
-                <Link href={buttonSecondaryLink} className="w-full md:w-auto">
                   <button
-                    className={`${borderPrimary} ${primary} border font-semibold px-4 sm:px-6 py-3 min-h-[44px] rounded-md ${bgHover} transition text-sm sm:text-base`}
                     className={`${borderPrimary} ${primary} border font-semibold px-4 sm:px-6 py-3 min-h-[44px] rounded-md ${bgHover} transition text-sm sm:text-base`}
                   >
                     {buttonSecondaryText}
@@ -224,9 +201,7 @@ export default function Products({
           {/* Features (optional) */}
           {features && features.length > 0 && (
             <div className="flex flex-wrap gap-3 sm:gap-4 md:gap-6 text-gray-600 text-xs sm:text-sm pt-3 sm:pt-4">
-            <div className="flex flex-wrap gap-3 sm:gap-4 md:gap-6 text-gray-600 text-xs sm:text-sm pt-3 sm:pt-4">
               {features.map((item, idx) => (
-                <div key={idx} className="flex items-center gap-1.5 sm:gap-2">
                 <div key={idx} className="flex items-center gap-1.5 sm:gap-2">
                   <span className={primary}>✓</span> {item}
                 </div>
@@ -236,8 +211,6 @@ export default function Products({
         </div>
 
         {/* Right Section */}
-        <div className="md:w-1/2 flex justify-center w-full">
-          <div className="relative rounded-xl sm:rounded-2xl overflow-hidden w-full max-w-[320px] sm:max-w-[380px] md:max-w-[460px]">
         <div className="md:w-1/2 flex justify-center w-full">
           <div className="relative rounded-xl sm:rounded-2xl overflow-hidden w-full max-w-[320px] sm:max-w-[380px] md:max-w-[460px]">
             <Image
