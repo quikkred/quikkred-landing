@@ -1,7 +1,7 @@
 # Quikkred Landing & Dashboard CI/CD Pipeline
 # Last updated: 2026-01-26 - Deploy on push to main + scheduled at 12 AM IST
-# Quikkred Landing & Dashboard CI/CD Pipeline
-# Last updated: 2026-01-26 - Deploy on push to main + scheduled at 12 AM IST
+
+
 name: Quikkred Landing & Dashboard CI/CD Pipeline
 
 on:
@@ -20,14 +20,14 @@ on:
         required: false
         default: false
         type: boolean
-  schedule:
-    # 12:00 AM IST = 18:30 UTC (previous day)
-    - cron: '30 18 * * *'
-      deploy_now:
-        description: "Deploy to production immediately (skip schedule)"
-        required: false
-        default: false
-        type: boolean
+
+
+
+
+
+
+
+
   schedule:
     # 12:00 AM IST = 18:30 UTC (previous day)
     - cron: '30 18 * * *'
@@ -82,7 +82,7 @@ jobs:
   deploy-alpha:
     needs: build-and-test
     if: github.ref == 'refs/heads/develop' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-    if: github.ref == 'refs/heads/develop' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+
     runs-on: ubuntu-latest
     environment: alpha
 
@@ -107,7 +107,7 @@ jobs:
 
             npm ci
 
-            NEXT_PUBLIC_API_URL=https://api.quikkred.in npm run build
+            NEXT_PUBLIC_API_URL=https://alpha.quikkred.in npm run build
 
             pm2 delete quikkred-landing 2>/dev/null || true
             PORT=3002 pm2 start npm --name "quikkred-landing" -- start
@@ -128,7 +128,7 @@ jobs:
   deploy-beta:
     needs: build-and-test
     if: github.ref == 'refs/heads/staging' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-    if: github.ref == 'refs/heads/staging' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+
     runs-on: ubuntu-latest
     environment: beta
 
@@ -152,10 +152,10 @@ jobs:
           cp .env.beta .env.production
           echo "✅ Using .env.beta for beta build"
 
-      - name: Use beta environment config
-        run: |
-          cp .env.beta .env.production
-          echo "✅ Using .env.beta for beta build"
+
+
+
+
 
       - name: Build, tag, and push image to ECR
         id: build-image
@@ -197,30 +197,30 @@ jobs:
           echo "task-def-arn=$NEW_TASK_DEF" >> $GITHUB_OUTPUT
           echo "✅ New task definition registered: $NEW_TASK_DEF"
 
-      - name: Update ECS Task Definition
-        id: task-def
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: beta-${{ github.sha }}
-        run: |
-          TASK_FAMILY="quikkred-landing-beta"
 
-          aws ecs describe-task-definition --task-definition $TASK_FAMILY \
-            --query 'taskDefinition' > task-def.json
 
-          NEW_IMAGE="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
-          cat task-def.json | jq --arg IMG "$NEW_IMAGE" \
-            'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy) | .containerDefinitions[0].image = $IMG' \
-            > new-task-def.json
 
-          NEW_TASK_DEF=$(aws ecs register-task-definition \
-            --cli-input-json file://new-task-def.json \
-            --query 'taskDefinition.taskDefinitionArn' \
-            --output text)
 
-          echo "task-def-arn=$NEW_TASK_DEF" >> $GITHUB_OUTPUT
-          echo "✅ New task definition registered: $NEW_TASK_DEF"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       - name: Update ECS service
         run: |
@@ -228,7 +228,7 @@ jobs:
             --cluster quikkred-beta \
             --service quikkred-landing-beta \
             --task-definition ${{ steps.task-def.outputs.task-def-arn }} \
-            --task-definition ${{ steps.task-def.outputs.task-def-arn }} \
+
             --force-new-deployment \
             --region ${{ env.AWS_REGION }}
           echo "✅ ECS Beta service updated"
@@ -245,22 +245,22 @@ jobs:
         run: |
           sleep 15
           response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://beta.quikkred.in || echo "000")
-          response=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 https://beta.quikkred.in || echo "000")
+
           echo "Beta health check: $response"
 
   # ============================================
   # DEPLOY TO PRODUCTION (AWS ECS)
   # Triggers on: push to main, schedule (12 AM IST), or manual workflow_dispatch
-  # Triggers on: push to main, schedule (12 AM IST), or manual workflow_dispatch
+
   # ============================================
   deploy-production:
     needs: build-and-test
-    if: |
-      github.ref == 'refs/heads/main' && (
-        github.event_name == 'push' ||
-        github.event_name == 'schedule' ||
-        (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_now == 'true')
-      )
+
+
+
+
+
+
     if: |
       github.ref == 'refs/heads/main' && (
         github.event_name == 'push' ||
@@ -325,30 +325,30 @@ jobs:
           echo "task-def-arn=$NEW_TASK_DEF" >> $GITHUB_OUTPUT
           echo "✅ New task definition registered: $NEW_TASK_DEF"
 
-      - name: Update ECS Task Definition
-        id: task-def
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: prod-${{ github.sha }}
-        run: |
-          TASK_FAMILY="quikkred-landing-prod"
 
-          aws ecs describe-task-definition --task-definition $TASK_FAMILY \
-            --query 'taskDefinition' > task-def.json
 
-          NEW_IMAGE="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
-          cat task-def.json | jq --arg IMG "$NEW_IMAGE" \
-            'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy) | .containerDefinitions[0].image = $IMG' \
-            > new-task-def.json
 
-          NEW_TASK_DEF=$(aws ecs register-task-definition \
-            --cli-input-json file://new-task-def.json \
-            --query 'taskDefinition.taskDefinitionArn' \
-            --output text)
 
-          echo "task-def-arn=$NEW_TASK_DEF" >> $GITHUB_OUTPUT
-          echo "✅ New task definition registered: $NEW_TASK_DEF"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       - name: Update ECS service
         run: |
@@ -356,7 +356,7 @@ jobs:
             --cluster quikkred-production \
             --service quikkred-landing-service \
             --task-definition ${{ steps.task-def.outputs.task-def-arn }} \
-            --task-definition ${{ steps.task-def.outputs.task-def-arn }} \
+
             --force-new-deployment \
             --region ${{ env.AWS_REGION }}
           echo "✅ ECS Production service updated"
@@ -376,12 +376,12 @@ jobs:
             --paths "/*"
           echo "✅ CloudFront cache invalidated"
 
-      - name: Invalidate CloudFront cache
-        run: |
-          aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*"
-          echo "✅ CloudFront cache invalidated"
+
+
+
+
+
+
 
       - name: Health Check
         run: |
