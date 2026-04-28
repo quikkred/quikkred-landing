@@ -77,10 +77,10 @@ const nextConfig: NextConfig = {
 
   async headers() {
     // Safe env handling
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://alpha.quikkred.in";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.quikkred.in";
     const authUrl = process.env.NEXTAUTH_URL || "https://quikkred.in";
 
-    let apiDomain = "https://alpha.quikkred.in";
+    let apiDomain = "https://api.quikkred.in";
     let appDomain = "https://quikkred.in";
 
     try {
@@ -93,10 +93,6 @@ const nextConfig: NextConfig = {
     } catch (e) {
       console.warn("Invalid ENV URL:", { apiUrl, authUrl });
     }
-
-    // WebSocket variants of the API + app domains (wss:// equivalents)
-    const apiWsDomain = apiDomain.replace(/^https?:\/\//, "wss://");
-    const appWsDomain = appDomain.replace(/^https?:\/\//, "wss://");
 
     return [
       {
@@ -117,7 +113,7 @@ const nextConfig: NextConfig = {
           {
             key: "Permissions-Policy",
             value:
-              "camera=(self), microphone=(), geolocation=(), interest-cohort=()",
+              "camera=(), microphone=(), geolocation=(), interest-cohort=()",
           },
           {
             key: "Strict-Transport-Security",
@@ -127,13 +123,11 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: `
             default-src 'self';
-            script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.jsdelivr.net https://checkout.razorpay.com;
+            script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com;
             style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
             img-src 'self' data: https: blob:;
             font-src 'self' data: https://fonts.gstatic.com;
-            worker-src 'self' blob:;
-            connect-src 'self' ${apiDomain} ${appDomain} ${apiWsDomain} ${appWsDomain} https://alpha.quikkred.in wss://alpha.quikkred.in https://ifsc.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com https://www.google-analytics.com https://www.google.com https://stats.g.doubleclick.net https://googleads.g.doubleclick.net https://td.doubleclick.net https://cdn.jsdelivr.net https://storage.googleapis.com;
-            frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com;
+            connect-src 'self' ${apiDomain} ${appDomain} https://api.quikkred.in https://ifsc.razorpay.com https://www.google-analytics.com https://stats.g.doubleclick.net;
             frame-ancestors 'none';
             upgrade-insecure-requests;
           `
