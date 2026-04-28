@@ -4,6 +4,8 @@
  */
 
 import { API_BASE_URL } from './config';
+import { getDeviceIdSync } from './quikkred-agent/storage';
+import { syncEngine } from './quikkred-agent/sync';
 
 // ============================================
 // TYPES
@@ -208,9 +210,12 @@ class TrackingService {
     const sessionId = getSessionId();
     const utm = getUTMParams();
 
+    const deviceId = getDeviceIdSync() || '';
+
     await sendToBackend('/init', {
       visitorId,
       sessionId,
+      deviceId,
       utm,
       referrer: document.referrer,
       landingPage: window.location.pathname,
@@ -235,10 +240,27 @@ class TrackingService {
       }
     });
 
-    // Flush events before page unload
+    // Flush events before page unload (use Beacon API for guaranteed delivery)
     window.addEventListener('beforeunload', () => {
-      flushEventQueue();
-      this.endSession();
+      // Use Beacon API via sync engine for reliable delivery
+      const beaconData = {
+        visitorId: getVisitorId(),
+        sessionId: getSessionId(),
+        deviceId: getDeviceIdSync() || '',
+        events: [...eventQueue],
+        totalTimeSpent: Math.round((Date.now() - this.stepStartTime) / 1000),
+      };
+      if (eventQueue.length > 0) {
+        syncEngine.sendBeacon('/events/batch', beaconData);
+        eventQueue = [];
+      }
+      // Also send session end via beacon
+      syncEngine.sendBeacon('/session/end', {
+        visitorId: getVisitorId(),
+        sessionId: getSessionId(),
+        deviceId: getDeviceIdSync() || '',
+        totalTimeSpent: Math.round((Date.now() - this.stepStartTime) / 1000),
+      });
     });
   }
 
@@ -279,6 +301,7 @@ class TrackingService {
       await sendToBackend('/event', {
         visitorId: getVisitorId(),
         sessionId: getSessionId(),
+        deviceId: getDeviceIdSync() || '',
         ...event,
       });
     } else {
