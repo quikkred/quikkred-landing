@@ -619,7 +619,7 @@ export default function AboutPage() {
           title="Quikkred Head Office Location"
           className="w-full h-full"
         />
-      </div> */}
+      </div>
     </div>
   );
 }

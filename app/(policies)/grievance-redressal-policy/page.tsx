@@ -33,7 +33,7 @@ export default function GrievanceRedressalPolicyPage() {
         {/* Introduction */}
         <div className="mb-10">
           <p className="text-[#2b2b2b] leading-[1.7]">
-            {grp?.introduction || "QuikkRed is committed to providing excellent customer service and resolving customer grievances in a timely and efficient manner. This Grievance Redressal Policy outlines the process for customers to escalate their concerns and the timelines within which they can expect resolution."}
+            {grp?.introduction || "Quikkred is committed to providing excellent customer service and resolving customer grievances in a timely and efficient manner. This Grievance Redressal Policy outlines the process for customers to escalate their concerns and the timelines within which they can expect resolution."}
           </p>
         </div>
 
@@ -162,7 +162,7 @@ export default function GrievanceRedressalPolicyPage() {
             {(grp?.importantNotes?.items || [
               "All complaints should include relevant details such as loan account number, contact information, and a clear description of the issue.",
               "A unique complaint reference number will be provided for tracking purposes.",
-              "QuikkRed is committed to treating all complaints fairly and confidentially.",
+              "Quikkred is committed to treating all complaints fairly and confidentially.",
               "This policy is subject to periodic review and may be updated as per regulatory requirements."
             ]).map((item: string, index: number) => (
               <li key={index} className="flex items-start gap-2">

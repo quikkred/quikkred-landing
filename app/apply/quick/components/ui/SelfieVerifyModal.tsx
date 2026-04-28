@@ -18,65 +18,20 @@ let globalDetector: FaceDetector | null = null;
 let isEngineInitializing = false;
 
 const MODEL_ASSET_PATH = "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite";
-// Pin WASM to the installed @mediapipe/tasks-vision version. Using @latest causes
-// silent init failures when jsdelivr resolves a build newer than the JS package.
-const WASM_PATH = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.32/wasm";
+const WASM_PATH = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm";
 
-const createDetector = (vision: any, delegate: "GPU" | "CPU") =>
-    FaceDetector.createFromOptions(vision, {
-        baseOptions: { modelAssetPath: MODEL_ASSET_PATH, delegate },
-        runningMode: "VIDEO",
-        minDetectionConfidence: 0.6,
-    });
-
-// MediaPipe sometimes throws raw DOM Events (script/network errors) instead of Errors.
-// Extract whatever useful info we can so console logs aren't just "[object Event]".
-const describeError = (e: any): string => {
-    if (e instanceof Event) {
-        const t: any = e.target;
-        const src = t?.src || t?.href || t?.responseURL;
-        return `DOM ${e.type} event${src ? ` (resource: ${src})` : ""}`;
-    }
-    if (e instanceof Error) return e.message;
-    if (e && typeof e === "object") {
-        try { return JSON.stringify(e); } catch { return String(e); }
-    }
-    return String(e);
-};
-
-export const preloadFaceDetector = async (): Promise<FaceDetector | null> => {
-    if (globalDetector) return globalDetector;
-    if (isEngineInitializing) {
-        // Wait for the in-flight init to finish instead of racing it.
-        while (isEngineInitializing) await new Promise(r => setTimeout(r, 50));
-        return globalDetector;
-    }
+export const preloadFaceDetector = async () => {
+    if (globalDetector || isEngineInitializing) return;
     isEngineInitializing = true;
     try {
-        // Step 1: load WASM runtime
-        try {
-            globalVision = await FilesetResolver.forVisionTasks(WASM_PATH);
-        } catch (e) {
-            console.error("[FaceDetector] WASM runtime load failed:", describeError(e), e);
-            throw e;
-        }
-
-        // Step 2: build detector — try GPU first, fall back to CPU.
-        try {
-            globalDetector = await createDetector(globalVision, "GPU");
-        } catch (gpuErr) {
-            console.warn("[FaceDetector] GPU delegate failed, retrying with CPU:", describeError(gpuErr));
-            try {
-                globalDetector = await createDetector(globalVision, "CPU");
-            } catch (cpuErr) {
-                console.error("[FaceDetector] CPU delegate also failed (likely model fetch):", describeError(cpuErr), cpuErr);
-                throw cpuErr;
-            }
-        }
-        return globalDetector;
+        globalVision = await FilesetResolver.forVisionTasks(WASM_PATH);
+        globalDetector = await FaceDetector.createFromOptions(globalVision, {
+            baseOptions: { modelAssetPath: MODEL_ASSET_PATH, delegate: "GPU" },
+            runningMode: "VIDEO",
+            minDetectionConfidence: 0.6,
+        });
     } catch (e) {
-        // Already logged at the specific step above; this is just the outer handler.
-        return null;
+        console.error("AI Preload failed", e);
     } finally {
         isEngineInitializing = false;
     }
@@ -98,14 +53,11 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verification", onCl
     const axios = useAxios();
 
     const [isModelReady, setIsModelReady] = useState(!!globalDetector);
-    const [modelLoadFailed, setModelLoadFailed] = useState(false);
     const [feedback, setFeedback] = useState<string>("Please wait, camera is getting ready...");
     const [faceQuality, setFaceQuality] = useState<number>(0);
     const [capturedImage, setCapturedImage] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [cameraPermissionDenied, setCameraPermissionDenied] = useState(false);
-    // true = browser-level block (need address-bar fix); false = just needs to ask
-    const [permissionBlocked, setPermissionBlocked] = useState(false);
 
     // Status message for inline Red/Green alerts above buttons
     const [statusMsg, setStatusMsg] = useState<{ type: 'error' | 'success' | null, text: string }>({ type: null, text: "" });
@@ -120,10 +72,19 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verification", onCl
         document.body.style.overflow = "hidden";
         isActiveRef.current = true;
         setCameraPermissionDenied(false);
-        setModelLoadFailed(false);
         setStatusMsg({ type: null, text: "" });
 
-        runEngine();
+        const startEngine = async () => {
+            if (!globalDetector) {
+                await preloadFaceDetector();
+            }
+            if (isActiveRef.current) {
+                setIsModelReady(true);
+                startCamera();
+            }
+        };
+
+        startEngine();
 
         return () => {
             document.body.style.overflow = "unset";
@@ -132,31 +93,8 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verification", onCl
         };
     }, [isOpen]);
 
-    const queryCameraPermission = async (): Promise<'granted' | 'denied' | 'prompt' | 'unknown'> => {
-        try {
-            if (!navigator.permissions?.query) return 'unknown';
-            const result = await navigator.permissions.query({ name: 'camera' as PermissionName });
-            return result.state as 'granted' | 'denied' | 'prompt';
-        } catch {
-            return 'unknown';
-        }
-    };
-
-    const runEngine = async () => {
-        setModelLoadFailed(false);
-        const detector = globalDetector ?? await preloadFaceDetector();
-        if (!isActiveRef.current) return;
-        if (!detector) {
-            setModelLoadFailed(true);
-            return;
-        }
-        setIsModelReady(true);
-        startCamera();
-    };
-
     const startCamera = async () => {
         setCameraPermissionDenied(false);
-        setPermissionBlocked(false);
         setStatusMsg({ type: null, text: "" });
 
         try {
@@ -181,20 +119,15 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verification", onCl
                 stream.getTracks().forEach(t => t.stop());
             }
         } catch (err: any) {
-            if (!isActiveRef.current) return;
-            setCameraPermissionDenied(true);
-
-            if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
-                // Distinguish: did the user permanently block, or just dismiss the prompt?
-                const state = await queryCameraPermission();
-                setPermissionBlocked(state === 'denied');
-                setStatusMsg({ type: null, text: "" });
-            } else if (err?.name === 'NotFoundError' || err?.name === 'DevicesNotFoundError') {
-                setPermissionBlocked(false);
-                setStatusMsg({ type: 'error', text: "No camera found. Please connect a camera and try again." });
-            } else {
-                setPermissionBlocked(false);
-                setStatusMsg({ type: 'error', text: "Unable to access camera. Please check your browser permissions and try again." });
+            if (isActiveRef.current) {
+                setCameraPermissionDenied(true);
+                if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
+                    setStatusMsg({ type: 'error', text: "Camera access denied. Please allow camera access in your browser settings and try again." });
+                } else if (err?.name === 'NotFoundError' || err?.name === 'DevicesNotFoundError') {
+                    setStatusMsg({ type: 'error', text: "No camera found. Please connect a camera and try again." });
+                } else {
+                    setStatusMsg({ type: 'error', text: "Unable to access camera. Please check your browser permissions and try again." });
+                }
             }
         }
     };
@@ -355,76 +288,20 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verification", onCl
                 {/* Camera Area */}
                 <div className="relative flex-1 bg-slate-100 overflow-hidden flex flex-col items-center justify-center">
                     {cameraPermissionDenied ? (
-                        permissionBlocked ? (
-                            <div className="flex flex-col items-center gap-4 px-6 text-center">
-                                <div className="p-4 bg-red-50 rounded-full">
-                                    <Camera className="w-10 h-10 text-red-400" />
-                                </div>
-                                <div>
-                                    <p className="text-base font-semibold text-slate-800 mb-2">Camera Access Blocked</p>
-                                    <p className="text-sm text-slate-500 mb-3">
-                                        Camera permission is blocked for this site. To enable it:
-                                    </p>
-                                    <ol className="text-xs text-slate-500 text-left space-y-1.5 max-w-[280px] mx-auto">
-                                        <li><span className="font-semibold text-slate-700">1.</span> Click the <span className="font-semibold text-slate-700">lock / camera icon</span> in your browser&apos;s address bar</li>
-                                        <li><span className="font-semibold text-slate-700">2.</span> Set <span className="font-semibold text-slate-700">Camera</span> to <span className="font-semibold text-emerald-600">Allow</span></li>
-                                        <li><span className="font-semibold text-slate-700">3.</span> Tap <span className="font-semibold text-slate-700">&quot;Try Again&quot;</span> below</li>
-                                    </ol>
-                                </div>
-                                <div className="flex gap-3 mt-2">
-                                    <button
-                                        onClick={onClose}
-                                        className="px-5 py-2.5 rounded-xl font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50 transition-all text-sm"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={startCamera}
-                                        className="px-5 py-2.5 rounded-xl font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-all text-sm flex items-center gap-2"
-                                    >
-                                        <RotateCw className="w-4 h-4" />
-                                        Try Again
-                                    </button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="flex flex-col items-center gap-4 px-6 text-center">
-                                <div className="p-4 bg-indigo-50 rounded-full">
-                                    <Camera className="w-10 h-10 text-indigo-500" />
-                                </div>
-                                <div>
-                                    <p className="text-base font-semibold text-slate-800 mb-2">Camera Access Needed</p>
-                                    <p className="text-sm text-slate-500 max-w-[300px] mx-auto">
-                                        We need your camera to verify your identity with a quick selfie. Tap the button below and choose <span className="font-semibold text-slate-700">Allow</span> when your browser asks.
-                                    </p>
-                                </div>
-                                <div className="flex gap-3 mt-2">
-                                    <button
-                                        onClick={onClose}
-                                        className="px-5 py-2.5 rounded-xl font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50 transition-all text-sm"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={startCamera}
-                                        className="px-5 py-2.5 rounded-xl font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-all text-sm flex items-center gap-2"
-                                    >
-                                        <Camera className="w-4 h-4" />
-                                        Allow Camera Access
-                                    </button>
-                                </div>
-                            </div>
-                        )
-                    ) : modelLoadFailed ? (
                         <div className="flex flex-col items-center gap-4 px-6 text-center">
-                            <div className="p-4 bg-amber-50 rounded-full">
-                                <AlertTriangle className="w-10 h-10 text-amber-500" />
+                            <div className="p-4 bg-red-50 rounded-full">
+                                <Camera className="w-10 h-10 text-red-400" />
                             </div>
                             <div>
-                                <p className="text-base font-semibold text-slate-800 mb-2">Face Verification Unavailable</p>
-                                <p className="text-sm text-slate-500 max-w-[300px] mx-auto">
-                                    We couldn&apos;t load the face-detection engine. Check your internet connection and try again.
+                                <p className="text-base font-semibold text-slate-800 mb-2">Camera Access Required</p>
+                                <p className="text-sm text-slate-500 mb-3">
+                                    Camera permission is blocked for this site. To enable it:
                                 </p>
+                                <ol className="text-xs text-slate-500 text-left space-y-1.5 max-w-[280px] mx-auto">
+                                    <li><span className="font-semibold text-slate-700">1.</span> Click the <span className="font-semibold text-slate-700">lock / camera icon</span> in your browser&apos;s address bar</li>
+                                    <li><span className="font-semibold text-slate-700">2.</span> Set <span className="font-semibold text-slate-700">Camera</span> to <span className="font-semibold text-emerald-600">Allow</span></li>
+                                    <li><span className="font-semibold text-slate-700">3.</span> Tap <span className="font-semibold text-slate-700">&quot;Try Again&quot;</span> below</li>
+                                </ol>
                             </div>
                             <div className="flex gap-3 mt-2">
                                 <button
@@ -434,7 +311,7 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verification", onCl
                                     Cancel
                                 </button>
                                 <button
-                                    onClick={runEngine}
+                                    onClick={startCamera}
                                     className="px-5 py-2.5 rounded-xl font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-all text-sm flex items-center gap-2"
                                 >
                                     <RotateCw className="w-4 h-4" />
@@ -480,8 +357,7 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verification", onCl
                     )}
                 </div>
 
-                {/* Footer Controls — hidden while an in-camera error panel owns the UI */}
-                {!cameraPermissionDenied && !modelLoadFailed && (
+                {/* Footer Controls */}
                 <div className="px-6 py-5 bg-white border-t border-slate-100">
 
                     {/* Status Message (Red/Green) - Replaces messy Toasts */}
@@ -538,7 +414,6 @@ export default function AdvancedFaceCam({ isOpen, apiType = "verification", onCl
                         </div>
                     )}
                 </div>
-                )}
             </div>
 
             <canvas ref={canvasRef} className="hidden" />

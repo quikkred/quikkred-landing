@@ -30,27 +30,36 @@ export default function RBIGuidelinesPage() {
       </section>
 
       {/* Content */}
-      <section className="py-16">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="prose prose-lg max-w-none"
-          >
-            {/* Introduction */}
-            <div className="mb-10">
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <BookOpen className="w-6 h-6 text-[#25B181]" />
-                About RBI Regulations
-              </h2>
-              <p className="text-gray-600 mb-4">
-                QuikkRed operates as a Non-Banking Financial Company (NBFC) registered with the Reserve Bank of India (RBI). We strictly adhere to all guidelines, circulars, and directions issued by the RBI for NBFCs, particularly those related to digital lending, consumer protection, and fair practices.
-              </p>
-              <p className="text-gray-600">
-                The RBI has established comprehensive guidelines to ensure that NBFCs maintain financial stability, protect consumer interests, and follow ethical business practices. This page outlines the key RBI regulations applicable to our operations and how we comply with them.
-              </p>
-            </div>
+      <PoliciesLayout>
+        {/* Introduction */}
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <BookOpen className="w-6 h-6 text-[#25B181]" />
+            {sections?.intro?.title || "About RBI Regulations"}
+          </h2>
+          <p className="text-gray-600 mb-4">
+            {sections?.intro ? (
+              <>
+                {sections.intro.beforeLsp}
+                <strong>{sections.intro.lsp}</strong>
+                {sections.intro.afterLsp}
+                <strong>{sections.intro.nbfc}</strong>
+                {sections.intro.afterNbfc}
+              </>
+            ) : (
+              <>
+                Quikkred is a digital lending platform powered by{" "}
+                <strong>Fluxusforge Private Limited</strong> (Loan Service Provider). All
+                loans on our platform are disbursed by{" "}
+                <strong>Satsai Finlease Private Limited</strong>, an RBI-registered
+                Non-Banking Financial Company (NBFC) established in 1996 (CIN: U71290DL1996PTC081328).
+              </>
+            )}
+          </p>
+          <p className="text-gray-600">
+            {sections?.intro?.content2 || "The RBI has established comprehensive guidelines to ensure that NBFCs and their digital lending partners maintain financial stability, protect consumer interests, and follow ethical business practices. This page outlines the key RBI regulations applicable to our platform and our lending partner's operations."}
+          </p>
+        </div>
 
         {/* NBFC Partnership */}
         <div className="mb-10">
@@ -59,30 +68,66 @@ export default function RBIGuidelinesPage() {
             {sections?.lendingPartner?.title || "Our Lending Partner"}
           </h2>
 
-              <div className="mb-8 bg-gray-50 rounded-lg p-6">
-                <h3 className="text-xl font-semibold mb-4 text-gray-800">
-                  Registration Requirements
-                </h3>
-                <ul className="space-y-3 text-gray-600">
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#25B181] mt-1">•</span>
-                    <span>QuikkRed is a registered NBFC under the Reserve Bank of India Act, 1934.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#25B181] mt-1">•</span>
-                    <span>We maintain the minimum Net Owned Fund (NOF) as prescribed by the RBI.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#25B181] mt-1">•</span>
-                    <span>Our registration details are available for verification on the RBI website.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#25B181] mt-1">•</span>
-                    <span>We submit periodic regulatory returns and reports as mandated by the RBI.</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
+          <div className="mb-8 bg-gray-50 rounded-lg p-6">
+            <h3 className="text-xl font-semibold mb-4 text-gray-800">
+              {sections?.lendingPartner?.partner1.title || "Satsai Finlease Private Limited"}
+            </h3>
+            <ul className="space-y-3 text-gray-600">
+              <li className="flex items-start gap-2">
+                <span className="text-[#25B181] mt-1">•</span>
+                <strong>
+                  {sections?.lendingPartner?.partner1?.highlightLabel?.[0] ??
+                    "RBI-Registered NBFC:"}
+                </strong>{" "}
+                {sections?.lendingPartner?.partner1?.highlightItems[0] || "Satsai Finlease is a registered NBFC under the Reserve Bank of India Act, 1934."}
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[#25B181] mt-1">•</span>
+                <span><strong>{sections?.lendingPartner?.partner1.highlightLabel[1] || "Established:"}</strong>{" "} {sections?.lendingPartner?.partner1?.highlightItems[1] || "1996 (28+ years of financial services experience)"}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[#25B181] mt-1">•</span>
+                <span><strong>{sections?.lendingPartner?.partner1.highlightLabel[2] || "CIN:"}</strong> {sections?.lendingPartner?.partner1?.highlightItems[2] || "U71290DL1996PTC081328"}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[#25B181] mt-1">•</span>
+                <span><strong>{sections?.lendingPartner?.partner1.highlightLabel[3] || "Website:"}</strong> <a href="https://satsaifinlease.com" target="_blank" rel="noopener noreferrer" className="text-[#25B181] hover:underline">{sections?.lendingPartner?.partner1.highlightItems[3] || "satsaifinlease.com"}</a></span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[#25B181] mt-1">•</span>
+                <span>{sections?.lendingPartner?.partner1.highlightItems[4] || "Maintains the minimum Net Owned Fund (NOF) as prescribed by the RBI."}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[#25B181] mt-1">•</span>
+                <span>{sections?.lendingPartner?.partner1.highlightItems[5] || "Registration details available for verification on the RBI website."}</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="mb-8 bg-gray-50 rounded-lg p-6">
+            <h3 className="text-xl font-semibold mb-4 text-gray-800">
+              {sections?.lendingPartner?.partner2.title || "Fluxusforge Private Limited (LSP)"}
+            </h3>
+            <ul className="space-y-3 text-gray-600">
+              <li className="flex items-start gap-2">
+                <span className="text-[#25B181] mt-1">•</span>
+                <span><strong>{sections?.lendingPartner?.partner2.highlightLabel[0] || "Role:"}</strong> {sections?.lendingPartner?.partner2.highlightItems[0] || "Loan Service Provider (LSP) and Technology Partner operating the Quikkred platform."}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[#25B181] mt-1">•</span>
+                <span><strong>{sections?.lendingPartner?.partner2.highlightLabel[1] || "Website:"}</strong> <a href="https://fluxusforge.in" target="_blank" rel="noopener noreferrer" className="text-[#25B181] hover:underline">fluxusforge.in</a></span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[#25B181] mt-1">•</span>
+                <span>{sections?.lendingPartner?.partner2.highlightItems[2] || "Provides technology infrastructure, customer onboarding, and servicing support."}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[#25B181] mt-1">•</span>
+                <span>{sections?.lendingPartner?.partner2.highlightItems[3] || "Operates under the regulatory framework established by RBI Digital Lending Guidelines, 2022."}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
 
         {/* Digital Lending Guidelines */}
         <div className="mb-10">
@@ -426,15 +471,47 @@ export default function RBIGuidelinesPage() {
         </div>
 
 
-            {/* Disclaimer */}
-            <div className="mb-10 bg-yellow-50 rounded-lg p-6 border-l-4 border-yellow-400">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Disclaimer</h3>
-              <p className="text-gray-600 text-sm">
-                This page provides a summary of key RBI guidelines applicable to QuikkRed's operations. For complete regulatory information, please refer to the official RBI website at <a href="https://www.rbi.org.in" target="_blank" rel="noopener noreferrer" className="text-[#25B181] hover:underline">www.rbi.org.in</a>. The guidelines mentioned above are subject to updates and amendments by the RBI from time to time. QuikkRed ensures timely compliance with all regulatory changes.
-              </p>
-            </div>
+        {/* Disclaimer */}
+        <div className="mb-10 bg-yellow-50 rounded-lg p-6 border-l-4 border-yellow-400">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">
+            {sections?.disclaimer?.title || "Disclaimer"}
+          </h3>
 
-          </motion.div>
+          <p className="text-gray-600 text-sm">
+            {sections?.disclaimer?.content ? (
+              <>
+                {sections.disclaimer.content.textBeforeLink}{" "}
+                <a
+                  href={sections.disclaimer.content.linkUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#25B181] hover:underline"
+                >
+                  {sections.disclaimer.content.linkText}
+                </a>{" "}
+                {sections.disclaimer.content.textAfterLink}
+              </>
+            ) : (
+              <>
+                Quikkred is a digital lending platform powered by Fluxusforge Private
+                Limited (LSP). All loans are disbursed by Satsai Finlease Private Limited,
+                an RBI-registered NBFC. This page provides a summary of key RBI guidelines
+                applicable to our platform and lending partner&apos;s operations. For
+                complete regulatory information, please refer to the official RBI
+                website at{" "}
+                <a
+                  href="https://www.rbi.org.in"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#25B181] hover:underline"
+                >
+                  www.rbi.org.in
+                </a>
+                . The guidelines mentioned above are subject to updates and amendments by
+                the RBI from time to time.
+              </>
+            )}
+          </p>
         </div>
       </PoliciesLayout >
     </div >
