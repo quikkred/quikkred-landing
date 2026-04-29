@@ -1,0 +1,174 @@
+name: Landing Production Deploy (Zero-Downtime)
+
+on:
+  push:
+    branches:
+      - vultr-production
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Which app server(s) to deploy to"
+        required: true
+        default: "both"
+        type: choice
+        options:
+          - app-2
+          - app-1
+          - both
+
+concurrency:
+  group: landing-production-deploy
+  cancel-in-progress: false
+
+env:
+  HEALTH_URL: https://quikkred.in
+  EXPECTED_STATUS: "200"
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check current production health
+        run: |
+          CODE=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 10 "$HEALTH_URL" || echo "000")
+          echo "Current landing status: $CODE"
+
+  deploy:
+    needs: preflight
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include:
+          - host: 65.20.73.74
+            name: app-2
+            condition: "app-2 both"
+
+          - host: 65.20.69.185
+            name: app-1
+            condition: "app-1 both"
+
+    steps:
+      - name: Resolve deploy target
+        id: gate
+        env:
+          TARGET: ${{ github.event_name == 'push' && 'both' || inputs.target }}
+
+        run: |
+          echo "Effective target: $TARGET"
+          if echo "${{ matrix.condition }}" | grep -qw "$TARGET"; then
+            echo "run=true" >> $GITHUB_OUTPUT
+          else
+            echo "run=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy to ${{ matrix.name }}
+        if: steps.gate.outputs.run == 'true'
+        uses: appleboy/ssh-action@v1.0.3
+
+        with:
+          host: ${{ matrix.host }}
+          username: root
+          key: ${{ secrets.VULTR_SSH_KEY }}
+          port: 22
+          command_timeout: 20m
+
+          script: |
+            set -e
+            cd /opt/quikkred/landing
+
+            PREV_SHA_FILE="/tmp/quikkred-landing-prev-sha-${{ matrix.name }}"
+            ENV_BACKUP_FILE="/tmp/quikkred-landing-env-backup-${{ matrix.name }}"
+            BUILD_BACKUP_DIR="/tmp/quikkred-landing-next-backup-${{ matrix.name }}"
+
+            PREV_SHA=$(git rev-parse HEAD)
+            echo "$PREV_SHA" > "$PREV_SHA_FILE"
+
+            if [ -f .env.production ]; then
+              cp .env.production "$ENV_BACKUP_FILE"
+            fi
+
+            if [ -d .next ]; then
+              rm -rf "$BUILD_BACKUP_DIR"
+              cp -r .next "$BUILD_BACKUP_DIR"
+            fi
+
+            git fetch origin vultr-production
+            git reset --hard origin/vultr-production
+            git clean -fd -e .env -e .env.production -e .env.local -e node_modules -e .next
+
+            echo "Current deployed commit:"
+            git rev-parse HEAD
+
+            if [ -f "$ENV_BACKUP_FILE" ]; then
+              cp "$ENV_BACKUP_FILE" .env.production
+            fi
+
+            npm ci --prefer-offline --no-audit --no-fund
+
+            NEXT_PUBLIC_API_URL=https://api.quikkred.in npm run build
+
+            if pm2 describe quikkred-landing > /dev/null 2>&1; then
+              pm2 reload quikkred-landing --update-env
+            else
+              PORT=3002 pm2 start npm --name "quikkred-landing" -- start
+              pm2 save
+            fi
+
+            pm2 status quikkred-landing
+
+      - name: Post-deploy health check
+        if: steps.gate.outputs.run == 'true'
+        id: healthcheck
+        run: |
+          for i in $(seq 1 20); do
+            sleep 3
+            CODE=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 8 "$HEALTH_URL" || echo "000")
+            echo "attempt $i: $CODE"
+            if [ "$CODE" = "$EXPECTED_STATUS" ]; then
+              exit 0
+            fi
+          done
+          exit 1
+
+      - name: Rollback on failure
+        if: failure() && steps.healthcheck.outcome == 'failure' && steps.gate.outputs.run == 'true'
+        uses: appleboy/ssh-action@v1.0.3
+
+        with:
+          host: ${{ matrix.host }}
+          username: root
+          key: ${{ secrets.VULTR_SSH_KEY }}
+          port: 22
+          command_timeout: 15m
+
+          script: |
+            set -e
+            cd /opt/quikkred/landing
+
+            PREV_SHA_FILE="/tmp/quikkred-landing-prev-sha-${{ matrix.name }}"
+            ENV_BACKUP_FILE="/tmp/quikkred-landing-env-backup-${{ matrix.name }}"
+            BUILD_BACKUP_DIR="/tmp/quikkred-landing-next-backup-${{ matrix.name }}"
+
+            PREV_SHA=$(cat "$PREV_SHA_FILE")
+            git reset --hard "$PREV_SHA"
+
+            if [ -f "$ENV_BACKUP_FILE" ]; then
+              cp "$ENV_BACKUP_FILE" .env.production
+            fi
+
+            if [ -d "$BUILD_BACKUP_DIR" ]; then
+              rm -rf .next
+              cp -r "$BUILD_BACKUP_DIR" .next
+            else
+              npm ci --prefer-offline --no-audit --no-fund || true
+              NEXT_PUBLIC_API_URL=https://api.quikkred.in npm run build || true
+            fi
+
+            pm2 reload quikkred-landing --update-env || PORT=3002 pm2 start npm --name "quikkred-landing" -- start
