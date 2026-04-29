@@ -107,7 +107,7 @@ export default function GrievanceRedressalPolicyPage() {
               <li><strong>{grp?.levels?.level3?.officerLabel || "Grievance Redressal Officer (Nodal Officer)"}:</strong> {grp?.levels?.level3?.officerName || "Mr. Manish Soni"}</li>
               <li className="flex items-start gap-2">
                 <MapPin className="w-5 h-5 text-[#25B181] mt-1 flex-shrink-0" />
-                <span><strong>{grp?.levels?.level3?.addressLabel || "Address"}:</strong> {grp?.levels?.level3?.address || "Quikkred, 1008, 10th Floor, Vikrant Tower, Rajendra Place, New Delhi - 110005"}</span>
+                <span><strong>{grp?.levels?.level3?.addressLabel || "Address"}:</strong> {grp?.levels?.level3?.address || "Quikkred, 1008, 13th floor, Vikrant Tower, Rajendra Place, New Delhi - 110005"}</span>
               </li>
               <li className="flex items-start gap-2">
                 <Phone className="w-5 h-5 text-[#25B181] mt-1 flex-shrink-0" />

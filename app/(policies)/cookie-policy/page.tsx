@@ -244,7 +244,7 @@ export default function CookiePolicyPage() {
                 <strong className="text-gray-700">{t?.policies?.common?.email || "Email"}:</strong> {sections?.contact?.email || "support@quikkred.in"}
               </li>
               <li className="text-gray-600">
-                <strong className="text-gray-700">{t?.policies?.common?.address || "Address"}:</strong> {sections?.contact?.address || "1008, 10th Floor, Vikrant Tower, Rajendra Place, New Delhi - 110005"}
+                <strong className="text-gray-700">{t?.policies?.common?.address || "Address"}:</strong> {sections?.contact?.address || "1008, 13th floor, Vikrant Tower, Rajendra Place, New Delhi - 110005"}
               </li>
             </ul>
           </div>

@@ -45,7 +45,7 @@ const contactCards = [
     icon: MapPin,
     title: "Visit Us",
     description: "Our head office location",
-    contact: "1008, 10th floor, Vikrant Tower, Rajendra Place, New Delhi - 110005",
+    contact: "1008, 13th floor, Vikrant Tower, Rajendra Place, New Delhi - 110005",
     link: "https://maps.google.com/?q=Vikrant+Tower+Rajendra+Place+New+Delhi"
   }
 ];
