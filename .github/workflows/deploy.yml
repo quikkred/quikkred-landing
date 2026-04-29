@@ -73,7 +73,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          NEXT_PUBLIC_API_URL: ${{ github.ref == 'refs/heads/main' && 'https://api.quikkred.in' || github.ref == 'refs/heads/staging' && 'https://beta.quikkred.in' || github.ref == 'refs/heads/develop' && 'https://alpha.quikkred.in' }}
+          NEXT_PUBLIC_API_URL: ${{ github.ref == 'refs/heads/main' && 'https://api.quikkred.in' || github.ref == 'refs/heads/staging' && 'https://beta.quikkred.in' || github.ref == 'refs/heads/develop' && 'https://api.quikkred.in' }}
 
   # ============================================
   # DEPLOY TO ALPHA (Hostinger KVM8)

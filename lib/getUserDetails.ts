@@ -24,12 +24,13 @@ export default async function getUserDetails(): Promise<User | null> {
   // @ts-ignore
   const accessToken: string | undefined = session.accessToken;
 
+  // console.log("access-token:", accessToken);
 
   if (!accessToken) return baseUser; // logged in but no backend token
 
   // 4) Fetch profile from your API using backend token
   try {
-    
+    // console.log("🔵 Fetching user profile from API...");
     const response = await fetch(`${API_BASE_URL}/api/customer/get`, {
       method: "GET",
       headers: {
@@ -40,6 +41,7 @@ export default async function getUserDetails(): Promise<User | null> {
     });
 
     const result = await response.json();
+    // console.log("🔵 User profile API response:", result);
 
     if (!response.ok || !result?.success || !result?.data) {
       return baseUser;
@@ -47,6 +49,8 @@ export default async function getUserDetails(): Promise<User | null> {
 
     const apiData = result.data;
     const fullName = apiData.fullName || baseUser.name;
+
+    // console.log("api Data", apiData)
 
     const updatedUser: User = {
       ...baseUser,
@@ -70,8 +74,6 @@ export default async function getUserDetails(): Promise<User | null> {
         s3Key: apiData.profile.s3Key || "",
         s3URL: apiData.profile.s3URL || "",
       } : null,
-      isProfileVerified: apiData?.profile?.status === "VERIFIED",
-      isBankDetailsFilled: apiData?.isBankDetailsFilled || false,
       isSubmit: apiData?.isSubmit || false,
 
       // verified
@@ -80,7 +82,6 @@ export default async function getUserDetails(): Promise<User | null> {
       isPanVerify: apiData.isPanVerify || false,
       isAadhaarVerify: apiData.isAadhaarVerify || false,
       brePulled: apiData.brePulled || false,
-      bsaInitiated: apiData.bsaInitiated || false,
 
       // dob: formatDateForInput(profileData.dateOfBirth) || prev.dob,
       pan: apiData.panCard || null,
