@@ -11,7 +11,6 @@ import { useSearchParams } from "next/navigation";
 import { getSession, signIn } from "next-auth/react";
 import { toast } from "@/components/ui/toast";
 import { useAuth } from "@/contexts/AuthContext";
-import EmailVerify from "./EmailVerify";
 import GoogleVerify from "./GoogleVerify";
 
 const CustomerLogin = () => {
@@ -169,7 +168,7 @@ const CustomerLogin = () => {
                             </div>
                             <div className="relative flex justify-center">
                                 <span className="bg-white px-3 text-xs font-medium text-gray-600 uppercase tracking-wider">
-                                    Or enter details manually
+                                    Or continue with mobile OTP
                                 </span>
                             </div>
                         </div>
@@ -177,10 +176,7 @@ const CustomerLogin = () => {
                         {/* Standard Mobile Verification */}
                         <div className="space-y-4">
                             <div className="[&_input]:w-full [&_input]:border-gray-300 [&_input]:rounded-lg [&_input]:focus:ring-emerald-500 [&_input]:focus:border-emerald-500">
-                                {/* <MobileVerify callback={() => {
-                                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                                }} /> */}
-                                <EmailVerify callback={() => {
+                                <MobileVerify callback={() => {
                                     window.scrollTo({ top: 0, behavior: 'smooth' });
                                 }} />
                             </div>
