@@ -68,16 +68,16 @@ export default function LoanCalculatorAll() {
             </div>
             <input
               type="range"
-              min="5000"
-              max="100000"
-              step="1000"
+              min="2500"
+              max="50000"
+              step="500"
               value={loanAmount}
               onChange={(e) => setLoanAmount(Number(e.target.value))}
               className="w-full h-1 bg-gradient-to-r from-[#51C9AF] to-slate-300 rounded-lg appearance-none cursor-pointer accent-[#25B181]"
             />
             <div className="flex justify-between text-[9px] text-slate-500">
-              <span>₹5k</span>
-              <span>₹25L</span>
+              <span>₹2.5k</span>
+              <span>₹50k</span>
             </div>
           </div>
 
