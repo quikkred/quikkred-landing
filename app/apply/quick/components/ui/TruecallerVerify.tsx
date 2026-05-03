@@ -102,7 +102,7 @@ const TruecallerVerify = ({
             type="button"
             onClick={handleTruecallerLogin}
             disabled={loading}
-            className="flex-1 flex md:hidden items-center justify-center gap-2 py-2.5 sm:py-3 bg-white border-2 border-[#0066FF] rounded-lg font-medium text-xs sm:text-sm text-gray-800 hover:bg-[#0066FF]/5 disabled:opacity-50 transition-all active:scale-[0.98] touch-manipulation"
+            className="flex-1 flex md:hidden items-center justify-center gap-2 py-2.5 sm:py-3 bg-white border-2 border-gray-200 rounded-lg font-medium text-xs sm:text-sm text-gray-800 hover:bg-gray-50 disabled:opacity-50 transition-all active:scale-[0.98] touch-manipulation"
         >
             {loading ? (
                 <div className="flex items-center gap-2">
