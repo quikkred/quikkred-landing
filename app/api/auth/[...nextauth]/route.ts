@@ -263,6 +263,7 @@ export const authOptions: AuthOptions = {
               token.customerUniqueId = result.data.customerUniqueId;
               token.role = result.data.role;
               token.verifiedAt = result.data.verifiedAt;
+              (token as any).mobile = result.data.mobile ?? null;
             } else {
               // Passing error to be caught if necessary
               throw new Error(result?.message || "Google backend login failed");

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Phone, AlertCircle, Loader2, ArrowRight, CheckCircle2, Edit2, Timer } from "lucide-react";
+import { Phone, Mail, AlertCircle, Loader2, ArrowRight, CheckCircle2, Edit2, Timer } from "lucide-react";
 import { signIn, getSession } from "next-auth/react";
 import { useAuth } from "@/contexts/AuthContext";
 import { VALIDATION, TIMERS } from "@/lib/constants/quickApplyV2";
@@ -21,12 +21,18 @@ const MobileVerify = ({
 
   // State
   const [mobile, setMobile] = useState("");
+  const [email, setEmail] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpVerifying, setOtpVerifying] = useState(false);
   const [otp, setOtp] = useState("");
   const [otpError, setOtpError] = useState("");
   const [otpTimer, setOtpTimer] = useState(0);
+
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const isMobileValid = /^[6-9]\d{9}$/.test(mobile);
+  const isEmailValid = EMAIL_REGEX.test(email.trim());
+  const canSendOtp = isMobileValid && isEmailValid;
 
   const { trackOTPVerified } = useQuickApplyTracking();
   const mobileFriction = useVerificationFrictionTracking('mobile');
@@ -54,6 +60,10 @@ const MobileVerify = ({
       setOtpError("Please enter a valid 10-digit mobile number");
       return;
     }
+    if (!EMAIL_REGEX.test(email.trim())) {
+      setOtpError("Please enter a valid email address");
+      return;
+    }
 
     setOtpLoading(true);
     setOtpError("");
@@ -61,6 +71,7 @@ const MobileVerify = ({
     try {
       const response = await axios.post("/api/auth/customer/create", {
         mobile,
+        email: email.trim().toLowerCase(),
         type: "mobile_verification",
       });
 
@@ -172,14 +183,40 @@ const MobileVerify = ({
           )}
         </div>
 
+        {/* Email — required so we have a fallback contact channel; no email OTP is sent. */}
+        <div className={`relative transition-all duration-300 ${otpSent ? "opacity-75" : "opacity-100"}`}>
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+            <Mail className="w-5 h-5" />
+          </div>
+          <input
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            value={email}
+            disabled={otpSent || otpLoading}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setOtpError("");
+            }}
+            className={`
+              w-full pl-12 pr-4 py-3.5
+              text-base font-medium text-gray-900
+              bg-white border rounded-xl outline-none transition-all
+              ${otpError && !isEmailValid ? "border-red-300 focus:ring-red-100" : "border-gray-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"}
+              disabled:bg-gray-50 disabled:text-gray-500
+            `}
+            placeholder="Enter your email"
+          />
+        </div>
+
         {/* Phase 1: Get OTP Button */}
         {!otpSent && (
           <button
             onClick={sendOTP}
-            disabled={mobile.length !== 10 || otpLoading}
+            disabled={!canSendOtp || otpLoading}
             className={`
               w-full py-3.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2
-              ${mobile.length === 10
+              ${canSendOtp
                 ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20"
                 : "bg-gray-100 text-gray-400 cursor-not-allowed"}
             `}
