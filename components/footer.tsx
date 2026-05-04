@@ -96,6 +96,7 @@ export function Footer() {
       { name: t.footer.resources.items.interestRates, href: "/interest-rates" },
       { name: t.footer.resources.items.documentChecklist, href: "/document-checklist" },
       { name: t.footer.policyLinks.items.interestRatePolicy, href: "/interest-rate-policy" },
+      { name: "New FAQ", href: "/faq" },
       // { name: t.footer.resources.items.howToApply, href: "/resources/how-to-apply" },
       // { name: t.navigation.faqs, href: "/resources/faqs" },
       // { name: t.navigation.blog, href: "/blog" },
