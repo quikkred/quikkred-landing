@@ -14,7 +14,7 @@ export default function BranchesPage() {
     {
       city: "Delhi",
       name: "New Delhi Head Office",
-      address: "1008, 10th floor, Vikrant tower, Rajendra Place, New Delhi, Delhi, Pin Code 110005",
+      address: "1008, 13th floor, Vikrant tower, Rajendra Place, New Delhi, Delhi, Pin Code 110008",
       phone: "+91-11-4567-8900",
       email: "delhi@Quikkred.com",
       hours: "Mon-Sat: 9:00 AM - 6:00 PM",

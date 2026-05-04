@@ -75,7 +75,7 @@ export default function NodalOfficerPage() {
                 <User className="w-12 h-12 text-white" />
               </div>
               <div className="flex-1">
-                <h2 className="text-2xl font-bold mb-2">Mr. Rajesh Kumar</h2>
+                <h2 className="text-2xl font-bold mb-2">Ms. Deepika Kwatra</h2>
                 <p className="text-lg text-[#25B181] font-semibold mb-4">
                   Nodal Officer - Customer Grievances
                 </p>
@@ -112,8 +112,8 @@ export default function NodalOfficerPage() {
                   <h3 className="font-bold mb-1">Office Address</h3>
                   <p className="text-sm text-gray-600">
                     Quikkred (Fluxusforge Pvt. Ltd.)<br />
-                    1008, 10th Floor, Vikrant Tower,<br />
-                    Rajendra Place, New Delhi - 110005
+                    1008, 13th Floor, Vikrant Tower,<br />
+                    Rajendra Place, New Delhi - 110008
                   </p>
                 </div>
               </div>

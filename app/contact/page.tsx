@@ -50,7 +50,7 @@ export default function ContactPage() {
     {
       city: "New Delhi",
       type: "Head Office",
-      address: "1008, 10th floor, Vikrant tower, Rajendra Place, New Delhi, Delhi, Pin Code 110005",
+      address: "1008, 13th floor, Vikrant tower, Rajendra Place, New Delhi, Delhi, Pin Code 110008",
       phone: "+91-11-4567-8900",
       email: "delhi@Quikkred.com",
       hours: "Mon-Sat: 9:00 AM - 6:00 PM"
@@ -275,7 +275,7 @@ export default function ContactPage() {
               </h3>
               <div className="rounded-lg overflow-hidden h-64">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3501.4097591754347!2d77.1807!3d28.6419!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d029e2b6b2f6f%3A0x5c4a5f8a3a2b1c0d!2sVikrant%20Tower%2C%20Rajendra%20Place%2C%20New%20Delhi%2C%20Delhi%20110005!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3501.4097591754347!2d77.1807!3d28.6419!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d029e2b6b2f6f%3A0x5c4a5f8a3a2b1c0d!2sVikrant%20Tower%2C%20Rajendra%20Place%2C%20New%20Delhi%2C%20Delhi%20110008!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
@@ -286,7 +286,7 @@ export default function ContactPage() {
                 />
               </div>
               <a
-                href="https://www.google.com/maps/search/Vikrant+Tower+Rajendra+Place+New+Delhi+110005"
+                href="https://www.google.com/maps/search/Vikrant+Tower+Rajendra+Place+New+Delhi+110008"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-3 text-[#4A66FF] hover:underline flex items-center justify-center text-sm"

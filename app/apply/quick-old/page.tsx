@@ -6191,7 +6191,7 @@ export default function QuickLoanApplication() {
                         <div className="text-center space-y-2">
                           <p className="text-xs text-gray-700 font-semibold">Satsai Finlease Private Limited</p>
                           <p className="text-[10px] text-gray-500">
-                            1008, 10th floor, Vikrant Tower, Rajendra Place, New Delhi - 110008
+                            1008, 13th floor, Vikrant Tower, Rajendra Place, New Delhi - 110008
                           </p>
                           <div className="flex items-center justify-center gap-4 text-[10px] text-gray-500">
                             <a href="tel:+919311913854" className="flex items-center gap-1 hover:text-emerald-600">

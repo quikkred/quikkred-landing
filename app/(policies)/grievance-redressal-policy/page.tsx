@@ -104,10 +104,10 @@ export default function GrievanceRedressalPolicyPage() {
           </p>
           <div className="bg-white rounded-lg p-4 border border-teal-300">
             <ul className="space-y-3 text-[#2b2b2b] leading-[1.7]">
-              <li><strong>{grp?.levels?.level3?.officerLabel || "Grievance Redressal Officer (Nodal Officer)"}:</strong> {grp?.levels?.level3?.officerName || "Mr. Manish Soni"}</li>
+              <li><strong>{grp?.levels?.level3?.officerLabel || "Grievance Redressal Officer (Nodal Officer)"}:</strong> {grp?.levels?.level3?.officerName || "Ms. Deepika Kwatra"}</li>
               <li className="flex items-start gap-2">
                 <MapPin className="w-5 h-5 text-[#25B181] mt-1 flex-shrink-0" />
-                <span><strong>{grp?.levels?.level3?.addressLabel || "Address"}:</strong> {grp?.levels?.level3?.address || "Quikkred, 1008, 13th floor, Vikrant Tower, Rajendra Place, New Delhi - 110005"}</span>
+                <span><strong>{grp?.levels?.level3?.addressLabel || "Address"}:</strong> {grp?.levels?.level3?.address || "Quikkred, 1008, 13th floor, Vikrant Tower, Rajendra Place, New Delhi - 110008"}</span>
               </li>
               <li className="flex items-start gap-2">
                 <Phone className="w-5 h-5 text-[#25B181] mt-1 flex-shrink-0" />
