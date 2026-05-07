@@ -33,6 +33,12 @@ import SalaryAdvance from "@/components/SalaryAdvance";
 import { DocumentIcon } from "@/components/feature-icon";
 import { FinancialFeatureSection } from "@/components/financial-feature-section";
 import ContactForm from "@/components/Contact-form";
+import {
+  COMPANY_ADDRESS,
+  COMPANY_PHONE_DISPLAY,
+  COMPANY_PHONE_TEL,
+  COMPANY_EMAIL_SUPPORT,
+} from "@/lib/constants/companyInfo";
 
 interface Stat {
   label: string;
@@ -173,22 +179,21 @@ const contactCards = [
     icon: Phone,
     title: "Call us",
     description: "Speak directly with our support team",
-    contact: "+91 9311913854",
-    link: "tel:+919311913854",
+    contact: COMPANY_PHONE_DISPLAY,
+    link: `tel:${COMPANY_PHONE_TEL}`,
   },
   {
     icon: Mail,
     title: "Email us",
     description: "Send us your queries anytime",
-    contact: "support@quikkred.in",
-    link: "mailto:support@quikkred.in",
+    contact: COMPANY_EMAIL_SUPPORT,
+    link: `mailto:${COMPANY_EMAIL_SUPPORT}`,
   },
   {
     icon: MapPin,
     title: "Visit us",
     description: "Our head office location",
-    contact:
-      "1008, 13th floor, Vikrant Tower, Rajendra Place, New Delhi - 110008",
+    contact: COMPANY_ADDRESS,
     link: "https://maps.google.com/?q=Vikrant+Tower+Rajendra+Place+New+Delhi",
   },
 ];

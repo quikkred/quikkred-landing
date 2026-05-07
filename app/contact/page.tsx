@@ -18,6 +18,11 @@ import {
 import Link from "next/link";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import ContactForm from "@/components/Contact-form";
+import {
+  COMPANY_ADDRESS,
+  COMPANY_EMAIL_SUPPORT,
+  COMPANY_EMAIL_LOANS,
+} from "@/lib/constants/companyInfo";
 
 export default function ContactPage() {
   const { t } = useLanguage();
@@ -31,8 +36,8 @@ export default function ContactPage() {
     {
       icon: Mail,
       title: "Email Us",
-      primary: "support@quikkred.com",
-      secondary: "loans@quikkred.com",
+      primary: COMPANY_EMAIL_SUPPORT,
+      secondary: COMPANY_EMAIL_LOANS,
       description: "Get email support",
       available: "Response within 2 hours"
     },
@@ -50,7 +55,7 @@ export default function ContactPage() {
     {
       city: "New Delhi",
       type: "Head Office",
-      address: "1008, 13th floor, Vikrant tower, Rajendra Place, New Delhi, Delhi, Pin Code 110008",
+      address: COMPANY_ADDRESS,
       phone: "+91-11-4567-8900",
       email: "delhi@Quikkred.com",
       hours: "Mon-Sat: 9:00 AM - 6:00 PM"

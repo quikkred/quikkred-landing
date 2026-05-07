@@ -1,11 +1,12 @@
 import { Phone, MapPin, Mail } from "lucide-react"
+import { COMPANY_EMAIL_SUPPORT, COMPANY_EMAIL_LOANS } from "@/lib/constants/companyInfo"
 
 const contactCards = [
   {
     icon: Mail,
     title: "Email Us",
-    description: "support@quikkred.com",
-    subtext: "loans@quikkred.com",
+    description: COMPANY_EMAIL_SUPPORT,
+    subtext: COMPANY_EMAIL_LOANS,
   },
   {
     icon: MapPin,

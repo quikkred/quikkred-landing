@@ -6,6 +6,12 @@ import Image from "next/image"
 import { motion } from "framer-motion";
 import { User, Mail, Phone, Send, MessageSquare, CheckCircle, MapPin, RotateCcw, ArrowRight } from "lucide-react"
 import { API_BASE_URL } from '@/lib/config'
+import {
+  COMPANY_ADDRESS,
+  COMPANY_PHONE_DISPLAY,
+  COMPANY_PHONE_TEL,
+  COMPANY_EMAIL_SUPPORT,
+} from '@/lib/constants/companyInfo'
 
 interface FormData {
   name: string;
@@ -31,21 +37,21 @@ const contactCards = [
     icon: Phone,
     title: "Call Us",
     description: "Speak directly with our support team",
-    contact: "+91 9311913854",
-    link: "tel:+919311913854"
+    contact: COMPANY_PHONE_DISPLAY,
+    link: `tel:${COMPANY_PHONE_TEL}`
   },
   {
     icon: Mail,
     title: "Email Us",
     description: "Send us your queries anytime",
-    contact: "support@quikkred.in",
-    link: "mailto:support@quikkred.in"
+    contact: COMPANY_EMAIL_SUPPORT,
+    link: `mailto:${COMPANY_EMAIL_SUPPORT}`
   },
   {
     icon: MapPin,
     title: "Visit Us",
     description: "Our head office location",
-    contact: "1008, 13th floor, Vikrant Tower, Rajendra Place, New Delhi - 110008",
+    contact: COMPANY_ADDRESS,
     link: "https://maps.google.com/?q=Vikrant+Tower+Rajendra+Place+New+Delhi"
   }
 ];

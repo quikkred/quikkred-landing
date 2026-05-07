@@ -4,6 +4,11 @@ import { motion } from "framer-motion";
 import { User, Home, ArrowRight, Mail, Phone, MapPin, Clock, Shield, FileText } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import {
+  COMPANY_ADDRESS_LINES,
+  COMPANY_PHONE_DISPLAY,
+  COMPANY_PHONE_TEL,
+} from "@/lib/constants/companyInfo";
 
 export default function NodalOfficerPage() {
   const { t } = useLanguage();
@@ -100,8 +105,8 @@ export default function NodalOfficerPage() {
                 <Phone className="w-6 h-6 text-[#25B181] flex-shrink-0" />
                 <div>
                   <h3 className="font-bold mb-1">Phone Number</h3>
-                  <a href="tel:+919311913854" className="text-[#25B181] hover:underline">
-                    +91-9311913854
+                  <a href={`tel:${COMPANY_PHONE_TEL}`} className="text-[#25B181] hover:underline">
+                    {COMPANY_PHONE_DISPLAY}
                   </a>
                 </div>
               </div>
@@ -112,8 +117,8 @@ export default function NodalOfficerPage() {
                   <h3 className="font-bold mb-1">Office Address</h3>
                   <p className="text-sm text-gray-600">
                     Quikkred (Fluxusforge Pvt. Ltd.)<br />
-                    1008, 13th Floor, Vikrant Tower,<br />
-                    Rajendra Place, New Delhi - 110008
+                    {COMPANY_ADDRESS_LINES.line1}<br />
+                    {COMPANY_ADDRESS_LINES.line2}
                   </p>
                 </div>
               </div>
@@ -199,7 +204,7 @@ export default function NodalOfficerPage() {
                 </p>
                 <p className="flex items-center gap-2">
                   <Phone className="w-4 h-4" />
-                  <span>+91-9311913854</span>
+                  <span>{COMPANY_PHONE_DISPLAY}</span>
                 </p>
               </div>
             </div>

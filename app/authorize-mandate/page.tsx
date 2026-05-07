@@ -4,6 +4,11 @@ import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Shield, CheckCircle, AlertCircle, Loader2, Phone, Mail, CreditCard, Smartphone, Building2 } from 'lucide-react';
 import Image from 'next/image';
+import {
+  COMPANY_PHONE_DISPLAY,
+  COMPANY_PHONE_TEL,
+  COMPANY_EMAIL_SUPPORT,
+} from '@/lib/constants/companyInfo';
 
 declare global {
     interface Window {
@@ -238,8 +243,8 @@ function AuthorizeMandateContent() {
                     </div>
                     <h2 className="text-xl font-bold text-gray-900 mb-2">Error</h2>
                     <p className="text-gray-600 mb-6">{error}</p>
-                    <a href="tel:+919311913854" className="inline-flex items-center gap-2 text-[#25B181] font-medium">
-                        <Phone className="w-4 h-4" /> +91 9311913854
+                    <a href={`tel:${COMPANY_PHONE_TEL}`} className="inline-flex items-center gap-2 text-[#25B181] font-medium">
+                        <Phone className="w-4 h-4" /> {COMPANY_PHONE_DISPLAY}
                     </a>
                 </div>
             </div>
@@ -434,11 +439,11 @@ function AuthorizeMandateContent() {
                 <div className="mt-5 text-center text-xs text-gray-500">
                     <p>Need help?</p>
                     <div className="flex items-center justify-center gap-4 mt-1">
-                        <a href="tel:+919311913854" className="flex items-center gap-1 text-[#25B181]">
-                            <Phone className="w-3.5 h-3.5" /> +91 9311913854
+                        <a href={`tel:${COMPANY_PHONE_TEL}`} className="flex items-center gap-1 text-[#25B181]">
+                            <Phone className="w-3.5 h-3.5" /> {COMPANY_PHONE_DISPLAY}
                         </a>
-                        <a href="mailto:support@quikkred.in" className="flex items-center gap-1 text-[#25B181]">
-                            <Mail className="w-3.5 h-3.5" /> support@quikkred.in
+                        <a href={`mailto:${COMPANY_EMAIL_SUPPORT}`} className="flex items-center gap-1 text-[#25B181]">
+                            <Mail className="w-3.5 h-3.5" /> {COMPANY_EMAIL_SUPPORT}
                         </a>
                     </div>
                 </div>

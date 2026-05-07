@@ -26,6 +26,7 @@ import {
 import Link from "next/link";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { API_BASE_URL } from '@/lib/config';
+import { COMPANY_EMAIL_SUPPORT } from '@/lib/constants/companyInfo';
 
 interface ApplicationStatus {
   _id: string;
@@ -588,7 +589,7 @@ export default function TrackApplicationPage() {
                       Contact Support
                     </button>
                   </Link>
-                  <a href="mailto:support@quikkred.com" className="px-8 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-[#1F8F68] transition-all">
+                  <a href={`mailto:${COMPANY_EMAIL_SUPPORT}`} className="px-8 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-[#1F8F68] transition-all">
                     Email Support
                   </a>
                 </div>

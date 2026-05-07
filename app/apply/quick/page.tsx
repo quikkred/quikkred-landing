@@ -28,6 +28,7 @@ import CustomerLogin from './components/ui/CustomerLogin';
 import CheckEligibility from './components/CheckEligibility';
 import FormSteps, { FormStepsType } from './components/ui/FormSteps';
 import Link from 'next/link';
+import { COMPANY_PHONE_TEL } from '@/lib/constants/companyInfo';
 import { LayoutDashboard, LogOut } from 'lucide-react';
 
 // Main Page Component
@@ -251,7 +252,7 @@ export default function QuickApplyV2Page() {
 
                         <div className="w-auto flex jusitfy-center items-center gap-2.5">
                             <a
-                                href="tel:+919311913854"
+                                href={`tel:${COMPANY_PHONE_TEL}`}
                                 className="text-xs sm:text-sm text-gray-500 hover:text-[#25B181] flex items-center gap-1"
                             >
                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -8,6 +8,7 @@ import { AxiosError } from "axios";
 import { Loader2 } from "lucide-react";
 import useAxios from "@/hooks/useAxios";
 import { toast } from "@/components/ui/toast";
+import { COMPANY_PHONE_DISPLAY, COMPANY_PHONE_TEL, COMPANY_EMAIL_SUPPORT } from "@/lib/constants/companyInfo";
 
 // Validation Schema
 const schema = yup.object().shape({
@@ -120,7 +121,7 @@ const AccountDeletion = () => {
 
           <p className="text-sm text-gray-500 mt-4">
             Need help? <br />
-            support@quikkred.com | +91 93119 13854
+            {COMPANY_EMAIL_SUPPORT} | {COMPANY_PHONE_DISPLAY}
           </p>
         </div>
       </div>
@@ -306,16 +307,16 @@ const AccountDeletion = () => {
             <p className="mt-2">
               <a
                 className="text-teal-600 hover:text-teal-700 font-medium"
-                href="mailto:support@quikkred.com"
+                href={`mailto:${COMPANY_EMAIL_SUPPORT}`}
               >
-                support@quikkred.com
+                {COMPANY_EMAIL_SUPPORT}
               </a>
               <span className="text-slate-400 mx-2">|</span>
               <a
                 className="text-teal-600 hover:text-teal-700 font-medium"
-                href="tel: +91 93119 13854"
+                href={`tel:${COMPANY_PHONE_TEL}`}
               >
-                +91 93119 13854
+                {COMPANY_PHONE_DISPLAY}
               </a>
             </p>
           </div>

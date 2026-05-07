@@ -5,6 +5,7 @@ import { MapPin, Home, ArrowRight, Phone, Mail, Clock, Navigation } from "lucide
 import Link from "next/link";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { useState } from "react";
+import { COMPANY_ADDRESS } from "@/lib/constants/companyInfo";
 
 export default function BranchesPage() {
   const { t } = useLanguage();
@@ -14,7 +15,7 @@ export default function BranchesPage() {
     {
       city: "Delhi",
       name: "New Delhi Head Office",
-      address: "1008, 13th floor, Vikrant tower, Rajendra Place, New Delhi, Delhi, Pin Code 110008",
+      address: COMPANY_ADDRESS,
       phone: "+91-11-4567-8900",
       email: "delhi@Quikkred.com",
       hours: "Mon-Sat: 9:00 AM - 6:00 PM",
