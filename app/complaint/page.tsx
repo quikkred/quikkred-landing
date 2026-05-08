@@ -28,6 +28,10 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { createPortal } from "react-dom";
+import {
+  COMPANY_PHONE_DISPLAY,
+  COMPANY_EMAIL_SUPPORT,
+} from "@/lib/constants/companyInfo";
 
 // 2. Define Validation Schema
 const complaintSchema = yup.object({
@@ -254,10 +258,10 @@ export default function ComplaintPage() {
                 Alternative Contact Methods
               </h3>
               <div className="flex items-center gap-3 mb-3.5 text-[#4a5568] text-sm">
-                <Mail color="teal" /> <span>support@quikkred.in</span>
+                <Mail color="teal" /> <span>{COMPANY_EMAIL_SUPPORT}</span>
               </div>
               <div className="flex items-center gap-3 mb-3.5 text-[#4a5568] text-sm">
-                <Phone color="teal" /> <span>+91-9311913854</span>
+                <Phone color="teal" /> <span>{COMPANY_PHONE_DISPLAY}</span>
               </div>
             </div>
           </div>

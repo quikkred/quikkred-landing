@@ -96,8 +96,8 @@
         "nameAlphabetsOnly": "Name can only contain alphabets",
         "nameMinLength": "Name must be at least 3 characters",
         "amountNumbersOnly": "Amount can only contain numbers",
-        "amountMin": "Minimum loan amount is ₹5,000",
-        "amountMax": "Maximum loan amount is ₹1,00,000",
+        "amountMin": "Minimum loan amount is ₹2,500",
+        "amountMax": "Maximum loan amount is ₹50,000",
         "amountRequired": "Loan amount is required",
         "invalidEmail": "Please enter a valid email address",
         "emailRequired": "Email is required"
@@ -307,48 +307,60 @@
       "eligibilityCriteria": "Eligibility Criteria",
       "popular": "POPULAR"
     },
-    "loanProducts": {
-      "lightningPayday": {
-        "title": "Lightning Payday",
-        "tagline": "Salary aa gaya? Abhi nahi? Le lo abhi!",
-        "description": "Quick payday loan before your salary arrives",
-        "features": ["2-min approval", "Same-day cash", "Zero paper"],
-        "eligibility": ["Age: 21-58 years", "Salaried employee", "Basic KYC documents", "Bank account required"]
-      },
-      "instantCash": {
-        "title": "Instant Cash",
-        "tagline": "Paisa abhi, tension khatam!",
-        "description": "Instant money transfer directly to your bank",
-        "features": ["UPI direct in bank", "No salary slip needed"],
-        "eligibility": ["Age: 21-60 years", "Any income source", "Valid Aadhaar & PAN", "Active bank account"]
-      },
-      "weekendBooster": {
-        "title": "Weekend Booster",
-        "tagline": "Friday night? Party on us!",
-        "description": "Get cash on Friday, repay next salary",
-        "features": ["Friday 5 PM disbursal", "Repay next salary"],
-        "eligibility": ["Salaried professional", "Regular salary credit", "Basic KYC", "3 months employment"]
-      },
-      "emergency24x7": {
-        "title": "Emergency 24×7",
-        "tagline": "Hospital bill? Bike repair? We're open!",
-        "description": "Round the clock emergency funding",
-        "features": ["3 AM approval also", "Highest speed"],
-        "eligibility": ["Emergency situation", "Basic KYC documents", "Any income proof", "Active mobile number"]
-      },
-      "festivalFire": {
-        "title": "Festival Fire",
-        "tagline": "Diwali, Eid, Xmas – celebrate bindaas",
-        "description": "Special festival loans at lower rates",
-        "features": ["Special low rate", "Extra ₹5K bonus possible"],
-        "eligibility": ["Festival season only", "Regular income proof", "Valid ID documents", "6 months bank statement"]
-      },
-      "topupTurbo": {
-        "title": "Top-Up Turbo",
-        "tagline": "Already took loan? Take extra now!",
-        "description": "Extra cash for existing borrowers instantly",
-        "features": ["Instant repeat cash – no new documents"],
-        "eligibility": ["Existing Quikkred customer", "Good repayment history", "Running loan active", "No overdue payments"]
+    "paydayLoan": {
+      "title": "Payday Loan",
+      "tagline": "One loan. Endless possibilities.",
+      "description": "A short-term, instant payday loan to bridge the gap until your next salary — use it for any personal need.",
+      "amount": "₹2,500 - ₹50,000",
+      "tenure": "Up to 45 days",
+      "rate": "1% per day",
+      "processingFee": "10% + GST",
+      "approvalTime": "30 seconds",
+      "features": [
+        "30-second AI-powered approval",
+        "Flexible tenure: up to 45 days",
+        "100% paperless — minimal documentation",
+        "Money disbursed in 30 minutes",
+        "No collateral required",
+        "Transparent pricing — no hidden charges"
+      ],
+      "eligibility": [
+        "Age: 21 - 60 years",
+        "Indian citizen with valid KYC",
+        "Active bank account",
+        "Regular source of income"
+      ]
+    },
+    "useCases": {
+      "badge": "Where Can You Use It",
+      "title": "One Payday Loan,",
+      "titleHighlight": "Many Uses",
+      "subtitle": "Our payday loan adapts to whatever life throws at you — here are some common scenarios where it helps.",
+      "items": {
+        "salaryAdvance": {
+          "title": "Salary Advance",
+          "description": "Get cash before your salary arrives — bridge the gap till payday."
+        },
+        "personalLoan": {
+          "title": "Personal Needs",
+          "description": "Quick cash for any personal expense — no questions asked."
+        },
+        "emergencyFund": {
+          "title": "Emergency Fund",
+          "description": "24-hour support for medical and urgent unforeseen expenses."
+        },
+        "festivalAdvance": {
+          "title": "Festival Spending",
+          "description": "Celebrate Diwali, Eid, Christmas and more without financial worry."
+        },
+        "medicalLoan": {
+          "title": "Medical Expenses",
+          "description": "Healthcare financing for treatments, hospitals or urgent care."
+        },
+        "travelLoan": {
+          "title": "Travel Now Pay Later",
+          "description": "Book your dream vacation today, repay it on your next salary."
+        }
       }
     },
     "whyChooseUs": {
@@ -650,7 +662,7 @@
     },
     "contact": {
       "title": "Contact Us",
-      "address": "1008, 10th floor, Vikrant tower, Rajendra Place, New Delhi, Delhi, Pin Code 110005",
+      "address": "1308, 13th floor, Vikrant tower, Rajendra Place, New Delhi, Delhi, Pin Code 110008",
       "email": "support@quikkred.in",
       "phone": "+91-9311913854",
       "whatsapp": "+91-9311913848",

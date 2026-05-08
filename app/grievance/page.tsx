@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Shield, Home, ArrowRight, Clock, CheckCircle, FileText, Mail, Phone, User } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { COMPANY_EMAIL_GRIEVANCE } from "@/lib/constants/companyInfo";
 
 export default function GrievancePage() {
   const { t } = useLanguage();
@@ -261,7 +262,7 @@ export default function GrievancePage() {
                 <Mail className="w-6 h-6 flex-shrink-0" />
                 <div>
                   <h3 className="font-bold mb-1">Email</h3>
-                  <p className="opacity-90">grievance@Quikkred.com</p>
+                  <p className="opacity-90">{COMPANY_EMAIL_GRIEVANCE}</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">

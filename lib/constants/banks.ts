@@ -26,6 +26,7 @@ export const BANKS = [
   { value: 'rbl bank', name: 'RBL Bank' },
   { value: 'catholic syrian bank (csb bank)', name: 'Catholic Syrian Bank (CSB Bank)' },
   { value: 'south indian bank', name: 'South Indian Bank' },
+  { value: 'standard chartered bank', name: 'Standard Chartered Bank' },
 
   // ===== Small Finance / Payments Banks =====
   { value: 'au small finance bank', name: 'AU Small Finance Bank' },

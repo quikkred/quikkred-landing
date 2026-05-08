@@ -542,12 +542,12 @@ export default function MyLoansPage() {
   const handleProceedToBank = () => {
     setNewLoanError(null);
     const amount = Number(newLoanForm.loanAmount);
-    if (!amount || amount < 3000) {
-      setNewLoanError('Please enter a valid loan amount (minimum ₹3,000)');
+    if (!amount || amount < 2500) {
+      setNewLoanError('Please enter a valid loan amount (minimum ₹2,500)');
       return;
     }
-    if (amount > 25000) {
-      setNewLoanError('Maximum loan amount is ₹25,000');
+    if (amount > 50000) {
+      setNewLoanError('Maximum loan amount is ₹50,000');
       return;
     }
     setNewLoanStep('bank');
@@ -692,12 +692,12 @@ export default function MyLoansPage() {
         // maxAmount available from eligibility response
         setIsReapplyModalOpen(true);
       } else {
-        setReapplyEligibility({ eligible: true, maxAmount: 25000, minAmount: 3000 });
+        setReapplyEligibility({ eligible: true, maxAmount: 50000, minAmount: 2500 });
         setIsReapplyModalOpen(true);
       }
     } catch (error: any) {
       console.error('Error checking reapply eligibility:', error);
-      setReapplyEligibility({ eligible: true, maxAmount: 25000, minAmount: 3000 });
+      setReapplyEligibility({ eligible: true, maxAmount: 50000, minAmount: 2500 });
       setIsReapplyModalOpen(true);
     } finally {
       setReapplyLoading(false);
@@ -1540,15 +1540,15 @@ export default function MyLoansPage() {
                         <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <input
                           type="number"
-                          min="3000"
-                          max="25000"
+                          min="2500"
+                          max="50000"
                           value={newLoanForm.loanAmount}
                           onChange={(e) => setNewLoanForm({ ...newLoanForm, loanAmount: e.target.value })}
                           className="w-full pl-12 pr-4 py-4 bg-[#FAFAFA] border-2 border-[#E0E0E0] rounded-xl focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none text-lg font-semibold"
                           placeholder="Enter loan amount"
                         />
                       </div>
-                      <p className="text-xs text-gray-500 mt-2">Min: ₹3,000 | Max: ₹25,000</p>
+                      <p className="text-xs text-gray-500 mt-2">Min: ₹2,500 | Max: ₹50,000</p>
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-3 mt-6">

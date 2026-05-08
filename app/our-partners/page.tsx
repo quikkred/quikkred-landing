@@ -24,6 +24,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import OurPartners from "@/components/OurPartners";
+import { COMPANY_PHONE_DISPLAY, COMPANY_PHONE_TEL } from "@/lib/constants/companyInfo";
 
 interface PathCard {
   tag: string;
@@ -404,8 +405,8 @@ export default function PartnersPage() {
               {
                 icon: Phone,
                 title: "Support helpline",
-                value: "+91 9311913854",
-                href: "tel:+919311913854",
+                value: COMPANY_PHONE_DISPLAY,
+                href: `tel:${COMPANY_PHONE_TEL}`,
                 sub: "Monday–Saturday, 10:00–18:00 IST",
               },
               {

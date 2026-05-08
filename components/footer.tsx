@@ -13,11 +13,11 @@ import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { API_BASE_URL } from '@/lib/config';
 
 const socialLinks = [
-  { icon: Facebook, href: "https://facebook.com/Quikkred", label: "Facebook" },
+  { icon: Facebook, href: "https://www.facebook.com/quikkredofficialofficial", label: "Facebook" },
   { icon: Twitter, href: "https://twitter.com/Quikkred", label: "Twitter" },
   { icon: Linkedin, href: "https://linkedin.com/company/Quikkred", label: "LinkedIn" },
   { icon: Instagram, href: "https://instagram.com/Quikkred", label: "Instagram" },
-  { icon: Youtube, href: "https://youtube.com/Quikkred", label: "YouTube" },
+  { icon: Youtube, href: "https://www.youtube.com/channel/UC3JKUfFpqeQdd9uqYPNGH2g", label: "YouTube" },
 ];
 
 const certifications = [

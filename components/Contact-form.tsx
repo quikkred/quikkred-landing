@@ -6,6 +6,12 @@ import Image from "next/image"
 import { motion } from "framer-motion";
 import { User, Mail, Phone, Send, MessageSquare, CheckCircle, MapPin, RotateCcw, ArrowRight } from "lucide-react"
 import { API_BASE_URL } from '@/lib/config'
+import {
+  COMPANY_ADDRESS,
+  COMPANY_PHONE_DISPLAY,
+  COMPANY_PHONE_TEL,
+  COMPANY_EMAIL_SUPPORT,
+} from '@/lib/constants/companyInfo'
 
 interface FormData {
   name: string;
@@ -31,21 +37,21 @@ const contactCards = [
     icon: Phone,
     title: "Call Us",
     description: "Speak directly with our support team",
-    contact: "+91 9311913854",
-    link: "tel:+919311913854"
+    contact: COMPANY_PHONE_DISPLAY,
+    link: `tel:${COMPANY_PHONE_TEL}`
   },
   {
     icon: Mail,
     title: "Email Us",
     description: "Send us your queries anytime",
-    contact: "support@quikkred.in",
-    link: "mailto:support@quikkred.in"
+    contact: COMPANY_EMAIL_SUPPORT,
+    link: `mailto:${COMPANY_EMAIL_SUPPORT}`
   },
   {
     icon: MapPin,
     title: "Visit Us",
     description: "Our head office location",
-    contact: "1008, 10th floor, Vikrant Tower, Rajendra Place, New Delhi - 110005",
+    contact: COMPANY_ADDRESS,
     link: "https://maps.google.com/?q=Vikrant+Tower+Rajendra+Place+New+Delhi"
   }
 ];
@@ -268,7 +274,7 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
                 </div>
                 <div className="w-full h-[250px] sm:h-[300px] md:h-[350px]">
                   <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3501.4097591754347!2d77.1807!3d28.6419!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d029e2b6b2f6f%3A0x5c4a5f8a3a2b1c0d!2sVikrant%20Tower%2C%20Rajendra%20Place%2C%20New%20Delhi%2C%20Delhi%20110005!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3501.4097591754347!2d77.1807!3d28.6419!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d029e2b6b2f6f%3A0x5c4a5f8a3a2b1c0d!2sVikrant%20Tower%2C%20Rajendra%20Place%2C%20New%20Delhi%2C%20Delhi%20110008!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}

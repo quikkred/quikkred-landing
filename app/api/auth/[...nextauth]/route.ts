@@ -40,8 +40,10 @@ export const authOptions: AuthOptions = {
             throw new Error("Invalid login method detected");
           }
 
+          const isEmailLogin = credentials.loginMethod === "email";
+
           const payload =
-            credentials.loginMethod === "email"
+            isEmailLogin
               ? { email: credentials.emailOrPhone, otp: credentials.otp }
               : { mobile: credentials.emailOrPhone, otp: credentials.otp };
 

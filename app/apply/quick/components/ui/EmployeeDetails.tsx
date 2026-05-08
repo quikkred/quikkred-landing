@@ -184,17 +184,17 @@ const EmployeeDetails = ({ formData, setFormData }: EmployeeDetailsProps) => {
                             onChange={(e) => handleLoanAmountChange(e.target.value)}
                             onFocus={() => trackFieldFocus("loanAmount", 2)}
                             className="w-full pl-8 pr-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#25B181] border-gray-300"
-                            placeholder="₹ 5,000 - ₹ 25,000"
+                            placeholder="₹ 2,500 - ₹ 50,000"
                         />
                     </div>
 
-                    {formData.loanAmount > 0 && formData.loanAmount < 5000 && (
-                        <p className="mt-1 text-xs text-red-500">Minimum loan amount is ₹5,000</p>
+                    {formData.loanAmount > 0 && formData.loanAmount < 2500 && (
+                        <p className="mt-1 text-xs text-red-500">Minimum loan amount is ₹2,500</p>
                     )}
-                    {formData.loanAmount > 25000 && (
-                        <p className="mt-1 text-xs text-red-500">Maximum loan amount is ₹25,000</p>
+                    {formData.loanAmount > 50000 && (
+                        <p className="mt-1 text-xs text-red-500">Maximum loan amount is ₹50,000</p>
                     )}
-                    {!formData.loanAmount || (formData.loanAmount >= 5000 && formData.loanAmount <= 25000) ? (
+                    {!formData.loanAmount || (formData.loanAmount >= 2500 && formData.loanAmount <= 50000) ? (
                         <p className="mt-1 text-xs text-gray-500">Enter the approximate loan amount</p>
                     ) : null}
                 </div>

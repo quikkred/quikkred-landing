@@ -11,6 +11,7 @@ import {
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { supportService } from "@/lib/api";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { COMPANY_EMAIL_SUPPORT, COMPANY_EMAIL_LOANS } from "@/lib/constants/companyInfo";
 
 interface Ticket {
   id: string;
@@ -369,7 +370,7 @@ export default function SupportPage() {
         id: (Date.now() + 1).toString(),
         sender: "bot",
         senderName: "System",
-        message: "I apologize, but I'm having trouble processing your request. Please try again or contact us at support@quikkred.com",
+        message: `I apologize, but I'm having trouble processing your request. Please try again or contact us at ${COMPANY_EMAIL_SUPPORT}`,
         timestamp: new Date().toISOString()
       };
       setAIChatMessages(prev => [...prev, errorMsg]);
@@ -422,7 +423,7 @@ export default function SupportPage() {
               <Mail className="w-8 h-8 text-[#4A66FF]" />
               <div className="text-left">
                 <p className="font-semibold text-gray-900">Email Us</p>
-                <p className="text-sm text-gray-600">support@quikkred.com</p>
+                <p className="text-sm text-gray-600">{COMPANY_EMAIL_SUPPORT}</p>
               </div>
             </button>
 
@@ -430,7 +431,7 @@ export default function SupportPage() {
               <Mail className="w-8 h-8 text-[#25B181]" />
               <div className="text-left">
                 <p className="font-semibold text-gray-900">Loans</p>
-                <p className="text-sm text-gray-600">loans@quikkred.com</p>
+                <p className="text-sm text-gray-600">{COMPANY_EMAIL_LOANS}</p>
               </div>
             </button>
 

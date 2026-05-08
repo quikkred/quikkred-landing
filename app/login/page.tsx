@@ -7,7 +7,6 @@ import { useSearchParams } from "next/navigation";
 
 // export const dynamic = 'force-dynamic';
 import {
-  Mail,
   Phone,
   Lock,
   Eye,
@@ -33,7 +32,6 @@ import { getSession, signIn } from "next-auth/react";
 import useAxios from "@/hooks/useAxios";
 import GoogleVerify from "../apply/quick/components/ui/GoogleVerify";
 import TruecallerVerify from "../apply/quick/components/ui/TruecallerVerify";
-import DigiLockerVerify from "../apply/quick/components/ui/DigiLockerVerify";
 import OTPField from "../apply/quick/components/ui/OTPField";
 
 interface LoginForm {
@@ -48,7 +46,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
-  const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('email');
+  const [loginMethod] = useState<'phone'>('phone');
   const [authMethod, setAuthMethod] = useState<'password' | 'otp'>('otp');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -169,7 +167,12 @@ export default function LoginPage() {
 
   const sendOtp = async () => {
     if (!formData.emailOrPhone) {
-      setError(`Please enter your ${loginMethod}`);
+      setError("Please enter your mobile number");
+      return;
+    }
+
+    if (loginMethod === 'phone' && mobileError) {
+      setError(mobileError);
       return;
     }
 
@@ -178,9 +181,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const payload = loginMethod === 'email'
-        ? { email: formData.emailOrPhone }
-        : { mobile: formData.emailOrPhone };
+      const payload = { mobile: formData.emailOrPhone };
 
       // const response = await fetch(`${API_BASE_URL}/api/auth/customer/login`, {
       //   method: "POST",
@@ -203,8 +204,8 @@ export default function LoginPage() {
           variant: "success",
           title: isResend ? "OTP Resent Successfully!" : "OTP Sent Successfully!",
           description: isResend
-            ? `A new OTP has been sent to your ${loginMethod}. Please check and enter it below.`
-            : `A one-time password has been sent to your ${loginMethod}. Please check and enter it below.`,
+            ? "A new OTP has been sent to your mobile number. Please check and enter it below."
+            : "A one-time password has been sent to your mobile number. Please check and enter it below.",
         });
       } else {
         setError(data.message || 'Failed to send OTP. Please try again.');
@@ -246,7 +247,7 @@ export default function LoginPage() {
         redirect: false,
         emailOrPhone: formData.emailOrPhone,
         otp,
-        loginMethod, // "email" | "mobile"
+        loginMethod,
       });
 
       // NextAuth returns { ok, error, status, url }
@@ -505,40 +506,32 @@ export default function LoginPage() {
                       !isIOS && <TruecallerVerify buttonText="Continue with truecaller" />
 
                     }
-
-                    <DigiLockerVerify buttonText="Continue with DigiLocker" />
                   </div>
 
                   <div className="my-3 flex w-full items-center gap-3 text-sm text-neutral-500">
                     <div className="flex-1 border-t border-neutral-400" />
-                    <span className="shrink-0 leading-none">or enter email</span>
+                    <span className="shrink-0 leading-none">or continue with mobile OTP</span>
                     <div className="flex-1 border-t border-neutral-400" />
                   </div>
 
                   {/* Email/Phone Input */}
                   <div>
-                    <label className="block text-sm font-medium mb-2">
-                      {loginMethod === 'email' ? 'Email Address' : 'Phone Number'}
-                    </label>
+                    <label className="block text-sm font-medium mb-2">Mobile Number</label>
                     <div className="relative">
-                      {loginMethod === 'email' ? (
-                        <Mail className="absolute left-3 top-0 translate-y-4 w-5 h-5 text-gray-400" />
-                      ) : (
-                        <Phone className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                      )}
+                      <Phone className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                       <input
-                        type={loginMethod === 'email' ? 'email' : 'tel'}
+                        type="tel"
                         name="emailOrPhone"
                         value={formData.emailOrPhone}
                         onChange={handleInputChange}
-                        maxLength={loginMethod === 'phone' ? 10 : undefined}
+                        maxLength={10}
                         required
-                        className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white ${loginMethod === 'phone' && mobileError ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white ${mobileError ? 'border-red-500' : 'border-gray-300'
                           }`}
-                        placeholder={loginMethod === 'email' ? 'Enter your email' : 'Enter 10-digit mobile number'}
+                        placeholder="Enter 10-digit mobile number"
                       />
                     </div>
-                    {loginMethod === 'phone' && mobileError && (
+                    {mobileError && (
                       <p className="mt-1 text-xs text-red-600">{mobileError}</p>
                     )}
                   </div>
@@ -580,7 +573,7 @@ export default function LoginPage() {
                             <h4 className="font-medium text-emerald-900">Login with OTP</h4>
                           </div>
                           <p className="text-sm text-emerald-700 mb-3">
-                            Click the button below to receive a one-time password on your {loginMethod}
+                            Enter your mobile number and we&apos;ll send a one-time password to continue securely.
                           </p>
                           {/* <button
                             type="button"

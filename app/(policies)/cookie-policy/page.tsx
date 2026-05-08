@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import PoliciesLayout from '@/components/layouts/PoliciesLayout';
+import { COMPANY_ADDRESS, COMPANY_EMAIL_SUPPORT } from '@/lib/constants/companyInfo';
 
 export default function CookiePolicyPage() {
   const { t } = useLanguage();
@@ -241,10 +242,10 @@ export default function CookiePolicyPage() {
           <div className="bg-gradient-to-br from-[#2BB89A]/10 to-[#2BB89A]/5 border-l-4 border-[#2BB89A] rounded-lg p-6">
             <ul className="space-y-2">
               <li className="text-gray-600">
-                <strong className="text-gray-700">{t?.policies?.common?.email || "Email"}:</strong> {sections?.contact?.email || "support@quikkred.in"}
+                <strong className="text-gray-700">{t?.policies?.common?.email || "Email"}:</strong> {sections?.contact?.email || COMPANY_EMAIL_SUPPORT}
               </li>
               <li className="text-gray-600">
-                <strong className="text-gray-700">{t?.policies?.common?.address || "Address"}:</strong> {sections?.contact?.address || "1008, 10th Floor, Vikrant Tower, Rajendra Place, New Delhi - 110005"}
+                <strong className="text-gray-700">{t?.policies?.common?.address || "Address"}:</strong> {sections?.contact?.address || COMPANY_ADDRESS}
               </li>
             </ul>
           </div>

@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Loader2, MapPin, Shield, XCircle, RefreshCw, Phone } from 'lucide-react';
+import { COMPANY_PHONE_DISPLAY, COMPANY_PHONE_TEL } from '@/lib/constants/companyInfo';
 
 interface IPCheckLoadingProps {
     message?: string;
@@ -105,11 +106,11 @@ export function BlockedScreen({ type, message, state, onRetry }: BlockedScreenPr
                 <div className="mt-6 pt-6 border-t border-gray-100">
                     <p className="text-sm text-gray-500 mb-2">Need help?</p>
                     <a
-                        href="tel:+919311913854"
+                        href={`tel:${COMPANY_PHONE_TEL}`}
                         className="inline-flex items-center gap-2 text-[#25B181] font-medium hover:underline"
                     >
                         <Phone className="w-4 h-4" />
-                        +91 9311913854
+                        {COMPANY_PHONE_DISPLAY}
                     </a>
                 </div>
 

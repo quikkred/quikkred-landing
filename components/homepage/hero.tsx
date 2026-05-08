@@ -21,8 +21,17 @@ export default function Hero() {
   const [fieldError, setFieldError] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false)
+  const [mousePos, setMousePos] = useState({ x: 50, y: 50 })
   const languageDropdownRef = useRef<HTMLDivElement>(null)
   const heroRef = useRef<HTMLElement>(null)
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    if (!heroRef.current) return
+    const rect = heroRef.current.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width) * 100
+    const y = ((e.clientY - rect.top) / rect.height) * 100
+    setMousePos({ x, y })
+  }
 
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -82,10 +91,10 @@ export default function Hero() {
       if (value && !/^[\d,]*$/.test(value)) {
         setFieldError(t?.hero?.form?.errors?.amountNumbersOnly || "Amount can only contain numbers")
         return
-      } else if (cleanValue && parseInt(cleanValue) < 5000) {
-        setFieldError(t?.hero?.form?.errors?.amountMin || "Minimum loan amount is ₹5,000")
-      } else if (cleanValue && parseInt(cleanValue) > 100000) {
-        setFieldError(t?.hero?.form?.errors?.amountMax || "Maximum loan amount is ₹1,00,000")
+      } else if (cleanValue && parseInt(cleanValue) < 2500) {
+        setFieldError(t?.hero?.form?.errors?.amountMin || "Minimum loan amount is ₹2,500")
+      } else if (cleanValue && parseInt(cleanValue) > 50000) {
+        setFieldError(t?.hero?.form?.errors?.amountMax || "Maximum loan amount is ₹50,000")
       } else {
         setFieldError("")
       }
@@ -139,12 +148,12 @@ export default function Hero() {
         setFieldError(t?.hero?.form?.errors?.amountRequired || "Loan amount is required")
         return
       }
-      if (parseInt(cleanValue) < 5000) {
-        setFieldError(t?.hero?.form?.errors?.amountMin || "Minimum loan amount is ₹5,000")
+      if (parseInt(cleanValue) < 2500) {
+        setFieldError(t?.hero?.form?.errors?.amountMin || "Minimum loan amount is ₹2,500")
         return
       }
-      if (parseInt(cleanValue) > 100000) {
-        setFieldError(t?.hero?.form?.errors?.amountMax || "Maximum loan amount is ₹1,00,000")
+      if (parseInt(cleanValue) > 50000) {
+        setFieldError(t?.hero?.form?.errors?.amountMax || "Maximum loan amount is ₹50,000")
         return
       }
     }
@@ -250,7 +259,22 @@ export default function Hero() {
   // Removed floating animation for better mobile performance
 
   return (
-    <section ref={heroRef} className="relative bg-gradient-to-br from-slate-50 via-white to-teal-50/30 min-h-fit md:min-h-[calc(100dvh-120px)] lg:min-h-[calc(100dvh-90px)] flex flex-col overflow-x-hidden overflow-y-auto">
+    <section ref={heroRef} onMouseMove={handleMouseMove} className="relative bg-gradient-to-br from-slate-50 via-white to-teal-50/30 min-h-fit md:min-h-[calc(100dvh-120px)] lg:min-h-[calc(100dvh-90px)] flex flex-col overflow-x-hidden overflow-y-auto">
+      {/* Pointer-tracking spotlight glow */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-0 transition-[background] duration-200 ease-out hidden md:block"
+        style={{
+          background: `radial-gradient(600px circle at ${mousePos.x}% ${mousePos.y}%, rgba(37,177,129,0.18), rgba(16,185,129,0.08) 35%, transparent 70%)`,
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-0 hidden md:block"
+        style={{
+          background: `radial-gradient(300px circle at ${mousePos.x}% ${mousePos.y}%, rgba(45,212,191,0.12), transparent 60%)`,
+        }}
+      />
       {/* Language Bar - Above Hero */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}

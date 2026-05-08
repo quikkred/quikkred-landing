@@ -49,21 +49,21 @@ export function LoanCalculator({ title, subtitle }: LoanCalculatorProps = {}) {
           </label>
           <input
             type="range"
-            min="10000"
-            max="500000"
-            step="5000"
+            min="2500"
+            max="50000"
+            step="500"
             value={amount}
             onChange={(e) => setAmount(Number(e.target.value))}
             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
             style={{
               background: `linear-gradient(to right, #34d399 0%, #34d399 ${
-                ((amount - 10000) / (500000 - 10000)) * 100
-              }%, #e5e7eb ${((amount - 10000) / (500000 - 10000)) * 100}%, #e5e7eb 100%)`,
+                ((amount - 2500) / (50000 - 2500)) * 100
+              }%, #e5e7eb ${((amount - 2500) / (50000 - 2500)) * 100}%, #e5e7eb 100%)`,
             }}
           />
           <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>₹10K</span>
-            <span>₹5L</span>
+            <span>₹2.5K</span>
+            <span>₹50K</span>
           </div>
         </div>
 
