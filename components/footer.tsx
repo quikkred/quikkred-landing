@@ -13,7 +13,7 @@ import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { API_BASE_URL } from '@/lib/config';
 
 const socialLinks = [
-  { icon: Facebook, href: "https://www.facebook.com/quikkredofficialofficial", label: "Facebook" },
+  { icon: Facebook, href: "https://www.facebook.com/quikkredofficial", label: "Facebook" },
   { icon: Twitter, href: "https://twitter.com/Quikkred", label: "Twitter" },
   { icon: Linkedin, href: "https://linkedin.com/company/Quikkred", label: "LinkedIn" },
   { icon: Instagram, href: "https://instagram.com/Quikkred", label: "Instagram" },
