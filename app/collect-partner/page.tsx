@@ -31,6 +31,14 @@ import {
   MapPinned,
   ArrowUpRight,
   BadgeCheck,
+  Bike,
+  Languages,
+  Thermometer,
+  HeartHandshake,
+  Trophy,
+  Activity,
+  Sparkles,
+  Stethoscope,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -640,6 +648,136 @@ export default function CollectPartnerPage() {
         </div>
       </section>
 
+      {/* ---------------- TWO TRACKS · Verified Partner vs DRA Partner ---------------- */}
+      <section className="container mx-auto px-4 py-12 sm:py-16">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-10 sm:mb-12 max-w-3xl mx-auto"
+        >
+          <span className="inline-flex items-center gap-2 px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <Sparkles className="w-3 h-3" /> Two-track partner system
+          </span>
+          <h2 className="mt-4 text-2xl sm:text-3xl lg:text-4xl font-bold font-sora text-gray-900 leading-tight">
+            Verified Partner <span className="text-gray-400">·</span> DRA Partner
+          </h2>
+          <p className="mt-4 text-gray-600 text-sm sm:text-base leading-relaxed">
+            We run the largest two-track collection network in Indian retail credit. Track A drives
+            soft-recovery from a <strong className="text-emerald-700">7M-rider gig pool</strong>{" "}
+            across Swiggy, Zomato and Rapido. Track B is staffed by IIBF DRA-certified specialists
+            for hard cases. The app surfaces only what each track is allowed to do.
+          </p>
+        </motion.div>
+
+        {/* Track strip */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 max-w-6xl mx-auto">
+          {/* Track A */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="relative rounded-2xl border-2 border-emerald-500 bg-gradient-to-br from-emerald-50/40 via-white to-cyan-50/40 p-6 sm:p-8 shadow-[0_12px_44px_-16px_rgba(37,177,129,0.22)]"
+          >
+            <span className="absolute -top-3 right-6 px-3 py-1 rounded-full bg-emerald-600 text-white text-[10px] font-bold tracking-[0.14em] uppercase">
+              Track A · Gig
+            </span>
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 grid place-items-center shrink-0">
+                <Bike className="w-5 h-5 text-emerald-700" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-sora font-bold text-xl text-gray-900">Verified Partner</h3>
+                <p className="mt-1 text-sm text-gray-600">For DPD 0–60 soft visits · reminder &amp; engagement</p>
+              </div>
+            </div>
+            <ul className="mt-5 space-y-2.5 text-sm text-gray-700">
+              {[
+                "Sourced from 7M gig-economy pool — Swiggy / Zomato / Rapido riders, retired postal staff, off-duty hours",
+                "On-boarded in 24 hours · KYC bundle pulled from existing gig profile",
+                "Police verification + IDfy background check + branded ID card",
+                "Permitted: ID-only knock visits · borrower self-pays via NBFC-owned QR",
+                "Cannot collect cash, cannot enter homes, cannot demand payment",
+                "Earnings: same-day UPI payout · per-visit fee + on-time bonus",
+              ].map((b) => (
+                <li key={b} className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+
+          {/* Track B */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.08 }}
+            className="relative rounded-2xl border-2 border-indigo-500 bg-gradient-to-br from-indigo-50/40 via-white to-blue-50/40 p-6 sm:p-8 shadow-[0_12px_44px_-16px_rgba(74,102,255,0.22)]"
+          >
+            <span className="absolute -top-3 right-6 px-3 py-1 rounded-full bg-indigo-600 text-white text-[10px] font-bold tracking-[0.14em] uppercase">
+              Track B · DRA
+            </span>
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-200 grid place-items-center shrink-0">
+                <Scale className="w-5 h-5 text-indigo-700" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-sora font-bold text-xl text-gray-900">DRA Partner</h3>
+                <p className="mt-1 text-sm text-gray-600">For DPD 60+ hard cases · NPA recovery · legal interface</p>
+              </div>
+            </div>
+            <ul className="mt-5 space-y-2.5 text-sm text-gray-700">
+              {[
+                "IIBF Debt Recovery Agent certification mandatory · 100-hour course + exam",
+                "Six-monthly RBI Fair Practices refresher · auto-blocked on certificate lapse",
+                "Permitted: in-person discussions · settlement negotiations · pre-litigation notices",
+                "Recorded calls + AI tone monitor on every conversation · WORM audit trail",
+                "Workplace, time-window and conflict-of-interest gates enforced by the app",
+                "Earnings: base retainer + recovery-tier commission · tax pre-computed",
+              ].map((b) => (
+                <li key={b} className="flex items-start gap-2">
+                  <CheckCircle className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        </div>
+
+        {/* Stat strip */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-3 max-w-6xl mx-auto"
+        >
+          {[
+            { v: "7M", l: "gig pool · Track A sourcing universe", icon: Users },
+            { v: "~70% ↓", l: "cost per soft visit vs DRA-only model", icon: TrendingUp },
+            { v: "13 langs", l: "in-app · Hindi · Marathi · Tamil · Bengali · 9 more", icon: Languages },
+            { v: "100%", l: "calls recorded · AI tone monitored · WORM audit", icon: Activity },
+          ].map((s) => {
+            const Icon = s.icon;
+            return (
+              <div
+                key={s.v}
+                className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 flex items-start gap-3"
+              >
+                <div className="w-10 h-10 rounded-lg bg-emerald-50 border border-emerald-100 grid place-items-center shrink-0">
+                  <Icon className="w-4 h-4 text-emerald-700" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-2xl font-bold text-gray-900 tabular-nums">{s.v}</div>
+                  <div className="text-[11px] text-gray-500 mt-0.5 leading-snug">{s.l}</div>
+                </div>
+              </div>
+            );
+          })}
+        </motion.div>
+      </section>
+
       {/* Screening & Onboarding Process */}
       <section className="container mx-auto px-4 py-12 sm:py-16">
         <motion.div
@@ -845,6 +983,93 @@ export default function CollectPartnerPage() {
               </p>
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* ---------------- SAFETY · WELLBEING · PERFORMANCE ---------------- */}
+      <section className="bg-gradient-to-br from-emerald-50/30 via-white to-cyan-50/30 py-12 sm:py-16 border-y border-gray-100">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-10 sm:mb-12 max-w-3xl mx-auto"
+          >
+            <span className="inline-flex items-center gap-2 px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+              <HeartHandshake className="w-3 h-3" /> Safety · wellbeing · growth
+            </span>
+            <h2 className="mt-4 text-2xl sm:text-3xl lg:text-4xl font-bold font-sora text-gray-900 leading-tight">
+              Most gig platforms ignore the partner's body.
+              <br />
+              <span className="text-emerald-700">We don't.</span>
+            </h2>
+            <p className="mt-4 text-gray-600 text-sm sm:text-base leading-relaxed">
+              Heat alerts, mandatory breaks, on-duty accident insurance, a Quick-SOS button, and a
+              transparent scoring system that's gentle by design. The app protects you while you do
+              the work.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              {
+                title: "Heat-stress warning",
+                body: "When ambient temp crosses 38°C, the app prompts a 15-min cool-down before the next visit. Cases auto-defer; supervisor is notified. No penalty.",
+                icon: Thermometer,
+                accent: "bg-amber-50 border-amber-200 text-amber-700",
+              },
+              {
+                title: "Mandatory break gate",
+                body: "After 4 hours of continuous field work, the app blocks new assignments for 30 minutes. Counts toward the daily-target multiplier.",
+                icon: Clock,
+                accent: "bg-cyan-50 border-cyan-200 text-cyan-700",
+              },
+              {
+                title: "On-duty insurance",
+                body: "Accident cover live whenever you're on a visit. Group personal-accident policy underwritten by a public-sector insurer. Beneficiary at onboarding.",
+                icon: Stethoscope,
+                accent: "bg-rose-50 border-rose-200 text-rose-700",
+              },
+              {
+                title: "Quick-SOS",
+                body: "One-tap panic button → location pinged to supervisor + nearest field-team peer + Quikkred ops. Borrower visit auto-paused. Recorded as incident.",
+                icon: AlertTriangle,
+                accent: "bg-orange-50 border-orange-200 text-orange-700",
+              },
+              {
+                title: "Performance score · gentle",
+                body: "Visits completed × on-time bonus × tone score. Anonymous leaderboard, no naming-and-shaming. Bronze → Silver → Gold tiers reset monthly.",
+                icon: Trophy,
+                accent: "bg-emerald-50 border-emerald-200 text-emerald-700",
+              },
+              {
+                title: "Same-day UPI payout",
+                body: "Earnings settle within hours of end-of-day check-out. TDS pre-computed. Annual Form 16-A in the app. Withdraw any time above ₹100.",
+                icon: IndianRupee,
+                accent: "bg-indigo-50 border-indigo-200 text-indigo-700",
+              },
+            ].map((c, i) => {
+              const Icon = c.icon;
+              return (
+                <motion.div
+                  key={c.title}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.05 }}
+                  className="rounded-2xl bg-white border border-gray-200 p-5 sm:p-6 hover:border-gray-300 transition-all"
+                >
+                  <div
+                    className={`w-11 h-11 rounded-xl grid place-items-center border ${c.accent} mb-4`}
+                  >
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-sora font-bold text-base text-gray-900">{c.title}</h3>
+                  <p className="mt-2 text-sm text-gray-600 leading-relaxed">{c.body}</p>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
       </section>
 

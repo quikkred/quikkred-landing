@@ -69,7 +69,7 @@ const PATHS: PathCard[] = [
     tagline: "Earn commissions on loans you source — with real dashboards and weekly payouts.",
     blurb:
       "Loan sourcing agents earning 1.5–3% commission on disbursals. Real-time dashboard for applications, approvals, earnings. Training and certification included. No upfront cost, pan-India coverage.",
-    href: "/channel-partner",
+    href: "/our-partners/channel",
     cta: "Join the network",
     icon: Handshake,
   },

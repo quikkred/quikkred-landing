@@ -15,7 +15,8 @@ const nextConfig: NextConfig = {
       },
 
       // Partner pages
-      { source: '/partners/channel', destination: '/channel-partner', permanent: true },
+      { source: '/partners/channel', destination: '/our-partners/channel', permanent: true },
+      { source: '/channel-partner', destination: '/our-partners/channel', permanent: true },
       { source: '/partners/investors', destination: '/our-partners/investor-relations', permanent: true },
 
       // Resource pages
