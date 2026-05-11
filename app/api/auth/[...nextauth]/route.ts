@@ -78,6 +78,57 @@ export const authOptions: AuthOptions = {
       },
     }),
 
+    // ✅ OTP Pre-Verified Tokens
+    // Used after a successful direct call to /api/auth/customer/verifyOtp.
+    // The OTP is already consumed and validated by the backend; this provider
+    // only re-validates the access token by calling /api/customer/get and then
+    // hands the credentials to NextAuth so a session can be established.
+    CredentialsProvider({
+      id: "otp-tokens",
+      name: "OTP Verified Session",
+      credentials: {
+        userId: { label: "userId", type: "text" },
+        email: { label: "email", type: "text" },
+        mobile: { label: "mobile", type: "text" },
+        role: { label: "role", type: "text" },
+        accessToken: { label: "accessToken", type: "text" },
+        refreshToken: { label: "refreshToken", type: "text" },
+        customerUniqueId: { label: "customerUniqueId", type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.accessToken || !credentials?.userId) {
+          throw new Error("Missing session credentials");
+        }
+
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/customer/get`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${credentials.accessToken}`,
+            },
+          });
+
+          if (!res.ok) {
+            throw new Error("Invalid or expired session token");
+          }
+
+          return {
+            id: credentials.userId,
+            email: credentials.email || null,
+            mobile: credentials.mobile || null,
+            role: credentials.role,
+            accessToken: credentials.accessToken,
+            refreshToken: credentials.refreshToken,
+            customerUniqueId: credentials.customerUniqueId,
+            verifiedAt: new Date().toISOString(),
+          };
+        } catch (err: any) {
+          throw new Error(err.message || "Session verification failed");
+        }
+      },
+    }),
+
     // ✅ DigiLocker Provider
     CredentialsProvider({
       id: "digilocker",
@@ -212,6 +263,7 @@ export const authOptions: AuthOptions = {
               token.customerUniqueId = result.data.customerUniqueId;
               token.role = result.data.role;
               token.verifiedAt = result.data.verifiedAt;
+              (token as any).mobile = result.data.mobile ?? null;
             } else {
               // Passing error to be caught if necessary
               throw new Error(result?.message || "Google backend login failed");
@@ -222,8 +274,8 @@ export const authOptions: AuthOptions = {
         }
       }
 
-      // ✅ 2) OTP/Truecaller/DigiLocker sign-in
-      if ((account?.provider === "otp" || account?.provider === "truecaller" || account?.provider === "digilocker") && user) {
+      // ✅ 2) OTP/OTP-Tokens/Truecaller/DigiLocker sign-in
+      if ((account?.provider === "otp" || account?.provider === "otp-tokens" || account?.provider === "truecaller" || account?.provider === "digilocker") && user) {
         token.userId = (user as any).id;
         token.accessToken = (user as any).accessToken;
         token.refreshToken = (user as any).refreshToken;

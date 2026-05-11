@@ -80,8 +80,8 @@ const EmployeeDetails = ({ formData, setFormData }: EmployeeDetailsProps) => {
     const handleLoanAmountChange = (value: string) => {
         const rawValue = getRawNumber(value);
 
-        // LIMIT: 1,00,000
-        if (rawValue && parseInt(rawValue) > 100000) {
+        // Cap typing at the absolute max (50,000)
+        if (rawValue && parseInt(rawValue) > 50000) {
             return;
         }
 
@@ -195,7 +195,7 @@ const EmployeeDetails = ({ formData, setFormData }: EmployeeDetailsProps) => {
                         <p className="mt-1 text-xs text-red-500">Maximum loan amount is ₹50,000</p>
                     )}
                     {!formData.loanAmount || (formData.loanAmount >= 2500 && formData.loanAmount <= 50000) ? (
-                        <p className="mt-1 text-xs text-gray-500">Enter the approximate loan amount</p>
+                        <p className="mt-1 text-xs text-gray-500">Enter the approximate loan amount (₹2,500 – ₹50,000)</p>
                     ) : null}
                 </div>
 

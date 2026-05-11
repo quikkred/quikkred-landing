@@ -16,6 +16,7 @@ import Hero from "@/components/homepage/hero";
 import StepsSection from "@/components/homepage/steps-section";
 import FeaturesSection from "@/components/homepage/features-section";
 import LoansGrid from "@/components/homepage/loans-grid";
+import LoanFinder from "@/components/homepage/loan-finder";
 import LoanCalculatorAll from "@/components/homepage/loan-calculator";
 import TestimonialsSection from "@/components/homepage/TestimonialsSection";
 import { FinancialCTA } from "@/components/homepage/financial-cta";
@@ -140,6 +141,9 @@ export default function Home() {
 
         {/* Steps Section - Full Screen */}
         <StepsSection/>
+
+        {/* Find your loan - use case selector */}
+        <LoanFinder/>
 
         {/* Features Section - Full Screen */}
         <FeaturesSection/>

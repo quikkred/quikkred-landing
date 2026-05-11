@@ -36,9 +36,12 @@ import OTPField from "../apply/quick/components/ui/OTPField";
 
 interface LoginForm {
   emailOrPhone: string;
+  email: string;
   password: string;
   rememberMe: boolean;
 }
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginPage() {
   const { t } = useLanguage();
@@ -55,12 +58,16 @@ export default function LoginPage() {
   const [sendingOtp, setSendingOtp] = useState(false);
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
+  const [lockedUntil, setLockedUntil] = useState<Date | null>(null);
+  const [lockoutCountdown, setLockoutCountdown] = useState("");
   const [formData, setFormData] = useState<LoginForm>({
     emailOrPhone: "",
+    email: "",
     password: "",
     rememberMe: false
   });
   const [mobileError, setMobileError] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [digiLockerProcessing, setDigiLockerProcessing] = useState(false);
   const axios = useAxios();
   const searchParams = useSearchParams();
@@ -87,6 +94,49 @@ export default function LoginPage() {
       if (interval) clearInterval(interval);
     };
   }, [resendTimer]);
+
+  // 24h lockout countdown (after 5 wrong OTP attempts)
+  useEffect(() => {
+    if (!lockedUntil) {
+      setLockoutCountdown("");
+      return;
+    }
+    const tick = () => {
+      const remainingMs = lockedUntil.getTime() - Date.now();
+      if (remainingMs <= 0) {
+        setLockedUntil(null);
+        setLockoutCountdown("");
+        setError(null);
+        return;
+      }
+      const totalSeconds = Math.ceil(remainingMs / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      setLockoutCountdown(
+        hours > 0
+          ? `${hours}h ${minutes}m ${seconds}s`
+          : `${minutes}m ${seconds}s`
+      );
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [lockedUntil]);
+
+  const applyBackendError = (err: any, fallback: string) => {
+    const status = err?.response?.status;
+    const message = err?.response?.data?.message || err?.message || fallback;
+    const lockedUntilRaw = err?.response?.data?.lockedUntil;
+    setError(message);
+    if (status === 429 && lockedUntilRaw) {
+      const lockDate = new Date(lockedUntilRaw);
+      if (!Number.isNaN(lockDate.getTime())) {
+        setLockedUntil(lockDate);
+      }
+    }
+    return { status, message };
+  };
 
   // DigiLocker callback handler
   useEffect(() => {
@@ -157,6 +207,14 @@ export default function LoginPage() {
       }
     }
 
+    if (name === 'email') {
+      if (value && !EMAIL_REGEX.test(value.trim())) {
+        setEmailError("Enter a valid email address");
+      } else {
+        setEmailError("");
+      }
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
@@ -176,30 +234,34 @@ export default function LoginPage() {
       return;
     }
 
-    const isResend = otpSent; // Check if this is a resend
+    // Email is required when logging in with mobile (saved as unverified
+    // contact data; no email OTP is sent).
+    const trimmedEmail = formData.email.trim();
+    if (!trimmedEmail || !EMAIL_REGEX.test(trimmedEmail)) {
+      setEmailError("Enter a valid email address");
+      setError("Email is required to continue");
+      return;
+    }
+
+    if (lockedUntil && lockedUntil.getTime() > Date.now()) {
+      setError(`Login is locked. Please try again after ${lockoutCountdown}.`);
+      return;
+    }
+
+    const isResend = otpSent;
     setSendingOtp(true);
     setError(null);
 
     try {
-      const payload = { mobile: formData.emailOrPhone };
-
-      // const response = await fetch(`${API_BASE_URL}/api/auth/customer/login`, {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify(payload),
-      // });
-
-      // const data = await response.json();
-
+      const payload = {
+        mobile: formData.emailOrPhone,
+        email: trimmedEmail.toLowerCase(),
+      };
       const response = await axios.post('/api/auth/customer/login', payload);
-      const data = response.data;
 
-      // if (response.ok && data.success) {
       if (response.status === 200 || response.status === 201) {
         setOtpSent(true);
-        setResendTimer(15); // Start 15-second countdown
+        setResendTimer(15);
         toast({
           variant: "success",
           title: isResend ? "OTP Resent Successfully!" : "OTP Sent Successfully!",
@@ -207,20 +269,13 @@ export default function LoginPage() {
             ? "A new OTP has been sent to your mobile number. Please check and enter it below."
             : "A one-time password has been sent to your mobile number. Please check and enter it below.",
         });
-      } else {
-        setError(data.message || 'Failed to send OTP. Please try again.');
-        toast({
-          variant: "error",
-          title: "Failed to Send OTP",
-          description: data.message || 'Please try again.',
-        });
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to send OTP. Please try again.');
+      const { status, message } = applyBackendError(err, 'Failed to send OTP. Please try again.');
       toast({
         variant: "error",
-        title: "Error",
-        description: err.message || 'Failed to send OTP. Please try again.',
+        title: status === 429 ? "Too Many Attempts" : "Failed to Send OTP",
+        description: message,
       });
     } finally {
       setSendingOtp(false);
@@ -238,54 +293,82 @@ export default function LoginPage() {
       return;
     }
 
+    if (lockedUntil && lockedUntil.getTime() > Date.now()) {
+      setError(`Login is locked. Please try again after ${lockoutCountdown}.`);
+      return;
+    }
+
     setVerifyingOtp(true);
     setError(null);
 
     try {
-      // ✅ Call NextAuth OTP provider (it will call backend verifyOtp inside authorize())
-      const res = await signIn("otp", {
-        redirect: false,
-        emailOrPhone: formData.emailOrPhone,
-        otp,
-        loginMethod,
-      });
+      // Call backend directly so we receive the actual error message
+      // (e.g. "Invalid OTP. 3 attempts remaining." or "OTP locked for 24 hours.")
+      // — NextAuth swallows these messages with a generic "CredentialsSignin".
+      const isEmailLogin = loginMethod !== "phone";
+      const verifyPayload = isEmailLogin
+        ? { email: formData.emailOrPhone, otp }
+        : { mobile: formData.emailOrPhone, otp };
 
-      // NextAuth returns { ok, error, status, url }
-      if (res?.ok) {
-        const userData = await getSession();
-        
-        toast({
-          variant: "success",
-          title: "Login Successful!",
-          description: "Welcome back! Redirecting to your dashboard...",
-        });
+      const verifyRes = await axios.post('/api/auth/customer/verifyOtp', verifyPayload);
+      const verifyData = verifyRes.data;
 
-        // ✅ redirect where you want
-        // router.push("/dashboard");
-        if (userData) {
-          await login({
-            apiData: userData,
-            email: userData?.user?.email || "",
-          });
-        }
-        router.push("/user");
+      if (!verifyData?.success || !verifyData?.data) {
+        const msg = verifyData?.message || "Invalid OTP. Please try again.";
+        setError(msg);
+        toast({ variant: "error", title: "Invalid OTP", description: msg });
         return;
       }
 
-      // If credentials invalid, NextAuth usually returns error: "CredentialsSignin"
-      setError("Invalid OTP. Please try again.");
-      toast({
-        variant: "error",
-        title: "Invalid OTP",
-        description: "The OTP you entered is incorrect. Please try again.",
+      // Backend has verified the OTP — hand the pre-verified tokens to NextAuth
+      // so the existing session/useAxios flow keeps working.
+      const sessionRes = await signIn("otp-tokens", {
+        redirect: false,
+        userId: verifyData.data.userId,
+        email: verifyData.data.email || "",
+        mobile: verifyData.data.mobile || "",
+        role: verifyData.data.role,
+        accessToken: verifyData.data.accessToken,
+        refreshToken: verifyData.data.refreshToken,
+        customerUniqueId: verifyData.data.customerUniqueId,
       });
+
+      if (!sessionRes?.ok) {
+        setError("Login session could not be established. Please try again.");
+        toast({
+          variant: "error",
+          title: "Session Error",
+          description: "Verified but could not start session. Please try again.",
+        });
+        return;
+      }
+
+      const userData = await getSession();
+
+      toast({
+        variant: "success",
+        title: "Login Successful!",
+        description: "Welcome back! Redirecting to your dashboard...",
+      });
+
+      if (userData) {
+        await login({
+          apiData: userData,
+          email: userData?.user?.email || "",
+        });
+      }
+      router.push("/user");
     } catch (err: any) {
-      setError(err?.message || "Verification failed. Please try again.");
+      const { status, message } = applyBackendError(err, "Verification failed. Please try again.");
       toast({
         variant: "error",
-        title: "Verification Error",
-        description: err?.message || "Verification failed. Please try again.",
+        title: status === 429 ? "Too Many Attempts" : "Invalid OTP",
+        description: message,
       });
+      // On lockout, force a clean state so user can't keep hammering verify
+      if (status === 429) {
+        setOtp("");
+      }
     } finally {
       setVerifyingOtp(false);
     }
@@ -525,8 +608,9 @@ export default function LoginPage() {
                         value={formData.emailOrPhone}
                         onChange={handleInputChange}
                         maxLength={10}
+                        disabled={otpSent}
                         required
-                        className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white ${mobileError ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white disabled:bg-gray-50 disabled:text-gray-500 ${mobileError ? 'border-red-500' : 'border-gray-300'
                           }`}
                         placeholder="Enter 10-digit mobile number"
                       />
@@ -534,6 +618,30 @@ export default function LoginPage() {
                     {mobileError && (
                       <p className="mt-1 text-xs text-red-600">{mobileError}</p>
                     )}
+                  </div>
+
+                  {/* Email — required so we can stay in touch even if mobile changes. */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Email <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                      <input
+                        type="email"
+                        name="email"
+                        autoComplete="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        disabled={otpSent}
+                        required
+                        className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white disabled:bg-gray-50 disabled:text-gray-500 ${emailError ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                        placeholder="you@example.com"
+                      />
+                    </div>
+                    {emailError && (
+                      <p className="mt-1 text-xs text-red-600">{emailError}</p>
+                    )}
+                    <p className="mt-1 text-[11px] text-gray-500">No OTP is sent to email — we just save it as a backup contact.</p>
                   </div>
 
                   {/* Password Input or OTP Section */}
@@ -621,14 +729,16 @@ export default function LoginPage() {
                             <button
                               type="button"
                               onClick={sendOtp}
-                              disabled={sendingOtp || resendTimer > 0}
+                              disabled={sendingOtp || resendTimer > 0 || Boolean(lockedUntil)}
                               className="text-[#25B181] hover:text-[#1F8F68] font-medium hover:underline disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:no-underline"
                             >
                               {sendingOtp
                                 ? 'Sending...'
-                                : resendTimer > 0
-                                  ? `Resend OTP (${resendTimer}s)`
-                                  : 'Resend OTP'
+                                : lockedUntil
+                                  ? `Locked (${lockoutCountdown})`
+                                  : resendTimer > 0
+                                    ? `Resend OTP (${resendTimer}s)`
+                                    : 'Resend OTP'
                               }
                             </button>
                           </div>
@@ -661,10 +771,15 @@ export default function LoginPage() {
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2"
+                      className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start space-x-2"
                     >
-                      <AlertCircle className="w-5 h-5 text-red-500" />
-                      <span className="text-sm text-red-700">{error}</span>
+                      <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                      <div className="text-sm text-red-700">
+                        <p>{error}</p>
+                        {lockedUntil && lockoutCountdown && (
+                          <p className="mt-1 font-medium">Try again in {lockoutCountdown}.</p>
+                        )}
+                      </div>
                     </motion.div>
                   )}
 
@@ -675,8 +790,8 @@ export default function LoginPage() {
                     {/* Login Button */}
                     <button
                       type="submit"
-                      disabled={isLoading || sendingOtp || verifyingOtp || (authMethod === 'otp' && otpSent && otp.length !== 6)}
-                      className="w-full bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white py-3 px-6 rounded-xl font-semibold flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-50"
+                      disabled={isLoading || sendingOtp || verifyingOtp || Boolean(lockedUntil) || (authMethod === 'otp' && otpSent && otp.length !== 6)}
+                      className="w-full bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white py-3 px-6 rounded-xl font-semibold flex items-center justify-center hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {(isLoading || sendingOtp || verifyingOtp) ? (
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />

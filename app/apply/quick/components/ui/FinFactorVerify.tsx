@@ -187,7 +187,7 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             return;
         }
 
-        // Validate Loan Amount (from previous requirement)
+        // Validate Loan Amount
         if (formData.loanAmount < 2500 || formData.loanAmount > 50000) {
             toast({ variant: "error", title: "Invalid Amount", description: "Loan must be between ₹2,500 and ₹50,000." });
             return;
@@ -343,7 +343,7 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             isAadhaarVerify &&
             income > 0 &&
             isWorkDetailsValid &&
-            // (loanAmount >= 2500 && loanAmount <= 50000) &&
+            (loanAmount >= 2500 && loanAmount <= 50000) &&
             product
         );
     }, [formData]);
