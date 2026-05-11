@@ -21,7 +21,8 @@ import {
   Facebook,
   Smartphone,
   Award,
-  KeyRound
+  KeyRound,
+  Mail
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
