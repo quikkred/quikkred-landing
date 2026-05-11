@@ -228,7 +228,6 @@ jobs:
             --cluster quikkred-beta \
             --service quikkred-landing-beta \
             --task-definition ${{ steps.task-def.outputs.task-def-arn }} \
-
             --force-new-deployment \
             --region ${{ env.AWS_REGION }}
           echo "✅ ECS Beta service updated"
@@ -356,7 +355,6 @@ jobs:
             --cluster quikkred-production \
             --service quikkred-landing-service \
             --task-definition ${{ steps.task-def.outputs.task-def-arn }} \
-
             --force-new-deployment \
             --region ${{ env.AWS_REGION }}
           echo "✅ ECS Production service updated"
