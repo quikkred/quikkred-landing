@@ -299,88 +299,216 @@ export default function CollectPartnerPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-[#1a5f4a] to-[#25B181] text-white py-16 sm:py-20 lg:py-28 overflow-hidden">
-<div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+      {/* ---------------- HERO · deck-inspired (route, live cards, pulse) ---------------- */}
+      <section className="relative bg-gradient-to-br from-[#0f4a3a] via-[#1a5f4a] to-[#25B181] text-white pt-16 pb-20 sm:pt-20 sm:pb-24 lg:pt-24 lg:pb-32 overflow-hidden">
+        {/* Soft radial accents */}
+        <div
+          className="absolute inset-0 opacity-60 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(circle at 15% 10%, rgba(74,232,178,0.30), transparent 45%), radial-gradient(circle at 85% 70%, rgba(15,118,110,0.40), transparent 55%)",
+          }}
+        />
+        {/* Subtle grid */}
+        <div
+          className="absolute inset-0 opacity-[0.07] pointer-events-none"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+          }}
+        />
+        {/* Animated route SVG behind everything · only on lg+ */}
+        <svg
+          className="hidden lg:block absolute right-[5%] top-[12%] w-[640px] h-[480px] pointer-events-none opacity-[0.18]"
+          viewBox="0 0 640 480"
+          fill="none"
+        >
+          <path
+            d="M40 380 C 120 280, 200 360, 280 240 S 420 80, 520 140 S 600 280, 580 360"
+            stroke="white"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeDasharray="6 8"
+          >
+            <animate
+              attributeName="stroke-dashoffset"
+              from="0"
+              to="-28"
+              dur="2s"
+              repeatCount="indefinite"
+            />
+          </path>
+          <circle cx="40" cy="380" r="8" fill="#34d399" />
+          <circle cx="280" cy="240" r="10" fill="#fbbf24">
+            <animate attributeName="r" values="8;12;8" dur="2s" repeatCount="indefinite" />
+          </circle>
+          <circle cx="520" cy="140" r="8" fill="white" opacity="0.6" />
+        </svg>
+
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="grid lg:grid-cols-12 gap-10 items-center">
+            {/* LEFT — copy */}
             <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
+              className="lg:col-span-7"
             >
-              <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold mb-6">
-                <Image
-                  src="/quikkred-mark.png"
-                  alt="Quikkred"
-                  width={20}
-                  height={20}
-                />
-                Quikkred Collect Partner App
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/15 backdrop-blur-sm border border-white/25 rounded-full text-[11px] font-bold tracking-[0.18em] uppercase mb-6">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-300" />
+                </span>
+                Quikkred Collect · Field Partner Network
               </span>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold font-sora leading-tight mb-6">
-                Become a Collection Partner
+              <h1 className="font-sora font-bold text-4xl sm:text-5xl md:text-6xl lg:text-[68px] leading-[1.02] tracking-tight mb-6">
+                From{" "}
+                <span className="relative inline-block">
+                  <span className="relative z-10 italic font-bold">"I drive Rapido"</span>
+                </span>
+                <br />
+                to <span className="text-emerald-200">verified Quikkred partner</span>
+                <br />
+                <span className="text-white/70 text-3xl sm:text-4xl md:text-5xl lg:text-[52px] font-semibold">
+                  in 24 hours.
+                </span>
               </h1>
-              <p className="text-lg sm:text-xl text-white/90 leading-relaxed mb-8 max-w-xl">
-                Join Quikkred&apos;s professional field collection network.
-                Build a real career with flexible hours, weekly payouts, and
-                growth opportunities.
+              <p className="text-base sm:text-lg lg:text-xl text-white/85 leading-relaxed mb-8 max-w-2xl">
+                Join India's largest two-track field partner network — sourced from a{" "}
+                <strong className="text-white">7M-rider gig pool</strong>, paid via UPI within{" "}
+                <strong className="text-white">4 hours</strong>, and available in{" "}
+                <strong className="text-white">13 Indian languages</strong>. Same emerald brand,
+                much richer career.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.97 }}
                   onClick={handleDownload}
-                  className="flex items-center justify-center gap-3 px-8 py-4 bg-white text-[#1a5f4a] rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all"
+                  className="flex items-center justify-center gap-3 px-7 py-4 bg-white text-[#1a5f4a] rounded-xl font-bold text-base sm:text-lg shadow-2xl shadow-emerald-900/30 hover:shadow-emerald-900/50 transition-all"
                 >
-                  <Download className="w-6 h-6" />
+                  <Download className="w-5 h-5" />
                   {downloadStarted ? "Starting Download..." : "Download App"}
                 </motion.button>
                 <Link href="#how-it-works">
                   <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    className="flex items-center justify-center gap-2 px-8 py-4 bg-transparent border-2 border-white text-white rounded-xl font-semibold hover:bg-white/10 transition-all"
+                    whileHover={{ scale: 1.04 }}
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-4 bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white rounded-xl font-semibold hover:bg-white/15 transition-all"
                   >
-                    Learn More
+                    See the architecture
                     <ArrowRight className="w-5 h-5" />
                   </motion.button>
                 </Link>
               </div>
 
-              {/* Value Props replacing fake stats */}
-              <div className="grid grid-cols-3 gap-6 mt-12">
-                <div className="flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-yellow-300 flex-shrink-0" />
-                  <div className="text-sm sm:text-base text-white/90 font-medium">
-                    RBI Registered NBFC
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-yellow-300 flex-shrink-0" />
-                  <div className="text-sm sm:text-base text-white/90 font-medium">
-                    Flexible Hours
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <IndianRupee className="w-5 h-5 text-yellow-300 flex-shrink-0" />
-                  <div className="text-sm sm:text-base text-white/90 font-medium">
-                    Weekly Payouts
-                  </div>
-                </div>
+              {/* Trust + deck stats strip */}
+              <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-3 max-w-2xl">
+                {[
+                  { icon: Shield, v: "RBI", l: "Satsai NBFC · B-14.01646" },
+                  { icon: Users, v: "7M", l: "gig-pool sourcing universe" },
+                  { icon: IndianRupee, v: "≤4 hrs", l: "UPI payout · visit → bank" },
+                  { icon: Languages, v: "13 langs", l: "Hindi · Tamil · 11 more" },
+                ].map((s, i) => {
+                  const Icon = s.icon;
+                  return (
+                    <motion.div
+                      key={s.v}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: 0.3 + i * 0.06 }}
+                      className="rounded-xl bg-white/10 backdrop-blur-sm border border-white/15 p-3"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Icon className="w-3.5 h-3.5 text-emerald-200 shrink-0" />
+                        <span className="font-bold text-sm tabular-nums text-white">{s.v}</span>
+                      </div>
+                      <div className="mt-1 text-[10px] text-white/70 leading-snug">{s.l}</div>
+                    </motion.div>
+                  );
+                })}
               </div>
             </motion.div>
 
-            {/* App Preview */}
+            {/* RIGHT — phone + floating live cards */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="hidden lg:flex justify-center"
+              className="hidden lg:flex justify-center relative lg:col-span-5"
             >
               <div className="relative">
+                {/* Floating · Online status pill (top-left of phone) */}
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                  className="absolute -top-3 -left-16 z-30"
+                >
+                  <div className="bg-white/95 backdrop-blur-md rounded-full px-3 py-1.5 shadow-2xl shadow-emerald-900/40 flex items-center gap-2">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                    </span>
+                    <span className="text-[11px] font-bold text-gray-900">Online · Pune</span>
+                  </div>
+                </motion.div>
+
+                {/* Floating · Earnings live card (right side) */}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.8 }}
+                  className="absolute top-[28%] -right-16 z-30 w-44"
+                >
+                  <div className="bg-gradient-to-br from-white to-emerald-50 rounded-2xl px-4 py-3 shadow-2xl shadow-emerald-900/40 border border-emerald-100">
+                    <div className="text-[9px] uppercase tracking-wider font-bold text-emerald-700">
+                      Just earned
+                    </div>
+                    <div className="mt-0.5 text-xl font-bold text-gray-900 tabular-nums leading-none">
+                      + ₹150
+                    </div>
+                    <div className="mt-1 text-[10px] text-gray-500 leading-snug">
+                      Field verify · R. Naidu · 12 min
+                    </div>
+                    <div className="mt-2 flex items-center gap-1.5 text-[9px] text-emerald-700">
+                      <BadgeCheck className="w-3 h-3" />
+                      <span className="font-semibold">UPI in ~3 hrs</span>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Floating · Mini next-visit card (bottom-left) */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.0 }}
+                  className="absolute bottom-[18%] -left-20 z-30 w-44"
+                >
+                  <div className="bg-white/95 backdrop-blur-md rounded-2xl px-4 py-3 shadow-2xl shadow-emerald-900/40">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-500 grid place-items-center text-white text-sm shrink-0">
+                        📍
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-[10px] uppercase tracking-wider font-bold text-gray-500">
+                          Next · 0.4 km
+                        </div>
+                        <div className="text-xs font-bold text-gray-900 truncate">
+                          P. Pawar · Reminder
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex items-baseline justify-between">
+                      <span className="text-[10px] text-gray-500">DPD 2</span>
+                      <span className="text-xs font-bold text-emerald-700 tabular-nums">+ ₹80</span>
+                    </div>
+                  </div>
+                </motion.div>
+
                 {/* Phone Mockup */}
-                <div className="w-[300px] h-[620px] bg-gradient-to-b from-gray-800 to-gray-900 rounded-[3rem] p-[6px] shadow-2xl ring-1 ring-white/10">
-                  {/* Phone notch */}
+                <div className="relative w-[300px] h-[620px] bg-gradient-to-b from-gray-800 to-gray-900 rounded-[3rem] p-[6px] shadow-2xl ring-1 ring-white/10">
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-gray-900 rounded-b-2xl z-10" />
                   <div className="w-full h-full bg-white rounded-[2.7rem] overflow-hidden relative">
                     {/* Status bar */}
@@ -413,37 +541,36 @@ export default function CollectPartnerPage() {
                           <span className="text-xs">RK</span>
                         </div>
                       </div>
-                      {/* Greeting */}
                       <div className="text-white/80 text-xs">Good Morning,</div>
-                      <div className="font-semibold text-base">Rahul Kumar</div>
+                      <div className="font-semibold text-base">Rahul Kumar · Verified Partner</div>
                     </div>
 
                     {/* App Content */}
                     <div className="p-4 space-y-3 bg-gray-50 h-full select-none">
-                      {/* Stats Row */}
                       <div className="grid grid-cols-2 gap-2.5">
                         <div className="bg-white rounded-xl p-3 shadow-sm">
-                          <div className="text-[10px] text-gray-400 mb-0.5">Today&apos;s Cases</div>
-                          <div className="text-xl font-bold text-[#1a5f4a]">8</div>
-                          <div className="text-[10px] text-green-600 font-medium">3 completed</div>
+                          <div className="text-[10px] text-gray-400 mb-0.5">Today&apos;s visits</div>
+                          <div className="text-xl font-bold text-[#1a5f4a]">6 / 8</div>
+                          <div className="text-[10px] text-green-600 font-medium">3 paid</div>
                         </div>
                         <div className="bg-white rounded-xl p-3 shadow-sm">
-                          <div className="text-[10px] text-gray-400 mb-0.5">Collected</div>
-                          <div className="text-xl font-bold text-green-600">₹68,500</div>
-                          <div className="text-[10px] text-gray-400 font-medium">Target: ₹1,00,000</div>
+                          <div className="text-[10px] text-gray-400 mb-0.5">Earned · paid</div>
+                          <div className="text-xl font-bold text-green-600 tabular-nums">₹1,180</div>
+                          <div className="text-[10px] text-gray-400 font-medium">₹240 in escrow</div>
                         </div>
                       </div>
 
-                      {/* Active Visit Card */}
-                      <div className="bg-white rounded-xl p-3.5 shadow-sm border-l-3 border-l-[#25B181]">
+                      <div className="bg-white rounded-xl p-3.5 shadow-sm border-l-[3px] border-l-[#25B181]">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-[10px] font-semibold text-[#25B181] bg-green-50 px-2 py-0.5 rounded-full">ACTIVE VISIT</span>
-                          <span className="text-[10px] text-gray-400">2.3 km away</span>
+                          <span className="text-[10px] font-bold text-[#25B181] bg-green-50 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#25B181] animate-pulse" /> ACTIVE
+                          </span>
+                          <span className="text-[10px] text-gray-400 tabular-nums">2.3 km</span>
                         </div>
                         <div className="flex items-center justify-between">
                           <div>
-                            <div className="font-semibold text-sm text-gray-900">Amit Sharma</div>
-                            <div className="text-xs text-gray-500">₹25,000 • 15 DPD</div>
+                            <div className="font-semibold text-sm text-gray-900">A. Sharma</div>
+                            <div className="text-xs text-gray-500">Doc pickup · DPD 4 · KYC</div>
                           </div>
                           <div className="w-9 h-9 bg-[#1a5f4a] rounded-full flex items-center justify-center shadow-md">
                             <Navigation className="w-4 h-4 text-white" />
@@ -451,31 +578,31 @@ export default function CollectPartnerPage() {
                         </div>
                       </div>
 
-                      {/* Upcoming Visit */}
                       <div className="bg-white rounded-xl p-3.5 shadow-sm">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-[10px] font-semibold text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">NEXT</span>
-                          <span className="text-[10px] text-gray-400">4.1 km away</span>
+                          <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
+                            STREAK · 7 days
+                          </span>
+                          <span className="text-[10px] text-gray-400">auto</span>
                         </div>
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-baseline justify-between">
                           <div>
-                            <div className="font-semibold text-sm text-gray-900">Priya Patel</div>
-                            <div className="text-xs text-gray-500">₹18,000 • 7 DPD</div>
+                            <div className="text-[10px] text-gray-500">Bonus credited</div>
+                            <div className="text-sm font-bold text-amber-700 tabular-nums">+ ₹250</div>
                           </div>
-                          <div className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center">
-                            <Phone className="w-4 h-4 text-gray-500" />
-                          </div>
+                          <Trophy className="w-5 h-5 text-amber-500" />
                         </div>
                       </div>
 
-                      {/* Earnings Banner */}
                       <div className="bg-gradient-to-r from-[#1a5f4a] to-[#25B181] rounded-xl p-3.5 text-white">
                         <div className="flex items-center justify-between">
                           <div>
-                            <div className="text-[10px] text-white/70">This Week&apos;s Earnings</div>
-                            <div className="font-bold text-lg">₹4,250</div>
+                            <div className="text-[10px] text-white/80">Week 18 · settles Fri</div>
+                            <div className="font-bold text-lg tabular-nums">₹ 8,640</div>
                           </div>
-                          <div className="text-[10px] text-white/80 bg-white/20 px-2 py-1 rounded-lg">Payout Friday</div>
+                          <div className="text-[10px] text-white/90 bg-white/20 px-2 py-1 rounded-lg">
+                            ICICI ●●3421
+                          </div>
                         </div>
                       </div>
                     </div>
