@@ -13,11 +13,11 @@ import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { API_BASE_URL } from '@/lib/config';
 
 const socialLinks = [
-  { icon: Facebook, href: "https://facebook.com/Quikkred", label: "Facebook" },
+  { icon: Facebook, href: "https://www.facebook.com/quikkredofficial", label: "Facebook" },
   { icon: Twitter, href: "https://twitter.com/Quikkred", label: "Twitter" },
   { icon: Linkedin, href: "https://linkedin.com/company/Quikkred", label: "LinkedIn" },
   { icon: Instagram, href: "https://instagram.com/Quikkred", label: "Instagram" },
-  { icon: Youtube, href: "https://youtube.com/Quikkred", label: "YouTube" },
+  { icon: Youtube, href: "https://www.youtube.com/channel/UC3JKUfFpqeQdd9uqYPNGH2g", label: "YouTube" },
 ];
 
 const certifications = [
@@ -187,12 +187,13 @@ export function Footer() {
               className="flex items-center justify-center sm:items-start sm:justify-start mb-4 sm:mb-6"
             >
               <Image
-                src="https://quikkred.in/QuikkredLogoWhite.svg"
+                src="/quikkred-logo.png"
                 alt={t.common.appName}
-                style={{ imageRendering: '-webkit-optimize-contrast', maxHeight: '45px' }}
-                className="h-auto object-contain mx-auto sm:mx-0 brightness-110"
-                width={180}
-                height={45}
+                style={{ imageRendering: '-webkit-optimize-contrast', maxHeight: '42px', filter: 'brightness(0) invert(1)' }}
+                className="h-auto object-contain mx-auto sm:mx-0"
+                width={170}
+                height={42}
+                unoptimized
               />
             </Link>
 

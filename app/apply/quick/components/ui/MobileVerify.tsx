@@ -19,6 +19,8 @@ const MobileVerify = ({
   const axios = useAxios();
   const otpInputRef = useRef<HTMLInputElement>(null);
 
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   // State
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
@@ -54,9 +56,7 @@ const MobileVerify = ({
 
   /* ---------------- SEND OTP ---------------- */
   const sendOTP = async () => {
-    const mobileRegex = VALIDATION?.MOBILE || /^[6-9]\d{9}$/;
-
-    if (!mobileRegex.test(mobile)) {
+    if (!isMobileValid) {
       setOtpError("Please enter a valid 10-digit mobile number");
       return;
     }
@@ -65,6 +65,12 @@ const MobileVerify = ({
       return;
     }
 
+    if (!isEmailValid) {
+      setOtpError("Please enter a valid email address");
+      return;
+    }
+
+    setOtp("");
     setOtpLoading(true);
     setOtpError("");
 

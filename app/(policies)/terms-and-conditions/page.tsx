@@ -4,6 +4,11 @@ import { motion } from "framer-motion";
 import { Shield, FileText, AlertCircle, CheckCircle } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import PoliciesLayout from "@/components/layouts/PoliciesLayout";
+import {
+  COMPANY_ADDRESS,
+  COMPANY_PHONE_DISPLAY,
+  COMPANY_EMAIL_SUPPORT,
+} from "@/lib/constants/companyInfo";
 
 export default function TermsPage() {
   const { t } = useLanguage();
@@ -194,9 +199,9 @@ export default function TermsPage() {
               {sections?.contact?.rbiReg || "RBI Registration No: B-14.01646"}
             </p>
             <p className="text-gray-600">
-              {t?.policies?.common?.email || "Email"}: {sections?.contact?.email || "support@quikkred.in"}<br />
-              {t?.policies?.common?.phone || "Phone"}: {sections?.contact?.phone || "+91-9311913854"}<br />
-              {sections?.contact?.address || "1008, 10th Floor, Vikrant Tower, Rajendra Place, New Delhi - 110008"}
+              {t?.policies?.common?.email || "Email"}: {sections?.contact?.email || COMPANY_EMAIL_SUPPORT}<br />
+              {t?.policies?.common?.phone || "Phone"}: {sections?.contact?.phone || COMPANY_PHONE_DISPLAY}<br />
+              {sections?.contact?.address || COMPANY_ADDRESS}
             </p>
           </div>
         </div>

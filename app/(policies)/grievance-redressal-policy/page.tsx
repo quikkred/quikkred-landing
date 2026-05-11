@@ -4,6 +4,12 @@ import { motion } from "framer-motion";
 import { Phone, Mail, Clock, MapPin, AlertCircle, Users, Headphones, Building, ExternalLink } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import PoliciesLayout from "@/components/layouts/PoliciesLayout";
+import {
+  COMPANY_ADDRESS,
+  COMPANY_PHONE_DISPLAY,
+  COMPANY_EMAIL_SUPPORT,
+  COMPANY_EMAIL_GRIEVANCE,
+} from "@/lib/constants/companyInfo";
 
 export default function GrievanceRedressalPolicyPage() {
   const { t } = useLanguage();
@@ -33,7 +39,7 @@ export default function GrievanceRedressalPolicyPage() {
         {/* Introduction */}
         <div className="mb-10">
           <p className="text-[#2b2b2b] leading-[1.7]">
-            {grp?.introduction || "QuikkRed is committed to providing excellent customer service and resolving customer grievances in a timely and efficient manner. This Grievance Redressal Policy outlines the process for customers to escalate their concerns and the timelines within which they can expect resolution."}
+            {grp?.introduction || "Quikkred is committed to providing excellent customer service and resolving customer grievances in a timely and efficient manner. This Grievance Redressal Policy outlines the process for customers to escalate their concerns and the timelines within which they can expect resolution."}
           </p>
         </div>
 
@@ -49,11 +55,11 @@ export default function GrievanceRedressalPolicyPage() {
           <ul className="space-y-3 text-[#2b2b2b] leading-[1.7]">
             <li className="flex items-start gap-2">
               <Phone className="w-5 h-5 text-[#25B181] mt-1 flex-shrink-0" />
-              <span><strong>{grp?.levels?.level1?.helplineLabel || "Helpline No."}:</strong> {grp?.levels?.level1?.helpline || "+91-9311913854"}</span>
+              <span><strong>{grp?.levels?.level1?.helplineLabel || "Helpline No."}:</strong> {grp?.levels?.level1?.helpline || COMPANY_PHONE_DISPLAY}</span>
             </li>
             <li className="flex items-start gap-2">
               <Mail className="w-5 h-5 text-[#25B181] mt-1 flex-shrink-0" />
-              <span><strong>{grp?.levels?.level1?.emailLabel || "Email Id"}:</strong> {grp?.levels?.level1?.email || "support@quikkred.com"}</span>
+              <span><strong>{grp?.levels?.level1?.emailLabel || "Email Id"}:</strong> {grp?.levels?.level1?.email || COMPANY_EMAIL_SUPPORT}</span>
             </li>
             <li className="flex items-start gap-2">
               <Clock className="w-5 h-5 text-[#25B181] mt-1 flex-shrink-0" />
@@ -81,7 +87,7 @@ export default function GrievanceRedressalPolicyPage() {
             </li>
             <li className="flex items-start gap-2">
               <Mail className="w-5 h-5 text-[#25B181] mt-1 flex-shrink-0" />
-              <span><strong>{grp?.levels?.level2?.emailLabel || "Email Id"}:</strong> {grp?.levels?.level2?.email || "support@quikkred.com"}</span>
+              <span><strong>{grp?.levels?.level2?.emailLabel || "Email Id"}:</strong> {grp?.levels?.level2?.email || COMPANY_EMAIL_SUPPORT}</span>
             </li>
             <li className="flex items-start gap-2">
               <Clock className="w-5 h-5 text-[#25B181] mt-1 flex-shrink-0" />
@@ -104,18 +110,18 @@ export default function GrievanceRedressalPolicyPage() {
           </p>
           <div className="bg-white rounded-lg p-4 border border-teal-300">
             <ul className="space-y-3 text-[#2b2b2b] leading-[1.7]">
-              <li><strong>{grp?.levels?.level3?.officerLabel || "Grievance Redressal Officer (Nodal Officer)"}:</strong> {grp?.levels?.level3?.officerName || "Mr. Manish Soni"}</li>
+              <li><strong>{grp?.levels?.level3?.officerLabel || "Grievance Redressal Officer (Nodal Officer)"}:</strong> {grp?.levels?.level3?.officerName || "Ms. Deepika Kwatra"}</li>
               <li className="flex items-start gap-2">
                 <MapPin className="w-5 h-5 text-[#25B181] mt-1 flex-shrink-0" />
-                <span><strong>{grp?.levels?.level3?.addressLabel || "Address"}:</strong> {grp?.levels?.level3?.address || "Quikkred, 1008, 10th Floor, Vikrant Tower, Rajendra Place, New Delhi - 110008"}</span>
+                <span><strong>{grp?.levels?.level3?.addressLabel || "Address"}:</strong> {grp?.levels?.level3?.address || `Quikkred, ${COMPANY_ADDRESS}`}</span>
               </li>
               <li className="flex items-start gap-2">
                 <Phone className="w-5 h-5 text-[#25B181] mt-1 flex-shrink-0" />
-                <span><strong>{grp?.levels?.level3?.contactLabel || "Contact No."}:</strong> {grp?.levels?.level3?.contact || "+91-9311913854"}</span>
+                <span><strong>{grp?.levels?.level3?.contactLabel || "Contact No."}:</strong> {grp?.levels?.level3?.contact || COMPANY_PHONE_DISPLAY}</span>
               </li>
               <li className="flex items-start gap-2">
                 <Mail className="w-5 h-5 text-[#25B181] mt-1 flex-shrink-0" />
-                <span><strong>{grp?.levels?.level3?.emailLabel || "Email Id"}:</strong> {grp?.levels?.level3?.email || "grievance@quikkred.in"}</span>
+                <span><strong>{grp?.levels?.level3?.emailLabel || "Email Id"}:</strong> {grp?.levels?.level3?.email || COMPANY_EMAIL_GRIEVANCE}</span>
               </li>
             </ul>
           </div>
@@ -162,7 +168,7 @@ export default function GrievanceRedressalPolicyPage() {
             {(grp?.importantNotes?.items || [
               "All complaints should include relevant details such as loan account number, contact information, and a clear description of the issue.",
               "A unique complaint reference number will be provided for tracking purposes.",
-              "QuikkRed is committed to treating all complaints fairly and confidentially.",
+              "Quikkred is committed to treating all complaints fairly and confidentially.",
               "This policy is subject to periodic review and may be updated as per regulatory requirements."
             ]).map((item: string, index: number) => (
               <li key={index} className="flex items-start gap-2">

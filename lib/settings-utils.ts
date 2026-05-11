@@ -1,4 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
+import {
+  COMPANY_ADDRESS,
+  COMPANY_EMAIL_CONTACT,
+  COMPANY_PHONE_DISPLAY,
+} from '@/lib/constants/companyInfo';
 
 // Settings types
 export interface SystemSettings {
@@ -183,9 +188,9 @@ export interface AuditLog {
 export const DEFAULT_SETTINGS: SystemSettings = {
   general: {
     companyName: 'Quikkred (Fluxusforge Pvt. Ltd.)',
-    companyEmail: 'contact@quikkred.in',
-    companyPhone: '+91-9311913854',
-    companyAddress: '1008, 10th Floor, Vikrant Tower, Rajendra Place, New Delhi - 110008',
+    companyEmail: COMPANY_EMAIL_CONTACT,
+    companyPhone: COMPANY_PHONE_DISPLAY,
+    companyAddress: COMPANY_ADDRESS,
     timezone: 'Asia/Kolkata',
     currency: 'INR',
     dateFormat: 'DD/MM/YYYY',

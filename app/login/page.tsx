@@ -7,7 +7,6 @@ import { useSearchParams } from "next/navigation";
 
 // export const dynamic = 'force-dynamic';
 import {
-  Mail,
   Phone,
   Lock,
   Eye,
@@ -33,7 +32,6 @@ import { getSession, signIn } from "next-auth/react";
 import useAxios from "@/hooks/useAxios";
 import GoogleVerify from "../apply/quick/components/ui/GoogleVerify";
 import TruecallerVerify from "../apply/quick/components/ui/TruecallerVerify";
-import DigiLockerVerify from "../apply/quick/components/ui/DigiLockerVerify";
 import OTPField from "../apply/quick/components/ui/OTPField";
 
 interface LoginForm {
@@ -591,8 +589,6 @@ export default function LoginPage() {
                       !isIOS && <TruecallerVerify buttonText="Continue with truecaller" />
 
                     }
-
-                    <DigiLockerVerify buttonText="Continue with DigiLocker" />
                   </div>
 
                   <div className="my-3 flex w-full items-center gap-3 text-sm text-neutral-500">

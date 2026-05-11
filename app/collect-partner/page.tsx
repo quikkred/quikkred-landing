@@ -35,6 +35,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import { COMPANY_PHONE_DISPLAY, COMPANY_PHONE_TEL } from "@/lib/constants/companyInfo";
 
 interface Feature {
   title: string;
@@ -301,7 +302,7 @@ export default function CollectPartnerPage() {
             >
               <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold mb-6">
                 <Image
-                  src="/QuikkredLogoWhite.svg"
+                  src="/quikkred-mark.png"
                   alt="Quikkred"
                   width={20}
                   height={20}
@@ -389,7 +390,7 @@ export default function CollectPartnerPage() {
                         <div className="flex items-center gap-2.5">
                           <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center overflow-hidden">
                             <Image
-                              src="/QuikkredLogoWhite.svg"
+                              src="/quikkred-mark.png"
                               alt="Quikkred"
                               width={26}
                               height={26}
@@ -906,10 +907,10 @@ export default function CollectPartnerPage() {
               Our partnership team is here to help you get started
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="tel:+919311913854">
+              <a href={`tel:${COMPANY_PHONE_TEL}`}>
                 <button className="w-full sm:w-auto px-8 py-4 bg-[#1a5f4a] text-white rounded-xl font-semibold hover:bg-[#25B181] transition-all flex items-center justify-center gap-2">
                   <Phone className="w-5 h-5" />
-                  +91 93119 13854
+                  {COMPANY_PHONE_DISPLAY}
                 </button>
               </a>
               <a href="mailto:collect@quikkred.in">

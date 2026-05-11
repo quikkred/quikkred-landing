@@ -4,6 +4,11 @@ import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Shield, CheckCircle, AlertCircle, Loader2, Phone, Mail, CreditCard, Smartphone, Building2 } from 'lucide-react';
 import Image from 'next/image';
+import {
+  COMPANY_PHONE_DISPLAY,
+  COMPANY_PHONE_TEL,
+  COMPANY_EMAIL_SUPPORT,
+} from '@/lib/constants/companyInfo';
 
 declare global {
     interface Window {
@@ -11,7 +16,7 @@ declare global {
     }
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://alpha.quikkred.in';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.quikkred.in';
 
 // Quikkred Brand Colors
 const BRAND = {
@@ -219,7 +224,7 @@ function AuthorizeMandateContent() {
         return (
             <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center">
                 <div className="text-center">
-                    <Image src="/logo.png" alt="Quikkred" width={120} height={40} className="mx-auto mb-4" />
+                    <Image src="/quikkred-logo.png" alt="Quikkred" width={120} height={40} className="mx-auto mb-4" />
                     <Loader2 className="w-10 h-10 text-[#25B181] animate-spin mx-auto" />
                     <p className="mt-3 text-gray-600 font-medium">Loading...</p>
                 </div>
@@ -232,14 +237,14 @@ function AuthorizeMandateContent() {
         return (
             <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center p-4">
                 <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
-                    <Image src="/logo.png" alt="Quikkred" width={100} height={32} className="mx-auto mb-6" />
+                    <Image src="/quikkred-logo.png" alt="Quikkred" width={100} height={32} className="mx-auto mb-6" />
                     <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <AlertCircle className="w-8 h-8 text-red-500" />
                     </div>
                     <h2 className="text-xl font-bold text-gray-900 mb-2">Error</h2>
                     <p className="text-gray-600 mb-6">{error}</p>
-                    <a href="tel:+919311913854" className="inline-flex items-center gap-2 text-[#25B181] font-medium">
-                        <Phone className="w-4 h-4" /> +91 9311913854
+                    <a href={`tel:${COMPANY_PHONE_TEL}`} className="inline-flex items-center gap-2 text-[#25B181] font-medium">
+                        <Phone className="w-4 h-4" /> {COMPANY_PHONE_DISPLAY}
                     </a>
                 </div>
             </div>
@@ -251,7 +256,7 @@ function AuthorizeMandateContent() {
         return (
             <div className="min-h-screen bg-gradient-to-b from-[#E8F7F1] to-gray-100 flex items-center justify-center p-4">
                 <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center">
-                    <Image src="/logo.png" alt="Quikkred" width={100} height={32} className="mx-auto mb-6" />
+                    <Image src="/quikkred-logo.png" alt="Quikkred" width={100} height={32} className="mx-auto mb-6" />
                     <div className="w-20 h-20 bg-[#E8F7F1] rounded-full flex items-center justify-center mx-auto mb-6">
                         <CheckCircle className="w-12 h-12 text-[#25B181]" />
                     </div>
@@ -283,7 +288,7 @@ function AuthorizeMandateContent() {
             {/* Header */}
             <header className="bg-white shadow-sm sticky top-0 z-10">
                 <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
-                    <Image src="/logo.png" alt="Quikkred" width={100} height={32} className="h-8 w-auto" />
+                    <Image src="/quikkred-logo.png" alt="Quikkred" width={100} height={32} className="h-8 w-auto" />
                     <div className="flex items-center gap-1.5 text-xs text-gray-500">
                         <Shield className="w-3.5 h-3.5 text-[#25B181]" />
                         <span>Secure</span>
@@ -434,11 +439,11 @@ function AuthorizeMandateContent() {
                 <div className="mt-5 text-center text-xs text-gray-500">
                     <p>Need help?</p>
                     <div className="flex items-center justify-center gap-4 mt-1">
-                        <a href="tel:+919311913854" className="flex items-center gap-1 text-[#25B181]">
-                            <Phone className="w-3.5 h-3.5" /> +91 9311913854
+                        <a href={`tel:${COMPANY_PHONE_TEL}`} className="flex items-center gap-1 text-[#25B181]">
+                            <Phone className="w-3.5 h-3.5" /> {COMPANY_PHONE_DISPLAY}
                         </a>
-                        <a href="mailto:support@quikkred.in" className="flex items-center gap-1 text-[#25B181]">
-                            <Mail className="w-3.5 h-3.5" /> support@quikkred.in
+                        <a href={`mailto:${COMPANY_EMAIL_SUPPORT}`} className="flex items-center gap-1 text-[#25B181]">
+                            <Mail className="w-3.5 h-3.5" /> {COMPANY_EMAIL_SUPPORT}
                         </a>
                     </div>
                 </div>

@@ -5,10 +5,6 @@ import { useState, useEffect, useCallback } from "react";
 interface LocationData {
     latitude: number;
     longitude: number;
-    accuracy?: number;
-    altitude?: number | null;
-    speed?: number | null;
-    heading?: number | null;
 }
 
 const useLocation = () => {
@@ -28,13 +24,9 @@ const useLocation = () => {
         return new Promise((resolve) => {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
-                    const newLocation: LocationData = {
+                    const newLocation = {
                         latitude: position.coords.latitude,
                         longitude: position.coords.longitude,
-                        accuracy: position.coords.accuracy,
-                        altitude: position.coords.altitude,
-                        speed: position.coords.speed,
-                        heading: position.coords.heading,
                     };
 
                     setLocation(newLocation);

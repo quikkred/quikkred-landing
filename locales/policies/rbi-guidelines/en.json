@@ -6,7 +6,7 @@
   "sections": {
     "intro": {
       "title": "About RBI Regulations",
-      "beforeLsp": "QuikkRed is a digital lending platform powered by ",
+      "beforeLsp": "Quikkred is a digital lending platform powered by ",
       "lsp": "Fluxusforge Private Limited",
       "afterLsp": " (Loan Service Provider). All loans on our platform are disbursed by ",
       "nbfc": "Satsai Finlease Private Limited",
@@ -39,7 +39,7 @@
           "Website:"
         ],
         "highlightItems": [
-          "Loan Service Provider (LSP) and Technology Partner operating the QuikkRed platform.",
+          "Loan Service Provider (LSP) and Technology Partner operating the Quikkred platform.",
           "fluxusforge.in",
           "Provides technology infrastructure, customer onboarding, and servicing support.",
           "Operates under the regulatory framework established by RBI Digital Lending Guidelines, 2022."
@@ -209,7 +209,7 @@
     "disclaimer": {
       "title": "Disclaimer",
       "content": {
-        "textBeforeLink": "QuikkRed is a digital lending platform powered by Fluxusforge Private Limited (LSP). All loans are disbursed by Satsai Finlease Private Limited, an RBI-registered NBFC. This page provides a summary of key RBI guidelines applicable to our platform and lending partner's operations. For complete regulatory information, please refer to the official RBI website at",
+        "textBeforeLink": "Quikkred is a digital lending platform powered by Fluxusforge Private Limited (LSP). All loans are disbursed by Satsai Finlease Private Limited, an RBI-registered NBFC. This page provides a summary of key RBI guidelines applicable to our platform and lending partner's operations. For complete regulatory information, please refer to the official RBI website at",
         "linkText": "www.rbi.org.in",
         "linkUrl": "https://www.rbi.org.in",
         "textAfterLink": "The guidelines mentioned above are subject to updates and amendments by the RBI from time to time."

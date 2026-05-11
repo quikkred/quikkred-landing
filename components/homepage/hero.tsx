@@ -91,10 +91,10 @@ export default function Hero() {
       if (value && !/^[\d,]*$/.test(value)) {
         setFieldError(t?.hero?.form?.errors?.amountNumbersOnly || "Amount can only contain numbers")
         return
-      } else if (cleanValue && parseInt(cleanValue) < 5000) {
-        setFieldError(t?.hero?.form?.errors?.amountMin || "Minimum loan amount is ₹5,000")
-      } else if (cleanValue && parseInt(cleanValue) > 100000) {
-        setFieldError(t?.hero?.form?.errors?.amountMax || "Maximum loan amount is ₹1,00,000")
+      } else if (cleanValue && parseInt(cleanValue) < 2500) {
+        setFieldError(t?.hero?.form?.errors?.amountMin || "Minimum loan amount is ₹2,500")
+      } else if (cleanValue && parseInt(cleanValue) > 50000) {
+        setFieldError(t?.hero?.form?.errors?.amountMax || "Maximum loan amount is ₹50,000")
       } else {
         setFieldError("")
       }
@@ -148,12 +148,12 @@ export default function Hero() {
         setFieldError(t?.hero?.form?.errors?.amountRequired || "Loan amount is required")
         return
       }
-      if (parseInt(cleanValue) < 5000) {
-        setFieldError(t?.hero?.form?.errors?.amountMin || "Minimum loan amount is ₹5,000")
+      if (parseInt(cleanValue) < 2500) {
+        setFieldError(t?.hero?.form?.errors?.amountMin || "Minimum loan amount is ₹2,500")
         return
       }
-      if (parseInt(cleanValue) > 100000) {
-        setFieldError(t?.hero?.form?.errors?.amountMax || "Maximum loan amount is ₹1,00,000")
+      if (parseInt(cleanValue) > 50000) {
+        setFieldError(t?.hero?.form?.errors?.amountMax || "Maximum loan amount is ₹50,000")
         return
       }
     }

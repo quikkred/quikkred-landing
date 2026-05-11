@@ -26,6 +26,7 @@ import {
 import Link from "next/link";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { QUICK_FORM_URL } from "@/lib/config";
+import { COMPANY_EMAIL_SUPPORT, COMPANY_EMAIL_LOANS } from "@/lib/constants/companyInfo";
 
 
 interface FAQ {
@@ -469,13 +470,13 @@ export default function FAQsPage() {
                   Contact Us
                 </button>
               </Link>
-              <a href="mailto:loans@quikkred.com">
+              <a href={`mailto:${COMPANY_EMAIL_LOANS}`}>
                 <button className="w-full bg-transparent border-2 border-white  py-3 px-6 rounded-lg font-semibold hover:bg-white hover:text-[#4A66FF] transition-all">
                   <Mail className="w-4 h-4 inline mr-2" />
                   Loan Queries
                 </button>
               </a>
-              <a href="mailto:support@quikkred.com">
+              <a href={`mailto:${COMPANY_EMAIL_SUPPORT}`}>
                 <button className="w-full bg-transparent border-2 border-white py-3 px-6 rounded-lg font-semibold hover:bg-white hover:text-[#4A66FF] transition-all">
                   <Mail className="w-4 h-4 inline mr-2" />
                   Email Us

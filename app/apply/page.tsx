@@ -158,7 +158,7 @@ export default function ApplyPage() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="bg-gray-50 rounded-xl p-4">
                 <p className="text-sm text-gray-500 mb-1">Loan Amount</p>
-                <p className="text-lg font-bold text-gray-900">₹5,000 - ₹25,000</p>
+                <p className="text-lg font-bold text-gray-900">₹2,500 - ₹50,000</p>
               </div>
               <div className="bg-gray-50 rounded-xl p-4">
                 <p className="text-sm text-gray-500 mb-1">Tenure</p>

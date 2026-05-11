@@ -27,6 +27,7 @@ import {
 import Link from "next/link";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { QUICK_FORM_URL } from "@/lib/config";
+import { COMPANY_EMAIL_SUPPORT, COMPANY_EMAIL_LOANS } from "@/lib/constants/companyInfo";
 
 
 interface Step {
@@ -445,7 +446,7 @@ export default function HowToApplyPage() {
               <p className="text-sm text-gray-600 mb-4">
                 Email our team for loan assistance
               </p>
-              <a href="mailto:loans@quikkred.com">
+              <a href={`mailto:${COMPANY_EMAIL_LOANS}`}>
                 <button className="w-full px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors">
                   Email Us
                 </button>
@@ -460,7 +461,7 @@ export default function HowToApplyPage() {
               <p className="text-sm text-gray-600 mb-4">
                 Send your queries and we'll guide you through
               </p>
-              <a href="mailto:support@quikkred.com">
+              <a href={`mailto:${COMPANY_EMAIL_SUPPORT}`}>
                 <button className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-colors">
                   Email Us
                 </button>

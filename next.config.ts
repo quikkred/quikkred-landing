@@ -157,7 +157,7 @@ const nextConfig: NextConfig = {
   // Environment variables exposed to browser
   env: {
     NEXT_PUBLIC_API_URL:
-      process.env.NEXT_PUBLIC_API_URL || "https://alpha.quikkred.in",
+      process.env.NEXT_PUBLIC_API_URL || "https://api.quikkred.in",
     NEXT_PUBLIC_APP_NAME: "Quikkred",
   },
 

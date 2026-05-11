@@ -11,8 +11,8 @@ import { QuickApplyV2FormData, LoanCalculation } from "../types/quickApplyV2";
 
 export const LOAN_CONFIG = {
     // Amount Range
-    MIN_AMOUNT: 5000,
-    MAX_AMOUNT: 25000,
+    MIN_AMOUNT: 2500,
+    MAX_AMOUNT: 50000,
     DEFAULT_AMOUNT: 10000,
 
     // Tenure Options (in days)

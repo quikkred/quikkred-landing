@@ -19,6 +19,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/toast';
 import { API_BASE_URL, RAZORPAY_KEY } from '@/lib/config';
+import { COMPANY_EMAIL_SUPPORT, COMPANY_PHONE_DISPLAY, COMPANY_PHONE_TEL } from '@/lib/constants/companyInfo';
 import { useDashboard } from '@/store/hooks/useDashboard';
 import { useLoans } from '@/store/hooks/useLoans';
 import { signOut } from 'next-auth/react';
@@ -1703,9 +1704,9 @@ export default function UserDashboard() {
                       </div>
                       <p className="text-xs text-gray-600">
                         If you face any issues with payment, contact us at{' '}
-                        <a href="tel:+919876543210" className="text-[#10B4A3] font-semibold">+91 98765 43210</a>
+                        <a href={`tel:${COMPANY_PHONE_TEL}`} className="text-[#10B4A3] font-semibold">{COMPANY_PHONE_DISPLAY}</a>
                         {' '}or email{' '}
-                        <a href="mailto:support@quikkred.in" className="text-[#10B4A3] font-semibold">support@quikkred.in</a>
+                        <a href={`mailto:${COMPANY_EMAIL_SUPPORT}`} className="text-[#10B4A3] font-semibold">{COMPANY_EMAIL_SUPPORT}</a>
                       </p>
                     </div>
 

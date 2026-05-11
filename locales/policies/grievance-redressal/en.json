@@ -1,7 +1,7 @@
 {
   "title": "Grievance Redressal Mechanism",
   "subtitle": "We're Here to Help Resolve Your Concerns",
-  "introduction": "QuikkRed is committed to providing excellent customer service and resolving customer grievances in a timely and efficient manner. This Grievance Redressal Policy outlines the process for customers to escalate their concerns and the timelines within which they can expect resolution.",
+  "introduction": "Quikkred is committed to providing excellent customer service and resolving customer grievances in a timely and efficient manner. This Grievance Redressal Policy outlines the process for customers to escalate their concerns and the timelines within which they can expect resolution.",
   "levels": {
     "level1": {
       "title": "LEVEL 1: Customer Service/Helpdesk",
@@ -29,9 +29,9 @@
       "title": "LEVEL 3: Grievance Redressal Officer (GRO) / Nodal Officer",
       "description": "If your grievance remains unresolved after escalation to Level 2, or if you are not satisfied with the resolution provided, you may escalate the matter to our Grievance Redressal Officer (Nodal Officer):",
       "officerLabel": "Grievance Redressal Officer (Nodal Officer)",
-      "officerName": "Mr. Manish Soni",
+      "officerName": "Ms. Deepika Kwatra",
       "addressLabel": "Address",
-      "address": "Quikkred, 1008, 10th Floor, Vikrant Tower, Rajendra Place, New Delhi - 110008",
+      "address": "Quikkred, 1308, 13th floor, Vikrant Tower, Rajendra Place, New Delhi - 110008",
       "contactLabel": "Contact No.",
       "contact": "+91-9311913854",
       "emailLabel": "Email Id",
@@ -55,7 +55,7 @@
     "items": [
       "All complaints should include relevant details such as loan account number, contact information, and a clear description of the issue.",
       "A unique complaint reference number will be provided for tracking purposes.",
-      "QuikkRed is committed to treating all complaints fairly and confidentially.",
+      "Quikkred is committed to treating all complaints fairly and confidentially.",
       "This policy is subject to periodic review and may be updated as per regulatory requirements."
     ]
   }
