@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 
 // export const dynamic = 'force-dynamic';
 import {
+  Mail,
   Phone,
   Lock,
   Eye,
