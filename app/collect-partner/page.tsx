@@ -151,251 +151,190 @@ const DECK_CSS = `
 .deck-host .id-shine::before { content:''; position:absolute; top:-50%; left:-50%; width:50%; height:200%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.20), transparent); transform: rotate(20deg); animation: deck-shine 6s linear infinite; }
 @keyframes deck-shine { 0% { left: -100%; } 50% { left: 200%; } 100% { left: 200%; } }
 
+.deck-host .glass { background: rgba(255,255,255,0.65); backdrop-filter: blur(22px) saturate(140%); -webkit-backdrop-filter: blur(22px) saturate(140%); border: 1px solid rgba(255,255,255,0.7); border-radius: 20px; box-shadow: var(--el-3); }
+
+@keyframes deck-float-y { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+.deck-host .float-y { animation: deck-float-y 5.5s ease-in-out infinite; }
+
 .deck-host .deck-phone-stage { transform: scale(0.78); transform-origin: top center; }
 @media (max-width: 1280px) { .deck-host .deck-phone-stage { transform: scale(0.72); } }
 `;
 
 const SCREEN_LABELS = [
-  { id: 0, badge: "A · 01 Home", label: "soft visits · Uber-style accept" },
-  { id: 1, badge: "A · 02 Case", label: "min data · clear do/don't" },
-  { id: 2, badge: "A · 03 Show ID", label: "QR trust · 3 checks" },
-  { id: 3, badge: "A · 04 Done", label: "4 outcomes · earned ₹" },
+  { id: 0, badge: "हिन्दी · Hindi", label: "home · case feed" },
+  { id: 1, badge: "मराठी · Marathi", label: "case detail · do/don't" },
+  { id: 2, badge: "தமிழ் · Tamil", label: "completion · earned" },
+  { id: 3, badge: "বাংলা · Bengali", label: "splash · earnings pitch" },
 ] as const;
 
-/* DECK-EXACT · A · 01 Home / Feed */
+/* DECK-EXACT · हिन्दी (Hindi) · home / case feed */
 function ScreenFeed() {
   return (
     <div className="pixel-screen">
-      <div className="pixel-status"><span>9:14 AM</span><span>●●●●</span></div>
+      <div className="pixel-status"><span>9:14</span><span>●●●●</span></div>
       <div className="pixel-body">
         <div style={{ position: "relative", flex: 1 }}>
           <div className="map-mock">
-            <div className="map-pin done" style={{ left: "23%", top: "18%" }}><div className="pin-bubble"><span>1</span></div></div>
-            <div className="map-pin now" style={{ left: "50%", top: "44%" }}><div className="pin-bubble"><span>2</span></div></div>
-            <div className="map-pin" style={{ left: "60%", top: "60%" }}><div className="pin-bubble"><span>3</span></div></div>
-            <div className="map-pin" style={{ left: "75%", top: "78%" }}><div className="pin-bubble"><span>4</span></div></div>
-            <div style={{ position: "absolute", top: 14, left: 14, right: 14, zIndex: 5, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div className="flex items-center gap-2" style={{ background: "white", borderRadius: 999, padding: "4px 10px", border: "1px solid var(--line)" }}>
-                <span className="status-dot live" />
-                <div style={{ fontSize: 12, fontWeight: 600 }}>Online</div>
+            <div className="map-pin done" style={{ left: "23%", top: "18%" }}><div className="pin-bubble" style={{ width: 22, height: 22, fontSize: 11 }}><span>1</span></div></div>
+            <div className="map-pin now" style={{ left: "50%", top: "44%" }}><div className="pin-bubble" style={{ width: 24, height: 24, fontSize: 12 }}><span>2</span></div></div>
+            <div className="map-pin" style={{ left: "70%", top: "65%" }}><div className="pin-bubble" style={{ width: 22, height: 22, fontSize: 11 }}><span>3</span></div></div>
+            <div style={{ position: "absolute", top: 12, left: 12, right: 12, zIndex: 5, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div className="glass" style={{ padding: "4px 12px", borderRadius: 999 }}>
+                <div className="flex items-center gap-1.5">
+                  <span className="status-dot live" style={{ width: 7, height: 7 }} />
+                  <div style={{ fontSize: 11, fontWeight: 600 }}>ऑनलाइन</div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <div style={{ padding: 16, background: "white", borderTop: "1px solid var(--line-2)", borderRadius: "24px 24px 0 0", marginTop: -24, position: "relative", zIndex: 6, boxShadow: "0 -8px 24px rgba(11,19,32,0.08)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <div>
-              <div style={{ fontSize: 10, color: "var(--ink-500)", textTransform: "uppercase", fontWeight: 700 }}>Available · soft visits</div>
-              <div className="display" style={{ fontSize: 16 }}>4 nearby · ₹420 potential</div>
+        <div style={{ padding: 14, background: "white", borderTop: "1px solid var(--line-2)", borderRadius: "20px 20px 0 0", marginTop: -20, position: "relative", zIndex: 6, boxShadow: "0 -8px 24px rgba(11,19,32,0.08)" }}>
+          <div style={{ fontSize: 10, color: "var(--ink-500)", textTransform: "uppercase", fontWeight: 700 }}>पास के काम</div>
+          <div className="display" style={{ fontSize: 15 }}>3 आसान विज़िट्स · ₹420</div>
+          <div className="space-y-1.5" style={{ marginTop: 10 }}>
+            <div className="card-soft flex items-center gap-2" style={{ padding: "8px 10px", borderColor: "var(--a-500)", background: "var(--a-50)" }}>
+              <div style={{ width: 28, height: 28, borderRadius: 7, background: "var(--a-500)", color: "white", display: "grid", placeItems: "center", fontWeight: 700, fontSize: 13, flexShrink: 0 }}>📞</div>
+              <div style={{ flex: 1, fontSize: 12, fontWeight: 600 }}>रिमाइंडर · 1.2 km</div>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--a-700)" }}>₹80</span>
             </div>
-            <span className="pill pill-a"><span className="dot" />Track A</span>
-          </div>
-          <div className="space-y-2">
-            <div className="card-soft flex items-center gap-3" style={{ padding: "10px 12px", borderColor: "var(--a-500)", background: "var(--a-50)" }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--a-500)", color: "white", display: "grid", placeItems: "center", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>📞</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 600 }}>Reminder · 1.2 km</div>
-                <div style={{ fontSize: 11, color: "var(--ink-500)" }}>DPD 2 · ₹80 · ~12 min</div>
-              </div>
-              <button className="btn btn-sm">Accept</button>
+            <div className="card-soft flex items-center gap-2" style={{ padding: "8px 10px" }}>
+              <div style={{ width: 28, height: 28, borderRadius: 7, background: "var(--a-100)", color: "var(--a-700)", display: "grid", placeItems: "center", fontWeight: 700, fontSize: 13, flexShrink: 0 }}>📋</div>
+              <div style={{ flex: 1, fontSize: 12, fontWeight: 600 }}>डॉक्युमेंट · 2.4 km</div>
+              <span style={{ fontSize: 12, fontWeight: 700 }}>₹100</span>
             </div>
-            <div className="card-soft flex items-center gap-3" style={{ padding: "10px 12px" }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--a-100)", color: "var(--a-700)", display: "grid", placeItems: "center", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>📋</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 600 }}>Doc pickup · 2.4 km</div>
-                <div style={{ fontSize: 11, color: "var(--ink-500)" }}>KYC re-verify · ₹100 · ~10 min</div>
-              </div>
-              <button className="btn-ghost btn btn-sm">View</button>
-            </div>
-            <div className="card-soft flex items-center gap-3" style={{ padding: "10px 12px" }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--a-100)", color: "var(--a-700)", display: "grid", placeItems: "center", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>📍</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 600 }}>Field verification · 3.1 km</div>
-                <div style={{ fontSize: 11, color: "var(--ink-500)" }}>CPV · ₹150 · ~15 min</div>
-              </div>
-              <button className="btn-ghost btn btn-sm">View</button>
+            <div className="card-soft flex items-center gap-2" style={{ padding: "8px 10px" }}>
+              <div style={{ width: 28, height: 28, borderRadius: 7, background: "var(--a-100)", color: "var(--a-700)", display: "grid", placeItems: "center", fontWeight: 700, fontSize: 13, flexShrink: 0 }}>📍</div>
+              <div style={{ flex: 1, fontSize: 12, fontWeight: 600 }}>सत्यापन · 3.1 km</div>
+              <span style={{ fontSize: 12, fontWeight: 700 }}>₹150</span>
             </div>
           </div>
+          <button className="btn btn-block" style={{ padding: 9, fontSize: 12, marginTop: 10 }}>पहला काम लें</button>
         </div>
       </div>
     </div>
   );
 }
 
-/* DECK-EXACT · A · 02 Case Detail */
+/* DECK-EXACT · मराठी (Marathi) · case detail · do/don't */
 function ScreenCaseDetail() {
   return (
     <div className="pixel-screen">
-      <div className="pixel-status"><span>9:18 AM</span><span>●●●●</span></div>
-      <div className="pixel-body" style={{ overflowY: "auto" }}>
-        <div style={{ padding: "20px 20px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--line-2)" }}>
-          <button style={{ color: "var(--ink-500)", background: "transparent", border: 0, fontSize: 18 }}>←</button>
-          <span className="pill pill-a"><span className="dot" />Reminder · DPD 2</span>
-          <div style={{ width: 24 }} />
+      <div className="pixel-status"><span>9:42</span><span>●●●●</span></div>
+      <div className="pixel-body" style={{ overflowY: "auto", padding: 14 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+          <button style={{ background: "transparent", border: 0, color: "var(--ink-500)", fontSize: 16 }}>←</button>
+          <span className="pill pill-a" style={{ padding: "2px 8px", fontSize: 10 }}><span className="dot" />स्मरणपत्र</span>
+          <div style={{ width: 18 }} />
         </div>
-        <div style={{ padding: 20 }}>
-          <div className="card-soft" style={{ background: "linear-gradient(135deg,var(--a-50),white)", padding: "14px 16px" }}>
-            <div style={{ fontSize: 10, color: "var(--ink-500)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700 }}>Customer (limited info — DPDP)</div>
-            <div className="display" style={{ fontSize: 18, marginTop: 2 }}>P. Pawar</div>
-            <div style={{ fontSize: 12, color: "var(--ink-500)", marginTop: 2 }}>House 42 · Vasant Lane · Wakad · 411057</div>
-            <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, fontSize: 11 }}>
-              <div><b className="tnum" style={{ color: "var(--ink-700)" }}>Day 2</b> overdue</div>
-              <div><b className="tnum" style={{ color: "var(--a-700)" }}>₹80</b> incentive</div>
-            </div>
+        <div className="card-soft" style={{ background: "linear-gradient(135deg,var(--a-50),white)", padding: "10px 12px" }}>
+          <div style={{ fontSize: 10, color: "var(--ink-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.04em" }}>ग्राहक</div>
+          <div className="display" style={{ fontSize: 16, marginTop: 2 }}>पी. पवार</div>
+          <div style={{ fontSize: 11, color: "var(--ink-500)", marginTop: 2 }}>घर 42 · वसंत लेन · वाकड</div>
+          <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, fontSize: 11 }}>
+            <div><b className="tnum">2 दिवस</b> उशीर</div>
+            <div><b className="tnum" style={{ color: "var(--a-700)" }}>₹80</b> मिळेल</div>
           </div>
-          <div className="card-soft" style={{ marginTop: 16, background: "var(--info-50)", borderColor: "rgba(14,165,233,0.20)", padding: 14 }}>
-            <div style={{ fontSize: 10, color: "var(--info-700)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>Your task — soft only</div>
-            <ul style={{ marginTop: 8, fontSize: 12, color: "var(--ink-700)", listStyle: "none", padding: 0 }}>
-              <li style={{ display: "flex", gap: 8, marginBottom: 6 }}><span style={{ color: "var(--info-700)" }}>●</span><span>Visit the address · check borrower is at home</span></li>
-              <li style={{ display: "flex", gap: 8, marginBottom: 6 }}><span style={{ color: "var(--info-700)" }}>●</span><span>Hand them the printed reminder card · take a photo</span></li>
-              <li style={{ display: "flex", gap: 8, marginBottom: 6 }}><span style={{ color: "var(--info-700)" }}>●</span><span>Friendly · "Aapka Quikkred ka payment hai · please pay via app"</span></li>
-              <li style={{ display: "flex", gap: 8, color: "var(--danger-700)" }}><span>✕</span><span><b>Don't</b> ask for cash · don't discuss amounts loudly · don't argue</span></li>
-            </ul>
-          </div>
-          <div style={{ marginTop: 16 }}>
-            <div style={{ fontSize: 10, color: "var(--ink-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>Last contact</div>
-            <div className="card-elev" style={{ marginTop: 8, padding: "12px 14px" }}>
-              <div style={{ fontSize: 12 }}>4 May · auto-debit failed · 11:00 PM</div>
-              <div style={{ fontSize: 12, marginTop: 4 }}>4 May · WA reminder sent · 6:00 PM</div>
-            </div>
-          </div>
-          <button className="btn btn-block btn-lg" style={{ marginTop: 20 }}>Begin visit · check in</button>
-          <button style={{ fontSize: 12, color: "var(--ink-500)", textDecoration: "underline", width: "100%", textAlign: "center", marginTop: 12, background: "transparent", border: 0 }}>Cancel · I can't make it</button>
         </div>
+        <div className="card-soft" style={{ marginTop: 12, background: "var(--info-50)", borderColor: "rgba(14,165,233,0.20)", padding: 12 }}>
+          <div style={{ fontSize: 10, color: "var(--info-700)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.04em" }}>तुमचं काम</div>
+          <ul style={{ marginTop: 8, listStyle: "none", padding: 0, fontSize: 11, color: "var(--ink-700)" }}>
+            <li style={{ display: "flex", gap: 6, marginBottom: 4 }}><span style={{ color: "var(--info-700)" }}>●</span><span>पत्त्यावर जा · ग्राहक भेटतोय का बघा</span></li>
+            <li style={{ display: "flex", gap: 6, marginBottom: 4 }}><span style={{ color: "var(--info-700)" }}>●</span><span>स्मरणपत्र द्या · फोटो काढा</span></li>
+            <li style={{ display: "flex", gap: 6, color: "var(--danger-700)" }}><span>✕</span><span>रोख घेऊ नका</span></li>
+          </ul>
+        </div>
+        <button className="btn btn-block" style={{ padding: 9, fontSize: 12, marginTop: 14 }}>भेटीला सुरुवात करा</button>
       </div>
     </div>
   );
 }
 
-/* DECK-EXACT · A · 03 Show ID */
+/* DECK-EXACT · தமிழ் (Tamil) · completion · earned */
 function ScreenShowID() {
   return (
     <div className="pixel-screen">
-      <div className="pixel-status"><span>9:42 AM</span><span>●●●●</span></div>
-      <div className="pixel-body" style={{ overflowY: "auto" }}>
-        <div style={{ padding: "20px 20px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--line-2)" }}>
-          <button style={{ color: "var(--ink-500)", background: "transparent", border: 0, fontSize: 18 }}>←</button>
-          <div style={{ fontWeight: 600, fontSize: 14 }}>Show your ID</div>
-          <div style={{ width: 24 }} />
+      <div className="pixel-status"><span>9:54</span><span>●●●●</span></div>
+      <div className="pixel-body" style={{ overflowY: "auto", padding: 14 }}>
+        <div style={{ textAlign: "center", marginBottom: 10 }}>
+          <div style={{ width: 56, height: 56, borderRadius: 999, margin: "0 auto", display: "grid", placeItems: "center", background: "var(--grad-a)", boxShadow: "var(--el-a)" }}>
+            <svg width="28" height="28" viewBox="0 0 24 24" stroke="white" strokeWidth="3" fill="none"><path d="M5 12 L10 17 L20 7" /></svg>
+          </div>
+          <div className="display" style={{ fontSize: 16, marginTop: 8 }}>முடிந்தது!</div>
+          <div style={{ fontSize: 10, color: "var(--ink-500)", marginTop: 2 }}>விசிட் வெற்றிகரமாக பதிவு செய்யப்பட்டது</div>
         </div>
-        <div style={{ padding: 20 }}>
-          <div className="card-a id-shine" style={{ borderRadius: 18 }}>
-            <div style={{ position: "relative", padding: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.05em" }}>QUIKKRED</div>
-                <span className="pill" style={{ background: "rgba(255,255,255,0.20)", borderColor: "rgba(255,255,255,0.30)", color: "white", padding: "2px 8px", fontSize: 10, border: "1px solid rgba(255,255,255,0.30)" }}>VERIFIED PARTNER</span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 16 }}>
-                <div style={{ width: 64, height: 80, borderRadius: 8, background: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.30)", display: "grid", placeItems: "center", flexShrink: 0 }}>
-                  <svg width="32" height="32" viewBox="0 0 24 24" stroke="white" strokeWidth="1.5" fill="none"><circle cx="12" cy="8" r="4" /><path d="M4 21 a8 8 0 0 1 16 0" /></svg>
-                </div>
-                <div>
-                  <div className="display" style={{ fontSize: 20 }}>Vikram Sharma</div>
-                  <div style={{ fontSize: 12, opacity: 0.85 }}>Track A · soft tasks</div>
-                  <div className="mono" style={{ fontSize: 10, opacity: 0.7, marginTop: 4 }}>QK-CP-2026-0421</div>
-                </div>
-              </div>
-              <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.20)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                <div style={{ fontSize: 10, opacity: 0.85, maxWidth: 180, lineHeight: 1.3 }}>
-                  I'm here for a friendly reminder. <b>I cannot accept cash.</b> Please pay via the Quikkred app.
-                </div>
-                <div style={{ width: 56, height: 56, background: "white", borderRadius: 4, flexShrink: 0, backgroundImage: "linear-gradient(45deg,#0B1320 25%, transparent 25%, transparent 75%, #0B1320 75%), linear-gradient(45deg,#0B1320 25%, transparent 25%, transparent 75%, #0B1320 75%)", backgroundSize: "4px 4px", backgroundPosition: "0 0, 2px 2px" }} />
-              </div>
+        <div className="card-money" style={{ padding: 12 }}>
+          <div style={{ position: "relative" }}>
+            <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.04em", opacity: 0.85, fontWeight: 700 }}>சம்பாதித்தது</div>
+            <div className="display tnum" style={{ fontSize: 22, marginTop: 2 }}>+ ₹80</div>
+            <div style={{ fontSize: 10, opacity: 0.85, marginTop: 2 }}>நாளை T+1 உங்கள் வங்கிக்கு</div>
+          </div>
+        </div>
+        <div className="card-soft" style={{ marginTop: 12, padding: 12 }}>
+          <div style={{ fontSize: 10, color: "var(--ink-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.04em", marginBottom: 6 }}>முடிவு</div>
+          <div style={{ fontSize: 11, display: "flex", flexDirection: "column", gap: 4 }}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>நிலை</span>
+              <span style={{ fontWeight: 600, color: "var(--a-700)" }}>✓ வழங்கப்பட்டது</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>நேரம்</span>
+              <span className="tnum" style={{ fontWeight: 600 }}>12 நி</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>தூரம்</span>
+              <span className="tnum" style={{ fontWeight: 600 }}>1.4 km</span>
             </div>
           </div>
-          <p style={{ fontSize: 12, color: "var(--ink-500)", textAlign: "center", marginTop: 12 }}>Ask the borrower to scan the QR with the Quikkred app — they'll see who you are.</p>
-          <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
-            <div className="card-soft" style={{ padding: "10px 12px" }}>
-              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-                <input type="checkbox" defaultChecked style={{ accentColor: "var(--a-500)", width: 16, height: 16 }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>GPS at registered address</div>
-                  <div style={{ fontSize: 11, color: "var(--a-700)" }}>📍 within 14m</div>
-                </div>
-              </label>
-            </div>
-            <div className="card-soft" style={{ padding: "10px 12px" }}>
-              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-                <input type="checkbox" defaultChecked style={{ accentColor: "var(--a-500)", width: 16, height: 16 }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>Borrower acknowledged</div>
-                  <div style={{ fontSize: 11, color: "var(--ink-500)" }}>Inside · agreed to talk briefly</div>
-                </div>
-              </label>
-            </div>
-            <div className="card-soft" style={{ padding: "10px 12px" }}>
-              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-                <input type="checkbox" style={{ accentColor: "var(--a-500)", width: 16, height: 16 }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>Borrower scanned my QR</div>
-                  <div style={{ fontSize: 11, color: "var(--ink-500)" }}>Trust ✓</div>
-                </div>
-              </label>
-            </div>
-          </div>
-          <button className="btn btn-block btn-lg" style={{ marginTop: 16 }}>Hand over reminder · capture</button>
         </div>
+        <button className="btn btn-block" style={{ padding: 9, fontSize: 12, marginTop: 14 }}>அடுத்த விசிட்</button>
       </div>
     </div>
   );
 }
 
-/* DECK-EXACT · A · 04 Mark Complete */
+/* DECK-EXACT · বাংলা (Bengali) · splash · earnings pitch */
 function ScreenComplete() {
   return (
     <div className="pixel-screen">
-      <div className="pixel-status"><span>9:54 AM</span><span>●●●●</span></div>
-      <div className="pixel-body" style={{ overflowY: "auto" }}>
-        <div style={{ padding: "20px 20px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--line-2)" }}>
-          <button style={{ color: "var(--ink-500)", background: "transparent", border: 0, fontSize: 18 }}>←</button>
-          <div style={{ fontWeight: 600, fontSize: 14 }}>Mark complete</div>
-          <div style={{ width: 24 }} />
+      <div className="pixel-status"><span>9:00</span><span>●●●●</span></div>
+      <div className="pixel-body" style={{ background: "linear-gradient(180deg,var(--a-50),white 60%)", padding: 0 }}>
+        <div style={{ flex: 1, display: "grid", placeItems: "center", padding: 16 }}>
+          <div style={{ textAlign: "center" }}>
+            {/* Mascot · simple inline SVG triangle character */}
+            <div style={{ width: 88, height: 88, margin: "0 auto", display: "grid", placeItems: "center" }} className="float-y">
+              <svg viewBox="0 0 96 96" width="88" height="88" fill="none">
+                <defs>
+                  <linearGradient id="mascotGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stopColor="#1FCB91" />
+                    <stop offset="1" stopColor="#0E84A8" />
+                  </linearGradient>
+                </defs>
+                <path d="M48 12 L82 76 L14 76 Z" fill="url(#mascotGrad)" />
+                <circle cx="40" cy="50" r="6" fill="white" />
+                <circle cx="56" cy="50" r="6" fill="white" />
+                <circle cx="40" cy="50" r="3" fill="#0B1320" />
+                <circle cx="56" cy="50" r="3" fill="#0B1320" />
+                <path d="M40 62 Q 48 68 56 62" stroke="#0B1320" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+              </svg>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, marginTop: 4 }}>
+              <Image src="/quikkred-mark.png" alt="" width={16} height={16} />
+              <span className="display" style={{ fontSize: 13, color: "var(--ink-900)" }}>Quikkred</span>
+            </div>
+            <h3 className="display" style={{ fontSize: 15, marginTop: 8 }}>অতিরিক্ত আয় করুন</h3>
+            <div style={{ fontSize: 10, color: "var(--ink-500)", marginTop: 4, maxWidth: 200, margin: "4px auto 0" }}>যদি আপনি আপনার শহরে ডেলিভারি / রাইড করেন · ২-৩ ঘন্টায় ₹১৫-৩০ হাজার</div>
+            <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: 4 }}>
+              <span className="pill pill-a" style={{ padding: "2px 8px", fontSize: 10 }}><span className="dot" />RBI</span>
+              <span className="pill" style={{ padding: "2px 8px", fontSize: 10, background: "var(--warn-50)", border: "1px solid rgba(245,158,11,0.30)", color: "var(--warn-700)" }}>
+                <span className="dot" style={{ width: 6, height: 6, borderRadius: 99, background: "var(--warn-500)" }} />
+                Per task
+              </span>
+            </div>
+          </div>
         </div>
-        <div style={{ padding: 20 }}>
-          <div style={{ fontSize: 10, color: "var(--ink-500)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700 }}>Outcome</div>
-          <div style={{ marginTop: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            <button className="card-soft" style={{ textAlign: "left", padding: 14, borderColor: "var(--a-500)", background: "var(--a-50)", border: "1px solid var(--a-500)" }}>
-              <div style={{ fontSize: 24 }}>✓</div>
-              <div style={{ fontSize: 13, fontWeight: 700, marginTop: 4, color: "var(--a-700)" }}>Delivered + acknowledged</div>
-              <div style={{ fontSize: 11, color: "var(--ink-700)", marginTop: 2 }}>Borrower agreed to pay via app</div>
-            </button>
-            <button className="card-soft" style={{ textAlign: "left", padding: 14 }}>
-              <div style={{ fontSize: 24 }}>⏰</div>
-              <div style={{ fontSize: 13, fontWeight: 700, marginTop: 4 }}>Not at home</div>
-              <div style={{ fontSize: 11, color: "var(--ink-500)", marginTop: 2 }}>Will retry later</div>
-            </button>
-            <button className="card-soft" style={{ textAlign: "left", padding: 14 }}>
-              <div style={{ fontSize: 24 }}>❌</div>
-              <div style={{ fontSize: 13, fontWeight: 700, marginTop: 4 }}>Refused / hostile</div>
-              <div style={{ fontSize: 11, color: "var(--ink-500)", marginTop: 2 }}>Escalate to ops</div>
-            </button>
-            <button className="card-soft" style={{ textAlign: "left", padding: 14 }}>
-              <div style={{ fontSize: 24 }}>🏚</div>
-              <div style={{ fontSize: 13, fontWeight: 700, marginTop: 4 }}>Wrong address</div>
-              <div style={{ fontSize: 11, color: "var(--ink-500)", marginTop: 2 }}>Address invalid</div>
-            </button>
-          </div>
-          <div style={{ marginTop: 16 }}>
-            <label style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: "var(--ink-500)" }}>Photo · borrower holding reminder card</label>
-            <div className="card-soft" style={{ marginTop: 4, padding: 10, background: "#0B1320", textAlign: "center" }}>
-              <div style={{ aspectRatio: "4 / 3", background: "#1A2336", borderRadius: 4, display: "grid", placeItems: "center", color: "rgba(255,255,255,0.4)" }}>
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="6" width="18" height="13" rx="2" /><circle cx="12" cy="13" r="3" /></svg>
-              </div>
-              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginTop: 8 }}>📷 captured · timestamp embedded</div>
-            </div>
-          </div>
-          <div style={{ marginTop: 16 }}>
-            <label style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: "var(--ink-500)" }}>Notes (optional)</label>
-            <textarea className="field" rows={2} style={{ marginTop: 4 }} defaultValue="Borrower said salary on 7 May · will pay then." />
-          </div>
-          <div className="card-money" style={{ marginTop: 16, padding: 14 }}>
-            <div style={{ position: "relative" }}>
-              <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.05em", opacity: 0.85, fontWeight: 700 }}>Earned</div>
-              <div className="display tnum" style={{ fontSize: 24 }}>+ ₹80</div>
-              <div style={{ fontSize: 11, opacity: 0.85, marginTop: 2 }}>Settled tomorrow T+1 to your bank</div>
-            </div>
-          </div>
-          <button className="btn btn-block btn-lg" style={{ marginTop: 16 }}>Submit · next case</button>
+        <div style={{ padding: "0 14px 14px", width: "100%" }}>
+          <button className="btn btn-block" style={{ padding: 10, fontSize: 12 }}>আবেদন করুন · ১০ মিনিট</button>
+          <button className="btn btn-ghost btn-block" style={{ padding: 8, fontSize: 11, marginTop: 6 }}>আমার অ্যাকাউন্ট আছে</button>
         </div>
       </div>
     </div>
