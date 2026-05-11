@@ -4,10 +4,14 @@ import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useRouter } from "nextjs-toploader/app";
 import { useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
+
+const LoginScene = dynamic(() => import("./components/LoginScene"), {
+  ssr: false,
+});
 
 // export const dynamic = 'force-dynamic';
 import {
-  Mail,
   Phone,
   Lock,
   Eye,
@@ -37,12 +41,9 @@ import OTPField from "../apply/quick/components/ui/OTPField";
 
 interface LoginForm {
   emailOrPhone: string;
-  email: string;
   password: string;
   rememberMe: boolean;
 }
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginPage() {
   const { t } = useLanguage();
@@ -63,12 +64,10 @@ export default function LoginPage() {
   const [lockoutCountdown, setLockoutCountdown] = useState("");
   const [formData, setFormData] = useState<LoginForm>({
     emailOrPhone: "",
-    email: "",
     password: "",
     rememberMe: false
   });
   const [mobileError, setMobileError] = useState("");
-  const [emailError, setEmailError] = useState("");
   const [digiLockerProcessing, setDigiLockerProcessing] = useState(false);
   const axios = useAxios();
   const searchParams = useSearchParams();
@@ -208,14 +207,6 @@ export default function LoginPage() {
       }
     }
 
-    if (name === 'email') {
-      if (value && !EMAIL_REGEX.test(value.trim())) {
-        setEmailError("Enter a valid email address");
-      } else {
-        setEmailError("");
-      }
-    }
-
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
@@ -235,15 +226,6 @@ export default function LoginPage() {
       return;
     }
 
-    // Email is required when logging in with mobile (saved as unverified
-    // contact data; no email OTP is sent).
-    const trimmedEmail = formData.email.trim();
-    if (!trimmedEmail || !EMAIL_REGEX.test(trimmedEmail)) {
-      setEmailError("Enter a valid email address");
-      setError("Email is required to continue");
-      return;
-    }
-
     if (lockedUntil && lockedUntil.getTime() > Date.now()) {
       setError(`Login is locked. Please try again after ${lockoutCountdown}.`);
       return;
@@ -256,7 +238,6 @@ export default function LoginPage() {
     try {
       const payload = {
         mobile: formData.emailOrPhone,
-        email: trimmedEmail.toLowerCase(),
       };
       const response = await axios.post('/api/auth/customer/login', payload);
 
@@ -438,8 +419,19 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5]">
-      <div className="container mx-auto px-4 py-12">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#f8fbff] to-[#ecfdf5]">
+      {/* Three.js animated background */}
+      <LoginScene />
+      {/* Very soft vignette — keep edges readable but let the scene breathe */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 z-[1]"
+        style={{
+          background:
+            "radial-gradient(ellipse at center, rgba(255,255,255,0) 0%, rgba(248,251,255,0.15) 70%, rgba(236,253,245,0.4) 100%)",
+        }}
+      />
+      <div className="container relative z-10 mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Side - Branding & Security */}
@@ -619,30 +611,6 @@ export default function LoginPage() {
                     {mobileError && (
                       <p className="mt-1 text-xs text-red-600">{mobileError}</p>
                     )}
-                  </div>
-
-                  {/* Email — required so we can stay in touch even if mobile changes. */}
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Email <span className="text-red-500">*</span></label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                      <input
-                        type="email"
-                        name="email"
-                        autoComplete="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        disabled={otpSent}
-                        required
-                        className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#34d399] focus:border-[#34d399] bg-white disabled:bg-gray-50 disabled:text-gray-500 ${emailError ? 'border-red-500' : 'border-gray-300'
-                          }`}
-                        placeholder="you@example.com"
-                      />
-                    </div>
-                    {emailError && (
-                      <p className="mt-1 text-xs text-red-600">{emailError}</p>
-                    )}
-                    <p className="mt-1 text-[11px] text-gray-500">No OTP is sent to email — we just save it as a backup contact.</p>
                   </div>
 
                   {/* Password Input or OTP Section */}
