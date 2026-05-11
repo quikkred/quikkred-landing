@@ -80,84 +80,141 @@ interface ComplianceRule {
   icon: React.ComponentType<any>;
 }
 
-// ---------------- Hero phone-screen carousel · 4 deck-faithful screens ----------------
+// ---------------- Hero phone-screen carousel · DECK-EXACT markup ----------------
+// CSS lifted verbatim from quikkred-platform-deck/collection-partner-app.html, scoped
+// to .deck-host so it doesn't bleed into the rest of the landing page.
+const DECK_CSS = `
+.deck-host {
+  --bg:#F7FBF8; --surface:#FFFFFF;
+  --ink-900:#0B1320; --ink-700:#2C3B53; --ink-500:#5C6A82; --ink-400:#8C97AB; --ink-300:#B8C0CD; --ink-200:#D6DCE4;
+  --line:#E4E8EE; --line-2:#EDF0F4; --line-3:#F4F6FA;
+  --a-50:#ECFCF3; --a-100:#D0F5DF; --a-300:#5FDC9D; --a-500:#15B57E; --a-600:#0E9468; --a-700:#0C7A56;
+  --b-50:#EEF2FF; --b-100:#DDE2FE; --b-500:#4F46E5; --b-600:#4338CA; --b-700:#3730A3; --b-900:#1E1B4B;
+  --warn-50:#FFFBEB; --warn-500:#F59E0B; --warn-700:#92400E;
+  --danger-50:#FEF2F2; --danger-500:#EF4444; --danger-700:#991B1B;
+  --info-50:#ECFEFF; --info-500:#0EA5E9; --info-700:#0369A1;
+  --grad-a: linear-gradient(135deg,#1FCB91 0%,#0EA38F 50%,#0E84A8 100%);
+  --grad-money: linear-gradient(135deg,#28C887 0%,#15B57E 50%,#0C7A56 100%);
+  --el-1: 0 1px 2px rgba(11,19,32,0.04);
+  --el-2: 0 1px 2px rgba(11,19,32,0.04), 0 4px 12px rgba(11,19,32,0.05);
+  --el-3: 0 2px 4px rgba(11,19,32,0.05), 0 12px 28px rgba(11,19,32,0.08);
+  --el-pop: 0 4px 8px rgba(11,19,32,0.08), 0 24px 64px rgba(11,19,32,0.18);
+  --el-a: 0 1px 2px rgba(11,19,32,0.04), 0 12px 28px rgba(21,181,126,0.18), 0 24px 48px rgba(11,19,32,0.06);
+}
+.deck-host .display { font-family: 'IBM Plex Sans','Inter',sans-serif; letter-spacing:-0.03em; font-weight:700; }
+.deck-host .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+.deck-host .tnum { font-variant-numeric: tabular-nums; }
+
+.deck-host .pixel { width: 380px; height: 800px; border-radius: 38px; background:#0B1320; padding: 10px; box-shadow: var(--el-pop), inset 0 0 0 2px #1A2336; position: relative; }
+.deck-host .pixel-screen { width: 100%; height: 100%; border-radius: 30px; overflow: hidden; background: var(--bg); position: relative; display: flex; flex-direction: column; color: var(--ink-900); }
+.deck-host .pixel-screen::before { content:''; position:absolute; top:14px; left:50%; transform:translateX(-50%); width:9px; height:9px; border-radius:99px; background:#0B1320; box-shadow: 0 0 0 2px #1A2336; z-index:10; }
+.deck-host .pixel-status { height: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 12px 22px 4px; font-size: 11px; font-weight: 600; color: var(--ink-900); }
+.deck-host .pixel-body { flex: 1; overflow: hidden; position: relative; display: flex; flex-direction: column; }
+
+.deck-host .pill { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 4px 10px; font-size: 11px; font-weight: 600; line-height: 1; }
+.deck-host .pill .dot { width: 6px; height: 6px; border-radius: 99px; }
+.deck-host .pill-a { background: var(--a-50); border: 1px solid rgba(21,181,126,0.20); color: var(--a-700); }
+.deck-host .pill-a .dot { background: var(--a-500); }
+.deck-host .pill-info { background: var(--info-50); border: 1px solid rgba(14,165,233,0.25); color: var(--info-700); }
+.deck-host .pill-info .dot { background: var(--info-500); }
+.deck-host .pill-danger { background: var(--danger-50); border: 1px solid rgba(239,68,68,0.25); color: var(--danger-700); }
+.deck-host .pill-danger .dot { background: var(--danger-500); }
+
+.deck-host .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 18px; border-radius: 12px; font-weight: 600; font-size: 14px; background: var(--grad-a); color: white; border: none; cursor: pointer; box-shadow: var(--el-a); line-height: 1; white-space: nowrap; }
+.deck-host .btn-ghost { background: white; color: var(--ink-900); border: 1px solid var(--line); box-shadow: var(--el-1); }
+.deck-host .btn-block { width: 100%; }
+.deck-host .btn-lg { padding: 14px 22px; font-size: 15px; border-radius: 14px; }
+.deck-host .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 9px; }
+
+.deck-host .card-soft { background: var(--surface); border: 1px solid var(--line-2); border-radius: 18px; padding: 18px; box-shadow: var(--el-2); }
+.deck-host .card-elev { background: var(--surface); border: 1px solid var(--line-2); border-radius: 20px; box-shadow: var(--el-3); }
+.deck-host .card-a { background: var(--grad-a); color: white; border-radius: 20px; box-shadow: var(--el-a); position: relative; overflow: hidden; }
+.deck-host .card-a::before { content:''; position:absolute; inset:0; background-image: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.16), transparent 50%), radial-gradient(circle at 80% 80%, rgba(255,255,255,0.08), transparent 50%); pointer-events: none; }
+.deck-host .card-money { background: var(--grad-money); color: white; border-radius: 20px; box-shadow: var(--el-a); position: relative; overflow: hidden; }
+.deck-host .card-money::before { content:''; position:absolute; inset:0; background-image: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.16), transparent 50%); pointer-events: none; }
+
+.deck-host .field { display: block; width: 100%; background: white; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; font-size: 14px; color: var(--ink-900); }
+.deck-host .status-dot { width: 8px; height: 8px; border-radius: 99px; display: inline-block; box-shadow: 0 0 0 3px rgba(21,181,126,0.18); background: var(--a-500); }
+.deck-host .status-dot.live { animation: deck-pulse 1.6s ease-in-out infinite; }
+@keyframes deck-pulse { 0%,100% { box-shadow: 0 0 0 3px rgba(21,181,126,0.18); } 50% { box-shadow: 0 0 0 6px rgba(21,181,126,0.10); } }
+
+.deck-host .map-mock { position: relative; width: 100%; height: 100%; background: linear-gradient(135deg,#E8EDF3 0%,#DCE4EC 100%); overflow: hidden; }
+.deck-host .map-mock::before { content:''; position:absolute; inset:0; background-image: linear-gradient(45deg,transparent 49%, rgba(255,255,255,0.6) 49%, rgba(255,255,255,0.6) 51%, transparent 51%), linear-gradient(-45deg,transparent 49%, rgba(255,255,255,0.6) 49%, rgba(255,255,255,0.6) 51%, transparent 51%); background-size: 32px 32px; opacity: 0.6; }
+.deck-host .map-pin { position: absolute; width: 32px; height: 32px; transform: translate(-50%,-100%); }
+.deck-host .map-pin .pin-bubble { width: 32px; height: 32px; background: var(--a-500); border-radius: 50% 50% 50% 0; transform: rotate(-45deg); box-shadow: 0 4px 12px rgba(21,181,126,0.30); color: white; display: grid; place-items: center; font-weight: 700; font-size: 12px; }
+.deck-host .map-pin .pin-bubble > span { transform: rotate(45deg); }
+.deck-host .map-pin.now .pin-bubble { background: var(--danger-500); box-shadow: 0 0 0 8px rgba(239,68,68,0.16), 0 4px 12px rgba(239,68,68,0.30); animation: deck-pin-pulse 1.4s ease-in-out infinite; }
+@keyframes deck-pin-pulse { 0%,100% { box-shadow: 0 0 0 6px rgba(239,68,68,0.16), 0 4px 12px rgba(239,68,68,0.30); } 50% { box-shadow: 0 0 0 14px rgba(239,68,68,0.04), 0 4px 12px rgba(239,68,68,0.30); } }
+.deck-host .map-pin.done .pin-bubble { background: var(--ink-300); box-shadow: 0 4px 12px rgba(11,19,32,0.16); }
+
+.deck-host .id-shine { position: relative; overflow: hidden; }
+.deck-host .id-shine::before { content:''; position:absolute; top:-50%; left:-50%; width:50%; height:200%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.20), transparent); transform: rotate(20deg); animation: deck-shine 6s linear infinite; }
+@keyframes deck-shine { 0% { left: -100%; } 50% { left: 200%; } 100% { left: 200%; } }
+
+.deck-host .deck-phone-stage { transform: scale(0.78); transform-origin: top center; }
+@media (max-width: 1280px) { .deck-host .deck-phone-stage { transform: scale(0.72); } }
+`;
+
 const SCREEN_LABELS = [
-  { id: 0, badge: "01 · Home", label: "Available · soft visits" },
-  { id: 1, badge: "02 · Case", label: "Reminder · DPD 2" },
-  { id: 2, badge: "03 · ID", label: "Show your ID" },
-  { id: 3, badge: "04 · Done", label: "Mark complete" },
+  { id: 0, badge: "A · 01 Home", label: "soft visits · Uber-style accept" },
+  { id: 1, badge: "A · 02 Case", label: "min data · clear do/don't" },
+  { id: 2, badge: "A · 03 Show ID", label: "QR trust · 3 checks" },
+  { id: 3, badge: "A · 04 Done", label: "4 outcomes · earned ₹" },
 ] as const;
 
+/* DECK-EXACT · A · 01 Home / Feed */
 function ScreenFeed() {
   return (
-    <div className="absolute inset-0 flex flex-col bg-[#F7FBF8]">
-      <div className="px-5 pt-2 pb-2 flex items-center justify-between text-[10px] font-semibold text-gray-900">
-        <span>9:14 AM</span>
-        <span>●●●●</span>
-      </div>
-      <div className="relative flex-1 overflow-hidden">
-        {/* Map mock */}
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,#E7F4ED,#D7EADF)]">
-          <div className="absolute inset-0 opacity-40" style={{ backgroundImage: "linear-gradient(rgba(21,181,126,0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(21,181,126,0.18) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
-          {/* route */}
-          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 280 260" fill="none">
-            <path d="M50 230 Q 80 180, 110 170 T 180 110 T 230 60" stroke="#15B57E" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="6 6" />
-          </svg>
-          {/* pins */}
-          <div className="absolute" style={{ left: "23%", top: "18%" }}>
-            <div className="w-6 h-6 rounded-full bg-[#15B57E] text-white text-[10px] font-bold grid place-items-center shadow-md">1</div>
-          </div>
-          <div className="absolute" style={{ left: "50%", top: "44%" }}>
-            <div className="w-7 h-7 rounded-full bg-amber-400 text-white text-[11px] font-bold grid place-items-center shadow-md animate-pulse">2</div>
-          </div>
-          <div className="absolute" style={{ left: "60%", top: "62%" }}>
-            <div className="w-6 h-6 rounded-full bg-white border-2 border-gray-300 text-gray-700 text-[10px] font-bold grid place-items-center shadow-sm">3</div>
-          </div>
-          <div className="absolute" style={{ left: "75%", top: "78%" }}>
-            <div className="w-6 h-6 rounded-full bg-white border-2 border-gray-300 text-gray-700 text-[10px] font-bold grid place-items-center shadow-sm">4</div>
-          </div>
-          {/* online pill */}
-          <div className="absolute top-3 left-3 bg-white rounded-full px-2 py-1 flex items-center gap-1.5 border border-gray-200 shadow-sm">
-            <span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" /></span>
-            <span className="text-[10px] font-bold text-gray-900">Online</span>
+    <div className="pixel-screen">
+      <div className="pixel-status"><span>9:14 AM</span><span>●●●●</span></div>
+      <div className="pixel-body">
+        <div style={{ position: "relative", flex: 1 }}>
+          <div className="map-mock">
+            <div className="map-pin done" style={{ left: "23%", top: "18%" }}><div className="pin-bubble"><span>1</span></div></div>
+            <div className="map-pin now" style={{ left: "50%", top: "44%" }}><div className="pin-bubble"><span>2</span></div></div>
+            <div className="map-pin" style={{ left: "60%", top: "60%" }}><div className="pin-bubble"><span>3</span></div></div>
+            <div className="map-pin" style={{ left: "75%", top: "78%" }}><div className="pin-bubble"><span>4</span></div></div>
+            <div style={{ position: "absolute", top: 14, left: 14, right: 14, zIndex: 5, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div className="flex items-center gap-2" style={{ background: "white", borderRadius: 999, padding: "4px 10px", border: "1px solid var(--line)" }}>
+                <span className="status-dot live" />
+                <div style={{ fontSize: 12, fontWeight: 600 }}>Online</div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-      {/* Bottom sheet */}
-      <div className="bg-white -mt-6 rounded-t-3xl shadow-[0_-8px_24px_rgba(11,19,32,0.10)] p-4 z-10 relative">
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <div className="text-[9px] uppercase tracking-wider font-bold text-gray-500">Available · soft visits</div>
-            <div className="font-bold text-sm text-gray-900">4 nearby · ₹420 potential</div>
-          </div>
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Track A
-          </span>
-        </div>
-        <div className="space-y-1.5">
-          <div className="rounded-xl border border-emerald-300 bg-emerald-50 px-2.5 py-2 flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500 text-white grid place-items-center text-sm shrink-0">📞</div>
-            <div className="flex-1 min-w-0">
-              <div className="text-[11px] font-bold text-gray-900 truncate">Reminder · 1.2 km</div>
-              <div className="text-[9px] text-gray-500">DPD 2 · ₹80 · ~12 min</div>
+        <div style={{ padding: 16, background: "white", borderTop: "1px solid var(--line-2)", borderRadius: "24px 24px 0 0", marginTop: -24, position: "relative", zIndex: 6, boxShadow: "0 -8px 24px rgba(11,19,32,0.08)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <div>
+              <div style={{ fontSize: 10, color: "var(--ink-500)", textTransform: "uppercase", fontWeight: 700 }}>Available · soft visits</div>
+              <div className="display" style={{ fontSize: 16 }}>4 nearby · ₹420 potential</div>
             </div>
-            <button className="px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-[10px] font-bold shrink-0">Accept</button>
+            <span className="pill pill-a"><span className="dot" />Track A</span>
           </div>
-          <div className="rounded-xl border border-gray-200 bg-white px-2.5 py-2 flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 grid place-items-center text-sm shrink-0">📋</div>
-            <div className="flex-1 min-w-0">
-              <div className="text-[11px] font-bold text-gray-900 truncate">Doc pickup · 2.4 km</div>
-              <div className="text-[9px] text-gray-500">KYC · ₹100 · ~10 min</div>
+          <div className="space-y-2">
+            <div className="card-soft flex items-center gap-3" style={{ padding: "10px 12px", borderColor: "var(--a-500)", background: "var(--a-50)" }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--a-500)", color: "white", display: "grid", placeItems: "center", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>📞</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 600 }}>Reminder · 1.2 km</div>
+                <div style={{ fontSize: 11, color: "var(--ink-500)" }}>DPD 2 · ₹80 · ~12 min</div>
+              </div>
+              <button className="btn btn-sm">Accept</button>
             </div>
-            <button className="px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-gray-700 text-[10px] font-bold shrink-0">View</button>
-          </div>
-          <div className="rounded-xl border border-gray-200 bg-white px-2.5 py-2 flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 grid place-items-center text-sm shrink-0">📍</div>
-            <div className="flex-1 min-w-0">
-              <div className="text-[11px] font-bold text-gray-900 truncate">Field verify · 3.1 km</div>
-              <div className="text-[9px] text-gray-500">CPV · ₹150 · ~15 min</div>
+            <div className="card-soft flex items-center gap-3" style={{ padding: "10px 12px" }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--a-100)", color: "var(--a-700)", display: "grid", placeItems: "center", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>📋</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 600 }}>Doc pickup · 2.4 km</div>
+                <div style={{ fontSize: 11, color: "var(--ink-500)" }}>KYC re-verify · ₹100 · ~10 min</div>
+              </div>
+              <button className="btn-ghost btn btn-sm">View</button>
             </div>
-            <button className="px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-gray-700 text-[10px] font-bold shrink-0">View</button>
+            <div className="card-soft flex items-center gap-3" style={{ padding: "10px 12px" }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: "var(--a-100)", color: "var(--a-700)", display: "grid", placeItems: "center", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>📍</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 600 }}>Field verification · 3.1 km</div>
+                <div style={{ fontSize: 11, color: "var(--ink-500)" }}>CPV · ₹150 · ~15 min</div>
+              </div>
+              <button className="btn-ghost btn btn-sm">View</button>
+            </div>
           </div>
         </div>
       </div>
@@ -165,175 +222,181 @@ function ScreenFeed() {
   );
 }
 
+/* DECK-EXACT · A · 02 Case Detail */
 function ScreenCaseDetail() {
   return (
-    <div className="absolute inset-0 flex flex-col bg-[#F7FBF8] overflow-y-auto">
-      <div className="px-5 pt-2 pb-2 flex items-center justify-between text-[10px] font-semibold text-gray-900">
-        <span>9:18 AM</span>
-        <span>●●●●</span>
-      </div>
-      <div className="px-4 pb-2 flex items-center justify-between border-b border-gray-100 pb-3">
-        <button className="text-gray-500 text-base">←</button>
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Reminder · DPD 2
-        </span>
-        <div className="w-5" />
-      </div>
-      <div className="p-4 flex-1">
-        <div className="rounded-2xl bg-gradient-to-br from-emerald-50 to-white border border-emerald-100 p-3.5">
-          <div className="text-[9px] uppercase tracking-wider font-bold text-gray-500">Customer (limited · DPDP)</div>
-          <div className="mt-0.5 font-bold text-base text-gray-900">P. Pawar</div>
-          <div className="text-[10px] text-gray-500 mt-0.5">House 42 · Vasant Lane · Wakad · 411057</div>
-          <div className="mt-2.5 grid grid-cols-2 gap-2 text-[10px]">
-            <div><strong className="text-gray-900 tabular-nums">Day 2</strong> <span className="text-gray-500">overdue</span></div>
-            <div><strong className="text-emerald-700 tabular-nums">₹80</strong> <span className="text-gray-500">incentive</span></div>
+    <div className="pixel-screen">
+      <div className="pixel-status"><span>9:18 AM</span><span>●●●●</span></div>
+      <div className="pixel-body" style={{ overflowY: "auto" }}>
+        <div style={{ padding: "20px 20px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--line-2)" }}>
+          <button style={{ color: "var(--ink-500)", background: "transparent", border: 0, fontSize: 18 }}>←</button>
+          <span className="pill pill-a"><span className="dot" />Reminder · DPD 2</span>
+          <div style={{ width: 24 }} />
+        </div>
+        <div style={{ padding: 20 }}>
+          <div className="card-soft" style={{ background: "linear-gradient(135deg,var(--a-50),white)", padding: "14px 16px" }}>
+            <div style={{ fontSize: 10, color: "var(--ink-500)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700 }}>Customer (limited info — DPDP)</div>
+            <div className="display" style={{ fontSize: 18, marginTop: 2 }}>P. Pawar</div>
+            <div style={{ fontSize: 12, color: "var(--ink-500)", marginTop: 2 }}>House 42 · Vasant Lane · Wakad · 411057</div>
+            <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, fontSize: 11 }}>
+              <div><b className="tnum" style={{ color: "var(--ink-700)" }}>Day 2</b> overdue</div>
+              <div><b className="tnum" style={{ color: "var(--a-700)" }}>₹80</b> incentive</div>
+            </div>
           </div>
-        </div>
-        <div className="mt-3 rounded-2xl bg-sky-50 border border-sky-200 p-3">
-          <div className="text-[9px] uppercase tracking-wider font-bold text-sky-700">Your task — soft only</div>
-          <ul className="mt-1.5 space-y-1 text-[10px] text-gray-700">
-            <li className="flex gap-1.5"><span className="text-sky-700">●</span><span>Visit the address · check borrower is at home</span></li>
-            <li className="flex gap-1.5"><span className="text-sky-700">●</span><span>Hand printed reminder · take a photo</span></li>
-            <li className="flex gap-1.5"><span className="text-sky-700">●</span><span>Friendly · "Aapka payment hai · pay via app"</span></li>
-            <li className="flex gap-1.5 text-rose-700"><span>✕</span><span><strong>Don't</strong> ask for cash · don't argue</span></li>
-          </ul>
-        </div>
-        <div className="mt-3">
-          <div className="text-[9px] uppercase tracking-wider font-bold text-gray-500">Last contact</div>
-          <div className="mt-1.5 rounded-2xl bg-white border border-gray-200 p-2.5 text-[10px] text-gray-700 space-y-1">
-            <div>4 May · auto-debit failed · 11:00 PM</div>
-            <div>4 May · WA reminder sent · 6:00 PM</div>
+          <div className="card-soft" style={{ marginTop: 16, background: "var(--info-50)", borderColor: "rgba(14,165,233,0.20)", padding: 14 }}>
+            <div style={{ fontSize: 10, color: "var(--info-700)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>Your task — soft only</div>
+            <ul style={{ marginTop: 8, fontSize: 12, color: "var(--ink-700)", listStyle: "none", padding: 0 }}>
+              <li style={{ display: "flex", gap: 8, marginBottom: 6 }}><span style={{ color: "var(--info-700)" }}>●</span><span>Visit the address · check borrower is at home</span></li>
+              <li style={{ display: "flex", gap: 8, marginBottom: 6 }}><span style={{ color: "var(--info-700)" }}>●</span><span>Hand them the printed reminder card · take a photo</span></li>
+              <li style={{ display: "flex", gap: 8, marginBottom: 6 }}><span style={{ color: "var(--info-700)" }}>●</span><span>Friendly · "Aapka Quikkred ka payment hai · please pay via app"</span></li>
+              <li style={{ display: "flex", gap: 8, color: "var(--danger-700)" }}><span>✕</span><span><b>Don't</b> ask for cash · don't discuss amounts loudly · don't argue</span></li>
+            </ul>
           </div>
+          <div style={{ marginTop: 16 }}>
+            <div style={{ fontSize: 10, color: "var(--ink-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>Last contact</div>
+            <div className="card-elev" style={{ marginTop: 8, padding: "12px 14px" }}>
+              <div style={{ fontSize: 12 }}>4 May · auto-debit failed · 11:00 PM</div>
+              <div style={{ fontSize: 12, marginTop: 4 }}>4 May · WA reminder sent · 6:00 PM</div>
+            </div>
+          </div>
+          <button className="btn btn-block btn-lg" style={{ marginTop: 20 }}>Begin visit · check in</button>
+          <button style={{ fontSize: 12, color: "var(--ink-500)", textDecoration: "underline", width: "100%", textAlign: "center", marginTop: 12, background: "transparent", border: 0 }}>Cancel · I can't make it</button>
         </div>
-        <button className="w-full mt-4 px-4 py-3 rounded-xl bg-gradient-to-br from-[#15B57E] to-[#0C7A56] text-white font-bold text-xs shadow-md">
-          Begin visit · check in
-        </button>
       </div>
     </div>
   );
 }
 
+/* DECK-EXACT · A · 03 Show ID */
 function ScreenShowID() {
   return (
-    <div className="absolute inset-0 flex flex-col bg-[#F7FBF8] overflow-y-auto">
-      <div className="px-5 pt-2 pb-2 flex items-center justify-between text-[10px] font-semibold text-gray-900">
-        <span>9:42 AM</span>
-        <span>●●●●</span>
-      </div>
-      <div className="px-4 pb-3 flex items-center justify-between border-b border-gray-100">
-        <button className="text-gray-500 text-base">←</button>
-        <span className="font-bold text-xs text-gray-900">Show your ID</span>
-        <div className="w-5" />
-      </div>
-      <div className="p-4">
-        {/* ID Card */}
-        <div className="relative rounded-2xl overflow-hidden shadow-lg" style={{ background: "linear-gradient(135deg, #1FCB91 0%, #0EA38F 50%, #0E84A8 100%)" }}>
-          <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(circle at 80% 20%, white, transparent 50%)" }} />
-          <div className="relative p-4 text-white">
-            <div className="flex items-center justify-between">
-              <div className="text-xs font-bold tracking-wider">QUIKKRED</div>
-              <span className="px-2 py-0.5 rounded-full bg-white/20 border border-white/30 text-[9px] font-bold tracking-wider">VERIFIED PARTNER</span>
-            </div>
-            <div className="flex items-center gap-3 mt-3.5">
-              <div className="w-14 h-16 rounded-lg bg-white/15 border-2 border-white/30 grid place-items-center shrink-0">
-                <div className="text-2xl">👤</div>
+    <div className="pixel-screen">
+      <div className="pixel-status"><span>9:42 AM</span><span>●●●●</span></div>
+      <div className="pixel-body" style={{ overflowY: "auto" }}>
+        <div style={{ padding: "20px 20px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--line-2)" }}>
+          <button style={{ color: "var(--ink-500)", background: "transparent", border: 0, fontSize: 18 }}>←</button>
+          <div style={{ fontWeight: 600, fontSize: 14 }}>Show your ID</div>
+          <div style={{ width: 24 }} />
+        </div>
+        <div style={{ padding: 20 }}>
+          <div className="card-a id-shine" style={{ borderRadius: 18 }}>
+            <div style={{ position: "relative", padding: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.05em" }}>QUIKKRED</div>
+                <span className="pill" style={{ background: "rgba(255,255,255,0.20)", borderColor: "rgba(255,255,255,0.30)", color: "white", padding: "2px 8px", fontSize: 10, border: "1px solid rgba(255,255,255,0.30)" }}>VERIFIED PARTNER</span>
               </div>
-              <div>
-                <div className="font-bold text-base">Vikram Sharma</div>
-                <div className="text-[10px] opacity-85">Track A · soft tasks</div>
-                <div className="text-[9px] opacity-70 font-mono mt-0.5">QK-CP-2026-0421</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 16 }}>
+                <div style={{ width: 64, height: 80, borderRadius: 8, background: "rgba(255,255,255,0.15)", border: "2px solid rgba(255,255,255,0.30)", display: "grid", placeItems: "center", flexShrink: 0 }}>
+                  <svg width="32" height="32" viewBox="0 0 24 24" stroke="white" strokeWidth="1.5" fill="none"><circle cx="12" cy="8" r="4" /><path d="M4 21 a8 8 0 0 1 16 0" /></svg>
+                </div>
+                <div>
+                  <div className="display" style={{ fontSize: 20 }}>Vikram Sharma</div>
+                  <div style={{ fontSize: 12, opacity: 0.85 }}>Track A · soft tasks</div>
+                  <div className="mono" style={{ fontSize: 10, opacity: 0.7, marginTop: 4 }}>QK-CP-2026-0421</div>
+                </div>
               </div>
-            </div>
-            <div className="mt-3 pt-3 border-t border-white/20 flex items-center justify-between gap-2">
-              <div className="text-[9px] opacity-85 leading-tight max-w-[140px]">
-                I'm here for a friendly reminder. <strong>Cannot accept cash.</strong> Pay via Quikkred app.
+              <div style={{ marginTop: 12, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.20)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                <div style={{ fontSize: 10, opacity: 0.85, maxWidth: 180, lineHeight: 1.3 }}>
+                  I'm here for a friendly reminder. <b>I cannot accept cash.</b> Please pay via the Quikkred app.
+                </div>
+                <div style={{ width: 56, height: 56, background: "white", borderRadius: 4, flexShrink: 0, backgroundImage: "linear-gradient(45deg,#0B1320 25%, transparent 25%, transparent 75%, #0B1320 75%), linear-gradient(45deg,#0B1320 25%, transparent 25%, transparent 75%, #0B1320 75%)", backgroundSize: "4px 4px", backgroundPosition: "0 0, 2px 2px" }} />
               </div>
-              <div className="w-12 h-12 rounded bg-white grid place-items-center shrink-0" style={{ backgroundImage: "linear-gradient(45deg,#0B1320 25%, transparent 25%, transparent 75%, #0B1320 75%), linear-gradient(45deg,#0B1320 25%, transparent 25%, transparent 75%, #0B1320 75%)", backgroundSize: "4px 4px", backgroundPosition: "0 0, 2px 2px" }} />
             </div>
           </div>
-        </div>
-        <p className="text-[9px] text-gray-500 text-center mt-2.5">Ask borrower to scan the QR with the Quikkred app — they'll see who you are.</p>
-        <div className="mt-3 space-y-1.5">
-          {[
-            { label: "GPS at registered address", note: "📍 within 14 m", checked: true, noteColor: "text-emerald-700" },
-            { label: "Borrower acknowledged", note: "Inside · agreed to talk briefly", checked: true, noteColor: "text-gray-500" },
-            { label: "Borrower scanned my QR", note: "Trust ✓", checked: false, noteColor: "text-gray-500" },
-          ].map((c) => (
-            <div key={c.label} className="rounded-xl bg-white border border-gray-200 px-2.5 py-2 flex items-center gap-2">
-              <div className={`w-4 h-4 rounded ${c.checked ? "bg-emerald-500" : "bg-white border-2 border-gray-300"} grid place-items-center shrink-0`}>
-                {c.checked && <span className="text-white text-[10px] leading-none">✓</span>}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-[10px] font-bold text-gray-900 leading-tight">{c.label}</div>
-                <div className={`text-[9px] ${c.noteColor} leading-tight`}>{c.note}</div>
-              </div>
+          <p style={{ fontSize: 12, color: "var(--ink-500)", textAlign: "center", marginTop: 12 }}>Ask the borrower to scan the QR with the Quikkred app — they'll see who you are.</p>
+          <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+            <div className="card-soft" style={{ padding: "10px 12px" }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+                <input type="checkbox" defaultChecked style={{ accentColor: "var(--a-500)", width: 16, height: 16 }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>GPS at registered address</div>
+                  <div style={{ fontSize: 11, color: "var(--a-700)" }}>📍 within 14m</div>
+                </div>
+              </label>
             </div>
-          ))}
+            <div className="card-soft" style={{ padding: "10px 12px" }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+                <input type="checkbox" defaultChecked style={{ accentColor: "var(--a-500)", width: 16, height: 16 }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>Borrower acknowledged</div>
+                  <div style={{ fontSize: 11, color: "var(--ink-500)" }}>Inside · agreed to talk briefly</div>
+                </div>
+              </label>
+            </div>
+            <div className="card-soft" style={{ padding: "10px 12px" }}>
+              <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+                <input type="checkbox" style={{ accentColor: "var(--a-500)", width: 16, height: 16 }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600 }}>Borrower scanned my QR</div>
+                  <div style={{ fontSize: 11, color: "var(--ink-500)" }}>Trust ✓</div>
+                </div>
+              </label>
+            </div>
+          </div>
+          <button className="btn btn-block btn-lg" style={{ marginTop: 16 }}>Hand over reminder · capture</button>
         </div>
-        <button className="w-full mt-3 px-4 py-3 rounded-xl bg-gradient-to-br from-[#15B57E] to-[#0C7A56] text-white font-bold text-xs shadow-md">
-          Hand over reminder · capture
-        </button>
       </div>
     </div>
   );
 }
 
+/* DECK-EXACT · A · 04 Mark Complete */
 function ScreenComplete() {
   return (
-    <div className="absolute inset-0 flex flex-col bg-[#F7FBF8] overflow-y-auto">
-      <div className="px-5 pt-2 pb-2 flex items-center justify-between text-[10px] font-semibold text-gray-900">
-        <span>9:54 AM</span>
-        <span>●●●●</span>
-      </div>
-      <div className="px-4 pb-3 flex items-center justify-between border-b border-gray-100">
-        <button className="text-gray-500 text-base">←</button>
-        <span className="font-bold text-xs text-gray-900">Mark complete</span>
-        <div className="w-5" />
-      </div>
-      <div className="p-4">
-        <div className="text-[9px] uppercase tracking-wider font-bold text-gray-500">Outcome</div>
-        <div className="mt-2 grid grid-cols-2 gap-1.5">
-          <button className="rounded-xl bg-emerald-50 border-2 border-emerald-500 p-2.5 text-left">
-            <div className="text-base">✓</div>
-            <div className="text-[10px] font-bold text-emerald-700 mt-0.5 leading-tight">Delivered + ack.</div>
-            <div className="text-[9px] text-gray-600 mt-0.5 leading-tight">Borrower agreed to pay via app</div>
-          </button>
-          <button className="rounded-xl bg-white border border-gray-200 p-2.5 text-left">
-            <div className="text-base">⏰</div>
-            <div className="text-[10px] font-bold text-gray-900 mt-0.5">Not at home</div>
-            <div className="text-[9px] text-gray-500 mt-0.5">Will retry later</div>
-          </button>
-          <button className="rounded-xl bg-white border border-gray-200 p-2.5 text-left">
-            <div className="text-base">❌</div>
-            <div className="text-[10px] font-bold text-gray-900 mt-0.5">Refused / hostile</div>
-            <div className="text-[9px] text-gray-500 mt-0.5">Escalate to ops</div>
-          </button>
-          <button className="rounded-xl bg-white border border-gray-200 p-2.5 text-left">
-            <div className="text-base">🏚</div>
-            <div className="text-[10px] font-bold text-gray-900 mt-0.5">Wrong address</div>
-            <div className="text-[9px] text-gray-500 mt-0.5">Address invalid</div>
-          </button>
+    <div className="pixel-screen">
+      <div className="pixel-status"><span>9:54 AM</span><span>●●●●</span></div>
+      <div className="pixel-body" style={{ overflowY: "auto" }}>
+        <div style={{ padding: "20px 20px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--line-2)" }}>
+          <button style={{ color: "var(--ink-500)", background: "transparent", border: 0, fontSize: 18 }}>←</button>
+          <div style={{ fontWeight: 600, fontSize: 14 }}>Mark complete</div>
+          <div style={{ width: 24 }} />
         </div>
-        <div className="mt-3">
-          <div className="text-[9px] uppercase tracking-wider font-bold text-gray-500">Photo · borrower with reminder</div>
-          <div className="mt-1 rounded-xl bg-[#0B1320] p-2 text-center">
-            <div className="aspect-[4/3] bg-[#1A2336] rounded grid place-items-center text-white/40">
-              <span className="text-2xl">📷</span>
+        <div style={{ padding: 20 }}>
+          <div style={{ fontSize: 10, color: "var(--ink-500)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700 }}>Outcome</div>
+          <div style={{ marginTop: 8, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            <button className="card-soft" style={{ textAlign: "left", padding: 14, borderColor: "var(--a-500)", background: "var(--a-50)", border: "1px solid var(--a-500)" }}>
+              <div style={{ fontSize: 24 }}>✓</div>
+              <div style={{ fontSize: 13, fontWeight: 700, marginTop: 4, color: "var(--a-700)" }}>Delivered + acknowledged</div>
+              <div style={{ fontSize: 11, color: "var(--ink-700)", marginTop: 2 }}>Borrower agreed to pay via app</div>
+            </button>
+            <button className="card-soft" style={{ textAlign: "left", padding: 14 }}>
+              <div style={{ fontSize: 24 }}>⏰</div>
+              <div style={{ fontSize: 13, fontWeight: 700, marginTop: 4 }}>Not at home</div>
+              <div style={{ fontSize: 11, color: "var(--ink-500)", marginTop: 2 }}>Will retry later</div>
+            </button>
+            <button className="card-soft" style={{ textAlign: "left", padding: 14 }}>
+              <div style={{ fontSize: 24 }}>❌</div>
+              <div style={{ fontSize: 13, fontWeight: 700, marginTop: 4 }}>Refused / hostile</div>
+              <div style={{ fontSize: 11, color: "var(--ink-500)", marginTop: 2 }}>Escalate to ops</div>
+            </button>
+            <button className="card-soft" style={{ textAlign: "left", padding: 14 }}>
+              <div style={{ fontSize: 24 }}>🏚</div>
+              <div style={{ fontSize: 13, fontWeight: 700, marginTop: 4 }}>Wrong address</div>
+              <div style={{ fontSize: 11, color: "var(--ink-500)", marginTop: 2 }}>Address invalid</div>
+            </button>
+          </div>
+          <div style={{ marginTop: 16 }}>
+            <label style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: "var(--ink-500)" }}>Photo · borrower holding reminder card</label>
+            <div className="card-soft" style={{ marginTop: 4, padding: 10, background: "#0B1320", textAlign: "center" }}>
+              <div style={{ aspectRatio: "4 / 3", background: "#1A2336", borderRadius: 4, display: "grid", placeItems: "center", color: "rgba(255,255,255,0.4)" }}>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="6" width="18" height="13" rx="2" /><circle cx="12" cy="13" r="3" /></svg>
+              </div>
+              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", marginTop: 8 }}>📷 captured · timestamp embedded</div>
             </div>
-            <div className="text-[8px] text-white/60 mt-1.5">captured · timestamp embedded</div>
           </div>
-        </div>
-        <div className="mt-3 rounded-2xl text-white p-3.5 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #28C887 0%, #15B57E 50%, #0C7A56 100%)" }}>
-          <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "radial-gradient(circle at 20% 30%, rgba(255,255,255,0.3), transparent 50%)" }} />
-          <div className="relative">
-            <div className="text-[9px] uppercase tracking-wider opacity-90 font-bold">Earned</div>
-            <div className="font-bold text-2xl tabular-nums leading-none mt-1">+ ₹80</div>
-            <div className="text-[10px] opacity-90 mt-1">Settled tomorrow T+1 to your bank</div>
+          <div style={{ marginTop: 16 }}>
+            <label style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.10em", color: "var(--ink-500)" }}>Notes (optional)</label>
+            <textarea className="field" rows={2} style={{ marginTop: 4 }} defaultValue="Borrower said salary on 7 May · will pay then." />
           </div>
+          <div className="card-money" style={{ marginTop: 16, padding: 14 }}>
+            <div style={{ position: "relative" }}>
+              <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.05em", opacity: 0.85, fontWeight: 700 }}>Earned</div>
+              <div className="display tnum" style={{ fontSize: 24 }}>+ ₹80</div>
+              <div style={{ fontSize: 11, opacity: 0.85, marginTop: 2 }}>Settled tomorrow T+1 to your bank</div>
+            </div>
+          </div>
+          <button className="btn btn-block btn-lg" style={{ marginTop: 16 }}>Submit · next case</button>
         </div>
-        <button className="w-full mt-3 px-4 py-3 rounded-xl bg-gradient-to-br from-[#15B57E] to-[#0C7A56] text-white font-bold text-xs shadow-md">
-          Submit · next case
-        </button>
       </div>
     </div>
   );
@@ -780,22 +843,24 @@ export default function CollectPartnerPage() {
                   </div>
                 </motion.div>
 
-                {/* Phone Mockup · 4-screen rotating carousel */}
-                <div className="relative w-[300px] h-[620px] bg-gradient-to-b from-gray-800 to-gray-900 rounded-[3rem] p-[6px] shadow-2xl ring-1 ring-white/10">
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-gray-900 rounded-b-2xl z-30" />
-                  <div className="w-full h-full bg-white rounded-[2.7rem] overflow-hidden relative">
-                    <AnimatePresence mode="wait">
-                      <motion.div
-                        key={screenIdx}
-                        initial={{ opacity: 0, x: 30, scale: 0.98 }}
-                        animate={{ opacity: 1, x: 0, scale: 1 }}
-                        exit={{ opacity: 0, x: -30, scale: 0.98 }}
-                        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                        className="absolute inset-0"
-                      >
-                        <ActiveScreen />
-                      </motion.div>
-                    </AnimatePresence>
+                {/* Phone Mockup · DECK-EXACT .pixel frame · 4-screen carousel */}
+                <div className="deck-host" style={{ width: 296, height: 624, position: "relative" }}>
+                  <style dangerouslySetInnerHTML={{ __html: DECK_CSS }} />
+                  <div className="deck-phone-stage">
+                    <div className="pixel">
+                      <AnimatePresence mode="wait">
+                        <motion.div
+                          key={screenIdx}
+                          initial={{ opacity: 0, x: 30 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -30 }}
+                          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                          style={{ width: "100%", height: "100%" }}
+                        >
+                          <ActiveScreen />
+                        </motion.div>
+                      </AnimatePresence>
+                    </div>
                   </div>
 
                   {/* Progress dots · below phone */}
