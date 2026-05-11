@@ -15,6 +15,7 @@ import { useLanguage } from "@/lib/contexts/LanguageContext";
 import Hero from "@/components/homepage/hero";
 import StepsSection from "@/components/homepage/steps-section";
 import FeaturesSection from "@/components/homepage/features-section";
+import DailyLadderTeaser from "@/components/homepage/daily-ladder-teaser";
 import LoansGrid from "@/components/homepage/loans-grid";
 import LoanCalculatorAll from "@/components/homepage/loan-calculator";
 import TestimonialsSection from "@/components/homepage/TestimonialsSection";
@@ -143,6 +144,9 @@ export default function Home() {
 
         {/* Features Section - Full Screen */}
         <FeaturesSection/>
+
+        {/* Daily Ladder teaser — links to dedicated page */}
+        <DailyLadderTeaser/>
 
         {/* Interactive Loan Calculator Section */}
         <section className="flex items-center py-8 sm:py-10 lg:py-12 bg-[#F6F6F6]">
