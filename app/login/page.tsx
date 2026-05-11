@@ -49,7 +49,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
-  const [loginMethod] = useState<'phone'>('phone');
+  const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('phone');
   const [authMethod, setAuthMethod] = useState<'password' | 'otp'>('otp');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);

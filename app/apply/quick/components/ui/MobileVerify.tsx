@@ -31,7 +31,6 @@ const MobileVerify = ({
   const [otpError, setOtpError] = useState("");
   const [otpTimer, setOtpTimer] = useState(0);
 
-  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const isMobileValid = /^[6-9]\d{9}$/.test(mobile);
   const isEmailValid = EMAIL_REGEX.test(email.trim());
   const canSendOtp = isMobileValid && isEmailValid;
