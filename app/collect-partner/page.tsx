@@ -42,7 +42,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { AnimatePresence } from "framer-motion";
 import { COMPANY_PHONE_DISPLAY, COMPANY_PHONE_TEL } from "@/lib/constants/companyInfo";
 
 interface Feature {
@@ -79,8 +80,280 @@ interface ComplianceRule {
   icon: React.ComponentType<any>;
 }
 
+// ---------------- Hero phone-screen carousel · 4 deck-faithful screens ----------------
+const SCREEN_LABELS = [
+  { id: 0, badge: "01 · Home", label: "Available · soft visits" },
+  { id: 1, badge: "02 · Case", label: "Reminder · DPD 2" },
+  { id: 2, badge: "03 · ID", label: "Show your ID" },
+  { id: 3, badge: "04 · Done", label: "Mark complete" },
+] as const;
+
+function ScreenFeed() {
+  return (
+    <div className="absolute inset-0 flex flex-col bg-[#F7FBF8]">
+      <div className="px-5 pt-2 pb-2 flex items-center justify-between text-[10px] font-semibold text-gray-900">
+        <span>9:14 AM</span>
+        <span>●●●●</span>
+      </div>
+      <div className="relative flex-1 overflow-hidden">
+        {/* Map mock */}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,#E7F4ED,#D7EADF)]">
+          <div className="absolute inset-0 opacity-40" style={{ backgroundImage: "linear-gradient(rgba(21,181,126,0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(21,181,126,0.18) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+          {/* route */}
+          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 280 260" fill="none">
+            <path d="M50 230 Q 80 180, 110 170 T 180 110 T 230 60" stroke="#15B57E" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="6 6" />
+          </svg>
+          {/* pins */}
+          <div className="absolute" style={{ left: "23%", top: "18%" }}>
+            <div className="w-6 h-6 rounded-full bg-[#15B57E] text-white text-[10px] font-bold grid place-items-center shadow-md">1</div>
+          </div>
+          <div className="absolute" style={{ left: "50%", top: "44%" }}>
+            <div className="w-7 h-7 rounded-full bg-amber-400 text-white text-[11px] font-bold grid place-items-center shadow-md animate-pulse">2</div>
+          </div>
+          <div className="absolute" style={{ left: "60%", top: "62%" }}>
+            <div className="w-6 h-6 rounded-full bg-white border-2 border-gray-300 text-gray-700 text-[10px] font-bold grid place-items-center shadow-sm">3</div>
+          </div>
+          <div className="absolute" style={{ left: "75%", top: "78%" }}>
+            <div className="w-6 h-6 rounded-full bg-white border-2 border-gray-300 text-gray-700 text-[10px] font-bold grid place-items-center shadow-sm">4</div>
+          </div>
+          {/* online pill */}
+          <div className="absolute top-3 left-3 bg-white rounded-full px-2 py-1 flex items-center gap-1.5 border border-gray-200 shadow-sm">
+            <span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" /><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" /></span>
+            <span className="text-[10px] font-bold text-gray-900">Online</span>
+          </div>
+        </div>
+      </div>
+      {/* Bottom sheet */}
+      <div className="bg-white -mt-6 rounded-t-3xl shadow-[0_-8px_24px_rgba(11,19,32,0.10)] p-4 z-10 relative">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <div className="text-[9px] uppercase tracking-wider font-bold text-gray-500">Available · soft visits</div>
+            <div className="font-bold text-sm text-gray-900">4 nearby · ₹420 potential</div>
+          </div>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Track A
+          </span>
+        </div>
+        <div className="space-y-1.5">
+          <div className="rounded-xl border border-emerald-300 bg-emerald-50 px-2.5 py-2 flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500 text-white grid place-items-center text-sm shrink-0">📞</div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[11px] font-bold text-gray-900 truncate">Reminder · 1.2 km</div>
+              <div className="text-[9px] text-gray-500">DPD 2 · ₹80 · ~12 min</div>
+            </div>
+            <button className="px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-[10px] font-bold shrink-0">Accept</button>
+          </div>
+          <div className="rounded-xl border border-gray-200 bg-white px-2.5 py-2 flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 grid place-items-center text-sm shrink-0">📋</div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[11px] font-bold text-gray-900 truncate">Doc pickup · 2.4 km</div>
+              <div className="text-[9px] text-gray-500">KYC · ₹100 · ~10 min</div>
+            </div>
+            <button className="px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-gray-700 text-[10px] font-bold shrink-0">View</button>
+          </div>
+          <div className="rounded-xl border border-gray-200 bg-white px-2.5 py-2 flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 grid place-items-center text-sm shrink-0">📍</div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[11px] font-bold text-gray-900 truncate">Field verify · 3.1 km</div>
+              <div className="text-[9px] text-gray-500">CPV · ₹150 · ~15 min</div>
+            </div>
+            <button className="px-2.5 py-1 rounded-lg bg-white border border-gray-200 text-gray-700 text-[10px] font-bold shrink-0">View</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ScreenCaseDetail() {
+  return (
+    <div className="absolute inset-0 flex flex-col bg-[#F7FBF8] overflow-y-auto">
+      <div className="px-5 pt-2 pb-2 flex items-center justify-between text-[10px] font-semibold text-gray-900">
+        <span>9:18 AM</span>
+        <span>●●●●</span>
+      </div>
+      <div className="px-4 pb-2 flex items-center justify-between border-b border-gray-100 pb-3">
+        <button className="text-gray-500 text-base">←</button>
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Reminder · DPD 2
+        </span>
+        <div className="w-5" />
+      </div>
+      <div className="p-4 flex-1">
+        <div className="rounded-2xl bg-gradient-to-br from-emerald-50 to-white border border-emerald-100 p-3.5">
+          <div className="text-[9px] uppercase tracking-wider font-bold text-gray-500">Customer (limited · DPDP)</div>
+          <div className="mt-0.5 font-bold text-base text-gray-900">P. Pawar</div>
+          <div className="text-[10px] text-gray-500 mt-0.5">House 42 · Vasant Lane · Wakad · 411057</div>
+          <div className="mt-2.5 grid grid-cols-2 gap-2 text-[10px]">
+            <div><strong className="text-gray-900 tabular-nums">Day 2</strong> <span className="text-gray-500">overdue</span></div>
+            <div><strong className="text-emerald-700 tabular-nums">₹80</strong> <span className="text-gray-500">incentive</span></div>
+          </div>
+        </div>
+        <div className="mt-3 rounded-2xl bg-sky-50 border border-sky-200 p-3">
+          <div className="text-[9px] uppercase tracking-wider font-bold text-sky-700">Your task — soft only</div>
+          <ul className="mt-1.5 space-y-1 text-[10px] text-gray-700">
+            <li className="flex gap-1.5"><span className="text-sky-700">●</span><span>Visit the address · check borrower is at home</span></li>
+            <li className="flex gap-1.5"><span className="text-sky-700">●</span><span>Hand printed reminder · take a photo</span></li>
+            <li className="flex gap-1.5"><span className="text-sky-700">●</span><span>Friendly · "Aapka payment hai · pay via app"</span></li>
+            <li className="flex gap-1.5 text-rose-700"><span>✕</span><span><strong>Don't</strong> ask for cash · don't argue</span></li>
+          </ul>
+        </div>
+        <div className="mt-3">
+          <div className="text-[9px] uppercase tracking-wider font-bold text-gray-500">Last contact</div>
+          <div className="mt-1.5 rounded-2xl bg-white border border-gray-200 p-2.5 text-[10px] text-gray-700 space-y-1">
+            <div>4 May · auto-debit failed · 11:00 PM</div>
+            <div>4 May · WA reminder sent · 6:00 PM</div>
+          </div>
+        </div>
+        <button className="w-full mt-4 px-4 py-3 rounded-xl bg-gradient-to-br from-[#15B57E] to-[#0C7A56] text-white font-bold text-xs shadow-md">
+          Begin visit · check in
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ScreenShowID() {
+  return (
+    <div className="absolute inset-0 flex flex-col bg-[#F7FBF8] overflow-y-auto">
+      <div className="px-5 pt-2 pb-2 flex items-center justify-between text-[10px] font-semibold text-gray-900">
+        <span>9:42 AM</span>
+        <span>●●●●</span>
+      </div>
+      <div className="px-4 pb-3 flex items-center justify-between border-b border-gray-100">
+        <button className="text-gray-500 text-base">←</button>
+        <span className="font-bold text-xs text-gray-900">Show your ID</span>
+        <div className="w-5" />
+      </div>
+      <div className="p-4">
+        {/* ID Card */}
+        <div className="relative rounded-2xl overflow-hidden shadow-lg" style={{ background: "linear-gradient(135deg, #1FCB91 0%, #0EA38F 50%, #0E84A8 100%)" }}>
+          <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(circle at 80% 20%, white, transparent 50%)" }} />
+          <div className="relative p-4 text-white">
+            <div className="flex items-center justify-between">
+              <div className="text-xs font-bold tracking-wider">QUIKKRED</div>
+              <span className="px-2 py-0.5 rounded-full bg-white/20 border border-white/30 text-[9px] font-bold tracking-wider">VERIFIED PARTNER</span>
+            </div>
+            <div className="flex items-center gap-3 mt-3.5">
+              <div className="w-14 h-16 rounded-lg bg-white/15 border-2 border-white/30 grid place-items-center shrink-0">
+                <div className="text-2xl">👤</div>
+              </div>
+              <div>
+                <div className="font-bold text-base">Vikram Sharma</div>
+                <div className="text-[10px] opacity-85">Track A · soft tasks</div>
+                <div className="text-[9px] opacity-70 font-mono mt-0.5">QK-CP-2026-0421</div>
+              </div>
+            </div>
+            <div className="mt-3 pt-3 border-t border-white/20 flex items-center justify-between gap-2">
+              <div className="text-[9px] opacity-85 leading-tight max-w-[140px]">
+                I'm here for a friendly reminder. <strong>Cannot accept cash.</strong> Pay via Quikkred app.
+              </div>
+              <div className="w-12 h-12 rounded bg-white grid place-items-center shrink-0" style={{ backgroundImage: "linear-gradient(45deg,#0B1320 25%, transparent 25%, transparent 75%, #0B1320 75%), linear-gradient(45deg,#0B1320 25%, transparent 25%, transparent 75%, #0B1320 75%)", backgroundSize: "4px 4px", backgroundPosition: "0 0, 2px 2px" }} />
+            </div>
+          </div>
+        </div>
+        <p className="text-[9px] text-gray-500 text-center mt-2.5">Ask borrower to scan the QR with the Quikkred app — they'll see who you are.</p>
+        <div className="mt-3 space-y-1.5">
+          {[
+            { label: "GPS at registered address", note: "📍 within 14 m", checked: true, noteColor: "text-emerald-700" },
+            { label: "Borrower acknowledged", note: "Inside · agreed to talk briefly", checked: true, noteColor: "text-gray-500" },
+            { label: "Borrower scanned my QR", note: "Trust ✓", checked: false, noteColor: "text-gray-500" },
+          ].map((c) => (
+            <div key={c.label} className="rounded-xl bg-white border border-gray-200 px-2.5 py-2 flex items-center gap-2">
+              <div className={`w-4 h-4 rounded ${c.checked ? "bg-emerald-500" : "bg-white border-2 border-gray-300"} grid place-items-center shrink-0`}>
+                {c.checked && <span className="text-white text-[10px] leading-none">✓</span>}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[10px] font-bold text-gray-900 leading-tight">{c.label}</div>
+                <div className={`text-[9px] ${c.noteColor} leading-tight`}>{c.note}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <button className="w-full mt-3 px-4 py-3 rounded-xl bg-gradient-to-br from-[#15B57E] to-[#0C7A56] text-white font-bold text-xs shadow-md">
+          Hand over reminder · capture
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ScreenComplete() {
+  return (
+    <div className="absolute inset-0 flex flex-col bg-[#F7FBF8] overflow-y-auto">
+      <div className="px-5 pt-2 pb-2 flex items-center justify-between text-[10px] font-semibold text-gray-900">
+        <span>9:54 AM</span>
+        <span>●●●●</span>
+      </div>
+      <div className="px-4 pb-3 flex items-center justify-between border-b border-gray-100">
+        <button className="text-gray-500 text-base">←</button>
+        <span className="font-bold text-xs text-gray-900">Mark complete</span>
+        <div className="w-5" />
+      </div>
+      <div className="p-4">
+        <div className="text-[9px] uppercase tracking-wider font-bold text-gray-500">Outcome</div>
+        <div className="mt-2 grid grid-cols-2 gap-1.5">
+          <button className="rounded-xl bg-emerald-50 border-2 border-emerald-500 p-2.5 text-left">
+            <div className="text-base">✓</div>
+            <div className="text-[10px] font-bold text-emerald-700 mt-0.5 leading-tight">Delivered + ack.</div>
+            <div className="text-[9px] text-gray-600 mt-0.5 leading-tight">Borrower agreed to pay via app</div>
+          </button>
+          <button className="rounded-xl bg-white border border-gray-200 p-2.5 text-left">
+            <div className="text-base">⏰</div>
+            <div className="text-[10px] font-bold text-gray-900 mt-0.5">Not at home</div>
+            <div className="text-[9px] text-gray-500 mt-0.5">Will retry later</div>
+          </button>
+          <button className="rounded-xl bg-white border border-gray-200 p-2.5 text-left">
+            <div className="text-base">❌</div>
+            <div className="text-[10px] font-bold text-gray-900 mt-0.5">Refused / hostile</div>
+            <div className="text-[9px] text-gray-500 mt-0.5">Escalate to ops</div>
+          </button>
+          <button className="rounded-xl bg-white border border-gray-200 p-2.5 text-left">
+            <div className="text-base">🏚</div>
+            <div className="text-[10px] font-bold text-gray-900 mt-0.5">Wrong address</div>
+            <div className="text-[9px] text-gray-500 mt-0.5">Address invalid</div>
+          </button>
+        </div>
+        <div className="mt-3">
+          <div className="text-[9px] uppercase tracking-wider font-bold text-gray-500">Photo · borrower with reminder</div>
+          <div className="mt-1 rounded-xl bg-[#0B1320] p-2 text-center">
+            <div className="aspect-[4/3] bg-[#1A2336] rounded grid place-items-center text-white/40">
+              <span className="text-2xl">📷</span>
+            </div>
+            <div className="text-[8px] text-white/60 mt-1.5">captured · timestamp embedded</div>
+          </div>
+        </div>
+        <div className="mt-3 rounded-2xl text-white p-3.5 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #28C887 0%, #15B57E 50%, #0C7A56 100%)" }}>
+          <div className="absolute inset-0 opacity-30" style={{ backgroundImage: "radial-gradient(circle at 20% 30%, rgba(255,255,255,0.3), transparent 50%)" }} />
+          <div className="relative">
+            <div className="text-[9px] uppercase tracking-wider opacity-90 font-bold">Earned</div>
+            <div className="font-bold text-2xl tabular-nums leading-none mt-1">+ ₹80</div>
+            <div className="text-[10px] opacity-90 mt-1">Settled tomorrow T+1 to your bank</div>
+          </div>
+        </div>
+        <button className="w-full mt-3 px-4 py-3 rounded-xl bg-gradient-to-br from-[#15B57E] to-[#0C7A56] text-white font-bold text-xs shadow-md">
+          Submit · next case
+        </button>
+      </div>
+    </div>
+  );
+}
+
+const SCREENS = [ScreenFeed, ScreenCaseDetail, ScreenShowID, ScreenComplete];
+
 export default function CollectPartnerPage() {
   const [downloadStarted, setDownloadStarted] = useState(false);
+  const [screenIdx, setScreenIdx] = useState(0);
+
+  // Auto-cycle through 4 hero screens every 3.6s
+  useEffect(() => {
+    const id = setInterval(() => {
+      setScreenIdx((i) => (i + 1) % SCREENS.length);
+    }, 3600);
+    return () => clearInterval(id);
+  }, []);
+
+  const ActiveScreen = SCREENS[screenIdx];
 
   const features: Feature[] = [
     {
@@ -507,105 +780,71 @@ export default function CollectPartnerPage() {
                   </div>
                 </motion.div>
 
-                {/* Phone Mockup */}
+                {/* Phone Mockup · 4-screen rotating carousel */}
                 <div className="relative w-[300px] h-[620px] bg-gradient-to-b from-gray-800 to-gray-900 rounded-[3rem] p-[6px] shadow-2xl ring-1 ring-white/10">
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-gray-900 rounded-b-2xl z-10" />
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-gray-900 rounded-b-2xl z-30" />
                   <div className="w-full h-full bg-white rounded-[2.7rem] overflow-hidden relative">
-                    {/* Status bar */}
-                    <div className="bg-[#1a5f4a] px-6 pt-8 pb-1 flex items-center justify-between text-white text-[10px]">
-                      <span>9:41</span>
-                      <div className="flex items-center gap-1">
-                        <div className="w-4 h-2 border border-white/60 rounded-sm relative">
-                          <div className="absolute inset-[1px] bg-white/60 rounded-[1px]" style={{ width: '70%' }} />
-                        </div>
-                      </div>
-                    </div>
-                    {/* App Header */}
-                    <div className="bg-[#1a5f4a] px-5 pb-5 text-white select-none">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center overflow-hidden">
-                            <Image
-                              src="/quikkred-mark.png"
-                              alt="Quikkred"
-                              width={26}
-                              height={26}
-                            />
-                          </div>
-                          <div>
-                            <div className="font-bold text-sm">Quikkred Collect</div>
-                            <div className="text-[10px] text-white/60">Field Partner App</div>
-                          </div>
-                        </div>
-                        <div className="w-8 h-8 bg-white/15 rounded-full flex items-center justify-center">
-                          <span className="text-xs">RK</span>
-                        </div>
-                      </div>
-                      <div className="text-white/80 text-xs">Good Morning,</div>
-                      <div className="font-semibold text-base">Rahul Kumar · Verified Partner</div>
-                    </div>
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={screenIdx}
+                        initial={{ opacity: 0, x: 30, scale: 0.98 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        exit={{ opacity: 0, x: -30, scale: 0.98 }}
+                        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                        className="absolute inset-0"
+                      >
+                        <ActiveScreen />
+                      </motion.div>
+                    </AnimatePresence>
+                  </div>
 
-                    {/* App Content */}
-                    <div className="p-4 space-y-3 bg-gray-50 h-full select-none">
-                      <div className="grid grid-cols-2 gap-2.5">
-                        <div className="bg-white rounded-xl p-3 shadow-sm">
-                          <div className="text-[10px] text-gray-400 mb-0.5">Today&apos;s visits</div>
-                          <div className="text-xl font-bold text-[#1a5f4a]">6 / 8</div>
-                          <div className="text-[10px] text-green-600 font-medium">3 paid</div>
-                        </div>
-                        <div className="bg-white rounded-xl p-3 shadow-sm">
-                          <div className="text-[10px] text-gray-400 mb-0.5">Earned · paid</div>
-                          <div className="text-xl font-bold text-green-600 tabular-nums">₹1,180</div>
-                          <div className="text-[10px] text-gray-400 font-medium">₹240 in escrow</div>
-                        </div>
-                      </div>
+                  {/* Progress dots · below phone */}
+                  <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-2 z-30">
+                    {SCREEN_LABELS.map((s, i) => (
+                      <button
+                        key={s.id}
+                        onClick={() => setScreenIdx(i)}
+                        aria-label={`Screen ${i + 1}`}
+                        className="group relative h-2 rounded-full transition-all"
+                        style={{ width: i === screenIdx ? "32px" : "8px" }}
+                      >
+                        <span
+                          className={`absolute inset-0 rounded-full transition-colors ${
+                            i === screenIdx ? "bg-white" : "bg-white/30 group-hover:bg-white/50"
+                          }`}
+                        />
+                        {i === screenIdx && (
+                          <motion.span
+                            key={`pg-${screenIdx}`}
+                            initial={{ width: 0 }}
+                            animate={{ width: "100%" }}
+                            transition={{ duration: 3.6, ease: "linear" }}
+                            className="absolute inset-y-0 left-0 rounded-full bg-emerald-300"
+                          />
+                        )}
+                      </button>
+                    ))}
+                  </div>
 
-                      <div className="bg-white rounded-xl p-3.5 shadow-sm border-l-[3px] border-l-[#25B181]">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-[10px] font-bold text-[#25B181] bg-green-50 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#25B181] animate-pulse" /> ACTIVE
-                          </span>
-                          <span className="text-[10px] text-gray-400 tabular-nums">2.3 km</span>
+                  {/* Screen label · below dots */}
+                  <div className="absolute -bottom-[68px] left-1/2 -translate-x-1/2 text-center z-30">
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={`lbl-${screenIdx}`}
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.3 }}
+                        className="whitespace-nowrap"
+                      >
+                        <div className="text-[10px] uppercase tracking-[0.18em] font-bold text-emerald-200">
+                          {SCREEN_LABELS[screenIdx].badge}
                         </div>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-semibold text-sm text-gray-900">A. Sharma</div>
-                            <div className="text-xs text-gray-500">Doc pickup · DPD 4 · KYC</div>
-                          </div>
-                          <div className="w-9 h-9 bg-[#1a5f4a] rounded-full flex items-center justify-center shadow-md">
-                            <Navigation className="w-4 h-4 text-white" />
-                          </div>
+                        <div className="text-[11px] text-white/70 mt-0.5">
+                          {SCREEN_LABELS[screenIdx].label}
                         </div>
-                      </div>
-
-                      <div className="bg-white rounded-xl p-3.5 shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
-                            STREAK · 7 days
-                          </span>
-                          <span className="text-[10px] text-gray-400">auto</span>
-                        </div>
-                        <div className="flex items-baseline justify-between">
-                          <div>
-                            <div className="text-[10px] text-gray-500">Bonus credited</div>
-                            <div className="text-sm font-bold text-amber-700 tabular-nums">+ ₹250</div>
-                          </div>
-                          <Trophy className="w-5 h-5 text-amber-500" />
-                        </div>
-                      </div>
-
-                      <div className="bg-gradient-to-r from-[#1a5f4a] to-[#25B181] rounded-xl p-3.5 text-white">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="text-[10px] text-white/80">Week 18 · settles Fri</div>
-                            <div className="font-bold text-lg tabular-nums">₹ 8,640</div>
-                          </div>
-                          <div className="text-[10px] text-white/90 bg-white/20 px-2 py-1 rounded-lg">
-                            ICICI ●●3421
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      </motion.div>
+                    </AnimatePresence>
                   </div>
                 </div>
               </div>
