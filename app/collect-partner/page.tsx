@@ -778,6 +778,141 @@ export default function CollectPartnerPage() {
         </motion.div>
       </section>
 
+      {/* ---------------- VISIT TYPE TAXONOMY ---------------- */}
+      <section className="bg-[#F8FAFB] py-12 sm:py-16 border-y border-gray-100">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-10 sm:mb-12"
+          >
+            <span className="inline-block px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              02 · Visit-type taxonomy
+            </span>
+            <h2 className="mt-4 text-2xl sm:text-3xl lg:text-4xl font-bold font-sora text-gray-900 leading-tight max-w-3xl">
+              Cases routed by type. The app surfaces only what each track is allowed.
+            </h2>
+            <p className="mt-3 text-gray-600 text-sm sm:text-base leading-relaxed max-w-2xl">
+              Every case has a <code className="text-xs px-1.5 py-0.5 bg-gray-100 rounded text-emerald-700 font-mono">visit_type</code> set by the risk engine. The partner app's case-feed
+              query filters by your track. The API rejects mismatched assignments. Soft visits flow
+              to Track A; cash and NPA cases stay with Track B DRA-certified partners.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+            {[
+              {
+                emoji: "📞",
+                title: "Reminder visit",
+                window: "DPD 1–3 · friendly nudge",
+                track: "A + B",
+                trackColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+                time: "~12 min",
+                fee: "₹80",
+                accent: "border-emerald-200",
+              },
+              {
+                emoji: "📋",
+                title: "Document pickup",
+                window: "KYC re-verify · address proof",
+                track: "A + B",
+                trackColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+                time: "~10 min",
+                fee: "₹100",
+                accent: "border-emerald-200",
+              },
+              {
+                emoji: "📍",
+                title: "Field verification",
+                window: "CPV · address & identity",
+                track: "A + B",
+                trackColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+                time: "~15 min",
+                fee: "₹150",
+                accent: "border-emerald-200",
+              },
+              {
+                emoji: "💵",
+                title: "Cash collection",
+                window: "DPD 4–30 · cure window",
+                track: "B only",
+                trackColor: "bg-indigo-50 text-indigo-700 border-indigo-200",
+                time: "~25 min",
+                fee: "₹250",
+                accent: "border-indigo-200",
+              },
+              {
+                emoji: "⚠️",
+                title: "NPA recovery",
+                window: "DPD 90+ · hard recovery",
+                track: "B only",
+                trackColor: "bg-indigo-50 text-indigo-700 border-indigo-200",
+                time: "~40 min",
+                fee: "₹500",
+                accent: "border-indigo-200",
+              },
+            ].map((v, i) => (
+              <motion.div
+                key={v.title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                className={`rounded-2xl bg-white border ${v.accent} p-4 sm:p-5 hover:shadow-[0_12px_36px_-16px_rgba(0,0,0,0.12)] transition-all`}
+              >
+                <div className="text-3xl leading-none">{v.emoji}</div>
+                <h3 className="mt-3 font-sora font-bold text-base text-gray-900 leading-tight">
+                  {v.title}
+                </h3>
+                <p className="mt-1 text-[11px] text-gray-500 leading-snug">{v.window}</p>
+                <div className="mt-3 flex items-center gap-1.5">
+                  <span
+                    className={`inline-flex px-2 py-0.5 text-[10px] font-bold tracking-wider rounded-md border ${v.trackColor}`}
+                  >
+                    {v.track}
+                  </span>
+                </div>
+                <div className="mt-3 flex items-baseline justify-between text-xs">
+                  <span className="text-gray-500">
+                    <Clock className="w-3 h-3 inline -mt-0.5 mr-0.5" /> {v.time}
+                  </span>
+                  <span className="font-bold text-gray-900 tabular-nums">{v.fee}</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Auto-promotion path */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-8 rounded-2xl bg-gradient-to-r from-emerald-50 via-cyan-50 to-indigo-50 border border-emerald-200 p-5 sm:p-6"
+          >
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-white border border-emerald-200 grid place-items-center shrink-0">
+                <Trophy className="w-5 h-5 text-emerald-700" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[11px] uppercase tracking-[0.14em] font-bold text-emerald-700">
+                  Auto-promotion path · Track A → Track B
+                </div>
+                <h4 className="mt-1 font-sora font-bold text-base sm:text-lg text-gray-900">
+                  200+ soft visits · 95%+ compliance · 12 months on platform → IIBF DRA upgrade
+                </h4>
+                <p className="mt-2 text-sm text-gray-600 leading-relaxed">
+                  A Verified Partner who clears the thresholds is surfaced an in-app{" "}
+                  <strong className="text-emerald-700">"Upgrade to DRA"</strong> CTA — IIBF training
+                  booked, exam scheduled, fees subsidised. Most successful gig partners convert in
+                  ~9 months.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Screening & Onboarding Process */}
       <section className="container mx-auto px-4 py-12 sm:py-16">
         <motion.div
@@ -918,70 +1053,131 @@ export default function CollectPartnerPage() {
         </motion.div>
       </section>
 
-      {/* Compliance & Code of Conduct */}
+      {/* ---------------- 8 FAIR PRACTICES CODE PILLARS · with track markers ---------------- */}
       <section className="bg-gray-50 py-12 sm:py-16">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 max-w-6xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="mb-10 sm:mb-12"
           >
-            <span className="inline-block px-4 py-2 bg-red-100 text-red-700 rounded-full text-sm font-semibold mb-4">
-              Mandatory Compliance
+            <span className="inline-block px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+              03 · RBI compliance · enforced by the app
             </span>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">
-              Code of Conduct
+            <h2 className="mt-4 text-2xl sm:text-3xl lg:text-4xl font-bold font-sora text-gray-900 leading-tight max-w-3xl">
+              Eight pillars from the Fair Practices Code.
             </h2>
-            <p className="text-gray-600 text-base sm:text-lg max-w-2xl mx-auto">
-              All collection partners must adhere to RBI guidelines and our
-              strict code of conduct
+            <p className="mt-3 text-gray-600 text-sm sm:text-base leading-relaxed max-w-3xl">
+              Mapped to either a <strong className="text-rose-700">hard block</strong>, a{" "}
+              <strong className="text-amber-700">forced action</strong>, or an{" "}
+              <strong className="text-indigo-700">immutable log</strong>. Each pillar calls out
+              what's enforced for which track.
             </p>
           </motion.div>
 
-          <div className="max-w-5xl mx-auto grid sm:grid-cols-2 gap-5">
-            {complianceRules.map((rule, index) => {
-              const Icon = rule.icon;
-              return (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.08 }}
-                  className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex items-start gap-4"
-                >
-                  <div className="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-5 h-5 text-red-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900 mb-1">
-                      {rule.title}
-                    </h3>
-                    <p className="text-sm text-gray-600">{rule.description}</p>
-                  </div>
-                </motion.div>
-              );
-            })}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              {
+                n: "1",
+                title: "Trained & certified",
+                body: "DRA only · IIBF cert + 100h. Track A does 30-min in-app modules.",
+                pills: [
+                  { label: "A · 30 min", class: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+                  { label: "B · IIBF", class: "bg-indigo-50 text-indigo-700 border-indigo-200" },
+                ],
+              },
+              {
+                n: "2",
+                title: "Background verified",
+                body: "A · IDfy/OCEAN · 24–48h. B · PCC + 2 character refs · 5–7 days.",
+                pills: [
+                  { label: "A · BG check", class: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+                  { label: "B · PCC", class: "bg-indigo-50 text-indigo-700 border-indigo-200" },
+                ],
+              },
+              {
+                n: "3",
+                title: "Time-window 8 AM – 7 PM",
+                body: "App-side clock blocks calls + visits outside hours. Festival calendars enforced.",
+                pills: [{ label: "Both tracks · hard block", class: "bg-amber-50 text-amber-700 border-amber-200" }],
+              },
+              {
+                n: "4",
+                title: "Identifiable on visit",
+                body: "QR-rotating partner ID. Borrower scans to verify track and certification.",
+                pills: [{ label: "QR-verified", class: "bg-indigo-50 text-indigo-700 border-indigo-200" }],
+              },
+              {
+                n: "5",
+                title: "No threats · no abuse",
+                body: "Pre-approved scripts in 13 languages. AI tone monitor flags violations live during calls.",
+                pills: [{ label: "AI-moderated", class: "bg-cyan-50 text-cyan-700 border-cyan-200" }],
+              },
+              {
+                n: "6",
+                title: "Workplace · last resort",
+                body: "DRA only. Three verified home attempts must be logged before the workplace-visit CTA unlocks.",
+                pills: [{ label: "B only · gated", class: "bg-indigo-50 text-indigo-700 border-indigo-200" }],
+              },
+              {
+                n: "7",
+                title: "Privacy + DPDP",
+                body: "No discussing dues with neighbours. Track A sees minimum data — name, address, visit type only.",
+                pills: [{ label: "DPDP-compliant", class: "bg-slate-50 text-slate-700 border-slate-200" }],
+              },
+              {
+                n: "8",
+                title: "Grievance redressal",
+                body: "Borrower can flag misconduct in-app. Nodal Officer reviews · 30-day SLA · auto-escalation if missed.",
+                pills: [{ label: "SLA-tracked", class: "bg-rose-50 text-rose-700 border-rose-200" }],
+              },
+            ].map((p, i) => (
+              <motion.div
+                key={p.n}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.04 }}
+                className="rounded-2xl bg-white border border-gray-200 p-5 hover:border-gray-300 transition-all"
+              >
+                <div className="w-9 h-9 rounded-lg bg-rose-50 border border-rose-200 grid place-items-center text-rose-700 font-bold text-sm tabular-nums">
+                  {p.n}
+                </div>
+                <h3 className="mt-3 font-sora font-bold text-base text-gray-900 leading-snug">
+                  {p.title}
+                </h3>
+                <p className="mt-2 text-xs text-gray-600 leading-relaxed">{p.body}</p>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {p.pills.map((pill) => (
+                    <span
+                      key={pill.label}
+                      className={`inline-flex px-2 py-0.5 text-[10px] font-bold tracking-wider rounded-md border ${pill.class}`}
+                    >
+                      {pill.label}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
           </div>
 
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="max-w-5xl mx-auto mt-8"
+            className="mt-8 rounded-xl bg-[#1a5f4a]/5 border border-[#1a5f4a]/20 p-5 text-center"
           >
-            <div className="bg-[#1a5f4a]/5 border border-[#1a5f4a]/20 rounded-xl p-5 text-center">
-              <p className="text-sm text-gray-700">
-                Quikkred operates under{" "}
-                <span className="font-semibold">
-                  Satsai Finlease Private Limited
-                </span>{" "}
-                (RBI Registration: B-14.01646). All collection activities are
-                conducted in compliance with RBI&apos;s Fair Practices Code and
-                applicable laws.
-              </p>
-            </div>
+            <p className="text-sm text-gray-700">
+              Quikkred operates under{" "}
+              <span className="font-semibold">Satsai Finlease Private Limited</span> (RBI
+              Registration: B-14.01646). Every visit is logged with geo-stamp, recorded calls and a
+              WORM audit trail. The Nodal Officer is reachable at{" "}
+              <Link href="/nodal-officer" className="text-emerald-700 underline">
+                /nodal-officer
+              </Link>
+              .
+            </p>
           </motion.div>
         </div>
       </section>
@@ -1070,6 +1266,301 @@ export default function CollectPartnerPage() {
               );
             })}
           </div>
+        </div>
+      </section>
+
+      {/* ---------------- EARNINGS · TRANSPARENT, SAME-DAY, GAMIFIED ---------------- */}
+      <section className="bg-white py-12 sm:py-16">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-10 sm:mb-12"
+          >
+            <span className="inline-block px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              07 · Earnings & payouts
+            </span>
+            <h2 className="mt-4 text-2xl sm:text-3xl lg:text-4xl font-bold font-sora text-gray-900 leading-tight max-w-3xl">
+              Money, transparent — paid same-day, taxes pre-computed, incentives gamified.
+            </h2>
+            <p className="mt-3 text-gray-600 text-sm sm:text-base leading-relaxed max-w-3xl">
+              Gig workers care about cash velocity. Each visit pays out within 4 hours of completion
+              via UPI. Weekly statements are RBI-friendly with TDS deducted at source under{" "}
+              <strong>Section 194O</strong> for partners earning above ₹20,000/month.
+            </p>
+          </motion.div>
+
+          {/* SLA stat row */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
+            {[
+              {
+                k: "SLA · payout",
+                v: "≤ 4 hrs",
+                note: "visit → UPI · same day",
+                accent: "border-l-emerald-500",
+              },
+              {
+                k: "Floor pay",
+                v: "₹80",
+                note: "per accepted reminder",
+                accent: "border-l-emerald-500",
+              },
+              {
+                k: "Hard recovery",
+                v: "2 – 4%",
+                note: "DRA only · tiered on cleared amount",
+                accent: "border-l-indigo-500",
+              },
+              {
+                k: "TDS",
+                v: "Section 194O",
+                note: "auto · Form 26AS · Form 16A in app",
+                accent: "border-l-amber-500",
+              },
+            ].map((s) => (
+              <div
+                key={s.k}
+                className={`bg-white border border-gray-200 ${s.accent} border-l-4 rounded-xl p-4`}
+              >
+                <div className="text-[10px] uppercase tracking-wider font-bold text-gray-500">
+                  {s.k}
+                </div>
+                <div className="mt-1 font-sora font-bold text-xl text-gray-900 tabular-nums">
+                  {s.v}
+                </div>
+                <div className="mt-0.5 text-[11px] text-gray-500 leading-snug">{s.note}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Earnings breakdown card · mock weekly statement */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="grid grid-cols-1 lg:grid-cols-5 gap-5"
+          >
+            {/* Weekly statement card */}
+            <div className="lg:col-span-3 rounded-2xl bg-gradient-to-br from-emerald-50/40 via-white to-cyan-50/40 border border-emerald-200 p-6 sm:p-8">
+              <div className="flex items-baseline justify-between mb-1">
+                <div className="text-[11px] uppercase tracking-[0.14em] font-bold text-emerald-700">
+                  Sample weekly statement · 32 visits
+                </div>
+                <div className="text-[11px] text-gray-500 tabular-nums">28 Apr → 4 May</div>
+              </div>
+              <div className="mt-3 text-4xl sm:text-5xl font-bold text-gray-900 tabular-nums leading-none">
+                ₹ 8,640
+              </div>
+              <div className="mt-1 text-xs text-gray-500">
+                Settled to ICICI ●●3421 on 5 May 11:02 AM · IMPS
+              </div>
+
+              <div className="mt-6 pt-5 border-t border-gray-200 space-y-2.5 text-sm">
+                {[
+                  { label: "Visits (32)", value: "₹ 7,420", sign: "" },
+                  { label: "Streak bonus · 7-day", value: "+ ₹ 750", sign: "pos" },
+                  { label: "Multi-language bonus", value: "+ ₹ 200", sign: "pos" },
+                  { label: "Weekend hours bonus", value: "+ ₹ 480", sign: "pos" },
+                  { label: "TDS · 1% · Section 194O", value: "– ₹ 88", sign: "neg" },
+                  { label: "Equipment lease (optional)", value: "– ₹ 120", sign: "neg" },
+                ].map((r) => (
+                  <div
+                    key={r.label}
+                    className="flex items-baseline justify-between"
+                  >
+                    <span className="text-gray-600">{r.label}</span>
+                    <span
+                      className={`font-bold tabular-nums ${
+                        r.sign === "pos"
+                          ? "text-emerald-700"
+                          : r.sign === "neg"
+                            ? "text-rose-700"
+                            : "text-gray-900"
+                      }`}
+                    >
+                      {r.value}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                <div className="rounded-xl bg-white border border-gray-200 p-3 flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-lg bg-cyan-50 border border-cyan-200 grid place-items-center shrink-0">
+                    <FileCheck className="w-4 h-4 text-cyan-700" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-gray-900">Form 16A · Q1 FY26</div>
+                    <div className="text-[10px] text-gray-500">TDS auto-filed · ready in 14 days</div>
+                  </div>
+                </div>
+                <div className="rounded-xl bg-white border border-gray-200 p-3 flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-lg bg-emerald-50 border border-emerald-200 grid place-items-center shrink-0">
+                    <BadgeCheck className="w-4 h-4 text-emerald-700" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-gray-900">7-day streak active</div>
+                    <div className="text-[10px] text-gray-500">+ ₹250 weekly streak bonus</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column · bonus types */}
+            <div className="lg:col-span-2 space-y-4">
+              <div className="rounded-2xl bg-white border border-gray-200 p-5 sm:p-6">
+                <div className="text-[11px] uppercase tracking-[0.14em] font-bold text-emerald-700">
+                  How bonuses stack
+                </div>
+                <h3 className="mt-2 font-sora font-bold text-lg text-gray-900">
+                  Five ways to earn more
+                </h3>
+                <ul className="mt-4 space-y-3 text-sm">
+                  {[
+                    {
+                      t: "7-day streak",
+                      v: "+ ₹250",
+                      note: "every consecutive 7 days with ≥ 4 cleared visits",
+                    },
+                    {
+                      t: "Multi-language",
+                      v: "+ ₹200",
+                      note: "interact with borrowers in 2+ Indian languages weekly",
+                    },
+                    {
+                      t: "Weekend hours",
+                      v: "+ ₹15/visit",
+                      note: "Saturday & Sunday cleared visits earn a top-up",
+                    },
+                    {
+                      t: "Top 10% leaderboard",
+                      v: "Gold tier",
+                      note: "monthly · anonymous · access to higher-fee visit pools",
+                    },
+                    {
+                      t: "Refer a partner",
+                      v: "₹500",
+                      note: "credited after their first 10 cleared visits",
+                    },
+                  ].map((b) => (
+                    <li
+                      key={b.t}
+                      className="flex items-baseline justify-between gap-3 border-b border-dashed border-gray-200 pb-2.5 last:border-0"
+                    >
+                      <div className="min-w-0">
+                        <div className="font-semibold text-gray-900 text-sm">{b.t}</div>
+                        <div className="text-[11px] text-gray-500 leading-snug">{b.note}</div>
+                      </div>
+                      <div className="font-bold text-emerald-700 tabular-nums text-sm shrink-0">
+                        {b.v}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ---------------- DESIGN LANGUAGE · 13 INDIAN SCRIPTS ---------------- */}
+      <section className="bg-gradient-to-br from-emerald-50/20 via-white to-cyan-50/20 py-12 sm:py-16 border-y border-gray-100">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-8 sm:mb-10"
+          >
+            <span className="inline-block px-3 py-1 text-[11px] font-bold tracking-[0.18em] uppercase rounded-full bg-cyan-50 text-cyan-700 border border-cyan-200">
+              00.5 · Design language
+            </span>
+            <h2 className="mt-4 text-2xl sm:text-3xl lg:text-4xl font-bold font-sora text-gray-900 leading-tight max-w-3xl">
+              High-tech yet simple.{" "}
+              <span className="text-emerald-700">Indian by default.</span>
+            </h2>
+            <p className="mt-3 text-gray-600 text-sm sm:text-base leading-relaxed max-w-2xl">
+              The app ships in 13 Indian scripts at v1. The borrower sees the partner's chosen
+              language; pre-approved scripts auto-translate into the borrower's language with one tap.
+              No machine translation in the loop — every script is human-curated and FPC-reviewed.
+            </p>
+          </motion.div>
+
+          {/* Language chip grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2.5">
+            {[
+              { script: "English", latin: "EN" },
+              { script: "हिन्दी", latin: "Hindi" },
+              { script: "मराठी", latin: "Marathi" },
+              { script: "தமிழ்", latin: "Tamil" },
+              { script: "తెలుగు", latin: "Telugu" },
+              { script: "বাংলা", latin: "Bengali" },
+              { script: "ગુજરાતી", latin: "Gujarati" },
+              { script: "ಕನ್ನಡ", latin: "Kannada" },
+              { script: "മലയാളം", latin: "Malayalam" },
+              { script: "ਪੰਜਾਬੀ", latin: "Punjabi" },
+              { script: "ଓଡ଼ିଆ", latin: "Odia" },
+              { script: "অসমীয়া", latin: "Assamese" },
+              { script: "اُردُو", latin: "Urdu" },
+            ].map((l, i) => (
+              <motion.div
+                key={l.latin}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.025 }}
+                className="bg-white rounded-xl border border-gray-200 px-3 py-3 sm:py-4 text-center hover:border-emerald-300 hover:shadow-[0_8px_24px_-12px_rgba(16,185,129,0.25)] transition-all"
+              >
+                <div className="text-base sm:text-lg font-bold text-gray-900 leading-tight">
+                  {l.script}
+                </div>
+                <div className="text-[10px] uppercase tracking-wider text-gray-500 mt-1">
+                  {l.latin}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Live comms features strip */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4"
+          >
+            {[
+              {
+                title: "Recorded · in-app calls",
+                body: "Every borrower conversation is captured · stored in WORM audit · retained per RBI norms.",
+                icon: Activity,
+              },
+              {
+                title: "AI tone monitor · live",
+                body: "Speech analysis flags raised voice, threats, or out-of-script language in real time. Supervisor pinged.",
+                icon: HeartHandshake,
+              },
+              {
+                title: "Live translator overlay",
+                body: "Borrower speaks Marathi · partner reads Hindi · suggested response in Marathi. No machine voice — just text aid.",
+                icon: Languages,
+              },
+            ].map((c, i) => {
+              const Icon = c.icon;
+              return (
+                <div
+                  key={c.title}
+                  className="rounded-2xl bg-white border border-gray-200 p-5 hover:border-emerald-300 transition-all"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-cyan-50 border border-cyan-200 grid place-items-center">
+                    <Icon className="w-4 h-4 text-cyan-700" />
+                  </div>
+                  <h3 className="mt-3 font-sora font-bold text-base text-gray-900">{c.title}</h3>
+                  <p className="mt-1.5 text-xs text-gray-600 leading-relaxed">{c.body}</p>
+                </div>
+              );
+            })}
+          </motion.div>
         </div>
       </section>
 
