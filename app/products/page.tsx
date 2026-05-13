@@ -269,7 +269,7 @@ export default function ProductsPage() {
     tagline: t("products.paydayLoan.tagline", { defaultValue: "" }) as string,
     description: t("products.paydayLoan.description", { defaultValue: "" }) as string,
     amount: t("products.paydayLoan.amount", { defaultValue: "₹2,500 - ₹50,000" }) as string,
-    tenure: t("products.paydayLoan.tenure", { defaultValue: "Up to 45 days" }) as string,
+    tenure: t("products.paydayLoan.tenure", { defaultValue: "Up to 90 days" }) as string,
     rate: apiProduct
       ? `${apiProduct.dailyInterestRate}% per day`
       : (t("products.paydayLoan.rate", { defaultValue: "" }) as string),

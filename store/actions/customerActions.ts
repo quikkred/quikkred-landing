@@ -203,6 +203,38 @@ export const fetchFinfactor = () => async (dispatch: Dispatch) => {
   }
 };
 
+// ==================== Bank Update Actions ====================
+
+interface BankUpdatePayload {
+  bankId: string;
+  bankName: string;
+  accountNumber: string;
+  ifscCode: string;
+  accountHolderName: string;
+}
+
+export const updateBank = (customerId: string, payload: BankUpdatePayload) => async (dispatch: Dispatch) => {
+  dispatch({ type: actionTypes.BANK_UPDATE_REQUEST });
+
+  try {
+    const data = await apiCall(`/customer/bankUpdate/${customerId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+    dispatch({
+      type: actionTypes.BANK_UPDATE_SUCCESS,
+      payload: data,
+    });
+    return data;
+  } catch (error: any) {
+    dispatch({
+      type: actionTypes.BANK_UPDATE_FAILURE,
+      payload: error.message,
+    });
+    throw error;
+  }
+};
+
 // ==================== Clear Actions ====================
 
 export const clearCustomerData = () => ({
