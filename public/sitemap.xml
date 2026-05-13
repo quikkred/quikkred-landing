@@ -41,22 +41,36 @@
   </url>
   
   <url>
-    <loc>https://www.quikkred.in/partners</loc>
-    <lastmod>2025-01-01</lastmod>
+    <loc>https://www.quikkred.in/partners/lending-partner-program</loc>
+    <lastmod>2026-05-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  
+
   <url>
-    <loc>https://www.quikkred.in/channel-partner</loc>
-    <lastmod>2025-01-01</lastmod>
+    <loc>https://www.quikkred.in/partners/proprietor-network</loc>
+    <lastmod>2026-05-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.quikkred.in/partners/channel-partner</loc>
+    <lastmod>2026-05-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
-  
+
+  <url>
+    <loc>https://www.quikkred.in/partners/collection-partner</loc>
+    <lastmod>2026-05-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
   <url>
     <loc>https://www.quikkred.in/partners/investor-relations</loc>
-    <lastmod>2025-01-01</lastmod>
+    <lastmod>2026-05-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

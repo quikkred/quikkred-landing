@@ -478,7 +478,7 @@ export default function PartnersPage() {
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <Link
-                href="/partners/apply"
+                href="/partners/lending-partner-program/apply"
                 className="inline-flex items-center gap-2 px-6 py-3.5 bg-[#25B181] hover:bg-[#1F8F68] transition-colors rounded-xl font-semibold text-white shadow-lg"
               >
                 Apply as a partner
@@ -980,14 +980,14 @@ export default function PartnersPage() {
 
         <div className="mt-8 flex flex-wrap items-center gap-3 justify-center">
           <Link
-            href="/partners/proprietor"
+            href="/partners/proprietor-network"
             className="inline-flex items-center gap-2 px-5 py-3 bg-[#0E2920] hover:bg-[#144B37] transition-colors rounded-xl font-semibold text-white text-sm"
           >
             Deep-dive the proprietor network
             <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
-            href="/partners/apply"
+            href="/partners/lending-partner-program/apply"
             className="inline-flex items-center gap-2 px-5 py-3 border border-gray-300 hover:bg-gray-50 transition-colors rounded-xl font-semibold text-gray-800 text-sm"
           >
             Apply — I want to run a proprietor network
@@ -1395,7 +1395,7 @@ export default function PartnersPage() {
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
-                href="/partners/apply"
+                href="/partners/lending-partner-program/apply"
                 className="inline-flex items-center gap-2 px-6 py-3.5 bg-white text-[#1F8F68] hover:bg-[#D3F1EB] transition-colors rounded-xl font-semibold shadow-lg"
               >
                 Start partner application

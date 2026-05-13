@@ -276,7 +276,7 @@ export default function EDDPortalPage({
       <section className="bg-[#0E2920] text-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <Link
-            href="/partners"
+            href="/partners/lending-partner-program"
             className="inline-flex items-center gap-2 text-sm text-white/70 hover:text-white mb-4"
           >
             <ArrowLeft className="w-4 h-4" />

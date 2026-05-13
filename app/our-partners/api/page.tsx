@@ -161,7 +161,7 @@ if (eligibility.isEligible) {
                 Home
               </Link>
               <ArrowRight className="w-3 h-3" />
-              <Link href="/partners" className="hover:text-white transition-colors">
+              <Link href="/our-partners" className="hover:text-white transition-colors">
                 Partners
               </Link>
               <ArrowRight className="w-3 h-3" />

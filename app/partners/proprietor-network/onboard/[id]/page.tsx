@@ -208,7 +208,7 @@ export default function ProprietorOnboardPage({
       <header className="sticky top-0 z-20 bg-[#0E2920] text-white border-b border-white/10">
         <div className="max-w-xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
           <Link
-            href="/partners/proprietor"
+            href="/partners/proprietor-network"
             className="inline-flex items-center gap-1.5 text-xs text-white/70 hover:text-white"
           >
             <ArrowLeft className="w-3.5 h-3.5" />

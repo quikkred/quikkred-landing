@@ -14,10 +14,23 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
 
-      // Partner pages
-      { source: '/partners/channel', destination: '/our-partners/channel', permanent: true },
-      { source: '/channel-partner', destination: '/our-partners/channel', permanent: true },
-      { source: '/partners/investors', destination: '/our-partners/investor-relations', permanent: true },
+      // Partner pages — consolidated to /partners/* URL structure
+      // Lending Partner Program (was /partners)
+      { source: '/partners', destination: '/partners/lending-partner-program', permanent: true },
+      { source: '/partners/apply', destination: '/partners/lending-partner-program/apply', permanent: true },
+      { source: '/partners/edd/:id', destination: '/partners/lending-partner-program/edd/:id', permanent: true },
+      // Proprietor Network (was /partners/proprietor)
+      { source: '/partners/proprietor', destination: '/partners/proprietor-network', permanent: true },
+      { source: '/partners/proprietor/:path*', destination: '/partners/proprietor-network/:path*', permanent: true },
+      // Channel Partner (was /our-partners/channel and /channel-partner)
+      { source: '/partners/channel', destination: '/partners/channel-partner', permanent: true },
+      { source: '/channel-partner', destination: '/partners/channel-partner', permanent: true },
+      { source: '/our-partners/channel', destination: '/partners/channel-partner', permanent: true },
+      // Collection Partner (was /collect-partner)
+      { source: '/collect-partner', destination: '/partners/collection-partner', permanent: true },
+      // Investor Relations (was /our-partners/investor-relations and /partners/investors)
+      { source: '/partners/investors', destination: '/partners/investor-relations', permanent: true },
+      { source: '/our-partners/investor-relations', destination: '/partners/investor-relations', permanent: true },
 
       // Resource pages
       {

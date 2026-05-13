@@ -329,7 +329,7 @@ export default function PartnerApplyPage() {
               </ol>
             </div>
             <Link
-              href="/partners"
+              href="/partners/lending-partner-program"
               className="inline-flex items-center gap-2 text-sm text-[#1F8F68] hover:underline"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -347,7 +347,7 @@ export default function PartnerApplyPage() {
       <section className="bg-[#0E2920] text-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <Link
-            href="/partners"
+            href="/partners/lending-partner-program"
             className="inline-flex items-center gap-2 text-sm text-white/70 hover:text-white mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -833,7 +833,7 @@ export default function PartnerApplyPage() {
               )}
             </button>
             <Link
-              href="/partners"
+              href="/partners/lending-partner-program"
               className="inline-flex items-center justify-center gap-2 px-6 py-3.5 border border-gray-200 hover:bg-gray-50 transition-colors rounded-xl font-semibold text-gray-700"
             >
               Cancel

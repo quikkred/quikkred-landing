@@ -3,7 +3,7 @@ import LayoutInterface from "@/interfaces/layoutInterface";
 
 const SITE_NAME = "Quikkred";
 const SITE_URL = "https://quikkred.in";
-const PAGE_PATH = "/partners";
+const PAGE_PATH = "/partners/lending-partner-program";
 const PAGE_URL = `${SITE_URL}${PAGE_PATH}`;
 const OG_IMAGE = `${SITE_URL}/Partners_our_image.jpg`;
 

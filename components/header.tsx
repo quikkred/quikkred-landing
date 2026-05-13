@@ -74,29 +74,29 @@ export function Header() {
       submenu: [
         {
           name: "Lending Partner Program",
-          href: "/partners",
+          href: "/partners/lending-partner-program",
           description:
             "B2B2C partnership on Satsai's NBFC stack — your brand, your capital, our compliance.",
         },
         {
           name: "Proprietor Network",
-          href: "/partners/proprietor",
+          href: "/partners/proprietor-network",
           description:
             "Deploy a sub-agent network — retail outlets, market aggregators, transport hubs — under DLD 2025.",
         },
         {
           name: t.navigation.channelPartners,
-          href: "/channel-partner",
+          href: "/partners/channel-partner",
           description: t.navigation.channelPartnersDesc,
         },
         {
           name: "Collection Partner",
-          href: "/collect-partner",
+          href: "/partners/collection-partner",
           description: "Join our field collection network and earn",
         },
         {
           name: t.navigation.investorRelations,
-          href: "/our-partners/investor-relations",
+          href: "/partners/investor-relations",
           description: t.navigation.investorRelationsDesc,
         },
       ],

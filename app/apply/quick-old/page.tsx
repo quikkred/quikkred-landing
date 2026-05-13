@@ -5915,7 +5915,7 @@ export default function QuickLoanApplication() {
                               </div>
                             </div>
                             <p className="text-xs text-gray-600 leading-relaxed">
-                              By continuing, I agree to Credit Bureau <a href="/terms-and-conditions" className="text-blue-600 underline">Terms and Conditions</a> and authorize Quikkred and its <a href="/partners" className="text-blue-600 underline">Partners</a> to collect and store the Credit Bureau data for checking my eligibility for loan.
+                              By continuing, I agree to Credit Bureau <a href="/terms-and-conditions" className="text-blue-600 underline">Terms and Conditions</a> and authorize Quikkred and its <a href="/our-partners" className="text-blue-600 underline">Partners</a> to collect and store the Credit Bureau data for checking my eligibility for loan.
                             </p>
                           </label>
 
@@ -5926,7 +5926,7 @@ export default function QuickLoanApplication() {
                               </div>
                             </div>
                             <p className="text-xs text-gray-600 leading-relaxed">
-                              By continuing, I agree to the <a href="/privacy-policy" className="text-blue-600 underline">Privacy Policy</a> and <a href="/terms-and-conditions" className="text-blue-600 underline">Terms and Conditions</a> of Quikkred and its <a href="/partners" className="text-blue-600 underline">Partners</a>, and I consent to receive communications via SMS, E-mail, and WhatsApp.
+                              By continuing, I agree to the <a href="/privacy-policy" className="text-blue-600 underline">Privacy Policy</a> and <a href="/terms-and-conditions" className="text-blue-600 underline">Terms and Conditions</a> of Quikkred and its <a href="/our-partners" className="text-blue-600 underline">Partners</a>, and I consent to receive communications via SMS, E-mail, and WhatsApp.
                             </p>
                           </label>
                         </div>

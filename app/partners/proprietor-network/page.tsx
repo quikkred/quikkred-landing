@@ -134,7 +134,7 @@ export default function ProprietorNetworkPage() {
         />
         <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
           <Link
-            href="/partners"
+            href="/our-partners"
             className="inline-flex items-center gap-2 text-sm text-white/70 hover:text-white mb-6"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -164,10 +164,10 @@ export default function ProprietorNetworkPage() {
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
-                href="/partners/apply"
+                href="/partners/proprietor-network/apply"
                 className="inline-flex items-center gap-2 px-6 py-3.5 bg-[#FF9C70] hover:bg-[#E36229] transition-colors rounded-xl font-semibold text-[#0E2920] shadow-lg"
               >
-                Apply — I want to run a proprietor network
+                Apply — Become a Distributor
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <a
@@ -657,20 +657,26 @@ Cash:       Not supported in v1`}</pre>
               Ready to reach the last-mile borrower?
             </h2>
             <p className="text-white/90 text-base sm:text-lg mb-7 max-w-2xl">
-              Apply as a Primary LSP (any track), and indicate "proprietor network" in
-              the capital intent. We'll plug in the sub-agent substrate as a week-5 add-on
-              after the main partnership goes live.
+              Two ways in: apply as a <b>Distributor</b> if you can recruit and manage
+              a cluster of proprietor shops, or as a <b>Primary LSP</b> if you want to
+              operate the network platform itself under any of the four partner tracks.
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
-                href="/partners/apply"
+                href="/partners/proprietor-network/apply"
                 className="inline-flex items-center gap-2 px-6 py-3.5 bg-white text-[#E36229] hover:bg-[#FFF4E4] transition-colors rounded-xl font-semibold shadow-lg"
               >
-                Start partner application
+                Apply as a Distributor
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                href="/partners"
+                href="/partners/lending-partner-program/apply"
+                className="inline-flex items-center gap-2 px-6 py-3.5 border border-white/30 hover:bg-white/10 transition-colors rounded-xl font-semibold text-white"
+              >
+                Apply as a Primary LSP
+              </Link>
+              <Link
+                href="/our-partners"
                 className="inline-flex items-center gap-2 px-6 py-3.5 border border-white/30 hover:bg-white/10 transition-colors rounded-xl font-semibold text-white"
               >
                 Back to partner overview
