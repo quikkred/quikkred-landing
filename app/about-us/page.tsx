@@ -259,7 +259,7 @@ export default function AboutPage() {
               We saw the challenges many faced with traditional financing. By leveraging cutting-edge technology, we set out to offer accessible and fair loan products. Our digital-first approach removes barriers, simplifies the process, and empowers individuals to achieve their financial goals with dignity and ease.
             </p>
             <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
-              In 2026 we launched the <Link href="/partners" className="text-[#1F8F68] font-semibold hover:underline">Quikkred Partner Platform</Link> — a B2B2C and B2B2B2C architecture that lets Private Limited companies plug into the same regulatory and tech stack to offer loans under their own brand, reaching last-mile borrowers through a proprietor network of neighbourhood retailers.
+              In 2026 we launched the <Link href="/our-partners" className="text-[#1F8F68] font-semibold hover:underline">Quikkred Partner Platform</Link> — a B2B2C and B2B2B2C architecture that lets Private Limited companies plug into the same regulatory and tech stack to offer loans under their own brand, reaching last-mile borrowers through a proprietor network of neighbourhood retailers.
             </p>
             <p className="text-[#0E2920] font-semibold text-sm sm:text-base">
               Today, we continue to innovate and expand, staying true to our mission of making financial services accessible to everyone who needs them.
@@ -522,7 +522,7 @@ export default function AboutPage() {
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                   <Link
-                    href="/partners"
+                    href="/partners/lending-partner-program"
                     className="inline-flex items-center gap-2 px-5 py-3 border border-white/30 hover:bg-white/10 transition-colors rounded-xl font-semibold text-white text-sm"
                   >
                     Deep-dive the Lending Partner Program
@@ -612,18 +612,26 @@ export default function AboutPage() {
       </section>
 
       {/* ─── Map ─── */}
-      <div className="w-full h-[250px] sm:h-[300px] md:h-[350px]">
+      <div className="relative w-full h-[250px] sm:h-[300px] md:h-[350px]">
         <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3501.4097591754347!2d77.1807!3d28.6419!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d029e2b6b2f6f%3A0x5c4a5f8a3a2b1c0d!2sVikrant%20Tower%2C%20Rajendra%20Place%2C%20New%20Delhi%2C%20Delhi%20110008!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
+          src="https://www.openstreetmap.org/export/embed.html?bbox=77.1760%2C28.6380%2C77.1870%2C28.6460&layer=mapnik&marker=28.6420%2C77.1816"
           width="100%"
           height="100%"
           style={{ border: 0 }}
-          allowFullScreen
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
           title="Quikkred Head Office Location"
           className="w-full h-full"
         />
+        <a
+          href="https://www.google.com/maps/search/?api=1&query=Vikrant+Tower+Rajendra+Place+New+Delhi+110008"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="absolute bottom-3 right-3 inline-flex items-center gap-2 bg-white/95 hover:bg-white border border-gray-200 shadow-md rounded-lg px-3 py-2 text-xs font-semibold text-[#1F8F68]"
+        >
+          <MapPin className="w-3.5 h-3.5" />
+          Open in Google Maps
+        </a>
       </div>
     </div>
   );
