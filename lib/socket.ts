@@ -22,9 +22,9 @@ export function getSocket(): Socket {
   });
 
   if (process.env.NODE_ENV !== "production") {
-    socket.on("connect", () => console.log("[socket] connected:", socket!.id));
+    socket.on("connect", () => //console.log("[socket] connected:", socket!.id));
     socket.on("connect_error", (e) => console.warn("[socket] error:", e.message));
-    socket.on("disconnect", (r) => console.log("[socket] disconnected:", r));
+    socket.on("disconnect", (r) => //console.log("[socket] disconnected:", r));
   }
 
   return socket;

@@ -76,8 +76,8 @@ function analyzeBackendService(filePath) {
 }
 
 // Scan all API routes
-console.log('🔍 ANALYZING API ENDPOINTS\n');
-console.log('=' .repeat(80));
+//console.log('🔍 ANALYZING API ENDPOINTS\n');
+//console.log('=' .repeat(80));
 
 const apiDir = path.join(process.cwd(), 'app/api');
 const endpoints = [];
@@ -109,22 +109,22 @@ endpoints.forEach(ep => {
 
 // Print endpoints by category
 Object.keys(categories).sort().forEach(category => {
-  console.log(`\n📁 ${category.toUpperCase()}`);
-  console.log('-'.repeat(40));
+  //console.log(`\n📁 ${category.toUpperCase()}`);
+  //console.log('-'.repeat(40));
 
   categories[category].forEach(ep => {
     const methods = ep.methods.length > 0 ? ep.methods.join(', ') : 'NONE';
     const status = ep.status === 'implemented' ? '✅' : '❌';
 
-    console.log(`${status} ${ep.path}`);
-    console.log(`   Methods: ${methods}`);
-    console.log(`   Features: Auth:${ep.features.authentication ? '✓' : '✗'} DB:${ep.features.database ? '✓' : '✗'} Validation:${ep.features.validation ? '✓' : '✗'} AI:${ep.features.aiIntegration ? '✓' : '✗'} ErrorHandling:${ep.features.errorHandling ? '✓' : '✗'}`);
+    //console.log(`${status} ${ep.path}`);
+    //console.log(`   Methods: ${methods}`);
+    //console.log(`   Features: Auth:${ep.features.authentication ? '✓' : '✗'} DB:${ep.features.database ? '✓' : '✗'} Validation:${ep.features.validation ? '✓' : '✗'} AI:${ep.features.aiIntegration ? '✓' : '✗'} ErrorHandling:${ep.features.errorHandling ? '✓' : '✗'}`);
   });
 });
 
 // Analyze backend services
-console.log('\n\n🔧 BACKEND SERVICES ANALYSIS\n');
-console.log('=' .repeat(80));
+//console.log('\n\n🔧 BACKEND SERVICES ANALYSIS\n');
+//console.log('=' .repeat(80));
 
 const backendDir = path.join(process.cwd(), 'backend/lib');
 const services = [];
@@ -160,21 +160,21 @@ services.forEach(service => {
 
 // Print services by category
 Object.keys(serviceCategories).sort().forEach(category => {
-  console.log(`\n📦 ${category.toUpperCase()}`);
-  console.log('-'.repeat(40));
+  //console.log(`\n📦 ${category.toUpperCase()}`);
+  //console.log('-'.repeat(40));
 
   serviceCategories[category].forEach(service => {
     const status = service.status === 'implemented' ? '✅' : '⚠️';
     const deps = service.dependencies.length > 0 ? service.dependencies.join(', ') : 'none';
 
-    console.log(`${status} ${service.name}`);
-    console.log(`   Dependencies: ${deps}`);
+    //console.log(`${status} ${service.name}`);
+    //console.log(`   Dependencies: ${deps}`);
   });
 });
 
 // Summary statistics
-console.log('\n\n📊 SUMMARY STATISTICS\n');
-console.log('=' .repeat(80));
+//console.log('\n\n📊 SUMMARY STATISTICS\n');
+//console.log('=' .repeat(80));
 
 const totalEndpoints = endpoints.length;
 const implementedEndpoints = endpoints.filter(ep => ep.status === 'implemented').length;
@@ -182,14 +182,14 @@ const endpointsWithAuth = endpoints.filter(ep => ep.features.authentication).len
 const endpointsWithDB = endpoints.filter(ep => ep.features.database).length;
 const endpointsWithAI = endpoints.filter(ep => ep.features.aiIntegration).length;
 
-console.log(`Total API Endpoints: ${totalEndpoints}`);
-console.log(`Implemented: ${implementedEndpoints} (${Math.round(implementedEndpoints/totalEndpoints*100)}%)`);
-console.log(`With Authentication: ${endpointsWithAuth} (${Math.round(endpointsWithAuth/totalEndpoints*100)}%)`);
-console.log(`With Database: ${endpointsWithDB} (${Math.round(endpointsWithDB/totalEndpoints*100)}%)`);
-console.log(`With AI Integration: ${endpointsWithAI} (${Math.round(endpointsWithAI/totalEndpoints*100)}%)`);
+//console.log(`Total API Endpoints: ${totalEndpoints}`);
+//console.log(`Implemented: ${implementedEndpoints} (${Math.round(implementedEndpoints/totalEndpoints*100)}%)`);
+//console.log(`With Authentication: ${endpointsWithAuth} (${Math.round(endpointsWithAuth/totalEndpoints*100)}%)`);
+//console.log(`With Database: ${endpointsWithDB} (${Math.round(endpointsWithDB/totalEndpoints*100)}%)`);
+//console.log(`With AI Integration: ${endpointsWithAI} (${Math.round(endpointsWithAI/totalEndpoints*100)}%)`);
 
-console.log(`\nTotal Backend Services: ${services.length}`);
-console.log(`Implemented: ${services.filter(s => s.status === 'implemented').length}`);
+//console.log(`\nTotal Backend Services: ${services.length}`);
+//console.log(`Implemented: ${services.filter(s => s.status === 'implemented').length}`);
 
 // Method coverage
 const methodCounts = {};
@@ -199,9 +199,9 @@ endpoints.forEach(ep => {
   });
 });
 
-console.log('\n📈 HTTP Method Distribution:');
+//console.log('\n📈 HTTP Method Distribution:');
 Object.entries(methodCounts).forEach(([method, count]) => {
-  console.log(`   ${method}: ${count} endpoints`);
+  //console.log(`   ${method}: ${count} endpoints`);
 });
 
-console.log('\n✨ Analysis Complete!\n');
+//console.log('\n✨ Analysis Complete!\n');

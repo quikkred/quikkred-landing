@@ -140,8 +140,8 @@ if (eligibility.isEligible) {
     purpose: 'personal'
   });
 
-  console.log('Application ID:', application.id);
-  console.log('Status:', application.status);
+  //console.log('Application ID:', application.id);
+  //console.log('Status:', application.status);
 }`;
 
   return (

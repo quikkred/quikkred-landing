@@ -17,13 +17,13 @@ const token = jwt.sign(
   { expiresIn: '24h' }
 );
 
-console.log('\nGenerated JWT Token:');
-console.log(token);
-console.log('\nPayload:');
-console.log({
+//console.log('\nGenerated JWT Token:');
+//console.log(token);
+//console.log('\nPayload:');
+//console.log({
   userId,
   email,
   userType
 });
-console.log('\nUse with Authorization header:');
-console.log(`Authorization: Bearer ${token}`);
+//console.log('\nUse with Authorization header:');
+//console.log(`Authorization: Bearer ${token}`);

@@ -236,7 +236,7 @@ const BankVerification = ({
             //     applicationId: application?._id,
             // });
             // if(response.status === 200 || response.status === 201){
-            //     console.log(response.data);
+            //     //console.log(response.data);
             // }
             const response = await axios.post("/api/v2/application/loan/create", {
                 // basicDetails

@@ -286,7 +286,7 @@ export default function QuickLoanApplication() {
   useEffect(() => {
     const loadUserData = async () => {
       if (user && !userDataLoaded) {
-        console.log('🔵 Loading user data for logged-in user...');
+        // //console.log('🔵 Loading user data for logged-in user...');
         try {
           const token = await getToken();
 
@@ -296,7 +296,7 @@ export default function QuickLoanApplication() {
 
             if (result.success && result.data) {
               const profileData = result.data;
-              console.log('✅ User profile loaded successfully');
+              // //console.log('✅ User profile loaded successfully');
 
               // Pre-fill form data (using imported formatDateForInput)
               // Note: prev.mobile takes priority (from localStorage/applyMobile)
@@ -336,31 +336,31 @@ export default function QuickLoanApplication() {
               // Check verification statuses (using imported toBoolean)
               if (toBoolean(profileData.isPanVerify)) {
                 setPanVerified(true);
-                console.log('✅ PAN already verified');
+                // //console.log('✅ PAN already verified');
               }
               if (toBoolean(profileData.isAadhaarVerify)) {
                 setAadhaarVerified(true);
-                console.log('✅ Aadhaar already verified');
+                // //console.log('✅ Aadhaar already verified');
               }
               // Check bank verification via penny drop status
               if (profileData.banks?.[0]?.pennyDropStatus === 'VERIFIED') {
                 setBankVerified(true);
-                console.log('✅ Bank already verified (penny drop)');
+                // //console.log('✅ Bank already verified (penny drop)');
               }
 
               // Set detected bank if IFSC and bank name are pre-filled
               if (profileData.banks?.[0]?.ifscCode && profileData.banks?.[0]?.bankName) {
                 setIfscDetectedBank(profileData.banks[0].bankName);
-                console.log('✅ Bank name pre-filled from profile:', profileData.banks[0].bankName);
+                //console.log('✅ Bank name pre-filled from profile:', profileData.banks[0].bankName);
               }
 
               // Check eSign status from profile
               if (profileData.eSign?.status) {
                 setUserESignStatus(profileData.eSign.status);
-                console.log('📝 eSign status from profile:', profileData.eSign.status);
+                // //console.log('📝 eSign status from profile:', profileData.eSign.status);
                 if (profileData.eSign.status === 'SUCCESS') {
                   setESignVerified(true);
-                  console.log('✅ eSign already completed');
+                  // //console.log('✅ eSign already completed');
                 }
               }
 
@@ -368,14 +368,14 @@ export default function QuickLoanApplication() {
 
               // if (profileData.bsaStatus) {
               //   setBsaStatus(profileData.bsaStatus);
-              //   console.log('📊 BSA status from profile:', profileData.bsaStatus);
+              //   //console.log('📊 BSA status from profile:', profileData.bsaStatus);
 
               //   // If BSA is PROCESSED and ?finfactor=success is not in URL, redirect to add it
               //   if (profileData.bsaStatus === 'PROCESSED') {
               //     const currentUrl = new URL(window.location.href);
               //     const finfactorParam = currentUrl.searchParams.get('finfactor');
               //     if (finfactorParam !== 'success') {
-              //       console.log('📊 BSA is PROCESSED, redirecting with ?finfactor=success');
+              //       //console.log('📊 BSA is PROCESSED, redirecting with ?finfactor=success');
               //       currentUrl.searchParams.set('finfactor', 'success');
               //       router.replace(currentUrl.pathname + currentUrl.search);
               //       return; // Exit early as we're redirecting
@@ -385,7 +385,7 @@ export default function QuickLoanApplication() {
 
               // Check if bsaInitiated is true - redirect to finfactor success flow
               if (toBoolean(profileData.bsaInitiated)) {
-                console.log('📊 bsaInitiated is true, redirecting to finfactor success flow');
+                // //console.log('📊 bsaInitiated is true, redirecting to finfactor success flow');
                 const currentUrl = new URL(window.location.href);
                 const finfactorParam = currentUrl.searchParams.get('finfactor');
                 if (finfactorParam !== 'success') {
@@ -696,7 +696,7 @@ export default function QuickLoanApplication() {
       // const updateBsaStatus = async () => {
       //   // Prevent duplicate calls
       //   if (bsaStatusUpdated) {
-      //     console.log('BSA status already updated, skipping API call');
+      //     //console.log('BSA status already updated, skipping API call');
       //     return;
       //   }
 
@@ -719,7 +719,7 @@ export default function QuickLoanApplication() {
 
       //     const result = await response.json();
       //     if (response.ok && result.success) {
-      //       console.log('BSA status updated successfully:', result.data);
+      //       //console.log('BSA status updated successfully:', result.data);
       //       // Update local bsaStatus state
       //       setBsaStatus('PROCESSED');
       //     } else {
@@ -780,7 +780,7 @@ export default function QuickLoanApplication() {
     }
 
     const fetchBreFinfactorResult = async () => {
-      console.log('📊 finfactor=success detected, calling BRE finFactor API...');
+      // //console.log('📊 finfactor=success detected, calling BRE finFactor API...');
       breFinFactorCalledRef.current = true;
       setConsentLoading(true);
       setCurrentStep(4);
@@ -805,7 +805,7 @@ export default function QuickLoanApplication() {
         const result = await response.json();
 
         if (response.ok && result?.success && result?.data) {
-          console.log('✅ BRE finFactor result:', result.data);
+          // //console.log('✅ BRE finFactor result:', result.data);
           toast({ variant: "success", title: "Success", description: result.message || "Analysis completed." });
           setApprovalData(result.data);
           setFinfactorSuccess(false);
@@ -844,27 +844,27 @@ export default function QuickLoanApplication() {
 
       // STEP 1: Check if verified param is 'true'
       if (verifiedParam !== 'true') {
-        console.log('ℹ️ No verified=true query param, skipping Aadhaar status check');
+        // //console.log('ℹ️ No verified=true query param, skipping Aadhaar status check');
         return;
       }
 
       // STEP 2: Wait for user profile data to be loaded first
       // This ensures we have the isAadhaarVerify value from GET user/details API
       if (!userDataLoaded) {
-        console.log('⏳ Waiting for user profile data to load before checking Aadhaar status...');
+        // //console.log('⏳ Waiting for user profile data to load before checking Aadhaar status...');
         return;
       }
 
       // STEP 3: Prevent duplicate API calls on page refresh
       if (aadhaarStatusChecked || aadhaarStatusLoading) {
-        console.log('🔄 Aadhaar status already checked or loading, skipping duplicate call');
+        //console.log('🔄 Aadhaar status already checked or loading, skipping duplicate call');
         return;
       }
 
       // STEP 4: Check if already verified from user profile data (isAadhaarVerify === true)
       // If profile data shows isAadhaarVerify = true, don't call the API
       if (aadhaarVerified) {
-        console.log('✅ Aadhaar already verified from profile (isAadhaarVerify = true), skipping API call');
+        // //console.log('✅ Aadhaar already verified from profile (isAadhaarVerify = true), skipping API call');
         setAadhaarStatusChecked(true);
 
         return;
@@ -874,13 +874,13 @@ export default function QuickLoanApplication() {
       const token = await getToken();
 
       if (!token) {
-        console.log('⚠️ No auth token found, cannot check Aadhaar status');
+        // //console.log('⚠️ No auth token found, cannot check Aadhaar status');
         setAadhaarStatusChecked(true);
         return;
       }
 
       // STEP 6: Call Aadhaar status API (isAadhaarVerify was false/not set)
-      console.log('🔍 Calling Aadhaar verification status API (isAadhaarVerify was not true)...');
+      // //console.log('🔍 Calling Aadhaar verification status API (isAadhaarVerify was not true)...');
       setAadhaarStatusLoading(true);
 
       try {
@@ -897,7 +897,7 @@ export default function QuickLoanApplication() {
             description: result.message || "Your Aadhaar has been verified successfully.",
           });
         } else {
-          console.log('ℹ️ Aadhaar not verified:', result.message || 'Verification pending or failed');
+          //console.log('ℹ️ Aadhaar not verified:', result.message || 'Verification pending or failed');
           setAadhaarVerified(false);
           // Show info toast if verification failed/pending
 
@@ -942,25 +942,25 @@ export default function QuickLoanApplication() {
 
       // Condition 1: Only trigger if isSigned === "true"
       if (isSignedParam !== 'true') {
-        console.log('[eSign] No isSigned=true query param, skipping e-Sign status check');
+        //console.log('[eSign] No isSigned=true query param, skipping e-Sign status check');
         return;
       }
 
       // Wait for user data to be loaded first
       if (!userDataLoaded) {
-        console.log('[eSign] Waiting for user profile data to load...');
+        //console.log('[eSign] Waiting for user profile data to load...');
         return;
       }
 
       // Prevent duplicate API calls
       if (eSignStatusChecked || eSignStatusLoading) {
-        console.log('[eSign] e-Sign status already checked or loading, skipping duplicate call');
+        //console.log('[eSign] e-Sign status already checked or loading, skipping duplicate call');
         return;
       }
 
       // Skip if already verified from state
       if (eSignVerified) {
-        console.log('[eSign] e-Sign already verified, skipping API call');
+        //console.log('[eSign] e-Sign already verified, skipping API call');
         setESignStatusChecked(true);
         return;
       }
@@ -968,7 +968,7 @@ export default function QuickLoanApplication() {
       // Condition 2: Check if eSign.status !== "SUCCESS" from user profile
       // If status is already SUCCESS, skip API call
       if (userESignStatus === 'SUCCESS') {
-        console.log('[eSign] eSign.status is already SUCCESS, skipping API call');
+        //console.log('[eSign] eSign.status is already SUCCESS, skipping API call');
         setESignVerified(true);
         setESignStatusChecked(true);
         return;
@@ -978,13 +978,13 @@ export default function QuickLoanApplication() {
       const token = await getToken();
 
       if (!token) {
-        console.log('[eSign] No auth token found, cannot check e-Sign status');
+        //console.log('[eSign] No auth token found, cannot check e-Sign status');
         setESignStatusChecked(true);
         return;
       }
 
       // Call API only if isSigned=true AND eSign.status !== SUCCESS
-      console.log('[eSign] Calling e-Sign document status API (conditions met: isSigned=true, eSign.status !== SUCCESS)...');
+      //console.log('[eSign] Calling e-Sign document status API (conditions met: isSigned=true, eSign.status !== SUCCESS)...');
       setESignStatusLoading(true);
 
       try {
@@ -1001,15 +1001,15 @@ export default function QuickLoanApplication() {
             description: "Your document has been signed successfully.",
           });
         } else {
-          console.log('[eSign] e-Sign not completed:', result.message || 'Document not signed');
+          //console.log('[eSign] e-Sign not completed:', result.message || 'Document not signed');
           setESignVerified(false);
         }
 
         // Call customer/get API once after eSign/document API using Redux
         try {
-          console.log('[eSign] Calling customer/get API to refresh user data...');
+          //console.log('[eSign] Calling customer/get API to refresh user data...');
           await getCustomer();
-          console.log('[eSign] customer/get API called successfully');
+          //console.log('[eSign] customer/get API called successfully');
         } catch (customerError) {
           console.error('[eSign] Error calling customer/get API:', customerError);
         }
@@ -1090,11 +1090,11 @@ export default function QuickLoanApplication() {
 
       // Skip if already fetched for this Step 4 session
       if (customerDataFetchedOnStep4Ref.current) {
-        console.log('[Step 4] Customer data already fetched, skipping duplicate call');
+        //console.log('[Step 4] Customer data already fetched, skipping duplicate call');
         return;
       }
 
-      console.log('[Step 4] Fetching latest customer data...');
+      //console.log('[Step 4] Fetching latest customer data...');
       customerDataFetchedOnStep4Ref.current = true;
 
       try {
@@ -1130,9 +1130,9 @@ export default function QuickLoanApplication() {
             companyName: profileData.companyName || prev.companyName,
           }));
 
-          console.log('[Step 4] Form data updated with latest customer info');
+          //console.log('[Step 4] Form data updated with latest customer info');
         } else {
-          console.log('[Step 4] ⚠️ Customer API returned no data');
+          //console.log('[Step 4] ⚠️ Customer API returned no data');
         }
       } catch (error) {
         console.error('[Step 4] ❌ Error fetching customer data:', error);
@@ -1160,26 +1160,26 @@ export default function QuickLoanApplication() {
 
       // Skip if already called in this session
       if (breApiCalledRef.current) {
-        console.log('[Step 4] BRE API already called, skipping');
+        //console.log('[Step 4] BRE API already called, skipping');
         return;
       }
 
       // Skip if data already exists
       if (approvalData) {
-        console.log('[Step 4] BRE data already loaded, skipping API call');
+        //console.log('[Step 4] BRE data already loaded, skipping API call');
         return;
       }
 
       const token = await getToken();
 
       if (!token) {
-        console.log('[Step 4] No auth token found, cannot fetch BRE data');
+        //console.log('[Step 4] No auth token found, cannot fetch BRE data');
         return;
       }
 
       // Mark as called BEFORE the API call to prevent race conditions
       breApiCalledRef.current = true;
-      console.log('[Step 4] Calling BRE API (bre/initialize)...');
+      //console.log('[Step 4] Calling BRE API (bre/initialize)...');
       setApprovalLoading(true);
 
       try {
@@ -1187,7 +1187,7 @@ export default function QuickLoanApplication() {
         const result = await initBRE();
 
         if (result.success && result.data) {
-          console.log('[Step 4] BRE data fetched successfully');
+          //console.log('[Step 4] BRE data fetched successfully');
           // Store BRE response data only (don't include formData to avoid dependency)
           setApprovalData(result.data);
         } else {
@@ -1605,7 +1605,7 @@ export default function QuickLoanApplication() {
       const payload = verificationMethod === 'email'
         ? { email: formData.email }
         : { mobile: formData.mobile };
-      console.log('Sending OTP with payload:', payload);
+      //console.log('Sending OTP with payload:', payload);
 
       const response = await fetch(`${API_BASE_URL}/api/auth/customer/create`, {
         method: "POST",
@@ -1696,7 +1696,7 @@ export default function QuickLoanApplication() {
           localStorage.setItem('accessToken', accessToken);
           localStorage.setItem('token', accessToken);
           localStorage.setItem('authToken', accessToken);
-          console.log('✅ Access token stored');
+          //console.log('✅ Access token stored');
         }
         // Store userId if provided
         const userId = (sessionData as any)?.userId || (sessionData as any)?.user?.id;
@@ -1713,24 +1713,24 @@ export default function QuickLoanApplication() {
         // Auto-fill form with customer data after successful OTP verification
         // Cookie token will be used automatically by the API
         try {
-          console.log('🔵 Fetching customer data after OTP verification...');
+          //console.log('🔵 Fetching customer data after OTP verification...');
           // Using Redux for customer/get API (uses cookie token automatically)
           const customerResult = await getCustomer();
 
           if (customerResult.success && customerResult.data) {
             const profileData = customerResult.data;
-            console.log('✅ Customer data fetched successfully');
+            //console.log('✅ Customer data fetched successfully');
 
             // Store user info in localStorage for AuthContext
-            console.log('📝 Storing user info in localStorage:', {
-              fullName: profileData.fullName,
-              email: profileData.email,
-              mobile: profileData.mobile,
-              _id: profileData._id
-            });
+            //console.log('📝 Storing user info in localStorage:', {
+            //   fullName: profileData.fullName,
+            //   email: profileData.email,
+            //   mobile: profileData.mobile,
+            //   _id: profileData._id
+            // });
             if (profileData.fullName) {
               localStorage.setItem('userName', profileData.fullName);
-              console.log('✅ userName stored:', profileData.fullName);
+              //console.log('✅ userName stored:', profileData.fullName);
             } else {
               console.warn('⚠️ fullName is empty, not storing userName');
             }
@@ -1767,35 +1767,35 @@ export default function QuickLoanApplication() {
             // Set bank verified flag if bank has been verified via penny drop
             if (profileData.banks?.[0]?.pennyDropStatus === 'VERIFIED') {
               setBankVerified(true);
-              console.log('✅ Bank already verified (penny drop)');
+              //console.log('✅ Bank already verified (penny drop)');
             }
 
             // Set detected bank if IFSC and bank name are pre-filled
             if (profileData.banks?.[0]?.ifscCode && profileData.banks?.[0]?.bankName) {
               setIfscDetectedBank(profileData.banks[0].bankName);
-              console.log('✅ Bank name pre-filled from profile:', profileData.banks[0].bankName);
+              //console.log('✅ Bank name pre-filled from profile:', profileData.banks[0].bankName);
             }
 
             // Set verification flags from API if available
             if (profileData.isPanVerify) {
               setPanVerified(true);
-              console.log('✅ PAN already verified');
+              //console.log('✅ PAN already verified');
             }
             if (profileData.isAadhaarVerify) {
               setAadhaarVerified(true);
-              console.log('✅ Aadhaar already verified');
+              //console.log('✅ Aadhaar already verified');
             }
 
             // Load selfie preview from profile if available
             if (profileData.profile?.s3URL) {
               setSelfiePreview(profileData.profile.s3URL);
               setSelfieCaptured(true);
-              console.log('✅ Selfie loaded from profile:', profileData.profile.s3URL);
+              //console.log('✅ Selfie loaded from profile:', profileData.profile.s3URL);
 
               // Check if selfie/profile is verified - disable retake if verified
               if (profileData.profile?.status === 'VERIFIED') {
                 setSelfieVerified(true);
-                console.log('✅ Selfie already verified - retake disabled');
+                //console.log('✅ Selfie already verified - retake disabled');
               }
             }
 
@@ -1804,13 +1804,13 @@ export default function QuickLoanApplication() {
             if (profileData.eSign === true) {
               setUserESignStatus('SUCCESS');
               setESignVerified(true);
-              console.log('✅ eSign already completed (boolean: true)');
+              //console.log('✅ eSign already completed (boolean: true)');
             } else if (profileData.eSign?.status) {
               setUserESignStatus(profileData.eSign.status);
-              console.log('📝 eSign status from profile:', profileData.eSign.status);
+              //console.log('📝 eSign status from profile:', profileData.eSign.status);
               if (profileData.eSign.status === 'SUCCESS') {
                 setESignVerified(true);
-                console.log('✅ eSign already completed (status: SUCCESS)');
+                //console.log('✅ eSign already completed (status: SUCCESS)');
               }
             }
 
@@ -1836,10 +1836,10 @@ export default function QuickLoanApplication() {
                   reference2Relationship: ref2.relationship || prev.reference2Relationship,
                 }));
               }
-              console.log('✅ References auto-filled');
+              //console.log('✅ References auto-filled');
             }
 
-            console.log('🟢 Form auto-filled with customer data');
+            //console.log('🟢 Form auto-filled with customer data');
 
             // ============================================
             // CHECKLIST-BASED REDIRECT LOGIC (after OTP verification)
@@ -1857,17 +1857,17 @@ export default function QuickLoanApplication() {
               setBasicDetailsFilled(true);
             }
 
-            console.log('📋 Checklist after OTP:', {
-              isBasicDetailsFilled,
-              isKycDetailsFilled,
-              isBankDetailsFilled,
-              isSubmit
-            });
+            //console.log('📋 Checklist after OTP:', {
+            //   isBasicDetailsFilled,
+            //   isKycDetailsFilled,
+            //   isBankDetailsFilled,
+            //   isSubmit
+            // });
 
             const allChecklistComplete = isBasicDetailsFilled && isKycDetailsFilled && isBankDetailsFilled && isSubmit;
 
             if (allChecklistComplete) {
-              console.log('✅ All checklist items complete - redirecting to Dashboard');
+              //console.log('✅ All checklist items complete - redirecting to Dashboard');
               toast({
                 variant: "success",
                 title: "Welcome Back!",
@@ -1890,7 +1890,7 @@ export default function QuickLoanApplication() {
               targetStep = 4;
             }
 
-            console.log('📍 Redirecting to step:', targetStep);
+            //console.log('📍 Redirecting to step:', targetStep);
 
             // Check if any meaningful data was auto-filled (not just email/mobile from verification)
             const hasAutoFilledData = !!(
@@ -1919,7 +1919,7 @@ export default function QuickLoanApplication() {
               });
             }
           } else {
-            console.log('⚠️ Customer API returned no data');
+            //console.log('⚠️ Customer API returned no data');
           }
         } catch (error) {
           console.error('❌ Error fetching customer data:', error);
@@ -2154,8 +2154,8 @@ export default function QuickLoanApplication() {
         // Store address data for later use (will be saved on Next button click)
         if (result.data.address) {
           setAadhaarAddress(result.data.address);
-          console.log('✅ Aadhaar verified successfully');
-          console.log('📊 Address data stored:', result.data.address);
+          //console.log('✅ Aadhaar verified successfully');
+          //console.log('📊 Address data stored:', result.data.address);
         }
 
         // ============================================
@@ -2166,7 +2166,7 @@ export default function QuickLoanApplication() {
         // Phase 1: Contact Validation
         if (result.data.contactValidation) {
           const cv = result.data.contactValidation;
-          console.log('📱 Contact Validation:', cv);
+          //console.log('📱 Contact Validation:', cv);
 
           if (!cv.contactMatchesAadhaar) {
             if (cv.mismatch?.mobile) {
@@ -2181,18 +2181,18 @@ export default function QuickLoanApplication() {
         // Phase 4: Duplicate Detection
         if (result.data.duplicateCheck?.isDuplicate) {
           const dc = result.data.duplicateCheck;
-          console.log('🚨 Duplicate Aadhaar detected:', dc);
+          //console.log('🚨 Duplicate Aadhaar detected:', dc);
           warningMessages.push(`⚠️ This Aadhaar is already registered with ${dc.duplicateCount} other account(s)`);
         }
 
         // Phase 2: Photo Validation
         if (result.data.photoValidation?.photoUploaded) {
-          console.log('📸 Aadhaar photo uploaded:', result.data.photoValidation.photoUrl);
+          //console.log('📸 Aadhaar photo uploaded:', result.data.photoValidation.photoUrl);
         }
 
         // Phase 3: Address Validation
         if (result.data.addressValidation?.addressExtracted) {
-          console.log('🏠 Address validation:', result.data.addressValidation);
+          //console.log('🏠 Address validation:', result.data.addressValidation);
         }
 
         // Show toast with warnings if any
@@ -2527,7 +2527,7 @@ export default function QuickLoanApplication() {
           // Save to localStorage
           localStorage.setItem('userLocation', JSON.stringify(location));
           setUserLocation(location);
-          console.log('✅ User location captured:', location);
+          //console.log('✅ User location captured:', location);
           resolve(location);
         },
         (error) => {
@@ -2627,7 +2627,7 @@ export default function QuickLoanApplication() {
         // Add selfie photo file
         // if (formData.selfie) {
         //   formDataToSend.append('photo', formData.selfie, formData.selfie.name);
-        //   console.log('✅ Adding selfie photo to Step 2:', formData.selfie.name);
+        //   //console.log('✅ Adding selfie photo to Step 2:', formData.selfie.name);
         // }
 
         const response = await fetch(`${API_BASE_URL}/api/application/loan/create`, {
@@ -2641,14 +2641,14 @@ export default function QuickLoanApplication() {
 
         const result = await response.json();
 
-        console.log('🔍 API Response for loan create:', result);
-        console.log('🔍 result.data:', result.data);
-        console.log('🔍 result.data._id:', result.data?._id);
+        //console.log('🔍 API Response for loan create:', result);
+        //console.log('🔍 result.data:', result.data);
+        //console.log('🔍 result.data._id:', result.data?._id);
 
         if (result.data) {
           if (result.data.customerId) localStorage.setItem('userId', result.data.customerId);
           if (result.data._id) {
-            console.log('✅ Setting applicationId in localStorage:', result.data._id);
+            //console.log('✅ Setting applicationId in localStorage:', result.data._id);
             localStorage.setItem('applicationId', result.data._id);
           } else {
             console.warn('⚠️ No _id found in result.data');
@@ -2657,7 +2657,7 @@ export default function QuickLoanApplication() {
         }
 
         if (response.ok && result.success) {
-          console.log(`✅ Step 2 data saved successfully`);
+          //console.log(`✅ Step 2 data saved successfully`);
           return true;
         } else {
           console.error(`❌ Failed to save step 2 data:`, result.message);
@@ -2688,9 +2688,9 @@ export default function QuickLoanApplication() {
 
       const result = await response.json();
 
-      console.log('🔍 API Response for step', step, ':', result);
-      console.log('🔍 result.data:', result.data);
-      console.log('🔍 result.data._id:', result.data?._id);
+      //console.log('🔍 API Response for step', step, ':', result);
+      //console.log('🔍 result.data:', result.data);
+      //console.log('🔍 result.data._id:', result.data?._id);
 
       // Store IDs if this is first save
       if (result.data) {
@@ -2698,7 +2698,7 @@ export default function QuickLoanApplication() {
 
         // Store MongoDB _id as applicationId (internal ID)
         if (result.data._id) {
-          console.log('✅ Setting applicationId (MongoDB _id):', result.data._id);
+          //console.log('✅ Setting applicationId (MongoDB _id):', result.data._id);
           localStorage.setItem('applicationId', result.data._id);
         } else {
           console.warn('⚠️ No _id found in result.data');
@@ -2706,19 +2706,19 @@ export default function QuickLoanApplication() {
 
         // Store application number separately (user-friendly number)
         if (result.data.applicationNumber) {
-          console.log('✅ Setting applicationNumber:', result.data.applicationNumber);
+          //console.log('✅ Setting applicationNumber:', result.data.applicationNumber);
           localStorage.setItem('applicationNumber', result.data.applicationNumber);
         }
 
         // Store loan number (if available)
         if (result.data.loanNumber) {
-          console.log('✅ Setting loanNumber:', result.data.loanNumber);
+          //console.log('✅ Setting loanNumber:', result.data.loanNumber);
           localStorage.setItem('loanNumber', result.data.loanNumber);
         }
       }
 
       if (response.ok && result.success) {
-        console.log(`✅ Step ${step} data saved successfully`);
+        //console.log(`✅ Step ${step} data saved successfully`);
         return true;
       } else {
         console.error(`❌ Failed to save step ${step} data:`, result.message);
@@ -2743,7 +2743,7 @@ export default function QuickLoanApplication() {
   // Check UPI Autopay status after Razorpay closes (success or dismiss)
   const checkUpiAutoPayStatus = async (subscriptionId: string, token: string) => {
     try {
-      console.log("Calling UPI AutoPay status API for subscriptionId:", subscriptionId);
+      //console.log("Calling UPI AutoPay status API for subscriptionId:", subscriptionId);
 
       const statusResponse = await fetch(`${API_BASE_URL}/api/upi/upiAutopay/status/${subscriptionId}`, {
         method: 'GET',
@@ -2754,7 +2754,7 @@ export default function QuickLoanApplication() {
       });
 
       const statusResult = await statusResponse.json();
-      console.log("UPI AutoPay Status Response:", statusResult);
+      //console.log("UPI AutoPay Status Response:", statusResult);
 
       // After status API call, refresh customer data to get updated upiAutoPayStatus
       await getCustomer();
@@ -2869,8 +2869,8 @@ export default function QuickLoanApplication() {
             theme: { color: "#25B181" },
             handler: async function (razorpayResponse: any) {
               // Payment successful - wait 10 seconds for data to update, then call status API
-              console.log("Razorpay payment success:", razorpayResponse);
-              console.log("Waiting 10 seconds before checking status...");
+              //console.log("Razorpay payment success:", razorpayResponse);
+              //console.log("Waiting 10 seconds before checking status...");
               setMandateVerifying(true);
               await new Promise(resolve => setTimeout(resolve, 10000));
               await checkUpiAutoPayStatus(subscriptionId, token);
@@ -2880,7 +2880,7 @@ export default function QuickLoanApplication() {
             modal: {
               ondismiss: function () {
                 // User closed the modal without completing
-                console.log("Razorpay modal dismissed");
+                //console.log("Razorpay modal dismissed");
                 setMandateLoading(false);
                 setUpiAutopayConsent(false);
               }
@@ -3293,7 +3293,7 @@ export default function QuickLoanApplication() {
 
         // Store BRE data for Step 4 (Approval)
         if (breResponse && breResponse.success && breResponse.data) {
-          console.log('🔍 BRE Response data:', breResponse.data);
+          //console.log('🔍 BRE Response data:', breResponse.data);
 
           // Try to find MongoDB ObjectID from multiple possible fields
           let mongoId = breResponse.data._id || breResponse.data.id;
@@ -3301,13 +3301,13 @@ export default function QuickLoanApplication() {
           // If _id/id not found, check if applicationId looks like MongoDB ObjectID (24 hex chars)
           if (!mongoId && breResponse.data.applicationId && /^[a-f0-9]{24}$/i.test(breResponse.data.applicationId)) {
             mongoId = breResponse.data.applicationId;
-            console.log('✅ Using applicationId as MongoDB _id (looks like ObjectID):', mongoId);
+            //console.log('✅ Using applicationId as MongoDB _id (looks like ObjectID):', mongoId);
           }
 
           if (mongoId) {
             localStorage.setItem('applicationId', mongoId);
             localStorage.setItem('applicationMongoId', mongoId);
-            console.log('✅ Stored MongoDB _id for application:', mongoId);
+            //console.log('✅ Stored MongoDB _id for application:', mongoId);
           } else {
             console.warn('⚠️ No MongoDB _id found in BRE response');
           }
@@ -3315,11 +3315,11 @@ export default function QuickLoanApplication() {
           // Store application number separately (if it's not a MongoDB ObjectID)
           if (breResponse.data.applicationNumber) {
             localStorage.setItem('applicationNumber', breResponse.data.applicationNumber);
-            console.log('✅ Stored applicationNumber:', breResponse.data.applicationNumber);
+            //console.log('✅ Stored applicationNumber:', breResponse.data.applicationNumber);
           } else if (breResponse.data.applicationId && !/^[a-f0-9]{24}$/i.test(breResponse.data.applicationId)) {
             // If applicationId doesn't look like ObjectID, it's probably application number
             localStorage.setItem('applicationNumber', breResponse.data.applicationId);
-            console.log('✅ Stored applicationId as applicationNumber:', breResponse.data.applicationId);
+            //console.log('✅ Stored applicationId as applicationNumber:', breResponse.data.applicationId);
           }
 
           setApprovalData({
@@ -3389,10 +3389,10 @@ export default function QuickLoanApplication() {
 
         // Check if API call was successful
         if (response.ok && result.success) {
-          console.log('✅ Loan application submitted successfully');
-          console.log('📊 Response:', result);
-          console.log('🔍 result.data:', result.data);
-          console.log('🔍 result.data._id:', result.data?._id);
+          //console.log('✅ Loan application submitted successfully');
+          //console.log('📊 Response:', result);
+          //console.log('🔍 result.data:', result.data);
+          //console.log('🔍 result.data._id:', result.data?._id);
 
           // Store IDs from response
           if (result.data) {
@@ -3400,7 +3400,7 @@ export default function QuickLoanApplication() {
 
             // Store MongoDB _id as applicationId (internal ID)
             if (result.data._id) {
-              console.log('✅ Setting applicationId (MongoDB _id):', result.data._id);
+              //console.log('✅ Setting applicationId (MongoDB _id):', result.data._id);
               localStorage.setItem('applicationId', result.data._id);
             } else {
               console.warn('⚠️ No _id found in result.data');
@@ -3408,13 +3408,13 @@ export default function QuickLoanApplication() {
 
             // Store application number separately (user-friendly number)
             if (result.data.applicationNumber) {
-              console.log('✅ Setting applicationNumber:', result.data.applicationNumber);
+              //console.log('✅ Setting applicationNumber:', result.data.applicationNumber);
               localStorage.setItem('applicationNumber', result.data.applicationNumber);
             }
 
             // Store loan number (if available)
             if (result.data.loanNumber) {
-              console.log('✅ Setting loanNumber:', result.data.loanNumber);
+              //console.log('✅ Setting loanNumber:', result.data.loanNumber);
               localStorage.setItem('loanNumber', result.data.loanNumber);
             }
           }
@@ -4988,28 +4988,28 @@ export default function QuickLoanApplication() {
                                 }
 
                                 let applicationId = localStorage.getItem('applicationId');
-                                console.log('🔍 Account Aggregator - customerId:', user?.id);
-                                console.log('🔍 Account Aggregator - applicationId from localStorage:', applicationId);
-                                console.log('🔍 Account Aggregator - approvalData:', approvalData);
+                                //console.log('🔍 Account Aggregator - customerId:', user?.id);
+                                //console.log('🔍 Account Aggregator - applicationId from localStorage:', applicationId);
+                                //console.log('🔍 Account Aggregator - approvalData:', approvalData);
 
                                 // Try multiple sources to get the application ID
                                 if (!applicationId) {
                                   // Try _id first (MongoDB ObjectID)
                                   if (approvalData?._id) {
                                     applicationId = approvalData._id;
-                                    console.log('✅ Using _id from approvalData:', applicationId);
+                                    //console.log('✅ Using _id from approvalData:', applicationId);
                                     localStorage.setItem('applicationId', applicationId as string);
                                   }
                                   // Try applicationMongoId from localStorage
                                   else if (localStorage.getItem('applicationMongoId')) {
                                     applicationId = localStorage.getItem('applicationMongoId');
-                                    console.log('✅ Using applicationMongoId from localStorage:', applicationId);
+                                    //console.log('✅ Using applicationMongoId from localStorage:', applicationId);
                                     localStorage.setItem('applicationId', applicationId as string);
                                   }
                                   // Fallback: Check if approvalData.applicationId looks like a MongoDB ObjectID (24 hex chars)
                                   else if (approvalData?.applicationId && /^[a-f0-9]{24}$/i.test(approvalData.applicationId)) {
                                     applicationId = approvalData.applicationId;
-                                    console.log('✅ Using applicationId from approvalData (looks like MongoDB _id):', applicationId);
+                                    //console.log('✅ Using applicationId from approvalData (looks like MongoDB _id):', applicationId);
                                     localStorage.setItem('applicationId', applicationId as string);
                                   }
                                 }
@@ -5038,7 +5038,7 @@ export default function QuickLoanApplication() {
                                   callbackUrl: `${window.location.origin}/aa-callback`
                                 };
 
-                                console.log('🔍 Account Aggregator - Final payload:', payload);
+                                //console.log('🔍 Account Aggregator - Final payload:', payload);
 
                                 const response = await fetch(`${API_BASE_URL}/api/surepassAA/initialize`, {
                                   method: 'POST',

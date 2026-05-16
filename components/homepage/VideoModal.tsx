@@ -45,7 +45,7 @@ const VideoModal = ({
     if (mounted && !ytId && videoRef.current) {
       videoRef.current.muted = false;
       videoRef.current.play().catch(() => {
-        console.log("Autoplay with sound blocked");
+        //console.log("Autoplay with sound blocked");
       });
     }
   }, [mounted, ytId]);

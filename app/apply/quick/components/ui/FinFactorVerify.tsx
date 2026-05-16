@@ -122,7 +122,7 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
         // }
 
         // if (user && user?.bsaInitiated) {
-        //     console.log("bsa initial...!");
+        //     //console.log("bsa initial...!");
         //     fetchBreFinfactorResult();
         //     return;
         // }
@@ -267,7 +267,7 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
                 try {
                     //                 const response = await axios.get("/api/v2/bre/initialize");
                     //                 if (response.status === 200 || response.status === 201) {
-                    //                     console.log(response.data)
+                    //                     //console.log(response.data)
                     //                     // const eligibilityStep = isLogin && user?.brePulled && application && application?.status !== "REJECTED";
 
                     //                     /*

@@ -129,8 +129,8 @@ async function testEndpoint(endpoint) {
 
 // Run tests
 async function runTests() {
-  console.log('🚀 Testing All API Endpoints\n');
-  console.log('Token:', token.substring(0, 50) + '...\n');
+  //console.log('🚀 Testing All API Endpoints\n');
+  //console.log('Token:', token.substring(0, 50) + '...\n');
 
   const results = [];
 
@@ -141,33 +141,33 @@ async function runTests() {
     const emoji = result.success ? '✅' : '❌';
     const status = result.success ? `[${result.status}]` : `[${result.status}]`;
 
-    console.log(`${emoji} ${result.name.padEnd(20)} ${status.padEnd(6)} ${result.path}`);
+    //console.log(`${emoji} ${result.name.padEnd(20)} ${status.padEnd(6)} ${result.path}`);
     if (!result.success) {
-      console.log(`   Error: ${result.message}\n`);
+      //console.log(`   Error: ${result.message}\n`);
     }
   }
 
   // Summary
-  console.log('\n📊 Summary');
-  console.log('─────────');
+  //console.log('\n📊 Summary');
+  //console.log('─────────');
   const working = results.filter(r => r.success).length;
   const failed = results.filter(r => !r.success).length;
   const percentage = Math.round((working / results.length) * 100);
 
-  console.log(`✅ Working: ${working}/${results.length} (${percentage}%)`);
-  console.log(`❌ Failed: ${failed}/${results.length}`);
+  //console.log(`✅ Working: ${working}/${results.length} (${percentage}%)`);
+  //console.log(`❌ Failed: ${failed}/${results.length}`);
 
   // List working endpoints
-  console.log('\n✅ Working Endpoints:');
+  //console.log('\n✅ Working Endpoints:');
   results.filter(r => r.success).forEach(r => {
-    console.log(`   - ${r.path}`);
+    //console.log(`   - ${r.path}`);
   });
 
   // List failed endpoints
   if (failed > 0) {
-    console.log('\n❌ Failed Endpoints:');
+    //console.log('\n❌ Failed Endpoints:');
     results.filter(r => !r.success).forEach(r => {
-      console.log(`   - ${r.path}: ${r.message}`);
+      //console.log(`   - ${r.path}: ${r.message}`);
     });
   }
 }

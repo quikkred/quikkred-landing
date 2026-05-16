@@ -168,7 +168,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const fetchUserProfile = async (token: string, currentUser: User) => {
-    console.log('🔵 Fetching user profile from API...');
+    //console.log('🔵 Fetching user profile from API...');
     try {
       const response = await fetch('https://api.quikkred.in/api/customer/get', {
         method: 'GET',
@@ -179,7 +179,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       const result = await response.json();
-      console.log('🟢 Profile API Response:', result.success ? 'Success' : 'Failed');
+      //console.log('🟢 Profile API Response:', result.success ? 'Success' : 'Failed');
 
       if (response.ok && result.success && result.data) {
         const apiData = result.data;
@@ -187,7 +187,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Use fullName directly from API (not nested under profile)
         const fullName = apiData.fullName || currentUser.name;
 
-        console.log('✅ Profile fetched successfully. Name:', fullName);
+        //console.log('✅ Profile fetched successfully. Name:', fullName);
 
         // Update user with real profile data from API
         const updatedUser: User = {
