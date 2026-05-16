@@ -274,16 +274,16 @@ export default function ContactForm({ onSuccess }: ContactFormProps) {
                 </div>
                 <div className="w-full h-[250px] sm:h-[300px] md:h-[350px]">
                   <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3501.4097591754347!2d77.1807!3d28.6419!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d029e2b6b2f6f%3A0x5c4a5f8a3a2b1c0d!2sVikrant%20Tower%2C%20Rajendra%20Place%2C%20New%20Delhi%2C%20Delhi%20110008!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0 }}
-                    allowFullScreen
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    title="Quikkred Head Office Location"
-                    className="w-full h-full"
-                  />
+  src="https://maps.google.com/maps?q=Vikrant%20Tower%20Rajendra%20Place%20New%20Delhi&t=&z=15&ie=UTF8&iwloc=&output=embed"
+  width="100%"
+  height="100%"
+  style={{ border: 0 }}
+  allowFullScreen
+  loading="lazy"
+  referrerPolicy="no-referrer-when-downgrade"
+  title="Quikkred Head Office Location"
+  className="w-full h-full"
+/>
                 </div>
               </div>
 

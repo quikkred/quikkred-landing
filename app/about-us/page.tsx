@@ -612,27 +612,27 @@ export default function AboutPage() {
       </section>
 
       {/* ─── Map ─── */}
-      <div className="relative w-full h-[250px] sm:h-[300px] md:h-[350px]">
-        <iframe
-          src="https://www.openstreetmap.org/export/embed.html?bbox=77.1760%2C28.6380%2C77.1870%2C28.6460&layer=mapnik&marker=28.6420%2C77.1816"
-          width="100%"
-          height="100%"
-          style={{ border: 0 }}
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          title="Quikkred Head Office Location"
-          className="w-full h-full"
-        />
-        <a
-          href="https://www.google.com/maps/search/?api=1&query=Vikrant+Tower+Rajendra+Place+New+Delhi+110008"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="absolute bottom-3 right-3 inline-flex items-center gap-2 bg-white/95 hover:bg-white border border-gray-200 shadow-md rounded-lg px-3 py-2 text-xs font-semibold text-[#1F8F68]"
-        >
-          <MapPin className="w-3.5 h-3.5" />
-          Open in Google Maps
-        </a>
-      </div>
+<div className="relative w-full h-[250px] sm:h-[320px] md:h-[380px] overflow-hidden rounded-2xl shadow-lg">
+  <iframe
+    src="https://maps.google.com/maps?q=Vikrant%20Tower%20Rajendra%20Place%20New%20Delhi%20110008&t=&z=15&ie=UTF8&iwloc=&output=embed"
+    width="100%"
+    height="100%"
+    loading="lazy"
+    title="Quikkred Head Office Location"
+    className="w-full h-full border-0"
+    allowFullScreen
+  />
+
+  <a
+    href="https://www.google.com/maps/search/?api=1&query=Vikrant+Tower+Rajendra+Place+New+Delhi+110008"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="absolute bottom-4 right-4 inline-flex items-center gap-2 bg-white hover:bg-gray-100 border border-gray-200 shadow-md rounded-xl px-4 py-2 text-sm font-medium text-[#1F8F68] transition-all duration-200"
+  >
+    <MapPin className="w-4 h-4" />
+    Open in Google Maps
+  </a>
+</div>
     </div>
   );
 }
