@@ -641,7 +641,7 @@ const UserLayout = ({ children }: UserLayoutProps) => {
                           console.error('Failed to load profile image in navbar');
                           setImageLoadError(true);
                         }}
-                        onLoad={() => //console.log('✅ Navbar profile image loaded')}
+                        // onLoad={() => console.log('✅ Navbar profile image loaded')}
                       />
                     </div>
                   ) : (
