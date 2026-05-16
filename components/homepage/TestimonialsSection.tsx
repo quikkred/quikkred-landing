@@ -48,6 +48,15 @@ interface VideoTestimonial {
 
 type Testimonial = TextTestimonial | VideoTestimonial;
 
+// Pull the 11-char video id out of a YouTube Shorts/watch/youtu.be URL.
+// Returns null for non-YouTube URLs so the modal can fall back to <video>.
+function getYouTubeId(url: string): string | null {
+  const m = url.match(
+    /(?:youtube\.com\/(?:shorts\/|watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+  );
+  return m ? m[1] : null;
+}
+
 // Sample Data
 const testimonialsData: Testimonial[] = [
   {
@@ -73,8 +82,7 @@ const testimonialsData: Testimonial[] = [
     loanAmount: "5,00,000",
     loanType: "Business Loan",
     date: "Nov 2024",
-    videoUrl: "/videos/shrushti.mp4",
-    // thumbnail: "/videos/thumb.jpg",
+    videoUrl: "https://youtube.com/shorts/0jleExlJWz0?feature=share",
     duration: "24sec",
     title: "Service is good and quick , so helpful customer support. ",
   },
@@ -100,8 +108,7 @@ const testimonialsData: Testimonial[] = [
     loanAmount: "3,00,000",
     loanType: "Personal Loan",
     date: "Oct 2024",
-    videoUrl: "/videos/shubham-khanna.mp4",
-    // thumbnail: "/videos/shubham-thumb.jpg",
+    videoUrl: "https://youtube.com/shorts/Y5-mK3YrqVE?feature=share",
     duration: "09sec",
     title: "This time I'm getting a higher loan , Quikkred has my trust.",
   },
@@ -116,9 +123,7 @@ const testimonialsData: Testimonial[] = [
     loanType: "Business Loan",
     date: "Jan 2025",
 
-    videoUrl: "/videos/amul-king.mp4",
-    // thumbnail: "/videos/amul-thumb.jpg", // optional
-
+    videoUrl: "https://youtube.com/shorts/1FgaFv2Yu1o?feature=share",
     duration: "15sec",
     title: "Fast service and very supportive team. Good experience.",
   },
@@ -222,9 +227,9 @@ const TextCard = ({ testimonial }: { testimonial: TextTestimonial }) => {
             <DefaultAvatar name={testimonial.name} />
           )}
           <div className="min-w-0">
-            <h4 className="font-semibold text-gray-900 text-xs sm:text-sm truncate">
+            <h3 className="font-semibold text-gray-900 text-xs sm:text-sm truncate">
               {testimonial.name}
-            </h4>
+            </h3>
             <p className="text-[10px] sm:text-xs text-gray-500 truncate">
               {testimonial.location}
             </p>
@@ -261,12 +266,39 @@ const VideoCard = ({
         className="relative h-36 sm:h-44 lg:h-48 bg-gray-900 cursor-pointer group"
         onClick={onPlay}
       >
-        <video
-          src={testimonial.videoUrl}
-          className="w-full h-full object-cover"
-          preload="metadata"
-          muted
-        />
+        {(() => {
+          const ytId = getYouTubeId(testimonial.videoUrl);
+          if (ytId) {
+            // YouTube Shorts thumbnail — Shorts use the same vi/<id>/ URL space.
+            // hqdefault is the most reliable; mqdefault is the fallback.
+            // Explicit width/height reserve layout space (CLS fix).
+            return (
+              <img
+                src={`https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`}
+                alt={testimonial.title}
+                width={480}
+                height={360}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = `https://i.ytimg.com/vi/${ytId}/mqdefault.jpg`;
+                }}
+              />
+            );
+          }
+          // Fallback: a direct video file (preload none so we don't fetch the mp4
+          // until the user actually plays it).
+          return (
+            <video
+              src={testimonial.videoUrl}
+              className="w-full h-full object-cover"
+              preload="none"
+              muted
+              playsInline
+            />
+          );
+        })()}
         <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
           <div className="w-11 h-11 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-white/90 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
             <Play className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-[#25B181] ml-0.5 sm:ml-1" />
@@ -280,9 +312,9 @@ const VideoCard = ({
         </span>
       </div>
       <div className="p-3 sm:p-4 lg:p-5 flex flex-col flex-grow">
-        <h4 className="font-semibold text-gray-900 text-xs sm:text-sm mb-1.5 sm:mb-2 line-clamp-2">
+        <h3 className="font-semibold text-gray-900 text-xs sm:text-sm mb-1.5 sm:mb-2 line-clamp-2">
           {testimonial.title}
-        </h4>
+        </h3>
         <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2 sm:mb-3">
           <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 bg-[#D3F1EB] text-[#1F8F68] rounded-full text-[10px] sm:text-xs font-medium">
             <IndianRupee size={10} className="sm:w-3 sm:h-3" />
@@ -312,9 +344,9 @@ const VideoCard = ({
               </div>
             )}
             <div className="min-w-0">
-              <h5 className="font-medium text-gray-900 text-xs sm:text-sm truncate">
+              <h4 className="font-medium text-gray-900 text-xs sm:text-sm truncate">
                 {testimonial.name}
-              </h5>
+              </h4>
               <p className="text-[10px] sm:text-xs text-gray-500 truncate">
                 {testimonial.location}
               </p>
@@ -414,34 +446,29 @@ export default function TestimonialsSection() {
         </motion.div>
       </div>
 
-      {/* Carousel */}
-      <div className="relative w-screen left-1/2 -translate-x-1/2">
-        <div
-          className="overflow-x-auto scrollbar-hide px-3 sm:px-6 md:px-10 lg:px-16 xl:px-20"
-          style={{ scrollBehavior: "smooth" }}
-        >
-          <div className="flex gap-3 sm:gap-4 md:gap-5 lg:gap-6 w-fit py-2">
-            {filteredTestimonials.map((testimonial) =>
-              testimonial.type === "text" ? (
-                <div
-                  key={testimonial.id}
-                  className="w-[260px] sm:w-[300px] md:w-[320px] lg:w-[360px] xl:w-[380px] flex-shrink-0"
-                >
-                  <TextCard testimonial={testimonial} />
-                </div>
-              ) : (
-                <div
-                  key={testimonial.id}
-                  className="w-[260px] sm:w-[300px] md:w-[320px] lg:w-[360px] xl:w-[380px] flex-shrink-0"
-                >
-                  <VideoCard
-                    testimonial={testimonial}
-                    onPlay={() => setSelectedVideo(testimonial.videoUrl)}
-                  />
-                </div>
-              ),
-            )}
-          </div>
+      {/* Cards — centered wrapping grid (no carousel) */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-wrap justify-center gap-4 sm:gap-5 lg:gap-6 py-2">
+          {filteredTestimonials.map((testimonial) =>
+            testimonial.type === "text" ? (
+              <div
+                key={testimonial.id}
+                className="w-full sm:w-[300px] md:w-[320px] lg:w-[360px] xl:w-[380px] max-w-[380px]"
+              >
+                <TextCard testimonial={testimonial} />
+              </div>
+            ) : (
+              <div
+                key={testimonial.id}
+                className="w-full sm:w-[300px] md:w-[320px] lg:w-[360px] xl:w-[380px] max-w-[380px]"
+              >
+                <VideoCard
+                  testimonial={testimonial}
+                  onPlay={() => setSelectedVideo(testimonial.videoUrl)}
+                />
+              </div>
+            ),
+          )}
         </div>
       </div>
 

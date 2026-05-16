@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -135,9 +136,14 @@ export function Header() {
         <div className="flex justify-between items-center h-16 lg:h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center group">
-            <img
+            <Image
               src="/quikkred-logo.png"
               alt={t.common.appName}
+              width={161}
+              height={42}
+              priority
+              fetchPriority="high"
+              sizes="161px"
               className="h-9 lg:h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
             />
           </Link>
@@ -227,7 +233,11 @@ export function Header() {
                 </motion.button>
               </Link>
             ) : (
-              <Link href={isHomePage ? "/login" : (QUICK_FORM_URL as string)} className="sm:hidden">
+              <Link
+                href={isHomePage ? "/login" : (QUICK_FORM_URL as string)}
+                className="sm:hidden"
+                aria-label={isHomePage ? (t.navigation.login || "Login") : (t.common.apply || "Apply")}
+              >
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   className="px-3 py-2 bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-xs font-semibold rounded-lg shadow-md min-h-[36px]"
@@ -250,7 +260,7 @@ export function Header() {
                 </motion.button>
               </Link>
             ) : isHomePage ? (
-              <Link href="/login">
+              <Link href="/login" aria-label={t.navigation.login || "Login"}>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -387,6 +397,7 @@ export function Header() {
                     href="/login"
                     onClick={() => setMobileMenuOpen(false)}
                     className="block mt-2"
+                    aria-label={t.navigation.login || "Login"}
                   >
                     <button className="w-full py-4 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-bold rounded-2xl text-base shadow-lg">
                       {t.navigation.login}

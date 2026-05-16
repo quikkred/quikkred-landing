@@ -21,7 +21,9 @@ import {
   IdCard,
   FileBadge,
   Sparkles,
+  ChevronDown,
 } from "lucide-react";
+import { API_BASE_URL } from "@/lib/config";
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const ACCEPTED_DOC_TYPES = ["application/pdf", "image/jpeg", "image/png"];
@@ -29,13 +31,31 @@ const ACCEPTED_DOC_EXTS = ".pdf,.jpg,.jpeg,.png";
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png"];
 const ACCEPTED_IMAGE_EXTS = ".jpg,.jpeg,.png";
 
+type BusinessType =
+  | ""
+  | "PROPRIETORSHIP"
+  | "PARTNERSHIP"
+  | "LLP"
+  | "PRIVATE_LIMITED"
+  | "PUBLIC_LIMITED";
+
+const BUSINESS_TYPE_OPTIONS: { value: Exclude<BusinessType, "">; label: string }[] = [
+  { value: "PROPRIETORSHIP", label: "Proprietorship" },
+  { value: "PARTNERSHIP", label: "Partnership" },
+  { value: "LLP", label: "LLP" },
+  { value: "PRIVATE_LIMITED", label: "Private Limited" },
+  { value: "PUBLIC_LIMITED", label: "Public Limited" },
+];
+
 interface FormState {
   fullName: string;
+  email: string;
   mobile: string;
 
   panNumber: string;
   aadhaarNumber: string;
   gstNumber: string;
+  businessType: BusinessType;
 
   bankAccountHolder: string;
   bankAccountNumber: string;
@@ -56,10 +76,12 @@ interface FormState {
 
 const initial: FormState = {
   fullName: "",
+  email: "",
   mobile: "",
   panNumber: "",
   aadhaarNumber: "",
   gstNumber: "",
+  businessType: "",
   bankAccountHolder: "",
   bankAccountNumber: "",
   bankAccountConfirm: "",
@@ -81,6 +103,7 @@ const GSTIN_REGEX =
   /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
 const MOBILE_REGEX = /^[6-9][0-9]{9}$/;
 const IFSC_REGEX = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function fileErr(
   file: File | null,
@@ -97,6 +120,8 @@ function validate(f: FormState): Partial<Record<keyof FormState, string>> {
   const e: Partial<Record<keyof FormState, string>> = {};
 
   if (!f.fullName.trim()) e.fullName = "Required";
+  if (!EMAIL_REGEX.test(f.email.trim()))
+    e.email = "Enter a valid email address";
   if (!MOBILE_REGEX.test(f.mobile))
     e.mobile = "10-digit Indian mobile starting with 6–9";
 
@@ -108,6 +133,8 @@ function validate(f: FormState): Partial<Record<keyof FormState, string>> {
   const hasGst = !!f.gstNumber.trim();
   if (hasGst && !GSTIN_REGEX.test(f.gstNumber))
     e.gstNumber = "Enter a valid 15-character GSTIN";
+
+  if (!f.businessType) e.businessType = "Select your business type";
 
   if (!f.bankAccountHolder.trim()) e.bankAccountHolder = "Required";
   if (!/^[0-9]{9,18}$/.test(f.bankAccountNumber))
@@ -189,41 +216,68 @@ export default function ProprietorDistributorApplyPage() {
     setSubmitting(true);
     try {
       const fd = new FormData();
-      const payload: Record<string, unknown> = {
-        fullName: form.fullName,
-        mobile: form.mobile,
-        panNumber: form.panNumber.toUpperCase(),
-        aadhaarNumber: form.aadhaarNumber,
-        gstNumber: form.gstNumber.toUpperCase(),
-        bankAccountHolder: form.bankAccountHolder,
-        bankAccountNumber: form.bankAccountNumber,
-        bankIfsc: form.bankIfsc.toUpperCase(),
-        submittedAt: new Date().toISOString(),
-      };
-      fd.append("payload", JSON.stringify(payload));
+      fd.append("fullName", form.fullName.trim());
+      fd.append("email", form.email.trim());
+      fd.append("mobile", form.mobile);
+      fd.append("pan", form.panNumber.toUpperCase());
+      fd.append("aadhaar", form.aadhaarNumber);
+      if (form.gstNumber.trim()) {
+        fd.append("gstin", form.gstNumber.toUpperCase());
+      }
+      fd.append("businessType", form.businessType);
+      fd.append("accountHolderName", form.bankAccountHolder.trim());
+      fd.append("ifsc", form.bankIfsc.toUpperCase());
+      fd.append("accountNumber", form.bankAccountNumber);
+      fd.append("confirmAccountNumber", form.bankAccountConfirm);
+      fd.append("consent", String(form.consent));
 
+      const fileFieldMap: Record<(typeof DOC_KEYS)[number], string> = {
+        docPan: "panCard",
+        docFace: "selfie",
+        docAadhaarFront: "aadhaarFront",
+        docAadhaarBack: "aadhaarBack",
+        docCoi: "coi",
+        docGst: "gstCert",
+        docMoa: "moa",
+        docAoa: "aoa",
+      };
       for (const k of DOC_KEYS) {
         const file = form[k];
-        if (file) fd.append(k, file, file.name);
+        if (file) fd.append(fileFieldMap[k], file, file.name);
       }
 
-      const res = await fetch("/api/partners/proprietor-distributor/apply", {
-        method: "POST",
-        body: fd,
-      });
+      const res = await fetch(
+        `${API_BASE_URL}/api/v2/distributor-onboard/apply`,
+        {
+          method: "POST",
+          body: fd,
+        },
+      );
+
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        const fallbackId = `QDIST-${Date.now().toString(36).toUpperCase()}`;
-        setSubmitted({ applicationId: fallbackId });
+        const msg =
+          (data && (data.message || data.error)) ||
+          `Submission failed (status ${res.status})`;
+        setErrors((prev) => ({ ...prev, fullName: msg }));
         return;
       }
-      const data = await res.json();
+
       setSubmitted({
-        applicationId: data.applicationId || data.id || `QDIST-${Date.now()}`,
+        applicationId:
+          data.applicationId ||
+          data.applicationRef ||
+          data.id ||
+          `QDIST-${Date.now().toString(36).toUpperCase()}`,
       });
-    } catch {
-      const fallbackId = `QDIST-${Date.now().toString(36).toUpperCase()}`;
-      setSubmitted({ applicationId: fallbackId });
+    } catch (err) {
+      console.error("[proprietor-network/apply] submit failed", err);
+      setErrors((prev) => ({
+        ...prev,
+        fullName:
+          "Could not reach the server. Check your connection and try again.",
+      }));
     } finally {
       setSubmitting(false);
     }
@@ -321,6 +375,17 @@ export default function ProprietorDistributorApplyPage() {
               />
             </Field>
 
+            <Field id="field-email" label="Email" required error={errors.email}>
+              <input
+                type="email"
+                value={form.email}
+                onChange={(e) => update("email", e.target.value)}
+                placeholder="you@example.com"
+                autoComplete="email"
+                className={inputCls(!!errors.email)}
+              />
+            </Field>
+
             <Field id="field-mobile" label="Mobile" required error={errors.mobile}>
               <div className="flex">
                 <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-gray-200 bg-gray-50 text-sm text-gray-600 font-medium">
@@ -336,6 +401,31 @@ export default function ProprietorDistributorApplyPage() {
                   maxLength={10}
                   className={`${inputCls(!!errors.mobile)} rounded-l-none`}
                 />
+              </div>
+            </Field>
+
+            <Field
+              id="field-businessType"
+              label="Business type"
+              required
+              error={errors.businessType}
+            >
+              <div className="relative">
+                <select
+                  value={form.businessType}
+                  onChange={(e) =>
+                    update("businessType", e.target.value as BusinessType)
+                  }
+                  className={`${inputCls(!!errors.businessType)} appearance-none pr-10`}
+                >
+                  <option value="">Select business type</option>
+                  {BUSINESS_TYPE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               </div>
             </Field>
 

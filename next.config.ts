@@ -141,19 +141,35 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: `
             default-src 'self';
-            script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://cdn.jsdelivr.net https://checkout.razorpay.com;
+            script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://connect.facebook.net https://cdn.jsdelivr.net https://checkout.razorpay.com;
             style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
             img-src 'self' data: https: blob:;
             font-src 'self' data: https://fonts.gstatic.com;
             worker-src 'self' blob:;
-            connect-src 'self' ${apiDomain} ${appDomain} ${apiWsDomain} ${appWsDomain} https://alpha.quikkred.in wss://alpha.quikkred.in https://ifsc.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com https://www.google-analytics.com https://www.google.com https://stats.g.doubleclick.net https://googleads.g.doubleclick.net https://td.doubleclick.net https://connect.facebook.net https://www.facebook.com https://cdn.jsdelivr.net https://storage.googleapis.com;
-            frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com;
+            connect-src 'self' ${apiDomain} ${appDomain} ${apiWsDomain} ${appWsDomain} https://alpha.quikkred.in wss://alpha.quikkred.in https://ifsc.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com https://www.google-analytics.com https://www.google.com https://stats.g.doubleclick.net https://googleads.g.doubleclick.net https://td.doubleclick.net https://connect.facebook.net https://www.facebook.com https://*.conversionsapigateway.com https://*.a.run.app https://cdn.jsdelivr.net https://storage.googleapis.com;
+            frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://www.google.com https://maps.google.com https://www.youtube.com https://www.youtube-nocookie.com;
             frame-ancestors 'none';
             upgrade-insecure-requests;
           `
               .replace(/\s{2,}/g, " ")
               .trim(),
           },
+        ],
+      },
+      // Long-cache static assets — Lighthouse flagged 4h TTL on images/videos/svgs
+      // costing ~3.2 MB of repeat-visit savings. Filenames in /videos/ are stable;
+      // root-level logo/favicon are stable too. Next.js fingerprints anything under
+      // /_next/static already, so those don't need overriding here.
+      {
+        source: "/videos/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
+        source: "/:all*(svg|png|jpg|jpeg|gif|webp|avif|ico|woff|woff2|ttf|otf|mp4|webm)",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
         ],
       },
     ];

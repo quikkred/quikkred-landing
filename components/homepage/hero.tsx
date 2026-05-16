@@ -481,29 +481,41 @@ export default function Hero() {
                 </AnimatePresence>
 
                 {/* Progress bars */}
-                <div className="flex gap-1 xs:gap-1.5 sm:gap-2 flex-1">
-                  {steps.map((_, index) => (
-                    <button
-                      key={index}
-                      type="button"
-                      disabled={index + 1 >= currentStep}
-                      onClick={() => {
-                        if (index + 1 < currentStep) {
-                          setCurrentStep(index + 1);
-                        }
-                      }}
-                      className={`flex-1 ${index + 1 < currentStep ? 'cursor-pointer' : 'cursor-default'}`}
-                    >
-                      <motion.div
-                        initial={{ scaleX: 0 }}
-                        animate={{ scaleX: 1 }}
-                        transition={{ delay: index * 0.1, duration: 0.4 }}
-                        className={`h-1.5 sm:h-2 w-full rounded-full transition-all duration-500 ${
-                          currentStep >= index + 1 ? "bg-gradient-to-r from-teal-500 to-emerald-500" : "bg-slate-200"
-                        } ${index + 1 < currentStep ? 'hover:from-teal-600 hover:to-emerald-600' : ''}`}
-                      />
-                    </button>
-                  ))}
+                <div className="flex gap-1 xs:gap-1.5 sm:gap-2 flex-1" role="list" aria-label="Form progress">
+                  {steps.map((step, index) => {
+                    const stepNumber = index + 1;
+                    const isCurrent = stepNumber === currentStep;
+                    const isCompleted = stepNumber < currentStep;
+                    const stateLabel = isCompleted
+                      ? "completed, go back"
+                      : isCurrent
+                      ? "current"
+                      : "upcoming";
+                    return (
+                      <button
+                        key={index}
+                        type="button"
+                        disabled={stepNumber >= currentStep}
+                        onClick={() => {
+                          if (stepNumber < currentStep) {
+                            setCurrentStep(stepNumber);
+                          }
+                        }}
+                        aria-label={`Step ${stepNumber} of ${steps.length}: ${step.question} (${stateLabel})`}
+                        aria-current={isCurrent ? "step" : undefined}
+                        className={`flex-1 ${isCompleted ? 'cursor-pointer' : 'cursor-default'}`}
+                      >
+                        <motion.div
+                          initial={{ scaleX: 0 }}
+                          animate={{ scaleX: 1 }}
+                          transition={{ delay: index * 0.1, duration: 0.4 }}
+                          className={`h-1.5 sm:h-2 w-full rounded-full transition-all duration-500 ${
+                            currentStep >= stepNumber ? "bg-gradient-to-r from-teal-500 to-emerald-500" : "bg-slate-200"
+                          } ${isCompleted ? 'hover:from-teal-600 hover:to-emerald-600' : ''}`}
+                        />
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* Step counter */}

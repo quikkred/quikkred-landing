@@ -63,16 +63,18 @@ export default function LoanCalculatorAll() {
 
           <div className="mb-2 sm:mb-3">
             <div className="flex justify-between items-center mb-1">
-              <label className="block text-[10px] sm:text-xs font-semibold text-slate-900">{t?.calculator?.loanAmount}</label>
+              <label htmlFor="calc-loan-amount" className="block text-[10px] sm:text-xs font-semibold text-slate-900">{t?.calculator?.loanAmount}</label>
               <span className="text-slate-900 font-semibold text-[10px] sm:text-xs">₹{loanAmount.toLocaleString()}</span>
             </div>
             <input
+              id="calc-loan-amount"
               type="range"
               min="2500"
               max="50000"
               step="500"
               value={loanAmount}
               onChange={(e) => setLoanAmount(Number(e.target.value))}
+              aria-valuetext={`₹${loanAmount.toLocaleString()}`}
               className="w-full h-1 bg-gradient-to-r from-[#51C9AF] to-slate-300 rounded-lg appearance-none cursor-pointer accent-[#25B181]"
             />
             <div className="flex justify-between text-[9px] text-slate-500">
@@ -83,16 +85,18 @@ export default function LoanCalculatorAll() {
 
           <div className="mb-2 sm:mb-3">
             <div className="flex justify-between items-center mb-1">
-              <label className="block text-[10px] sm:text-xs font-semibold text-slate-900">{t?.calculator?.tenure}</label>
+              <label htmlFor="calc-tenure" className="block text-[10px] sm:text-xs font-semibold text-slate-900">{t?.calculator?.tenure}</label>
               <span className="text-slate-900 font-semibold text-[10px] sm:text-xs">{tenureDays} {t?.calculator?.tenureDays}</span>
             </div>
             <input
+              id="calc-tenure"
               type="range"
               min="7"
               max="45"
               step="1"
               value={tenureDays}
               onChange={(e) => setTenureDays(Number(e.target.value))}
+              aria-valuetext={`${tenureDays} ${t?.calculator?.tenureDays ?? "days"}`}
               className="w-full h-1 bg-gradient-to-r from-[#51C9AF] via-[#51C9AF] to-slate-300 rounded-lg appearance-none cursor-pointer accent-[#25B181]"
             />
             <div className="flex justify-between text-[9px] text-slate-500">
@@ -103,16 +107,18 @@ export default function LoanCalculatorAll() {
 
           <div className="mb-2 sm:mb-3">
             <div className="flex justify-between items-center mb-1">
-              <label className="block text-[10px] sm:text-xs font-semibold text-slate-900">{t?.calculator?.dailyInterestRate}</label>
+              <label htmlFor="calc-interest-rate" className="block text-[10px] sm:text-xs font-semibold text-slate-900">{t?.calculator?.dailyInterestRate}</label>
               <span className="text-slate-900 font-semibold text-[10px] sm:text-xs">{dailyInterestRate.toFixed(1)}% {t?.calculator?.perDay}</span>
             </div>
             <input
+              id="calc-interest-rate"
               type="range"
               min="0.5"
               max="3"
               step="0.1"
               value={dailyInterestRate}
               onChange={(e) => setDailyInterestRate(Number(e.target.value))}
+              aria-valuetext={`${dailyInterestRate.toFixed(1)}% ${t?.calculator?.perDay ?? "per day"}`}
               className="w-full h-1 bg-gradient-to-r from-[#51C9AF] to-slate-300 rounded-lg appearance-none cursor-pointer accent-[#25B181]"
             />
             <div className="flex justify-between text-[9px] text-slate-500">
@@ -123,16 +129,18 @@ export default function LoanCalculatorAll() {
 
           <div className="mb-2 sm:mb-3">
             <div className="flex justify-between items-center mb-1">
-              <label className="block text-[10px] sm:text-xs font-semibold text-slate-900">{t?.calculator?.processingFee}</label>
+              <label htmlFor="calc-processing-fee" className="block text-[10px] sm:text-xs font-semibold text-slate-900">{t?.calculator?.processingFee}</label>
               <span className="text-slate-900 font-semibold text-[10px] sm:text-xs">{processingFeePercent}%</span>
             </div>
             <input
+              id="calc-processing-fee"
               type="range"
               min="0"
               max="10"
               step="0.5"
               value={processingFeePercent}
               onChange={(e) => setProcessingFeePercent(Number(e.target.value))}
+              aria-valuetext={`${processingFeePercent}%`}
               className="w-full h-1 bg-gradient-to-r from-[#51C9AF] to-slate-300 rounded-lg appearance-none cursor-pointer accent-[#25B181]"
             />
             <div className="flex justify-between text-[9px] text-slate-500">

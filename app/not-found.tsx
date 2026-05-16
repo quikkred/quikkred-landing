@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "nextjs-toploader/app";
 import { Home, ArrowLeft, Search, HelpCircle, Phone } from "lucide-react";
@@ -8,36 +9,40 @@ import { useLanguage } from "@/lib/contexts/LanguageContext";
 export default function NotFound() {
   const router = useRouter();
   const { t } = useLanguage();
+  const [viewport, setViewport] = useState<{ w: number; h: number } | null>(null);
+
+  useEffect(() => {
+    const update = () =>
+      setViewport({ w: window.innerWidth, h: window.innerHeight });
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-[#F0FDF4] to-white flex items-center justify-center px-4 py-8 relative overflow-hidden">
-      {/* Animated Background Elements */}
+      {/* Animated Background Elements — client-only (needs window) */}
       <div className="absolute inset-0 overflow-hidden">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-2 h-2 bg-[#25B181]/20 rounded-full"
-            animate={{
-              x: [
-                Math.random() * window.innerWidth,
-                Math.random() * window.innerWidth,
-              ],
-              y: [
-                Math.random() * window.innerHeight,
-                Math.random() * window.innerHeight,
-              ],
-            }}
-            transition={{
-              duration: Math.random() * 10 + 10,
-              repeat: Infinity,
-              repeatType: "reverse",
-            }}
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-          />
-        ))}
+        {viewport &&
+          [...Array(20)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-2 h-2 bg-[#25B181]/20 rounded-full"
+              animate={{
+                x: [Math.random() * viewport.w, Math.random() * viewport.w],
+                y: [Math.random() * viewport.h, Math.random() * viewport.h],
+              }}
+              transition={{
+                duration: Math.random() * 10 + 10,
+                repeat: Infinity,
+                repeatType: "reverse",
+              }}
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+              }}
+            />
+          ))}
       </div>
 
       <div className="max-w-4xl mx-auto w-full relative z-10">

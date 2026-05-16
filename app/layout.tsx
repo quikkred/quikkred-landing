@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Sora } from "next/font/google";
+import { Inter, Sora, Instrument_Serif } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { Providers } from "@/components/providers";
@@ -23,6 +23,15 @@ const sora = Sora({
   subsets: ["latin"],
   variable: "--font-sora",
   display: 'swap',
+  preload: false,
+});
+
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  variable: "--font-instrument",
+  weight: "400",
+  style: ["normal", "italic"],
+  display: "swap",
   preload: false,
 });
 
@@ -96,46 +105,20 @@ export default async function RootLayout({
     <html
       lang={language as string}
       dir={language === 'ur' ? 'rtl' : 'ltr'}
-      className={`${inter.variable} ${sora.variable}`}
+      className={`${inter.variable} ${sora.variable} ${instrumentSerif.variable}`}
       suppressHydrationWarning
     >
       <head>
-        {/* Language Detection Script */}
+        {/* Resource hints — establish early connections to critical origins.
+            Saves ~320ms on LCP per audit (api.quikkred.in is on the critical path). */}
+        <link rel="preconnect" href="https://api.quikkred.in" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://api.quikkred.in" />
+        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <link rel="preconnect" href="https://connect.facebook.net" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://connect.facebook.net" />
+        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
 
-        {/* <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  // Hide body initially to prevent language flash
-                  document.documentElement.style.visibility = 'hidden';
-
-                  const hasCookie = document.cookie.includes('languageSelected=true');
-                  if (hasCookie) {
-                    const saved = localStorage.getItem('language');
-                    if (saved) {
-                      window.__initialLanguage = saved;
-                      document.documentElement.lang = saved;
-                      if (saved === 'ur') {
-                        document.documentElement.dir = 'rtl';
-                      } else {
-                        document.documentElement.dir = 'ltr';
-                      }
-                    }
-                  }
-                  // Don't set any default language if user hasn't selected one
-
-                  // Show body after script runs
-                  requestAnimationFrame(() => {
-                    document.documentElement.style.visibility = 'visible';
-                  });
-                } catch (e) {
-                  document.documentElement.style.visibility = 'visible';
-                }
-              })();
-            `,
-          }}
-        /> */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -167,10 +150,17 @@ export default async function RootLayout({
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body className="font-sans antialiased" suppressHydrationWarning={true}>
+        {/*
+          Tracking scripts use strategy="lazyOnload" — they fire after the
+          window load event, off the critical path. Per Lighthouse audit, GTM
+          + GA + FB Pixel together account for ~1.5s of main-thread work and
+          ~300 KiB of unused JS during initial render.
+        */}
+
         {/* Google Tag Manager */}
         <Script
           id="gtm-script"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
           dangerouslySetInnerHTML={{
             __html: `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -193,11 +183,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <Script
           id="ga-script"
           src="https://www.googletagmanager.com/gtag/js?id=G-JT6CHHWW78"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
         />
         <Script
           id="ga-config"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
           dangerouslySetInnerHTML={{
             __html: `window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
@@ -211,7 +201,7 @@ gtag('config', 'AW-17796230994');`,
         {process.env.NEXT_PUBLIC_API_URL != 'https://alpha.quikkred.in' && (
           <Script
             id="fb-pixel"
-            strategy="afterInteractive"
+            strategy="lazyOnload"
             dangerouslySetInnerHTML={{
               __html: `!function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?

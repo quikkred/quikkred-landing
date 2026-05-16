@@ -14,14 +14,19 @@ import Image from "next/image";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import Hero from "@/components/homepage/hero";
 import StepsSection from "@/components/homepage/steps-section";
-import FeaturesSection from "@/components/homepage/features-section";
-import DailyLadderTeaser from "@/components/homepage/daily-ladder-teaser";
-import LoansGrid from "@/components/homepage/loans-grid";
-import LoanFinder from "@/components/homepage/loan-finder";
-import LoanCalculatorAll from "@/components/homepage/loan-calculator";
-import TestimonialsSection from "@/components/homepage/TestimonialsSection";
-import { FinancialCTA } from "@/components/homepage/financial-cta";
-import SalaryAdvance from "@/components/SalaryAdvance";
+
+// Below-the-fold sections — dynamic-imported so they don't bloat the initial
+// JS bundle. ssr stays on (default) so HTML still renders for SEO; only the
+// hydration JS code-splits. Per Lighthouse, the initial bundle was the main
+// driver of TBT / poor LCP on mobile.
+const LoanFinder = dynamic(() => import("@/components/homepage/loan-finder"));
+const FeaturesSection = dynamic(() => import("@/components/homepage/features-section"));
+const DailyLadderTeaser = dynamic(() => import("@/components/homepage/daily-ladder-teaser"));
+const LoanCalculatorAll = dynamic(() => import("@/components/homepage/loan-calculator"));
+const TestimonialsSection = dynamic(() => import("@/components/homepage/TestimonialsSection"));
+const FinancialCTA = dynamic(() =>
+  import("@/components/homepage/financial-cta").then((m) => m.FinancialCTA)
+);
 
 
 export default function Home() {

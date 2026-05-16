@@ -240,7 +240,9 @@ export default function QuickApplyV2Page() {
                             <img
                                 src="/quikkred-logo.png"
                                 alt="Quikkred"
-                                className="h-7 sm:h-8"
+                                width={123}
+                                height={32}
+                                className="h-7 sm:h-8 w-auto"
                                 onError={(e) => {
                                     e.currentTarget.style.display = 'none';
                                     const fallback = e.currentTarget.nextElementSibling;
