@@ -37,27 +37,31 @@ export default function SalaryAdvance({
   reverse = false,
 }: SalaryAdvanceProps) {
   
-  // LOOKUP MAP: This ensures Tailwind "sees" the full class names during build
+  // LOOKUP MAP: This ensures Tailwind "sees" the full class names during build.
+  // Note: globals.css overrides `text-emerald-600`/`bg-emerald-600` to the
+  // light `--success` token (#3AC6A0) which fails WCAG AA on white. We bump
+  // every shade up one step so the native Tailwind colors apply and clear
+  // 4.5:1 contrast: emerald-700 = #047857 ≈ 5.4:1 with white text.
   const colorMap = {
     emerald: {
-      text: "text-emerald-600",
-      bg: "bg-emerald-600",
-      hoverBg: "hover:bg-emerald-700",
-      border: "border-emerald-600",
+      text: "text-emerald-700",
+      bg: "bg-emerald-700",
+      hoverBg: "hover:bg-emerald-800",
+      border: "border-emerald-700",
       lightHover: "hover:bg-emerald-50",
     },
     teal: {
-      text: "text-teal-600",
-      bg: "bg-teal-600",
-      hoverBg: "hover:bg-teal-700",
-      border: "border-teal-600",
+      text: "text-teal-700",
+      bg: "bg-teal-700",
+      hoverBg: "hover:bg-teal-800",
+      border: "border-teal-700",
       lightHover: "hover:bg-teal-50",
     },
     blue: {
-      text: "text-blue-600",
-      bg: "bg-blue-600",
-      hoverBg: "hover:bg-blue-700",
-      border: "border-blue-600",
+      text: "text-blue-700",
+      bg: "bg-blue-700",
+      hoverBg: "hover:bg-blue-800",
+      border: "border-blue-700",
       lightHover: "hover:bg-blue-50",
     },
   };

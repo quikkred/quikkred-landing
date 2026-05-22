@@ -154,8 +154,8 @@ export function Header() {
               href="/"
               className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
                 pathname === '/'
-                  ? 'text-teal-600 bg-teal-50'
-                  : 'text-slate-600 hover:text-teal-600 hover:bg-slate-50'
+                  ? 'text-teal-700 bg-teal-50'
+                  : 'text-slate-600 hover:text-teal-700 hover:bg-slate-50'
               }`}
             >
               {t.navigation.home}
@@ -172,8 +172,8 @@ export function Header() {
                   href={item.href}
                   className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
                     pathname.startsWith(item.href)
-                      ? 'text-teal-600 bg-teal-50'
-                      : 'text-slate-600 hover:text-teal-600 hover:bg-slate-50'
+                      ? 'text-teal-700 bg-teal-50'
+                      : 'text-slate-600 hover:text-teal-700 hover:bg-slate-50'
                   }`}
                 >
                   {item.name}
@@ -286,7 +286,7 @@ export function Header() {
             {/* Mobile Menu Toggle - 44px touch target */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-600 hover:text-teal-600 hover:bg-slate-100 rounded-xl transition-colors"
+              className="lg:hidden p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-600 hover:text-teal-700 hover:bg-slate-100 rounded-xl transition-colors"
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             >
               {mobileMenuOpen ? (
@@ -315,7 +315,7 @@ export function Header() {
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
                   pathname === '/'
-                    ? 'text-teal-600 bg-teal-50 font-semibold'
+                    ? 'text-teal-700 bg-teal-50 font-semibold'
                     : 'text-slate-700 hover:bg-slate-50'
                 }`}
               >
@@ -330,7 +330,7 @@ export function Header() {
                         onClick={() => setMobileSubmenuOpen(mobileSubmenuOpen === item.name ? null : item.name)}
                         className={`flex items-center justify-between w-full px-4 py-3 rounded-xl transition-colors ${
                           pathname.startsWith(item.href)
-                            ? 'text-teal-600 bg-teal-50 font-semibold'
+                            ? 'text-teal-700 bg-teal-50 font-semibold'
                             : 'text-slate-700 hover:bg-slate-50'
                         }`}
                       >
@@ -354,7 +354,7 @@ export function Header() {
                                 key={subitem.name}
                                 href={subitem.href}
                                 onClick={() => setMobileMenuOpen(false)}
-                                className="block px-3 py-2 text-sm text-slate-600 hover:text-teal-600 transition-colors"
+                                className="block px-3 py-2 text-sm text-slate-600 hover:text-teal-700 transition-colors"
                               >
                                 {subitem.name}
                               </Link>
@@ -369,7 +369,7 @@ export function Header() {
                       onClick={() => setMobileMenuOpen(false)}
                       className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
                         pathname.startsWith(item.href)
-                          ? 'text-teal-600 bg-teal-50 font-semibold'
+                          ? 'text-teal-700 bg-teal-50 font-semibold'
                           : 'text-slate-700 hover:bg-slate-50'
                       }`}
                     >

@@ -568,7 +568,7 @@ export default function CollectPartnerPage() {
   const handleDownload = () => {
     setDownloadStarted(true);
     setTimeout(() => {
-      window.open("/downloads/quikkred-collect-v1.2.0.apk", "_blank");
+      window.open("/downloads/quikkred-collect-v1.1.0.apk", "_blank");
     }, 500);
   };
 

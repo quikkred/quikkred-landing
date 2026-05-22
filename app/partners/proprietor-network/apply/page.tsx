@@ -23,7 +23,12 @@ import {
   Sparkles,
   ChevronDown,
 } from "lucide-react";
-import { API_BASE_URL } from "@/lib/config";
+// Distributor onboarding lives on its own b2b subdomain, not the main API.
+// Override at build/runtime with NEXT_PUBLIC_DISTRIBUTOR_ONBOARD_URL if you
+// need to point staging at a different host.
+const DISTRIBUTOR_ONBOARD_URL =
+  process.env.NEXT_PUBLIC_DISTRIBUTOR_ONBOARD_URL ||
+  "https://b2b.quikkred.in/api/v2/distributor-onboard/apply";
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const ACCEPTED_DOC_TYPES = ["application/pdf", "image/jpeg", "image/png"];
@@ -246,13 +251,10 @@ export default function ProprietorDistributorApplyPage() {
         if (file) fd.append(fileFieldMap[k], file, file.name);
       }
 
-      const res = await fetch(
-        `${API_BASE_URL}/api/v2/distributor-onboard/apply`,
-        {
-          method: "POST",
-          body: fd,
-        },
-      );
+      const res = await fetch(DISTRIBUTOR_ONBOARD_URL, {
+        method: "POST",
+        body: fd,
+      });
 
       const data = await res.json().catch(() => ({}));
 

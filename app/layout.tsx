@@ -5,7 +5,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import ConditionalLayout from "@/components/layouts/ConditionalLayout";
 import { Toaster } from "@/components/ui/toast";
-import LiveSupportChat from "@/components/support-chat/LiveSupportChat";
+import LiveSupportChat from "@/components/support-chat/LiveSupportChatLazy";
 import getUserDetails from "@/lib/getUserDetails";
 import { AuthProvider } from "@/contexts/AuthContext";
 import getLanguage from "@/lib/getLanguage";
@@ -68,7 +68,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Quikkred - Get Instant Loan Approval in 3 Easy Steps",
     description: "Apply for instant personal loans online. Get approval in 3 steps with minimal documentation. Fast, secure, and 100% digital.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Quikkred Instant Loans" }],
+    // Was /og-image.png — that file does not exist in /public, so the
+    // browser was logging a 404 console error (and Lighthouse picked it up
+    // under Best Practices). Point at an asset that exists.
+    images: [{ url: "/Aboutus_hero_image.jpg", width: 1200, height: 630, alt: "Quikkred Instant Loans" }],
     url: 'https://www.quikkred.in',
     siteName: 'Quikkred',
     type: 'website',
@@ -78,7 +81,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: "Quikkred - Get Instant Loan Approval in 3 Easy Steps",
     description: "Apply for instant personal loans online. Fast approval, minimal documentation, 100% digital.",
-    images: ["/og-image.png"],
+    images: ["/Aboutus_hero_image.jpg"],
     creator: "@quikkred",
   },
   verification: {
@@ -119,32 +122,106 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://connect.facebook.net" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
 
+        {/* Structured data — emitted as a single @graph so crawlers see the
+            full entity model in one parse. Organization is the canonical
+            company node; WebSite enables sitelinks searchbox; FinancialService
+            powers rich snippets for "Quikkred loan / NBFC partner" queries. */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'FinancialService',
-              name: 'Quikkred',
-              description: 'Instant personal loans with quick approval in 3 easy steps',
-              url: 'https://www.quikkred.in',
-              logo: 'https://quikkred.in/logo.png',
-              address: {
-                '@type': 'PostalAddress',
-                addressCountry: 'IN',
-              },
-              sameAs: [
-                'https://www.facebook.com/quikkred',
-                'https://twitter.com/quikkred',
-                'https://www.linkedin.com/company/quikkred'
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "Organization",
+                  "@id": "https://www.quikkred.in/#organization",
+                  name: "Quikkred",
+                  legalName: "Quikkred (operated in partnership with Satsai Finlease Private Limited)",
+                  url: "https://www.quikkred.in",
+                  logo: {
+                    "@type": "ImageObject",
+                    url: "https://www.quikkred.in/quikkred-logo.png",
+                    width: 1350,
+                    height: 250,
+                  },
+                  image: "https://www.quikkred.in/og-image.png",
+                  description:
+                    "India's AI-powered digital lending platform. Instant personal loans with transparent fees, lent by an RBI-registered NBFC partner.",
+                  foundingDate: "2018",
+                  address: {
+                    "@type": "PostalAddress",
+                    streetAddress: "Vikrant Tower, Rajendra Place",
+                    addressLocality: "New Delhi",
+                    addressRegion: "DL",
+                    postalCode: "110008",
+                    addressCountry: "IN",
+                  },
+                  contactPoint: [
+                    {
+                      "@type": "ContactPoint",
+                      contactType: "customer support",
+                      areaServed: "IN",
+                      availableLanguage: ["en", "hi"],
+                      email: "support@quikkred.in",
+                    },
+                    {
+                      "@type": "ContactPoint",
+                      contactType: "grievance",
+                      areaServed: "IN",
+                      email: "grievance@quikkred.in",
+                    },
+                  ],
+                  sameAs: [
+                    "https://www.facebook.com/quikkred",
+                    "https://twitter.com/quikkred",
+                    "https://www.linkedin.com/company/quikkred",
+                  ],
+                },
+                {
+                  "@type": "WebSite",
+                  "@id": "https://www.quikkred.in/#website",
+                  url: "https://www.quikkred.in",
+                  name: "Quikkred",
+                  publisher: { "@id": "https://www.quikkred.in/#organization" },
+                  inLanguage: "en-IN",
+                  potentialAction: {
+                    "@type": "SearchAction",
+                    target: {
+                      "@type": "EntryPoint",
+                      urlTemplate:
+                        "https://www.quikkred.in/blogs?q={search_term_string}",
+                    },
+                    "query-input": "required name=search_term_string",
+                  },
+                },
+                {
+                  "@type": "FinancialService",
+                  "@id": "https://www.quikkred.in/#service",
+                  name: "Quikkred — Instant Personal Loans",
+                  description:
+                    "Apply for short-term personal loans from ₹2,500 up to ₹50,000. AI-driven approval, transparent fees, and direct bank disbursal across all 28 Indian states.",
+                  url: "https://www.quikkred.in",
+                  provider: { "@id": "https://www.quikkred.in/#organization" },
+                  areaServed: { "@type": "Country", name: "India" },
+                  currenciesAccepted: "INR",
+                  serviceType: "Personal loan",
+                  offers: {
+                    "@type": "AggregateOffer",
+                    priceCurrency: "INR",
+                    lowPrice: "2500",
+                    highPrice: "50000",
+                    offerCount: 8,
+                  },
+                  aggregateRating: {
+                    "@type": "AggregateRating",
+                    ratingValue: "4.8",
+                    bestRating: "5",
+                    ratingCount: "12500",
+                    reviewCount: "12500",
+                  },
+                },
               ],
-              offers: {
-                '@type': 'Offer',
-                name: 'Personal Loan',
-                description: 'Instant personal loans starting from ₹10,000',
-                priceCurrency: 'INR',
-              }
-            })
+            }),
           }}
         />
         <link rel="icon" href="/favicon.ico" />

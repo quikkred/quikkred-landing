@@ -93,10 +93,40 @@ export const metadata: Metadata = {
 
     icons: {
         icon: "/favicon.ico",
-        shortcut: "/favicon-16x16.png",
+        shortcut: "/favicon.ico",
         apple: "/apple-touch-icon.png",
     },
 };
 
-const ContactLayout = ({ children }: LayoutInterface) => children;
+const breadcrumbJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+    { "@type": "ListItem", position: 2, name: "Contact", item: PAGE_URL },
+  ],
+};
+
+// ContactPage schema reinforces that this is a contact entry point.
+const contactPageJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ContactPage",
+  name: `Contact ${SITE_NAME}`,
+  url: PAGE_URL,
+  about: { "@id": "https://www.quikkred.in/#organization" },
+};
+
+const ContactLayout = ({ children }: LayoutInterface) => (
+  <>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+    />
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(contactPageJsonLd) }}
+    />
+    {children}
+  </>
+);
 export default ContactLayout;

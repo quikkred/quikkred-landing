@@ -230,7 +230,7 @@ export default function Home() {
                 {t?.homepage?.faq?.heading}</h2>
               <p className="text-sm sm:text-lg lg:text-xl text-gray-600 px-4">
                 {t?.homepage?.faq?.subtitle}
-    ?          </p>
+              </p>
             </motion.div>
 
             <div className="space-y-3 sm:space-y-4">
@@ -277,6 +277,27 @@ export default function Home() {
 
         {/* Financial CTA - Full Screen */}
         <FinancialCTA/>
+
+        {/* FAQPage structured data — eligible for Google's FAQ rich result.
+            Sourced from the hardcoded `faqs` array below so the snippet stays
+            stable across locales and renders in the initial HTML payload. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: faqs.map((f) => ({
+                "@type": "Question",
+                name: f.question,
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: f.answer,
+                },
+              })),
+            }),
+          }}
+        />
       </div>
     </>
   );

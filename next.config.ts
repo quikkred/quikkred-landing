@@ -134,6 +134,17 @@ const nextConfig: NextConfig = {
               "camera=(self), microphone=(), geolocation=(), interest-cohort=()",
           },
           {
+            // Best Practices audit: origin isolation. unsafe-none would fail
+            // popup auth flows we don't have, so same-origin is the right level
+            // for a public marketing site.
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin",
+          },
+          {
+            key: "Cross-Origin-Resource-Policy",
+            value: "same-origin",
+          },
+          {
             key: "Strict-Transport-Security",
             value: "max-age=31536000; includeSubDomains; preload",
           },
@@ -146,7 +157,7 @@ const nextConfig: NextConfig = {
             img-src 'self' data: https: blob:;
             font-src 'self' data: https://fonts.gstatic.com;
             worker-src 'self' blob:;
-            connect-src 'self' ${apiDomain} ${appDomain} ${apiWsDomain} ${appWsDomain} https://alpha.quikkred.in wss://alpha.quikkred.in https://ifsc.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com https://www.google-analytics.com https://www.google.com https://stats.g.doubleclick.net https://googleads.g.doubleclick.net https://td.doubleclick.net https://connect.facebook.net https://www.facebook.com https://*.conversionsapigateway.com https://*.a.run.app https://cdn.jsdelivr.net https://storage.googleapis.com;
+            connect-src 'self' ${apiDomain} ${appDomain} ${apiWsDomain} ${appWsDomain} https://alpha.quikkred.in wss://alpha.quikkred.in https://b2b.quikkred.in https://ifsc.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com https://www.google-analytics.com https://www.google.com https://stats.g.doubleclick.net https://googleads.g.doubleclick.net https://td.doubleclick.net https://connect.facebook.net https://www.facebook.com https://*.conversionsapigateway.com https://*.a.run.app https://cdn.jsdelivr.net https://storage.googleapis.com;
             frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://www.google.com https://maps.google.com https://www.youtube.com https://www.youtube-nocookie.com;
             frame-ancestors 'none';
             upgrade-insecure-requests;
@@ -212,8 +223,10 @@ const nextConfig: NextConfig = {
     removeConsole: process.env.NODE_ENV === "production",
   },
 
-  // Reduce payload size
-  productionBrowserSourceMaps: false,
+  // Best Practices audit was flagging "Missing source maps for large
+  // first-party JavaScript". Enabling here ships .map files alongside the JS;
+  // browsers fetch them only when DevTools is open, so users don't pay the cost.
+  productionBrowserSourceMaps: true,
 
   // Reduce bundle size with modularizeImports
   modularizeImports: {

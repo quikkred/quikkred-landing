@@ -202,7 +202,7 @@ const TextCard = ({ testimonial }: { testimonial: TextTestimonial }) => {
       </div>
       <div className="flex items-end justify-between gap-2 mb-3 sm:mb-4">
         <div className="flex flex-wrap gap-1.5 sm:gap-2">
-          <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 bg-[#D3F1EB] text-[#1F8F68] rounded-full text-[10px] sm:text-xs font-medium">
+          <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 bg-[#D3F1EB] text-[#0E5A40] rounded-full text-[10px] sm:text-xs font-medium">
             <IndianRupee size={10} className="sm:w-3 sm:h-3" />
             {testimonial.loanAmount}
           </span>
@@ -237,7 +237,7 @@ const TextCard = ({ testimonial }: { testimonial: TextTestimonial }) => {
         </div>
         <div className="flex flex-col items-end gap-0.5 sm:gap-1 flex-shrink-0">
           <StarRating rating={testimonial.rating} />
-          <span className="text-[10px] sm:text-xs text-gray-400 whitespace-nowrap">
+          <span className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">
             {testimonial.date}
           </span>
         </div>
@@ -316,7 +316,7 @@ const VideoCard = ({
           {testimonial.title}
         </h3>
         <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2 sm:mb-3">
-          <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 bg-[#D3F1EB] text-[#1F8F68] rounded-full text-[10px] sm:text-xs font-medium">
+          <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 bg-[#D3F1EB] text-[#0E5A40] rounded-full text-[10px] sm:text-xs font-medium">
             <IndianRupee size={10} className="sm:w-3 sm:h-3" />
             {testimonial.loanAmount}
           </span>
@@ -382,7 +382,7 @@ export default function TestimonialsSection() {
           viewport={{ once: true }}
           className="text-center mb-6 sm:mb-8 lg:mb-12"
         >
-          <span className="inline-block px-3 sm:px-4 py-1.5 sm:py-2 bg-[#D3F1EB] text-[#1F8F68] rounded-full text-[10px] sm:text-xs lg:text-sm font-semibold mb-2 sm:mb-3 lg:mb-4">
+          <span className="inline-block px-3 sm:px-4 py-1.5 sm:py-2 bg-[#D3F1EB] text-[#0E5A40] rounded-full text-[10px] sm:text-xs lg:text-sm font-semibold mb-2 sm:mb-3 lg:mb-4">
             {t?.homepage?.sections?.testimonials?.badge || "Customer Stories"}
           </span>
           <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold font-sora mb-2 sm:mb-3 lg:mb-4 px-2">

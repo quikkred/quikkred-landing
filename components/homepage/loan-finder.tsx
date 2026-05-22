@@ -187,11 +187,11 @@ export default function LoanFinder() {
           transition={{ duration: 0.5 }}
           className="text-center mb-8 sm:mb-10"
         >
-          <span className="inline-block px-4 py-1.5 bg-[#D3F1EB] text-[#25B181] rounded-full text-xs sm:text-sm font-semibold mb-4">
+          <span className="inline-block px-4 py-1.5 bg-[#D3F1EB] text-[#1A6D4F] rounded-full text-xs sm:text-sm font-semibold mb-4">
             Find your loan
           </span>
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold font-sora text-slate-900 mb-3">
-            What do you need <span className="text-[#25B181]">money for?</span>
+            What do you need <span className="text-[#1A6D4F]">money for?</span>
           </h2>
           <p className="text-sm sm:text-base lg:text-lg text-gray-600 max-w-2xl mx-auto">
             Pick your situation — we'll recommend the right product, terms, and tenure in one click.
@@ -209,8 +209,8 @@ export default function LoanFinder() {
                 onClick={() => setActiveId(u.id)}
                 className={`inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all border ${
                   isActive
-                    ? "bg-[#25B181] text-white border-[#25B181] shadow-md"
-                    : "bg-white text-slate-700 border-gray-200 hover:border-[#25B181] hover:text-[#25B181]"
+                    ? "bg-[#1A6D4F] text-white border-[#1A6D4F] shadow-md"
+                    : "bg-white text-slate-700 border-gray-200 hover:border-[#1A6D4F] hover:text-[#1A6D4F]"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -233,7 +233,7 @@ export default function LoanFinder() {
             <div className="grid lg:grid-cols-2 gap-6 lg:gap-10 items-center">
               {/* Left content */}
               <div>
-                <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-[#25B181]/30 text-[#25B181] rounded-full text-xs font-semibold mb-4">
+                <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-[#25B181]/30 text-[#1A6D4F] rounded-full text-xs font-semibold mb-4">
                   <ActiveIcon className="w-3.5 h-3.5" />
                   {active.badge}
                 </span>
@@ -247,7 +247,7 @@ export default function LoanFinder() {
 
               {/* Right recommendation card */}
               <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-gray-100">
-                <p className="text-[10px] sm:text-xs font-bold tracking-wider text-[#25B181] uppercase mb-1.5">
+                <p className="text-[10px] sm:text-xs font-bold tracking-wider text-[#1A6D4F] uppercase mb-1.5">
                   Our recommendation
                 </p>
                 <h4 className="text-lg sm:text-xl font-bold text-slate-900 mb-4">
@@ -275,7 +275,7 @@ export default function LoanFinder() {
                 </div>
                 <Link
                   href={active.recommendation.href}
-                  className="inline-flex w-full items-center justify-center gap-2 bg-[#25B181] hover:bg-[#1F8F68] text-white font-semibold text-sm sm:text-base py-3 sm:py-3.5 rounded-full transition-colors shadow-md"
+                  className="inline-flex w-full items-center justify-center gap-2 bg-[#1A6D4F] hover:bg-[#14563E] text-white font-semibold text-sm sm:text-base py-3 sm:py-3.5 rounded-full transition-colors shadow-md"
                 >
                   {active.recommendation.cta}
                   <ArrowRight className="w-4 h-4" />

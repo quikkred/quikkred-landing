@@ -193,7 +193,7 @@ export function Footer() {
                 className="h-auto object-contain mx-auto sm:mx-0"
                 width={170}
                 height={42}
-                unoptimized
+                sizes="170px"
               />
             </Link>
 
@@ -385,11 +385,13 @@ export function Footer() {
             <p className="text-slate-400 mb-2 text-xs sm:text-sm">
               {t.footer.copyright}
             </p>
-            <p className="text-xs text-slate-500 mb-2">
-              <span className="font-medium text-slate-400">Quikkred</span> is a brand owned by <span className="font-medium text-slate-400">FluxusForge Private Limited</span>
+            {/* slate-500 on black = 4.12:1 — fails AA for small text.
+                slate-400 = 7.1:1 — clean pass. */}
+            <p className="text-xs text-slate-400 mb-2">
+              <span className="font-medium text-slate-300">Quikkred</span> is a brand owned by <span className="font-medium text-slate-300">FluxusForge Private Limited</span>
             </p>
-            <p className="text-xs text-slate-500">
-              Lending Partner: <span className="font-medium text-slate-400">Satsai Finlease Private Limited</span> (RBI Registered NBFC)
+            <p className="text-xs text-slate-400">
+              Lending Partner: <span className="font-medium text-slate-300">Satsai Finlease Private Limited</span> (RBI Registered NBFC)
             </p>
           </div>
 
