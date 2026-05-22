@@ -565,12 +565,16 @@ export default function CollectPartnerPage() {
     },
   ];
 
-  const handleDownload = () => {
-    setDownloadStarted(true);
-    setTimeout(() => {
-      window.open("/downloads/quikkred-collect-v1.1.0.apk", "_blank");
-    }, 500);
-  };
+const APK_URL =
+  "https://quikkred-documents.d53395d350bea8ce84393333f90ac7d1.r2.cloudflarestorage.com/apk-releases/release/unversioned/1779438131022_e0bf46a8-7e45-4a59-9e62-969aa4d89a7b_app-debug.apk?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=0d6c775ad8ab70e3cc1da39205d22701%2F20260522%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260522T082226Z&X-Amz-Expires=604800&X-Amz-Signature=0256505c7b8507c6c78f0c07910fd45a6ff4add562a680482cd9a5696a418fc6&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject";
+
+const handleDownload = () => {
+  setDownloadStarted(true);
+
+  setTimeout(() => {
+    window.open(APK_URL, "_blank");
+  }, 500);
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
