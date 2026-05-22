@@ -1,9 +1,9 @@
-// app/verify/[token]/page.tsx
+// app/verify-id-card/[token]/page.tsx
 // Public partner ID-card verification page.
 // Reached when a borrower scans the partner's QR code. The page fetches the
-// partner snapshot from collection-partner-backend (via /api/verify/[token])
-// and renders the same card the partner showed in person — so the borrower
-// can confirm name + photo match.
+// partner snapshot from collection-partner-backend (via /api/verify-id-card/
+// [token]) and renders the same card the partner showed in person — so the
+// borrower can confirm name + photo match.
 
 import { headers } from "next/headers";
 import Image from "next/image";
@@ -53,7 +53,7 @@ async function fetchVerification(token: string): Promise<{ status: number; body:
   const proto =
     h.get("x-forwarded-proto") ??
     (host.startsWith("localhost") || host.startsWith("127.") ? "http" : "https");
-  const res = await fetch(`${proto}://${host}/api/verify/${encodeURIComponent(token)}`, {
+  const res = await fetch(`${proto}://${host}/api/verify-id-card/${encodeURIComponent(token)}`, {
     cache: "no-store",
   });
   const body = (await res.json().catch(() => ({}))) as VerifyResponse;

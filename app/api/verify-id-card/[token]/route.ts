@@ -1,7 +1,8 @@
-// app/api/verify/[token]/route.ts
+// app/api/verify-id-card/[token]/route.ts
 // Public partner ID-card verification — proxies to collection-partner-backend.
-// Borrowers scan the partner's QR; the QR points at /verify/<token> on this
-// site. The page calls this route, which forwards to the partner service.
+// Borrowers scan the partner's QR; the QR points at /verify-id-card/<token>
+// on this site. The page calls this route, which forwards to the partner
+// service.
 
 import { NextRequest, NextResponse } from "next/server";
 
