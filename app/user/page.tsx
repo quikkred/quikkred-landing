@@ -97,6 +97,7 @@ export default function UserDashboard() {
   } | null>(null);
   const [loadingEmandate, setLoadingEmandate] = useState(false);
   const [authorizingEmandate, setAuthorizingEmandate] = useState(false);
+  const [cancelingEmandate, setCancelingEmandate] = useState(false);
 
   // Reapply Eligibility States
   const [reapplyEligibility, setReapplyEligibility] = useState<ReapplyEligibility | null>(null);
@@ -821,6 +822,67 @@ export default function UserDashboard() {
     }
   };
 
+  // Cancel E-Mandate (allowed only while loan is not yet disbursed)
+  const canCancelEmandate = !!emandateData?.isAuthorized
+    && !!emandateData?.applicationNumber
+    && data?.applicationStatus !== 'DISBURSED'
+    && data?.applicationStatus !== 'CLOSED';
+
+  const handleCancelEmandate = async () => {
+    if (!canCancelEmandate) return;
+    const applicationNumber = emandateData?.applicationNumber;
+    if (!applicationNumber) return;
+
+    const confirmed = typeof window !== 'undefined'
+      ? window.confirm('Cancel your E-Mandate authorization? You will need to re-authorize before disbursement.')
+      : true;
+    if (!confirmed) return;
+
+    setCancelingEmandate(true);
+    try {
+      const token = await getToken();
+      if (!token) {
+        toast({ variant: 'error', title: 'Session expired', description: 'Please log in again.' });
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/upi/autoPay/cancel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ applicationNumbers: [applicationNumber] }),
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (response.ok && (result.success ?? true)) {
+        toast({
+          variant: 'success',
+          title: 'E-Mandate Cancelled',
+          description: result.message || 'Your E-Mandate authorization has been cancelled.',
+        });
+        await fetchEmandateDetails();
+      } else {
+        toast({
+          variant: 'error',
+          title: 'Cancellation Failed',
+          description: result.message || 'Unable to cancel E-Mandate. Please try again.',
+        });
+      }
+    } catch (error: any) {
+      console.error('E-Mandate cancellation error:', error);
+      toast({
+        variant: 'error',
+        title: 'Cancellation Failed',
+        description: error?.message || 'Unable to cancel E-Mandate. Please try again.',
+      });
+    } finally {
+      setCancelingEmandate(false);
+    }
+  };
+
   const getProofStatusIcon = (status: string) => {
     switch (status) {
       case 'VERIFIED': return <CheckCircle2 className="w-4 h-4" />;
@@ -1133,8 +1195,8 @@ export default function UserDashboard() {
             transition={{ delay: 0.15 }}
             className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border-2 border-green-300 mb-4 sm:mb-6"
           >
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="p-2 sm:p-3 bg-green-500/20 rounded-lg sm:rounded-xl">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <div className="p-2 sm:p-3 bg-green-500/20 rounded-lg sm:rounded-xl self-start">
                 <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
               </div>
               <div className="flex-1">
@@ -1145,10 +1207,36 @@ export default function UserDashboard() {
                   Your E-Mandate has been successfully authorized. Your loan will be disbursed shortly.
                 </p>
               </div>
-              <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full border border-green-300">
-                Active
-              </span>
+              <div className="flex items-center gap-2 sm:flex-col sm:items-end">
+                <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full border border-green-300">
+                  Active
+                </span>
+                {canCancelEmandate && (
+                  <button
+                    onClick={handleCancelEmandate}
+                    disabled={cancelingEmandate}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium text-red-700 bg-white border border-red-300 rounded-lg hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {cancelingEmandate ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Cancelling...</span>
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="w-3.5 h-3.5" />
+                        <span>Cancel E-Mandate</span>
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
+            {canCancelEmandate && (
+              <p className="text-xs text-green-700/80 mt-2 sm:ml-14">
+                You can cancel this authorization any time before disbursement.
+              </p>
+            )}
           </motion.div>
         )}
 
