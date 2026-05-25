@@ -809,6 +809,63 @@
     }
   },
   "homepage": {
+    "dailyLadder": {
+      "eyebrow": "INDIA'S LENDING INNOVATION · 2026",
+      "title": "The Daily Ladder",
+      "titleAccent": "30 days, 30 rungs.",
+      "subtitle": "Pay a little every day. We see your repayment in real-time — not 30 days later. The first lending product in India where capital comes back in 24 hours, not 24 days.",
+      "visual": {
+        "caption": "₹50,000 loan, 30-day tenure, 5%/day floor. Climb the rungs by paying daily — overpay any day and your tenure shortens.",
+        "paidPill": "PAID",
+        "overpaidPill": "OVER",
+        "totalLabel": "Daily floor",
+        "principal": "Principal"
+      },
+      "pillars": [
+        {
+          "title": "Daily signal, not 30-day blindness",
+          "body": "Industry sees a default on day 30. We see it in 24 hours. Risk surfaces before it compounds."
+        },
+        {
+          "title": "Capital recycles every 15 days",
+          "body": "50% of the loan is recovered by day 15. That money funds another borrower the same week."
+        },
+        {
+          "title": "Reducing balance, no penalty",
+          "body": "Overpay any day and your tenure shortens. No prepayment fees. Interest only on what you still owe."
+        }
+      ],
+      "versus": {
+        "heading": "Bullet loan vs Daily Ladder",
+        "bullet": {
+          "title": "Industry standard · Bullet loan",
+          "signal": "Default surfaces · day 30",
+          "npa": "NPA · 12–18%",
+          "capital": "Capital locked · 30 days",
+          "flex": "Prepayment · penalty"
+        },
+        "ladder": {
+          "title": "Quikkred · Daily Ladder",
+          "signal": "Default surfaces · day 1",
+          "npa": "NPA · 3–5%",
+          "capital": "Capital recycles · every ~15 days",
+          "flex": "Overpay any day · zero penalty"
+        }
+      },
+      "math": {
+        "heading": "Transparent math",
+        "body": "Every paise visible, every day. No hidden charges, no surprise EMI."
+      },
+      "cta": {
+        "apply": "Apply now",
+        "learn": "See how it works"
+      },
+      "trust": [
+        "RBI registered NBFC",
+        "DPDP §8(7) audit ledger",
+        "Paise-perfect accounting"
+      ]
+    },
     "hero": {
       "trustBadge": "RBI Registered NBFC • 100% Secure",
       "heading": "Get Loan",

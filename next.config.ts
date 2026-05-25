@@ -14,9 +14,23 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
 
-      // Partner pages
-      { source: '/partners/channel', destination: '/channel-partner', permanent: true },
-      { source: '/partners/investors', destination: '/our-partners/investor-relations', permanent: true },
+      // Partner pages — consolidated to /partners/* URL structure
+      // Lending Partner Program (was /partners)
+      { source: '/partners', destination: '/partners/lending-partner-program', permanent: true },
+      { source: '/partners/apply', destination: '/partners/lending-partner-program/apply', permanent: true },
+      { source: '/partners/edd/:id', destination: '/partners/lending-partner-program/edd/:id', permanent: true },
+      // Proprietor Network (was /partners/proprietor)
+      { source: '/partners/proprietor', destination: '/partners/proprietor-network', permanent: true },
+      { source: '/partners/proprietor/:path*', destination: '/partners/proprietor-network/:path*', permanent: true },
+      // Channel Partner (was /our-partners/channel and /channel-partner)
+      { source: '/partners/channel', destination: '/partners/channel-partner', permanent: true },
+      { source: '/channel-partner', destination: '/partners/channel-partner', permanent: true },
+      { source: '/our-partners/channel', destination: '/partners/channel-partner', permanent: true },
+      // Collection Partner (was /collect-partner)
+      { source: '/collect-partner', destination: '/partners/collection-partner', permanent: true },
+      // Investor Relations (was /our-partners/investor-relations and /partners/investors)
+      { source: '/partners/investors', destination: '/partners/investor-relations', permanent: true },
+      { source: '/our-partners/investor-relations', destination: '/partners/investor-relations', permanent: true },
 
       // Resource pages
       {
@@ -120,6 +134,17 @@ const nextConfig: NextConfig = {
               "camera=(self), microphone=(), geolocation=(), interest-cohort=()",
           },
           {
+            // Best Practices audit: origin isolation. unsafe-none would fail
+            // popup auth flows we don't have, so same-origin is the right level
+            // for a public marketing site.
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin",
+          },
+          {
+            key: "Cross-Origin-Resource-Policy",
+            value: "same-origin",
+          },
+          {
             key: "Strict-Transport-Security",
             value: "max-age=31536000; includeSubDomains; preload",
           },
@@ -127,19 +152,35 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: `
             default-src 'self';
-            script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.jsdelivr.net https://checkout.razorpay.com;
+            script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://connect.facebook.net https://cdn.jsdelivr.net https://checkout.razorpay.com;
             style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
             img-src 'self' data: https: blob:;
             font-src 'self' data: https://fonts.gstatic.com;
             worker-src 'self' blob:;
-            connect-src 'self' ${apiDomain} ${appDomain} ${apiWsDomain} ${appWsDomain} https://alpha.quikkred.in wss://alpha.quikkred.in https://ifsc.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com https://www.google-analytics.com https://www.google.com https://stats.g.doubleclick.net https://googleads.g.doubleclick.net https://td.doubleclick.net https://cdn.jsdelivr.net https://storage.googleapis.com;
-            frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com;
+            connect-src 'self' ${apiDomain} ${appDomain} ${apiWsDomain} ${appWsDomain} https://alpha.quikkred.in wss://alpha.quikkred.in https://b2b.quikkred.in https://ifsc.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com https://www.google-analytics.com https://www.google.com https://stats.g.doubleclick.net https://googleads.g.doubleclick.net https://td.doubleclick.net https://connect.facebook.net https://www.facebook.com https://*.conversionsapigateway.com https://*.a.run.app https://cdn.jsdelivr.net https://storage.googleapis.com;
+            frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://www.google.com https://maps.google.com https://www.youtube.com https://www.youtube-nocookie.com;
             frame-ancestors 'none';
             upgrade-insecure-requests;
           `
               .replace(/\s{2,}/g, " ")
               .trim(),
           },
+        ],
+      },
+      // Long-cache static assets — Lighthouse flagged 4h TTL on images/videos/svgs
+      // costing ~3.2 MB of repeat-visit savings. Filenames in /videos/ are stable;
+      // root-level logo/favicon are stable too. Next.js fingerprints anything under
+      // /_next/static already, so those don't need overriding here.
+      {
+        source: "/videos/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
+        source: "/:all*(svg|png|jpg|jpeg|gif|webp|avif|ico|woff|woff2|ttf|otf|mp4|webm)",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
         ],
       },
     ];
@@ -182,8 +223,10 @@ const nextConfig: NextConfig = {
     removeConsole: process.env.NODE_ENV === "production",
   },
 
-  // Reduce payload size
-  productionBrowserSourceMaps: false,
+  // Best Practices audit was flagging "Missing source maps for large
+  // first-party JavaScript". Enabling here ships .map files alongside the JS;
+  // browsers fetch them only when DevTools is open, so users don't pay the cost.
+  productionBrowserSourceMaps: true,
 
   // Reduce bundle size with modularizeImports
   modularizeImports: {

@@ -246,7 +246,7 @@ export default function UserDashboard() {
     // }
 
     if (result?.success) {
-      console.log('✅ Active loan details loaded successfully');
+      //console.log('✅ Active loan details loaded successfully');
     } else if (result?.error) {
       toast({
         variant: "error",
@@ -281,7 +281,7 @@ export default function UserDashboard() {
     const result = await reduxFetchDashboard();
 
     if (result?.success) {
-      console.log('✅ Dashboard data loaded successfully');
+      //console.log('✅ Dashboard data loaded successfully');
     } else if (result?.error) {
       toast({
         variant: "error",
@@ -491,7 +491,7 @@ export default function UserDashboard() {
         throw new Error('Order ID not received from server');
       }
 
-      console.log('Payin initiated successfully, Order ID:', orderId, 'Amount:', amountInPaise, 'paise');
+      //console.log('Payin initiated successfully, Order ID:', orderId, 'Amount:', amountInPaise, 'paise');
 
       // Step 3: Open Razorpay checkout with order details from API response
       const options = {
@@ -508,7 +508,7 @@ export default function UserDashboard() {
         },
         handler: async (response: any) => {
           // Payment completed - Razorpay returns payment details
-          console.log("Payment completed:", response);
+          //console.log("Payment completed:", response);
 
           // Step 4: Call verify API
           try {
@@ -578,7 +578,7 @@ export default function UserDashboard() {
         },
         modal: {
           ondismiss: () => {
-            console.log("Payment cancelled");
+            //console.log("Payment cancelled");
             toast({
               variant: "default",
               title: "Payment Cancelled",
@@ -594,7 +594,7 @@ export default function UserDashboard() {
       const rzp = new window.Razorpay(options);
 
       rzp.on("payment.failed", (response: any) => {
-        console.log("Payment Failed:", response.error);
+        //console.log("Payment Failed:", response.error);
         toast({
           variant: "error",
           title: "Payment Failed",
@@ -852,7 +852,7 @@ export default function UserDashboard() {
           contact: user?.mobile || "",
         },
         handler: async (response: any) => {
-          console.log("E-Mandate Authorization Success:", response);
+          //console.log("E-Mandate Authorization Success:", response);
           toast({
             variant: "success",
             title: "E-Mandate Authorized!",
@@ -864,7 +864,7 @@ export default function UserDashboard() {
         },
         modal: {
           ondismiss: () => {
-            console.log("E-Mandate authorization cancelled");
+            //console.log("E-Mandate authorization cancelled");
             toast({
               variant: "default",
               title: "Authorization Cancelled",
@@ -879,7 +879,7 @@ export default function UserDashboard() {
       const rzp = new window.Razorpay(options);
 
       rzp.on("payment.failed", (response: any) => {
-        console.log("E-Mandate Authorization Failed:", response.error);
+        //console.log("E-Mandate Authorization Failed:", response.error);
         toast({
           variant: "error",
           title: "Authorization Failed",

@@ -162,7 +162,7 @@ export default function UserDashboard() {
     // }
 
     if (result?.success) {
-      console.log('✅ Active loan details loaded successfully');
+      //console.log('✅ Active loan details loaded successfully');
     } else if (result?.error) {
       toast({
         variant: "error",
@@ -197,7 +197,7 @@ export default function UserDashboard() {
     const result = await reduxFetchDashboard();
 
     if (result?.success) {
-      console.log('✅ Dashboard data loaded successfully');
+      //console.log('✅ Dashboard data loaded successfully');
     } else if (result?.error) {
       toast({
         variant: "error",
@@ -491,7 +491,7 @@ export default function UserDashboard() {
         },
         modal: {
           ondismiss: () => {
-            console.log("Payment cancelled");
+            //console.log("Payment cancelled");
             toast({
               variant: "default",
               title: "Payment Cancelled",
@@ -800,7 +800,7 @@ export default function UserDashboard() {
       const rzp = new window.Razorpay(options);
 
       rzp.on("payment.failed", (response: any) => {
-        console.log("E-Mandate Authorization Failed:", response.error);
+        //console.log("E-Mandate Authorization Failed:", response.error);
         toast({
           variant: "error",
           title: "Authorization Failed",

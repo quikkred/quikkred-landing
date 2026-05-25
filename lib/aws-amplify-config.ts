@@ -18,7 +18,7 @@ export const configureAmplify = (identityPoolId?: string, region: string = "ap-s
         }
     });
 
-    console.log("✅ AWS Amplify configured for Face Liveness");
+    //console.log("✅ AWS Amplify configured for Face Liveness");
 };
 
 // Optional: Configure with Cognito User Pool (if you're using Cognito for auth)
@@ -38,5 +38,5 @@ export const configureAmplifyWithCognito = (config: {
         }
     });
 
-    console.log("✅ AWS Amplify configured with Cognito");
+    //console.log("✅ AWS Amplify configured with Cognito");
 };

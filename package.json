@@ -79,5 +79,12 @@
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.9.2"
-  }
+  },
+  "browserslist": [
+    "supports es6-module",
+    "last 2 versions",
+    "not dead",
+    "not ie 11",
+    "not op_mini all"
+  ]
 }

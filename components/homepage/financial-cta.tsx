@@ -85,7 +85,10 @@ export function FinancialCTA({
           background: "linear-gradient(180deg, #6D9DFF 0%, #415E99 100%)",
         }}
       >
-        <motion.h1
+        {/* h2 — pages already have a single h1 in the hero. A second h1 here
+            broke the Lighthouse "heading elements in sequentially-descending
+            order" audit. Visual size is unchanged. */}
+        <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -101,7 +104,7 @@ export function FinancialCTA({
           }}
         >
           {heading || t?.homepage?.financialCta?.heading}
-        </motion.h1>
+        </motion.h2>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}

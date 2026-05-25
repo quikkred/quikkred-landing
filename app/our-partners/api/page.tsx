@@ -140,8 +140,8 @@ if (eligibility.isEligible) {
     purpose: 'personal'
   });
 
-  console.log('Application ID:', application.id);
-  console.log('Status:', application.status);
+  //console.log('Application ID:', application.id);
+  //console.log('Status:', application.status);
 }`;
 
   return (
@@ -161,7 +161,7 @@ if (eligibility.isEligible) {
                 Home
               </Link>
               <ArrowRight className="w-3 h-3" />
-              <Link href="/partners" className="hover:text-white transition-colors">
+              <Link href="/our-partners" className="hover:text-white transition-colors">
                 Partners
               </Link>
               <ArrowRight className="w-3 h-3" />

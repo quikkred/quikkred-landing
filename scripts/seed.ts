@@ -4,10 +4,10 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting database seed...');
+  //console.log('🌱 Starting database seed...');
 
   // Clean existing data (optional - comment out if you want to keep existing data)
-  console.log('🧹 Cleaning existing data...');
+  //console.log('🧹 Cleaning existing data...');
   await prisma.transaction.deleteMany();
   await prisma.repayment.deleteMany();
   await prisma.loan.deleteMany();
@@ -17,7 +17,7 @@ async function main() {
   await prisma.userProfile.deleteMany();
   await prisma.user.deleteMany();
 
-  console.log('👤 Creating test users...');
+  //console.log('👤 Creating test users...');
 
   // 1. Regular User
   const regularUser = await prisma.user.upsert({
@@ -268,33 +268,33 @@ async function main() {
     ]
   });
 
-  console.log('✅ Database seeded successfully!');
-  console.log('');
-  console.log('📧 Test User Credentials:');
-  console.log('=========================');
-  console.log('');
-  console.log('1. Regular User:');
-  console.log('   Email: user@test.com');
-  console.log('   Password: Test@123');
-  console.log('');
-  console.log('2. Admin User:');
-  console.log('   Email: admin@test.com');
-  console.log('   Password: Admin@123');
-  console.log('');
-  console.log('3. Underwriter:');
-  console.log('   Email: underwriter@test.com');
-  console.log('   Password: Under@123');
-  console.log('');
-  console.log('4. Collection Agent:');
-  console.log('   Email: collection@test.com');
-  console.log('   Password: Collect@123');
-  console.log('');
-  console.log('5. Support Agent:');
-  console.log('   Email: support@test.com');
-  console.log('   Password: Support@123');
-  console.log('');
-  console.log('=========================');
-  console.log('🚀 You can now login at: http://localhost:3001/login');
+  //console.log('✅ Database seeded successfully!');
+  //console.log('');
+  //console.log('📧 Test User Credentials:');
+  //console.log('=========================');
+  //console.log('');
+  //console.log('1. Regular User:');
+  //console.log('   Email: user@test.com');
+  //console.log('   Password: Test@123');
+  //console.log('');
+  //console.log('2. Admin User:');
+  //console.log('   Email: admin@test.com');
+  //console.log('   Password: Admin@123');
+  //console.log('');
+  //console.log('3. Underwriter:');
+  //console.log('   Email: underwriter@test.com');
+  //console.log('   Password: Under@123');
+  //console.log('');
+  //console.log('4. Collection Agent:');
+  //console.log('   Email: collection@test.com');
+  //console.log('   Password: Collect@123');
+  //console.log('');
+  //console.log('5. Support Agent:');
+  //console.log('   Email: support@test.com');
+  //console.log('   Password: Support@123');
+  //console.log('');
+  //console.log('=========================');
+  //console.log('🚀 You can now login at: http://localhost:3001/login');
 }
 
 main()

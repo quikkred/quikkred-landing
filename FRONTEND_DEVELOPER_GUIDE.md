@@ -597,7 +597,7 @@ export function useSocket() {
     const newSocket = io(process.env.NEXT_PUBLIC_WS_URL);
 
     newSocket.on('connect', () => {
-      console.log('Connected to WebSocket');
+      //console.log('Connected to WebSocket');
     });
 
     newSocket.on('notification', (data) => {

@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Payday Loan — Use It For Anything</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: #f0f5f2;
+    min-height: 100vh;
+    padding: 40px 20px;
+    color: #111;
+  }
+
+  .page-wrapper {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .page-header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  .page-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #166534;
+    background: #dcfce7;
+    border: 1.5px solid #86efac;
+    border-radius: 100px;
+    padding: 5px 14px;
+    margin-bottom: 16px;
+  }
+  .page-eyebrow .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #16a34a;
+    animation: blink 2s infinite;
+  }
+  .page-title {
+    font-size: 34px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+  .page-title span { color: #16a34a; }
+  .page-subtitle {
+    font-size: 15px;
+    color: #64748b;
+    line-height: 1.55;
+    max-width: 540px;
+    margin: 0 auto;
+  }
+
+  /* Tab nav */
+  .tab-nav {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    justify-content: center;
+  }
+
+  .tab-btn {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 100px;
+    border: 1.5px solid #ddd;
+    background: #fff;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.18s;
+    letter-spacing: 0.01em;
+  }
+  .tab-btn:hover { border-color: #aaa; color: #111; }
+  .tab-btn.active { background: #f0faf4; color: #166534; border-color: #6ee7a0; }
+
+  /* Loan section */
+  .loan-section { display: none; flex-direction: column; gap: 20px; }
+  .loan-section.active { display: flex; }
+
+  /* Card */
+  .loan-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 32px 36px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: start;
+    position: relative;
+    transition: box-shadow 0.2s;
+  }
+  .loan-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.07); }
+
+  /* Three-dot menu */
+  .card-menu {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    font-size: 20px;
+    color: #aaa;
+    letter-spacing: 2px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  /* Use-case icon */
+  .use-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: #f0faf4;
+    border: 1.5px solid #bbf7d0;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+  }
+  .use-icon svg { width: 22px; height: 22px; stroke: #16a34a; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  .use-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #16a34a;
+    margin-bottom: 8px;
+  }
+
+  .card-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.25;
+    margin-bottom: 8px;
+  }
+
+  .card-subtitle {
+    font-size: 13.5px;
+    color: #64748b;
+    margin-bottom: 22px;
+    line-height: 1.55;
+  }
+
+  .features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    margin-bottom: 28px;
+  }
+  .features li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #1e293b;
+    font-weight: 500;
+  }
+  .check-icon {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #dcfce7;
+    border: 1.5px solid #86efac;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .check-icon svg { width: 10px; height: 10px; }
+
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    background: #fff;
+    border: 2px solid #0f172a;
+    border-radius: 12px;
+    padding: 12px 22px;
+    cursor: pointer;
+    transition: all 0.18s;
+    letter-spacing: 0.01em;
+  }
+  .cta-btn:hover { background: #0f172a; color: #fff; }
+  .cta-btn svg { width: 16px; height: 16px; transition: transform 0.18s; }
+  .cta-btn:hover svg { transform: translateX(3px); }
+
+  /* Right side — Quick Stats */
+  .quick-stats {
+    background: #f0faf4;
+    border: 1.5px solid #bbf7d0;
+    border-radius: 16px;
+    padding: 24px 26px;
+  }
+  .qs-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #16a34a;
+    margin-bottom: 18px;
+  }
+  .qs-rows { display: flex; flex-direction: column; }
+  .qs-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 0;
+    border-bottom: 1px solid #d1fae5;
+  }
+  .qs-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .qs-label { font-size: 14px; color: #475569; font-weight: 400; }
+  .qs-val   { font-size: 14px; color: #0f172a; font-weight: 700; text-align: right; }
+  .qs-val.green { color: #16a34a; }
+
+  @media (max-width: 640px) {
+    .loan-card { grid-template-columns: 1fr; gap: 24px; padding: 24px 20px; }
+    .card-title { font-size: 20px; }
+    .page-title { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+  <div class="page-header">
+    <div class="page-eyebrow"><span class="dot"></span>One Payday Loan · Endless Uses</div>
+    <h1 class="page-title">Use Your <span>Payday Loan</span> For Anything</h1>
+    <p class="page-subtitle">From sudden emergencies to planned expenses — get up to ₹50,000 in 2 minutes and use it however you need.</p>
+  </div>
+
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="show('all', this)">All Use Cases</button>
+    <button class="tab-btn" onclick="show('urgent', this)">Urgent Needs</button>
+    <button class="tab-btn" onclick="show('lifestyle', this)">Lifestyle</button>
+    <button class="tab-btn" onclick="show('everyday', this)">Everyday</button>
+  </div>
+
+  <!-- ALL USE CASES -->
+  <div id="all" class="loan-section active">
+
+    <!-- Medical Emergency -->
+    <div class="loan-card" data-cat="urgent">
+      <div class="card-menu">···</div>
+      <div class="card-left">
+        <div class="use-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.5-9 9-9 9z"/></svg>
+        </div>
+        <div class="use-tag">Use Case · Medical</div>
+        <h2 class="card-title">Pay Hospital & Medicine Bills</h2>
+        <p class="card-subtitle">Use your payday loan to cover sudden hospital admissions, surgeries, medicines, or OPD visits — without waiting for insurance.</p>
+        <ul class="features">
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>No hospital invoice needed upfront</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Money in your account in minutes</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Pay any hospital, pharmacy or lab</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Available 24/7 — even on weekends</li>
+        </ul>
+        <button class="cta-btn">Use payday loan now <svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="quick-stats">
+        <div class="qs-title">Payday Loan Details</div>
+        <div class="qs-rows">
+          <div class="qs-row"><span class="qs-label">Amount Range</span><span class="qs-val">₹2,500 – ₹50,000</span></div>
+          <div class="qs-row"><span class="qs-label">Interest Rate</span><span class="qs-val green">Starting 1% / day</span></div>
+          <div class="qs-row"><span class="qs-label">Tenure</span><span class="qs-val">7 / 15 / 30 days</span></div>
+          <div class="qs-row"><span class="qs-label">Platform Fee</span><span class="qs-val">2% + 18% GST</span></div>
+          <div class="qs-row"><span class="qs-label">Approval Time</span><span class="qs-val green">2 minutes</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rent & Utility Bills -->
+    <div class="loan-card" data-cat="everyday">
+      <div class="card-menu">···</div>
+      <div class="card-left">
+        <div class="use-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>
+        </div>
+        <div class="use-tag">Use Case · Rent & Bills</div>
+        <h2 class="card-title">Cover Rent & Utility Bills</h2>
+        <p class="card-subtitle">Salary delayed? Use your payday loan to pay rent, electricity, water, internet or gas bills before the due date and avoid late fees.</p>
+        <ul class="features">
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>No landlord agreement needed</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Pay any biller — UPI or bank transfer</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Repay on your next payday</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Avoid late penalties & disconnection</li>
+        </ul>
+        <button class="cta-btn">Use payday loan now <svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="quick-stats">
+        <div class="qs-title">Payday Loan Details</div>
+        <div class="qs-rows">
+          <div class="qs-row"><span class="qs-label">Amount Range</span><span class="qs-val">₹2,500 – ₹50,000</span></div>
+          <div class="qs-row"><span class="qs-label">Interest Rate</span><span class="qs-val green">Starting 1% / day</span></div>
+          <div class="qs-row"><span class="qs-label">Tenure</span><span class="qs-val">7 / 15 / 30 days</span></div>
+          <div class="qs-row"><span class="qs-label">Platform Fee</span><span class="qs-val">2% + 18% GST</span></div>
+          <div class="qs-row"><span class="qs-label">Approval Time</span><span class="qs-val green">2 minutes</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Travel -->
+    <div class="loan-card" data-cat="lifestyle">
+      <div class="card-menu">···</div>
+      <div class="card-left">
+        <div class="use-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>
+        </div>
+        <div class="use-tag">Use Case · Travel</div>
+        <h2 class="card-title">Book Trips & Travel Plans</h2>
+        <p class="card-subtitle">Use your payday loan for last-minute flight bookings, hotel stays, weekend getaways or urgent travel emergencies.</p>
+        <ul class="features">
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>No travel itinerary required</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Book on any platform — MMT, Goibibo, IRCTC</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Use for domestic & international trips</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Lock in lower fares before they rise</li>
+        </ul>
+        <button class="cta-btn">Use payday loan now <svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="quick-stats">
+        <div class="qs-title">Payday Loan Details</div>
+        <div class="qs-rows">
+          <div class="qs-row"><span class="qs-label">Amount Range</span><span class="qs-val">₹2,500 – ₹50,000</span></div>
+          <div class="qs-row"><span class="qs-label">Interest Rate</span><span class="qs-val green">Starting 1% / day</span></div>
+          <div class="qs-row"><span class="qs-label">Tenure</span><span class="qs-val">7 / 15 / 30 days</span></div>
+          <div class="qs-row"><span class="qs-label">Platform Fee</span><span class="qs-val">2% + 18% GST</span></div>
+          <div class="qs-row"><span class="qs-label">Approval Time</span><span class="qs-val green">2 minutes</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wedding & Family Functions -->
+    <div class="loan-card" data-cat="lifestyle">
+      <div class="card-menu">···</div>
+      <div class="card-left">
+        <div class="use-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.5-9 9-9 9z"/></svg>
+        </div>
+        <div class="use-tag">Use Case · Functions</div>
+        <h2 class="card-title">Weddings & Family Functions</h2>
+        <p class="card-subtitle">Use your payday loan for engagement, wedding shopping, catering advance, or any family event without putting your savings on hold.</p>
+        <ul class="features">
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>No function proof required</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Spend wherever you want — no restrictions</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Flexible 7 / 15 / 30 day repayment</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Top up multiple times if needed</li>
+        </ul>
+        <button class="cta-btn">Use payday loan now <svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="quick-stats">
+        <div class="qs-title">Payday Loan Details</div>
+        <div class="qs-rows">
+          <div class="qs-row"><span class="qs-label">Amount Range</span><span class="qs-val">₹2,500 – ₹50,000</span></div>
+          <div class="qs-row"><span class="qs-label">Interest Rate</span><span class="qs-val green">Starting 1% / day</span></div>
+          <div class="qs-row"><span class="qs-label">Tenure</span><span class="qs-val">7 / 15 / 30 days</span></div>
+          <div class="qs-row"><span class="qs-label">Platform Fee</span><span class="qs-val">2% + 18% GST</span></div>
+          <div class="qs-row"><span class="qs-label">Approval Time</span><span class="qs-val green">2 minutes</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Education & Fees -->
+    <div class="loan-card" data-cat="everyday">
+      <div class="card-menu">···</div>
+      <div class="card-left">
+        <div class="use-icon">
+          <svg viewBox="0 0 24 24"><path d="M2 9l10-5 10 5-10 5L2 9z"/><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/></svg>
+        </div>
+        <div class="use-tag">Use Case · Education</div>
+        <h2 class="card-title">Pay College Fees & Course Costs</h2>
+        <p class="card-subtitle">Use your payday loan to pay tuition installments, exam fees, online course subscriptions, books or coaching dues — for yourself or your kids.</p>
+        <ul class="features">
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Works for students & professionals</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Pay any college, school or platform</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>No fee receipt or admission letter needed</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Never miss an enrollment deadline</li>
+        </ul>
+        <button class="cta-btn">Use payday loan now <svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="quick-stats">
+        <div class="qs-title">Payday Loan Details</div>
+        <div class="qs-rows">
+          <div class="qs-row"><span class="qs-label">Amount Range</span><span class="qs-val">₹2,500 – ₹50,000</span></div>
+          <div class="qs-row"><span class="qs-label">Interest Rate</span><span class="qs-val green">Starting 1% / day</span></div>
+          <div class="qs-row"><span class="qs-label">Tenure</span><span class="qs-val">7 / 15 / 30 days</span></div>
+          <div class="qs-row"><span class="qs-label">Platform Fee</span><span class="qs-val">2% + 18% GST</span></div>
+          <div class="qs-row"><span class="qs-label">Approval Time</span><span class="qs-val green">2 minutes</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gadgets & Electronics -->
+    <div class="loan-card" data-cat="lifestyle">
+      <div class="card-menu">···</div>
+      <div class="card-left">
+        <div class="use-icon">
+          <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18.01"/></svg>
+        </div>
+        <div class="use-tag">Use Case · Gadgets</div>
+        <h2 class="card-title">Buy Phones, Laptops & Electronics</h2>
+        <p class="card-subtitle">Use your payday loan to grab a new phone, laptop, headphones or appliance — from any store, online or offline. No EMI lock-ins.</p>
+        <ul class="features">
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Buy from Amazon, Flipkart or local store</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>No invoice or receipt needed upfront</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Cash payment — bag the best discount</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Skip the EMI paperwork & approvals</li>
+        </ul>
+        <button class="cta-btn">Use payday loan now <svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="quick-stats">
+        <div class="qs-title">Payday Loan Details</div>
+        <div class="qs-rows">
+          <div class="qs-row"><span class="qs-label">Amount Range</span><span class="qs-val">₹2,500 – ₹50,000</span></div>
+          <div class="qs-row"><span class="qs-label">Interest Rate</span><span class="qs-val green">Starting 1% / day</span></div>
+          <div class="qs-row"><span class="qs-label">Tenure</span><span class="qs-val">7 / 15 / 30 days</span></div>
+          <div class="qs-row"><span class="qs-label">Platform Fee</span><span class="qs-val">2% + 18% GST</span></div>
+          <div class="qs-row"><span class="qs-label">Approval Time</span><span class="qs-val green">2 minutes</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sudden Emergencies -->
+    <div class="loan-card" data-cat="urgent">
+      <div class="card-menu">···</div>
+      <div class="card-left">
+        <div class="use-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L4 14h7v8l9-13h-7l-1-7z"/></svg>
+        </div>
+        <div class="use-tag">Use Case · Emergency</div>
+        <h2 class="card-title">Handle Sudden Cash Emergencies</h2>
+        <p class="card-subtitle">Use your payday loan when life throws a surprise — vehicle breakdown, home repair, urgent travel, or any unexpected expense.</p>
+        <ul class="features">
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>2-minute approval — no human intervention</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Same-day disbursal to your bank</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Available 24/7 — even on holidays</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>No reason or proof of expense needed</li>
+        </ul>
+        <button class="cta-btn">Use payday loan now <svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="quick-stats">
+        <div class="qs-title">Payday Loan Details</div>
+        <div class="qs-rows">
+          <div class="qs-row"><span class="qs-label">Amount Range</span><span class="qs-val">₹2,500 – ₹50,000</span></div>
+          <div class="qs-row"><span class="qs-label">Interest Rate</span><span class="qs-val green">Starting 1% / day</span></div>
+          <div class="qs-row"><span class="qs-label">Tenure</span><span class="qs-val">7 / 15 / 30 days</span></div>
+          <div class="qs-row"><span class="qs-label">Platform Fee</span><span class="qs-val">2% + 18% GST</span></div>
+          <div class="qs-row"><span class="qs-label">Approval Time</span><span class="qs-val green">2 minutes</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shopping & Festivals -->
+    <div class="loan-card" data-cat="lifestyle">
+      <div class="card-menu">···</div>
+      <div class="card-left">
+        <div class="use-icon">
+          <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4H6z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        </div>
+        <div class="use-tag">Use Case · Shopping</div>
+        <h2 class="card-title">Festival Shopping & Big Purchases</h2>
+        <p class="card-subtitle">Use your payday loan during Diwali, Eid, Christmas or end-of-season sales — shop the deals now, repay on payday.</p>
+        <ul class="features">
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Catch limited-time festival discounts</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Buy clothes, gifts, jewellery — no limits</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Get up to ₹50,000 in 2 minutes</li>
+          <li><div class="check-icon"><svg viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Repay flexibly in 7, 15 or 30 days</li>
+        </ul>
+        <button class="cta-btn">Use payday loan now <svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="quick-stats">
+        <div class="qs-title">Payday Loan Details</div>
+        <div class="qs-rows">
+          <div class="qs-row"><span class="qs-label">Amount Range</span><span class="qs-val">₹2,500 – ₹50,000</span></div>
+          <div class="qs-row"><span class="qs-label">Interest Rate</span><span class="qs-val green">Starting 1% / day</span></div>
+          <div class="qs-row"><span class="qs-label">Tenure</span><span class="qs-val">7 / 15 / 30 days</span></div>
+          <div class="qs-row"><span class="qs-label">Platform Fee</span><span class="qs-val">2% + 18% GST</span></div>
+          <div class="qs-row"><span class="qs-label">Approval Time</span><span class="qs-val green">2 minutes</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /all -->
+
+</div><!-- /page-wrapper -->
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const cards = document.querySelectorAll('#all .loan-card');
+  cards.forEach(card => {
+    if (id === 'all') {
+      card.style.display = '';
+    } else {
+      card.style.display = (card.dataset.cat === id) ? '' : 'none';
+    }
+  });
+}
+</script>
+</body>
+</html>

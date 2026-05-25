@@ -86,7 +86,7 @@ export const metadata: Metadata = {
   themeColor: "#0A0A0A", // change to your brand color
   icons: {
     icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
+    shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
 };

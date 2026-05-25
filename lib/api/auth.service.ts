@@ -113,7 +113,7 @@ class AuthService {
     try {
       await apiClient.post('/api/auth/logout');
     } catch (error) {
-      console.log('Logout endpoint not available');
+      //console.log('Logout endpoint not available');
     }
   }
 

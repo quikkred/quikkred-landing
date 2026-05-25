@@ -7,7 +7,7 @@ import { signOut } from 'next-auth/react';
 export const clearSession = async (redirectPath: string | null = '/login') => {
   if (typeof window === 'undefined') return;
 
-  console.log('🧹 Clearing session and all authentication data...');
+  //console.log('🧹 Clearing session and all authentication data...');
 
   // 1. Clear all localStorage items used by the app
   const itemsToRemove = [

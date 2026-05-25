@@ -95,7 +95,7 @@ const { subscribe, emit } = useWebSocket();
 
 useEffect(() => {
   const unsubscribe = subscribe('CUSTOM_EVENT', (data) => {
-    console.log('Received custom event:', data);
+    //console.log('Received custom event:', data);
   });
 
   return unsubscribe;

@@ -97,10 +97,51 @@ export const metadata: Metadata = {
 
   icons: {
     icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
+    shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
 };
 
-const ProductsLayout = ({ children }: LayoutInterface) => children;
+const breadcrumbJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+    { "@type": "ListItem", position: 2, name: "Loan Products", item: PAGE_URL },
+  ],
+};
+
+// Service schema lets Google show product-style results for "Quikkred loans".
+// Tied back to the Organization node declared in app/layout.tsx via @id.
+const serviceJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  serviceType: "Personal loan",
+  name: "Quikkred Personal Loans",
+  url: PAGE_URL,
+  description:
+    "Short-term personal loans from ₹2,500 to ₹50,000 with transparent fees and same-day bank disbursal across India.",
+  provider: { "@id": "https://www.quikkred.in/#organization" },
+  areaServed: { "@type": "Country", name: "India" },
+  offers: {
+    "@type": "AggregateOffer",
+    priceCurrency: "INR",
+    lowPrice: "2500",
+    highPrice: "50000",
+  },
+};
+
+const ProductsLayout = ({ children }: LayoutInterface) => (
+  <>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+    />
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+    />
+    {children}
+  </>
+);
 export default ProductsLayout;

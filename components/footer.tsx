@@ -193,7 +193,7 @@ export function Footer() {
                 className="h-auto object-contain mx-auto sm:mx-0"
                 width={170}
                 height={42}
-                unoptimized
+                sizes="170px"
               />
             </Link>
 
@@ -248,7 +248,7 @@ export function Footer() {
 
           {/* Company */}
           <div className="col-span-1 text-center sm:text-left">
-            <h4 className="font-semibold text-slate-100 mb-3 sm:mb-4 text-sm sm:text-base">{t.footer.quickLinks.title}</h4>
+            <h3 className="font-semibold text-slate-100 mb-3 sm:mb-4 text-sm sm:text-base">{t.footer.quickLinks.title}</h3>
             <ul className="space-y-2 sm:space-y-3 flex flex-col items-center sm:items-start">
               {footerLinks.company.slice(0, 6).map((link) => (
                 <li key={link.name}>
@@ -266,7 +266,7 @@ export function Footer() {
 
           {/* Resources */}
           <div className="col-span-1 text-center sm:text-left">
-            <h4 className="font-semibold text-slate-100 mb-3 sm:mb-4 text-sm sm:text-base">{t.navigation.resources}</h4>
+            <h3 className="font-semibold text-slate-100 mb-3 sm:mb-4 text-sm sm:text-base">{t.navigation.resources}</h3>
             <ul className="space-y-2 sm:space-y-3 flex flex-col items-center sm:items-start">
               {footerLinks.resources.slice(0, 6).map((link) => (
                 <li key={link.name}>
@@ -284,7 +284,7 @@ export function Footer() {
 
           {/* Policy Links */}
           <div className="col-span-1 text-center sm:text-left">
-            <h4 className="font-semibold text-slate-100 mb-3 sm:mb-4 text-sm sm:text-base">{t.footer.policyLinks.title}</h4>
+            <h3 className="font-semibold text-slate-100 mb-3 sm:mb-4 text-sm sm:text-base">{t.footer.policyLinks.title}</h3>
             <ul className="space-y-2 sm:space-y-3 flex flex-col items-center sm:items-start">
               {footerLinks.policyLinks.map((link) => (
                 <li key={link.name}>
@@ -302,7 +302,7 @@ export function Footer() {
 
           {/* Contact Info */}
           <div className="col-span-1 text-center sm:text-left">
-            <h4 className="font-semibold text-slate-100 mb-3 sm:mb-4 text-sm sm:text-base">{t.footer.contact.title}</h4>
+            <h3 className="font-semibold text-slate-100 mb-3 sm:mb-4 text-sm sm:text-base">{t.footer.contact.title}</h3>
             <ul className="space-y-2 sm:space-y-3 flex flex-col items-center sm:items-start">
               <li>
                 <a
@@ -385,11 +385,13 @@ export function Footer() {
             <p className="text-slate-400 mb-2 text-xs sm:text-sm">
               {t.footer.copyright}
             </p>
-            <p className="text-xs text-slate-500 mb-2">
-              <span className="font-medium text-slate-400">Quikkred</span> is a brand owned by <span className="font-medium text-slate-400">FluxusForge Private Limited</span>
+            {/* slate-500 on black = 4.12:1 — fails AA for small text.
+                slate-400 = 7.1:1 — clean pass. */}
+            <p className="text-xs text-slate-400 mb-2">
+              <span className="font-medium text-slate-300">Quikkred</span> is a brand owned by <span className="font-medium text-slate-300">FluxusForge Private Limited</span>
             </p>
-            <p className="text-xs text-slate-500">
-              Lending Partner: <span className="font-medium text-slate-400">Satsai Finlease Private Limited</span> (RBI Registered NBFC)
+            <p className="text-xs text-slate-400">
+              Lending Partner: <span className="font-medium text-slate-300">Satsai Finlease Private Limited</span> (RBI Registered NBFC)
             </p>
           </div>
 
@@ -404,6 +406,10 @@ export function Footer() {
                 }}
                 src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
                 alt="Get it on Google Play"
+                width={140}
+                height={48}
+                loading="lazy"
+                decoding="async"
                 className="h-12 w-[140px] cursor-pointer hover:opacity-80 transition-opacity duration-200"
               />
               <img
@@ -413,7 +419,11 @@ export function Footer() {
                 }}
                 src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/en-us?size=250x83&releaseDate=1289942400"
                 alt="Download on the app store"
-                className=" cursor-pointer hover:opacity-80 transition-opacity duration-200" />
+                width={144}
+                height={48}
+                loading="lazy"
+                decoding="async"
+                className="h-12 w-auto cursor-pointer hover:opacity-80 transition-opacity duration-200" />
               {/* <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}

@@ -39,17 +39,20 @@ const fetchSupportAgent = async (): Promise<SupportAgent | null> => {
       return JSON.parse(stored);
     }
 
-    // Fetch from backend
+    // Fetch from backend. Endpoint may be 404 on environments where the
+    // AI service isn't deployed (Best Practices audit flagged a console
+    // error here). Treat any non-2xx as "use fallback" without logging.
     try {
       const response = await fetch(`${API_BASE_URL}/api/ai/support-agent`);
-      const result = await response.json();
-
-      if (result.success && result.agent) {
-        sessionStorage.setItem('supportAgent', JSON.stringify(result.agent));
-        return result.agent;
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.agent) {
+          sessionStorage.setItem('supportAgent', JSON.stringify(result.agent));
+          return result.agent;
+        }
       }
-    } catch (error) {
-      console.error('Failed to fetch support agent:', error);
+    } catch {
+      // Network failure — fall through to the static fallback agent.
     }
 
     // Fallback if API fails
