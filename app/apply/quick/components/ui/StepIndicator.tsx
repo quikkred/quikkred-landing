@@ -4,6 +4,7 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
         { id: 1, label: 'Login / Register' },
         { id: 2, label: 'Check Eligibility' },
         { id: 3, label: 'Bank Verification' },
+        { id: 4, label: 'References' },
     ];
 
     return (
