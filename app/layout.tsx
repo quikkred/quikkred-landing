@@ -275,13 +275,12 @@ gtag('config', 'AW-17796230994');`,
         />
 
         {/* Meta Pixel Code - Beta & Production only (exclude Alpha).
-            afterInteractive (not lazyOnload) so Meta's Event Setup Tool and
-            Pixel Helper detect the pixel — lazyOnload defers past their scan
-            window and they report "pixel wasn't detected." */}
+            Rendered as a raw inline <script> (not next/script) so the tag is
+            present in the SSR HTML and executes during initial parse. Meta's
+            Event Setup Tool / Pixel Helper scan a short window and miss
+            anything injected after hydration. */}
         {process.env.NEXT_PUBLIC_API_URL != 'https://alpha.quikkred.in' && (
-          <Script
-            id="fb-pixel"
-            strategy="afterInteractive"
+          <script
             dangerouslySetInnerHTML={{
               __html: `!function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?

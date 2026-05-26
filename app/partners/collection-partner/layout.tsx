@@ -1,15 +1,13 @@
-import Script from "next/script";
 import LayoutInterface from "@/interfaces/layoutInterface";
 
 const CollectionPartnerLayout = ({ children }: LayoutInterface) => (
   <>
     {/* Meta Pixel Code · page-specific pixel for /partners/collection-partner.
-        Uses afterInteractive (not lazyOnload) so Meta's Event Setup Tool and
-        Pixel Helper can detect the pixel — lazyOnload defers past their scan
-        window and they report "pixel wasn't detected." */}
-    <Script
-      id="fb-pixel-collection-partner"
-      strategy="afterInteractive"
+        Rendered as a raw inline <script> (not next/script) so the tag lands in
+        the SSR HTML and executes during initial parse — Meta's Event Setup
+        Tool / Pixel Helper scan a short window and miss anything injected
+        after hydration (which is what next/script does, even on afterInteractive). */}
+    <script
       dangerouslySetInnerHTML={{
         __html: `!function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
