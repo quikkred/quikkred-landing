@@ -274,11 +274,14 @@ gtag('config', 'AW-17796230994');`,
           }}
         />
 
-        {/* Meta Pixel Code - Beta & Production only (exclude Alpha) */}
+        {/* Meta Pixel Code - Beta & Production only (exclude Alpha).
+            afterInteractive (not lazyOnload) so Meta's Event Setup Tool and
+            Pixel Helper detect the pixel — lazyOnload defers past their scan
+            window and they report "pixel wasn't detected." */}
         {process.env.NEXT_PUBLIC_API_URL != 'https://alpha.quikkred.in' && (
           <Script
             id="fb-pixel"
-            strategy="lazyOnload"
+            strategy="afterInteractive"
             dangerouslySetInnerHTML={{
               __html: `!function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
