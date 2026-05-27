@@ -6,6 +6,7 @@ import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
 import { AlertCircle, Briefcase, IndianRupee } from "lucide-react";
 import { useState } from "react";
 import SelectProduct from "./SelectProduct";
+import References from "./References";
 
 interface EmployeeDetailsProps {
     formData: QuickApplyV2FormData;
@@ -200,6 +201,8 @@ const EmployeeDetails = ({ formData, setFormData }: EmployeeDetailsProps) => {
                 </div>
 
                 <SelectProduct formData={formData} setFormData={setFormData} />
+
+                <References formData={formData} setFormData={setFormData} />
             </div>
 
             {/* ---------------- SUBMIT ERROR ---------------- */}
