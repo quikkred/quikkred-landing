@@ -6,7 +6,7 @@ import useAxios from "@/hooks/useAxios";
 import { RAZORPAY_KEY } from "@/lib/config";
 import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
 import { CheckCircle, Shield } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 interface EMandateVerifyProps {
     formData: QuickApplyV2FormData;
@@ -44,8 +44,10 @@ const EMandateVerify = ({
     const axios = useAxios();
     const upiAutopayConsent = useMemo<boolean>(() => (formData?.upiAutoPayStatus === true), [formData]);
 
-    // Check UPI Autopay status via emandate checkout API
-    const checkUpiAutoPayStatus = async () => {
+    // Check UPI Autopay status via emandate checkout API.
+    // `silent` skips toasts — used for the on-mount/refresh check so we don't
+    // notify the user on every page load.
+    const checkUpiAutoPayStatus = async (silent = false) => {
         const customerId = application?.customerId;
         if (!customerId) {
             console.error("Customer ID not available for emandate checkout");
@@ -62,12 +64,14 @@ const EMandateVerify = ({
             // Check isAuthorized from the checkout API response
             if (result.success && result.isAuthorized) {
                 setFormData((prev) => ({ ...prev, upiAutoPayStatus: true }));
-                toast({
-                    variant: "success",
-                    title: "UPI Autopay Authorized",
-                    description: "Your UPI Autopay has been authorized successfully.",
-                });
-            } else {
+                if (!silent) {
+                    toast({
+                        variant: "success",
+                        title: "UPI Autopay Authorized",
+                        description: "Your UPI Autopay has been authorized successfully.",
+                    });
+                }
+            } else if (!silent) {
                 toast({
                     variant: "info",
                     title: "UPI Autopay Pending",
@@ -83,6 +87,19 @@ const EMandateVerify = ({
             }
         }
     };
+
+    // On mount/refresh: silently pull the live authorization status from
+    // /api/upi/emandate/checkout/{customerId} so the authorized UI shows after a
+    // refresh instead of relying only on /api/customer/get's upiAutoPayStatus.
+    const statusCheckedRef = useRef(false);
+    useEffect(() => {
+        if (statusCheckedRef.current) return;
+        if (application?.customerId && !upiAutopayConsent) {
+            statusCheckedRef.current = true;
+            checkUpiAutoPayStatus(true);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [application?.customerId, upiAutopayConsent]);
 
     const handleUpiAutopayClick = async (checked: boolean) => {
         // If already authorized (upiAutoPayStatus true or upiAutopayConsent true), don't allow changes

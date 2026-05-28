@@ -56,6 +56,16 @@ const ApplicationProvider = ({ children, payload }: LayoutInterface & { payload:
         }
     }, [user?.id]);
 
+    // On every mount/refresh: pull fresh customer details from /api/customer/get and
+    // merge into `user`. The server snapshot (getUserDetails) omits flags like
+    // bsaInitiated / isBankDetailsFilled, so we refresh client-side to get current data.
+    useEffect(() => {
+        if (user?.id) {
+            getCustomer();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user?.id]);
+
     const getApplication = async () => {
         try {
             // const applicationId = storage.get("applicationId");
