@@ -55,6 +55,7 @@ export interface User {
   isKycDetailsFilled?: boolean;
   isBankDetailsFilled?: boolean;
   isProfileVerified?: boolean;
+  references?: Array<{ name: string; mobile: string; relationship: string }>;
 }
 
 interface LoginProps { apiData?: any; email?: string; mobile?: string; }
@@ -128,6 +129,12 @@ export const userInitializer = ({ apiData, currentUser }: { apiData: any, curren
       pennyDropStatus: apiData.banks?.[0]?.pennyDropStatus || null,
       bankVerified: apiData.banks?.[0]?.pennyDropStatus === "VERIFIED",
       upiAutoPayStatus: apiData?.upiAutoPayStatus || false,
+
+      // references (may live on customer or inside basicDetails)
+      references:
+        apiData?.references ||
+        apiData?.basicDetails?.references ||
+        [],
     } as User;
   }
   return currentUser as User;

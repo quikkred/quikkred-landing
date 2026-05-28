@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Users } from "lucide-react";
 import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
 import { RELATIONSHIP_TYPES, VALIDATION } from "@/lib/constants/quickApplyV2";
+
+const PREDEFINED_RELATIONSHIPS = RELATIONSHIP_TYPES.map((r) => r.value) as string[];
+const OTHER_SENTINEL = "__OTHER__";
 
 interface ReferencesProps {
     formData: QuickApplyV2FormData;
@@ -22,8 +25,25 @@ type RefErrors = {
 const NAME_REGEX = /[^a-zA-Z\s.'-]/g;
 const DIGITS_ONLY = /^\d*$/;
 
+const isCustomRelationship = (val?: string) =>
+    !!val && !PREDEFINED_RELATIONSHIPS.includes(val);
+
 const References = ({ formData, setFormData }: ReferencesProps) => {
     const [errors, setErrors] = useState<RefErrors>({});
+
+    // Track which references are in "Other" mode (custom text input)
+    const [otherMode, setOtherMode] = useState<{ 1: boolean; 2: boolean }>({
+        1: isCustomRelationship(formData.reference1Relationship),
+        2: isCustomRelationship(formData.reference2Relationship),
+    });
+
+    // Auto-enable "Other" when API autofill brings in a non-predefined value
+    useEffect(() => {
+        setOtherMode((prev) => ({
+            1: prev[1] || isCustomRelationship(formData.reference1Relationship),
+            2: prev[2] || isCustomRelationship(formData.reference2Relationship),
+        }));
+    }, [formData.reference1Relationship, formData.reference2Relationship]);
 
     const update = (updates: Partial<QuickApplyV2FormData>) => {
         setFormData((prev) => ({ ...prev, ...updates }));
@@ -55,11 +75,27 @@ const References = ({ formData, setFormData }: ReferencesProps) => {
         setErrors((prev) => ({ ...prev, [field]: err }));
     };
 
-    const handleRelationshipChange = (
+    const handleRelationshipSelect = (
+        idx: 1 | 2,
         field: "reference1Relationship" | "reference2Relationship",
         value: string,
     ) => {
-        update({ [field]: value } as Partial<QuickApplyV2FormData>);
+        if (value === OTHER_SENTINEL) {
+            setOtherMode((prev) => ({ ...prev, [idx]: true }));
+            update({ [field]: "" } as Partial<QuickApplyV2FormData>);
+        } else {
+            setOtherMode((prev) => ({ ...prev, [idx]: false }));
+            update({ [field]: value } as Partial<QuickApplyV2FormData>);
+        }
+        setErrors((prev) => ({ ...prev, [field]: undefined }));
+    };
+
+    const handleOtherRelationshipChange = (
+        field: "reference1Relationship" | "reference2Relationship",
+        value: string,
+    ) => {
+        const clean = value.replace(NAME_REGEX, "");
+        update({ [field]: clean } as Partial<QuickApplyV2FormData>);
         setErrors((prev) => ({ ...prev, [field]: undefined }));
     };
 
@@ -160,9 +196,17 @@ const References = ({ formData, setFormData }: ReferencesProps) => {
                                     Relationship *
                                 </label>
                                 <select
-                                    value={formData[relKey] || ""}
+                                    value={
+                                        otherMode[idx as 1 | 2]
+                                            ? OTHER_SENTINEL
+                                            : formData[relKey] || ""
+                                    }
                                     onChange={(e) =>
-                                        handleRelationshipChange(relKey, e.target.value)
+                                        handleRelationshipSelect(
+                                            idx as 1 | 2,
+                                            relKey,
+                                            e.target.value,
+                                        )
                                     }
                                     className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#25B181] bg-white ${
                                         errors[relKey]
@@ -176,7 +220,28 @@ const References = ({ formData, setFormData }: ReferencesProps) => {
                                             {r.label}
                                         </option>
                                     ))}
+                                    <option value={OTHER_SENTINEL}>Other</option>
                                 </select>
+
+                                {otherMode[idx as 1 | 2] && (
+                                    <input
+                                        type="text"
+                                        value={formData[relKey] || ""}
+                                        onChange={(e) =>
+                                            handleOtherRelationshipChange(
+                                                relKey,
+                                                e.target.value,
+                                            )
+                                        }
+                                        placeholder="Specify relationship"
+                                        className={`mt-2 w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                                            errors[relKey]
+                                                ? "border-red-500"
+                                                : "border-gray-300"
+                                        }`}
+                                    />
+                                )}
+
                                 {errors[relKey] && (
                                     <p className="mt-1 text-xs text-red-600">
                                         {errors[relKey]}

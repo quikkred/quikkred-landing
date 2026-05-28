@@ -40,7 +40,7 @@ export default function QuickApplyV2Page() {
     const { user } = useAuth();
     // const storage = useStorage();
     // const breForm = useMemo<StorageApplicationForm | null>(() => ((storage.data?.breForm as StorageApplicationForm) || null), [storage]);
-    const { application } = useApplication();
+    const { application, getCustomer } = useApplication();
 
     // Form Data
     const [formData, setFormData] = useState<QuickApplyV2FormData>(getInitialFormData);
@@ -124,6 +124,25 @@ export default function QuickApplyV2Page() {
             isBankDetailsFilled: user?.isBankDetailsFilled || false,
 
             upiAutoPayStatus: user?.upiAutoPayStatus || false,
+
+            // References — autofill from API if previously saved
+            ...(() => {
+                const refs =
+                    (application as any)?.basicDetails?.references ||
+                    (application as any)?.references ||
+                    (user as any)?.references ||
+                    [];
+                const r1 = refs[0] || {};
+                const r2 = refs[1] || {};
+                return {
+                    reference1Name: r1.name || "",
+                    reference1Mobile: r1.mobile || "",
+                    reference1Relationship: r1.relationship || "",
+                    reference2Name: r2.name || "",
+                    reference2Mobile: r2.mobile || "",
+                    reference2Relationship: r2.relationship || "",
+                };
+            })(),
         }));
     }, [user, application]);
 
@@ -154,6 +173,12 @@ export default function QuickApplyV2Page() {
     useEffect(() => {
         initializeApp();
     }, []);
+
+    // Refresh customer data on every step change so references/KYC/bank flags stay fresh
+    useEffect(() => {
+        if (!user?.id) return;
+        getCustomer();
+    }, [step, user?.id]);
 
     const initializeApp = async () => {
         setIpBlocked(false);

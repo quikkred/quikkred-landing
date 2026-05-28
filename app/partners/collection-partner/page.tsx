@@ -355,6 +355,15 @@ export default function CollectPartnerPage() {
     return () => clearInterval(id);
   }, []);
 
+  // Campaign pixel 1650946159536225 is scoped to this page only — the base
+  // fbq loader and the two site-wide pixels live in app/layout.tsx.
+  useEffect(() => {
+    const fbq = (window as any).fbq;
+    if (!fbq) return;
+    fbq("init", "1650946159536225");
+    fbq("trackSingle", "1650946159536225", "PageView");
+  }, []);
+
   const ActiveScreen = SCREENS[screenIdx];
 
   const features: Feature[] = [
@@ -570,6 +579,14 @@ const APK_URL =
 
 const handleDownload = () => {
   setDownloadStarted(true);
+
+  if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq(
+      "trackSingleCustom",
+      "1650946159536225",
+      "CollectionPartnerAPKDownload",
+    );
+  }
 
   setTimeout(() => {
     window.open(APK_URL, "_blank");

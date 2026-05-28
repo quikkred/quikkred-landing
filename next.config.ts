@@ -116,10 +116,11 @@ const nextConfig: NextConfig = {
       {
         source: "/(.*)",
         headers: [
-          {
-            key: "X-Frame-Options",
-            value: "DENY",
-          },
+          // TEMPORARY (Meta Event Setup Tool): X-Frame-Options is absolute and
+          // cannot allowlist Facebook, so it's disabled here while framing is
+          // scoped to Facebook via CSP frame-ancestors below. REVERT after
+          // event setup: restore `{ key: "X-Frame-Options", value: "DENY" }`
+          // and set frame-ancestors back to 'none'.
           {
             key: "X-Content-Type-Options",
             value: "nosniff",
@@ -159,7 +160,7 @@ const nextConfig: NextConfig = {
             worker-src 'self' blob:;
             connect-src 'self' ${apiDomain} ${appDomain} ${apiWsDomain} ${appWsDomain} https://alpha.quikkred.in wss://alpha.quikkred.in https://b2b.quikkred.in https://ifsc.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com https://www.google-analytics.com https://www.google.com https://stats.g.doubleclick.net https://googleads.g.doubleclick.net https://td.doubleclick.net https://connect.facebook.net https://www.facebook.com https://*.conversionsapigateway.com https://*.a.run.app https://cdn.jsdelivr.net https://storage.googleapis.com;
             frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://www.google.com https://maps.google.com https://www.youtube.com https://www.youtube-nocookie.com;
-            frame-ancestors 'none';
+            frame-ancestors 'self' https://www.facebook.com https://business.facebook.com;
             upgrade-insecure-requests;
           `
               .replace(/\s{2,}/g, " ")
