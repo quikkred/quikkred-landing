@@ -274,11 +274,13 @@ gtag('config', 'AW-17796230994');`,
           }}
         />
 
-        {/* Meta Pixel Code - Beta & Production only (exclude Alpha) */}
+        {/* Meta Pixel Code - Beta & Production only (exclude Alpha).
+            Rendered as a raw inline <script> (not next/script) so the tag is
+            present in the SSR HTML and executes during initial parse. Meta's
+            Event Setup Tool / Pixel Helper scan a short window and miss
+            anything injected after hydration. */}
         {process.env.NEXT_PUBLIC_API_URL != 'https://alpha.quikkred.in' && (
-          <Script
-            id="fb-pixel"
-            strategy="lazyOnload"
+          <script
             dangerouslySetInnerHTML={{
               __html: `!function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -290,6 +292,7 @@ s.parentNode.insertBefore(t,s)}(window, document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
 fbq('init', '763439572919909');
 fbq('init', '2940321649486833');
+fbq('init', '1650946159536225');
 fbq('track', 'PageView');`,
             }}
           />
@@ -309,6 +312,13 @@ fbq('track', 'PageView');`,
               width="1"
               style={{ display: 'none' }}
               src="https://www.facebook.com/tr?id=2940321649486833&ev=PageView&noscript=1"
+              alt=""
+            />
+            <img
+              height="1"
+              width="1"
+              style={{ display: 'none' }}
+              src="https://www.facebook.com/tr?id=1650946159536225&ev=PageView&noscript=1"
               alt=""
             />
           </noscript>

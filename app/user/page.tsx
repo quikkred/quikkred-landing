@@ -1098,8 +1098,9 @@ export default function UserDashboard() {
           </motion.div>
         )}
 
-        {/* E-Mandate Section - Show only if E-Mandate exists and not authorized */}
-        {emandateData?.hasEMandate && !emandateData?.isAuthorized && (
+        {/* E-Mandate Section - Show only if application is submitted (user can't go back to edit),
+            E-Mandate exists, and not yet authorized */}
+        {data?.isSubmit && emandateData?.hasEMandate && !emandateData?.isAuthorized && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1158,30 +1159,34 @@ export default function UserDashboard() {
                   </div>
                 </div>
 
-                {/* Authorization Button */}
-                <button
-                  onClick={handleAuthorizeEmandate}
-                  disabled={authorizingEmandate || !razorpayLoaded}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-lg hover:shadow-lg transition-all font-medium text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {authorizingEmandate ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>Processing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Shield className="w-4 h-4" />
-                      <span>Authorize E-Mandate Now</span>
-                      <ChevronRight className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
+                {/* Authorization Button - hidden if application is rejected */}
+                {data?.applicationStatus !== 'REJECTED' && (
+                  <>
+                    <button
+                      onClick={handleAuthorizeEmandate}
+                      disabled={authorizingEmandate || !razorpayLoaded}
+                      className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-lg hover:shadow-lg transition-all font-medium text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {authorizingEmandate ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                          <span>Processing...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Shield className="w-4 h-4" />
+                          <span>Authorize E-Mandate Now</span>
+                          <ChevronRight className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
 
-                {/* Help Text */}
-                <p className="text-xs text-purple-600 mt-3">
-                  You will be redirected to your bank's UPI app to authorize the mandate. This is a one-time authorization.
-                </p>
+                    {/* Help Text */}
+                    <p className="text-xs text-purple-600 mt-3">
+                      You will be redirected to your bank's UPI app to authorize the mandate. This is a one-time authorization.
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>

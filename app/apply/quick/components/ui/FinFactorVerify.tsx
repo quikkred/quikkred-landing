@@ -7,6 +7,7 @@ import FinFactorStatus from "./FinFactorStatus";
 import { useSearchParams } from "next/navigation";
 import { toast } from "@/components/ui/toast";
 import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
+import { VALIDATION } from "@/lib/constants/quickApplyV2";
 import { useKycStatus } from "@/lib/contexts/KycStatusContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
@@ -52,6 +53,13 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             const result = response.data;
 
             if (response.status === 200 || response.status === 201) {
+                // Consent was reinitiated — redirect the customer to the new consent URL
+                if (result.data?.reinitiated && result.data?.url) {
+                    toast({ variant: "default", title: "Consent Required", description: result.message || "Please approve the new consent request." });
+                    window.location.href = result.data.url;
+                    return;
+                }
+
                 // Determine bsaBreStatus from finFactor result
                 const bsaBreResult = result.data?.status === "Reject" || result.data?.status === "REJECTED" ? "REJECTED" : result.data?.status;
 
@@ -202,10 +210,47 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             return;
         }
 
+        // Validate References
+        const r1NameOk = (formData.reference1Name || '').trim().length >= 2;
+        const r2NameOk = (formData.reference2Name || '').trim().length >= 2;
+        const r1MobileOk = VALIDATION.MOBILE.test(formData.reference1Mobile || '');
+        const r2MobileOk = VALIDATION.MOBILE.test(formData.reference2Mobile || '');
+        const r1RelOk = !!formData.reference1Relationship;
+        const r2RelOk = !!formData.reference2Relationship;
+        if (!(r1NameOk && r2NameOk && r1MobileOk && r2MobileOk && r1RelOk && r2RelOk)) {
+            toast({
+                variant: "warning",
+                title: "References Required",
+                description: "Please fill both references with name, valid mobile, and relationship.",
+            });
+            return;
+        }
+        if (formData.reference1Mobile === formData.reference2Mobile) {
+            toast({ variant: "error", title: "References must have different mobile numbers" });
+            return;
+        }
+        if (formData.reference1Mobile === formData.mobile || formData.reference2Mobile === formData.mobile) {
+            toast({ variant: "error", title: "Reference cannot be your own mobile number" });
+            return;
+        }
+
         const isBasicDetailsFilled = true;
 
         const selectedProduct = formData.selectedProduct || null;
         const locationData = location || (await getLocation()); // Use existing location from context or fetch if not available
+
+        const references = [
+            {
+                name: (formData.reference1Name || '').trim(),
+                mobile: formData.reference1Mobile || '',
+                relationship: formData.reference1Relationship || '',
+            },
+            {
+                name: (formData.reference2Name || '').trim(),
+                mobile: formData.reference2Mobile || '',
+                relationship: formData.reference2Relationship || '',
+            },
+        ];
 
         const basicDetails = {
             employmentType: formData.employmentType,
@@ -218,6 +263,7 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             isBasicDetailsFilled,
             dateOfBirth: formData.dob,
             companyName: formData.companyName,
+            references,
         }
         const loanDetails = {
             requestedLoanAmount: formData.loanAmount,
@@ -336,6 +382,20 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
         // 5. product required
         const product = !!formData.productId && !!formData.selectedProduct;
 
+        // 6. references required
+        const r1NameOk = (formData.reference1Name || '').trim().length >= 2;
+        const r2NameOk = (formData.reference2Name || '').trim().length >= 2;
+        const r1MobileOk = VALIDATION.MOBILE.test(formData.reference1Mobile || '');
+        const r2MobileOk = VALIDATION.MOBILE.test(formData.reference2Mobile || '');
+        const r1RelOk = !!formData.reference1Relationship;
+        const r2RelOk = !!formData.reference2Relationship;
+        const distinct = formData.reference1Mobile !== formData.reference2Mobile;
+        const notSelf =
+            formData.reference1Mobile !== formData.mobile &&
+            formData.reference2Mobile !== formData.mobile;
+        const referencesValid =
+            r1NameOk && r2NameOk && r1MobileOk && r2MobileOk && r1RelOk && r2RelOk && distinct && notSelf;
+
         // Final result
         return (
             isContactVerified &&
@@ -344,7 +404,8 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             income > 0 &&
             isWorkDetailsValid &&
             (loanAmount >= 2500 && loanAmount <= 50000) &&
-            product
+            product &&
+            referencesValid
         );
     }, [formData]);
 

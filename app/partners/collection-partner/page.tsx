@@ -355,6 +355,31 @@ export default function CollectPartnerPage() {
     return () => clearInterval(id);
   }, []);
 
+  // Fire ViewContent once when the "how it works" section is 40% visible.
+  // Scoped to the campaign pixel, consistent with the page's other events.
+  useEffect(() => {
+    const section = document.querySelector("#how-it-works");
+    if (!section) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const fbq = (window as any).fbq;
+        if (entry.isIntersecting && fbq) {
+          fbq("trackSingle", "1650946159536225", "ViewContent", {
+            content_name: "Collection Partner Landing Page",
+            content_category: "Partner Recruitment",
+            content_type: "landing_page",
+          });
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.4 },
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+
   const ActiveScreen = SCREENS[screenIdx];
 
   const features: Feature[] = [
@@ -570,6 +595,23 @@ const APK_URL =
 
 const handleDownload = () => {
   setDownloadStarted(true);
+
+  const fbq = typeof window !== "undefined" ? (window as any).fbq : undefined;
+  if (fbq) {
+    // Standard Lead event — fires on every download attempt. Scoped to the
+    // campaign pixel so it doesn't pollute the two site-wide pixels.
+    fbq("trackSingle", "1650946159536225", "Lead", {
+      content_name: "Collection Partner APK Download",
+      content_category: "App Install",
+      value: 0,
+      currency: "INR",
+    });
+    // Custom event — captures the download type/source.
+    fbq("trackSingleCustom", "1650946159536225", "AppDownload", {
+      platform: "android_direct",
+      page: "collection-partner",
+    });
+  }
 
   setTimeout(() => {
     window.open(APK_URL, "_blank");
