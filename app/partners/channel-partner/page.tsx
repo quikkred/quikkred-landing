@@ -29,8 +29,10 @@ import {
   IndianRupee,
   Smartphone,
   MapPin,
+  Download,
 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 
 interface Benefit {
@@ -47,8 +49,38 @@ interface EarningTier {
   bonus: string;
 }
 
+// TODO: replace with the real Quikkred Mobile App APK URL.
+// Placeholder reuses the Collect build until the customer-app APK is published.
+const APK_URL =
+  "https://quikkred-documents.d53395d350bea8ce84393333f90ac7d1.r2.cloudflarestorage.com/apk-releases/release/unversioned/1779438131022_e0bf46a8-7e45-4a59-9e62-969aa4d89a7b_app-debug.apk?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=0d6c775ad8ab70e3cc1da39205d22701%2F20260522%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260522T082226Z&X-Amz-Expires=604800&X-Amz-Signature=0256505c7b8507c6c78f0c07910fd45a6ff4add562a680482cd9a5696a418fc6&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject";
+
 export default function ChannelPartnersPage() {
   const { t } = useLanguage();
+  const [downloadStarted, setDownloadStarted] = useState(false);
+
+  const handleDownload = () => {
+    setDownloadStarted(true);
+
+    const fbq = typeof window !== "undefined" ? (window as any).fbq : undefined;
+    if (fbq) {
+      fbq("trackSingle", "1650946159536225", "Lead", {
+        content_name: "Quikkred Mobile App Download",
+        content_category: "App Install",
+        value: 0,
+        currency: "INR",
+      });
+      fbq("trackSingleCustom", "1650946159536225", "AppDownload", {
+        platform: "android_direct",
+        page: "channel-partner",
+        app: "mobile",
+      });
+    }
+
+    setTimeout(() => {
+      window.open(APK_URL, "_blank");
+      setDownloadStarted(false);
+    }, 500);
+  };
 
   const benefits: Benefit[] = [
     {
@@ -485,6 +517,50 @@ export default function ChannelPartnersPage() {
             </motion.div>
           </div>
         </div>
+      </section>
+
+      {/* Download App CTA */}
+      <section className="container mx-auto px-4 py-12 sm:py-16">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="max-w-4xl mx-auto"
+        >
+          <div className="bg-gradient-to-r from-[#4A66FF] to-[#6D90FF] rounded-2xl sm:rounded-3xl p-8 sm:p-12 text-white text-center relative overflow-hidden">
+            {/* Decorative elements */}
+            <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
+
+            <div className="relative">
+              <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Smartphone className="w-10 h-10 text-white" />
+              </div>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora mb-4">
+                Download the Quikkred App
+              </h2>
+              <p className="text-base sm:text-lg lg:text-xl mb-8 opacity-95 max-w-xl mx-auto">
+                Get the Quikkred mobile app to onboard customers, submit loan
+                applications and track disbursements on the go
+              </p>
+
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleDownload}
+                className="px-10 py-5 bg-white text-[#4A66FF] rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all inline-flex items-center gap-3"
+              >
+                <Download className="w-6 h-6" />
+                {downloadStarted ? "Starting Download..." : "Download App"}
+              </motion.button>
+
+              <p className="text-white/70 text-sm mt-4">
+                Android 8.0+ required
+              </p>
+            </div>
+          </div>
+        </motion.div>
       </section>
 
       {/* Contact / Questions Section */}
