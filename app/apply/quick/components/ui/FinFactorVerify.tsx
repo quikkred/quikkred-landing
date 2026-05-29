@@ -53,6 +53,13 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             const result = response.data;
 
             if (response.status === 200 || response.status === 201) {
+                // Consent was reinitiated — redirect the customer to the new consent URL
+                if (result.data?.reinitiated && result.data?.url) {
+                    toast({ variant: "default", title: "Consent Required", description: result.message || "Please approve the new consent request." });
+                    window.location.href = result.data.url;
+                    return;
+                }
+
                 // Determine bsaBreStatus from finFactor result
                 const bsaBreResult = result.data?.status === "Reject" || result.data?.status === "REJECTED" ? "REJECTED" : result.data?.status;
 
