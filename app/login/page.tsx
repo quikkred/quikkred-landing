@@ -36,6 +36,7 @@ import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { API_BASE_URL, QUICK_FORM_URL } from '@/lib/config';
 import { getSession, signIn } from "next-auth/react";
 import useAxios from "@/hooks/useAxios";
+import { getCoordinates, LocationError, locationErrorMessage } from "@/lib/helpers/getCoordinates";
 import GoogleVerify from "../apply/quick/components/ui/GoogleVerify";
 import TruecallerVerify from "../apply/quick/components/ui/TruecallerVerify";
 import OTPField from "../apply/quick/components/ui/OTPField";
@@ -237,9 +238,14 @@ export default function LoginPage() {
     setError(null);
 
     try {
+      const { latitude, longitude } = await getCoordinates();
       const payload = {
         mobile: formData.emailOrPhone,
+        latitude,
+        longitude,
       };
+
+      console.log("Sending OTP with payload:", payload);
       const response = await axios.post('/api/auth/customer/login', payload);
 
       if (response.status === 200 || response.status === 201) {
@@ -254,6 +260,16 @@ export default function LoginPage() {
         });
       }
     } catch (err: any) {
+      if (err instanceof LocationError) {
+        const message = locationErrorMessage(err);
+        setError(message);
+        toast({
+          variant: "error",
+          title: "Location Required",
+          description: message,
+        });
+        return;
+      }
       const { status, message } = applyBackendError(err, 'Failed to send OTP. Please try again.');
       toast({
         variant: "error",

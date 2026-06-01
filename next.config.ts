@@ -132,7 +132,7 @@ const nextConfig: NextConfig = {
           {
             key: "Permissions-Policy",
             value:
-              "camera=(self), microphone=(), geolocation=(), interest-cohort=()",
+              "camera=(self), microphone=(), geolocation=(self), interest-cohort=()",
           },
           {
             // Best Practices audit: origin isolation. unsafe-none would fail
