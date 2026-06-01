@@ -591,7 +591,7 @@ export default function CollectPartnerPage() {
   ];
 
 const APK_URL =
-  "https://quikkred-documents.d53395d350bea8ce84393333f90ac7d1.r2.cloudflarestorage.com/apk-releases/release/unversioned/1779438131022_e0bf46a8-7e45-4a59-9e62-969aa4d89a7b_app-debug.apk?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=0d6c775ad8ab70e3cc1da39205d22701%2F20260522%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20260522T082226Z&X-Amz-Expires=604800&X-Amz-Signature=0256505c7b8507c6c78f0c07910fd45a6ff4add562a680482cd9a5696a418fc6&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject";
+  "https://api.quikkred.in/api/apk/download/quikkred-collect-partner?channel=release";
 
 const handleDownload = () => {
   setDownloadStarted(true);
@@ -2012,7 +2012,7 @@ const handleDownload = () => {
                 className="px-10 py-5 bg-white text-[#1a5f4a] rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all inline-flex items-center gap-3"
               >
                 <Download className="w-6 h-6" />
-                Download APK (81 MB)
+                Download APK
               </motion.button>
 
               <p className="text-white/70 text-sm mt-4">
