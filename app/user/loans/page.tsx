@@ -23,6 +23,10 @@ import useAxios from '@/hooks/useAxios';
 import { useDashboard } from '@/store/hooks/useDashboard';
 import { Skeleton, SkeletonCircle } from '@/components/ui/Skeleton';
 
+// Reapply loan amount bounds (fallback when eligibility doesn't specify them).
+const REAPPLY_MIN_AMOUNT = 2500;
+const REAPPLY_MAX_AMOUNT = 50000;
+
 interface Loan {
   id: string;
   loanNumber: string;
@@ -267,6 +271,7 @@ export default function MyLoansPage() {
     cooldownEndsAt?: string;
   } | null>(null);
   const [reapplyForm, setReapplyForm] = useState({
+    amount: '',
     tenure: '30',
     purpose: ''
   });
@@ -710,13 +715,23 @@ export default function MyLoansPage() {
       return;
     }
 
+    const minAmount = reapplyEligibility?.minAmount || REAPPLY_MIN_AMOUNT;
+    const maxAmount = reapplyEligibility?.maxAmount || REAPPLY_MAX_AMOUNT;
+    const amount = Number(reapplyForm.amount);
+    if (!amount || amount < minAmount || amount > maxAmount) {
+      setReapplyError(
+        `Please enter an amount between ₹${minAmount.toLocaleString('en-IN')} and ₹${maxAmount.toLocaleString('en-IN')}`
+      );
+      return;
+    }
+
     setReapplyLoading(true);
     setReapplyError(null);
 
     try {
       const response = await loansService.submitReapplication({
         customerId: selectedLoanForReapply.customerId,
-        loanAmount: reapplyEligibility?.maxAmount || 0,
+        loanAmount: amount,
         tenure: Number(reapplyForm.tenure),
         purpose: reapplyForm.purpose || 'Repeat Loan',
         notes: 'Reapplication from customer dashboard'
@@ -747,7 +762,7 @@ export default function MyLoansPage() {
     setReapplyEligibility(null);
     setReapplyError(null);
     setReapplySuccess(null);
-    setReapplyForm({ tenure: '30', purpose: '' });
+    setReapplyForm({ amount: '', tenure: '30', purpose: '' });
   };
 
   // ============ UPI AUTOPAY HANDLERS ============
@@ -2465,6 +2480,26 @@ export default function MyLoansPage() {
                         <p className="text-sm text-red-700">{reapplyError}</p>
                       </div>
                     )}
+
+                    {/* Loan Amount */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Loan Amount (₹) <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        min={reapplyEligibility?.minAmount || REAPPLY_MIN_AMOUNT}
+                        max={reapplyEligibility?.maxAmount || REAPPLY_MAX_AMOUNT}
+                        value={reapplyForm.amount}
+                        onChange={(e) => setReapplyForm({ ...reapplyForm, amount: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#FAFAFA] border-2 border-[#E0E0E0] rounded-xl focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none"
+                        placeholder={`Enter amount (₹${(reapplyEligibility?.minAmount || REAPPLY_MIN_AMOUNT).toLocaleString('en-IN')} - ₹${(reapplyEligibility?.maxAmount || REAPPLY_MAX_AMOUNT).toLocaleString('en-IN')})`}
+                      />
+                      <p className="mt-1.5 text-xs text-gray-500">
+                        Enter an amount between ₹{(reapplyEligibility?.minAmount || REAPPLY_MIN_AMOUNT).toLocaleString('en-IN')} and ₹{(reapplyEligibility?.maxAmount || REAPPLY_MAX_AMOUNT).toLocaleString('en-IN')}
+                      </p>
+                    </div>
 
                     {/* Tenure */}
                     <div>
