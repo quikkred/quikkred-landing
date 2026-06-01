@@ -44,7 +44,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
-import { COMPANY_PHONE_DISPLAY, COMPANY_PHONE_TEL } from "@/lib/constants/companyInfo";
+import {
+  COLLECTION_PARTNER_PHONE_DISPLAY,
+  COLLECTION_PARTNER_PHONE_TEL,
+  COLLECTION_PARTNER_EMAIL,
+} from "@/lib/constants/companyInfo";
 
 interface Feature {
   title: string;
@@ -2039,16 +2043,16 @@ const handleDownload = () => {
               Our partnership team is here to help you get started
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href={`tel:${COMPANY_PHONE_TEL}`}>
+              <a href={`tel:${COLLECTION_PARTNER_PHONE_TEL}`}>
                 <button className="w-full sm:w-auto px-8 py-4 bg-[#1a5f4a] text-white rounded-xl font-semibold hover:bg-[#25B181] transition-all flex items-center justify-center gap-2">
                   <Phone className="w-5 h-5" />
-                  {COMPANY_PHONE_DISPLAY}
+                  {COLLECTION_PARTNER_PHONE_DISPLAY}
                 </button>
               </a>
-              <a href="mailto:collect@quikkred.in">
+              <a href={`mailto:${COLLECTION_PARTNER_EMAIL}`}>
                 <button className="w-full sm:w-auto px-8 py-4 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all flex items-center justify-center gap-2">
                   <Mail className="w-5 h-5" />
-                  collect@quikkred.in
+                  {COLLECTION_PARTNER_EMAIL}
                 </button>
               </a>
             </div>
