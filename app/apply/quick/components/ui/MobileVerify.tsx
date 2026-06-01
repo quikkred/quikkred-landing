@@ -8,6 +8,8 @@ import { VALIDATION, TIMERS } from "@/lib/constants/quickApplyV2";
 import useAxios from "@/hooks/useAxios";
 import { useQuickApplyTracking, useVerificationFrictionTracking } from "@/lib/hooks";
 import { useApplication } from "@/contexts/ApplicationContext";
+import { getCoordinates, LocationError, locationErrorMessage } from "@/lib/helpers/getCoordinates";
+import { toast } from "@/components/ui/toast";
 
 const MobileVerify = ({
   callback,
@@ -74,10 +76,13 @@ const MobileVerify = ({
     setOtpError("");
 
     try {
+      const { latitude, longitude } = await getCoordinates();
       const response = await axios.post("/api/auth/customer/create", {
         mobile,
         email: email.trim().toLowerCase(),
         type: "mobile_verification",
+        latitude,
+        longitude,
       });
 
       if (response.status === 200 || response.status === 201) {
@@ -87,6 +92,12 @@ const MobileVerify = ({
         setOtpError(response.data?.message || "Failed to send OTP");
       }
     } catch (error: any) {
+      if (error instanceof LocationError) {
+        const message = locationErrorMessage(error);
+        setOtpError(message);
+        toast({ variant: "error", title: "Location Required", description: message });
+        return;
+      }
       setOtpError(error.response?.data?.message || "Network error. Please try again.");
     } finally {
       setOtpLoading(false);

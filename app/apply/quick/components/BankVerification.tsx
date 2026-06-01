@@ -12,7 +12,6 @@ import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle, IndianRupee, Loader2, 
 import { useRef, useState, useCallback, useMemo } from "react";
 import SelfieVerify from "./ui/SelfieVerify";
 import { calculateLoanDetails, formatCurrency } from "@/lib/constants/quickApplyV2";
-import { useApplication } from "@/contexts/ApplicationContext";
 import EMandateVerify from "./ui/EMandateVerify";
 
 // Regex Constants
@@ -26,24 +25,22 @@ const REGEX = {
 interface BankVerificationProps {
     formData: QuickApplyV2FormData;
     setFormData: React.Dispatch<React.SetStateAction<QuickApplyV2FormData>>;
-    // onNext: () => void;
+    onNext: () => void;
     // onBack: () => void;
 }
 
 const BankVerification = ({
     formData,
     setFormData,
-    // onNext,
+    onNext,
     // onBack,
 }: BankVerificationProps) => {
     const axios = useAxios();
-    const { getApplication, getCustomer } = useApplication();
 
     // UI States (Loading/Errors only, Data stays in formData)
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>(initialFieldErrors);
     const [ifscLoading, setIfscLoading] = useState(false);
     const [verifyLoading, setVerifyLoading] = useState(false);
-    const [submitLoading, setSubmitLoading] = useState(false);
     const ifscTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const loanCalc = calculateLoanDetails(formData.loanAmount, formData.tenure);
@@ -201,64 +198,12 @@ const BankVerification = ({
         }
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = () => {
         if (!canProceed) {
             toast({ variant: "warning", title: "Verification Required", description: "Please complete bank verification, selfie, and UPI AutoPay authorization" });
             return;
         }
-        setSubmitLoading(true);
-        // Simulate API call or navigation delay
-        // await new Promise(r => setTimeout(r, 500));
-        // onNext();
-
-        const nameParts = formData.fullName.trim().split(/\s+/);
-        const firstName = nameParts[0] || "";
-        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
-
-        const isBasicDetailsFilled = true;
-
-        const basicDetails = {
-            employmentType: formData.employmentType,
-            monthlyIncome: formData.monthlyIncome,
-            salaryDate: formData.salaryDate,
-            firstName,
-            lastName,
-            mobile: formData.mobile,
-            email: formData.email,
-            isBasicDetailsFilled,
-            dateOfBirth: formData.dob,
-            companyName: formData.companyName,
-            isSubmit: true,
-        }
-
-        try {
-            // const response = await axios.post("/api/mandate-checkout/generate-link", {
-            //     applicationId: application?._id,
-            // });
-            // if(response.status === 200 || response.status === 201){
-            //     //console.log(response.data);
-            // }
-            const response = await axios.post("/api/v2/application/loan/create", {
-                // basicDetails
-                isSubmit: true,
-            });
-            if (response.status === 200 || response.status === 201) {
-                toast({
-                    variant: "success",
-                    title: "Application submitted successfully",
-                    description: "Your application has been received and is being reviewed. We’ll notify you of the next steps shortly."
-                });
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        } catch (error: unknown) {
-            if (error instanceof AxiosError) {
-                toast({ variant: "error", title: error.response?.data?.message || "Internal server error" });
-            }
-        } finally {
-            getApplication();
-            getCustomer();
-            setSubmitLoading(false);
-        }
+        onNext();
     };
 
     return (
@@ -455,22 +400,13 @@ const BankVerification = ({
             {/* Navigation */}
             <button
                 onClick={handleSubmit}
-                disabled={submitLoading || !canProceed}
+                disabled={!canProceed}
                 className="w-full py-2 text-sm bg-gradient-to-r disabled:cursor-not-allowed from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-xl font-semibold sm:text-base shadow-lg shadow-[#25B181]/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
             >
-                {submitLoading ? (
-                    <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span className="text-sm">Submitting...</span>
-                    </>
-                ) : (
-                    <>
-                        <span>Application Submit</span>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                        </svg>
-                    </>
-                )}
+                <span>Continue</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                </svg>
             </button>
 
             {/* Trust Badge */}
