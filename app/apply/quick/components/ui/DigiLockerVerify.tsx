@@ -9,6 +9,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, X } from "lucide-react";
+import { getCoordinates, LocationError, locationErrorMessage } from "@/lib/helpers/getCoordinates";
 
 const schema = yup.object().shape({
     mobile: yup
@@ -70,9 +71,12 @@ const DigiLockerVerify = ({
     const onSubmit = async (data: FormData) => {
         setLoading(true);
         try {
+            const { latitude, longitude } = await getCoordinates();
             const response = await axios.post(type === "v2" ? "/api/v2/customer/digilocker/login" : "/api/auth/customer/digilocker/login", {
                 mobile: data.mobile,
                 email: data.email.toLowerCase(),
+                latitude,
+                longitude,
                 ...extraParams,
             });
             const resData = response.data;
@@ -93,6 +97,15 @@ const DigiLockerVerify = ({
                 setLoading(false);
             }
         } catch (err: any) {
+            if (err instanceof LocationError) {
+                toast({
+                    variant: "error",
+                    title: "Location Required",
+                    description: locationErrorMessage(err),
+                });
+                setLoading(false);
+                return;
+            }
             const message =
                 err?.response?.data?.message || err?.message || "Something went wrong. Please try again.";
             toast({
