@@ -7,8 +7,8 @@ const PAGE_PATH = "/partners/investor-relations";
 const PAGE_URL = `${SITE_URL}${PAGE_PATH}`;
 
 // ✅ If you create a dedicated OG image for investors, use it.
-// Otherwise keep Aboutus_hero_image.jpg
-const OG_IMAGE = `${SITE_URL}/Aboutus_hero_image.jpg`;
+// Otherwise keep Aboutus_hero_image.png
+const OG_IMAGE = `${SITE_URL}/Aboutus_hero_image.png`;
 
 export const metadata: Metadata = {
     metadataBase: new URL(SITE_URL),

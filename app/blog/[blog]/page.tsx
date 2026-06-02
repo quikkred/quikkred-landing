@@ -21,7 +21,7 @@ const BlogDetails = () => {
 
                 <div className="flex justify-start items-center gap-3">
                     <Image
-                        src="/Aboutus_hero_image.jpg"
+                        src="/Aboutus_hero_image.png"
                         alt="blog-image-profile"
                         width={38}
                         height={38}

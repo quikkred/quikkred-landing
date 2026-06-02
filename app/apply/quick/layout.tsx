@@ -7,7 +7,7 @@ import getApplicationDetails from "@/lib/getApplicationDetails";
 const SITE_NAME = "Quikkred";
 const SITE_URL = "https://quikkred.in";
 const PAGE_URL = `${SITE_URL}/apply`;
-const OG_IMAGE = `${SITE_URL}/Aboutus_hero_image.jpg`;
+const OG_IMAGE = `${SITE_URL}/Aboutus_hero_image.png`;
 
 export const metadata: Metadata = {
     metadataBase: new URL(SITE_URL),

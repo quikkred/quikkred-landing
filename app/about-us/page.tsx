@@ -208,7 +208,7 @@ export default function AboutPage() {
           subtitle="India's most trusted AI-powered digital lending platform — committed to making credit accessible, affordable and transparent for every Indian. Our mission is to empower dreams and enable financial inclusion through technology and trust."
           buttonPrimaryText="Contact Us"
           buttonSecondaryText="Call Us Now"
-          imageSrc="/Aboutus_hero_image.jpg"
+          imageSrc="/Aboutus_hero_image.png"
           primaryColor="emerald"
         />
       </section>

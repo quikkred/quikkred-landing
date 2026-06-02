@@ -7,7 +7,7 @@ const PAGE_PATH = "/careers";
 const PAGE_URL = `${SITE_URL}${PAGE_PATH}`;
 
 // ✅ If you make a careers OG image later, replace this.
-const OG_IMAGE = `${SITE_URL}/Aboutus_hero_image.jpg`;
+const OG_IMAGE = `${SITE_URL}/Aboutus_hero_image.png`;
 
 export const metadata: Metadata = {
     metadataBase: new URL(SITE_URL),
