@@ -4,7 +4,7 @@ import LayoutInterface from "@/interfaces/layoutInterface";
 const SITE_NAME = "Quikkred";
 const SITE_URL = "https://quikkred.in";
 const PAGE_URL = `${SITE_URL}/it-security-policy`;
-const OG_IMAGE = `${SITE_URL}/Aboutus_hero_image.jpg`;
+const OG_IMAGE = `${SITE_URL}/Aboutus_hero_image.png`;
 
 export const metadata: Metadata = {
     metadataBase: new URL(SITE_URL),

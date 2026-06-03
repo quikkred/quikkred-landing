@@ -71,7 +71,7 @@ export const metadata: Metadata = {
     // Was /og-image.png — that file does not exist in /public, so the
     // browser was logging a 404 console error (and Lighthouse picked it up
     // under Best Practices). Point at an asset that exists.
-    images: [{ url: "/Aboutus_hero_image.jpg", width: 1200, height: 630, alt: "Quikkred Instant Loans" }],
+    images: [{ url: "/Aboutus_hero_image.png", width: 1200, height: 630, alt: "Quikkred Instant Loans" }],
     url: 'https://www.quikkred.in',
     siteName: 'Quikkred',
     type: 'website',
@@ -81,7 +81,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: "Quikkred - Get Instant Loan Approval in 3 Easy Steps",
     description: "Apply for instant personal loans online. Fast approval, minimal documentation, 100% digital.",
-    images: ["/Aboutus_hero_image.jpg"],
+    images: ["/Aboutus_hero_image.png"],
     creator: "@quikkred",
   },
   verification: {

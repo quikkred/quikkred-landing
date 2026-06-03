@@ -7,7 +7,7 @@ const PAGE_PATH = "/products";
 const PAGE_URL = `${SITE_URL}${PAGE_PATH}`;
 
 // ✅ Use a products OG image if you have (recommended)
-const OG_IMAGE = `${SITE_URL}/Aboutus_hero_image.jpg`;
+const OG_IMAGE = `${SITE_URL}/Aboutus_hero_image.png`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

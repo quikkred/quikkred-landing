@@ -4,7 +4,7 @@ import LayoutInterface from "@/interfaces/layoutInterface";
 const SITE_NAME = "Quikkred"; // change if needed
 const SITE_URL = "https://quikkred.in"; // ✅ change to your domain
 const PAGE_URL = `${SITE_URL}/eligibility-check`;
-const OG_IMAGE = `${SITE_URL}/Aboutus_hero_image.jpg`; // ✅ create this image (1200x630)
+const OG_IMAGE = `${SITE_URL}/Aboutus_hero_image.png`; // ✅ create this image (1200x630)
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

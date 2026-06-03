@@ -23,10 +23,10 @@ const Blogs = () => {
                                 key={i}
                                 title="10 Smart Ways to Improve Your Credit Score in 2025"
                                 slug="10-smart-ways-to-imporve-your-credit-score-in-2025"
-                                image="/Aboutus_hero_image.jpg"
+                                image="/Aboutus_hero_image.png"
                                 author={{
                                     name: "Rajesh Kumar",
-                                    image: "/Aboutus_hero_image.jpg"
+                                    image: "/Aboutus_hero_image.png"
                                 }}
                                 created_at="28 Sept 2025"
                                 updated_at="28 Sept 2025"
@@ -50,10 +50,10 @@ const Blogs = () => {
                                 key={i}
                                 title="10 Smart Ways to Improve Your Credit Score in 2025"
                                 slug="10-smart-ways-to-imporve-your-credit-score-in-2025"
-                                image="/Aboutus_hero_image.jpg"
+                                image="/Aboutus_hero_image.png"
                                 author={{
                                     name: "Rajesh Kumar",
-                                    image: "/Aboutus_hero_image.jpg"
+                                    image: "/Aboutus_hero_image.png"
                                 }}
                                 created_at="28 Sept 2025"
                                 updated_at="28 Sept 2025"

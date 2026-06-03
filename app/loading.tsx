@@ -12,9 +12,9 @@ export default function Loading() {
                     {/* Logo icon with pulse animation */}
                     <div className="relative z-10 animate-pulse">
                         <img
-                            src="/i.svg"
+                            src="/quikkred-logo.png"
                             alt="Quikkred Logo"
-                            className="w-24 h-24 mx-auto"
+                            className="w-24 h-auto mx-auto"
                             style={{
                                 filter: 'drop-shadow(0 4px 6px rgba(37, 177, 129, 0.2))',
                                 animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
