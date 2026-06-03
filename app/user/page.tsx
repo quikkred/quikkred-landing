@@ -1159,8 +1159,8 @@ export default function UserDashboard() {
                   </div>
                 </div>
 
-                {/* Authorization Button - hidden if application is rejected */}
-                {data?.applicationStatus !== 'REJECTED' && (
+                {/* Authorization Button - hidden if application is rejected or on hold */}
+                {data?.applicationStatus !== 'REJECTED' && data?.applicationStatus !== 'HOLD' && (
                   <>
                     <button
                       onClick={handleAuthorizeEmandate}
