@@ -509,7 +509,15 @@ export function Footer() {
         )}
       </AnimatePresence>
 
-<iframe id='Iframe1' src='https://dunsregistered.dnb.com/SealAuthentication.aspx?Cid=1' width='114px' height='97px' frameborder='0' scrolling='no' allowtransparency='true' ></iframe>
+<iframe
+  id="Iframe1"
+  src="https://dunsregistered.dnb.com/SealAuthentication.aspx?Cid=1"
+  width={114}
+  height={97}
+  frameBorder={0}
+  scrolling="no"
+  allowTransparency
+/>
 
     </footer>
   );
