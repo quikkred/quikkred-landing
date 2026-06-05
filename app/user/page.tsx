@@ -1099,8 +1099,11 @@ export default function UserDashboard() {
         )}
 
         {/* E-Mandate Section - Show only if application is submitted (user can't go back to edit),
-            E-Mandate exists, and not yet authorized */}
-        {data?.isSubmit && emandateData?.hasEMandate && !emandateData?.isAuthorized && (
+            E-Mandate exists, not yet authorized, and application is not in a terminal state */}
+        {data?.isSubmit
+          && emandateData?.hasEMandate
+          && !emandateData?.isAuthorized
+          && !['CLOSED', 'REJECTED', 'CANCELLED'].includes(data?.applicationStatus || '') && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1181,12 +1184,10 @@ export default function UserDashboard() {
                       )}
                     </button>
 
-                    {/* Help Text */}
-                    <p className="text-xs text-purple-600 mt-3">
-                      You will be redirected to your bank's UPI app to authorize the mandate. This is a one-time authorization.
-                    </p>
-                  </>
-                )}
+                {/* Help Text */}
+                <p className="text-xs text-purple-600 mt-3">
+                  You will be redirected to your bank's UPI app to authorize the mandate. This is a one-time authorization.
+                </p>
               </div>
             </div>
           </motion.div>
