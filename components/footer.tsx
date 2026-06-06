@@ -518,7 +518,6 @@ export function Footer() {
   scrolling="no"
   allowTransparency
 />
-
     </footer>
   );
 }

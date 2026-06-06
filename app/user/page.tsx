@@ -1163,31 +1163,36 @@ export default function UserDashboard() {
                 </div>
 
                 {/* Authorization Button - hidden if application is rejected or on hold */}
-                {data?.applicationStatus !== 'REJECTED' && data?.applicationStatus !== 'HOLD' && (
-                  <>
-                    <button
-                      onClick={handleAuthorizeEmandate}
-                      disabled={authorizingEmandate || !razorpayLoaded}
-                      className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-lg hover:shadow-lg transition-all font-medium text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {authorizingEmandate ? (
-                        <>
-                          <RefreshCw className="w-4 h-4 animate-spin" />
-                          <span>Processing...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Shield className="w-4 h-4" />
-                          <span>Authorize E-Mandate Now</span>
-                          <ChevronRight className="w-4 h-4" />
-                        </>
-                      )}
-                    </button>
+           {/* Authorization Button - hidden if application is rejected or on hold */}
+{data?.applicationStatus !== 'REJECTED' &&
+ data?.applicationStatus !== 'HOLD' && (
+  <>
+    <button
+      onClick={handleAuthorizeEmandate}
+      disabled={authorizingEmandate || !razorpayLoaded}
+      className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-lg hover:shadow-lg transition-all font-medium text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {authorizingEmandate ? (
+        <>
+          <RefreshCw className="w-4 h-4 animate-spin" />
+          <span>Processing...</span>
+        </>
+      ) : (
+        <>
+          <Shield className="w-4 h-4" />
+          <span>Authorize E-Mandate Now</span>
+          <ChevronRight className="w-4 h-4" />
+        </>
+      )}
+    </button>
 
-                {/* Help Text */}
-                <p className="text-xs text-purple-600 mt-3">
-                  You will be redirected to your bank's UPI app to authorize the mandate. This is a one-time authorization.
-                </p>
+    {/* Help Text */}
+    <p className="text-xs text-purple-600 mt-3">
+      You will be redirected to your bank&apos;s UPI app to authorize
+      the mandate. This is a one-time authorization.
+    </p>
+  </>
+)}
               </div>
             </div>
           </motion.div>
