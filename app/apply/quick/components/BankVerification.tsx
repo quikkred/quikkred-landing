@@ -37,7 +37,7 @@ const BankVerification = ({
     // onBack,
 }: BankVerificationProps) => {
     const axios = useAxios();
-    const { getApplication, getCustomer } = useApplication();
+    const { application, getApplication, getCustomer } = useApplication();
 
     // UI States (Loading/Errors only, Data stays in formData)
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>(initialFieldErrors);
@@ -207,9 +207,16 @@ const BankVerification = ({
             return;
         }
 
+        const applicationId = application?._id;
+        if (!applicationId) {
+            toast({ variant: "error", title: "No active application found" });
+            return;
+        }
+
         setSubmitting(true);
         try {
-            const submitRes = await axios.post("/api/v2/application/loan/create", {
+            const submitRes = await axios.put("/api/loans/update", {
+                applicationId,
                 isSubmit: true,
             });
 
