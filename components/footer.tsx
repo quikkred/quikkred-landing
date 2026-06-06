@@ -508,6 +508,16 @@ export function Footer() {
           </motion.div>
         )}
       </AnimatePresence>
+
+<iframe
+  id="Iframe1"
+  src="https://dunsregistered.dnb.com/SealAuthentication.aspx?Cid=1"
+  width={114}
+  height={97}
+  frameBorder={0}
+  scrolling="no"
+  allowTransparency
+/>
     </footer>
   );
 }
