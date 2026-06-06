@@ -125,8 +125,8 @@ const FormSteps = ({
 }
 
 const RejectMessage = ({ application }: { application: any }) => {
-    const isRejected = application?.status === "REJECTED" || application?.breHistory?.bsaBreStatus === "REJECTED";
-    const rejectReason = application?.breHistory?.bsaBreStatus === "REJECTED"
+    const isRejected = application?.status === "REJECTED" || application?.breHistory?.breStatus === "REJECTED";
+    const rejectReason = application?.breHistory?.breStatus === "REJECTED"
         ? "Bank statement verification was not approved."
         : "Your application does not meet eligibility criteria.";
 
