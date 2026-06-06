@@ -13,11 +13,10 @@ import { TRACKING_EVENTS } from "@/lib/constants/quickApplyV2";
 import { useApplication } from "@/contexts/ApplicationContext";
 import { AlertCircle } from "lucide-react";
 import BankVerification from "../BankVerification";
-import References from "../References";
 import ApplicationSuccess from "./ApplicationSuccess";
 
 // export type FormStepsType = "eligibility" | "bank" | "mandate";
-export type FormStepsType = "login" | "eligibility" | "bank" | "reference" | "submit";
+export type FormStepsType = "login" | "eligibility" | "bank" | "submit";
 
 interface FormStepsProps {
     step: FormStepsType;
@@ -45,7 +44,6 @@ const FormSteps = ({
     const { user } = useAuth();
     const { application } = useApplication();
     const currentStep = useMemo(() => {
-        if (step === "reference") return 4;
         if (step === "bank") return 3;
         if (step === "eligibility") return 2;
         // If basic+kyc details are filled (from API), show step 2 indicator
@@ -60,8 +58,8 @@ const FormSteps = ({
             tracking.linkToCustomer({ mobile: formData.mobile });
         } else if (nextStep === "bank") {
             tracking.trackEvent('STEP_COMPLETED', { stepNumber: 3, stepName: 'Bank Verification' });
-        } else if (nextStep === "reference") {
-            tracking.trackEvent('STEP_COMPLETED', { stepNumber: 4, stepName: 'References' });
+        } else if (nextStep === "submit") {
+            tracking.trackEvent('STEP_COMPLETED', { stepNumber: 4, stepName: 'Application Submitted' });
         }
         setStep(nextStep);
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -115,16 +113,7 @@ const FormSteps = ({
                                     key="bank"
                                     formData={formData}
                                     setFormData={setFormData}
-                                    onNext={() => handleChangeStep("reference")}
-                                />
-                            )}
-
-                            {step === 'reference' && (
-                                <References
-                                    key="reference"
-                                    formData={formData}
-                                    setFormData={setFormData}
-                                    onBack={() => handleChangeStep("bank")}
+                                    onNext={() => handleChangeStep("submit")}
                                 />
                             )}
                         </AnimatePresence>
