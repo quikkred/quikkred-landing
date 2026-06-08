@@ -91,6 +91,7 @@ export default function UserDashboard() {
     subscriptionStatus?: string;
     keyId?: string;
     applicationNumber?: string;
+    applicationStatus?: string;
     amount?: number;
     dueDate?: string;
     message?: string;
@@ -753,11 +754,20 @@ export default function UserDashboard() {
 
   // Authorize E-Mandate with Razorpay Checkout
   const handleAuthorizeEmandate = async () => {
-    if (!emandateData?.subscriptionId || !emandateData?.keyId || !razorpayLoaded) {
+    if (!razorpayLoaded) {
       toast({
         variant: "error",
         title: "Error",
-        description: "E-Mandate details not available. Please refresh and try again."
+        description: "Payment gateway is still loading. Please try again in a moment."
+      });
+      return;
+    }
+
+    if (!data?.customerId) {
+      toast({
+        variant: "error",
+        title: "Error",
+        description: "Customer details not available. Please refresh and try again."
       });
       return;
     }
@@ -765,9 +775,39 @@ export default function UserDashboard() {
     setAuthorizingEmandate(true);
 
     try {
+      const token = await getToken();
+      if (!token) {
+        toast({ variant: 'error', title: 'Session expired', description: 'Please log in again.' });
+        setAuthorizingEmandate(false);
+        return;
+      }
+
+      // Create the mandate (POST) only now, when the user clicks Authorize.
+      // The page-load fetch is GET-only (status), so simply viewing the
+      // dashboard never creates a mandate.
+      const createResponse = await fetch(`${API_BASE_URL}/api/upi/emandate/checkout/${data.customerId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const createResult = await createResponse.json().catch(() => ({}));
+
+      if (!createResult?.subscriptionId || !createResult?.keyId) {
+        toast({
+          variant: "error",
+          title: "Error",
+          description: createResult?.message || "Failed to create E-Mandate. Please try again."
+        });
+        setAuthorizingEmandate(false);
+        return;
+      }
+
       const options = {
-        key: emandateData.keyId,
-        subscription_id: emandateData.subscriptionId,
+        key: createResult.keyId,
+        subscription_id: createResult.subscriptionId,
         name: "Quikkred",
         description: "E-Mandate Authorization for Loan Repayment",
         prefill: {
@@ -822,11 +862,13 @@ export default function UserDashboard() {
     }
   };
 
-  // Cancel E-Mandate (allowed only while loan is not yet disbursed)
+  // Cancel E-Mandate (allowed only while loan is not yet disbursed).
+  // Prefer the emandate response's status — it reflects the latest disbursement
+  // state — and fall back to the main application data.
+  const effectiveApplicationStatus = (emandateData?.applicationStatus || data?.applicationStatus || '').toUpperCase();
   const canCancelEmandate = !!emandateData?.isAuthorized
     && !!emandateData?.applicationNumber
-    && data?.applicationStatus !== 'DISBURSED'
-    && data?.applicationStatus !== 'CLOSED';
+    && effectiveApplicationStatus !== 'DISBURSED';
 
   const handleCancelEmandate = async () => {
     if (!canCancelEmandate) return;
@@ -1098,12 +1140,16 @@ export default function UserDashboard() {
           </motion.div>
         )}
 
-        {/* E-Mandate Section - Show only if application is submitted (user can't go back to edit),
-            E-Mandate exists, not yet authorized, and application is not in a terminal state */}
+        {/* E-Mandate Section - Show when the application is submitted, the mandate is
+            not yet authorized, and the application is not in a terminal/blocked state.
+            We intentionally do NOT require hasEMandate here: the subscription is created
+            on Authorize click (POST), so this block must show first to expose the button. */}
         {data?.isSubmit
-          && emandateData?.hasEMandate
+          && !!emandateData
           && !emandateData?.isAuthorized
-          && !['CLOSED', 'REJECTED', 'CANCELLED'].includes(data?.applicationStatus || '') && (
+          && !['CLOSED', 'REJECTED', 'CANCELLED', 'HOLD'].includes(
+            (emandateData?.applicationStatus || data?.applicationStatus || '').toUpperCase()
+          ) && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1198,8 +1244,8 @@ export default function UserDashboard() {
           </motion.div>
         )}
 
-        {/* E-Mandate Authorized Success - Show briefly when authorized */}
-        {emandateData?.hasEMandate && emandateData?.isAuthorized && (
+        {/* E-Mandate Authorized Success - Show whenever the mandate is authorized */}
+        {emandateData?.isAuthorized && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
