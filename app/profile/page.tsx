@@ -12,7 +12,6 @@ import {
   Plus, Trash2
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useApplication } from "@/contexts/ApplicationContext";
 import { API_BASE_URL } from '@/lib/config';
 import { useProfile } from '@/store/hooks/useProfile';
 import getToken from "@/lib/getToken";
@@ -126,7 +125,6 @@ interface ProfileData {
 export default function ProfilePage() {
   const { user } = useAuth();
   const router = useRouter();
-  const { application } = useApplication();
 
   // Redux state for profile
   const {
@@ -156,6 +154,9 @@ export default function ProfilePage() {
   const [isAddingReference, setIsAddingReference] = useState(false);
   const [isSavingReferences, setIsSavingReferences] = useState(false);
   const [referenceErrors, setReferenceErrors] = useState<{ [key: string]: string }>({});
+  // Inline error for the references save action — kept separate from the page-level
+  // `error` so a save failure never replaces the whole profile with the error screen.
+  const [referencesError, setReferencesError] = useState<string | null>(null);
 
   // Bank edit state
   const [editingBankId, setEditingBankId] = useState<string | null>(null);
@@ -343,33 +344,40 @@ export default function ProfilePage() {
     if (references.length === 0) return;
     if (!validateReferences()) return;
 
-    const applicationId = application?._id;
-    if (!applicationId) {
-      setError('No active loan application found to add references');
+    setReferencesError(null);
+
+    const customerId = profileData?._id;
+    if (!customerId) {
+      setReferencesError('Customer profile not loaded. Please refresh and try again.');
       return;
     }
 
     try {
       setIsSavingReferences(true);
-      setError(null);
       setSuccessMessage(null);
 
       const token = await getToken();
       if (!token) {
-        setError('No authentication token found');
+        setReferencesError('No authentication token found. Please log in again.');
         return;
       }
 
-      // Combine existing references with new ones
+      // Combine existing references with new ones. Keep the existing references'
+      // _id (and verification state) so the backend can match them instead of
+      // re-creating duplicates / wiping their verified status. New references have
+      // no _id — the backend assigns one.
       const existingRefs = (profileData?.references || []).map(r => ({
+        ...(r._id ? { _id: r._id } : {}),
         name: r.name,
         mobile: r.mobile,
-        relationship: r.relationship
+        relationship: r.relationship,
+        ...(r.verified !== undefined ? { verified: r.verified } : {}),
+        ...(r.verifiedAt ? { verifiedAt: r.verifiedAt } : {}),
       }));
       const allReferences = [...existingRefs, ...references];
 
-      const response = await fetch(`${API_BASE_URL}/api/application/loan/update/${applicationId}`, {
-        method: 'PUT',
+      const response = await fetch(`${API_BASE_URL}/api/customer/references/${customerId}`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -387,11 +395,11 @@ export default function ProfilePage() {
         await fetchProfile();
         setTimeout(() => setSuccessMessage(null), 3000);
       } else {
-        setError(result.message || 'Failed to add references');
+        setReferencesError(result.message || 'Failed to add references');
       }
     } catch (err: any) {
       console.error('Failed to save references:', err);
-      setError(err.message || 'Failed to save references');
+      setReferencesError(err.message || 'Failed to save references');
     } finally {
       setIsSavingReferences(false);
     }
@@ -1716,6 +1724,14 @@ export default function ProfilePage() {
                             </div>
                           ))}
 
+                          {/* Inline save error (does not replace the page) */}
+                          {referencesError && (
+                            <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg">
+                              <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                              <p className="text-red-600 text-sm">{referencesError}</p>
+                            </div>
+                          )}
+
                           {/* Action Buttons */}
                           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                             <button
@@ -1731,6 +1747,7 @@ export default function ProfilePage() {
                                   setReferences([]);
                                   setIsAddingReference(false);
                                   setReferenceErrors({});
+                                  setReferencesError(null);
                                 }}
                                 className="px-4 py-2 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-100 transition-colors"
                               >

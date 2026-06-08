@@ -6,6 +6,7 @@ import { initialFieldErrors } from "@/lib/constants/quickApply";
 import tracking from "@/lib/tracking";
 import { FieldErrors } from "@/lib/types/quickApply";
 import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
+import { useApplication } from "@/contexts/ApplicationContext";
 import { AxiosError } from "axios";
 import { motion } from "framer-motion";
 import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle, IndianRupee, Loader2, Lock, Shield } from "lucide-react";
@@ -36,11 +37,13 @@ const BankVerification = ({
     // onBack,
 }: BankVerificationProps) => {
     const axios = useAxios();
+    const { getApplication, getCustomer } = useApplication();
 
     // UI States (Loading/Errors only, Data stays in formData)
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>(initialFieldErrors);
     const [ifscLoading, setIfscLoading] = useState(false);
     const [verifyLoading, setVerifyLoading] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
     const ifscTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const loanCalc = calculateLoanDetails(formData.loanAmount, formData.tenure);
@@ -198,12 +201,40 @@ const BankVerification = ({
         }
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!canProceed) {
             toast({ variant: "warning", title: "Verification Required", description: "Please complete bank verification, selfie, and UPI AutoPay authorization" });
             return;
         }
-        onNext();
+
+        setSubmitting(true);
+        try {
+            const submitRes = await axios.post("/api/v2/application/loan/create", {
+                isSubmit: true,
+            });
+
+            if (submitRes.status === 200 || submitRes.status === 201) {
+                toast({
+                    variant: "success",
+                    title: "Application submitted successfully",
+                    description: "Your application has been received and is being reviewed. We’ll notify you of the next steps shortly.",
+                });
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                onNext();
+            } else {
+                throw new Error(submitRes.data?.message || "Failed to submit application");
+            }
+        } catch (error: unknown) {
+            if (error instanceof AxiosError) {
+                toast({ variant: "error", title: error.response?.data?.message || "Internal server error" });
+            } else if (error instanceof Error) {
+                toast({ variant: "error", title: error.message });
+            }
+        } finally {
+            getApplication();
+            getCustomer();
+            setSubmitting(false);
+        }
     };
 
     return (
@@ -400,13 +431,22 @@ const BankVerification = ({
             {/* Navigation */}
             <button
                 onClick={handleSubmit}
-                disabled={!canProceed}
+                disabled={!canProceed || submitting}
                 className="w-full py-2 text-sm bg-gradient-to-r disabled:cursor-not-allowed from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-xl font-semibold sm:text-base shadow-lg shadow-[#25B181]/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
             >
-                <span>Continue</span>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                </svg>
+                {submitting ? (
+                    <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span className="text-sm">Submitting...</span>
+                    </>
+                ) : (
+                    <>
+                        <span>Submit Application</span>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                        </svg>
+                    </>
+                )}
             </button>
 
             {/* Trust Badge */}
