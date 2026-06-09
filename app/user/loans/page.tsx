@@ -916,9 +916,9 @@ export default function MyLoansPage() {
       (filterStatus === 'active' && statusUpper === 'ACTIVE') ||
       (filterStatus === 'closed' && (statusUpper === 'CLOSED' || statusUpper === 'COMPLETED'));
 
-    const matchesSearch = loan.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      loan.loanNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (loan.customerName && loan.customerName.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch = loan.id.includes(searchTerm?.toLowerCase()) ||
+      loan.loanNumber?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
+      (loan?.customerName && loan?.customerName.toLowerCase().includes(searchTerm?.toLowerCase()));
 
     return matchesStatus && matchesSearch;
   });
@@ -1270,7 +1270,7 @@ export default function MyLoansPage() {
                 }`}
             >
               Closed ({loans.filter(l => {
-                const s = l.status.toLowerCase();
+                const s = l.status?.toLowerCase();
                 return s === 'closed' || s === 'completed';
               }).length})
             </button>
@@ -1971,7 +1971,7 @@ export default function MyLoansPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-4 lg:grid-cols-4 gap-1 sm:gap-1">
                       <div>
                         <p className="text-sm text-gray-600">Customer Name</p>
-                        <p className="font-semibold text-gray-900">{detailedLoan.customerId.fullName.toLowerCase()
+                        <p className="font-semibold text-gray-900">{detailedLoan.customerId.fullName?.toLowerCase()
                           .replace(/\b\w/g, char => char.toUpperCase())}</p>
                       </div>
                       <div>

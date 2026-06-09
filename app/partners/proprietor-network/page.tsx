@@ -204,6 +204,13 @@ export default function ProprietorNetworkPage() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <a
+                href="https://api.quikkred.in/api/apk/download/b2b-app?channel=release"
+                className="inline-flex items-center gap-2 px-6 py-3.5 bg-white hover:bg-white/90 transition-colors rounded-xl font-semibold text-[#0E2920] shadow-lg"
+              >
+                <Download className="w-4 h-4" />
+                Download Quikkred Collect
+              </a>
+              <a
                 href="mailto:partnerships@quikkred.in"
                 className="inline-flex items-center gap-2 px-6 py-3.5 border border-white/20 hover:bg-white/10 transition-colors rounded-xl font-semibold text-white"
               >
