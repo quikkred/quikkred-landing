@@ -4379,7 +4379,7 @@ export default function QuickLoanApplication() {
                                     className={`px-4 py-2 hover:bg-[#25B181] hover:text-white cursor-pointer ${formData.state === state.value ? 'bg-[#25B181] text-white' : ''
                                       } ${state.value === '' ? 'text-gray-500' : ''}`}
                                     onClick={() => {
-                                      const selectedState = state.value.toLowerCase();
+                                      const selectedState = state.value?.toLowerCase();
                                       setFormData(prev => ({ ...prev, state: selectedState }));
                                       setStateDropdownOpen(false);
                                       setStateSearchTerm('');

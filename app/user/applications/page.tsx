@@ -307,9 +307,9 @@ export default function MyApplicationsPage() {
       (filterStatus === 'approved' && (statusUpper === 'APPROVED' || statusUpper === 'DISBURSED')) ||
       (filterStatus === 'rejected' && (statusUpper === 'REJECTED' || statusUpper === 'CANCELLED'));
 
-    const matchesSearch = app.applicationNumber?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = app.applicationNumber?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
       (app.purpose?.toLowerCase() || '')?.includes(searchTerm.toLowerCase()) ||
-      (app.customerId?.fullName?.toLowerCase() || '')?.includes(searchTerm.toLowerCase());
+      (app.customerId?.fullName?.toLowerCase() || '')?.includes(searchTerm?.toLowerCase());
 
     return matchesStatus && matchesSearch;
   });
@@ -703,16 +703,16 @@ export default function MyApplicationsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <div>
                         <p className="text-sm text-gray-600">Full Name</p>
-                        <p className="font-semibold text-gray-900">{detailedApplication.customerId.fullName .toLowerCase()
+                        <p className="font-semibold text-gray-900">{detailedApplication.customerId.fullName?.toLowerCase()
     .replace(/\b\w/g, char => char.toUpperCase())}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Email</p>
-                        <p className="font-semibold text-gray-900">{detailedApplication.customerId.email}</p>
+                        <p className="font-semibold text-gray-900">{detailedApplication?.customerId.email}</p>
                       </div>
 
                       {/* References */}
-                      {detailedApplication.customerId.references && detailedApplication.customerId.references.length > 0 && (
+                      {detailedApplication?.customerId.references && detailedApplication?.customerId.references.length > 0 && (
                         <div className="col-span-full mt-2">
                           <div className="flex items-center gap-2 mb-2">
                             <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
