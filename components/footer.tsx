@@ -393,6 +393,22 @@ export function Footer() {
             <p className="text-xs text-slate-400">
               Lending Partner: <span className="font-medium text-slate-300">Satsai Finlease Private Limited</span> (RBI Registered NBFC)
             </p>
+
+            {/* D&B DUNS Registered Seal — authenticates that the company is
+                registered with Dun & Bradstreet. Requires the D&B domains to be
+                allowed in CSP frame-src (see next.config.ts). */}
+            <div className="mt-5 flex justify-center">
+              <iframe
+                id="Iframe1"
+                title="DUNS Registered Seal"
+                src="https://dunsregistered.dnb.com/SealAuthentication.aspx?Cid=1"
+                width={114}
+                height={97}
+                frameBorder={0}
+                scrolling="no"
+                allowTransparency
+              />
+            </div>
           </div>
 
           {/* Mobile App Download */}
@@ -508,16 +524,6 @@ export function Footer() {
           </motion.div>
         )}
       </AnimatePresence>
-
-<iframe
-  id="Iframe1"
-  src="https://dunsregistered.dnb.com/SealAuthentication.aspx?Cid=1"
-  width={114}
-  height={97}
-  frameBorder={0}
-  scrolling="no"
-  allowTransparency
-/>
     </footer>
   );
 }
