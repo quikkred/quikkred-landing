@@ -13,6 +13,22 @@ const axiosClient = axios.create({
     headers: { "Content-Type": "application/json" },
 });
 
+// 2. Dedupe getSession(): while the useSession() hook is still loading on a
+// fresh page load, many requests hit the interceptor at once and each would
+// otherwise fire its own /api/auth/session fetch. Share a single in-flight
+// promise so concurrent requests reuse one network call. Cleared once it
+// resolves so later token rotations can re-fetch.
+let sessionPromise: ReturnType<typeof getSession> | null = null;
+
+function getSessionDeduped() {
+    if (!sessionPromise) {
+        sessionPromise = getSession().finally(() => {
+            sessionPromise = null;
+        });
+    }
+    return sessionPromise;
+}
+
 export default function useAxios() {
     const { data: session } = useSession();
 
@@ -26,9 +42,10 @@ export default function useAxios() {
                 // STRATEGY: Try the fast hook first
                 let accessToken = (session as any)?.accessToken;
 
-                // FALLBACK: If hook is loading (Refresh Bug Fix), fetch session manually
+                // FALLBACK: If hook is loading (Refresh Bug Fix), fetch session manually.
+                // Deduped so concurrent requests share ONE /api/auth/session call.
                 if (!accessToken) {
-                    const freshSession = await getSession();
+                    const freshSession = await getSessionDeduped();
                     accessToken = (freshSession as any)?.accessToken;
                 }
 
