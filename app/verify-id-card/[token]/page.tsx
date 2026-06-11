@@ -19,6 +19,14 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+type LenderBranding = {
+  lenderCode: string;
+  displayName: string;
+  shortName?: string;
+  logoUrl?: string;
+  primaryColor?: string;
+};
+
 type VerifyData = {
   partnerId: string;
   name: string;
@@ -36,6 +44,7 @@ type VerifyData = {
   linkedWork: { platform: string; rating: number | null } | null;
   verifiedAt: string;
   scanNumber: number;
+  lenderBranding?: LenderBranding | null;
 };
 
 type VerifyResponse =
@@ -47,15 +56,20 @@ type VerifyResponse =
       message: string;
     };
 
-async function fetchVerification(token: string): Promise<{ status: number; body: VerifyResponse }> {
+async function fetchVerification(
+  token: string,
+  lender: string | null,
+): Promise<{ status: number; body: VerifyResponse }> {
   const h = await headers();
   const host = h.get("host") ?? "www.quikkred.in";
   const proto =
     h.get("x-forwarded-proto") ??
     (host.startsWith("localhost") || host.startsWith("127.") ? "http" : "https");
-  const res = await fetch(`${proto}://${host}/api/verify-id-card/${encodeURIComponent(token)}`, {
-    cache: "no-store",
-  });
+  const qs = lender ? `?lender=${encodeURIComponent(lender)}` : "";
+  const res = await fetch(
+    `${proto}://${host}/api/verify-id-card/${encodeURIComponent(token)}${qs}`,
+    { cache: "no-store" },
+  );
   const body = (await res.json().catch(() => ({}))) as VerifyResponse;
   return { status: res.status, body };
 }
@@ -71,17 +85,21 @@ function formatDate(iso: string | null): string {
 
 export default async function VerifyPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string }>;
+  searchParams: Promise<{ lender?: string }>;
 }) {
   const { token } = await params;
-  const { status, body } = await fetchVerification(token);
+  const { lender = null } = await searchParams;
+  const { status, body } = await fetchVerification(token, lender ?? null);
 
   if (!body.success || !body.valid) {
     return <FailureCard status={status} body={body as Extract<VerifyResponse, { success: false }>} />;
   }
 
   const d = body.data;
+  const lb = d.lenderBranding ?? null;
   const trackBadge = d.track === "B" ? "CERTIFIED DRA · TRACK B" : "VERIFIED PARTNER · TRACK A";
 
   return (
@@ -90,9 +108,30 @@ export default async function VerifyPage({
         <article className="relative overflow-hidden rounded-3xl shadow-xl bg-gradient-to-br from-[#1FA180] via-[#1AAE85] to-[#178C84] text-white p-6 sm:p-8">
           {/* Header row */}
           <div className="flex items-start justify-between gap-3">
-            <h1 className="font-sora text-xl sm:text-2xl font-semibold tracking-wide">
-              QUIKKRED
-            </h1>
+            {lb ? (
+              <div className="flex items-center gap-2.5">
+                <span className="font-sora text-xl sm:text-2xl font-semibold tracking-wide">QUIKKRED</span>
+                <div className="w-px h-5 bg-white/40" />
+                {lb.logoUrl ? (
+                  <Image
+                    src={lb.logoUrl}
+                    alt={lb.shortName ?? lb.displayName}
+                    width={64}
+                    height={22}
+                    className="object-contain"
+                    unoptimized
+                  />
+                ) : (
+                  <span className="font-semibold text-base tracking-wide text-white/90">
+                    {lb.shortName ?? lb.displayName}
+                  </span>
+                )}
+              </div>
+            ) : (
+              <h1 className="font-sora text-xl sm:text-2xl font-semibold tracking-wide">
+                QUIKKRED
+              </h1>
+            )}
             <span className="text-[10px] sm:text-[11px] font-medium tracking-wider uppercase border border-white/40 rounded-full px-3 py-1 whitespace-nowrap">
               {trackBadge}
             </span>
@@ -172,7 +211,9 @@ export default async function VerifyPage({
           {/* Scope + freshness pill */}
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <p className="text-xs sm:text-sm text-white/90 max-w-lg leading-relaxed">
-              {d.scope} Borrower may verify via QR.
+              {lb
+                ? `Authorised soft-task partner for ${lb.displayName}. Cannot collect cash. Borrower may verify via QR.`
+                : `${d.scope} Borrower may verify via QR.`}
             </p>
             <div className="shrink-0 inline-flex items-center gap-2 bg-white/15 rounded-xl px-3 py-2 text-xs sm:text-[13px] backdrop-blur-sm">
               <span className="inline-block h-2 w-2 rounded-full bg-emerald-300 animate-pulse" />
@@ -180,6 +221,18 @@ export default async function VerifyPage({
               <span className="text-white/60">· scan #{d.scanNumber}</span>
             </div>
           </div>
+
+          {/* Partnership disclaimer — only for external lender cases */}
+          {lb && (
+            <div className="mt-5 rounded-2xl bg-white/10 border border-white/20 px-4 py-3 text-[11px] sm:text-xs text-white/80 leading-relaxed">
+              This partner is engaged by{" "}
+              <strong className="text-white">Quikkred Financial Services</strong> to conduct
+              soft-task visits on behalf of{" "}
+              <strong className="text-white">{lb.displayName}</strong>. They{" "}
+              <strong className="text-red-300">cannot collect cash</strong>. Any payment should go
+              through the official payment link shared via the Quikkred Collect app.
+            </div>
+          )}
         </article>
 
         {/* Trust footer */}
