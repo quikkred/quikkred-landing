@@ -2511,7 +2511,6 @@ export default function MyLoansPage() {
                         onChange={(e) => setReapplyForm({ ...reapplyForm, tenure: e.target.value })}
                         className="w-full px-4 py-3 bg-[#FAFAFA] border-2 border-[#E0E0E0] rounded-xl focus:border-[#25B181] focus:ring-2 focus:ring-[#25B181]/20 focus:outline-none"
                       >
-                        <option value="7">7 Days</option>
                         <option value="15">15 Days</option>
                         <option value="30">30 Days</option>
                         <option value="60">60 Days</option>
