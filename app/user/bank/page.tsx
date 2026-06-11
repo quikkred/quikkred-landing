@@ -81,9 +81,10 @@ export default function BankAccountsPage() {
     });
   };
 
+  // Masking removed — always show the full account number.
   const maskAccountNumber = (accountNumber: string) => {
-    if (!accountNumber) return '••••••••••••';
-    return '•••• •••• ' + accountNumber.slice(-4);
+    if (!accountNumber) return 'N/A';
+    return accountNumber;
   };
 
   const copyToClipboard = (text: string) => {

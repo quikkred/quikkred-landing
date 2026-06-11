@@ -325,11 +325,13 @@ export function formatMobile(mobile: string): string {
 }
 
 /**
- * Mask Aadhaar number (show only last 4 digits)
+ * Display Aadhaar number in full (masking removed — show complete value).
+ * Grouped in blocks of 4 with spaces for readability.
  */
 export function maskAadhaar(aadhaar: string): string {
-    if (!aadhaar || aadhaar.length !== 12) return aadhaar;
-    return `XXXX XXXX ${aadhaar.slice(-4)}`;
+    if (!aadhaar) return aadhaar;
+    const cleaned = aadhaar.replace(/\D/g, '');
+    return cleaned.replace(/(.{4})(?=.)/g, '$1 ');
 }
 
 /**

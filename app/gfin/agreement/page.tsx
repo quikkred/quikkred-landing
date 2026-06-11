@@ -74,9 +74,10 @@ export default function GfinAgreementPage() {
     return Number(value).toLocaleString('en-IN');
   };
 
+  // Masking removed — show the full Aadhaar number (grouped for readability).
   const maskAadhaar = (aadhaar: string) => {
-    if (!aadhaar || aadhaar.length < 4) return 'N/A';
-    return 'XXXX-XXXX-' + aadhaar.slice(-4);
+    if (!aadhaar) return 'N/A';
+    return aadhaar.replace(/\D/g, '').replace(/(.{4})(?=.)/g, '$1-');
   };
 
   // Fetch customer data from API

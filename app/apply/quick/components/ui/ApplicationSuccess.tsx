@@ -139,7 +139,7 @@ const ApplicationSuccess = ({
                                     {application?.disbursementBankAccount?.bankName}
                                 </p>
                                 <p className="text-xs text-gray-500 font-mono">
-                                    •••• {application?.disbursementBankAccount?.accountNumber?.slice(-4)}
+                                    {application?.disbursementBankAccount?.accountNumber}
                                 </p>
                             </div>
                             {application?.disbursementBankAccount?.status === "VERIFIED" ? (

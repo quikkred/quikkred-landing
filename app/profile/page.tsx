@@ -1378,7 +1378,7 @@ export default function ProfilePage() {
                       <InfoField
                         icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
                         label="Aadhaar Number"
-                        value={profileData.aadhaarNumber ? `XXXX-XXXX-${profileData.aadhaarNumber.slice(-4)}` : 'N/A'}
+                        value={profileData.aadhaarNumber ? profileData.aadhaarNumber.replace(/\D/g, '').replace(/(.{4})(?=.)/g, '$1-') : 'N/A'}
                       />
                       <div className="p-4 bg-[#FAFAFA] rounded-lg border border-[#E0E0E0]">
                         <div className="flex items-start gap-3">
@@ -1548,7 +1548,7 @@ export default function ProfilePage() {
                                   <InfoField
                                     icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
                                     label="Account Number"
-                                    value={`XXXX${bank.accountNumber.slice(-4)}`}
+                                    value={bank.accountNumber}
                                   />
                                   <InfoField
                                     icon={<FileText className="w-5 h-5 text-[#4A66FF]" />}

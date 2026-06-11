@@ -1693,7 +1693,7 @@ export default function MyLoansPage() {
                                   <div className="flex-1 min-w-0">
                                     <p className="font-semibold text-gray-800 text-sm truncate">{bank.bankName}</p>
                                     <p className="text-xs text-gray-500">
-                                      ****{bank.accountNumber.slice(-4)} • {bank.ifscCode}
+                                      {bank.accountNumber} • {bank.ifscCode}
                                     </p>
                                   </div>
                                   {bank.isPrimary && (
