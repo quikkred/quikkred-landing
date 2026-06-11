@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ token: string }> },
 ) {
   const { token } = await params;
@@ -24,9 +24,14 @@ export async function GET(
     );
   }
 
+  // Forward ?lender= so the partner backend can include lenderBranding in the
+  // response for external-lender cases (e.g. KAMAKSHI).
+  const lender = req.nextUrl.searchParams.get("lender");
+  const qs = lender ? `?lender=${encodeURIComponent(lender)}` : "";
+
   try {
     const upstream = await fetch(
-      `${PARTNER_BASE}/api/public/verify/${encodeURIComponent(token)}`,
+      `${PARTNER_BASE}/api/public/verify/${encodeURIComponent(token)}${qs}`,
       {
         method: "GET",
         headers: { accept: "application/json" },
