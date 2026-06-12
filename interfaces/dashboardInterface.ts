@@ -7,6 +7,15 @@ export interface LoanSummary {
     principalAmount: number;
 }
 
+export interface LedgerSplit {
+    _id?: string;
+    date: string;
+    amount: number;
+    status: 'PENDING' | 'PAID';
+    paidAt?: string;
+    paidAmount?: number;
+}
+
 export interface ActiveLoanDetails {
     _id: string;
     loanNumber: string;
@@ -27,6 +36,11 @@ export interface ActiveLoanDetails {
     applicationNumber?: string;
     disbursementDate?: string;
     loanCreatedDate?: string;
+    // Ledger (daily payment) support — when the loan is ledger eligible the
+    // borrower may pay each daily split individually or close the loan in full,
+    // but partial/custom amounts are not allowed.
+    isLedgerEligible?: boolean;
+    ledgerSplits?: LedgerSplit[];
 }
 
 export interface DashboardData {
@@ -41,6 +55,9 @@ export interface DashboardData {
     isSubmit: boolean;
     activeLoan: boolean;
     loans: LoanSummary[];
+    // Customer-level ledger eligibility. Either this or the active loan's own
+    // isLedgerEligible flag enables the daily payment option.
+    isLedgerEligible?: boolean;
 }
 
 export interface PaymentResponse {

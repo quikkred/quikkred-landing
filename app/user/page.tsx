@@ -22,11 +22,12 @@ import { API_BASE_URL, RAZORPAY_KEY } from '@/lib/config';
 import { COMPANY_EMAIL_SUPPORT, COMPANY_PHONE_DISPLAY, COMPANY_PHONE_TEL } from '@/lib/constants/companyInfo';
 import { useDashboard } from '@/store/hooks/useDashboard';
 import { useLoans } from '@/store/hooks/useLoans';
+import { globalHandlerService } from '@/lib/api/global-handler.service';
 import { signOut } from 'next-auth/react';
 import getToken from '@/lib/getToken';
 import useAxios from '@/hooks/useAxios';
 import ApplicationStatus from './_components/ApplicationStatus';
-import { DashboardData, ActiveLoanDetails, PaymentResponse, PaymentProof, ReapplyEligibility } from "@/interfaces/dashboardInterface";
+import { DashboardData, ActiveLoanDetails, PaymentResponse, PaymentProof, ReapplyEligibility, LedgerSplit } from "@/interfaces/dashboardInterface";
 import PreviousApplicationStatus from './_components/PreviousApplicationStatus';
 import { Skeleton, SkeletonCircle } from '@/components/ui/Skeleton';
 
@@ -64,6 +65,10 @@ export default function UserDashboard() {
   const [processingPayment, setProcessingPayment] = useState(false);
   const [customAmount, setCustomAmount] = useState<string>('');
   const [paymentType, setPaymentType] = useState<'FULL_CLOSURE' | 'PART_PAYMENT'>('FULL_CLOSURE');
+  // Ledger (daily payment) selection — only used when the loan is ledger eligible.
+  // 'DAILY' pays a single selected split; 'FULL' closes the whole loan at once.
+  const [ledgerPayMode, setLedgerPayMode] = useState<'DAILY' | 'FULL'>('DAILY');
+  const [selectedSplitDate, setSelectedSplitDate] = useState<string>('');
   const [selectedLoanNumber, setSelectedLoanNumber] = useState<string>('');
   const [activeLoanDetails, setActiveLoanDetails] = useState<ActiveLoanDetails | null>(null);
   const [loadingLoanDetails, setLoadingLoanDetails] = useState(false);
@@ -104,6 +109,16 @@ export default function UserDashboard() {
   const [reapplyEligibility, setReapplyEligibility] = useState<ReapplyEligibility | null>(null);
   const [loadingReapply, setLoadingReapply] = useState(false);
 
+  // ----- Ledger (daily payment) derived state -----
+  // A loan offers the daily payment option when either the customer or the loan
+  // itself is ledger eligible AND the backend has generated daily splits.
+  const isLedgerEligible = !!(activeLoanDetails?.isLedgerEligible ?? data?.isLedgerEligible);
+  const ledgerSplits: LedgerSplit[] = activeLoanDetails?.ledgerSplits ?? [];
+  const hasLedger = isLedgerEligible && ledgerSplits.length > 0;
+  const pendingSplits = ledgerSplits.filter((s) => s.status === 'PENDING');
+  // Next unpaid split — the day the borrower is expected to pay next.
+  const nextPendingSplit = pendingSplits[0] ?? null;
+
   // Update local state from Redux
   useEffect(() => {
     if (dashboardData) {
@@ -139,16 +154,42 @@ export default function UserDashboard() {
     document.body.appendChild(script);
   }, []);
 
-  // Set default amount to remaining amount when loan details are loaded (for full closure)
+  // Set default amount to remaining amount when loan details are loaded (for full closure).
+  // Skipped for ledger loans — those are driven by the ledger effect below.
   useEffect(() => {
-    if (activeLoanDetails) {
+    if (activeLoanDetails && !hasLedger) {
       const remaining = getTotalLoanAmount() - (activeLoanDetails.paidAmount || 0);
       // Only set for full closure, or if no amount is set yet
       if (paymentType === 'FULL_CLOSURE' || !customAmount) {
         setCustomAmount(remaining.toString());
       }
     }
-  }, [activeLoanDetails, paymentType]);
+  }, [activeLoanDetails, paymentType, hasLedger]);
+
+  // Drive the payable amount for ledger loans: daily mode pays the selected
+  // split (defaulting to the next pending one), full mode pays the remaining balance.
+  useEffect(() => {
+    if (!hasLedger) return;
+
+    if (ledgerPayMode === 'FULL') {
+      setCustomAmount(getRemainingAmount().toString());
+      return;
+    }
+
+    // DAILY mode — keep the current selection if it is still pending, else
+    // fall back to the next pending split.
+    const selected = ledgerSplits.find(
+      (s) => s.date === selectedSplitDate && s.status === 'PENDING'
+    ) || nextPendingSplit;
+
+    if (selected) {
+      setSelectedSplitDate(selected.date);
+      setCustomAmount(selected.amount.toString());
+    } else {
+      setSelectedSplitDate('');
+      setCustomAmount('');
+    }
+  }, [hasLedger, ledgerPayMode, selectedSplitDate, activeLoanDetails]);
 
   // Fetch active loan details using Redux
   const fetchActiveLoanDetails = async (loanNumber: string) => {
@@ -301,6 +342,25 @@ export default function UserDashboard() {
     }
   };
 
+  // Select a specific daily split to pay (ledger loans only).
+  const handleSelectSplit = (split: LedgerSplit) => {
+    if (split.status !== 'PENDING') return;
+    setLedgerPayMode('DAILY');
+    setSelectedSplitDate(split.date);
+    setCustomAmount(split.amount.toString());
+  };
+
+  // Switch the ledger payment mode (daily split vs. full closure).
+  const handleLedgerModeChange = (mode: 'DAILY' | 'FULL') => {
+    setLedgerPayMode(mode);
+    if (mode === 'FULL') {
+      setCustomAmount(getRemainingAmount().toString());
+    } else if (nextPendingSplit) {
+      setSelectedSplitDate(nextPendingSplit.date);
+      setCustomAmount(nextPendingSplit.amount.toString());
+    }
+  };
+
   const handlePayment = async () => {
     if (!activeLoanDetails) return;
 
@@ -339,6 +399,32 @@ export default function UserDashboard() {
         });
         setProcessingPayment(false);
         return;
+      }
+
+      // Ledger loans only allow a daily split amount or a full closure —
+      // never an arbitrary partial amount.
+      if (hasLedger && ledgerPayMode === 'DAILY') {
+        const selected = ledgerSplits.find(
+          (s) => s.date === selectedSplitDate && s.status === 'PENDING'
+        );
+        if (!selected) {
+          toast({
+            variant: "error",
+            title: "Select a Day",
+            description: "Please select a pending daily payment to continue."
+          });
+          setProcessingPayment(false);
+          return;
+        }
+        if (amount !== selected.amount) {
+          toast({
+            variant: "error",
+            title: "Partial Payment Not Allowed",
+            description: "Pay the full daily amount or choose to close the loan in full."
+          });
+          setProcessingPayment(false);
+          return;
+        }
       }
 
       // const token = await getToken();
@@ -394,7 +480,13 @@ export default function UserDashboard() {
 
       const payinResponse = await axios.post("/api/emi/customerEmiPayment", {
         paymentAmount: totalAmount,
-        loanId: activeLoanDetails._id
+        loanId: activeLoanDetails._id,
+        // Ledger context lets the backend mark the correct daily split as PAID,
+        // or close the whole ledger when paying in full.
+        ...(hasLedger && {
+          paymentMode: ledgerPayMode === 'FULL' ? 'LEDGER_FULL' : 'LEDGER_DAILY',
+          ...(ledgerPayMode === 'DAILY' && { ledgerSplitDate: selectedSplitDate }),
+        }),
       });
       const payinResult = payinResponse.data;
 
@@ -773,6 +865,19 @@ export default function UserDashboard() {
     }
 
     setAuthorizingEmandate(true);
+
+    // Kill-switch: if the MANDATE global handler is disabled, the e-mandate
+    // feature is temporarily unavailable — block the action with a message.
+    const mandateActive = await globalHandlerService.isEventActive('MANDATE');
+    if (!mandateActive) {
+      toast({
+        variant: "error",
+        title: "E-Mandate Unavailable",
+        description: "Currently the e-mandate feature has some problem. Please retry after some time."
+      });
+      setAuthorizingEmandate(false);
+      return;
+    }
 
     try {
       const token = await getToken();
@@ -1613,10 +1718,134 @@ export default function UserDashboard() {
                     <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 sm:p-6 mb-4 border-2 border-indigo-200">
                       <h4 className="text-sm font-semibold text-indigo-800 mb-4 flex items-center gap-2">
                         <Target className="w-4 h-4" />
-                        Choose Payment Type
+                        {hasLedger ? 'Choose How to Pay' : 'Choose Payment Type'}
                       </h4>
 
-                      {/* Toggle Buttons */}
+                      {/* ===== Ledger (daily payment) UI ===== */}
+                      {hasLedger && (
+                        <div className="mb-4">
+                          {/* Daily vs Full mode toggle */}
+                          <div className="grid grid-cols-2 gap-3 mb-4">
+                            <button
+                              onClick={() => handleLedgerModeChange('DAILY')}
+                              className={`p-4 rounded-xl border-2 transition-all ${ledgerPayMode === 'DAILY'
+                                ? 'bg-gradient-to-br from-blue-500 to-indigo-600 border-blue-600 text-white shadow-lg'
+                                : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50'
+                                }`}
+                            >
+                              <div className="flex flex-col items-center gap-2">
+                                <Calendar className={`w-6 h-6 ${ledgerPayMode === 'DAILY' ? 'text-white' : 'text-blue-600'}`} />
+                                <span className="font-semibold text-sm">Daily Payment</span>
+                                <span className={`text-xs ${ledgerPayMode === 'DAILY' ? 'text-blue-100' : 'text-gray-500'}`}>
+                                  Pay one day at a time
+                                </span>
+                              </div>
+                            </button>
+
+                            <button
+                              onClick={() => handleLedgerModeChange('FULL')}
+                              className={`p-4 rounded-xl border-2 transition-all ${ledgerPayMode === 'FULL'
+                                ? 'bg-gradient-to-br from-green-500 to-emerald-600 border-green-600 text-white shadow-lg'
+                                : 'bg-white border-gray-200 text-gray-700 hover:border-green-300 hover:bg-green-50'
+                                }`}
+                            >
+                              <div className="flex flex-col items-center gap-2">
+                                <CheckCircle className={`w-6 h-6 ${ledgerPayMode === 'FULL' ? 'text-white' : 'text-green-600'}`} />
+                                <span className="font-semibold text-sm">Pay in Full</span>
+                                <span className={`text-xs ${ledgerPayMode === 'FULL' ? 'text-green-100' : 'text-gray-500'}`}>
+                                  Close the entire loan
+                                </span>
+                              </div>
+                            </button>
+                          </div>
+
+                          {/* Partial payment not allowed notice */}
+                          <div className="flex items-start gap-2 p-3 mb-4 bg-amber-50 rounded-lg border border-amber-200">
+                            <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                            <p className="text-xs text-amber-700">
+                              Partial payments are not allowed on this loan. Pay a full day&apos;s
+                              amount or close the loan in full.
+                            </p>
+                          </div>
+
+                          {/* Daily split schedule — selectable list */}
+                          {ledgerPayMode === 'DAILY' && (
+                            <div className="space-y-2 mb-2">
+                              <p className="text-xs font-medium text-indigo-800 mb-1">
+                                Daily Payment Schedule
+                              </p>
+                              <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
+                                {ledgerSplits.map((split, idx) => {
+                                  const isPaid = split.status === 'PAID';
+                                  const isSelected = !isPaid && split.date === selectedSplitDate;
+                                  return (
+                                    <button
+                                      key={split._id || `${split.date}-${idx}`}
+                                      onClick={() => handleSelectSplit(split)}
+                                      disabled={isPaid}
+                                      className={`w-full flex items-center justify-between p-3 rounded-lg border-2 text-left transition-all ${isPaid
+                                        ? 'bg-green-50 border-green-200 cursor-default'
+                                        : isSelected
+                                          ? 'bg-indigo-50 border-indigo-500 shadow-sm'
+                                          : 'bg-white border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/50'
+                                        }`}
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        <div className={`p-1.5 rounded-lg ${isPaid ? 'bg-green-100' : isSelected ? 'bg-indigo-100' : 'bg-gray-100'}`}>
+                                          {isPaid
+                                            ? <CheckCircle2 className="w-4 h-4 text-green-600" />
+                                            : <Calendar className={`w-4 h-4 ${isSelected ? 'text-indigo-600' : 'text-gray-500'}`} />}
+                                        </div>
+                                        <div>
+                                          <p className={`text-sm font-semibold ${isPaid ? 'text-green-900' : 'text-gray-900'}`}>
+                                            {formatDate(split.date)}
+                                          </p>
+                                          {isPaid && split.paidAt && (
+                                            <p className="text-xs text-green-600">
+                                              Paid on {formatDate(split.paidAt)}
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <span className={`text-sm font-bold ${isPaid ? 'text-green-700' : 'text-gray-900'}`}>
+                                          ₹{(isPaid ? (split.paidAmount ?? split.amount) : split.amount).toLocaleString()}
+                                        </span>
+                                        <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full border ${isPaid
+                                          ? 'bg-green-100 text-green-800 border-green-300'
+                                          : 'bg-yellow-100 text-yellow-800 border-yellow-300'
+                                          }`}>
+                                          {split.status}
+                                        </span>
+                                      </div>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                              {pendingSplits.length === 0 && (
+                                <p className="text-xs text-green-700 text-center py-2">
+                                  All daily payments are cleared. 🎉
+                                </p>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Full closure amount for ledger */}
+                          {ledgerPayMode === 'FULL' && (
+                            <div className="bg-white rounded-xl p-4 border border-green-200">
+                              <div className="text-center">
+                                <p className="text-sm text-green-700 mb-1">Full Closure Amount</p>
+                                <p className="text-3xl font-bold text-green-800">₹{getRemainingAmount().toLocaleString()}</p>
+                                <p className="text-xs text-green-600 mt-1">Clears all remaining daily payments</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Toggle Buttons — standard (non-ledger) loans */}
+                      {!hasLedger && (
+                      <>
                       <div className="grid grid-cols-2 gap-3 mb-4">
                         <button
                           onClick={() => handlePaymentTypeChange('FULL_CLOSURE')}
@@ -1703,22 +1932,34 @@ export default function UserDashboard() {
                           </div>
                         </div>
                       )}
+                      </>
+                      )}
 
                       {/* Payment Summary */}
                       <div className="bg-white rounded-xl p-4 border border-indigo-200 mb-4">
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-gray-600">Payment Amount:</span>
                           <span className="text-xl font-bold text-indigo-900">
-                            ₹{paymentType === 'FULL_CLOSURE'
-                              ? getRemainingAmount().toLocaleString()
-                              : (parseFloat(customAmount) || 0).toLocaleString()}
+                            ₹{(hasLedger || paymentType !== 'FULL_CLOSURE')
+                              ? (parseFloat(customAmount) || 0).toLocaleString()
+                              : getRemainingAmount().toLocaleString()}
                           </span>
                         </div>
-                        {paymentType === 'PART_PAYMENT' && customAmount && parseFloat(customAmount) > 0 && (
+                        {!hasLedger && paymentType === 'PART_PAYMENT' && customAmount && parseFloat(customAmount) > 0 && (
                           <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
                             <span className="text-xs text-gray-500">Balance after payment:</span>
                             <span className="text-sm font-semibold text-orange-600">
                               ₹{(getRemainingAmount() - parseFloat(customAmount)).toLocaleString()}
+                            </span>
+                          </div>
+                        )}
+                        {hasLedger && (
+                          <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
+                            <span className="text-xs text-gray-500">
+                              {ledgerPayMode === 'FULL' ? 'Closing the loan in full' : 'Balance after this day'}
+                            </span>
+                            <span className="text-sm font-semibold text-orange-600">
+                              ₹{(getRemainingAmount() - (parseFloat(customAmount) || 0)).toLocaleString()}
                             </span>
                           </div>
                         )}
@@ -1727,7 +1968,7 @@ export default function UserDashboard() {
                       {/* Pay Now Button */}
                       <button
                         onClick={handlePayment}
-                        disabled={processingPayment || !razorpayLoaded || (paymentType === 'PART_PAYMENT' && (!customAmount || parseFloat(customAmount) <= 0))}
+                        disabled={processingPayment || !razorpayLoaded || (!hasLedger && paymentType === 'PART_PAYMENT' && (!customAmount || parseFloat(customAmount) <= 0)) || (hasLedger && (!customAmount || parseFloat(customAmount) <= 0))}
                         className="w-full py-4 bg-gradient-to-r from-[#10B4A3] to-emerald-600 text-white rounded-xl font-bold text-lg hover:from-[#0EA594] hover:to-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg hover:shadow-xl"
                       >
                         {processingPayment ? (
