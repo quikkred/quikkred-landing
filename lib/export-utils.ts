@@ -218,7 +218,7 @@ export class PDFExporter {
 
       // Add branding
       this.doc.text(
-        'Quikkred NBFC',
+        'Quikkred',
         this.pageWidth - this.margin,
         footerY,
         { align: 'right' }
@@ -448,7 +448,7 @@ export function useExport() {
       await exportData(dashboardData, {
         format,
         title: 'Dashboard Report',
-        subtitle: `Generated from Quikkred NBFC`,
+        subtitle: `Generated from Quikkred`,
         includeTimestamp: true
       });
 

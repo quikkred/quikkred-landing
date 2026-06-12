@@ -26,6 +26,8 @@ export interface CustomerProfile {
   isEmailVerified?: boolean;
   isMobileVerified?: boolean;
   createdAt?: string;
+  // Ledger (daily payment) eligibility lives on the customer profile.
+  isLedgerEligible?: boolean;
 }
 
 // Application
