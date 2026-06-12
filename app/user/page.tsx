@@ -110,11 +110,15 @@ export default function UserDashboard() {
   const [loadingReapply, setLoadingReapply] = useState(false);
 
   // ----- Ledger (daily payment) derived state -----
-  // A loan offers the daily payment option when either the customer or the loan
-  // itself is ledger eligible AND the backend has generated daily splits.
-  const isLedgerEligible = !!(activeLoanDetails?.isLedgerEligible ?? data?.isLedgerEligible);
+  // Frontend-only detection (no dependency on /api/customer/get): the loan
+  // response carries `ledgerSplits`, and either the loan or dashboard payload
+  // may carry `isLedgerEligible`. Treat the loan as ledger eligible when any of
+  // those signal it.
+  const isLedgerEligible = !!(activeLoanDetails?.isLedgerEligible || data?.isLedgerEligible);
   const ledgerSplits: LedgerSplit[] = activeLoanDetails?.ledgerSplits ?? [];
-  const hasLedger = isLedgerEligible && ledgerSplits.length > 0;
+  // Show the daily ledger flow (replacing "Part Payment") when the loan is
+  // flagged eligible OR the backend has already sent daily splits for it.
+  const hasLedger = isLedgerEligible || ledgerSplits.length > 0;
   const pendingSplits = ledgerSplits.filter((s) => s.status === 'PENDING');
   // Next unpaid split — the day the borrower is expected to pay next.
   const nextPendingSplit = pendingSplits[0] ?? null;
@@ -1822,11 +1826,15 @@ export default function UserDashboard() {
                                   );
                                 })}
                               </div>
-                              {pendingSplits.length === 0 && (
+                              {ledgerSplits.length === 0 ? (
+                                <p className="text-xs text-gray-500 text-center py-2">
+                                  Your daily payment schedule will appear here once it&apos;s generated. You can still pay in full above.
+                                </p>
+                              ) : pendingSplits.length === 0 ? (
                                 <p className="text-xs text-green-700 text-center py-2">
                                   All daily payments are cleared. 🎉
                                 </p>
-                              )}
+                              ) : null}
                             </div>
                           )}
 
