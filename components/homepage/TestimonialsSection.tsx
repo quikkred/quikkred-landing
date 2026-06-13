@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Star,
   Quote,
   Play,
-  X,
-  User,
   Video,
   MessageSquare,
   IndianRupee,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import Image from "next/image";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
@@ -140,19 +140,6 @@ const testimonialsData: Testimonial[] = [
     date: "Dec 2024",
     content: "Best loan service.",
   },
-  // {
-  //   type: "text",
-  //   id: "6",
-  //   name: "Meera Reddy",
-  //   location: "Hyderabad, Telangana",
-  //   image: "https://randomuser.me/api/portraits/women/33.jpg",
-  //   rating: 4,
-  //   loanAmount: "1,50,000",
-  //   loanType: "Education Loan",
-  //   date: "Nov 2024",
-  //   content:
-  //     "Got loan for daughter's higher education. Minimal documentation and smooth process. Quikkred is truly customer-friendly!",
-  // },
 ];
 
 // Filter type
@@ -246,7 +233,7 @@ const TextCard = ({ testimonial }: { testimonial: TextTestimonial }) => {
   );
 };
 
-// VideoCard component - replace the video thumbnail section
+// VideoCard component
 const VideoCard = ({
   testimonial,
   onPlay,
@@ -372,6 +359,39 @@ export default function TestimonialsSection() {
     return item.type === filter;
   });
 
+  // ---- Slider plumbing ----
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const [progress, setProgress] = useState(0); // 0..1 scroll position
+  const [edges, setEdges] = useState({ start: true, end: false });
+
+  const syncScroll = useCallback(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    const x = el.scrollLeft;
+    setProgress(max > 0 ? x / max : 0);
+    setEdges({ start: x <= 4, end: x >= max - 4 });
+  }, []);
+
+  // Re-evaluate on filter change (track contents change) and on resize.
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    el.scrollTo({ left: 0 });
+    syncScroll();
+    window.addEventListener("resize", syncScroll);
+    return () => window.removeEventListener("resize", syncScroll);
+  }, [filter, syncScroll]);
+
+  const scrollByCards = (dir: 1 | -1) => {
+    const el = trackRef.current;
+    if (!el) return;
+    // Advance by ~one card (first child width + gap), fallback to 85% viewport.
+    const first = el.firstElementChild as HTMLElement | null;
+    const step = first ? first.offsetWidth + 24 : el.clientWidth * 0.85;
+    el.scrollBy({ left: dir * step, behavior: "smooth" });
+  };
+
   return (
     <section className="py-8 sm:py-10 lg:py-12 bg-[#FAFAFA] overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -446,78 +466,98 @@ export default function TestimonialsSection() {
         </motion.div>
       </div>
 
-      {/* Cards — centered wrapping grid (no carousel) */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap justify-center gap-4 sm:gap-5 lg:gap-6 py-2">
-          {filteredTestimonials.map((testimonial) =>
-            testimonial.type === "text" ? (
-              <div
-                key={testimonial.id}
-                className="w-full sm:w-[300px] md:w-[320px] lg:w-[360px] xl:w-[380px] max-w-[380px]"
-              >
+      {/* Cards — side-by-side slider */}
+      <div className="relative mx-auto max-w-7xl">
+        {/* edge fades */}
+        <div
+          aria-hidden
+          className={`pointer-events-none absolute inset-y-0 left-0 z-20 w-10 bg-gradient-to-r from-[#FAFAFA] to-transparent transition-opacity duration-300 sm:w-16 ${
+            edges.start ? "opacity-0" : "opacity-100"
+          }`}
+        />
+        <div
+          aria-hidden
+          className={`pointer-events-none absolute inset-y-0 right-0 z-20 w-10 bg-gradient-to-l from-[#FAFAFA] to-transparent transition-opacity duration-300 sm:w-16 ${
+            edges.end ? "opacity-0" : "opacity-100"
+          }`}
+        />
+
+        {/* floating arrows (desktop) */}
+        <button
+          type="button"
+          onClick={() => scrollByCards(-1)}
+          disabled={edges.start}
+          aria-label="Previous testimonials"
+          className="absolute left-1 top-1/2 z-30 hidden -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white p-3 text-[#25B181] shadow-lg transition-all duration-300 hover:bg-[#25B181] hover:text-white disabled:cursor-not-allowed disabled:opacity-0 lg:flex"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+        <button
+          type="button"
+          onClick={() => scrollByCards(1)}
+          disabled={edges.end}
+          aria-label="Next testimonials"
+          className="absolute right-1 top-1/2 z-30 hidden -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white p-3 text-[#25B181] shadow-lg transition-all duration-300 hover:bg-[#25B181] hover:text-white disabled:cursor-not-allowed disabled:opacity-0 lg:flex"
+        >
+          <ChevronRight className="h-5 w-5" />
+        </button>
+
+        {/* the rail */}
+        <div
+          ref={trackRef}
+          onScroll={syncScroll}
+          className="flex snap-x snap-mandatory items-stretch gap-4 overflow-x-auto scroll-smooth px-4 py-2 sm:gap-5 sm:px-6 lg:gap-6 lg:px-8 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {filteredTestimonials.map((testimonial) => (
+            <div
+              key={testimonial.id}
+              className="w-[80vw] max-w-[360px] shrink-0 snap-start sm:w-[300px] md:w-[320px] lg:w-[360px] xl:w-[380px]"
+            >
+              {testimonial.type === "text" ? (
                 <TextCard testimonial={testimonial} />
-              </div>
-            ) : (
-              <div
-                key={testimonial.id}
-                className="w-full sm:w-[300px] md:w-[320px] lg:w-[360px] xl:w-[380px] max-w-[380px]"
-              >
+              ) : (
                 <VideoCard
                   testimonial={testimonial}
                   onPlay={() => setSelectedVideo(testimonial.videoUrl)}
                 />
-              </div>
-            ),
-          )}
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Stats */}
-      {/* <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-8 sm:mt-12 lg:mt-16 grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 lg:gap-6"
-        >
-          <div className="text-center p-3 sm:p-4 lg:p-6 bg-white rounded-lg sm:rounded-xl shadow-sm">
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#25B181] mb-0.5 sm:mb-1">
-              50,000+
-            </div>
-            <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600">
-              {t?.homepage?.sections?.testimonials?.stats?.customers ||
-                "Happy Customers"}
-            </div>
+      {/* Slider controls: mobile arrows + progress */}
+      <div className="container mx-auto mt-4 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-xs items-center justify-center gap-4">
+          <button
+            type="button"
+            onClick={() => scrollByCards(-1)}
+            disabled={edges.start}
+            aria-label="Previous testimonials"
+            className="flex items-center justify-center rounded-full border border-gray-200 bg-white p-2 text-[#25B181] shadow-sm transition-all disabled:opacity-30 lg:hidden"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+
+          <div className="relative h-1 flex-1 overflow-hidden rounded-full bg-gray-200">
+            <motion.span
+              className="absolute inset-y-0 left-0 rounded-full bg-[#25B181]"
+              animate={{ width: `${28 + progress * 72}%` }}
+              transition={{ type: "spring", stiffness: 200, damping: 30 }}
+            />
           </div>
-          <div className="text-center p-3 sm:p-4 lg:p-6 bg-white rounded-lg sm:rounded-xl shadow-sm">
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#25B181] mb-0.5 sm:mb-1">
-              4.8/5
-            </div>
-            <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600">
-              {t?.homepage?.sections?.testimonials?.stats?.rating ||
-                "Average Rating"}
-            </div>
-          </div>
-          <div className="text-center p-3 sm:p-4 lg:p-6 bg-white rounded-lg sm:rounded-xl shadow-sm">
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#25B181] mb-0.5 sm:mb-1">
-              500+ Cr
-            </div>
-            <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600">
-              {t?.homepage?.sections?.testimonials?.stats?.disbursed ||
-                "Loans Disbursed"}
-            </div>
-          </div>
-          <div className="text-center p-3 sm:p-4 lg:p-6 bg-white rounded-lg sm:rounded-xl shadow-sm">
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#25B181] mb-0.5 sm:mb-1">
-              98%
-            </div>
-            <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600">
-              {t?.homepage?.sections?.testimonials?.stats?.satisfaction ||
-                "Satisfaction Rate"}
-            </div>
-          </div>
-        </motion.div>
-      </div> */}
+
+          <button
+            type="button"
+            onClick={() => scrollByCards(1)}
+            disabled={edges.end}
+            aria-label="Next testimonials"
+            className="flex items-center justify-center rounded-full border border-gray-200 bg-white p-2 text-[#25B181] shadow-sm transition-all disabled:opacity-30 lg:hidden"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
 
       {/* Video Modal */}
       <AnimatePresence>
