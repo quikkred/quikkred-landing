@@ -102,19 +102,24 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
         }
     };
 
-    const bsaInitiatedCalled = useRef(false);
+    const finFactorFetched = useRef(false);
 
     useEffect(() => {
+        // Guard so the BRE/finFactor result is fetched at most once per page load,
+        // regardless of how many times `user` is re-fetched from /api/auth/session.
+        if (finFactorFetched.current) return;
+
         const finfactorParam = searchParams.get('finfactor');
         if (finfactorParam === "success") {
+            finFactorFetched.current = true;
+            // Strip the param so a manual refresh can't re-trigger the fetch.
+            window.history.replaceState({}, '', window.location.pathname);
             fetchBreFinfactorResult();
             return;
         }
 
         if (user && user?.bsaInitiated) {
-            if (bsaInitiatedCalled.current) return;
-            bsaInitiatedCalled.current = true;
-
+            finFactorFetched.current = true;
             fetchBreFinfactorResult();
             return;
         }

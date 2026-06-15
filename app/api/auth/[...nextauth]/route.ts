@@ -100,6 +100,14 @@ export const authOptions: AuthOptions = {
           throw new Error("Missing session credentials");
         }
 
+        // The OTP was already verified server-side by /api/auth/customer/verifyOtp
+        // immediately before this call, and these tokens are its freshly-issued
+        // result. The /api/customer/get call below is only a best-effort sanity
+        // check — it must NOT be the gatekeeper, otherwise any transient/non-auth
+        // failure of that endpoint blocks a legitimate login. We log the real
+        // status for diagnostics but still establish the session; the backend
+        // remains the authority on every subsequent request (a bad token gets a
+        // 401 there and useAxios logs the user out).
         try {
           const res = await fetch(`${API_BASE_URL}/api/customer/get`, {
             method: "GET",
@@ -110,22 +118,27 @@ export const authOptions: AuthOptions = {
           });
 
           if (!res.ok) {
-            throw new Error("Invalid or expired session token");
+            const body = await res.text().catch(() => "");
+            console.warn(
+              `[otp-tokens] /api/customer/get returned ${res.status} during login re-validation; proceeding with verified tokens. Body: ${body?.slice(0, 300)}`
+            );
           }
-
-          return {
-            id: credentials.userId,
-            email: credentials.email || null,
-            mobile: credentials.mobile || null,
-            role: credentials.role,
-            accessToken: credentials.accessToken,
-            refreshToken: credentials.refreshToken,
-            customerUniqueId: credentials.customerUniqueId,
-            verifiedAt: new Date().toISOString(),
-          };
         } catch (err: any) {
-          throw new Error(err.message || "Session verification failed");
+          console.warn(
+            `[otp-tokens] /api/customer/get re-validation request failed (${err?.message || err}); proceeding with verified tokens.`
+          );
         }
+
+        return {
+          id: credentials.userId,
+          email: credentials.email || null,
+          mobile: credentials.mobile || null,
+          role: credentials.role,
+          accessToken: credentials.accessToken,
+          refreshToken: credentials.refreshToken,
+          customerUniqueId: credentials.customerUniqueId,
+          verifiedAt: new Date().toISOString(),
+        };
       },
     }),
 

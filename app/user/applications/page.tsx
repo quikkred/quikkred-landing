@@ -490,7 +490,6 @@ export default function MyApplicationsPage() {
                   {/* <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Customer</th> */}
                   <th className="px-2 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Total Repayment</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Tenure</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Priority</th>
                   <th className="px-8 py-2 text-left text-xs font-semibold text-gray-700 uppercase">Status</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Actions</th>
                 </tr>
@@ -519,15 +518,6 @@ export default function MyApplicationsPage() {
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{app.tenure || '-'} {app.tenureUnit || ''}</div>
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      {app.priority && (
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          app.priority === 'High' ? 'text-red-600 bg-red-100' : 'text-blue-600 bg-blue-100'
-                        }`}>
-                          {app.priority}
-                        </span>
-                      )}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(app.status)}`}>

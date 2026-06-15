@@ -6,6 +6,7 @@ import useAxios from "@/hooks/useAxios";
 import useStorage from "@/hooks/useStorage";
 import { StorageApplicationForm } from "@/interfaces/storageInterface";
 import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
+import { globalHandlerService } from "@/lib/api/global-handler.service";
 import { RAZORPAY_KEY } from "@/lib/config";
 import { AxiosError } from "axios";
 import { motion } from "framer-motion";
@@ -122,6 +123,19 @@ const ApproveMandate = ({
         }
 
         setMandateLoading(true);
+
+        // Kill-switch: if the MANDATE global handler is disabled, the e-mandate
+        // feature is temporarily unavailable — block the action with a message.
+        const mandateActive = await globalHandlerService.isEventActive('MANDATE');
+        if (!mandateActive) {
+            toast({
+                variant: "error",
+                title: "E-Mandate Unavailable",
+                description: "Currently the e-mandate feature has some problem. Please retry after some time.",
+            });
+            setMandateLoading(false);
+            return;
+        }
 
         try {
             const response = await axios.post(`/api/upi/autoPay/create`, {

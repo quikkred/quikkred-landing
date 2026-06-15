@@ -1,0 +1,94 @@
+# Quikkred
+
+> Instant personal loans online in India — fast approval, fast disbursal, 100% digital.
+
+Quikkred is an AI-powered digital lending platform in India offering instant personal loans to individuals. Loans are lent by an RBI-registered NBFC partner; Quikkred provides the technology, the application journey, and customer servicing. The proposition is speed and simplicity: a fully digital process with minimal documentation, transparent fees, and quick disbursal.
+
+The platform serves people who need immediate funds for personal needs — emergencies, medical expenses, festival or salary advances, travel, and other short-term requirements. Core journeys include checking eligibility, applying online, calculating EMIs, tracking an application, and accessing loan policies. Key concepts for an LLM to understand: eligibility, interest rates, application status, document requirements, and regulatory/grievance policies. Emphasis throughout is on a 100% digital, minimal-paperwork experience.
+
+## Getting Started
+
+- [Quikkred — Get Instant Loan Approval in 3 Easy Steps](https://www.quikkred.in/): Home page; instant personal loans in 3 simple steps.
+- [Apply for an Instant Personal Loan](https://www.quikkred.in/apply): Start a personal loan application online.
+- [Quick Apply](https://www.quikkred.in/apply/quick): Fast, streamlined application flow.
+- [Check Loan Eligibility](https://www.quikkred.in/eligibility): Determine eligibility for a personal loan.
+- [Instant Eligibility Check](https://www.quikkred.in/eligibility-check): Quickly check eligibility for an instant loan.
+- [How to Apply — Step-by-Step Guide](https://www.quikkred.in/resources/how-to-apply): Walkthrough of the online application process.
+
+## Loan Information & Tools
+
+- [Loan Products](https://www.quikkred.in/products): Instant personal loan products offered by Quikkred.
+- [EMI Calculator](https://www.quikkred.in/emi-calculator): Estimate your Equated Monthly Installment.
+- [EMI Calculator (Resources)](https://www.quikkred.in/resources/emi-calculator): EMI calculator within the resources hub.
+- [Interest Rates](https://www.quikkred.in/interest-rates): Personal loan interest rate information.
+- [Interest Rates (Resources)](https://www.quikkred.in/resources/interest-rates): Interest rate details within the resources hub.
+- [Document Checklist](https://www.quikkred.in/document-checklist): Documents required for a loan application.
+- [Document Checklist (Resources)](https://www.quikkred.in/resources/document-checklist): Required-document checklist in the resources hub.
+- [Daily Ladder](https://www.quikkred.in/daily-ladder): Daily repayment/ladder product information.
+
+## Company Information
+
+- [About Quikkred](https://www.quikkred.in/about-us): Mission and how Quikkred works with its RBI-registered NBFC lending partner.
+- [Our Story](https://www.quikkred.in/about-us/our-story): The origin and journey of Quikkred.
+- [Leadership Team](https://www.quikkred.in/about-us/leadership-team): The people leading Quikkred.
+- [Corporate Social Responsibility](https://www.quikkred.in/about-us/csr): Quikkred's CSR initiatives.
+- [Press & Media](https://www.quikkred.in/about-us/press): Press releases and media coverage.
+- [Awards & Recognition](https://www.quikkred.in/awards): Awards received by Quikkred.
+- [Careers](https://www.quikkred.in/careers): Job openings and opportunities.
+- [Contact Us](https://www.quikkred.in/contact): Ways to get in touch.
+- [Branches](https://www.quikkred.in/branches): Physical branch locations.
+- [Testimonials](https://www.quikkred.in/testimonials): Customer feedback and experiences.
+
+## Partnerships
+
+- [Our Partners](https://www.quikkred.in/our-partners): Companies and organizations Quikkred works with.
+- [Corporate Partners](https://www.quikkred.in/our-partners/corporate): Corporate partnership programs.
+- [API Partners](https://www.quikkred.in/our-partners/api): API integration for partners.
+- [Lending Partner Program](https://www.quikkred.in/partners/lending-partner-program): Become a lending partner.
+- [Apply — Lending Partner Program](https://www.quikkred.in/partners/lending-partner-program/apply): Submit a lending-partner application.
+- [Proprietor Network Program](https://www.quikkred.in/partners/proprietor-network): Join the proprietor network.
+- [Apply — Proprietor Network](https://www.quikkred.in/partners/proprietor-network/apply): Submit a proprietor-network application.
+- [Channel Partner Program](https://www.quikkred.in/partners/channel-partner): Become a channel partner.
+- [Collection Partner Program](https://www.quikkred.in/partners/collection-partner): Partner for collection services.
+- [Investor Relations](https://www.quikkred.in/partners/investor-relations): Information for investors.
+
+## Resources & Support
+
+- [Resources Hub](https://www.quikkred.in/resources): Collection of helpful resources.
+- [FAQs](https://www.quikkred.in/resources/faqs): Answers to common questions.
+- [Blog](https://www.quikkred.in/blog): Personal finance articles and company updates.
+- [Blog (Resources)](https://www.quikkred.in/resources/blog): Blog within the resources hub.
+- [Eligibility (Resources)](https://www.quikkred.in/resources/eligibility): Eligibility info within the resources hub.
+- [Eligibility Check (Resources)](https://www.quikkred.in/resources/eligibility-check): Eligibility check within the resources hub.
+- [Support](https://www.quikkred.in/support): Help for loan-related queries.
+- [Track Your Application](https://www.quikkred.in/track-application): Real-time application status.
+- [Application Status](https://www.quikkred.in/application-status): View your submitted application's status.
+- [Grievance Redressal](https://www.quikkred.in/grievance): Register a complaint or grievance.
+- [Nodal Officer](https://www.quikkred.in/nodal-officer): Contact for escalated complaints.
+- [Register a Complaint](https://www.quikkred.in/complaint): Submit a formal complaint.
+- [Report Fraud](https://www.quikkred.in/report-fraud): How to report fraudulent activity.
+- [Account Deletion Request](https://www.quikkred.in/account-deletion): Request deletion of your account.
+- [Downloads](https://www.quikkred.in/downloads): Downloadable forms and documents.
+
+## Legal & Policies
+
+- [Privacy Policy](https://www.quikkred.in/privacy-policy): How Quikkred collects, uses, and protects data.
+- [Terms and Conditions](https://www.quikkred.in/terms-and-conditions): Legal terms for using Quikkred.
+- [Fair Practice Code](https://www.quikkred.in/fair-practice-code): Commitment to fair lending practices.
+- [Grievance Redressal Policy](https://www.quikkred.in/grievance-redressal-policy): Policy for handling grievances.
+- [Interest Rate Policy](https://www.quikkred.in/interest-rate-policy): Official policy on interest rates.
+- [KYC & AML Policy](https://www.quikkred.in/kyc-aml-policy): Know Your Customer and Anti-Money Laundering policies.
+- [Credit Policy](https://www.quikkred.in/credit-policy): Guidelines for credit assessment.
+- [Collection Policy](https://www.quikkred.in/collection-policy): Loan collection practices.
+- [Lending Policy](https://www.quikkred.in/lending-policy): Policy governing lending activities.
+- [Refund & Cancellation Policy](https://www.quikkred.in/refund-cancellation): Policies for refunds and cancellations.
+- [RBI Guidelines](https://www.quikkred.in/rbi-guidelines): Compliance with Reserve Bank of India guidelines.
+
+## Optional
+
+- [Settlement & Write-off Policy](https://www.quikkred.in/settlement-writeoff-policy): Loan settlement and write-off policies.
+- [Investment Policy](https://www.quikkred.in/investment-policy): Approach to investments.
+- [IT Security Policy](https://www.quikkred.in/it-security-policy): Information technology security policies.
+- [Disclaimer & Disclosure](https://www.quikkred.in/disclaimer-disclosure): Important disclaimers and disclosures.
+- [Cookie Policy](https://www.quikkred.in/cookie-policy): Use of cookies on the website.
+- [Blogs (alias)](https://www.quikkred.in/blogs): Alternate blog listing.

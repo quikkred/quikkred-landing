@@ -819,10 +819,10 @@ function InstallFooter() {
         <div>
           <span className="inline-flex items-center gap-2 rounded-full bg-emerald-400/15 px-3 py-1 text-[10.5px] font-bold uppercase tracking-widest text-emerald-200">
             <ShieldCheck className="h-3.5 w-3.5" />
-            RBI-compliant NBFC
+            RBI-registered NBFC partner
           </span>
           <p className="mt-4 text-[13.5px] leading-relaxed text-emerald-50/75">
-            All Quikkred apps are distributed directly by Satsai Finance. Only download from this
+            All Quikkred apps are distributed directly by Satsai Finlease Private Limited. Only download from this
             official page or your partner onboarding link.
           </p>
         </div>
