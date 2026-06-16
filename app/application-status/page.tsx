@@ -24,6 +24,8 @@ import { Suspense } from "react";
 import { getSession } from "next-auth/react";
 import getToken from "@/lib/getToken";
 import { QUICK_FORM_URL } from "@/lib/config";
+import useAxios from "@/hooks/useAxios";
+import { ApplicationInterface } from "@/interfaces/applicationInterface";
 
 // Declare global types for tracking
 declare global {
@@ -84,36 +86,100 @@ function fireTrackingEvents(status: string, loanNumber?: string, amount?: string
 
 function ApplicationStatusContent() {
   const router = useRouter();
+  const axios = useAxios();
   const [statusData, setStatusData] = useState<ApplicationStatusData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [noData, setNoData] = useState(false);
   const trackedRef = useRef(false);
 
   useEffect(() => {
-    // Read data from localStorage
-    const storedData = localStorage.getItem('applicationStatusData');
-    if (storedData) {
-      try {
-        const data = JSON.parse(storedData);
-        const parsed: ApplicationStatusData = {
-          status: data.status || "approved",
-          loanNumber: data.loanNumber || "",
-          amount: data.amount || "",
-          reason: data.reason || ""
-        };
-        setStatusData(parsed);
-        // Clear localStorage after reading
-        localStorage.removeItem('applicationStatusData');
-      } catch (error) {
-        console.error('Error parsing application status data:', error);
-        setNoData(true);
+    let cancelled = false;
+
+    const resolveStatus = async () => {
+      // 1. Fast path — data handed off via localStorage by the apply flow /
+      //    dashboard redirect. Show it instantly.
+      const storedData = localStorage.getItem('applicationStatusData');
+      if (storedData) {
+        try {
+          const raw = JSON.parse(storedData);
+          // hooks/useStorage.ts persists values wrapped as { __type, value }
+          // (used by the apply flow), while the dashboard writes a plain
+          // object. Support both so loan number / amount always decode.
+          const data =
+            raw && typeof raw === 'object' && '__type' in raw && 'value' in raw
+              ? raw.value
+              : raw;
+          if (!cancelled) {
+            setStatusData({
+              status: data?.status || "approved",
+              loanNumber: data?.loanNumber || "",
+              amount: data?.amount || "",
+              reason: data?.reason || ""
+            });
+          }
+          // Clear the payload and flag that the applicant has seen their
+          // status so the dashboard won't redirect back here (avoids a loop
+          // when they click "Go to Dashboard").
+          localStorage.removeItem('applicationStatusData');
+          sessionStorage.setItem('applicationStatusSeen', '1');
+          if (!cancelled) setIsLoading(false);
+          return;
+        } catch (error) {
+          console.error('Error parsing application status data:', error);
+          // fall through to the backend lookup
+        }
       }
-    } else {
-      // No data found - show empty state (don't redirect immediately)
-      setNoData(true);
-    }
-    setIsLoading(false);
-  }, []);
+
+      // 2. Fallback — no handoff data (refresh or direct visit). Fetch the
+      //    latest application for the logged-in customer from the backend so
+      //    we show real status instead of "No Application Found".
+      try {
+        const token = await getToken();
+        if (!token) {
+          if (!cancelled) { setNoData(true); setIsLoading(false); }
+          return;
+        }
+
+        const response = await axios.get('/api/v2/applicationByCustomerToken', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const result = response.data;
+        const app = (result?.data?.[0] || result?.data) as ApplicationInterface | undefined;
+
+        if (!app || (Array.isArray(app) && app.length === 0) || !app.status) {
+          if (!cancelled) { setNoData(true); setIsLoading(false); }
+          return;
+        }
+
+        const isRejected =
+          (app.status || '').toUpperCase() === 'REJECTED' ||
+          app.breHistory?.breStatus === 'REJECTED';
+
+        if (!cancelled) {
+          setStatusData({
+            status: isRejected ? 'rejected' : 'approved',
+            loanNumber: app.applicationNumber || '',
+            amount: isRejected
+              ? ''
+              : String(app.approvedLoanAmount || app.breApprovedLoanAmount || ''),
+            reason: isRejected
+              ? app.breHistory?.breStatus === 'REJECTED'
+                ? 'Bank statement verification was not approved.'
+                : 'Your application does not meet eligibility criteria.'
+              : '',
+          });
+          sessionStorage.setItem('applicationStatusSeen', '1');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error fetching application status:', error);
+        if (!cancelled) { setNoData(true); setIsLoading(false); }
+      }
+    };
+
+    resolveStatus();
+    return () => { cancelled = true; };
+  }, [axios]);
 
   // Fire tracking events after statusData is set and page has rendered
   useEffect(() => {
@@ -471,8 +537,14 @@ function ApplicationStatusContent() {
                 transition={{ delay: 0.7 }}
                 className="flex flex-col sm:flex-row gap-4 justify-center"
               >
-                <Link href="/">
+                <Link href="/user">
                   <button className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-[#25B181] to-[#1F8F68] text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center">
+                    <FileText className="w-5 h-5 mr-2" />
+                    Go to Dashboard
+                  </button>
+                </Link>
+                <Link href="/">
+                  <button className="w-full sm:w-auto px-8 py-3 bg-white border-2 border-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all flex items-center justify-center">
                     <Home className="w-5 h-5 mr-2" />
                     Back to Home
                   </button>
