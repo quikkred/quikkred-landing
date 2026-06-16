@@ -130,6 +130,36 @@ export default function UserDashboard() {
     }
   }, [dashboardData]);
 
+  // Route approved / rejected applicants to the dedicated status page once per
+  // session. From there they can choose to continue to the dashboard. The
+  // "applicationStatusSeen" flag is set by /application-status on load, so
+  // returning here does not loop back.
+  useEffect(() => {
+    if (!data || typeof window === 'undefined') return;
+    if (sessionStorage.getItem('applicationStatusSeen')) return;
+
+    const status = (data.applicationStatus || '').toUpperCase();
+    if (status !== 'APPROVED' && status !== 'REJECTED') return;
+
+    const loanNumber = data.oldApplicationNumber || data.loans?.[0]?.loanNumber || '';
+    const amount =
+      status === 'APPROVED' && data.loans?.[0]?.principalAmount
+        ? String(data.loans[0].principalAmount)
+        : '';
+
+    localStorage.setItem(
+      'applicationStatusData',
+      JSON.stringify({
+        status: status.toLowerCase(),
+        loanNumber,
+        amount,
+        reason: '',
+      })
+    );
+
+    router.replace('/application-status');
+  }, [data, router]);
+
   useEffect(() => {
     if (reduxActiveLoan) {
       setActiveLoanDetails(reduxActiveLoan);
