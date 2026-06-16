@@ -135,11 +135,16 @@ const nextConfig: NextConfig = {
               "camera=(self), microphone=(), geolocation=(self), interest-cohort=()",
           },
           {
-            // Best Practices audit: origin isolation. unsafe-none would fail
-            // popup auth flows we don't have, so same-origin is the right level
-            // for a public marketing site.
+            // TEMPORARY (Meta Event Setup Tool): COOP `same-origin` (added for
+            // the Lighthouse "origin isolation" Best Practices score) isolates
+            // this site into its own browsing-context group, which severs
+            // `window.opener` for the cross-origin Facebook window. Meta's Event
+            // Setup Tool / Test Events opens the site in a popup and relies on
+            // window.opener + postMessage to capture events, so it sees nothing.
+            // Relaxed to `unsafe-none` while wiring up the pixel.
+            // REVERT after event setup: restore value to "same-origin".
             key: "Cross-Origin-Opener-Policy",
-            value: "same-origin",
+            value: "unsafe-none",
           },
           {
             key: "Cross-Origin-Resource-Policy",
