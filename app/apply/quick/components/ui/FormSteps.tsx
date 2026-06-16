@@ -1,7 +1,8 @@
 "use client"
 
 import { useAuth } from "@/contexts/AuthContext";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { useRouter } from "nextjs-toploader/app";
 import CustomerLogin from "./CustomerLogin";
 import { BlockedScreen, IPCheckLoading } from "../IPCheckScreen";
 import StepIndicator from "./StepIndicator";
@@ -13,7 +14,6 @@ import { TRACKING_EVENTS } from "@/lib/constants/quickApplyV2";
 import { useApplication } from "@/contexts/ApplicationContext";
 import { AlertCircle } from "lucide-react";
 import BankVerification from "../BankVerification";
-import ApplicationSuccess from "./ApplicationSuccess";
 
 // export type FormStepsType = "eligibility" | "bank" | "mandate";
 export type FormStepsType = "login" | "eligibility" | "bank" | "submit";
@@ -42,7 +42,42 @@ const FormSteps = ({
     performIPCheck,
 }: FormStepsProps) => {
     const { user } = useAuth();
-    const { application } = useApplication();
+    const { application, loading: applicationLoading } = useApplication();
+    const router = useRouter();
+
+    // Once the application is submitted, send the applicant to the dedicated
+    // /application-status page instead of rendering the success/status screen
+    // inline within /apply/quick. Wait for the application to finish loading so
+    // the correct approved/rejected status is shown.
+    useEffect(() => {
+        if (ipLoading || ipBlocked) return;
+        if (!user?.isSubmit) return;
+        if (applicationLoading) return;
+        if (typeof window === 'undefined') return;
+
+        const isRejected =
+            (application?.status || '').toUpperCase() === 'REJECTED' ||
+            application?.breHistory?.breStatus === 'REJECTED';
+
+        localStorage.setItem(
+            'applicationStatusData',
+            JSON.stringify({
+                status: isRejected ? 'rejected' : 'approved',
+                loanNumber: application?.applicationNumber || '',
+                amount: isRejected
+                    ? ''
+                    : String(formData?.approvedLoanAmount ?? application?.approvedLoanAmount ?? ''),
+                reason: isRejected
+                    ? application?.breHistory?.breStatus === 'REJECTED'
+                        ? 'Bank statement verification was not approved.'
+                        : 'Your application does not meet eligibility criteria.'
+                    : '',
+            })
+        );
+
+        router.replace('/application-status');
+    }, [user?.isSubmit, applicationLoading, ipLoading, ipBlocked, application, formData?.approvedLoanAmount, router]);
+
     const currentStep = useMemo(() => {
         if (step === "bank") return 3;
         if (step === "eligibility") return 2;
@@ -81,10 +116,12 @@ const FormSteps = ({
 
             {/* Main Flow */}
             {!ipLoading && !ipBlocked && (
-                user?.isSubmit ? <ApplicationSuccess
-                    formData={formData}
-                    setFormData={setFormData}
-                /> : <>
+                user?.isSubmit ? (
+                    /* Redirecting to /application-status (see effect above) */
+                    <div className="flex items-center justify-center py-20">
+                        <div className="w-10 h-10 border-4 border-[#25B181] border-t-transparent rounded-full animate-spin" />
+                    </div>
+                ) : <>
                     {/* Step Indicator */}
                     <StepIndicator currentStep={currentStep} />
 
