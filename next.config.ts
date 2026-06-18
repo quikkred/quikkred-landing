@@ -135,11 +135,16 @@ const nextConfig: NextConfig = {
               "camera=(self), microphone=(), geolocation=(self), interest-cohort=()",
           },
           {
-            // Best Practices audit: origin isolation. unsafe-none would fail
-            // popup auth flows we don't have, so same-origin is the right level
-            // for a public marketing site.
+            // TEMPORARY (Meta Event Setup Tool): COOP `same-origin` (added for
+            // the Lighthouse "origin isolation" Best Practices score) isolates
+            // this site into its own browsing-context group, which severs
+            // `window.opener` for the cross-origin Facebook window. Meta's Event
+            // Setup Tool / Test Events opens the site in a popup and relies on
+            // window.opener + postMessage to capture events, so it sees nothing.
+            // Relaxed to `unsafe-none` while wiring up the pixel.
+            // REVERT after event setup: restore value to "same-origin".
             key: "Cross-Origin-Opener-Policy",
-            value: "same-origin",
+            value: "unsafe-none",
           },
           {
             key: "Cross-Origin-Resource-Policy",
@@ -153,12 +158,12 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: `
             default-src 'self';
-            script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://connect.facebook.net https://cdn.jsdelivr.net https://checkout.razorpay.com;
+            script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://googleads.g.doubleclick.net https://connect.facebook.net https://www.facebook.com https://cdn.jsdelivr.net https://checkout.razorpay.com https://static.cloudflareinsights.com;
             style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
             img-src 'self' data: https: blob:;
             font-src 'self' data: https://fonts.gstatic.com;
             worker-src 'self' blob:;
-            connect-src 'self' ${apiDomain} ${appDomain} ${apiWsDomain} ${appWsDomain} https://alpha.quikkred.in wss://alpha.quikkred.in https://b2b.quikkred.in https://alpha-b2b.quikkred.in https://ifsc.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com https://www.google-analytics.com https://www.google.com https://stats.g.doubleclick.net https://googleads.g.doubleclick.net https://td.doubleclick.net https://connect.facebook.net https://www.facebook.com https://*.conversionsapigateway.com https://*.a.run.app https://cdn.jsdelivr.net https://storage.googleapis.com;
+            connect-src 'self' ${apiDomain} ${appDomain} ${apiWsDomain} ${appWsDomain} https://alpha.quikkred.in wss://alpha.quikkred.in https://b2b.quikkred.in https://alpha-b2b.quikkred.in https://ifsc.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com https://www.google-analytics.com https://www.google.com https://stats.g.doubleclick.net https://googleads.g.doubleclick.net https://td.doubleclick.net https://connect.facebook.net https://www.facebook.com https://api.facebook.com https://graph.facebook.com https://*.conversionsapigateway.com https://*.a.run.app https://cdn.jsdelivr.net https://storage.googleapis.com https://cloudflareinsights.com https://static.cloudflareinsights.com;
             frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://www.google.com https://maps.google.com https://www.youtube.com https://www.youtube-nocookie.com https://dunsregistered.dnb.com https://profiles.dunsregistered.com;
             frame-ancestors 'self' https://www.facebook.com https://business.facebook.com;
             upgrade-insecure-requests;

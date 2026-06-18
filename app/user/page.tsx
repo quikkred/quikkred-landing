@@ -8,7 +8,7 @@ import {
   TrendingUp, Calendar, Clock, Download, Plus,
   IndianRupee, Percent, Target, CheckCircle,
   AlertTriangle, FileText, Phone, Mail, MapPin,
-  Building, Award, Star, ArrowUpRight, ArrowDownRight,
+  Award, Star, ArrowUpRight, ArrowDownRight,
   Wallet, Calculator, Eye, EyeOff, RefreshCw,
   Shield, UserCheck, History, Gift, HelpCircle,
   Smartphone, Globe, Heart, Zap, Activity,
@@ -129,6 +129,36 @@ export default function UserDashboard() {
       setData(dashboardData);
     }
   }, [dashboardData]);
+
+  // Route approved / rejected applicants to the dedicated status page once per
+  // session. From there they can choose to continue to the dashboard. The
+  // "applicationStatusSeen" flag is set by /application-status on load, so
+  // returning here does not loop back.
+  useEffect(() => {
+    if (!data || typeof window === 'undefined') return;
+    if (sessionStorage.getItem('applicationStatusSeen')) return;
+
+    const status = (data.applicationStatus || '').toUpperCase();
+    if (status !== 'APPROVED' && status !== 'REJECTED') return;
+
+    const loanNumber = data.oldApplicationNumber || data.loans?.[0]?.loanNumber || '';
+    const amount =
+      status === 'APPROVED' && data.loans?.[0]?.principalAmount
+        ? String(data.loans[0].principalAmount)
+        : '';
+
+    localStorage.setItem(
+      'applicationStatusData',
+      JSON.stringify({
+        status: status.toLowerCase(),
+        loanNumber,
+        amount,
+        reason: '',
+      })
+    );
+
+    router.replace('/application-status');
+  }, [data, router]);
 
   useEffect(() => {
     if (reduxActiveLoan) {
@@ -2011,82 +2041,6 @@ export default function UserDashboard() {
                         </div>
                       </div>
                     )}
-
-                    {/* Bank Account Details for Manual Payment */}
-                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 border-2 border-blue-200">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Building className="w-5 h-5 text-blue-700" />
-                        <h4 className="text-base font-semibold text-blue-900">Bank Transfer Details</h4>
-                      </div>
-
-                      <div className="space-y-3">
-                        {/* Account Name */}
-                        <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-blue-100">
-                          <div>
-                            <p className="text-xs text-gray-500">Account Name</p>
-                            <p className="text-sm font-semibold text-gray-900">Satsai Finlease Pvt Ltd</p>
-                          </div>
-                        </div>
-
-                        {/* Account Number */}
-                        <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-blue-100">
-                          <div>
-                            <p className="text-xs text-gray-500">Account Number</p>
-                            <p className="text-base font-bold text-gray-900 font-mono">401655461518</p>
-                          </div>
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText('401655461518');
-                              toast({ variant: "success", title: "Copied!", description: "Account number copied to clipboard" });
-                            }}
-                            className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
-                          >
-                            <Copy className="w-4 h-4 text-blue-600" />
-                          </button>
-                        </div>
-
-                        {/* IFSC Code */}
-                        <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-blue-100">
-                          <div>
-                            <p className="text-xs text-gray-500">IFSC Code</p>
-                            <p className="text-base font-bold text-gray-900 font-mono">RATN0000315</p>
-                          </div>
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText('RATN0000315');
-                              toast({ variant: "success", title: "Copied!", description: "IFSC code copied to clipboard" });
-                            }}
-                            className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
-                          >
-                            <Copy className="w-4 h-4 text-blue-600" />
-                          </button>
-                        </div>
-
-                        {/* Bank Name */}
-                        <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-blue-100">
-                          <div>
-                            <p className="text-xs text-gray-500">Bank Name</p>
-                            <p className="text-sm font-semibold text-gray-900">RBL Bank</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Payment Instructions */}
-                      <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
-                        <div className="flex items-start gap-2">
-                          <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <p className="text-xs font-semibold text-amber-800">Important Instructions</p>
-                            <ul className="text-xs text-amber-700 mt-1 space-y-1 list-disc list-inside">
-                              <li>Transfer exact amount: ₹{getRemainingAmount().toLocaleString()}</li>
-                              <li>Use IMPS/NEFT/UPI for instant transfer</li>
-                              <li>Add your Loan Number <span className="font-mono font-bold">{activeLoanDetails.loanNumber}</span> in remarks</li>
-                              <li>Payment will be updated within 24 hours</li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
 
                     {/* -------------------------------------------------------->UPI */}
 
