@@ -159,9 +159,9 @@ interface DetailedApplication {
     bsaBreStatus?: string;
     manuallyBreStatus?: string;
     manullyExtractedBankStatementFlag?: boolean;
-    // When false, no manually-uploaded bank statement has been verified yet —
-    // surface the manual upload control in the details modal.
     bankStatementUploadedVerified?: boolean;
+    // When true, surface the manual bank-statement upload control in the modal.
+    isActivebankStatementUpload?: boolean;
   };
   lastModifiedBy?: {
     _id: string;
@@ -847,8 +847,8 @@ export default function MyApplicationsPage() {
                   )}
 
                   {/* Manual bank statement upload — shown only when
-                      breHistory.bankStatementUploadedVerified is true. */}
-                  {detailedApplication.breHistory?.bankStatementUploadedVerified && (
+                      breHistory.isActivebankStatementUpload is true. */}
+                  {detailedApplication.breHistory?.isActivebankStatementUpload && (
                     <BankStatementUpload
                       applicationNumber={detailedApplication.applicationNumber}
                       applicationId={detailedApplication._id}
