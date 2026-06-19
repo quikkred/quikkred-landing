@@ -109,21 +109,32 @@ function ApplicationStatusContent() {
             raw && typeof raw === 'object' && '__type' in raw && 'value' in raw
               ? raw.value
               : raw;
-          if (!cancelled) {
-            setStatusData({
-              status: data?.status || "approved",
-              loanNumber: data?.loanNumber || "",
-              amount: data?.amount || "",
-              reason: data?.reason || ""
-            });
+          // Only trust the fast path when it carries an EXPLICIT, valid status.
+          // Previously a missing/garbled payload silently became "approved",
+          // which fired the Meta "Lead/approved" conversion (and inflated the
+          // pending-disbursement count) for applicants who never submitted.
+          // If the status isn't a real value, drop through to the backend
+          // lookup, which authoritatively gates on isSubmit.
+          const handoffStatus = (data?.status || '').toLowerCase();
+          if (handoffStatus === 'approved' || handoffStatus === 'rejected') {
+            if (!cancelled) {
+              setStatusData({
+                status: handoffStatus,
+                loanNumber: data?.loanNumber || "",
+                amount: data?.amount || "",
+                reason: data?.reason || ""
+              });
+            }
+            // Clear the payload and flag that the applicant has seen their
+            // status so the dashboard won't redirect back here (avoids a loop
+            // when they click "Go to Dashboard").
+            localStorage.removeItem('applicationStatusData');
+            sessionStorage.setItem('applicationStatusSeen', '1');
+            if (!cancelled) setIsLoading(false);
+            return;
           }
-          // Clear the payload and flag that the applicant has seen their
-          // status so the dashboard won't redirect back here (avoids a loop
-          // when they click "Go to Dashboard").
+          // Invalid/empty handoff — discard it and fall through.
           localStorage.removeItem('applicationStatusData');
-          sessionStorage.setItem('applicationStatusSeen', '1');
-          if (!cancelled) setIsLoading(false);
-          return;
         } catch (error) {
           console.error('Error parsing application status data:', error);
           // fall through to the backend lookup
@@ -151,8 +162,19 @@ function ApplicationStatusContent() {
           return;
         }
 
+        // Gate on isSubmit: only show a final approved/rejected status — and
+        // therefore only fire the Meta "Lead/approved" ad conversion that feeds
+        // the pending-disbursement count — once the customer has actually
+        // submitted. A half-finished application (status set by BRE but
+        // isSubmit=false) must not be counted as an approved conversion.
+        if (!app.isSubmit) {
+          if (!cancelled) { setNoData(true); setIsLoading(false); }
+          return;
+        }
+
+        // Status can come back as "REJECTED" or "Reject" — match any REJECT* form.
         const isRejected =
-          (app.status || '').toUpperCase() === 'REJECTED' ||
+          (app.status || '').toUpperCase().includes('REJECT') ||
           app.breHistory?.breStatus === 'REJECTED';
 
         if (!cancelled) {

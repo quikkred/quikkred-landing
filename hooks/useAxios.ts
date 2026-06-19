@@ -68,8 +68,24 @@ export default function useAxios() {
 
                 // If 401 Unauthorized
                 if (status === 401) {
+                    const url = prevRequest?.url || "";
+
                     // ✅ Prevent logout loop if login attempt itself fails with 401
-                    if (prevRequest && (prevRequest.url?.includes("/api/auth") || prevRequest.url?.includes("/auth/login"))) {
+                    if (url.includes("/api/auth") || url.includes("/auth/login")) {
+                        return Promise.reject(error);
+                    }
+
+                    // ✅ Don't sign the user out when an application-flow endpoint
+                    // (FinFactor / bank-statement BRE) errors. These hit external
+                    // consent flows and can return 401 even while the session is
+                    // valid — the customer should stay on the application page and
+                    // the calling component handles the error (toast). See
+                    // FinFactorVerify / BalanceCheckConsent.
+                    if (
+                        url.includes("finfactor") ||
+                        url.includes("finFactor") ||
+                        url.includes("/bre/")
+                    ) {
                         return Promise.reject(error);
                     }
 

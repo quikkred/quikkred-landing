@@ -37,7 +37,11 @@ const BankVerification = ({
     // onBack,
 }: BankVerificationProps) => {
     const axios = useAxios();
-    const { getApplication, getCustomer } = useApplication();
+    const { getApplication, getCustomer, application } = useApplication();
+
+    // When the bank statement was manually uploaded & verified, the applicant
+    // skips eligibility and the e-mandate (UPI AutoPay) step is not required.
+    const skipMandate = !!application?.breHistory?.bankStatementUploadedVerified;
 
     // UI States (Loading/Errors only, Data stays in formData)
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>(initialFieldErrors);
@@ -48,7 +52,10 @@ const BankVerification = ({
 
     const loanCalc = calculateLoanDetails(formData.loanAmount, formData.tenure);
 
-    const canProceed = useMemo(() => (formData.bankVerified && formData.selfieVerified && formData.upiAutoPayStatus), [formData]);
+    const canProceed = useMemo(
+        () => formData.bankVerified && formData.selfieVerified && (skipMandate || formData.upiAutoPayStatus),
+        [formData, skipMandate]
+    );
 
     // --- Helpers ---
 
@@ -363,8 +370,10 @@ const BankVerification = ({
                 </button>
             </div>
 
-            {/* E-mandate */}
-            <EMandateVerify formData={formData} setFormData={setFormData} />
+            {/* E-mandate — hidden when skipped (manually verified bank statement) */}
+            {!skipMandate && (
+                <EMandateVerify formData={formData} setFormData={setFormData} />
+            )}
 
             {/* <div className="bg-gray-50 rounded-xl p-4">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-2">

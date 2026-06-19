@@ -52,6 +52,9 @@ export interface BreHistory {
     bsaBrePulledAt?: string;
     bsaBreStatus?: "APPROVED" | "REJECTED" | "PENDING" | "PROCEED TO BANK";
     manuallyBreStatus?: string;
+    // When true, the applicant can skip eligibility and resume at the
+    // selfie + bank verification step.
+    bankStatementUploadedVerified?: boolean;
 }
 
 /* -------------------- FINFACTOR -------------------- */
