@@ -157,7 +157,12 @@ export default function QuickApplyV2Page() {
         const isLogin = user?.isEmailVerified || user?.isMobileVerified;
         const basicAndKycFilled = user?.isBasicDetailsFilled && user?.isKycDetailsFilled;
 
-        if (isLogin && user?.bsaInitiated && (user?.isProfileVerified || user?.isBankDetailsFilled)) {
+        // Skip eligibility entirely once the bank statement has been manually
+        // uploaded & verified — send the applicant straight to selfie + bank.
+        if (isLogin && application?.breHistory?.bankStatementUploadedVerified) {
+            setStep("bank");
+            hasAutoRouted.current = true;
+        } else if (isLogin && user?.bsaInitiated && (user?.isProfileVerified || user?.isBankDetailsFilled)) {
             setStep("bank");
             hasAutoRouted.current = true;
         } else if (isLogin && basicAndKycFilled) {
