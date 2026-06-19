@@ -15,6 +15,7 @@ import { loansService } from '@/lib/api/loans.service';
 import { API_BASE_URL } from '@/lib/config';
 import { useApplications } from '@/store/hooks/useApplications';
 import { Skeleton } from '@/components/ui/Skeleton';
+import BankStatementUpload from './BankStatementUpload';
 
 interface Application {
   _id: string;
@@ -152,6 +153,15 @@ interface DetailedApplication {
       respondedAt: string;
       cost: number;
     };
+  };
+  breHistory?: {
+    breStatus?: string;
+    bsaBreStatus?: string;
+    manuallyBreStatus?: string;
+    manullyExtractedBankStatementFlag?: boolean;
+    // When false, no manually-uploaded bank statement has been verified yet —
+    // surface the manual upload control in the details modal.
+    bankStatementUploadedVerified?: boolean;
   };
   lastModifiedBy?: {
     _id: string;
@@ -834,6 +844,16 @@ export default function MyApplicationsPage() {
                         ))}
                       </div>
                     </div>
+                  )}
+
+                  {/* Manual bank statement upload — shown only when
+                      breHistory.bankStatementUploadedVerified is true. */}
+                  {detailedApplication.breHistory?.bankStatementUploadedVerified && (
+                    <BankStatementUpload
+                      applicationNumber={detailedApplication.applicationNumber}
+                      applicationId={detailedApplication._id}
+                      onUploaded={() => fetchApplicationDetails(detailedApplication.applicationNumber)}
+                    />
                   )}
 
                   {/* Bank Account */}
