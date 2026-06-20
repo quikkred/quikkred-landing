@@ -30,6 +30,13 @@ import FormSteps, { FormStepsType } from './components/ui/FormSteps';
 import Link from 'next/link';
 import { COMPANY_PHONE_TEL } from '@/lib/constants/companyInfo';
 import { LayoutDashboard, LogOut } from 'lucide-react';
+import FlowSwitcher from './components/ui/FlowSwitcher';
+
+// Show the runtime flow switcher in development, or anywhere it's explicitly
+// enabled via NEXT_PUBLIC_SHOW_FLOW_SWITCHER=true.
+const SHOW_FLOW_SWITCHER =
+    process.env.NODE_ENV !== 'production' ||
+    process.env.NEXT_PUBLIC_SHOW_FLOW_SWITCHER === 'true';
 
 // Main Page Component
 export default function QuickApplyV2Page() {
@@ -342,6 +349,9 @@ export default function QuickApplyV2Page() {
                     </div>
                 </div>
             </footer>
+
+            {/* Runtime flow switcher (dev / opt-in) */}
+            {SHOW_FLOW_SWITCHER && <FlowSwitcher />}
         </div>
     );
 }
