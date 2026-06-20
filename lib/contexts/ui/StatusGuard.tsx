@@ -93,8 +93,10 @@ const StatusGuard = () => {
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
                         transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
-                        // Added 'relative' and 'z-10' to ensure it sits on top of backdrop
-                        className="relative z-10 w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden ring-1 ring-black/5"
+                        // Added 'relative' and 'z-10' to ensure it sits on top of backdrop.
+                        // Cap height and allow scrolling so tall content (e.g. the
+                        // bank-statement upload in the review state) never overflows.
+                        className="relative z-10 w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-y-auto max-h-[90vh] ring-1 ring-black/5"
                     >
                         {loading ? (
                             <LoadingView />

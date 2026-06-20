@@ -49,6 +49,26 @@ export default function useAxios() {
                     accessToken = (freshSession as any)?.accessToken;
                 }
 
+                // /api/customer/get REQUIRES an auth token. If it's not ready yet
+                // (e.g. the brief post-login window), retry to resolve it, then
+                // cancel the request rather than firing it without an Authorization
+                // header (which the backend rejects with 401 "Token missing").
+                // Scoped to this endpoint so public/pre-login calls (OTP, login,
+                // product list) that legitimately have no token are unaffected.
+                const requiresToken = (config.url || "").includes("/api/customer/get");
+                if (requiresToken && !accessToken) {
+                    for (let attempt = 0; attempt < 3 && !accessToken; attempt++) {
+                        await new Promise((resolve) => setTimeout(resolve, 200));
+                        const freshSession = await getSessionDeduped();
+                        accessToken = (freshSession as any)?.accessToken;
+                    }
+                    if (!accessToken && !config.headers["Authorization"]) {
+                        return Promise.reject(
+                            new axios.Cancel(`Auth token unavailable — ${config.url} cancelled`)
+                        );
+                    }
+                }
+
                 // If we found a token (via hook OR fallback), attach it
                 if (accessToken && !config.headers["Authorization"]) {
                     config.headers["Authorization"] = `Bearer ${accessToken}`;

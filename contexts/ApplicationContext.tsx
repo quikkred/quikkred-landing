@@ -5,6 +5,7 @@ import { ApplicationInterface } from "@/interfaces/applicationInterface";
 import LayoutInterface from "@/interfaces/layoutInterface";
 import { AxiosError } from "axios";
 import { createContext, useContext, useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { useAuth, User, userInitializer } from "./AuthContext";
 
 interface ApplicationContextStateInterface {
@@ -40,6 +41,14 @@ const ApplicationProvider = ({ children, payload }: LayoutInterface & { payload:
     const [state, setState] = useState<ApplicationContextStateInterface>({ ...initialState, data: payload });
     const { updateUser, user } = useAuth();
 
+    // The NextAuth session is the source of the Bearer token that useAxios
+    // attaches. Gate auth-dependent fetches on it so we never fire a request
+    // before the token is resolvable (which otherwise yields a 401
+    // "Token missing" right after login).
+    const { data: session, status: sessionStatus } = useSession();
+    const accessToken = (session as any)?.accessToken as string | undefined;
+    const isAuthReady = sessionStatus === "authenticated" && !!accessToken;
+
     const updateState = (state: Partial<ApplicationContextStateInterface>) => setState((prev) => ({ ...prev, ...state }));
 
     // Sync payload from server component if it updates
@@ -49,22 +58,25 @@ const ApplicationProvider = ({ children, payload }: LayoutInterface & { payload:
         }
     }, [payload]);
 
-    // If user is logged in but application data is missing (e.g. client navigation), fetch it
+    // If user is logged in but application data is missing (e.g. client navigation), fetch it.
+    // Wait for the session token (isAuthReady) so the request carries an Authorization header.
     useEffect(() => {
-        if (user?.id && !state.data && !state.loading) {
+        if (isAuthReady && user?.id && !state.data && !state.loading) {
             getApplication();
         }
-    }, [user?.id]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isAuthReady, user?.id]);
 
     // On every mount/refresh: pull fresh customer details from /api/customer/get and
     // merge into `user`. The server snapshot (getUserDetails) omits flags like
     // bsaInitiated / isBankDetailsFilled, so we refresh client-side to get current data.
+    // Gated on isAuthReady so it never fires before the token is available.
     useEffect(() => {
-        if (user?.id) {
+        if (isAuthReady && user?.id) {
             getCustomer();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.id]);
+    }, [isAuthReady, user?.id]);
 
     const getApplication = async () => {
         try {
@@ -98,6 +110,9 @@ const ApplicationProvider = ({ children, payload }: LayoutInterface & { payload:
     }
 
     const getCustomer = async () => {
+        // Skip until the session token is available so the request always
+        // carries an Authorization header (avoids 401 "Token missing").
+        if (!isAuthReady) return;
         try {
             const response = await axios.get("/api/customer/get");
             if (response.status === 200 || response.status === 201) {
@@ -115,6 +130,8 @@ const ApplicationProvider = ({ children, payload }: LayoutInterface & { payload:
     }
 
     const fetchUserData = async () => {
+        // Skip until the session token is available (avoids 401 "Token missing").
+        if (!isAuthReady) return null;
         try {
             const response = await axios.get("/api/customer/get");
             if (response.status === 200 || response.status === 201) {

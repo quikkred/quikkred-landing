@@ -24,6 +24,8 @@ interface BankStatementUploadProps {
   applicationId?: string;
   /** Called after a successful upload so the parent can refresh the details. */
   onUploaded?: () => void;
+  /** Optional subtitle override (e.g. "Please upload your last 6 months bank statement"). */
+  description?: string;
 }
 
 function formatSize(bytes: number) {
@@ -36,11 +38,13 @@ export default function BankStatementUpload({
   applicationNumber,
   applicationId,
   onUploaded,
+  description,
 }: BankStatementUploadProps) {
   const axios = useAxios();
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const [file, setFile] = useState<File | null>(null);
+  const [password, setPassword] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploaded, setUploaded] = useState(false);
@@ -79,6 +83,8 @@ export default function BankStatementUpload({
       formData.append('documentValue', file);
       formData.append('applicationNumber', applicationNumber);
       if (applicationId) formData.append('applicationId', applicationId);
+      // Password for protected PDFs — only sent when provided.
+      if (password.trim()) formData.append('password', password.trim());
 
       const res = await axios.postForm('/api/application/upload-bank-statement', formData);
 
@@ -114,7 +120,7 @@ export default function BankStatementUpload({
             Bank Statement Verification
           </h4>
           <p className="text-xs sm:text-sm text-gray-600 mt-0.5">
-            Upload your latest bank statement for manual verification by our team.
+            {description || 'Upload your latest bank statement for manual verification by our team.'}
           </p>
         </div>
       </div>
@@ -203,6 +209,21 @@ export default function BankStatementUpload({
                 )}
               </div>
             )}
+
+            {/* Password for protected statements (optional) — always visible */}
+            <div className="mt-3">
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Statement password <span className="text-gray-400">(if PDF is protected)</span>
+              </label>
+              <input
+                type="text"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter password if your statement is locked"
+                autoComplete="off"
+                className="w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm text-gray-800 placeholder:text-gray-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 outline-none"
+              />
+            </div>
 
             {error && (
               <p className="mt-2 flex items-center gap-1.5 text-xs text-red-600">
