@@ -37,11 +37,12 @@ const BankVerification = ({
     // onBack,
 }: BankVerificationProps) => {
     const axios = useAxios();
-    const { getApplication, getCustomer, application } = useApplication();
+    const { getApplication, getCustomer } = useApplication();
 
-    // When the bank statement was manually uploaded & verified, the applicant
-    // skips eligibility and the e-mandate (UPI AutoPay) step is not required.
-    const skipMandate = !!application?.breHistory?.bankStatementUploadedVerified;
+    // E-mandate (UPI AutoPay) is currently skipped for everyone.
+    // To re-enable it only for manually-verified bank statements, restore:
+    //   const skipMandate = !!application?.breHistory?.bankStatementUploadedVerified;
+    const skipMandate = true;
 
     // UI States (Loading/Errors only, Data stays in formData)
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>(initialFieldErrors);
