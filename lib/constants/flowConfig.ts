@@ -22,7 +22,7 @@
 export type BreFlowMode = 'DIRECT_TO_BANK' | 'BRE_DECISION';
 
 /** The single source of truth for the default flow. Change this one line. */
-export const DEFAULT_BRE_FLOW: BreFlowMode = 'DIRECT_TO_BANK';
+export const DEFAULT_BRE_FLOW: BreFlowMode = 'BRE_DECISION';
 
 /** localStorage key for the per-browser runtime override. */
 export const FLOW_MODE_STORAGE_KEY = 'quikkred:breFlowMode';
