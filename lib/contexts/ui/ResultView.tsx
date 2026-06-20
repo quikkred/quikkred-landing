@@ -13,7 +13,9 @@ import {
     Landmark,
     ArrowRight,
     Ban,
-    AlertTriangle
+    AlertTriangle,
+    Clock,
+    LifeBuoy
 } from "lucide-react";
 import { useRouter } from "nextjs-toploader/app";
 import useAxios from "@/hooks/useAxios";
@@ -21,6 +23,7 @@ import { toast } from "@/components/ui/toast";
 import { KycStatusTypes, LoanOfferData } from "../KycStatusContext";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import BankStatementUpload from "@/app/user/applications/BankStatementUpload";
 
 const ResultView = ({
     status,
@@ -45,6 +48,7 @@ const ResultView = ({
     const isApproved = status === "approved";
     const isPtb = status === "proceed-to-bank";
     const isRejected = status === "rejected";
+    const isPending = status === "pending"; // account on HOLD / under review
 
     const handleGoHome = () => {
         onBack();
@@ -102,6 +106,12 @@ const ResultView = ({
         icon = <Landmark className="w-10 h-10" />;
         defaultTitle = "Proceed to Bank Verification";
         defaultDesc = "Your application requires additional bank verification to proceed.";
+    } else if (isPending) {
+        themeColor = "text-amber-600 bg-amber-100 ring-amber-50";
+        gradientBg = "bg-gradient-to-b from-amber-50 to-white";
+        icon = <Clock className="w-10 h-10" />;
+        defaultTitle = "Your account is under review";
+        defaultDesc = "Your application is currently under review. Please contact our support team for assistance.";
     } else {
         // Rejected
         themeColor = "text-red-500 bg-red-100 ring-red-50";
@@ -146,8 +156,9 @@ const ResultView = ({
                     <h3 className={`text-xl font-bold tracking-tight text-gray-900`}>
                         {displayTitle}
                     </h3>
-                    {/* Only show generic description if NOT rejected (Rejected has specific box below) */}
-                    {!isRejected && (!isApproved || !data?.loanAmount) && (
+                    {/* Only show generic description if NOT rejected/pending — those
+                        render their own message box below, so we'd duplicate it. */}
+                    {!isRejected && !isPending && (!isApproved || !data?.loanAmount) && (
                         <p className="text-sm text-gray-500 mt-1">
                             {displayDesc}
                         </p>
@@ -205,6 +216,32 @@ const ResultView = ({
                             <p className="text-xs text-blue-600 mt-2 px-2">
                                 {data.reason}
                             </p>
+                        )}
+                    </motion.div>
+                )}
+
+                {/* --- 2b. ACCOUNT UNDER REVIEW (HOLD) VIEW --- */}
+                {isPending && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="space-y-4 mb-6"
+                    >
+                        {/* Bank-statement upload (with optional password) */}
+                        <BankStatementUpload
+                            applicationNumber={data?.applicationNumber || data?.applicationId || ""}
+                            applicationId={data?.applicationId}
+                            description="Please upload your last 6 months bank statement (PDF). Add the password if the file is protected."
+                            onUploaded={onContinue}
+                        />
+
+                        {(data?.applicationNumber || data?.applicationId) && (
+                            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 text-center">
+                                <p className="text-xs text-gray-500 mb-1">Application No</p>
+                                <p className="text-sm font-bold text-gray-900 font-mono">
+                                    {data?.applicationNumber || data?.applicationId}
+                                </p>
+                            </div>
                         )}
                     </motion.div>
                 )}
@@ -280,6 +317,25 @@ const ResultView = ({
                             )}
                         </span>
                     </button>
+                )}
+
+                {/* CASE 1b: Account Under Review — secondary actions (upload is above) */}
+                {isPending && (
+                    <div className="space-y-3">
+                        <button
+                            onClick={onBack}
+                            className="w-full py-3 px-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl font-semibold text-sm transition-all"
+                        >
+                            Close
+                        </button>
+                        <button
+                            onClick={() => { onBack(); router.push('/support'); }}
+                            className="w-full flex items-center justify-center gap-1.5 text-xs font-medium text-amber-700 hover:text-amber-800 transition-colors"
+                        >
+                            <LifeBuoy className="w-3.5 h-3.5" />
+                            Need help? Contact Support
+                        </button>
+                    </div>
                 )}
 
                 {/* CASE 2: Approved Button */}
