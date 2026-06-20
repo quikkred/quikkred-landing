@@ -20,6 +20,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/toast';
 import { API_BASE_URL, RAZORPAY_KEY } from '@/lib/config';
 import { COMPANY_EMAIL_SUPPORT, COMPANY_PHONE_DISPLAY, COMPANY_PHONE_TEL } from '@/lib/constants/companyInfo';
+import { SKIP_EMANDATE } from '@/lib/constants/flowConfig';
 import { useDashboard } from '@/store/hooks/useDashboard';
 import { useLoans } from '@/store/hooks/useLoans';
 import { globalHandlerService } from '@/lib/api/global-handler.service';
@@ -876,8 +877,9 @@ export default function UserDashboard() {
     }
   };
 
-  // Fetch E-Mandate when dashboard data is available
+  // Fetch E-Mandate when dashboard data is available (skipped when e-mandate is off)
   useEffect(() => {
+    if (SKIP_EMANDATE) return;
     if (data?.customerId) {
       fetchEmandateDetails();
     }
@@ -1330,7 +1332,8 @@ export default function UserDashboard() {
             not yet authorized, and the application is not in a terminal/blocked state.
             We intentionally do NOT require hasEMandate here: the subscription is created
             on Authorize click (POST), so this block must show first to expose the button. */}
-        {data?.isSubmit
+        {!SKIP_EMANDATE
+          && data?.isSubmit
           && !!emandateData
           && !emandateData?.isAuthorized
           && !['CLOSED', 'REJECTED', 'CANCELLED', 'HOLD'].includes(
@@ -1431,7 +1434,7 @@ export default function UserDashboard() {
         )}
 
         {/* E-Mandate Authorized Success - Show whenever the mandate is authorized */}
-        {emandateData?.isAuthorized && (
+        {!SKIP_EMANDATE && emandateData?.isAuthorized && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

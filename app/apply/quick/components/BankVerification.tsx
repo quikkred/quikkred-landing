@@ -14,6 +14,7 @@ import { useRef, useState, useCallback, useMemo } from "react";
 import SelfieVerify from "./ui/SelfieVerify";
 import { calculateLoanDetails, formatCurrency } from "@/lib/constants/quickApplyV2";
 import EMandateVerify from "./ui/EMandateVerify";
+import { SKIP_EMANDATE } from "@/lib/constants/flowConfig";
 
 // Regex Constants
 const REGEX = {
@@ -39,10 +40,10 @@ const BankVerification = ({
     const axios = useAxios();
     const { getApplication, getCustomer } = useApplication();
 
-    // E-mandate (UPI AutoPay) is currently skipped for everyone.
+    // E-mandate (UPI AutoPay) is currently skipped for everyone (SKIP_EMANDATE).
     // To re-enable it only for manually-verified bank statements, restore:
     //   const skipMandate = !!application?.breHistory?.bankStatementUploadedVerified;
-    const skipMandate = true;
+    const skipMandate = SKIP_EMANDATE;
 
     // UI States (Loading/Errors only, Data stays in formData)
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>(initialFieldErrors);
