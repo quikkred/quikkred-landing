@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from "nextjs-toploader/app";
 import {
@@ -20,6 +20,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/toast';
 import { API_BASE_URL, RAZORPAY_KEY } from '@/lib/config';
 import { COMPANY_EMAIL_SUPPORT, COMPANY_PHONE_DISPLAY, COMPANY_PHONE_TEL } from '@/lib/constants/companyInfo';
+import { SKIP_EMANDATE } from '@/lib/constants/flowConfig';
 import { useDashboard } from '@/store/hooks/useDashboard';
 import { useLoans } from '@/store/hooks/useLoans';
 import { globalHandlerService } from '@/lib/api/global-handler.service';
@@ -59,6 +60,9 @@ export default function UserDashboard() {
   } = useLoans();
 
   const [data, setData] = useState<DashboardData | null>(null);
+  // Full customer profile from /api/customer/get — carries repayment details
+  // (au_virtual_accounts) that aren't part of the dashboard payload.
+  const [customerData, setCustomerData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedEmiCount, setSelectedEmiCount] = useState<number>(1);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -123,12 +127,56 @@ export default function UserDashboard() {
   // Next unpaid split — the day the borrower is expected to pay next.
   const nextPendingSplit = pendingSplits[0] ?? null;
 
+  // ----- AU virtual account(s) for repayment -----
+  // `au_virtual_accounts` comes from /api/customer/get (fetched into
+  // customerData below) — an array of AU Bank virtual accounts. The customer
+  // repays by transferring to the VAN + IFSC.
+  const repayAccounts = useMemo(() => {
+    const raw = customerData?.au_virtual_accounts;
+    if (!Array.isArray(raw)) {
+      return [] as { beneficiaryName: string; van: string; actualAccount: string; ifsc: string; customerRef: string; status: string }[];
+    }
+    return raw
+      .map((a: any) => ({
+        beneficiaryName: a?.beneficiaryName ?? '',
+        van: a?.van ?? '',
+        actualAccount: a?.actualAccount ?? '',
+        ifsc: a?.ifsc ?? '',
+        customerRef: a?.customerRef ?? '',
+        status: a?.status ?? '',
+      }))
+      .filter((a) => a.van || a.actualAccount);
+  }, [customerData]);
+
+  const copyRepayDetail = (value: string, label: string) => {
+    navigator.clipboard.writeText(value);
+    toast({ variant: 'success', title: 'Copied!', description: `${label} copied to clipboard` });
+  };
+
   // Update local state from Redux
   useEffect(() => {
     if (dashboardData) {
       setData(dashboardData);
     }
   }, [dashboardData]);
+
+  // Fetch the full customer profile (/api/customer/get) for repayment details
+  // (au_virtual_accounts). Non-blocking: if it fails, the repay card just
+  // doesn't render.
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await axios.get('/api/customer/get');
+        const customer = res.data?.data ?? res.data;
+        if (!cancelled) setCustomerData(customer);
+      } catch {
+        // ignore — repayment card is optional
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
 
   // Route approved / rejected applicants to the dedicated status page once per
   // session. From there they can choose to continue to the dashboard. The
@@ -829,8 +877,9 @@ export default function UserDashboard() {
     }
   };
 
-  // Fetch E-Mandate when dashboard data is available
+  // Fetch E-Mandate when dashboard data is available (skipped when e-mandate is off)
   useEffect(() => {
+    if (SKIP_EMANDATE) return;
     if (data?.customerId) {
       fetchEmandateDetails();
     }
@@ -1283,7 +1332,8 @@ export default function UserDashboard() {
             not yet authorized, and the application is not in a terminal/blocked state.
             We intentionally do NOT require hasEMandate here: the subscription is created
             on Authorize click (POST), so this block must show first to expose the button. */}
-        {data?.isSubmit
+        {!SKIP_EMANDATE
+          && data?.isSubmit
           && !!emandateData
           && !emandateData?.isAuthorized
           && !['CLOSED', 'REJECTED', 'CANCELLED', 'HOLD'].includes(
@@ -1384,7 +1434,7 @@ export default function UserDashboard() {
         )}
 
         {/* E-Mandate Authorized Success - Show whenever the mandate is authorized */}
-        {emandateData?.isAuthorized && (
+        {!SKIP_EMANDATE && emandateData?.isAuthorized && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1571,6 +1621,105 @@ export default function UserDashboard() {
 
             {!loadingLoanDetails && activeLoanDetails && (
               <>
+
+                {/* Repay to Virtual Account (AU) — fallback when Razorpay fails */}
+                {repayAccounts.length > 0 && (
+                  <div className="mb-6 space-y-3">
+                    {/* Razorpay-down note */}
+                    <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                      <p className="text-xs leading-relaxed text-amber-800">
+                        <span className="font-semibold">Payment not going through?</span> If
+                        Razorpay / auto-pay isn&apos;t working, transfer your repayment directly
+                        to the virtual account below from any bank or UPI app — it
+                        auto-reconciles to your loan.
+                      </p>
+                    </div>
+
+                    {repayAccounts.map((acc, idx) => (
+                      <div
+                        key={idx}
+                        className="relative overflow-hidden rounded-2xl border border-emerald-900/10 bg-gradient-to-br from-[#0B3B32] via-[#0E4A3D] to-[#10B4A3] text-white shadow-lg shadow-emerald-900/15"
+                      >
+                        {/* decorative glow */}
+                        <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-emerald-300/10 blur-2xl" />
+
+                        {/* Header */}
+                        <div className="relative flex items-start justify-between gap-3 px-5 pt-5">
+                          <div className="flex items-center gap-3">
+                            <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/10 ring-1 ring-white/15">
+                              <CreditCard className="h-5 w-5 text-emerald-100" />
+                            </div>
+                            <div>
+                              <p className="text-[11px] uppercase tracking-[0.14em] text-emerald-200/70">Repay to</p>
+                              <h3 className="text-base font-semibold leading-tight">{acc.beneficiaryName || 'Virtual Account'}</h3>
+                            </div>
+                          </div>
+                          {acc.status && (
+                            <span className="shrink-0 rounded-full bg-emerald-400/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-100 ring-1 ring-emerald-300/25">
+                              {acc.status}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* VAN — primary */}
+                        <div className="relative px-5 pt-4">
+                          <p className="text-[11px] uppercase tracking-[0.14em] text-emerald-200/60">Virtual Account Number</p>
+                          <div className="mt-1 flex items-center justify-between gap-3">
+                            <p className="font-mono text-xl font-bold tracking-[0.06em] break-all">{acc.van}</p>
+                            <button
+                              onClick={() => copyRepayDetail(acc.van, 'Virtual account number')}
+                              className="shrink-0 rounded-lg bg-white/10 p-2 ring-1 ring-white/10 transition-colors hover:bg-white/20"
+                              aria-label="Copy virtual account number"
+                            >
+                              <Copy className="h-4 w-4 text-emerald-50" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Actual account number */}
+                        {acc.actualAccount && (
+                          <div className="relative px-5 pt-3">
+                            <p className="text-[11px] uppercase tracking-[0.14em] text-emerald-200/60">Account Number</p>
+                            <div className="mt-1 flex items-center justify-between gap-3">
+                              <p className="font-mono text-base font-semibold tracking-[0.04em] break-all">{acc.actualAccount}</p>
+                              <button
+                                onClick={() => copyRepayDetail(acc.actualAccount, 'Account number')}
+                                className="shrink-0 rounded-lg bg-white/10 p-2 ring-1 ring-white/10 transition-colors hover:bg-white/20"
+                                aria-label="Copy account number"
+                              >
+                                <Copy className="h-4 w-4 text-emerald-50" />
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* IFSC + Loan reference */}
+                        <div className="relative mt-4 grid grid-cols-2 gap-px bg-white/10">
+                          <div className="bg-[#0E4A3D] px-5 py-3">
+                            <p className="text-[11px] uppercase tracking-[0.14em] text-emerald-200/60">IFSC</p>
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="font-mono text-sm font-semibold">{acc.ifsc || '—'}</p>
+                              {acc.ifsc && (
+                                <button
+                                  onClick={() => copyRepayDetail(acc.ifsc, 'IFSC')}
+                                  className="shrink-0 rounded-md p-1.5 transition-colors hover:bg-white/15"
+                                  aria-label="Copy IFSC"
+                                >
+                                  <Copy className="h-3.5 w-3.5 text-emerald-200" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          <div className="bg-[#0E4A3D] px-5 py-3">
+                            <p className="text-[11px] uppercase tracking-[0.14em] text-emerald-200/60">Loan Reference</p>
+                            <p className="truncate font-mono text-sm font-semibold">{acc.customerRef || '—'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* Payment Progress Overview */}
                 <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-4 sm:p-6 border border-purple-200 mb-6">

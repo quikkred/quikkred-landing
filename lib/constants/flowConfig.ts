@@ -22,7 +22,14 @@
 export type BreFlowMode = 'DIRECT_TO_BANK' | 'BRE_DECISION';
 
 /** The single source of truth for the default flow. Change this one line. */
-export const DEFAULT_BRE_FLOW: BreFlowMode = 'DIRECT_TO_BANK';
+export const DEFAULT_BRE_FLOW: BreFlowMode = 'BRE_DECISION';
+
+/**
+ * When true, the e-mandate (UPI AutoPay) step is skipped everywhere — both in
+ * the apply flow (BankVerification) and on the dashboard (no authorize/cancel
+ * UI, no mandate fetch). Flip to false to bring the e-mandate step back.
+ */
+export const SKIP_EMANDATE = true;
 
 /** localStorage key for the per-browser runtime override. */
 export const FLOW_MODE_STORAGE_KEY = 'quikkred:breFlowMode';
