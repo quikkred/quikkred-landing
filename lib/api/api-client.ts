@@ -1,6 +1,7 @@
 import { API_BASE_URL } from '@/lib/config';
 import getToken from '../getToken';
 import { clearSession } from '../auth-utils';
+import { isTestMode } from '@/lib/testMode';
 
 // Core API Client with type-safe methods for all backend endpoints
 interface ApiResponse<T = any> {
@@ -50,6 +51,13 @@ class ApiClient {
     options: RequestInit = {},
     useExternalAPI: boolean = false
   ): Promise<ApiResponse<T>> {
+    // TEST MODE: never hit the backend. Endpoints that need data are
+    // short-circuited with dummy data in customer.service; everything else
+    // fails soft so callers' guards/catches handle it without a network call.
+    if (isTestMode()) {
+      return { success: false, error: 'test-mode: backend disabled' } as ApiResponse<T>;
+    }
+
     const url = useExternalAPI
       ? `${this.externalBaseURL}${endpoint}`
       : `${this.baseURL}${endpoint}`;

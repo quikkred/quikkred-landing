@@ -15,6 +15,7 @@ import NextTopLoader from "nextjs-toploader";
 import { LanguageProvider } from "@/lib/contexts/LanguageContext";
 import { TranslationData } from "@/lib/getTranslation";
 import TestModeBanner from "@/components/TestModeBanner";
+import { isTestMode } from "@/lib/testMode";
 
 // Lazy-loaded AgentInitializer — non-critical, deferred
 const AgentInitializer = lazy(() => import('@/lib/quikkred-agent').then(mod => {
@@ -90,9 +91,12 @@ export function Providers({ language, initialData, children }: { language: strin
                       <AnalyticsProvider>
                         <WebSocketProvider>
                           {children}
-                          <Suspense fallback={null}>
-                            <AgentInitializer />
-                          </Suspense>
+                          {/* TEST MODE: skip the tracking agent (it hits /api/tracking). */}
+                          {!isTestMode() && (
+                            <Suspense fallback={null}>
+                              <AgentInitializer />
+                            </Suspense>
+                          )}
                         </WebSocketProvider>
                       </AnalyticsProvider>
                     ) : (

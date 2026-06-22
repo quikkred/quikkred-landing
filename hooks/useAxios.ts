@@ -6,6 +6,7 @@ import { useSession, getSession } from "next-auth/react";
 import { API_BASE_URL } from "@/lib/config";
 import { toast } from "@/components/ui/toast";
 import { clearSession } from "@/lib/auth-utils";
+import { isTestMode } from "@/lib/testMode";
 
 // 1. Create the instance outside to keep it stable
 const axiosClient = axios.create({
@@ -36,6 +37,13 @@ export default function useAxios() {
         // ✅ Request Interceptor: The "Hybrid" Token Check
         const requestIntercept = axiosClient.interceptors.request.use(
             async (config) => {
+                // TEST MODE: never hit the backend. Cancel every request so the
+                // app runs purely on the injected dummy data. Callers already
+                // wrap these in try/catch (a Cancel is a no-op error).
+                if (isTestMode()) {
+                    return Promise.reject(new axios.Cancel("test-mode: backend disabled"));
+                }
+
                 // Ensure headers object exists
                 config.headers = config.headers || {};
 
@@ -85,6 +93,11 @@ export default function useAxios() {
             async (error: AxiosError) => {
                 const prevRequest = error.config;
                 const status = error.response?.status;
+
+                // TEST MODE: never force-logout / redirect to /login.
+                if (isTestMode()) {
+                    return Promise.reject(error);
+                }
 
                 // If 401 Unauthorized
                 if (status === 401) {
