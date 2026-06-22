@@ -14,6 +14,7 @@ import { SessionProvider } from "next-auth/react";
 import NextTopLoader from "nextjs-toploader";
 import { LanguageProvider } from "@/lib/contexts/LanguageContext";
 import { TranslationData } from "@/lib/getTranslation";
+import TestModeBanner from "@/components/TestModeBanner";
 
 // Lazy-loaded AgentInitializer — non-critical, deferred
 const AgentInitializer = lazy(() => import('@/lib/quikkred-agent').then(mod => {
@@ -97,6 +98,7 @@ export function Providers({ language, initialData, children }: { language: strin
                     ) : (
                       children
                     )}
+                    <TestModeBanner />
                   </NotificationProvider>
                 </QueryClientProvider>
               </ThemeProvider>

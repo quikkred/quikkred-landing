@@ -26,6 +26,7 @@ import getToken from "@/lib/getToken";
 import { QUICK_FORM_URL } from "@/lib/config";
 import useAxios from "@/hooks/useAxios";
 import { ApplicationInterface } from "@/interfaces/applicationInterface";
+import { isTestMode, TEST_APPLICATION_STATUS } from "@/lib/testMode";
 
 // Declare global types for tracking
 declare global {
@@ -96,6 +97,17 @@ function ApplicationStatusContent() {
     let cancelled = false;
 
     const resolveStatus = async () => {
+      // 0. TEST MODE — show the dummy approved status directly (unless a real
+      //    handoff payload is present, which takes precedence).
+      if (isTestMode() && !localStorage.getItem('applicationStatusData')) {
+        if (!cancelled) {
+          setStatusData({ ...TEST_APPLICATION_STATUS });
+          sessionStorage.setItem('applicationStatusSeen', '1');
+          setIsLoading(false);
+        }
+        return;
+      }
+
       // 1. Fast path — data handed off via localStorage by the apply flow /
       //    dashboard redirect. Show it instantly.
       const storedData = localStorage.getItem('applicationStatusData');

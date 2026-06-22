@@ -5,6 +5,7 @@ import { useRouter } from "nextjs-toploader/app";
 import { API_BASE_URL } from '@/lib/config';
 import { clearSession } from '@/lib/auth-utils';
 import { quikkredAgent } from '@/lib/quikkred-agent';
+import { isTestMode, TEST_USER } from '@/lib/testMode';
 
 export interface User {
   id: string;
@@ -146,7 +147,19 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
 
+  // ── TEST MODE: seed a fully-approved dummy customer so every guarded page
+  // renders without a real login/session. See lib/testMode. ──
   useEffect(() => {
+    if (isTestMode()) {
+      setUser((prev) => prev?.id === TEST_USER.id ? prev : TEST_USER);
+      setIsLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    // Test mode supplies its own user — never overwrite it from storage.
+    if (isTestMode()) return;
     // Check for existing session
     const token = localStorage.getItem('token') ||
       localStorage.getItem('authToken') ||
