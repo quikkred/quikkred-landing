@@ -15,6 +15,7 @@ import SelfieVerify from "./ui/SelfieVerify";
 import { calculateLoanDetails, formatCurrency } from "@/lib/constants/quickApplyV2";
 import EMandateVerify from "./ui/EMandateVerify";
 import { SKIP_EMANDATE } from "@/lib/constants/flowConfig";
+import BankStatementUpload from "@/app/user/applications/BankStatementUpload";
 
 // Regex Constants
 const REGEX = {
@@ -38,7 +39,7 @@ const BankVerification = ({
     // onBack,
 }: BankVerificationProps) => {
     const axios = useAxios();
-    const { getApplication, getCustomer } = useApplication();
+    const { getApplication, getCustomer, application } = useApplication();
 
     // E-mandate (UPI AutoPay) is currently skipped for everyone (SKIP_EMANDATE).
     // To re-enable it only for manually-verified bank statements, restore:
@@ -50,13 +51,23 @@ const BankVerification = ({
     const [ifscLoading, setIfscLoading] = useState(false);
     const [verifyLoading, setVerifyLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [statementUploaded, setStatementUploaded] = useState(false);
     const ifscTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const loanCalc = calculateLoanDetails(formData.loanAmount, formData.tenure);
 
+    // The 6-month bank statement is required before submit. Treat it as satisfied
+    // if it was uploaded here, or already verified by the backend earlier.
+    const statementSatisfied =
+        statementUploaded || !!application?.breHistory?.bankStatementUploadedVerified;
+
     const canProceed = useMemo(
-        () => formData.bankVerified && formData.selfieVerified && (skipMandate || formData.upiAutoPayStatus),
-        [formData, skipMandate]
+        () =>
+            formData.bankVerified &&
+            formData.selfieVerified &&
+            statementSatisfied &&
+            (skipMandate || formData.upiAutoPayStatus),
+        [formData, skipMandate, statementSatisfied]
     );
 
     // --- Helpers ---
@@ -375,6 +386,26 @@ const BankVerification = ({
             {/* E-mandate — hidden when skipped (manually verified bank statement) */}
             {!skipMandate && (
                 <EMandateVerify formData={formData} setFormData={setFormData} />
+            )}
+
+            {/* Bank statement upload — shown once bank details are verified, as the
+                final step before submitting. Includes an optional password field. */}
+            {formData.bankVerified && (
+                <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.25 }}
+                >
+                    <BankStatementUpload
+                        applicationNumber={application?.applicationNumber || ""}
+                        applicationId={application?._id}
+                        description="Upload your last 6 months bank statement (PDF) to complete your application. Add the password if the file is protected."
+                        onUploaded={() => {
+                            setStatementUploaded(true);
+                            getApplication();
+                        }}
+                    />
+                </motion.div>
             )}
 
             {/* <div className="bg-gray-50 rounded-xl p-4">
