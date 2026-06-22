@@ -5,7 +5,7 @@ import { useRouter } from "nextjs-toploader/app";
 import { API_BASE_URL } from '@/lib/config';
 import { clearSession } from '@/lib/auth-utils';
 import { quikkredAgent } from '@/lib/quikkred-agent';
-import { isTestMode, TEST_USER } from '@/lib/testMode';
+import { isTestMode, isTestLoggedIn, setTestLoggedIn, clearTestLoggedIn, TEST_USER } from '@/lib/testMode';
 
 export interface User {
   id: string;
@@ -147,10 +147,15 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
 
-  // ── TEST MODE: seed a fully-approved dummy customer so every guarded page
-  // renders without a real login/session. See lib/testMode. ──
+  // ── TEST MODE: seed a fully-approved dummy customer so guarded pages render
+  // without a real session. On the apply flow we wait until the fixed-OTP test
+  // login completes (so the login screen is shown); everywhere else we seed
+  // immediately. See lib/testMode. ──
   useEffect(() => {
-    if (isTestMode()) {
+    if (!isTestMode()) return;
+    const onApplyFlow =
+      typeof window !== 'undefined' && window.location.pathname.startsWith('/apply');
+    if (isTestLoggedIn() || !onApplyFlow) {
       setUser((prev) => prev?.id === TEST_USER.id ? prev : TEST_USER);
       setIsLoading(false);
     }
@@ -227,6 +232,14 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
     setIsLoading(true);
 
     try {
+      // TEST MODE: skip the real backend auth — seed the dummy user and mark
+      // the test session as logged in. Triggered by the fixed-OTP login.
+      if (isTestMode()) {
+        setTestLoggedIn();
+        setUser({ ...TEST_USER, mobile: mobile || TEST_USER.mobile, email: email || TEST_USER.email });
+        return true;
+      }
+
       // If API data is provided, use it for authentication
       if (apiData && (apiData.user?.id || apiData.userId) && (apiData.token || apiData.accessToken)) {
         const authToken = apiData.accessToken || apiData.token;
@@ -290,6 +303,9 @@ export function AuthProvider({ userData, children }: { userData: User | null; ch
     // Set logging out state immediately to hide UI
     //console.log("Logging out...");
     try {
+      // Test mode: clear the test-login flag so the apply flow shows login again.
+      clearTestLoggedIn();
+
       // Stop agent heartbeat on logout (keep deviceId for re-identification)
       quikkredAgent.stopHeartbeat();
 

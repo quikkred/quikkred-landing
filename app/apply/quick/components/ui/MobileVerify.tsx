@@ -10,6 +10,7 @@ import { useQuickApplyTracking, useVerificationFrictionTracking } from "@/lib/ho
 import { useApplication } from "@/contexts/ApplicationContext";
 import { getCoordinates, LocationError, locationErrorMessage } from "@/lib/helpers/getCoordinates";
 import { toast } from "@/components/ui/toast";
+import { isTestMode, TEST_OTP } from "@/lib/testMode";
 
 const MobileVerify = ({
   callback,
@@ -75,6 +76,14 @@ const MobileVerify = ({
     setOtpLoading(true);
     setOtpError("");
 
+    // TEST MODE: skip the real SMS + location prompt — just reveal the OTP box.
+    if (isTestMode()) {
+      setOtpSent(true);
+      setOtpTimer(TIMERS?.OTP_RESEND || 30);
+      setOtpLoading(false);
+      return;
+    }
+
     try {
       const { latitude, longitude } = await getCoordinates();
       const response = await axios.post("/api/auth/customer/create", {
@@ -113,6 +122,24 @@ const MobileVerify = ({
 
     setOtpVerifying(true);
     setOtpError("");
+
+    // TEST MODE: accept the fixed OTP and log in via the dummy user (no backend).
+    if (isTestMode()) {
+      if (otp !== TEST_OTP) {
+        setOtpError("Invalid OTP. Please try again.");
+        setOtpVerifying(false);
+        return;
+      }
+      try {
+        trackOTPVerified(mobile);
+        mobileFriction.completeTracking(true);
+      } catch { /* tracking is best-effort */ }
+      await login({ mobile, apiData: null });
+      getApplication();
+      callback?.();
+      setOtpVerifying(false);
+      return;
+    }
 
     try {
       const res = await signIn("otp", {

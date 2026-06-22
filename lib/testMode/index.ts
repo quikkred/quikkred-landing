@@ -21,6 +21,8 @@
 export const TEST_MODE_QUERY = "testMode";
 export const TEST_MODE_STORAGE_KEY = "qk_test_mode";
 export const TEST_MODE_COOKIE = "qk_test_mode";
+/** Set once the user completes the Test Mode OTP login. */
+export const TEST_LOGIN_FLAG = "qk_test_logged_in";
 
 /** Build-time master switch — inlined into client + middleware + server bundles. */
 export const TEST_MODE_ENV = process.env.NEXT_PUBLIC_TEST_MODE === "true";
@@ -71,7 +73,39 @@ export function disableTestMode(): void {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.removeItem(TEST_MODE_STORAGE_KEY);
+    window.localStorage.removeItem(TEST_LOGIN_FLAG);
     document.cookie = `${TEST_MODE_COOKIE}=; path=/; max-age=0`;
+  } catch {
+    /* ignore */
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Test Mode "login" state — set after the fixed-OTP login completes so the   */
+/*  apply flow shows the login screen first, while other pages stay seeded.    */
+/* -------------------------------------------------------------------------- */
+export function isTestLoggedIn(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.localStorage.getItem(TEST_LOGIN_FLAG) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function setTestLoggedIn(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(TEST_LOGIN_FLAG, "1");
+  } catch {
+    /* ignore */
+  }
+}
+
+export function clearTestLoggedIn(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(TEST_LOGIN_FLAG);
   } catch {
     /* ignore */
   }

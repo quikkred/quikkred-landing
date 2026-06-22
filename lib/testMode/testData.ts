@@ -24,6 +24,11 @@ export const TEST_LOAN_NUMBER = "QKLN-TEST-0001";
 export const TEST_LOAN_ID = "test-loan-001";
 export const TEST_PRODUCT_ID = "test-product-001";
 
+/** Fixed OTP that always works in Test Mode (no real SMS / backend). */
+export const TEST_OTP = "123456";
+/** Mobile number used for the Test Mode login screen. */
+export const TEST_MOBILE = "9999999999";
+
 const APPROVED_AMOUNT = 50000;
 const TENURE_DAYS = 30;
 const INTEREST_RATE = 1; // 1% per day (matches the apply flow's rate/100 math)
@@ -43,7 +48,7 @@ export const TEST_USER: User = {
   lastName: "Sharma",
   fullName: "Rahul Sharma",
   email: "rahul.test@quikkred.in",
-  mobile: "9876543210",
+  mobile: TEST_MOBILE,
   dateOfBirth: "1995-06-15T00:00:00.000Z",
   address: "123 MG Road, Indiranagar",
   city: "Bengaluru",
