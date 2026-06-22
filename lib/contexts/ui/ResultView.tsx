@@ -23,7 +23,6 @@ import { toast } from "@/components/ui/toast";
 import { KycStatusTypes, LoanOfferData } from "../KycStatusContext";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import BankStatementUpload from "@/app/user/applications/BankStatementUpload";
 
 const ResultView = ({
     status,
@@ -156,9 +155,9 @@ const ResultView = ({
                     <h3 className={`text-xl font-bold tracking-tight text-gray-900`}>
                         {displayTitle}
                     </h3>
-                    {/* Only show generic description if NOT rejected/pending — those
-                        render their own message box below, so we'd duplicate it. */}
-                    {!isRejected && !isPending && (!isApproved || !data?.loanAmount) && (
+                    {/* Only show generic description if NOT rejected (rejected renders
+                        its own reason box below, so we'd duplicate it). */}
+                    {!isRejected && (!isApproved || !data?.loanAmount) && (
                         <p className="text-sm text-gray-500 mt-1">
                             {displayDesc}
                         </p>
@@ -221,28 +220,16 @@ const ResultView = ({
                 )}
 
                 {/* --- 2b. ACCOUNT UNDER REVIEW (HOLD) VIEW --- */}
-                {isPending && (
+                {isPending && (data?.applicationNumber || data?.applicationId) && (
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="space-y-4 mb-6"
+                        className="rounded-xl p-3 mb-6 border text-center bg-amber-50 border-amber-100"
                     >
-                        {/* Bank-statement upload (with optional password) */}
-                        <BankStatementUpload
-                            applicationNumber={data?.applicationNumber || data?.applicationId || ""}
-                            applicationId={data?.applicationId}
-                            description="Please upload your last 6 months bank statement (PDF). Add the password if the file is protected."
-                            onUploaded={onContinue}
-                        />
-
-                        {(data?.applicationNumber || data?.applicationId) && (
-                            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 text-center">
-                                <p className="text-xs text-gray-500 mb-1">Application No</p>
-                                <p className="text-sm font-bold text-gray-900 font-mono">
-                                    {data?.applicationNumber || data?.applicationId}
-                                </p>
-                            </div>
-                        )}
+                        <p className="text-xs uppercase font-semibold mb-1 text-amber-500">Application No</p>
+                        <p className="font-bold text-gray-800 text-base tracking-wide">
+                            {data?.applicationNumber || data?.applicationId}
+                        </p>
                     </motion.div>
                 )}
 
