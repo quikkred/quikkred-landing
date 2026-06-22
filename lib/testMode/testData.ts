@@ -55,57 +55,56 @@ export const TEST_USER: User = {
   state: "Karnataka",
   pincode: "560001",
 
-  // Every verification step marked complete → all apply pages are skipped
+  // FRESH applicant: only mobile + email are verified (done at the OTP login
+  // step). Everything else is left empty/false so the apply flow shows EVERY
+  // step and you fill each field yourself. Each step is faked client-side.
   isEmailVerified: true,
   isMobileVerified: true,
-  isPanVerify: true,
-  isAadhaarVerify: true,
-  brePulled: true,
-  kycStatus: "VERIFIED",
-  status: "APPROVED",
+  isPanVerify: false,
+  isAadhaarVerify: false,
+  brePulled: false,
+  kycStatus: "PENDING",
+  status: "PENDING",
   createdAt: "2026-06-01T10:00:00.000Z",
 
-  pan: "ABCDE1234F",
-  aadhaar: "XXXXXXXX1234",
+  // KYC / employment — left blank for you to enter
+  pan: "",
+  aadhaar: "",
   employmentType: "SALARIED",
-  monthlyIncome: "75000",
-  companyName: "Acme Corp Pvt Ltd",
+  monthlyIncome: "",
+  companyName: "",
 
-  // Bank — verified
-  bankName: "HDFC Bank",
-  accountHolderName: "Rahul Sharma",
-  accountNumber: "50100123456789",
-  ifsc: "HDFC0001234",
-  pennyDropStatus: "VERIFIED",
-  bankVerified: true,
-  loanAmount: String(APPROVED_AMOUNT),
+  // Bank — not yet verified
+  bankName: "",
+  accountHolderName: "",
+  accountNumber: "",
+  ifsc: "",
+  pennyDropStatus: "",
+  bankVerified: false,
+  loanAmount: "",
 
-  // Selfie / liveness — verified
-  profile: {
-    documentType: "SELFIE",
-    status: "VERIFIED",
-    s3Key: "test/selfie.jpg",
-    s3URL: "https://ui-avatars.com/api/?name=Rahul+Sharma&background=25B181&color=fff&size=256",
-  },
+  // Selfie / liveness — not yet captured
+  profile: null,
 
-  upiAutoPayStatus: true,
-  isSubmit: true,
-  bsaInitiated: true,
-  bsaCompleted: true,
-  bsaToBreInitiated: true,
-  bsaToBreCompleted: true,
+  upiAutoPayStatus: false,
+  isSubmit: false,
+  bsaInitiated: false,
+  bsaCompleted: false,
+  bsaToBreInitiated: false,
+  bsaToBreCompleted: false,
 
-  // "Filled" flags → eligibility / KYC / bank steps are all considered done
-  isBasicDetailsFilled: true,
-  isKycDetailsFilled: true,
-  isBankDetailsFilled: true,
-  isProfileVerified: true,
+  // Nothing filled yet → eligibility / KYC / bank steps are all shown
+  isBasicDetailsFilled: false,
+  isKycDetailsFilled: false,
+  isBankDetailsFilled: false,
+  isProfileVerified: false,
 
-  references: [
-    { name: "Amit Verma", mobile: "9811122233", relationship: "Friend" },
-    { name: "Priya Nair", mobile: "9822233344", relationship: "Colleague" },
-  ],
+  references: [],
 };
+
+/** Placeholder selfie image used when capturing the selfie in Test Mode. */
+export const TEST_SELFIE_URL =
+  "https://ui-avatars.com/api/?name=Rahul+Sharma&background=25B181&color=fff&size=256";
 
 /* -------------------------------------------------------------------------- */
 /*  2) APPLICATION → drives useApplication().application (apply flow)         */
@@ -114,15 +113,18 @@ export const TEST_APPLICATION: ApplicationInterface = {
   _id: TEST_LOAN_ID,
   applicationNumber: TEST_APPLICATION_NUMBER,
   customerId: TEST_CUSTOMER_ID,
-  productId: TEST_PRODUCT_ID,
+  // Left blank so you pick the product in the form. Approved amounts below are
+  // kept only for the offer/summary display.
+  productId: "",
 
-  status: "APPROVED",
+  // In-progress: the apply flow shows every step until you submit.
+  status: "PENDING",
   priority: "HIGH",
 
-  isSubmit: true,
+  isSubmit: false,
   isDeleted: false,
 
-  requestedLoanAmount: APPROVED_AMOUNT,
+  requestedLoanAmount: 0,
   breApprovedLoanAmount: APPROVED_AMOUNT,
   approvedLoanAmount: APPROVED_AMOUNT,
 
@@ -179,16 +181,15 @@ export const TEST_APPLICATION: ApplicationInterface = {
   },
 
   breHistory: {
-    brePulled: true,
-    brePulledAt: "2026-06-20T09:00:00.000Z",
-    breStatus: "APPROVED",
-    bsaInitiated: true,
-    bsaInitiatedAt: "2026-06-20T09:05:00.000Z",
-    bsaStatus: "COMPLETED",
-    bsaBrePulled: true,
-    bsaBrePulledAt: "2026-06-20T09:10:00.000Z",
-    bsaBreStatus: "APPROVED",
-    bankStatementUploadedVerified: true,
+    brePulled: false,
+    brePulledAt: "",
+    breStatus: "PENDING",
+    bsaInitiated: false,
+    bsaStatus: "PENDING",
+    bsaBrePulled: false,
+    bsaBreStatus: "PENDING",
+    // false → the apply flow routes through eligibility (not straight to bank).
+    bankStatementUploadedVerified: false,
   },
 
   finfactor: { transactions: [] },

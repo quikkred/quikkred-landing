@@ -16,6 +16,7 @@ import { LanguageProvider } from "@/lib/contexts/LanguageContext";
 import { TranslationData } from "@/lib/getTranslation";
 import TestModeBanner from "@/components/TestModeBanner";
 import { isTestMode } from "@/lib/testMode";
+import { installTestNetworkGuard } from "@/lib/testMode/networkGuard";
 
 // Lazy-loaded AgentInitializer — non-critical, deferred
 const AgentInitializer = lazy(() => import('@/lib/quikkred-agent').then(mod => {
@@ -28,6 +29,13 @@ const AgentInitializer = lazy(() => import('@/lib/quikkred-agent').then(mod => {
 }));
 
 export function Providers({ language, initialData, children }: { language: string; initialData: TranslationData; children: ReactNode; }) {
+  // Install the Test Mode network guard during the very first render (before any
+  // child effect can fire a request). Idempotent + no-op outside Test Mode.
+  useState(() => {
+    installTestNetworkGuard();
+    return null;
+  });
+
   const [queryClient] = useState(
     () =>
       new QueryClient({

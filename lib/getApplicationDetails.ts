@@ -2,8 +2,12 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { ApplicationInterface } from "@/interfaces/applicationInterface";
 import { getServerSession } from "next-auth";
 import { API_BASE_URL } from "./config";
+import { isTestMode } from "@/lib/testMode";
 
 const getApplicationDetails = async (): Promise<ApplicationInterface | null> => {
+    // TEST MODE: never call the backend on the server (dummy data is injected
+    // client-side by ApplicationContext).
+    if (isTestMode()) return null;
     try {
         // 1) Get NextAuth session (server-side)
         const session = await getServerSession(authOptions);

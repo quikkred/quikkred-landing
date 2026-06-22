@@ -8,6 +8,7 @@ import useAxios from "@/hooks/useAxios";
 import { AxiosError } from "axios";
 import { useQuickApplyTracking, useVerificationFrictionTracking } from "@/lib/hooks";
 import { toast } from "@/components/ui/toast";
+import { isTestMode } from "@/lib/testMode";
 
 interface PanVerifyProps {
     formData: QuickApplyV2FormData;
@@ -83,6 +84,24 @@ const PanVerify = ({ formData, setFormData }: PanVerifyProps) => {
         trackPANVerifyStarted();
         panFriction.startTracking();
         panFriction.recordAttempt();
+
+        // TEST MODE: accept the entered PAN without calling the backend.
+        if (isTestMode()) {
+            setFormData((prev) => ({
+                ...prev,
+                panVerified: true,
+                panData: {
+                    panNumber: formData.pan,
+                    fullName: prev.fullName,
+                    dateOfBirth: prev.dob,
+                },
+            }));
+            toast({ variant: "success", title: "PAN verified successfully" });
+            trackPANVerifySuccess({ fullName: formData.fullName });
+            panFriction.completeTracking(true);
+            setPanReverifyTimer(TIMERS.REVERIFY_COOLDOWN);
+            return;
+        }
 
         try {
             // 2. API Call (Only sending panNumber)

@@ -5,6 +5,7 @@ import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
 import { Camera, CheckCircle } from "lucide-react"
 import { useState, useEffect } from "react";
 import SelfieVerifyModal from "./SelfieVerifyModal";
+import { isTestMode, TEST_SELFIE_URL } from "@/lib/testMode";
 
 interface SelfieVerifyProps {
     formData: QuickApplyV2FormData;
@@ -49,6 +50,16 @@ const SelfieVerify = ({ formData, setFormData }: SelfieVerifyProps) => {
         }
     }, [formData.selfie, formData.selfieVerified]);
 
+
+    // TEST MODE: mark the selfie verified without opening the AWS liveness modal
+    // (which needs a backend session). Uses a placeholder preview image.
+    const handleTestCapture = () => {
+        setFormData((prev) => ({ ...prev, selfie: TEST_SELFIE_URL, selfieVerified: true }));
+        setSelfiePreview(TEST_SELFIE_URL);
+        setSelfieCaptured(true);
+        setSelfieVerified(true);
+        toast({ variant: "success", title: "Selfie captured (test mode) ✓" });
+    };
 
     const handleSelfieCapture = (imageFile: File) => {
         // ... (Existing validations: null check, size, type, blank check) ...
@@ -105,7 +116,7 @@ const SelfieVerify = ({ formData, setFormData }: SelfieVerifyProps) => {
                         </p>
                         <button
                             type="button"
-                            onClick={() => setIsOpen(true)}
+                            onClick={() => (isTestMode() ? handleTestCapture() : setIsOpen(true))}
                             className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg hover:shadow-lg transition-all font-semibold flex items-center justify-center gap-2"
                         >
                             <Camera className="w-5 h-5" />

@@ -15,6 +15,7 @@ import { AxiosError } from "axios";
 import useLocation from "@/hooks/useLocation";
 import useFlowMode from "@/hooks/useFlowMode";
 import { normalizeBreStatus } from "@/lib/constants/flowConfig";
+import { isTestMode } from "@/lib/testMode";
 
 interface FinFactorVerifyProps {
     formData: QuickApplyV2FormData;
@@ -441,6 +442,14 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
         }
         if (formData.reference1Mobile === formData.mobile || formData.reference2Mobile === formData.mobile) {
             toast({ variant: "error", title: "Reference cannot be your own mobile number" });
+            return;
+        }
+
+        // TEST MODE: skip the loan/create + BRE backend calls and show the
+        // approval offer directly. Accepting it advances to the bank step.
+        if (isTestMode()) {
+            setFormData((prev) => ({ ...prev, breStatus: "Approve", brePulled: true }));
+            showApprovalModal();
             return;
         }
 
