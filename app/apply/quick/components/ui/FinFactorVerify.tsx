@@ -115,12 +115,12 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             visibility: true,
             status: "pending",
             title: "Your account is under review",
-            description: "Your account is under review and needs manual verification.",
+            description: "Your account is under review. Please complete your bank verification to proceed.",
             data: {
                 applicationNumber: (application as any)?.applicationNumber,
                 applicationId: (application as any)?._id || (application as any)?.applicationId,
                 status: "HOLD",
-                reason: "Your account is under review and needs manual verification.",
+                reason: "Your account is under review. Please complete your bank verification to proceed.",
             },
             // After a successful upload, close the popup and refresh context.
             onSuccess: () => {
@@ -129,6 +129,107 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             },
         });
     };
+
+    // Map a decision payload (Approve / Reject / Proceed-to-Bank) to the result
+    // modal. Shared by the BRE flow and the SurePass AA store step.
+    const showDecisionModal = (decision: any) => {
+        const status = normalizeBreStatus(decision?.status);
+        const copy = ELIGIBILITY_COPY[status];
+
+        setFormData((prev) => ({
+            ...prev,
+            breStatus: status === "proceed-to-bank" ? "HOLD" : decision?.status,
+            brePulled: true,
+        }));
+
+        updateKycStatusState({
+            loading: false,
+            visibility: true,
+            status,
+            title: copy.title,
+            description: copy.description,
+            data: {
+                applicationNumber: decision?.applicationNumber,
+                applicationId: decision?.applicationId,
+                status: decision?.status,
+                reason: copy.description,
+                loanAmount: decision?.loanAmount ?? formData.approvedLoanAmount ?? formData.loanAmount,
+                tenure: decision?.tenure ?? formData.tenure,
+                tenureUnit: decision?.tenureUnit ?? formData.tenureUnit,
+                totalInterest: decision?.totalInterest ?? formData.totalInterest,
+                totalRepayment: decision?.totalRepayment ?? formData.totalRepayment,
+                netDisbursalAmount: decision?.netDisbursalAmount ?? formData.netDisbursalAmount,
+                interestRate: decision?.interestRate ?? formData.interestRate,
+            },
+            onSuccess: () => {
+                onNext();
+                getApplication();
+                getCustomer();
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            },
+        });
+    };
+
+    // SurePass AA — after the consent flow returns to
+    // /apply/quick?surepassAA=success, we wait 30s (handled by the effect below)
+    // then store the fetched AA data and surface the resulting decision.
+    const storeSurepassData = async (customerId: string, applicationId: string) => {
+        try {
+            const response = await axios.post(`/api/surepassAA/storeData`, {
+                customerId,
+                applicationId,
+            });
+            const result = response.data;
+
+            getCustomer();
+            getApplication();
+
+            const decision = result?.data;
+            if ((response.status === 200 || response.status === 201) && decision?.status) {
+                showDecisionModal(decision);
+            } else {
+                updateKycStatusState({ visibility: false, loading: false });
+                toast({ variant: "success", title: "Verification submitted", description: result?.message || "Your bank data has been received." });
+            }
+        } catch (error: unknown) {
+            updateKycStatusState({ visibility: false, loading: false });
+            const message =
+                error instanceof AxiosError
+                    ? error.response?.data?.message || "Could not complete bank verification."
+                    : "Something went wrong";
+            toast({ variant: "error", title: "Error", description: message });
+        }
+    };
+
+    // On return from SurePass AA consent, wait 30 seconds then store the data.
+    const surepassHandled = useRef(false);
+    const surepassStored = useRef(false);
+    useEffect(() => {
+        if (surepassHandled.current) return;
+        if (searchParams.get("surepassAA") !== "success") return;
+
+        const customerId = user?.id;
+        const applicationId = (application as any)?._id || formData.applicationId;
+        if (!customerId || !applicationId) return; // wait until user/application load
+
+        surepassHandled.current = true;
+        // Strip the param so a manual refresh can't re-trigger the store step.
+        window.history.replaceState({}, "", window.location.pathname);
+
+        // Show a processing modal during the 30s wait, then store the AA data.
+        updateKycStatusState({ visibility: true, loading: true });
+
+        // IMPORTANT: do NOT clear this timer on cleanup. React StrictMode (dev)
+        // mounts → unmounts → remounts, and a cleanup clearTimeout would cancel
+        // the scheduled store call so /api/surepassAA/storeData never fires.
+        // surepassStored dedupes the actual call instead.
+        setTimeout(() => {
+            if (surepassStored.current) return;
+            surepassStored.current = true;
+            storeSurepassData(customerId, applicationId);
+        }, 30000);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams, user?.id, application]);
 
     const [finFactorDetails, setFinFactorDetails] = useState<{
         visibility: boolean;
@@ -300,53 +401,10 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             const decision = result?.data;
 
             if ((response.status === 200 || response.status === 201) && decision) {
-                const status = normalizeBreStatus(decision.status);
-                const copy = ELIGIBILITY_COPY[status];
-
                 // Keep customer/application context fresh for downstream steps.
                 getCustomer();
                 getApplication();
-
-                setFormData((prev) => ({
-                    ...prev,
-                    // Proceed-to-Bank means the application is on HOLD until the
-                    // bank-statement verification completes.
-                    breStatus: status === "proceed-to-bank" ? "HOLD" : decision.status,
-                    brePulled: true,
-                }));
-
-                updateKycStatusState({
-                    loading: false,
-                    visibility: true,
-                    status,
-                    title: copy.title,
-                    description: copy.description,
-                    data: {
-                        applicationNumber: decision.applicationNumber,
-                        applicationId: decision.applicationId,
-                        status: decision.status,
-                        reason: copy.description,
-                        loanAmount:
-                            decision.loanAmount ??
-                            formData.approvedLoanAmount ??
-                            formData.loanAmount,
-                        tenure: decision.tenure ?? formData.tenure,
-                        tenureUnit: decision.tenureUnit ?? formData.tenureUnit,
-                        totalInterest: decision.totalInterest ?? formData.totalInterest,
-                        totalRepayment: decision.totalRepayment ?? formData.totalRepayment,
-                        netDisbursalAmount:
-                            decision.netDisbursalAmount ?? formData.netDisbursalAmount,
-                        interestRate: decision.interestRate ?? formData.interestRate,
-                    },
-                    // Only fires from the "Accept & Proceed" (approved) button.
-                    // Proceed-to-Bank handles its own action inside ResultView.
-                    onSuccess: () => {
-                        onNext();
-                        getApplication();
-                        getCustomer();
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                    },
-                });
+                showDecisionModal(decision);
             } else {
                 throw new Error(result?.message || "Eligibility check failed");
             }
