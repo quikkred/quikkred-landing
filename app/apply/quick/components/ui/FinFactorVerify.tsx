@@ -408,8 +408,17 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             } else {
                 throw new Error(result?.message || "Eligibility check failed");
             }
-        } catch {
-            // Show a generic frontend message rather than the raw backend error.
+        } catch (error: unknown) {
+            // Log the real cause for diagnosis; show a friendly message to the user.
+            if (error instanceof AxiosError) {
+                console.error(
+                    "[bre/initialize] failed:",
+                    error.response?.status,
+                    error.response?.data ?? error.message
+                );
+            } else {
+                console.error("[bre/initialize] failed:", error);
+            }
             updateKycStatusState({ visibility: false, loading: false });
             toast({
                 variant: "error",
