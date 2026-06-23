@@ -152,9 +152,11 @@ export default function QuickApplyV2Page() {
                     reference1Name: r1.name || "",
                     reference1Mobile: r1.mobile || "",
                     reference1Relationship: r1.relationship || "",
+                    reference1Verified: !!r1.verified,
                     reference2Name: r2.name || "",
                     reference2Mobile: r2.mobile || "",
                     reference2Relationship: r2.relationship || "",
+                    reference2Verified: !!r2.verified,
                 };
             })(),
         }));
