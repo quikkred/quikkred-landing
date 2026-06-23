@@ -229,10 +229,10 @@ const nextConfig: NextConfig = {
     removeConsole: process.env.NODE_ENV === "production",
   },
 
-  // Best Practices audit was flagging "Missing source maps for large
-  // first-party JavaScript". Enabling here ships .map files alongside the JS;
-  // browsers fetch them only when DevTools is open, so users don't pay the cost.
-  productionBrowserSourceMaps: true,
+  // Source maps are disabled in production builds to cut build time and output
+  // size (they were a major CI/build cost). Re-enable only if you need to upload
+  // maps to an error tracker.
+  productionBrowserSourceMaps: false,
 
   // Reduce bundle size with modularizeImports
   modularizeImports: {

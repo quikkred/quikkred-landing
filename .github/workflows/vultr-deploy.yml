@@ -110,7 +110,15 @@ jobs:
               cp "$ENV_BACKUP_FILE" .env.production
             fi
 
-            npm ci --prefer-offline --no-audit --no-fund
+            # Only reinstall deps when the lockfile changed since the last deploy
+            # (node_modules is preserved by git clean above). Saves a full npm ci.
+            LOCK_CACHE="/tmp/quikkred-landing-lock-${{ matrix.name }}"
+            if [ ! -d node_modules ] || ! cmp -s package-lock.json "$LOCK_CACHE" 2>/dev/null; then
+              npm ci --prefer-offline --no-audit --no-fund
+              cp package-lock.json "$LOCK_CACHE"
+            else
+              echo "package-lock.json unchanged — skipping npm ci"
+            fi
 
             NEXT_PUBLIC_API_URL=https://api.quikkred.in npm run build
 

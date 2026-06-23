@@ -36,11 +36,17 @@ on:
       - develop    # Deploy to Alpha (Hostinger KVM8)
       - staging    # Deploy to Beta (AWS ECS)
       - main       # Deploy to Production (AWS ECS)
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
   pull_request:
     branches:
       - develop
       - staging
       - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
 
 env:
   AWS_REGION: ap-south-1
@@ -64,16 +70,17 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --prefer-offline --no-audit --no-fund
 
       - name: Run linter
         run: npm run lint
         continue-on-error: true
 
-      - name: Build
-        run: npm run build
-        env:
-          NEXT_PUBLIC_API_URL: ${{ github.ref == 'refs/heads/main' && 'https://api.quikkred.in' || github.ref == 'refs/heads/staging' && 'https://beta.quikkred.in' || github.ref == 'refs/heads/develop' && 'https://api.quikkred.in' }}
+      # Fast type-safety gate instead of a full `next build` — the production
+      # build is re-done inside Docker (ECS) / on the server (alpha, vultr), so
+      # building here too just doubled the time. tsc catches type errors quickly.
+      - name: Type check
+        run: npx tsc --noEmit
 
   # ============================================
   # DEPLOY TO ALPHA (Hostinger KVM8)
@@ -105,7 +112,13 @@ jobs:
             git fetch origin develop
             git reset --hard origin/develop
 
-            npm ci
+            # Only reinstall deps when the lockfile changed (saves a full npm ci).
+            if ! cmp -s package-lock.json /tmp/quikkred-landing-lock.alpha 2>/dev/null; then
+              npm ci --prefer-offline --no-audit --no-fund
+              cp package-lock.json /tmp/quikkred-landing-lock.alpha
+            else
+              echo "package-lock.json unchanged — skipping npm ci"
+            fi
 
             NEXT_PUBLIC_API_URL=https://alpha.quikkred.in npm run build
 
@@ -147,30 +160,27 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Use beta environment config
         run: |
           cp .env.beta .env.production
           echo "✅ Using .env.beta for beta build"
 
-
-
-
-
-
       - name: Build, tag, and push image to ECR
         id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: beta-${{ github.sha }}
-        run: |
-          docker build \
-            --build-arg NEXT_PUBLIC_API_URL=https://beta.quikkred.in \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:beta-latest \
-            .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:beta-latest
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=https://beta.quikkred.in
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:beta-${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:beta-latest
+          cache-from: type=registry,ref=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:beta-buildcache
+          cache-to: type=registry,ref=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:beta-buildcache,mode=max
 
       - name: Update ECS Task Definition
         id: task-def
@@ -284,20 +294,22 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Build, tag, and push image to ECR
         id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: prod-${{ github.sha }}
-        run: |
-          docker build \
-            --build-arg NEXT_PUBLIC_API_URL=https://api.quikkred.in \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-            -t $ECR_REGISTRY/$ECR_REPOSITORY:latest \
-            .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=https://api.quikkred.in
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:prod-${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
+          cache-from: type=registry,ref=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:prod-buildcache
+          cache-to: type=registry,ref=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:prod-buildcache,mode=max
 
       - name: Update ECS Task Definition
         id: task-def
