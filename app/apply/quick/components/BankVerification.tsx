@@ -427,22 +427,37 @@ const BankVerification = ({
             )}
 
             {/* Bank statement upload — shown once bank details are verified, as the
-                final step before submitting. Includes an optional password field. */}
+                final step before submitting. Includes an optional password field.
+                Once uploaded (now or verified earlier) we show a persistent
+                confirmation instead of the widget, so it doesn't look like nothing
+                was submitted. */}
             {formData.bankVerified && (
                 <motion.div
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.25 }}
                 >
-                    <BankStatementUpload
-                        applicationNumber={application?.applicationNumber || ""}
-                        applicationId={application?._id}
-                        description="Upload your last 6 months bank statement (PDF) to complete your application. Add the password if the file is protected."
-                        onUploaded={() => {
-                            setStatementUploaded(true);
-                            getApplication();
-                        }}
-                    />
+                    {(statementUploaded || application?.breHistory?.bankStatementUploadedVerified) ? (
+                        <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                            <span className="grid place-items-center w-9 h-9 rounded-full bg-emerald-100 shrink-0">
+                                <CheckCircle className="w-5 h-5 text-emerald-600" />
+                            </span>
+                            <div className="min-w-0">
+                                <p className="text-sm font-semibold text-emerald-800">Bank statement uploaded</p>
+                                <p className="text-xs text-emerald-600">Received for verification. You can submit your application.</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <BankStatementUpload
+                            applicationNumber={application?.applicationNumber || ""}
+                            applicationId={application?._id}
+                            description="Upload your last 6 months bank statement (PDF) to complete your application. Add the password if the file is protected."
+                            onUploaded={() => {
+                                setStatementUploaded(true);
+                                getApplication();
+                            }}
+                        />
+                    )}
                 </motion.div>
             )}
 
