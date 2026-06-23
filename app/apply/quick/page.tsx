@@ -75,6 +75,12 @@ export default function QuickApplyV2Page() {
         const netDisbursal = approvedLoanAmount - (processingFee + gstOnProcessingFee);
         const totalRepayment = approvedLoanAmount + interestAmount;
 
+        // The API can return a masked account number (e.g. "XXXXXX1234"). Never
+        // pre-fill a masked value — blank it and force re-entry/re-verification.
+        const rawAccountNumber = user?.accountNumber || "";
+        const isAccountMasked = rawAccountNumber !== "" && !/^\d+$/.test(rawAccountNumber);
+        const safeAccountNumber = isAccountMasked ? "" : rawAccountNumber;
+
         const isMobileVerify = !user?.mobile && user?.mobile === "";
         const isEmailVerify = !user?.email && user?.email === "";
 
@@ -108,9 +114,10 @@ export default function QuickApplyV2Page() {
             // bank
             bankName: user?.bankName || "",
             accountHolderName: user?.accountHolderName || "",
-            accountNumber: user?.accountNumber || "",
+            accountNumber: safeAccountNumber,
             ifsc: user?.ifsc || "",
-            bankVerified: user?.bankVerified || false,
+            // A masked account can't be verified — require a fresh entry/verify.
+            bankVerified: isAccountMasked ? false : (user?.bankVerified || false),
 
             // bre form
             loanAmount: application?.requestedLoanAmount || 0,
@@ -145,9 +152,11 @@ export default function QuickApplyV2Page() {
                     reference1Name: r1.name || "",
                     reference1Mobile: r1.mobile || "",
                     reference1Relationship: r1.relationship || "",
+                    reference1Verified: !!r1.verified,
                     reference2Name: r2.name || "",
                     reference2Mobile: r2.mobile || "",
                     reference2Relationship: r2.relationship || "",
+                    reference2Verified: !!r2.verified,
                 };
             })(),
         }));

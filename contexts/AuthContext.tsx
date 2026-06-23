@@ -56,7 +56,7 @@ export interface User {
   isKycDetailsFilled?: boolean;
   isBankDetailsFilled?: boolean;
   isProfileVerified?: boolean;
-  references?: Array<{ name: string; mobile: string; relationship: string }>;
+  references?: Array<{ name: string; mobile: string; relationship: string; verified?: boolean }>;
 }
 
 interface LoginProps { apiData?: any; email?: string; mobile?: string; }

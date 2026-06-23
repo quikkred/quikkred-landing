@@ -17,12 +17,12 @@ export default function ImpersonationBanner() {
   const [remainingMs, setRemainingMs] = useState<number | null>(null);
   const [exiting, setExiting] = useState(false);
 
-  // Push page content down so the fixed banner never covers the top of the UI.
+  // Pad the bottom of the page so the fixed banner never covers the bottom of the UI.
   useEffect(() => {
     if (typeof document === "undefined") return;
-    document.body.style.paddingTop = isImpersonating ? "2.5rem" : "";
+    document.body.style.paddingBottom = isImpersonating ? "2.5rem" : "";
     return () => {
-      document.body.style.paddingTop = "";
+      document.body.style.paddingBottom = "";
     };
   }, [isImpersonating]);
 
@@ -64,7 +64,7 @@ export default function ImpersonationBanner() {
   };
 
   return (
-    <div className="fixed inset-x-0 top-0 z-[9998] flex items-center justify-center gap-3 bg-amber-500 px-4 py-2 text-sm font-medium text-amber-950 shadow-md">
+    <div className="fixed inset-x-0 bottom-0 z-[9998] flex items-center justify-center gap-3 bg-amber-500 px-4 py-2 text-sm font-medium text-amber-950 shadow-md">
       <ShieldAlert className="h-4 w-4 shrink-0" />
       <span className="truncate">
         Support session — viewing{" "}
