@@ -55,6 +55,13 @@ const FormSteps = ({
         if (applicationLoading) return;
         if (typeof window === 'undefined') return;
 
+        // `user.isSubmit` is a PERSISTENT flag from the previous cycle. On a
+        // reapply the new application is fresh (status PENDING, BRE not pulled),
+        // so don't bounce it to /application-status — let it run eligibility/BRE.
+        const status = (application?.status || '').toUpperCase();
+        const brePulled = !!application?.breHistory?.brePulled;
+        if (!brePulled && status === 'PENDING') return;
+
         const isRejected =
             (application?.status || '').toUpperCase() === 'REJECTED' ||
             application?.breHistory?.breStatus === 'REJECTED';
