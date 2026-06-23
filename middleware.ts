@@ -21,7 +21,25 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/user", request.url));
   }
 
-  // ✅ Protect routes: /user/* and /dashboard/*
+  // ── Admin area (obscured path) ────────────────────────────────────────────
+  // The admin tooling lives under /latur-ka-fraud-customer (deliberately
+  // unguessable; not linked anywhere in the customer UI). The entry page is the
+  // public sign-in (email + password → POST /api/user/login). Everything else
+  // under it requires a session; the page + backend enforce the ADMIN role.
+  // Admins sign in here, NOT via the customer OTP flow at /login, so an
+  // unauthenticated admin sub-route redirects to the entry page (not /login).
+  const ADMIN_BASE = "/latur-ka-fraud-customer";
+  const isAdminEntry = pathname === ADMIN_BASE;
+  const isAdminArea = pathname === ADMIN_BASE || pathname.startsWith(`${ADMIN_BASE}/`);
+
+  if (isAdminEntry && loggedIn) {
+    return NextResponse.redirect(new URL(`${ADMIN_BASE}/impersonate`, request.url));
+  }
+  if (isAdminArea && !isAdminEntry && !loggedIn) {
+    return NextResponse.redirect(new URL(ADMIN_BASE, request.url));
+  }
+
+  // ✅ Protect customer routes: /user/*, /profile/*, /dashboard/*
   const isProtected =
     pathname === "/user" ||
     pathname.startsWith("/user/") ||

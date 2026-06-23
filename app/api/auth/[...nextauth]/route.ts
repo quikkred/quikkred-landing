@@ -94,6 +94,9 @@ export const authOptions: AuthOptions = {
         accessToken: { label: "accessToken", type: "text" },
         refreshToken: { label: "refreshToken", type: "text" },
         customerUniqueId: { label: "customerUniqueId", type: "text" },
+        // Present only when an ADMIN/CEO starts a support session via
+        // /api/auth/admin/impersonate. Empty/undefined for a normal OTP login.
+        impersonatedBy: { label: "impersonatedBy", type: "text" },
       },
       async authorize(credentials) {
         if (!credentials?.accessToken || !credentials?.userId) {
@@ -137,6 +140,7 @@ export const authOptions: AuthOptions = {
           accessToken: credentials.accessToken,
           refreshToken: credentials.refreshToken,
           customerUniqueId: credentials.customerUniqueId,
+          impersonatedBy: credentials.impersonatedBy || null,
           verifiedAt: new Date().toISOString(),
         };
       },
@@ -297,6 +301,7 @@ export const authOptions: AuthOptions = {
         token.verifiedAt = (user as any).verifiedAt;
         token.email = (user as any).email;
         (token as any).mobile = (user as any).mobile;
+        (token as any).impersonatedBy = (user as any).impersonatedBy ?? null;
         if ((user as any).phoneNumber) (token as any).phoneNumber = (user as any).phoneNumber;
       }
 
@@ -315,6 +320,7 @@ export const authOptions: AuthOptions = {
       (session as any).role = (token as any).role;
       (session as any).verifiedAt = (token as any).verifiedAt;
       (session as any).mobile = (token as any).mobile;
+      (session as any).impersonatedBy = (token as any).impersonatedBy ?? null;
 
       return session;
     },

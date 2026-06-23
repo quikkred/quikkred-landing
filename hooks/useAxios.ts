@@ -6,6 +6,8 @@ import { useSession, getSession } from "next-auth/react";
 import { API_BASE_URL } from "@/lib/config";
 import { toast } from "@/components/ui/toast";
 import { clearSession } from "@/lib/auth-utils";
+import { isTestMode } from "@/lib/testMode";
+import { getImpersonationMeta } from "@/lib/impersonation";
 
 // 1. Create the instance outside to keep it stable
 const axiosClient = axios.create({
@@ -85,6 +87,28 @@ export default function useAxios() {
             async (error: AxiosError) => {
                 const prevRequest = error.config;
                 const status = error.response?.status;
+
+                // TEST MODE: never force-logout / redirect to /login.
+                if (isTestMode()) {
+                    return Promise.reject(error);
+                }
+
+                // During an admin support (impersonation) session the backend
+                // blocks sensitive actions — disbursement, password/mobile
+                // change, account deletion, loan-agreement e-sign — with a 403.
+                // Surface a clear message instead of a confusing generic error.
+                // Scoped to impersonation so normal 403s are untouched.
+                if (status === 403 && getImpersonationMeta()) {
+                    const blockMsg =
+                        (error.response?.data as any)?.message ||
+                        "This action isn't available during a support session.";
+                    toast({
+                        variant: "warning",
+                        title: "Action unavailable",
+                        description: blockMsg,
+                    });
+                    return Promise.reject(error);
+                }
 
                 // If 401 Unauthorized
                 if (status === 401) {

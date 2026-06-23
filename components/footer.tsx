@@ -406,7 +406,6 @@ export function Footer() {
                 height={97}
                 frameBorder={0}
                 scrolling="no"
-                allowTransparency
               />
             </div>
           </div>
