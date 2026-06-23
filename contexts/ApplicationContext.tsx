@@ -4,7 +4,7 @@ import useAxios from "@/hooks/useAxios";
 import { ApplicationInterface } from "@/interfaces/applicationInterface";
 import LayoutInterface from "@/interfaces/layoutInterface";
 import { AxiosError } from "axios";
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useAuth, User, userInitializer } from "./AuthContext";
 import { isTestMode, TEST_APPLICATION } from "@/lib/testMode";
@@ -51,6 +51,10 @@ const ApplicationProvider = ({ children, payload }: LayoutInterface & { payload:
     const isAuthReady = sessionStatus === "authenticated" && !!accessToken;
 
     const updateState = (state: Partial<ApplicationContextStateInterface>) => setState((prev) => ({ ...prev, ...state }));
+
+    // Dedupe concurrent /api/customer/get calls — several effects can trigger it
+    // at once (provider mount, step change, post-login), and we only need one.
+    const customerInFlight = useRef(false);
 
     const testMode = isTestMode();
 
@@ -131,6 +135,9 @@ const ApplicationProvider = ({ children, payload }: LayoutInterface & { payload:
         // Skip until the session token is available so the request always
         // carries an Authorization header (avoids 401 "Token missing").
         if (!isAuthReady) return;
+        // Collapse overlapping calls into one.
+        if (customerInFlight.current) return;
+        customerInFlight.current = true;
         try {
             const response = await axios.get("/api/customer/get");
             if (response.status === 200 || response.status === 201) {
@@ -144,6 +151,8 @@ const ApplicationProvider = ({ children, payload }: LayoutInterface & { payload:
             if (error instanceof AxiosError) {
                 //console.log("get customer error:", error.response?.data?.message);
             }
+        } finally {
+            customerInFlight.current = false;
         }
     }
 
