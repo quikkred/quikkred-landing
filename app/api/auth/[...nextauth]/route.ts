@@ -152,14 +152,25 @@ export const authOptions: AuthOptions = {
       name: "DigiLocker",
       credentials: {
         requestId: { label: "Request ID", type: "text" },
+        clientId: { label: "Client ID", type: "text" },
       },
       async authorize(credentials) {
+        // v1 DigiLocker returns a `requestId`; the v2 flow
+        // (/api/v2/customer/digilocker/login) returns a `client_id`. Accept
+        // either and query the status endpoint with the matching param — the
+        // backend resolves the session by clientId too (see the
+        // /auth/digilocker/callback page, which uses ?clientId=).
         const requestId = credentials?.requestId;
-        if (!requestId) return null;
+        const clientId = credentials?.clientId;
+        if (!requestId && !clientId) return null;
+
+        const statusQuery = clientId
+          ? `clientId=${encodeURIComponent(clientId)}`
+          : `requestId=${encodeURIComponent(requestId as string)}`;
 
         try {
           const res = await fetch(
-            `${API_BASE_URL}/api/auth/customer/digilocker/status?requestId=${encodeURIComponent(requestId)}`,
+            `${API_BASE_URL}/api/auth/customer/digilocker/status?${statusQuery}`,
             {
               method: "GET",
               headers: { "Content-Type": "application/json" },

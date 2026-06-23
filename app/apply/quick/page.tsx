@@ -168,7 +168,11 @@ export default function QuickApplyV2Page() {
         if (hasAutoRouted.current) return;
         if (!user) return;
 
-        const isLogin = user?.isEmailVerified || user?.isMobileVerified;
+        // Treat the applicant as logged-in for any verified identity. DigiLocker
+        // sign-in verifies Aadhaar (isAadhaarVerify) but often leaves
+        // isMobileVerified/isEmailVerified false, so without isAadhaarVerify here
+        // a DigiLocker user gets stranded on the login step after returning.
+        const isLogin = user?.isEmailVerified || user?.isMobileVerified || user?.isAadhaarVerify;
         const basicAndKycFilled = user?.isBasicDetailsFilled && user?.isKycDetailsFilled;
 
         // Skip eligibility entirely once the bank statement has been manually

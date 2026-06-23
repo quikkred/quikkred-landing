@@ -165,6 +165,21 @@ export async function startImpersonation(params: ImpersonateParams): Promise<Imp
       body: JSON.stringify(body),
     });
     json = await res.json().catch(() => null);
+
+    // The NextAuth session can outlive the backend access token (nothing
+    // refreshes it), so a stored-but-expired admin token comes back here as a
+    // 401 "Token expired". The admin's session can't authorise anything in
+    // that state — clear it and send them to the sign-in page to
+    // re-authenticate, mirroring how useAxios handles 401s for customers.
+    if (res.status === 401) {
+      clearImpersonationMeta();
+      clearStashedAdminSession();
+      await clearSession("/latur-ka-fraud-customer");
+      throw new Error(
+        json?.message || "Your admin session has expired. Please sign in again.",
+      );
+    }
+
     if (!res.ok || !json?.success || !json?.data) {
       throw new Error(json?.message || "Could not start the support session. Please try again.");
     }
