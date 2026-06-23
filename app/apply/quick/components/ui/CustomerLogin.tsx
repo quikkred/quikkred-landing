@@ -15,19 +15,32 @@ import GoogleVerify from "./GoogleVerify";
 
 const CustomerLogin = () => {
     const { getCustomer, getApplication } = useApplication();
-    const { login } = useAuth();
+    const { login, user } = useAuth();
     const [isIOS, setIsIOS] = useState(false);
     const searchParams = useSearchParams();
 
     // 1. New State for loading
     const [isDigiLockerProcessing, setDigiLockerProcessing] = useState(false);
 
-    // DigiLocker callback handler — login, fetch profile, auto-fill & verify
+    // DigiLocker callback handler — login, fetch profile, auto-fill & verify.
+    // v1 returns ?requestId=...; the v2 apply flow returns ?client_id=... — both
+    // come back with status=success, so accept either identifier.
+    //
+    // Only runs when the visitor is NOT already logged in. An already-signed-in
+    // applicant doing Aadhaar verification returns to the SAME url (the redirect
+    // carries client_id + status=success too). Re-running signIn there would
+    // reset `user` to a bare {id,email,mobile} and strip ?verified=true before
+    // AadhaarVerify can consume it — leaving Aadhaar stuck on "Get OTP" until a
+    // reload. In that case we leave it to AadhaarVerify on the eligibility step.
     useEffect(() => {
-        const requestId = searchParams.get("requestId");
-        const status = searchParams.get("status");
+        if (user?.id) return;
 
-        if (requestId && status === "success") {
+        const requestId = searchParams.get("requestId");
+        const clientId = searchParams.get("client_id");
+        const status = searchParams.get("status");
+        const digilockerId = requestId || clientId;
+
+        if (digilockerId && status === "success") {
             // 2. Enable loading state
             setDigiLockerProcessing(true);
 
@@ -36,7 +49,7 @@ const CustomerLogin = () => {
                     // 1. Authenticate via NextAuth DigiLocker provider
                     const res = await signIn("digilocker", {
                         redirect: false,
-                        requestId,
+                        ...(requestId ? { requestId } : { clientId: clientId as string }),
                     });
 
                     if (!res?.ok) {
@@ -76,7 +89,7 @@ const CustomerLogin = () => {
                 }
             })();
         }
-    }, [searchParams]);
+    }, [searchParams, user?.id]);
 
     // 1. Detect Platform & Mount
     useEffect(() => {
