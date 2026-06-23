@@ -21,6 +21,7 @@ import { useRouter } from "nextjs-toploader/app";
 import useAxios from "@/hooks/useAxios";
 import { toast } from "@/components/ui/toast";
 import { KycStatusTypes, LoanOfferData } from "../KycStatusContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -42,6 +43,7 @@ const ResultView = ({
     const router = useRouter();
     const [ptbLoading, setPtbLoading] = useState(false);
     const axios = useAxios();
+    const { user } = useAuth();
 
     // Status Checks
     const isApproved = status === "approved";
@@ -60,24 +62,41 @@ const ResultView = ({
     };
 
     const handleProceedToBankApi = async () => {
+        const customerId = user?.id;
+        const applicationId = data?.applicationId;
+
+        if (!customerId || !applicationId) {
+            toast({ variant: "error", title: "Missing details", description: "Customer or application not found. Please refresh and try again." });
+            return;
+        }
+
         setPtbLoading(true);
         try {
-            const response = await axios.get(`/api/v2/finfactorConsentRequest`);
+            // SurePass Account Aggregator — initialise the consent flow. On success
+            // the API returns the consent URL; the provider redirects back to
+            // /apply/quick?surepassAA=success once the customer completes it.
+            const response = await axios.post(`/api/surepassAA/initialize`, {
+                customerId,
+                applicationId,
+            });
             const result = response.data;
 
+            const redirectUrl = result.data?.redirectUrl || result.data?.url;
             if (response.status === 200 || response.status === 201) {
-                toast({ variant: "success", title: "Success", description: result.message || "Bank verification initiated successfully." });
-                if (result.data?.url) {
-                    window.location.href = result.data.url;
+                if (redirectUrl) {
+                    // Open the SurePass AA consent page; it returns to
+                    // /apply/quick?surepassAA=success after completion.
+                    window.location.href = redirectUrl;
                 } else {
+                    toast({ variant: "success", title: "Success", description: result.message || "Bank verification initiated successfully." });
                     onContinue();
                 }
             } else {
                 toast({ variant: "error", title: "Failed", description: result.message || "Failed to initiate bank verification." });
             }
         } catch (error: any) {
-            console.error('PTB API error:', error);
-            toast({ variant: "error", title: "Network Error", description: error?.message || "Unable to connect to server. Please try again." });
+            console.error('SurePass AA init error:', error);
+            toast({ variant: "error", title: "Network Error", description: error?.response?.data?.message || error?.message || "Unable to connect to server. Please try again." });
         } finally {
             setPtbLoading(false);
         }
@@ -306,9 +325,22 @@ const ResultView = ({
                     </button>
                 )}
 
-                {/* CASE 1b: Account Under Review — secondary actions (upload is above) */}
+                {/* CASE 1b: Account Under Review — Proceed to Bank (SurePass AA) + secondary actions */}
                 {isPending && (
                     <div className="space-y-3">
+                        <button
+                            onClick={handleProceedToBankApi}
+                            disabled={ptbLoading}
+                            className="w-full group relative py-3.5 px-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-600/20 hover:shadow-blue-600/40 hover:-translate-y-0.5"
+                        >
+                            <span className="flex items-center justify-center gap-2">
+                                {ptbLoading ? (
+                                    <><Loader2 className="w-5 h-5 animate-spin" /> Processing...</>
+                                ) : (
+                                    <>Proceed to Bank <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>
+                                )}
+                            </span>
+                        </button>
                         <button
                             onClick={onBack}
                             className="w-full py-3 px-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl font-semibold text-sm transition-all"
