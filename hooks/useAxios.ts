@@ -38,6 +38,13 @@ export default function useAxios() {
         // ✅ Request Interceptor: The "Hybrid" Token Check
         const requestIntercept = axiosClient.interceptors.request.use(
             async (config) => {
+                // TEST MODE: never hit the backend. Cancel every request so the
+                // app runs purely on the injected dummy data. Callers already
+                // wrap these in try/catch (a Cancel is a no-op error).
+                if (isTestMode()) {
+                    return Promise.reject(new axios.Cancel("test-mode: backend disabled"));
+                }
+
                 // Ensure headers object exists
                 config.headers = config.headers || {};
 

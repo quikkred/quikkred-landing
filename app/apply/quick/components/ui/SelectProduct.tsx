@@ -4,6 +4,21 @@ import { toast } from "@/components/ui/toast";
 import useAxios from "@/hooks/useAxios";
 import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
 import { useEffect, useState } from "react";
+import { isTestMode, TEST_PRODUCT_ID } from "@/lib/testMode";
+
+// Fake product offered in Test Mode so the dropdown is selectable without the backend.
+const TEST_PRODUCTS = [
+    {
+        _id: TEST_PRODUCT_ID,
+        productName: "Personal Loan",
+        category: "Personal Loan",
+        dailyInterestRate: 1,
+        minAmount: 2500,
+        maxAmount: 50000,
+        minTenure: 15,
+        allowedTenures: [15],
+    },
+];
 
 interface SelectProductProps {
     formData: QuickApplyV2FormData;
@@ -20,6 +35,18 @@ const SelectProduct = ({ formData, setFormData }: SelectProductProps) => {
     useEffect(() => {
         const fetchLoanProducts = async () => {
             setLoadingProducts(true);
+
+            // TEST MODE: serve a fake product list (no backend call).
+            if (isTestMode()) {
+                setLoanProducts(TEST_PRODUCTS);
+                if (formData.productId) {
+                    const product = TEST_PRODUCTS.find((p) => p._id === formData.productId);
+                    if (product) setSelectedProduct(product);
+                }
+                setLoadingProducts(false);
+                return;
+            }
+
             try {
                 const response = await axios.get(`/api/loanProduct/allLoanProductsNameOnly`);
                 const result = response.data;

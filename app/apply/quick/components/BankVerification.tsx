@@ -16,6 +16,8 @@ import { calculateLoanDetails, formatCurrency } from "@/lib/constants/quickApply
 import EMandateVerify from "./ui/EMandateVerify";
 import { SKIP_EMANDATE } from "@/lib/constants/flowConfig";
 import BankStatementUpload from "@/app/user/applications/BankStatementUpload";
+import { isTestMode } from "@/lib/testMode";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Regex Constants
 const REGEX = {
@@ -40,6 +42,7 @@ const BankVerification = ({
 }: BankVerificationProps) => {
     const axios = useAxios();
     const { getApplication, getCustomer, application } = useApplication();
+    const { updateUser } = useAuth();
 
     // E-mandate (UPI AutoPay) is currently skipped for everyone (SKIP_EMANDATE).
     // To re-enable it only for manually-verified bank statements, restore:
@@ -59,6 +62,7 @@ const BankVerification = ({
     // The 6-month bank statement is required before submit. Treat it as satisfied
     // if it was uploaded here, or already verified by the backend earlier.
     const statementSatisfied =
+        isTestMode() ||
         statementUploaded || !!application?.breHistory?.bankStatementUploadedVerified;
 
     const canProceed = useMemo(
@@ -85,6 +89,15 @@ const BankVerification = ({
 
     const fetchBankDetails = async (ifscCode: string) => {
         setIfscLoading(true);
+
+        // TEST MODE: skip the IFSC lookup and fill a placeholder bank name.
+        if (isTestMode()) {
+            updateFormData({ bankName: "Test Bank" });
+            clearError("ifsc");
+            setIfscLoading(false);
+            return;
+        }
+
         try {
             const response = await fetch(`https://ifsc.razorpay.com/${ifscCode}`);
             if (response.ok) {
@@ -189,6 +202,15 @@ const BankVerification = ({
         }
 
         setVerifyLoading(true);
+
+        // TEST MODE: accept the entered bank details without a penny-drop call.
+        if (isTestMode()) {
+            updateFormData({ bankVerified: true });
+            toast({ variant: "success", title: "Bank account verified (test mode)" });
+            setVerifyLoading(false);
+            return;
+        }
+
         try {
             const response = await axios.post(`/api/v2/bank/verification`, {
                 accountNumber: formData.accountNumber,
@@ -228,6 +250,22 @@ const BankVerification = ({
         }
 
         setSubmitting(true);
+
+        // TEST MODE: mark the application submitted client-side. Setting
+        // user.isSubmit triggers FormSteps' redirect to the approved status page.
+        if (isTestMode()) {
+            toast({
+                variant: "success",
+                title: "Application submitted successfully",
+                description: "Your application has been received and is being reviewed.",
+            });
+            updateUser({ isSubmit: true });
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            onNext();
+            setSubmitting(false);
+            return;
+        }
+
         try {
             const submitRes = await axios.post("/api/v2/application/loan/create", {
                 isSubmit: true,

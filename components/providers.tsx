@@ -14,11 +14,11 @@ import { SessionProvider } from "next-auth/react";
 import NextTopLoader from "nextjs-toploader";
 import { LanguageProvider } from "@/lib/contexts/LanguageContext";
 import { TranslationData } from "@/lib/getTranslation";
-// import TestModeBanner from "@/components/TestModeBanner";
+import TestModeBanner from "@/components/TestModeBanner";
 import ImpersonationBanner from "@/components/ImpersonationBanner";
 import AdminLauncher from "@/components/AdminLauncher";
-// import { isTestMode } from "@/lib/testMode";
-// import { installTestNetworkGuard } from "@/lib/testMode/networkGuard";
+import { isTestMode } from "@/lib/testMode";
+import { installTestNetworkGuard } from "@/lib/testMode/networkGuard";
 
 // Lazy-loaded AgentInitializer — non-critical, deferred
 const AgentInitializer = lazy(() => import('@/lib/quikkred-agent').then(mod => {
@@ -31,6 +31,13 @@ const AgentInitializer = lazy(() => import('@/lib/quikkred-agent').then(mod => {
 }));
 
 export function Providers({ language, initialData, children }: { language: string; initialData: TranslationData; children: ReactNode; }) {
+  // Install the Test Mode network guard during the very first render (before any
+  // child effect can fire a request). Idempotent + no-op outside Test Mode.
+  useState(() => {
+    installTestNetworkGuard();
+    return null;
+  });
+
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -94,15 +101,18 @@ export function Providers({ language, initialData, children }: { language: strin
                       <AnalyticsProvider>
                         <WebSocketProvider>
                           {children}
-                          <Suspense fallback={null}>
-                            <AgentInitializer />
-                          </Suspense>
+                          {/* TEST MODE: skip the tracking agent (it hits /api/tracking). */}
+                          {!isTestMode() && (
+                            <Suspense fallback={null}>
+                              <AgentInitializer />
+                            </Suspense>
+                          )}
                         </WebSocketProvider>
                       </AnalyticsProvider>
                     ) : (
                       children
                     )}
-                    {/* <TestModeBanner /> */}
+                    <TestModeBanner />
                     <ImpersonationBanner />
                     <AdminLauncher />
                   </NotificationProvider>

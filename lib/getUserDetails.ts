@@ -4,8 +4,13 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // ✅ change path if different
 import { API_BASE_URL } from "@/lib/config";
 import type { User } from "@/contexts/AuthContext";
+import { isTestMode } from "@/lib/testMode";
 
 export default async function getUserDetails(): Promise<User | null> {
+  // TEST MODE: never call the backend on the server. The dummy user is seeded
+  // client-side (and the apply flow intentionally starts logged-out).
+  if (isTestMode()) return null;
+
   // 1) Get NextAuth session (server-side)
   const session = await getServerSession(authOptions);
 

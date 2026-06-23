@@ -31,6 +31,7 @@ import ApplicationStatus from './_components/ApplicationStatus';
 import { DashboardData, ActiveLoanDetails, PaymentResponse, PaymentProof, ReapplyEligibility, LedgerSplit } from "@/interfaces/dashboardInterface";
 import PreviousApplicationStatus from './_components/PreviousApplicationStatus';
 import { Skeleton, SkeletonCircle } from '@/components/ui/Skeleton';
+import { isTestMode } from '@/lib/testMode';
 
 declare global {
   interface Window {
@@ -747,6 +748,7 @@ export default function UserDashboard() {
   };
 
   const fetchMyPaymentProofs = async () => {
+    if (isTestMode()) return;
     if (!activeLoanDetails) return;
 
     setLoadingProofs(true);
@@ -855,6 +857,7 @@ export default function UserDashboard() {
 
   // Fetch E-Mandate details
   const fetchEmandateDetails = async () => {
+    if (isTestMode()) return;
     if (!data?.customerId) return;
 
     setLoadingEmandate(true);
@@ -887,6 +890,7 @@ export default function UserDashboard() {
 
   // Fetch Reapply Eligibility
   const fetchReapplyEligibility = async () => {
+    if (isTestMode()) return;
     if (!data?.customerId) return;
 
     setLoadingReapply(true);

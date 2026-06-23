@@ -2,6 +2,7 @@
 import getToken from '../getToken';
 import { apiClient, ApiResponse } from './api-client';
 import { API_BASE_URL } from '@/lib/config';
+import { isTestMode, TEST_DASHBOARD, TEST_ACTIVE_LOAN } from '@/lib/testMode';
 
 // Dashboard
 export interface DashboardData {
@@ -125,6 +126,10 @@ export interface LoanStatus {
 class CustomerService {
   // ==================== Dashboard ====================
   async getDashboard(): Promise<ApiResponse<DashboardData>> {
+    // TEST MODE: serve a dummy approved/active-loan dashboard.
+    if (isTestMode()) {
+      return { success: true, data: TEST_DASHBOARD as any };
+    }
     return apiClient.get<DashboardData>('/api/customer/dashboard', true);
   }
 
@@ -256,6 +261,10 @@ class CustomerService {
   }
 
   async getActiveLoan(loanNumber: string): Promise<ApiResponse<any>> {
+    // TEST MODE: serve the dummy active loan details.
+    if (isTestMode()) {
+      return { success: true, data: TEST_ACTIVE_LOAN };
+    }
     return apiClient.get(`/api/loans/active/${loanNumber}`, true);
   }
 }

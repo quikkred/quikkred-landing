@@ -7,6 +7,7 @@ import { AxiosError } from "axios";
 import { createContext, useContext, useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useAuth, User, userInitializer } from "./AuthContext";
+import { isTestMode, TEST_APPLICATION } from "@/lib/testMode";
 
 interface ApplicationContextStateInterface {
     loading: boolean;
@@ -51,8 +52,19 @@ const ApplicationProvider = ({ children, payload }: LayoutInterface & { payload:
 
     const updateState = (state: Partial<ApplicationContextStateInterface>) => setState((prev) => ({ ...prev, ...state }));
 
+    const testMode = isTestMode();
+
+    // ── TEST MODE: serve a dummy approved application and skip all fetches. ──
+    useEffect(() => {
+        if (testMode) {
+            updateState({ data: TEST_APPLICATION, loading: false });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [testMode]);
+
     // Sync payload from server component if it updates
     useEffect(() => {
+        if (testMode) return;
         if (payload) {
             updateState({ data: payload });
         }
@@ -61,6 +73,7 @@ const ApplicationProvider = ({ children, payload }: LayoutInterface & { payload:
     // If user is logged in but application data is missing (e.g. client navigation), fetch it.
     // Wait for the session token (isAuthReady) so the request carries an Authorization header.
     useEffect(() => {
+        if (testMode) return;
         if (isAuthReady && user?.id && !state.data && !state.loading) {
             getApplication();
         }
@@ -72,6 +85,7 @@ const ApplicationProvider = ({ children, payload }: LayoutInterface & { payload:
     // bsaInitiated / isBankDetailsFilled, so we refresh client-side to get current data.
     // Gated on isAuthReady so it never fires before the token is available.
     useEffect(() => {
+        if (testMode) return;
         if (isAuthReady && user?.id) {
             getCustomer();
         }
@@ -79,6 +93,7 @@ const ApplicationProvider = ({ children, payload }: LayoutInterface & { payload:
     }, [isAuthReady, user?.id]);
 
     const getApplication = async () => {
+        if (testMode) return updateState({ data: TEST_APPLICATION, loading: false });
         try {
             // const applicationId = storage.get("applicationId");
             // if (applicationId) {
@@ -110,6 +125,9 @@ const ApplicationProvider = ({ children, payload }: LayoutInterface & { payload:
     }
 
     const getCustomer = async () => {
+        // Test mode supplies the user directly — don't hit the API (it would
+        // 401 without a token and overwrite the dummy user).
+        if (testMode) return;
         // Skip until the session token is available so the request always
         // carries an Authorization header (avoids 401 "Token missing").
         if (!isAuthReady) return;
@@ -130,6 +148,7 @@ const ApplicationProvider = ({ children, payload }: LayoutInterface & { payload:
     }
 
     const fetchUserData = async () => {
+        if (testMode) return user;
         // Skip until the session token is available (avoids 401 "Token missing").
         if (!isAuthReady) return null;
         try {

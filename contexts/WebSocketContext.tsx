@@ -7,6 +7,7 @@ import { useNotifications } from '@/contexts/NotificationContext';
 import { WS_EVENTS, WSMessage, DEFAULT_WS_OPTIONS } from '@/lib/websocket-client';
 import { useSession } from 'next-auth/react';
 import { WS_URL } from '@/lib/config';
+import { isTestMode } from '@/lib/testMode';
 
 
 interface WebSocketContextType {
@@ -51,6 +52,9 @@ export function WebSocketProvider({ children, url }: WebSocketProviderProps) {
 
   // Initialize socket connection
   useEffect(() => {
+    // TEST MODE: never open a backend socket.
+    if (isTestMode()) return;
+
     if (!user) {
       // Disconnect if user logs out
       if (socket) {

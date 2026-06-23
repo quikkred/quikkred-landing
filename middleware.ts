@@ -1,8 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
+// Test Mode: bypass the auth guard so /user and /dashboard render with dummy
+// data for demo recordings. Enabled by NEXT_PUBLIC_TEST_MODE=true, the
+// ?testMode=1 query param, or the qk_test_mode cookie. See lib/testMode.
+function isTestModeRequest(request: NextRequest): boolean {
+  if (process.env.NEXT_PUBLIC_TEST_MODE === "true") return true;
+  const q = request.nextUrl.searchParams.get("testMode");
+  if (q === "1" || q === "true") return true;
+  if (q === "0" || q === "false") return false;
+  return request.cookies.get("qk_test_mode")?.value === "1";
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Test Mode short-circuits all auth redirects.
+  if (isTestModeRequest(request)) {
+    return NextResponse.next();
+  }
 
   // ✅ Securely verify the session token (checks signature & expiration)
   const token = await getToken({
