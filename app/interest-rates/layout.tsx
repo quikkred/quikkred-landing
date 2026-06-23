@@ -7,7 +7,7 @@ const PAGE_PATH = "/interest-rates";
 const PAGE_URL = `${SITE_URL}${PAGE_PATH}`;
 
 // ✅ If you create a dedicated OG image for rates, replace this
-const OG_IMAGE = `${SITE_URL}/Aboutus_hero_image.jpg`;
+const OG_IMAGE = `${SITE_URL}/Aboutus_hero_image.png`;
 
 export const metadata: Metadata = {
     metadataBase: new URL(SITE_URL),
@@ -96,7 +96,7 @@ export const metadata: Metadata = {
 
     icons: {
         icon: "/favicon.ico",
-        shortcut: "/favicon-16x16.png",
+        shortcut: "/favicon.ico",
         apple: "/apple-touch-icon.png",
     },
 };

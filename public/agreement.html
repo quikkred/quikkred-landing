@@ -749,13 +749,13 @@
         document.addEventListener('DOMContentLoaded', function() {
             const storedData = localStorage.getItem('agreementCustomerData');
             if (!storedData) {
-                console.log('No customer data found in localStorage');
+                //console.log('No customer data found in localStorage');
                 return;
             }
 
             try {
                 const data = JSON.parse(storedData);
-                console.log('Loaded customer data:', data);
+                //console.log('Loaded customer data:', data);
 
                 // Current date
                 const today = new Date();
@@ -1323,7 +1323,7 @@
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
 
-                console.log('PDF downloaded successfully!');
+                //console.log('PDF downloaded successfully!');
 
             } catch (error) {
                 console.error('Error generating PDF:', error);
@@ -1344,7 +1344,7 @@
             const page = document.querySelector('.page');
             const approveSection = document.getElementById('approve-section');
 
-            console.log('=== PDF Generation Started ===');
+            //console.log('=== PDF Generation Started ===');
 
             // Add PDF mode class for proper styling
             document.body.classList.add('pdf-mode');
@@ -1500,11 +1500,11 @@
             const contentHeight = clonedPage.scrollHeight;
             breakPositions.push(contentHeight);
 
-            console.log('Page break positions:', breakPositions);
+            //console.log('Page break positions:', breakPositions);
 
             // Get actual dimensions
             const contentWidth = clonedPage.scrollWidth;
-            console.log('Content dimensions:', contentWidth, 'x', contentHeight);
+            //console.log('Content dimensions:', contentWidth, 'x', contentHeight);
 
             try {
                 // Capture the isolated container
@@ -1529,7 +1529,7 @@
                     }
                 });
 
-                console.log('Canvas captured:', canvas.width, 'x', canvas.height);
+                //console.log('Canvas captured:', canvas.width, 'x', canvas.height);
 
                 // Cleanup
                 document.body.removeChild(container);
@@ -1554,7 +1554,7 @@
                 const scaleFactor = printableWidth / canvas.width;
                 const maxSliceHeight = printableHeight / scaleFactor;
 
-                console.log('Scale factor:', scaleFactor, 'Max slice height:', maxSliceHeight);
+                //console.log('Scale factor:', scaleFactor, 'Max slice height:', maxSliceHeight);
 
                 // Generate pages based on break positions
                 let currentY = 0;
@@ -1598,14 +1598,14 @@
 
                         pdf.addImage(imgData, 'JPEG', margin, margin, printableWidth, imgHeight);
 
-                        console.log(`Page ${pageNum + 1}: sectionY=${sectionY.toFixed(0)}, sliceHeight=${sliceHeight.toFixed(0)}, imgHeight=${imgHeight.toFixed(1)}mm`);
+                        //console.log(`Page ${pageNum + 1}: sectionY=${sectionY.toFixed(0)}, sliceHeight=${sliceHeight.toFixed(0)}, imgHeight=${imgHeight.toFixed(1)}mm`);
 
                         sectionY += sliceHeight;
                         pageNum++;
                     }
                 }
 
-                console.log('=== PDF Generation Complete ===');
+                //console.log('=== PDF Generation Complete ===');
 
                 // Cleanup - remove PDF mode class
                 document.body.classList.remove('pdf-mode');

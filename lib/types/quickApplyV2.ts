@@ -84,9 +84,11 @@ export interface QuickApplyV2FormData {
     reference1Name: string;
     reference1Mobile: string;
     reference1Relationship: string;
+    reference1Verified?: boolean;
     reference2Name: string;
     reference2Mobile: string;
     reference2Relationship: string;
+    reference2Verified?: boolean;
 
     // Detail-filled flags from API
     isBasicDetailsFilled?: boolean;

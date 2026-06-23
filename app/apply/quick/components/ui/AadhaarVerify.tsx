@@ -11,6 +11,7 @@ import { useSearchParams } from "next/navigation";
 import tracking from "@/lib/tracking";
 import { TRACKING_EVENTS } from "@/lib/constants/quickApplyV2";
 import { useApplication } from "@/contexts/ApplicationContext";
+import { isTestMode, TEST_OTP } from "@/lib/testMode";
 
 // Helper for Aadhaar Validation (12 digits)
 const isValidAadhaar = (aadhaar: string) => /^\d{12}$/.test(aadhaar);
@@ -130,6 +131,15 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
         setLoading(true);
         setError("");
 
+        // TEST MODE: skip the real OTP request and reveal the OTP box.
+        if (isTestMode()) {
+            setOtpSent(true);
+            setClientId("test-client");
+            setLoading(false);
+            toast({ variant: "success", title: `Test OTP is ${TEST_OTP}` });
+            return;
+        }
+
         try {
             const response = await axios.post('/api/v2/aadhaar/verification', {
                 aadhaarNumber: formData.aadhaar
@@ -171,6 +181,31 @@ const AadhaarVerify = ({ formData, setFormData }: AadhaarVerifyProps) => {
 
         setLoading(true);
         setError("");
+
+        // TEST MODE: accept the fixed test OTP and mark Aadhaar verified.
+        if (isTestMode()) {
+            if (otp !== TEST_OTP) {
+                setError(`Invalid OTP. Use ${TEST_OTP} in test mode.`);
+                setLoading(false);
+                return;
+            }
+            const user = await fetchUserData();
+            setFormData((prev) => ({
+                ...prev,
+                aadhaarVerified: true,
+                fullName: user?.fullName || prev.fullName,
+                dob: user?.dateOfBirth || prev.dob,
+                aadhaarData: {
+                    name: user?.fullName || prev.fullName,
+                    dob: user?.dateOfBirth || prev.dob,
+                    gender: "",
+                    address: "",
+                },
+            }));
+            toast({ variant: "success", title: "Aadhaar verification successfully" });
+            setLoading(false);
+            return;
+        }
 
         try {
             const response = await axios.post('/api/v2/aadhaar/verify', {

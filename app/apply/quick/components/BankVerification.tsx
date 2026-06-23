@@ -6,14 +6,18 @@ import { initialFieldErrors } from "@/lib/constants/quickApply";
 import tracking from "@/lib/tracking";
 import { FieldErrors } from "@/lib/types/quickApply";
 import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
+import { useApplication } from "@/contexts/ApplicationContext";
 import { AxiosError } from "axios";
 import { motion } from "framer-motion";
 import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle, IndianRupee, Loader2, Lock, Shield } from "lucide-react";
 import { useRef, useState, useCallback, useMemo } from "react";
 import SelfieVerify from "./ui/SelfieVerify";
 import { calculateLoanDetails, formatCurrency } from "@/lib/constants/quickApplyV2";
-import { useApplication } from "@/contexts/ApplicationContext";
 import EMandateVerify from "./ui/EMandateVerify";
+import { SKIP_EMANDATE } from "@/lib/constants/flowConfig";
+import BankStatementUpload from "@/app/user/applications/BankStatementUpload";
+import { isTestMode } from "@/lib/testMode";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Regex Constants
 const REGEX = {
@@ -26,29 +30,49 @@ const REGEX = {
 interface BankVerificationProps {
     formData: QuickApplyV2FormData;
     setFormData: React.Dispatch<React.SetStateAction<QuickApplyV2FormData>>;
-    // onNext: () => void;
+    onNext: () => void;
     // onBack: () => void;
 }
 
 const BankVerification = ({
     formData,
     setFormData,
-    // onNext,
+    onNext,
     // onBack,
 }: BankVerificationProps) => {
     const axios = useAxios();
-    const { getApplication, getCustomer } = useApplication();
+    const { getApplication, getCustomer, application } = useApplication();
+    const { updateUser } = useAuth();
+
+    // E-mandate (UPI AutoPay) is currently skipped for everyone (SKIP_EMANDATE).
+    // To re-enable it only for manually-verified bank statements, restore:
+    //   const skipMandate = !!application?.breHistory?.bankStatementUploadedVerified;
+    const skipMandate = SKIP_EMANDATE;
 
     // UI States (Loading/Errors only, Data stays in formData)
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>(initialFieldErrors);
     const [ifscLoading, setIfscLoading] = useState(false);
     const [verifyLoading, setVerifyLoading] = useState(false);
-    const [submitLoading, setSubmitLoading] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [statementUploaded, setStatementUploaded] = useState(false);
     const ifscTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const loanCalc = calculateLoanDetails(formData.loanAmount, formData.tenure);
 
-    const canProceed = useMemo(() => (formData.bankVerified && formData.selfieVerified && formData.upiAutoPayStatus), [formData]);
+    // The 6-month bank statement is required before submit. Treat it as satisfied
+    // if it was uploaded here, or already verified by the backend earlier.
+    const statementSatisfied =
+        isTestMode() ||
+        statementUploaded || !!application?.breHistory?.bankStatementUploadedVerified;
+
+    const canProceed = useMemo(
+        () =>
+            formData.bankVerified &&
+            formData.selfieVerified &&
+            statementSatisfied &&
+            (skipMandate || formData.upiAutoPayStatus),
+        [formData, skipMandate, statementSatisfied]
+    );
 
     // --- Helpers ---
 
@@ -65,6 +89,15 @@ const BankVerification = ({
 
     const fetchBankDetails = async (ifscCode: string) => {
         setIfscLoading(true);
+
+        // TEST MODE: skip the IFSC lookup and fill a placeholder bank name.
+        if (isTestMode()) {
+            updateFormData({ bankName: "Test Bank" });
+            clearError("ifsc");
+            setIfscLoading(false);
+            return;
+        }
+
         try {
             const response = await fetch(`https://ifsc.razorpay.com/${ifscCode}`);
             if (response.ok) {
@@ -169,6 +202,15 @@ const BankVerification = ({
         }
 
         setVerifyLoading(true);
+
+        // TEST MODE: accept the entered bank details without a penny-drop call.
+        if (isTestMode()) {
+            updateFormData({ bankVerified: true });
+            toast({ variant: "success", title: "Bank account verified (test mode)" });
+            setVerifyLoading(false);
+            return;
+        }
+
         try {
             const response = await axios.post(`/api/v2/bank/verification`, {
                 accountNumber: formData.accountNumber,
@@ -206,58 +248,50 @@ const BankVerification = ({
             toast({ variant: "warning", title: "Verification Required", description: "Please complete bank verification, selfie, and UPI AutoPay authorization" });
             return;
         }
-        setSubmitLoading(true);
-        // Simulate API call or navigation delay
-        // await new Promise(r => setTimeout(r, 500));
-        // onNext();
 
-        const nameParts = formData.fullName.trim().split(/\s+/);
-        const firstName = nameParts[0] || "";
-        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+        setSubmitting(true);
 
-        const isBasicDetailsFilled = true;
-
-        const basicDetails = {
-            employmentType: formData.employmentType,
-            monthlyIncome: formData.monthlyIncome,
-            salaryDate: formData.salaryDate,
-            firstName,
-            lastName,
-            mobile: formData.mobile,
-            email: formData.email,
-            isBasicDetailsFilled,
-            dateOfBirth: formData.dob,
-            companyName: formData.companyName,
-            isSubmit: true,
+        // TEST MODE: mark the application submitted client-side. Setting
+        // user.isSubmit triggers FormSteps' redirect to the approved status page.
+        if (isTestMode()) {
+            toast({
+                variant: "success",
+                title: "Application submitted successfully",
+                description: "Your application has been received and is being reviewed.",
+            });
+            updateUser({ isSubmit: true });
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            onNext();
+            setSubmitting(false);
+            return;
         }
 
         try {
-            // const response = await axios.post("/api/mandate-checkout/generate-link", {
-            //     applicationId: application?._id,
-            // });
-            // if(response.status === 200 || response.status === 201){
-            //     console.log(response.data);
-            // }
-            const response = await axios.post("/api/v2/application/loan/create", {
-                // basicDetails
+            const submitRes = await axios.post("/api/v2/application/loan/create", {
                 isSubmit: true,
             });
-            if (response.status === 200 || response.status === 201) {
+
+            if (submitRes.status === 200 || submitRes.status === 201) {
                 toast({
                     variant: "success",
                     title: "Application submitted successfully",
-                    description: "Your application has been received and is being reviewed. We’ll notify you of the next steps shortly."
+                    description: "Your application has been received and is being reviewed. We’ll notify you of the next steps shortly.",
                 });
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                onNext();
+            } else {
+                throw new Error(submitRes.data?.message || "Failed to submit application");
             }
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
                 toast({ variant: "error", title: error.response?.data?.message || "Internal server error" });
+            } else if (error instanceof Error) {
+                toast({ variant: "error", title: error.message });
             }
         } finally {
             getApplication();
             getCustomer();
-            setSubmitLoading(false);
+            setSubmitting(false);
         }
     };
 
@@ -387,8 +421,45 @@ const BankVerification = ({
                 </button>
             </div>
 
-            {/* E-mandate */}
-            <EMandateVerify formData={formData} setFormData={setFormData} />
+            {/* E-mandate — hidden when skipped (manually verified bank statement) */}
+            {!skipMandate && (
+                <EMandateVerify formData={formData} setFormData={setFormData} />
+            )}
+
+            {/* Bank statement upload — shown once bank details are verified, as the
+                final step before submitting. Includes an optional password field.
+                Once uploaded (now or verified earlier) we show a persistent
+                confirmation instead of the widget, so it doesn't look like nothing
+                was submitted. */}
+            {formData.bankVerified && (
+                <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.25 }}
+                >
+                    {(statementUploaded || application?.breHistory?.bankStatementUploadedVerified) ? (
+                        <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                            <span className="grid place-items-center w-9 h-9 rounded-full bg-emerald-100 shrink-0">
+                                <CheckCircle className="w-5 h-5 text-emerald-600" />
+                            </span>
+                            <div className="min-w-0">
+                                <p className="text-sm font-semibold text-emerald-800">Bank statement uploaded</p>
+                                <p className="text-xs text-emerald-600">Received for verification. You can submit your application.</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <BankStatementUpload
+                            applicationNumber={application?.applicationNumber || ""}
+                            applicationId={application?._id}
+                            description="Upload your last 6 months bank statement (PDF) to complete your application. Add the password if the file is protected."
+                            onUploaded={() => {
+                                setStatementUploaded(true);
+                                getApplication();
+                            }}
+                        />
+                    )}
+                </motion.div>
+            )}
 
             {/* <div className="bg-gray-50 rounded-xl p-4">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-2">
@@ -455,17 +526,17 @@ const BankVerification = ({
             {/* Navigation */}
             <button
                 onClick={handleSubmit}
-                disabled={submitLoading || !canProceed}
+                disabled={!canProceed || submitting}
                 className="w-full py-2 text-sm bg-gradient-to-r disabled:cursor-not-allowed from-[#25B181] via-[#51C9AF] to-[#1F8F68] text-white rounded-xl font-semibold sm:text-base shadow-lg shadow-[#25B181]/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
             >
-                {submitLoading ? (
+                {submitting ? (
                     <>
                         <Loader2 className="w-4 h-4 animate-spin" />
                         <span className="text-sm">Submitting...</span>
                     </>
                 ) : (
                     <>
-                        <span>Application Submit</span>
+                        <span>Submit Application</span>
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                         </svg>

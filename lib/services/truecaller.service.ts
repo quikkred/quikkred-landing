@@ -58,7 +58,7 @@ class TruecallerService {
         // });
 
         this.initialized = true;
-        console.log('[Truecaller] Initialized with app:', config.appName);
+        //console.log('[Truecaller] Initialized with app:', config.appName);
     }
 
     /**
@@ -122,7 +122,7 @@ class TruecallerService {
         //   });
         // });
 
-        console.log('[Truecaller] Verification triggered - implement with actual Truecaller SDK');
+        //console.log('[Truecaller] Verification triggered - implement with actual Truecaller SDK');
 
         return {
             success: false,

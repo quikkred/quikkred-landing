@@ -67,17 +67,19 @@ export const formatDOBFromAPI = (dateStr: string): string => {
  */
 export const toBoolean = (value: unknown): boolean => {
   if (typeof value === 'boolean') return value;
-  if (typeof value === 'string') return value.toLowerCase() === 'true';
+  if (typeof value === 'string') return value?.toLowerCase() === 'true';
   if (typeof value === 'number') return value === 1;
   return false;
 };
 
 /**
- * Mask Aadhaar number (show only last 4 digits)
+ * Display Aadhaar number in full (masking removed — show complete value).
+ * Grouped in blocks of 4 with dashes for readability.
  */
 export const maskAadhaar = (aadhaar: string): string => {
-  if (!aadhaar || aadhaar.length < 4) return 'N/A';
-  return `XXXX-XXXX-${aadhaar.slice(-4)}`;
+  if (!aadhaar) return 'N/A';
+  const cleaned = aadhaar.replace(/\D/g, '');
+  return cleaned.replace(/(.{4})(?=.)/g, '$1-');
 };
 
 /**

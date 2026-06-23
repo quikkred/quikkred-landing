@@ -7,6 +7,7 @@ import { useNotifications } from '@/contexts/NotificationContext';
 import { WS_EVENTS, WSMessage, DEFAULT_WS_OPTIONS } from '@/lib/websocket-client';
 import { useSession } from 'next-auth/react';
 import { WS_URL } from '@/lib/config';
+import { isTestMode } from '@/lib/testMode';
 
 
 interface WebSocketContextType {
@@ -51,6 +52,9 @@ export function WebSocketProvider({ children, url }: WebSocketProviderProps) {
 
   // Initialize socket connection
   useEffect(() => {
+    // TEST MODE: never open a backend socket.
+    if (isTestMode()) return;
+
     if (!user) {
       // Disconnect if user logs out
       if (socket) {
@@ -75,7 +79,7 @@ export function WebSocketProvider({ children, url }: WebSocketProviderProps) {
 
     // Connection events
     newSocket.on('connect', () => {
-      console.log('WebSocket connected:', newSocket.id);
+      //console.log('WebSocket connected:', newSocket.id);
       setConnected(true);
       setConnecting(false);
       setError(null);
@@ -93,7 +97,7 @@ export function WebSocketProvider({ children, url }: WebSocketProviderProps) {
     });
 
     newSocket.on('disconnect', (reason) => {
-      console.log('WebSocket disconnected:', reason);
+      //console.log('WebSocket disconnected:', reason);
       setConnected(false);
       stopLatencyMonitoring();
 
@@ -119,7 +123,7 @@ export function WebSocketProvider({ children, url }: WebSocketProviderProps) {
 
     // Authentication events
     newSocket.on(WS_EVENTS.AUTH_SUCCESS, (data) => {
-      console.log('WebSocket authenticated:', data);
+      //console.log('WebSocket authenticated:', data);
       addNotification({
         type: 'SUCCESS',
         title: 'Connected',
@@ -268,7 +272,7 @@ export function useRealtimeDashboard(role: string) {
     switch (role) {
       case 'UNDERWRITER':
         unsubscribeRoleEvent = subscribe(WS_EVENTS.APPLICATION_RECEIVED, (data) => {
-          console.log('New application received:', data);
+          //console.log('New application received:', data);
           setRealtimeData((prev: any) => ({
             ...prev,
             newApplication: data
@@ -277,7 +281,7 @@ export function useRealtimeDashboard(role: string) {
         break;
       case 'COLLECTION_AGENT':
         unsubscribeRoleEvent = subscribe(WS_EVENTS.COLLECTION_ALERT, (data) => {
-          console.log('Collection alert:', data);
+          //console.log('Collection alert:', data);
           setRealtimeData((prev: any) => ({
             ...prev,
             collectionAlert: data
@@ -286,7 +290,7 @@ export function useRealtimeDashboard(role: string) {
         break;
       case 'FINANCE_MANAGER':
         unsubscribeRoleEvent = subscribe(WS_EVENTS.COMPLIANCE_ALERT, (data) => {
-          console.log('Compliance alert:', data);
+          //console.log('Compliance alert:', data);
           setRealtimeData((prev: any) => ({
             ...prev,
             complianceAlert: data
@@ -295,7 +299,7 @@ export function useRealtimeDashboard(role: string) {
         break;
       case 'RISK_ANALYST':
         unsubscribeRoleEvent = subscribe(WS_EVENTS.RISK_ALERT, (data) => {
-          console.log('Risk alert:', data);
+          //console.log('Risk alert:', data);
           setRealtimeData((prev: any) => ({
             ...prev,
             riskAlert: data
@@ -304,7 +308,7 @@ export function useRealtimeDashboard(role: string) {
         break;
       case 'SUPPORT_AGENT':
         unsubscribeRoleEvent = subscribe(WS_EVENTS.TICKET_ASSIGNED, (data) => {
-          console.log('New ticket assigned:', data);
+          //console.log('New ticket assigned:', data);
           setRealtimeData((prev: any) => ({
             ...prev,
             newTicket: data

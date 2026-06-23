@@ -1,6 +1,7 @@
 import { API_BASE_URL } from '@/lib/config';
 import getToken from '../getToken';
 import { clearSession } from '../auth-utils';
+import { isTestMode } from '@/lib/testMode';
 
 // Core API Client with type-safe methods for all backend endpoints
 interface ApiResponse<T = any> {
@@ -32,18 +33,50 @@ class ApiClient {
   //   return null;
   // }
 
+  // Resolve the auth token, retrying briefly to ride out the short window right
+  // after login where the NextAuth session hasn't populated accessToken yet.
+  private async resolveToken(retries = 3, delayMs = 200): Promise<string | null> {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      const token = await getToken();
+      if (token) return token;
+      if (attempt < retries) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
+    return null;
+  }
+
   private async request<T>(
     endpoint: string,
     options: RequestInit = {},
     useExternalAPI: boolean = false
   ): Promise<ApiResponse<T>> {
+    // TEST MODE: never hit the backend. Endpoints that need data are
+    // short-circuited with dummy data in customer.service; everything else
+    // fails soft so callers' guards/catches handle it without a network call.
+    if (isTestMode()) {
+      return { success: false, error: 'test-mode: backend disabled' } as ApiResponse<T>;
+    }
+
     const url = useExternalAPI
       ? `${this.externalBaseURL}${endpoint}`
       : `${this.baseURL}${endpoint}`;
 
-    // Get fresh token for each request
-    // const token = this.getToken();
-    const token = await getToken();
+    // /api/customer/get REQUIRES an auth token. Resolve it with a short retry to
+    // ride out the post-login window, then refuse to send the request without it
+    // (the backend rejects a tokenless call with 401 "Token missing"). Scoped to
+    // this endpoint so other/public calls keep their existing behaviour.
+    const requiresToken = endpoint.includes('/api/customer/get');
+    const token = requiresToken ? await this.resolveToken() : await getToken();
+
+    if (requiresToken && !token) {
+      // Fail soft so callers' catch/guards handle it without a logout loop.
+      return {
+        success: false,
+        error: 'Not authenticated',
+        message: 'Authentication token unavailable. Please log in again.',
+      } as ApiResponse<T>;
+    }
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',

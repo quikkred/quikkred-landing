@@ -243,7 +243,7 @@ export default function DocumentsPage() {
         });
       } catch (fetchError) {
         // If fetch fails due to CORS, open in new tab as fallback
-        console.log('Direct download failed, opening in new tab:', fetchError);
+        //console.log('Direct download failed, opening in new tab:', fetchError);
         window.open(doc.url, '_blank', 'noopener,noreferrer');
       }
     } catch (error) {

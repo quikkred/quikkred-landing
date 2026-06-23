@@ -4,7 +4,7 @@ import LayoutInterface from "@/interfaces/layoutInterface";
 const SITE_NAME = "Quikkred";
 const SITE_URL = "https://quikkred.in";
 const PAGE_URL = `${SITE_URL}/apply/quick`;
-const OG_IMAGE = `${SITE_URL}/Aboutus_hero_image.jpg`;
+const OG_IMAGE = `${SITE_URL}/Aboutus_hero_image.png`;
 
 export const metadata: Metadata = {
     metadataBase: new URL(SITE_URL),
@@ -98,10 +98,32 @@ export const metadata: Metadata = {
 
     icons: {
         icon: "/favicon.ico",
-        shortcut: "/favicon-16x16.png",
+        shortcut: "/favicon.ico",
         apple: "/apple-touch-icon.png",
     },
 };
 
-const ApplyLayout = ({ children }: LayoutInterface) => children;
+const breadcrumbJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: "Apply for a Loan",
+      item: PAGE_URL,
+    },
+  ],
+};
+
+const ApplyLayout = ({ children }: LayoutInterface) => (
+  <>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+    />
+    {children}
+  </>
+);
 export default ApplyLayout;

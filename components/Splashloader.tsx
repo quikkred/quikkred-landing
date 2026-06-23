@@ -37,12 +37,12 @@ export default function LoadingSplash() {
           }}
         >
           <Image
-            src="/logo.png"
+            src="/quikkred-logo.png"
             alt="Quikkred"
             width={200}
-            height={200}
+            height={52}
             priority
-            className="mx-auto mb-4"
+            className="mx-auto mb-4 h-auto w-auto"
           />
         </motion.div>
 

@@ -14,13 +14,19 @@ import Image from "next/image";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import Hero from "@/components/homepage/hero";
 import StepsSection from "@/components/homepage/steps-section";
-import FeaturesSection from "@/components/homepage/features-section";
-import DailyLadderTeaser from "@/components/homepage/daily-ladder-teaser";
-import LoansGrid from "@/components/homepage/loans-grid";
-import LoanCalculatorAll from "@/components/homepage/loan-calculator";
-import TestimonialsSection from "@/components/homepage/TestimonialsSection";
-import { FinancialCTA } from "@/components/homepage/financial-cta";
-import SalaryAdvance from "@/components/SalaryAdvance";
+
+// Below-the-fold sections — dynamic-imported so they don't bloat the initial
+// JS bundle. ssr stays on (default) so HTML still renders for SEO; only the
+// hydration JS code-splits. Per Lighthouse, the initial bundle was the main
+// driver of TBT / poor LCP on mobile.
+const LoanFinder = dynamic(() => import("@/components/homepage/loan-finder"));
+const FeaturesSection = dynamic(() => import("@/components/homepage/features-section"));
+const DailyLadderTeaser = dynamic(() => import("@/components/homepage/daily-ladder-teaser"));
+const LoanCalculatorAll = dynamic(() => import("@/components/homepage/loan-calculator"));
+const TestimonialsSection = dynamic(() => import("@/components/homepage/TestimonialsSection"));
+const FinancialCTA = dynamic(() =>
+  import("@/components/homepage/financial-cta").then((m) => m.FinancialCTA)
+);
 
 
 export default function Home() {
@@ -142,6 +148,9 @@ export default function Home() {
         {/* Steps Section - Full Screen */}
         <StepsSection/>
 
+        {/* Find your loan - use case selector */}
+        <LoanFinder/>
+
         {/* Features Section - Full Screen */}
         <FeaturesSection/>
 
@@ -221,7 +230,7 @@ export default function Home() {
                 {t?.homepage?.faq?.heading}</h2>
               <p className="text-sm sm:text-lg lg:text-xl text-gray-600 px-4">
                 {t?.homepage?.faq?.subtitle}
-    ?          </p>
+              </p>
             </motion.div>
 
             <div className="space-y-3 sm:space-y-4">
@@ -268,6 +277,27 @@ export default function Home() {
 
         {/* Financial CTA - Full Screen */}
         <FinancialCTA/>
+
+        {/* FAQPage structured data — eligible for Google's FAQ rich result.
+            Sourced from the hardcoded `faqs` array below so the snippet stays
+            stable across locales and renders in the initial HTML payload. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: faqs.map((f) => ({
+                "@type": "Question",
+                name: f.question,
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: f.answer,
+                },
+              })),
+            }),
+          }}
+        />
       </div>
     </>
   );

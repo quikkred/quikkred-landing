@@ -25,13 +25,27 @@ export default function Hero() {
   const languageDropdownRef = useRef<HTMLDivElement>(null)
   const heroRef = useRef<HTMLElement>(null)
 
+  // RAF-throttled mouse tracker — without this, every mousemove event triggered
+  // a style recompute on the radial spotlight, dominating the main thread on
+  // hover. Now we coalesce updates to once per animation frame.
+  const rafRef = useRef<number | null>(null)
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
     if (!heroRef.current) return
     const rect = heroRef.current.getBoundingClientRect()
     const x = ((e.clientX - rect.left) / rect.width) * 100
     const y = ((e.clientY - rect.top) / rect.height) * 100
-    setMousePos({ x, y })
+    if (rafRef.current !== null) return
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null
+      setMousePos({ x, y })
+    })
   }
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
+    }
+  }, [])
 
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -260,19 +274,15 @@ export default function Hero() {
 
   return (
     <section ref={heroRef} onMouseMove={handleMouseMove} className="relative bg-gradient-to-br from-slate-50 via-white to-teal-50/30 min-h-fit md:min-h-[calc(100dvh-120px)] lg:min-h-[calc(100dvh-90px)] flex flex-col overflow-x-hidden overflow-y-auto">
-      {/* Pointer-tracking spotlight glow */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 z-0 transition-[background] duration-200 ease-out hidden md:block"
-        style={{
-          background: `radial-gradient(600px circle at ${mousePos.x}% ${mousePos.y}%, rgba(37,177,129,0.18), rgba(16,185,129,0.08) 35%, transparent 70%)`,
-        }}
-      />
+      {/* Pointer-tracking spotlight — single layered gradient instead of two
+          stacked divs, with will-change to promote to its own compositor layer
+          so style updates don't repaint the whole hero. */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 z-0 hidden md:block"
         style={{
-          background: `radial-gradient(300px circle at ${mousePos.x}% ${mousePos.y}%, rgba(45,212,191,0.12), transparent 60%)`,
+          background: `radial-gradient(600px circle at ${mousePos.x}% ${mousePos.y}%, rgba(37,177,129,0.18), rgba(16,185,129,0.08) 35%, transparent 70%), radial-gradient(300px circle at ${mousePos.x}% ${mousePos.y}%, rgba(45,212,191,0.12), transparent 60%)`,
+          willChange: "background",
         }}
       />
       {/* Language Bar - Above Hero */}
@@ -368,94 +378,48 @@ export default function Hero() {
         </div>
       </motion.div>
 
-      {/* Animated Background Elements - Hidden on mobile for performance */}
+      {/* Decorative background — desktop only.
+          Trimmed from 10 always-animating layers (3 blobs + 6 particles + 1
+          rotating 800×800 gradient) to 2 quiet blobs that move with scroll.
+          The Lighthouse audit was attributing ~30 non-composited animations
+          to this section; the rotating 800×800 gradient alone was forcing a
+          full repaint every frame on Intel iGPUs. */}
       <div className="hidden md:block absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
-          style={{ y: backgroundY }}
+          style={{ y: backgroundY, willChange: "transform" }}
           className="absolute top-20 left-10 w-72 h-72 bg-teal-100/40 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.1, 1],
-            opacity: [0.4, 0.6, 0.4],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
         />
         <motion.div
-          style={{ y: backgroundY }}
+          style={{ y: backgroundY, willChange: "transform" }}
           className="absolute bottom-20 right-10 w-96 h-96 bg-blue-100/30 rounded-full blur-3xl"
-          animate={{
-            scale: [1, 1.15, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 1
-          }}
         />
-        <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-teal-50/20 to-transparent rounded-full blur-3xl"
-          animate={{
-            rotate: [0, 360],
-          }}
-          transition={{
-            duration: 60,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        />
-
-        {/* Floating particles */}
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-2 h-2 bg-teal-400/20 rounded-full"
-            style={{
-              left: `${15 + i * 15}%`,
-              top: `${20 + (i % 3) * 25}%`,
-            }}
-            animate={{
-              y: [-20, 20, -20],
-              x: [-10, 10, -10],
-              opacity: [0.2, 0.5, 0.2],
-            }}
-            transition={{
-              duration: 4 + i,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: i * 0.5,
-            }}
-          />
-        ))}
       </div>
 
       <motion.div
         style={{ opacity }}
         className="container mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 md:py-12 lg:py-16 relative z-10 flex-1 flex items-start md:items-center"
       >
+        <div className="max-w-4xl mx-auto text-center w-full">
+          {/* Main Heading — rendered outside the framer-motion container so
+              it paints on first SSR HTML render. Previously this was wrapped
+              in a motion.div with initial="hidden" (opacity:0), and the audit
+              identified it as the LCP element with 3.2–4.9s render delay
+              waiting for hydration. Plain h1 = LCP completes on first paint. */}
+          <h1 className="text-2xl xs:text-[26px] sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-slate-900 leading-tight mb-4 sm:mb-6 md:mb-8">
+            {t?.hero?.form?.heading || "Get"}{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-emerald-500">
+              {t?.hero?.form?.headingHighlight || "Instant Cash"}
+            </span>
+            <br />
+            {t?.hero?.form?.headingLine2 || "When You Need It"}
+          </h1>
+
         <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="max-w-4xl mx-auto text-center w-full"
         >
-          {/* Main Heading with gradient animation */}
-          <motion.div variants={itemVariants}>
-            <h1 className="text-2xl xs:text-[26px] sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-slate-900 leading-tight mb-4 sm:mb-6 md:mb-8">
-              {t?.hero?.form?.heading || "Get"}{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-emerald-500">
-                {t?.hero?.form?.headingHighlight || "Instant Cash"}
-              </span>
-              <br />
-              {t?.hero?.form?.headingLine2 || "When You Need It"}
-            </h1>
-          </motion.div>
-
           {/* Form Card - Centered */}
           <motion.div
             variants={itemVariants}
@@ -480,30 +444,46 @@ export default function Hero() {
                   </motion.div>
                 </AnimatePresence>
 
-                {/* Progress bars */}
-                <div className="flex gap-1 xs:gap-1.5 sm:gap-2 flex-1">
-                  {steps.map((_, index) => (
-                    <button
-                      key={index}
-                      type="button"
-                      disabled={index + 1 >= currentStep}
-                      onClick={() => {
-                        if (index + 1 < currentStep) {
-                          setCurrentStep(index + 1);
-                        }
-                      }}
-                      className={`flex-1 ${index + 1 < currentStep ? 'cursor-pointer' : 'cursor-default'}`}
-                    >
-                      <motion.div
-                        initial={{ scaleX: 0 }}
-                        animate={{ scaleX: 1 }}
-                        transition={{ delay: index * 0.1, duration: 0.4 }}
-                        className={`h-1.5 sm:h-2 w-full rounded-full transition-all duration-500 ${
-                          currentStep >= index + 1 ? "bg-gradient-to-r from-teal-500 to-emerald-500" : "bg-slate-200"
-                        } ${index + 1 < currentStep ? 'hover:from-teal-600 hover:to-emerald-600' : ''}`}
-                      />
-                    </button>
-                  ))}
+                {/* Progress bars — role="group" because the children are buttons
+                    (interactive), not list items. role="list" required
+                    role="listitem" children, which would conflict with button. */}
+                <div className="flex gap-1 xs:gap-1.5 sm:gap-2 flex-1" role="group" aria-label="Form progress">
+                  {steps.map((step, index) => {
+                    const stepNumber = index + 1;
+                    const isCurrent = stepNumber === currentStep;
+                    const isCompleted = stepNumber < currentStep;
+                    const stateLabel = isCompleted
+                      ? "completed, go back"
+                      : isCurrent
+                      ? "current"
+                      : "upcoming";
+                    return (
+                      <button
+                        key={index}
+                        type="button"
+                        disabled={stepNumber >= currentStep}
+                        onClick={() => {
+                          if (stepNumber < currentStep) {
+                            setCurrentStep(stepNumber);
+                          }
+                        }}
+                        aria-label={`Step ${stepNumber} of ${steps.length}: ${step.question} (${stateLabel})`}
+                        aria-current={isCurrent ? "step" : undefined}
+                        // py-3 expands the *hit area* to ~44px tall (WCAG 2.5.5)
+                        // while flex centering keeps the visible bar thin.
+                        className={`flex-1 min-h-[44px] py-3 flex items-center ${isCompleted ? 'cursor-pointer' : 'cursor-default'}`}
+                      >
+                        <motion.div
+                          initial={{ scaleX: 0 }}
+                          animate={{ scaleX: 1 }}
+                          transition={{ delay: index * 0.1, duration: 0.4 }}
+                          className={`h-1.5 sm:h-2 w-full rounded-full transition-all duration-500 ${
+                            currentStep >= stepNumber ? "bg-gradient-to-r from-teal-500 to-emerald-500" : "bg-slate-200"
+                          } ${isCompleted ? 'hover:from-teal-600 hover:to-emerald-600' : ''}`}
+                        />
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* Step counter */}
@@ -647,6 +627,7 @@ export default function Hero() {
             </motion.div>
           </motion.div>
         </motion.div>
+        </div>
       </motion.div>
     </section>
   )

@@ -8,6 +8,9 @@ import { VALIDATION, TIMERS } from "@/lib/constants/quickApplyV2";
 import useAxios from "@/hooks/useAxios";
 import { useQuickApplyTracking, useVerificationFrictionTracking } from "@/lib/hooks";
 import { useApplication } from "@/contexts/ApplicationContext";
+import { getCoordinates, LocationError, locationErrorMessage } from "@/lib/helpers/getCoordinates";
+import { toast } from "@/components/ui/toast";
+import { isTestMode, TEST_OTP } from "@/lib/testMode";
 
 const MobileVerify = ({
   callback,
@@ -31,9 +34,9 @@ const MobileVerify = ({
   const [otpError, setOtpError] = useState("");
   const [otpTimer, setOtpTimer] = useState(0);
 
-  const isMobileValid = (VALIDATION?.MOBILE || /^[6-9]\d{9}$/).test(mobile);
+  const isMobileValid = /^[6-9]\d{9}$/.test(mobile);
   const isEmailValid = EMAIL_REGEX.test(email.trim());
-  const canSubmit = isMobileValid && isEmailValid;
+  const canSendOtp = isMobileValid && isEmailValid;
 
   const { trackOTPVerified } = useQuickApplyTracking();
   const mobileFriction = useVerificationFrictionTracking('mobile');
@@ -59,6 +62,10 @@ const MobileVerify = ({
       setOtpError("Please enter a valid 10-digit mobile number");
       return;
     }
+    if (!EMAIL_REGEX.test(email.trim())) {
+      setOtpError("Please enter a valid email address");
+      return;
+    }
 
     if (!isEmailValid) {
       setOtpError("Please enter a valid email address");
@@ -69,11 +76,22 @@ const MobileVerify = ({
     setOtpLoading(true);
     setOtpError("");
 
+    // TEST MODE: skip the real SMS + location prompt — just reveal the OTP box.
+    if (isTestMode()) {
+      setOtpSent(true);
+      setOtpTimer(TIMERS?.OTP_RESEND || 30);
+      setOtpLoading(false);
+      return;
+    }
+
     try {
+      const { latitude, longitude } = await getCoordinates();
       const response = await axios.post("/api/auth/customer/create", {
         mobile,
         email: email.trim().toLowerCase(),
         type: "mobile_verification",
+        latitude,
+        longitude,
       });
 
       if (response.status === 200 || response.status === 201) {
@@ -83,6 +101,12 @@ const MobileVerify = ({
         setOtpError(response.data?.message || "Failed to send OTP");
       }
     } catch (error: any) {
+      if (error instanceof LocationError) {
+        const message = locationErrorMessage(error);
+        setOtpError(message);
+        toast({ variant: "error", title: "Location Required", description: message });
+        return;
+      }
       setOtpError(error.response?.data?.message || "Network error. Please try again.");
     } finally {
       setOtpLoading(false);
@@ -98,6 +122,24 @@ const MobileVerify = ({
 
     setOtpVerifying(true);
     setOtpError("");
+
+    // TEST MODE: accept the fixed OTP and log in via the dummy user (no backend).
+    if (isTestMode()) {
+      if (otp !== TEST_OTP) {
+        setOtpError("Invalid OTP. Please try again.");
+        setOtpVerifying(false);
+        return;
+      }
+      try {
+        trackOTPVerified(mobile);
+        mobileFriction.completeTracking(true);
+      } catch { /* tracking is best-effort */ }
+      await login({ mobile, apiData: null });
+      getApplication();
+      callback?.();
+      setOtpVerifying(false);
+      return;
+    }
 
     try {
       const res = await signIn("otp", {
@@ -184,12 +226,11 @@ const MobileVerify = ({
           )}
         </div>
 
-        {/* Email Input Field */}
+        {/* Email — required so we have a fallback contact channel; no email OTP is sent. */}
         <div className={`relative transition-all duration-300 ${otpSent ? "opacity-75" : "opacity-100"}`}>
           <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-            {otpSent ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <Mail className="w-5 h-5" />}
+            <Mail className="w-5 h-5" />
           </div>
-
           <input
             type="email"
             inputMode="email"
@@ -201,13 +242,13 @@ const MobileVerify = ({
               setOtpError("");
             }}
             className={`
-              w-full pl-12 pr-12 py-3.5
+              w-full pl-12 pr-4 py-3.5
               text-base font-medium text-gray-900
               bg-white border rounded-xl outline-none transition-all
-              ${otpError ? "border-red-300 focus:ring-red-100" : "border-gray-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"}
+              ${otpError && !isEmailValid ? "border-red-300 focus:ring-red-100" : "border-gray-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"}
               disabled:bg-gray-50 disabled:text-gray-500
             `}
-            placeholder="Enter email address"
+            placeholder="Enter your email"
           />
         </div>
 
@@ -215,10 +256,10 @@ const MobileVerify = ({
         {!otpSent && (
           <button
             onClick={sendOTP}
-            disabled={!canSubmit || otpLoading}
+            disabled={!canSendOtp || otpLoading}
             className={`
               w-full py-3.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2
-              ${canSubmit
+              ${canSendOtp
                 ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20"
                 : "bg-gray-100 text-gray-400 cursor-not-allowed"}
             `}

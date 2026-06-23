@@ -6,6 +6,7 @@ import useAxios from "@/hooks/useAxios";
 import useStorage from "@/hooks/useStorage";
 import { StorageApplicationForm } from "@/interfaces/storageInterface";
 import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
+import { globalHandlerService } from "@/lib/api/global-handler.service";
 import { RAZORPAY_KEY } from "@/lib/config";
 import { AxiosError } from "axios";
 import { motion } from "framer-motion";
@@ -122,6 +123,19 @@ const ApproveMandate = ({
         }
 
         setMandateLoading(true);
+
+        // Kill-switch: if the MANDATE global handler is disabled, the e-mandate
+        // feature is temporarily unavailable — block the action with a message.
+        const mandateActive = await globalHandlerService.isEventActive('MANDATE');
+        if (!mandateActive) {
+            toast({
+                variant: "error",
+                title: "E-Mandate Unavailable",
+                description: "Currently the e-mandate feature has some problem. Please retry after some time.",
+            });
+            setMandateLoading(false);
+            return;
+        }
 
         try {
             const response = await axios.post(`/api/upi/autoPay/create`, {
@@ -401,7 +415,7 @@ const ApproveMandate = ({
                         <div className="min-w-0 w-full">
                             <p className="text-xs text-gray-500">Aadhaar</p>
                             <p className="font-medium text-gray-900">
-                                {formData.aadhaar ? `XXXX-XXXX-${formData.aadhaar.slice(-4)}` : "-"}
+                                {formData.aadhaar ? formData.aadhaar.replace(/\D/g, '').replace(/(.{4})(?=.)/g, '$1-') : "-"}
                             </p>
                         </div>
                     </div>

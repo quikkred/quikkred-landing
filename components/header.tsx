@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -74,29 +75,29 @@ export function Header() {
       submenu: [
         {
           name: "Lending Partner Program",
-          href: "/partners",
+          href: "/partners/lending-partner-program",
           description:
             "B2B2C partnership on Satsai's NBFC stack — your brand, your capital, our compliance.",
         },
         {
           name: "Proprietor Network",
-          href: "/partners/proprietor",
+          href: "/partners/proprietor-network",
           description:
             "Deploy a sub-agent network — retail outlets, market aggregators, transport hubs — under DLD 2025.",
         },
         {
           name: t.navigation.channelPartners,
-          href: "/channel-partner",
+          href: "/partners/channel-partner",
           description: t.navigation.channelPartnersDesc,
         },
         {
           name: "Collection Partner",
-          href: "/collect-partner",
+          href: "/partners/collection-partner",
           description: "Join our field collection network and earn",
         },
         {
           name: t.navigation.investorRelations,
-          href: "/our-partners/investor-relations",
+          href: "/partners/investor-relations",
           description: t.navigation.investorRelationsDesc,
         },
       ],
@@ -135,9 +136,14 @@ export function Header() {
         <div className="flex justify-between items-center h-16 lg:h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center group">
-            <img
+            <Image
               src="/quikkred-logo.png"
               alt={t.common.appName}
+              width={161}
+              height={42}
+              priority
+              fetchPriority="high"
+              sizes="161px"
               className="h-9 lg:h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
             />
           </Link>
@@ -148,8 +154,8 @@ export function Header() {
               href="/"
               className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
                 pathname === '/'
-                  ? 'text-teal-600 bg-teal-50'
-                  : 'text-slate-600 hover:text-teal-600 hover:bg-slate-50'
+                  ? 'text-teal-700 bg-teal-50'
+                  : 'text-slate-600 hover:text-teal-700 hover:bg-slate-50'
               }`}
             >
               {t.navigation.home}
@@ -166,8 +172,8 @@ export function Header() {
                   href={item.href}
                   className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
                     pathname.startsWith(item.href)
-                      ? 'text-teal-600 bg-teal-50'
-                      : 'text-slate-600 hover:text-teal-600 hover:bg-slate-50'
+                      ? 'text-teal-700 bg-teal-50'
+                      : 'text-slate-600 hover:text-teal-700 hover:bg-slate-50'
                   }`}
                 >
                   {item.name}
@@ -227,7 +233,11 @@ export function Header() {
                 </motion.button>
               </Link>
             ) : (
-              <Link href={isHomePage ? "/login" : (QUICK_FORM_URL as string)} className="sm:hidden">
+              <Link
+                href={isHomePage ? "/login" : (QUICK_FORM_URL as string)}
+                className="sm:hidden"
+                aria-label={isHomePage ? (t.navigation.login || "Login") : (t.common.apply || "Apply")}
+              >
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   className="px-3 py-2 bg-gradient-to-r from-teal-500 to-emerald-500 text-white text-xs font-semibold rounded-lg shadow-md min-h-[36px]"
@@ -250,7 +260,7 @@ export function Header() {
                 </motion.button>
               </Link>
             ) : isHomePage ? (
-              <Link href="/login">
+              <Link href="/login" aria-label={t.navigation.login || "Login"}>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -276,7 +286,7 @@ export function Header() {
             {/* Mobile Menu Toggle - 44px touch target */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-600 hover:text-teal-600 hover:bg-slate-100 rounded-xl transition-colors"
+              className="lg:hidden p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-600 hover:text-teal-700 hover:bg-slate-100 rounded-xl transition-colors"
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             >
               {mobileMenuOpen ? (
@@ -305,7 +315,7 @@ export function Header() {
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
                   pathname === '/'
-                    ? 'text-teal-600 bg-teal-50 font-semibold'
+                    ? 'text-teal-700 bg-teal-50 font-semibold'
                     : 'text-slate-700 hover:bg-slate-50'
                 }`}
               >
@@ -320,7 +330,7 @@ export function Header() {
                         onClick={() => setMobileSubmenuOpen(mobileSubmenuOpen === item.name ? null : item.name)}
                         className={`flex items-center justify-between w-full px-4 py-3 rounded-xl transition-colors ${
                           pathname.startsWith(item.href)
-                            ? 'text-teal-600 bg-teal-50 font-semibold'
+                            ? 'text-teal-700 bg-teal-50 font-semibold'
                             : 'text-slate-700 hover:bg-slate-50'
                         }`}
                       >
@@ -344,7 +354,7 @@ export function Header() {
                                 key={subitem.name}
                                 href={subitem.href}
                                 onClick={() => setMobileMenuOpen(false)}
-                                className="block px-3 py-2 text-sm text-slate-600 hover:text-teal-600 transition-colors"
+                                className="block px-3 py-2 text-sm text-slate-600 hover:text-teal-700 transition-colors"
                               >
                                 {subitem.name}
                               </Link>
@@ -359,7 +369,7 @@ export function Header() {
                       onClick={() => setMobileMenuOpen(false)}
                       className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
                         pathname.startsWith(item.href)
-                          ? 'text-teal-600 bg-teal-50 font-semibold'
+                          ? 'text-teal-700 bg-teal-50 font-semibold'
                           : 'text-slate-700 hover:bg-slate-50'
                       }`}
                     >
@@ -387,6 +397,7 @@ export function Header() {
                     href="/login"
                     onClick={() => setMobileMenuOpen(false)}
                     className="block mt-2"
+                    aria-label={t.navigation.login || "Login"}
                   >
                     <button className="w-full py-4 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-bold rounded-2xl text-base shadow-lg">
                       {t.navigation.login}

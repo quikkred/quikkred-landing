@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Star,
   Quote,
   Play,
-  X,
-  User,
   Video,
   MessageSquare,
   IndianRupee,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import Image from "next/image";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
@@ -48,6 +48,15 @@ interface VideoTestimonial {
 
 type Testimonial = TextTestimonial | VideoTestimonial;
 
+// Pull the 11-char video id out of a YouTube Shorts/watch/youtu.be URL.
+// Returns null for non-YouTube URLs so the modal can fall back to <video>.
+function getYouTubeId(url: string): string | null {
+  const m = url.match(
+    /(?:youtube\.com\/(?:shorts\/|watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+  );
+  return m ? m[1] : null;
+}
+
 // Sample Data
 const testimonialsData: Testimonial[] = [
   {
@@ -73,8 +82,7 @@ const testimonialsData: Testimonial[] = [
     loanAmount: "5,00,000",
     loanType: "Business Loan",
     date: "Nov 2024",
-    videoUrl: "/videos/shrushti.mp4",
-    // thumbnail: "/videos/thumb.jpg",
+    videoUrl: "https://youtube.com/shorts/0jleExlJWz0?feature=share",
     duration: "24sec",
     title: "Service is good and quick , so helpful customer support. ",
   },
@@ -100,8 +108,7 @@ const testimonialsData: Testimonial[] = [
     loanAmount: "3,00,000",
     loanType: "Personal Loan",
     date: "Oct 2024",
-    videoUrl: "/videos/shubham-khanna.mp4",
-    // thumbnail: "/videos/shubham-thumb.jpg",
+    videoUrl: "https://youtube.com/shorts/Y5-mK3YrqVE?feature=share",
     duration: "09sec",
     title: "This time I'm getting a higher loan , Quikkred has my trust.",
   },
@@ -116,9 +123,7 @@ const testimonialsData: Testimonial[] = [
     loanType: "Business Loan",
     date: "Jan 2025",
 
-    videoUrl: "/videos/amul-king.mp4",
-    // thumbnail: "/videos/amul-thumb.jpg", // optional
-
+    videoUrl: "https://youtube.com/shorts/1FgaFv2Yu1o?feature=share",
     duration: "15sec",
     title: "Fast service and very supportive team. Good experience.",
   },
@@ -135,19 +140,6 @@ const testimonialsData: Testimonial[] = [
     date: "Dec 2024",
     content: "Best loan service.",
   },
-  // {
-  //   type: "text",
-  //   id: "6",
-  //   name: "Meera Reddy",
-  //   location: "Hyderabad, Telangana",
-  //   image: "https://randomuser.me/api/portraits/women/33.jpg",
-  //   rating: 4,
-  //   loanAmount: "1,50,000",
-  //   loanType: "Education Loan",
-  //   date: "Nov 2024",
-  //   content:
-  //     "Got loan for daughter's higher education. Minimal documentation and smooth process. Quikkred is truly customer-friendly!",
-  // },
 ];
 
 // Filter type
@@ -197,7 +189,7 @@ const TextCard = ({ testimonial }: { testimonial: TextTestimonial }) => {
       </div>
       <div className="flex items-end justify-between gap-2 mb-3 sm:mb-4">
         <div className="flex flex-wrap gap-1.5 sm:gap-2">
-          <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 bg-[#D3F1EB] text-[#1F8F68] rounded-full text-[10px] sm:text-xs font-medium">
+          <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 bg-[#D3F1EB] text-[#0E5A40] rounded-full text-[10px] sm:text-xs font-medium">
             <IndianRupee size={10} className="sm:w-3 sm:h-3" />
             {testimonial.loanAmount}
           </span>
@@ -222,9 +214,9 @@ const TextCard = ({ testimonial }: { testimonial: TextTestimonial }) => {
             <DefaultAvatar name={testimonial.name} />
           )}
           <div className="min-w-0">
-            <h4 className="font-semibold text-gray-900 text-xs sm:text-sm truncate">
+            <h3 className="font-semibold text-gray-900 text-xs sm:text-sm truncate">
               {testimonial.name}
-            </h4>
+            </h3>
             <p className="text-[10px] sm:text-xs text-gray-500 truncate">
               {testimonial.location}
             </p>
@@ -232,7 +224,7 @@ const TextCard = ({ testimonial }: { testimonial: TextTestimonial }) => {
         </div>
         <div className="flex flex-col items-end gap-0.5 sm:gap-1 flex-shrink-0">
           <StarRating rating={testimonial.rating} />
-          <span className="text-[10px] sm:text-xs text-gray-400 whitespace-nowrap">
+          <span className="text-[10px] sm:text-xs text-gray-500 whitespace-nowrap">
             {testimonial.date}
           </span>
         </div>
@@ -241,7 +233,7 @@ const TextCard = ({ testimonial }: { testimonial: TextTestimonial }) => {
   );
 };
 
-// VideoCard component - replace the video thumbnail section
+// VideoCard component
 const VideoCard = ({
   testimonial,
   onPlay,
@@ -261,12 +253,39 @@ const VideoCard = ({
         className="relative h-36 sm:h-44 lg:h-48 bg-gray-900 cursor-pointer group"
         onClick={onPlay}
       >
-        <video
-          src={testimonial.videoUrl}
-          className="w-full h-full object-cover"
-          preload="metadata"
-          muted
-        />
+        {(() => {
+          const ytId = getYouTubeId(testimonial.videoUrl);
+          if (ytId) {
+            // YouTube Shorts thumbnail — Shorts use the same vi/<id>/ URL space.
+            // hqdefault is the most reliable; mqdefault is the fallback.
+            // Explicit width/height reserve layout space (CLS fix).
+            return (
+              <img
+                src={`https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`}
+                alt={testimonial.title}
+                width={480}
+                height={360}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = `https://i.ytimg.com/vi/${ytId}/mqdefault.jpg`;
+                }}
+              />
+            );
+          }
+          // Fallback: a direct video file (preload none so we don't fetch the mp4
+          // until the user actually plays it).
+          return (
+            <video
+              src={testimonial.videoUrl}
+              className="w-full h-full object-cover"
+              preload="none"
+              muted
+              playsInline
+            />
+          );
+        })()}
         <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
           <div className="w-11 h-11 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-white/90 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
             <Play className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-[#25B181] ml-0.5 sm:ml-1" />
@@ -280,11 +299,11 @@ const VideoCard = ({
         </span>
       </div>
       <div className="p-3 sm:p-4 lg:p-5 flex flex-col flex-grow">
-        <h4 className="font-semibold text-gray-900 text-xs sm:text-sm mb-1.5 sm:mb-2 line-clamp-2">
+        <h3 className="font-semibold text-gray-900 text-xs sm:text-sm mb-1.5 sm:mb-2 line-clamp-2">
           {testimonial.title}
-        </h4>
+        </h3>
         <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2 sm:mb-3">
-          <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 bg-[#D3F1EB] text-[#1F8F68] rounded-full text-[10px] sm:text-xs font-medium">
+          <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 bg-[#D3F1EB] text-[#0E5A40] rounded-full text-[10px] sm:text-xs font-medium">
             <IndianRupee size={10} className="sm:w-3 sm:h-3" />
             {testimonial.loanAmount}
           </span>
@@ -312,9 +331,9 @@ const VideoCard = ({
               </div>
             )}
             <div className="min-w-0">
-              <h5 className="font-medium text-gray-900 text-xs sm:text-sm truncate">
+              <h4 className="font-medium text-gray-900 text-xs sm:text-sm truncate">
                 {testimonial.name}
-              </h5>
+              </h4>
               <p className="text-[10px] sm:text-xs text-gray-500 truncate">
                 {testimonial.location}
               </p>
@@ -340,6 +359,39 @@ export default function TestimonialsSection() {
     return item.type === filter;
   });
 
+  // ---- Slider plumbing ----
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const [progress, setProgress] = useState(0); // 0..1 scroll position
+  const [edges, setEdges] = useState({ start: true, end: false });
+
+  const syncScroll = useCallback(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    const x = el.scrollLeft;
+    setProgress(max > 0 ? x / max : 0);
+    setEdges({ start: x <= 4, end: x >= max - 4 });
+  }, []);
+
+  // Re-evaluate on filter change (track contents change) and on resize.
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    el.scrollTo({ left: 0 });
+    syncScroll();
+    window.addEventListener("resize", syncScroll);
+    return () => window.removeEventListener("resize", syncScroll);
+  }, [filter, syncScroll]);
+
+  const scrollByCards = (dir: 1 | -1) => {
+    const el = trackRef.current;
+    if (!el) return;
+    // Advance by ~one card (first child width + gap), fallback to 85% viewport.
+    const first = el.firstElementChild as HTMLElement | null;
+    const step = first ? first.offsetWidth + 24 : el.clientWidth * 0.85;
+    el.scrollBy({ left: dir * step, behavior: "smooth" });
+  };
+
   return (
     <section className="py-8 sm:py-10 lg:py-12 bg-[#FAFAFA] overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -350,7 +402,7 @@ export default function TestimonialsSection() {
           viewport={{ once: true }}
           className="text-center mb-6 sm:mb-8 lg:mb-12"
         >
-          <span className="inline-block px-3 sm:px-4 py-1.5 sm:py-2 bg-[#D3F1EB] text-[#1F8F68] rounded-full text-[10px] sm:text-xs lg:text-sm font-semibold mb-2 sm:mb-3 lg:mb-4">
+          <span className="inline-block px-3 sm:px-4 py-1.5 sm:py-2 bg-[#D3F1EB] text-[#0E5A40] rounded-full text-[10px] sm:text-xs lg:text-sm font-semibold mb-2 sm:mb-3 lg:mb-4">
             {t?.homepage?.sections?.testimonials?.badge || "Customer Stories"}
           </span>
           <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold font-sora mb-2 sm:mb-3 lg:mb-4 px-2">
@@ -414,83 +466,98 @@ export default function TestimonialsSection() {
         </motion.div>
       </div>
 
-      {/* Carousel */}
-      <div className="relative w-screen left-1/2 -translate-x-1/2">
+      {/* Cards — side-by-side slider */}
+      <div className="relative mx-auto max-w-7xl">
+        {/* edge fades */}
         <div
-          className="overflow-x-auto scrollbar-hide px-3 sm:px-6 md:px-10 lg:px-16 xl:px-20"
-          style={{ scrollBehavior: "smooth" }}
+          aria-hidden
+          className={`pointer-events-none absolute inset-y-0 left-0 z-20 w-10 bg-gradient-to-r from-[#FAFAFA] to-transparent transition-opacity duration-300 sm:w-16 ${
+            edges.start ? "opacity-0" : "opacity-100"
+          }`}
+        />
+        <div
+          aria-hidden
+          className={`pointer-events-none absolute inset-y-0 right-0 z-20 w-10 bg-gradient-to-l from-[#FAFAFA] to-transparent transition-opacity duration-300 sm:w-16 ${
+            edges.end ? "opacity-0" : "opacity-100"
+          }`}
+        />
+
+        {/* floating arrows (desktop) */}
+        <button
+          type="button"
+          onClick={() => scrollByCards(-1)}
+          disabled={edges.start}
+          aria-label="Previous testimonials"
+          className="absolute left-1 top-1/2 z-30 hidden -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white p-3 text-[#25B181] shadow-lg transition-all duration-300 hover:bg-[#25B181] hover:text-white disabled:cursor-not-allowed disabled:opacity-0 lg:flex"
         >
-          <div className="flex gap-3 sm:gap-4 md:gap-5 lg:gap-6 w-fit py-2">
-            {filteredTestimonials.map((testimonial) =>
-              testimonial.type === "text" ? (
-                <div
-                  key={testimonial.id}
-                  className="w-[260px] sm:w-[300px] md:w-[320px] lg:w-[360px] xl:w-[380px] flex-shrink-0"
-                >
-                  <TextCard testimonial={testimonial} />
-                </div>
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+        <button
+          type="button"
+          onClick={() => scrollByCards(1)}
+          disabled={edges.end}
+          aria-label="Next testimonials"
+          className="absolute right-1 top-1/2 z-30 hidden -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white p-3 text-[#25B181] shadow-lg transition-all duration-300 hover:bg-[#25B181] hover:text-white disabled:cursor-not-allowed disabled:opacity-0 lg:flex"
+        >
+          <ChevronRight className="h-5 w-5" />
+        </button>
+
+        {/* the rail */}
+        <div
+          ref={trackRef}
+          onScroll={syncScroll}
+          className="flex snap-x snap-mandatory items-stretch gap-4 overflow-x-auto scroll-smooth px-4 py-2 sm:gap-5 sm:px-6 lg:gap-6 lg:px-8 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {filteredTestimonials.map((testimonial) => (
+            <div
+              key={testimonial.id}
+              className="w-[80vw] max-w-[360px] shrink-0 snap-start sm:w-[300px] md:w-[320px] lg:w-[360px] xl:w-[380px]"
+            >
+              {testimonial.type === "text" ? (
+                <TextCard testimonial={testimonial} />
               ) : (
-                <div
-                  key={testimonial.id}
-                  className="w-[260px] sm:w-[300px] md:w-[320px] lg:w-[360px] xl:w-[380px] flex-shrink-0"
-                >
-                  <VideoCard
-                    testimonial={testimonial}
-                    onPlay={() => setSelectedVideo(testimonial.videoUrl)}
-                  />
-                </div>
-              ),
-            )}
-          </div>
+                <VideoCard
+                  testimonial={testimonial}
+                  onPlay={() => setSelectedVideo(testimonial.videoUrl)}
+                />
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Stats */}
-      {/* <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-8 sm:mt-12 lg:mt-16 grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 lg:gap-6"
-        >
-          <div className="text-center p-3 sm:p-4 lg:p-6 bg-white rounded-lg sm:rounded-xl shadow-sm">
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#25B181] mb-0.5 sm:mb-1">
-              50,000+
-            </div>
-            <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600">
-              {t?.homepage?.sections?.testimonials?.stats?.customers ||
-                "Happy Customers"}
-            </div>
+      {/* Slider controls: mobile arrows + progress */}
+      <div className="container mx-auto mt-4 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-xs items-center justify-center gap-4">
+          <button
+            type="button"
+            onClick={() => scrollByCards(-1)}
+            disabled={edges.start}
+            aria-label="Previous testimonials"
+            className="flex items-center justify-center rounded-full border border-gray-200 bg-white p-2 text-[#25B181] shadow-sm transition-all disabled:opacity-30 lg:hidden"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+
+          <div className="relative h-1 flex-1 overflow-hidden rounded-full bg-gray-200">
+            <motion.span
+              className="absolute inset-y-0 left-0 rounded-full bg-[#25B181]"
+              animate={{ width: `${28 + progress * 72}%` }}
+              transition={{ type: "spring", stiffness: 200, damping: 30 }}
+            />
           </div>
-          <div className="text-center p-3 sm:p-4 lg:p-6 bg-white rounded-lg sm:rounded-xl shadow-sm">
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#25B181] mb-0.5 sm:mb-1">
-              4.8/5
-            </div>
-            <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600">
-              {t?.homepage?.sections?.testimonials?.stats?.rating ||
-                "Average Rating"}
-            </div>
-          </div>
-          <div className="text-center p-3 sm:p-4 lg:p-6 bg-white rounded-lg sm:rounded-xl shadow-sm">
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#25B181] mb-0.5 sm:mb-1">
-              500+ Cr
-            </div>
-            <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600">
-              {t?.homepage?.sections?.testimonials?.stats?.disbursed ||
-                "Loans Disbursed"}
-            </div>
-          </div>
-          <div className="text-center p-3 sm:p-4 lg:p-6 bg-white rounded-lg sm:rounded-xl shadow-sm">
-            <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#25B181] mb-0.5 sm:mb-1">
-              98%
-            </div>
-            <div className="text-[10px] sm:text-xs lg:text-sm text-gray-600">
-              {t?.homepage?.sections?.testimonials?.stats?.satisfaction ||
-                "Satisfaction Rate"}
-            </div>
-          </div>
-        </motion.div>
-      </div> */}
+
+          <button
+            type="button"
+            onClick={() => scrollByCards(1)}
+            disabled={edges.end}
+            aria-label="Next testimonials"
+            className="flex items-center justify-center rounded-full border border-gray-200 bg-white p-2 text-[#25B181] shadow-sm transition-all disabled:opacity-30 lg:hidden"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
 
       {/* Video Modal */}
       <AnimatePresence>

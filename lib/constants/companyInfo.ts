@@ -26,3 +26,10 @@ export const COMPANY_EMAIL_SUPPORT = 'support@quikkred.in';
 export const COMPANY_EMAIL_LOANS = 'loans@quikkred.in';
 export const COMPANY_EMAIL_GRIEVANCE = 'grievance@quikkred.in';
 export const COMPANY_EMAIL_CONTACT = 'contact@quikkred.in';
+
+// ─── Collection Partner ─────────────────────────────────────
+/** Display format, e.g. "+91 8130363939" */
+export const COLLECTION_PARTNER_PHONE_DISPLAY = '+91 8130363939';
+/** tel: link format, no spaces or hyphens */
+export const COLLECTION_PARTNER_PHONE_TEL = '+918130363939';
+export const COLLECTION_PARTNER_EMAIL = 'partnercare@quikkred.com';

@@ -165,7 +165,7 @@ export default function ReportsPage() {
 
   const handleExport = (format: string) => {
     // Export logic here
-    console.log(`Exporting as ${format}`);
+    //console.log(`Exporting as ${format}`);
   };
 
   // Chart data

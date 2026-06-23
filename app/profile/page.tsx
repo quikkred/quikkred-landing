@@ -12,7 +12,6 @@ import {
   Plus, Trash2
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useApplication } from "@/contexts/ApplicationContext";
 import { API_BASE_URL } from '@/lib/config';
 import { useProfile } from '@/store/hooks/useProfile';
 import getToken from "@/lib/getToken";
@@ -126,7 +125,6 @@ interface ProfileData {
 export default function ProfilePage() {
   const { user } = useAuth();
   const router = useRouter();
-  const { application } = useApplication();
 
   // Redux state for profile
   const {
@@ -156,6 +154,20 @@ export default function ProfilePage() {
   const [isAddingReference, setIsAddingReference] = useState(false);
   const [isSavingReferences, setIsSavingReferences] = useState(false);
   const [referenceErrors, setReferenceErrors] = useState<{ [key: string]: string }>({});
+  // Inline error for the references save action — kept separate from the page-level
+  // `error` so a save failure never replaces the whole profile with the error screen.
+  const [referencesError, setReferencesError] = useState<string | null>(null);
+
+  // Bank edit state
+  const [editingBankId, setEditingBankId] = useState<string | null>(null);
+  const [bankForm, setBankForm] = useState<{ bankName: string; accountNumber: string; ifscCode: string; accountHolderName: string }>({
+    bankName: '',
+    accountNumber: '',
+    ifscCode: '',
+    accountHolderName: '',
+  });
+  const [bankErrors, setBankErrors] = useState<{ [key: string]: string }>({});
+  const [isSavingBank, setIsSavingBank] = useState(false);
 
   // Update local state from Redux
   useEffect(() => {
@@ -332,33 +344,40 @@ export default function ProfilePage() {
     if (references.length === 0) return;
     if (!validateReferences()) return;
 
-    const applicationId = application?._id;
-    if (!applicationId) {
-      setError('No active loan application found to add references');
+    setReferencesError(null);
+
+    const customerId = profileData?._id;
+    if (!customerId) {
+      setReferencesError('Customer profile not loaded. Please refresh and try again.');
       return;
     }
 
     try {
       setIsSavingReferences(true);
-      setError(null);
       setSuccessMessage(null);
 
       const token = await getToken();
       if (!token) {
-        setError('No authentication token found');
+        setReferencesError('No authentication token found. Please log in again.');
         return;
       }
 
-      // Combine existing references with new ones
+      // Combine existing references with new ones. Keep the existing references'
+      // _id (and verification state) so the backend can match them instead of
+      // re-creating duplicates / wiping their verified status. New references have
+      // no _id — the backend assigns one.
       const existingRefs = (profileData?.references || []).map(r => ({
+        ...(r._id ? { _id: r._id } : {}),
         name: r.name,
         mobile: r.mobile,
-        relationship: r.relationship
+        relationship: r.relationship,
+        ...(r.verified !== undefined ? { verified: r.verified } : {}),
+        ...(r.verifiedAt ? { verifiedAt: r.verifiedAt } : {}),
       }));
       const allReferences = [...existingRefs, ...references];
 
-      const response = await fetch(`${API_BASE_URL}/api/application/loan/update/${applicationId}`, {
-        method: 'PUT',
+      const response = await fetch(`${API_BASE_URL}/api/customer/references/${customerId}`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -376,13 +395,113 @@ export default function ProfilePage() {
         await fetchProfile();
         setTimeout(() => setSuccessMessage(null), 3000);
       } else {
-        setError(result.message || 'Failed to add references');
+        setReferencesError(result.message || 'Failed to add references');
       }
     } catch (err: any) {
       console.error('Failed to save references:', err);
-      setError(err.message || 'Failed to save references');
+      setReferencesError(err.message || 'Failed to save references');
     } finally {
       setIsSavingReferences(false);
+    }
+  };
+
+  // Bank management
+  const handleEditBank = (bank: Bank) => {
+    setEditingBankId(bank._id);
+    setBankForm({
+      bankName: bank.bankName || '',
+      accountNumber: bank.accountNumber || '',
+      ifscCode: bank.ifscCode || '',
+      accountHolderName: bank.accountHolderName || '',
+    });
+    setBankErrors({});
+    setError(null);
+    setSuccessMessage(null);
+  };
+
+  const handleCancelBankEdit = () => {
+    setEditingBankId(null);
+    setBankForm({ bankName: '', accountNumber: '', ifscCode: '', accountHolderName: '' });
+    setBankErrors({});
+  };
+
+  const handleBankFormChange = (field: keyof typeof bankForm, value: string) => {
+    setBankForm(prev => ({ ...prev, [field]: value }));
+    setBankErrors(prev => {
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
+
+  const validateBankForm = (): boolean => {
+    const errors: { [key: string]: string } = {};
+    const ifscPattern = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+
+    if (!bankForm.bankName.trim()) errors.bankName = 'Bank name is required';
+    if (!bankForm.accountNumber.trim()) {
+      errors.accountNumber = 'Account number is required';
+    } else if (!/^\d{9,18}$/.test(bankForm.accountNumber)) {
+      errors.accountNumber = 'Account number must be 9-18 digits';
+    }
+    if (!bankForm.ifscCode.trim()) {
+      errors.ifscCode = 'IFSC code is required';
+    } else if (!ifscPattern.test(bankForm.ifscCode.toUpperCase())) {
+      errors.ifscCode = 'Invalid IFSC code';
+    }
+    if (!bankForm.accountHolderName.trim()) errors.accountHolderName = 'Account holder name is required';
+
+    setBankErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSaveBank = async () => {
+    if (!editingBankId || !profileData?._id) return;
+    if (!validateBankForm()) return;
+
+    try {
+      setIsSavingBank(true);
+      setError(null);
+      setSuccessMessage(null);
+
+      const token = await getToken();
+      if (!token) {
+        setError('No authentication token found');
+        return;
+      }
+
+      const payload = {
+        bankId: editingBankId,
+        bankName: bankForm.bankName.trim(),
+        accountNumber: bankForm.accountNumber.trim(),
+        ifscCode: bankForm.ifscCode.trim().toUpperCase(),
+        accountHolderName: bankForm.accountHolderName.trim(),
+      };
+
+      const response = await fetch(`${API_BASE_URL}/api/customer/bankUpdate/${profileData._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && (result.success || result.data)) {
+        setSuccessMessage(result.message || 'Bank details updated successfully');
+        handleCancelBankEdit();
+        await fetchProfile();
+        setTimeout(() => setSuccessMessage(null), 3000);
+      } else {
+        setError(result.message || 'Failed to update bank details');
+      }
+    } catch (err: any) {
+      console.error('Failed to update bank details:', err);
+      setError(err.message || 'Failed to update bank details');
+    } finally {
+      setIsSavingBank(false);
     }
   };
 
@@ -724,7 +843,7 @@ export default function ProfilePage() {
                         console.error('❌ Failed to load profile image');
                         setImageLoadError(true);
                       }}
-                      onLoad={() => console.log('✅ Profile image loaded successfully')}
+                      // onLoad={() => console.log('✅ Profile image loaded successfully')}
                     />
                   )}
 
@@ -1259,7 +1378,7 @@ export default function ProfilePage() {
                       <InfoField
                         icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
                         label="Aadhaar Number"
-                        value={profileData.aadhaarNumber ? `XXXX-XXXX-${profileData.aadhaarNumber.slice(-4)}` : 'N/A'}
+                        value={profileData.aadhaarNumber ? profileData.aadhaarNumber.replace(/\D/g, '').replace(/(.{4})(?=.)/g, '$1-') : 'N/A'}
                       />
                       <div className="p-4 bg-[#FAFAFA] rounded-lg border border-[#E0E0E0]">
                         <div className="flex items-start gap-3">
@@ -1300,60 +1419,171 @@ export default function ProfilePage() {
 
                       {profileData.banks && profileData.banks.length > 0 ? (
                         <div className="space-y-4 sm:space-y-6">
-                          {profileData.banks.map((bank, index) => (
+                          {profileData.banks.map((bank, index) => {
+                            const isEditingThisBank = editingBankId === bank._id;
+                            return (
                             <div key={bank._id} className="p-4 sm:p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg sm:rounded-xl border-2 border-blue-200">
-                              <h4 className="text-sm sm:text-md font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
-                                <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-[#4A66FF]" />
-                                Bank Account {index + 1}
-                              </h4>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                                <InfoField
-                                  icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
-                                  label="Bank Name"
-                                  value={bank.bankName}
-                                />
-                                <InfoField
-                                  icon={<User className="w-5 h-5 text-[#4A66FF]" />}
-                                  label="Account Holder Name"
-                                  value={bank.accountHolderName}
-                                />
-                                <InfoField
-                                  icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
-                                  label="Account Number"
-                                  value={`XXXX${bank.accountNumber.slice(-4)}`}
-                                />
-                                <InfoField
-                                  icon={<FileText className="w-5 h-5 text-[#4A66FF]" />}
-                                  label="IFSC Code"
-                                  value={bank.ifscCode}
-                                />
-                                {bank.accountType && (
-                                  <InfoField
-                                    icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
-                                    label="Account Type"
-                                    value={bank.accountType}
-                                  />
-                                )}
-                                {bank.pennyDropStatus && (
-                                  <div className="p-3 sm:p-4 bg-[#FAFAFA] rounded-lg border border-[#E0E0E0]">
-                                    <div className="flex items-start gap-2 sm:gap-3">
-                                      {bank.pennyDropStatus === 'VERIFIED' ? (
-                                        <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
-                                      ) : (
-                                        <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 flex-shrink-0" />
-                                      )}
-                                      <div className="flex-1 min-w-0">
-                                        <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">Verification Status</p>
-                                        <p className={`font-medium text-xs sm:text-sm ${bank.pennyDropStatus === 'VERIFIED' ? 'text-green-600' : 'text-yellow-600'}`}>
-                                          {bank.pennyDropStatus}
-                                        </p>
-                                      </div>
-                                    </div>
-                                  </div>
+                              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                                <h4 className="text-sm sm:text-md font-semibold text-gray-800 flex items-center gap-2">
+                                  <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-[#4A66FF]" />
+                                  Bank Account {index + 1}
+                                </h4>
+                                {!isEditingThisBank && editingBankId === null && (
+                                  <button
+                                    onClick={() => handleEditBank(bank)}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#4A66FF] text-[#4A66FF] text-xs sm:text-sm font-medium rounded-lg hover:bg-[#4A66FF] hover:text-white transition-colors"
+                                  >
+                                    <Edit2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                    Edit
+                                  </button>
                                 )}
                               </div>
+
+                              {isEditingThisBank ? (
+                                <div className="space-y-3 sm:space-y-4">
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                                    <div>
+                                      <label className="text-xs text-gray-600 mb-1 block font-medium">Bank Name</label>
+                                      <input
+                                        type="text"
+                                        value={bankForm.bankName}
+                                        onChange={(e) => handleBankFormChange('bankName', e.target.value)}
+                                        placeholder="e.g. State Bank of India"
+                                        className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-[#4A66FF] focus:border-[#4A66FF] ${
+                                          bankErrors.bankName ? 'border-red-400' : 'border-gray-300'
+                                        }`}
+                                      />
+                                      {bankErrors.bankName && (
+                                        <p className="text-red-500 text-xs mt-1">{bankErrors.bankName}</p>
+                                      )}
+                                    </div>
+                                    <div>
+                                      <label className="text-xs text-gray-600 mb-1 block font-medium">Account Holder Name</label>
+                                      <input
+                                        type="text"
+                                        value={bankForm.accountHolderName}
+                                        onChange={(e) => handleBankFormChange('accountHolderName', e.target.value)}
+                                        placeholder="As per bank records"
+                                        className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-[#4A66FF] focus:border-[#4A66FF] ${
+                                          bankErrors.accountHolderName ? 'border-red-400' : 'border-gray-300'
+                                        }`}
+                                      />
+                                      {bankErrors.accountHolderName && (
+                                        <p className="text-red-500 text-xs mt-1">{bankErrors.accountHolderName}</p>
+                                      )}
+                                    </div>
+                                    <div>
+                                      <label className="text-xs text-gray-600 mb-1 block font-medium">Account Number</label>
+                                      <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={bankForm.accountNumber}
+                                        onChange={(e) => handleBankFormChange('accountNumber', e.target.value.replace(/\D/g, '').slice(0, 18))}
+                                        placeholder="9-18 digit account number"
+                                        className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-[#4A66FF] focus:border-[#4A66FF] ${
+                                          bankErrors.accountNumber ? 'border-red-400' : 'border-gray-300'
+                                        }`}
+                                      />
+                                      {bankErrors.accountNumber && (
+                                        <p className="text-red-500 text-xs mt-1">{bankErrors.accountNumber}</p>
+                                      )}
+                                    </div>
+                                    <div>
+                                      <label className="text-xs text-gray-600 mb-1 block font-medium">IFSC Code</label>
+                                      <input
+                                        type="text"
+                                        value={bankForm.ifscCode}
+                                        onChange={(e) => handleBankFormChange('ifscCode', e.target.value.toUpperCase().slice(0, 11))}
+                                        placeholder="e.g. SBIN0001234"
+                                        maxLength={11}
+                                        className={`w-full px-3 py-2 border rounded-lg text-sm uppercase focus:ring-2 focus:ring-[#4A66FF] focus:border-[#4A66FF] ${
+                                          bankErrors.ifscCode ? 'border-red-400' : 'border-gray-300'
+                                        }`}
+                                      />
+                                      {bankErrors.ifscCode && (
+                                        <p className="text-red-500 text-xs mt-1">{bankErrors.ifscCode}</p>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  <div className="flex flex-col sm:flex-row sm:justify-end items-stretch sm:items-center gap-2 sm:gap-3 pt-2">
+                                    <button
+                                      onClick={handleCancelBankEdit}
+                                      disabled={isSavingBank}
+                                      className="px-4 py-2 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      onClick={handleSaveBank}
+                                      disabled={isSavingBank}
+                                      className="flex items-center justify-center gap-2 px-6 py-2 bg-[#1F8F68] text-white text-sm font-medium rounded-lg hover:bg-[#1a7a59] disabled:opacity-50 transition-colors"
+                                    >
+                                      {isSavingBank ? (
+                                        <>
+                                          <Loader2 className="w-4 h-4 animate-spin" />
+                                          Saving...
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Save className="w-4 h-4" />
+                                          Save Changes
+                                        </>
+                                      )}
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                                  <InfoField
+                                    icon={<Building className="w-5 h-5 text-[#4A66FF]" />}
+                                    label="Bank Name"
+                                    value={bank.bankName}
+                                  />
+                                  <InfoField
+                                    icon={<User className="w-5 h-5 text-[#4A66FF]" />}
+                                    label="Account Holder Name"
+                                    value={bank.accountHolderName}
+                                  />
+                                  <InfoField
+                                    icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
+                                    label="Account Number"
+                                    value={bank.accountNumber}
+                                  />
+                                  <InfoField
+                                    icon={<FileText className="w-5 h-5 text-[#4A66FF]" />}
+                                    label="IFSC Code"
+                                    value={bank.ifscCode}
+                                  />
+                                  {bank.accountType && (
+                                    <InfoField
+                                      icon={<CreditCard className="w-5 h-5 text-[#4A66FF]" />}
+                                      label="Account Type"
+                                      value={bank.accountType}
+                                    />
+                                  )}
+                                  {bank.pennyDropStatus && (
+                                    <div className="p-3 sm:p-4 bg-[#FAFAFA] rounded-lg border border-[#E0E0E0]">
+                                      <div className="flex items-start gap-2 sm:gap-3">
+                                        {bank.pennyDropStatus === 'VERIFIED' ? (
+                                          <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
+                                        ) : (
+                                          <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 flex-shrink-0" />
+                                        )}
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">Verification Status</p>
+                                          <p className={`font-medium text-xs sm:text-sm ${bank.pennyDropStatus === 'VERIFIED' ? 'text-green-600' : 'text-yellow-600'}`}>
+                                            {bank.pennyDropStatus}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
-                          ))}
+                          );
+                          })}
                         </div>
                       ) : (
                         <div className="text-center py-6 sm:py-8 bg-[#FAFAFA] rounded-lg">
@@ -1494,6 +1724,14 @@ export default function ProfilePage() {
                             </div>
                           ))}
 
+                          {/* Inline save error (does not replace the page) */}
+                          {referencesError && (
+                            <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg">
+                              <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                              <p className="text-red-600 text-sm">{referencesError}</p>
+                            </div>
+                          )}
+
                           {/* Action Buttons */}
                           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                             <button
@@ -1509,6 +1747,7 @@ export default function ProfilePage() {
                                   setReferences([]);
                                   setIsAddingReference(false);
                                   setReferenceErrors({});
+                                  setReferencesError(null);
                                 }}
                                 className="px-4 py-2 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-100 transition-colors"
                               >

@@ -30,6 +30,13 @@ import FormSteps, { FormStepsType } from './components/ui/FormSteps';
 import Link from 'next/link';
 import { COMPANY_PHONE_TEL } from '@/lib/constants/companyInfo';
 import { LayoutDashboard, LogOut } from 'lucide-react';
+import FlowSwitcher from './components/ui/FlowSwitcher';
+
+// Show the runtime flow switcher in development, or anywhere it's explicitly
+// enabled via NEXT_PUBLIC_SHOW_FLOW_SWITCHER=true.
+const SHOW_FLOW_SWITCHER =
+    process.env.NODE_ENV !== 'production' ||
+    process.env.NEXT_PUBLIC_SHOW_FLOW_SWITCHER === 'true';
 
 // Main Page Component
 export default function QuickApplyV2Page() {
@@ -40,7 +47,7 @@ export default function QuickApplyV2Page() {
     const { user } = useAuth();
     // const storage = useStorage();
     // const breForm = useMemo<StorageApplicationForm | null>(() => ((storage.data?.breForm as StorageApplicationForm) || null), [storage]);
-    const { application } = useApplication();
+    const { application, getCustomer } = useApplication();
 
     // Form Data
     const [formData, setFormData] = useState<QuickApplyV2FormData>(getInitialFormData);
@@ -67,6 +74,12 @@ export default function QuickApplyV2Page() {
         const gstOnProcessingFee = (processingFee * 0.18) || 0;
         const netDisbursal = approvedLoanAmount - (processingFee + gstOnProcessingFee);
         const totalRepayment = approvedLoanAmount + interestAmount;
+
+        // The API can return a masked account number (e.g. "XXXXXX1234"). Never
+        // pre-fill a masked value — blank it and force re-entry/re-verification.
+        const rawAccountNumber = user?.accountNumber || "";
+        const isAccountMasked = rawAccountNumber !== "" && !/^\d+$/.test(rawAccountNumber);
+        const safeAccountNumber = isAccountMasked ? "" : rawAccountNumber;
 
         const isMobileVerify = !user?.mobile && user?.mobile === "";
         const isEmailVerify = !user?.email && user?.email === "";
@@ -101,9 +114,10 @@ export default function QuickApplyV2Page() {
             // bank
             bankName: user?.bankName || "",
             accountHolderName: user?.accountHolderName || "",
-            accountNumber: user?.accountNumber || "",
+            accountNumber: safeAccountNumber,
             ifsc: user?.ifsc || "",
-            bankVerified: user?.bankVerified || false,
+            // A masked account can't be verified — require a fresh entry/verify.
+            bankVerified: isAccountMasked ? false : (user?.bankVerified || false),
 
             // bre form
             loanAmount: application?.requestedLoanAmount || 0,
@@ -124,6 +138,27 @@ export default function QuickApplyV2Page() {
             isBankDetailsFilled: user?.isBankDetailsFilled || false,
 
             upiAutoPayStatus: user?.upiAutoPayStatus || false,
+
+            // References — autofill from API if previously saved
+            ...(() => {
+                const refs =
+                    (application as any)?.basicDetails?.references ||
+                    (application as any)?.references ||
+                    (user as any)?.references ||
+                    [];
+                const r1 = refs[0] || {};
+                const r2 = refs[1] || {};
+                return {
+                    reference1Name: r1.name || "",
+                    reference1Mobile: r1.mobile || "",
+                    reference1Relationship: r1.relationship || "",
+                    reference1Verified: !!r1.verified,
+                    reference2Name: r2.name || "",
+                    reference2Mobile: r2.mobile || "",
+                    reference2Relationship: r2.relationship || "",
+                    reference2Verified: !!r2.verified,
+                };
+            })(),
         }));
     }, [user, application]);
 
@@ -135,10 +170,19 @@ export default function QuickApplyV2Page() {
         if (hasAutoRouted.current) return;
         if (!user) return;
 
-        const isLogin = user?.isEmailVerified || user?.isMobileVerified;
+        // Treat the applicant as logged-in for any verified identity. DigiLocker
+        // sign-in verifies Aadhaar (isAadhaarVerify) but often leaves
+        // isMobileVerified/isEmailVerified false, so without isAadhaarVerify here
+        // a DigiLocker user gets stranded on the login step after returning.
+        const isLogin = user?.isEmailVerified || user?.isMobileVerified || user?.isAadhaarVerify;
         const basicAndKycFilled = user?.isBasicDetailsFilled && user?.isKycDetailsFilled;
 
-        if (isLogin && user?.bsaInitiated && (user?.isProfileVerified || user?.isBankDetailsFilled)) {
+        // Skip eligibility entirely once the bank statement has been manually
+        // uploaded & verified — send the applicant straight to selfie + bank.
+        if (isLogin && application?.breHistory?.bankStatementUploadedVerified) {
+            setStep("bank");
+            hasAutoRouted.current = true;
+        } else if (isLogin && user?.bsaInitiated && (user?.isProfileVerified || user?.isBankDetailsFilled)) {
             setStep("bank");
             hasAutoRouted.current = true;
         } else if (isLogin && basicAndKycFilled) {
@@ -154,6 +198,12 @@ export default function QuickApplyV2Page() {
     useEffect(() => {
         initializeApp();
     }, []);
+
+    // Refresh customer data on every step change so references/KYC/bank flags stay fresh
+    useEffect(() => {
+        if (!user?.id) return;
+        getCustomer();
+    }, [step, user?.id]);
 
     const initializeApp = async () => {
         setIpBlocked(false);
@@ -240,7 +290,9 @@ export default function QuickApplyV2Page() {
                             <img
                                 src="/quikkred-logo.png"
                                 alt="Quikkred"
-                                className="h-7 sm:h-8"
+                                width={123}
+                                height={32}
+                                className="h-7 sm:h-8 w-auto"
                                 onError={(e) => {
                                     e.currentTarget.style.display = 'none';
                                     const fallback = e.currentTarget.nextElementSibling;
@@ -310,6 +362,9 @@ export default function QuickApplyV2Page() {
                     </div>
                 </div>
             </footer>
+
+            {/* Runtime flow switcher (dev / opt-in) */}
+            {SHOW_FLOW_SWITCHER && <FlowSwitcher />}
         </div>
     );
 }

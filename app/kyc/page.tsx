@@ -617,7 +617,7 @@ export default function KYCVerificationPage() {
                           </div>
                           <div>
                             <span className="text-gray-600">Aadhaar:</span>
-                            <span className="ml-2 font-medium">****{personalInfo.aadhaarNumber.slice(-4)}</span>
+                            <span className="ml-2 font-medium">{personalInfo.aadhaarNumber}</span>
                           </div>
                           <div>
                             <span className="text-gray-600">Date of Birth:</span>

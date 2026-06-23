@@ -7,17 +7,41 @@ import FinFactorStatus from "./FinFactorStatus";
 import { useSearchParams } from "next/navigation";
 import { toast } from "@/components/ui/toast";
 import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
+import { VALIDATION } from "@/lib/constants/quickApplyV2";
 import { useKycStatus } from "@/lib/contexts/KycStatusContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 import { AxiosError } from "axios";
 import useLocation from "@/hooks/useLocation";
+import useFlowMode from "@/hooks/useFlowMode";
+import { normalizeBreStatus } from "@/lib/constants/flowConfig";
+import { isTestMode } from "@/lib/testMode";
 
 interface FinFactorVerifyProps {
     formData: QuickApplyV2FormData;
     setFormData: React.Dispatch<React.SetStateAction<QuickApplyV2FormData>>;
     onNext: () => void;
 }
+
+// Frontend-defined copy shown to the applicant per eligibility outcome — we
+// intentionally do NOT surface the raw backend message/reason.
+const ELIGIBILITY_COPY = {
+    approved: {
+        title: "Congratulations, you're eligible!",
+        description:
+            "Your application meets our criteria. Continue to complete your verification.",
+    },
+    "proceed-to-bank": {
+        title: "One quick step to go",
+        description:
+            "We need to securely verify your bank account to finish checking your eligibility.",
+    },
+    rejected: {
+        title: "Application not approved",
+        description:
+            "Unfortunately, your application doesn't meet our current eligibility criteria. You can re-apply after 60 days.",
+    },
+} as const;
 
 const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps) => {
     const axios = useAxios();
@@ -26,6 +50,187 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
     const { updateKycStatusState } = useKycStatus();
     const { user } = useAuth();
     const { location, getLocation } = useLocation();
+    const { mode: flowMode } = useFlowMode();
+
+    // True when the applicant is already approved (from form state or the loaded
+    // application). Used to skip re-running eligibility — a re-run could flip an
+    // approved decision to rejected.
+    const alreadyApproved = useMemo(() => {
+        const isApproved = (s?: string) => normalizeBreStatus(s) === "approved";
+        return (
+            isApproved(formData.breStatus) ||
+            isApproved((application as any)?.status) ||
+            isApproved((application as any)?.breHistory?.breStatus)
+        );
+    }, [formData.breStatus, application]);
+
+    // True when the application is on HOLD / Proceed-to-Bank (under review).
+    // Used to show a "contact support" popup on re-entry instead of re-running
+    // eligibility.
+    const alreadyOnHold = useMemo(() => {
+        const isHold = (s?: string) =>
+            (s || "").toUpperCase() === "HOLD" || normalizeBreStatus(s) === "proceed-to-bank";
+        return (
+            isHold(formData.breStatus) ||
+            isHold((application as any)?.status) ||
+            isHold((application as any)?.breHistory?.breStatus)
+        );
+    }, [formData.breStatus, application]);
+
+    // Show the approval modal (with the approved offer details) and only advance
+    // to the next step after the applicant accepts. Used both for the live
+    // approve decision and the already-approved short-circuit, so an approved
+    // applicant always sees how much was approved before continuing.
+    const showApprovalModal = () => {
+        updateKycStatusState({
+            loading: false,
+            visibility: true,
+            status: "approved",
+            title: ELIGIBILITY_COPY.approved.title,
+            description: ELIGIBILITY_COPY.approved.description,
+            data: {
+                applicationNumber: (application as any)?.applicationNumber,
+                applicationId: (application as any)?._id || (application as any)?.applicationId,
+                status: "Approve",
+                reason: ELIGIBILITY_COPY.approved.description,
+                loanAmount: formData.approvedLoanAmount || formData.loanAmount,
+                tenure: formData.tenure,
+                tenureUnit: formData.tenureUnit,
+                totalInterest: formData.totalInterest,
+                totalRepayment: formData.totalRepayment,
+                netDisbursalAmount: formData.netDisbursalAmount,
+                interestRate: formData.interestRate,
+            },
+            onSuccess: () => {
+                onNext();
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            },
+        });
+    };
+
+    // Show the "account under review" (HOLD) popup — used when the applicant is
+    // already in a Proceed-to-Bank/HOLD state, so we don't re-run eligibility.
+    const showHoldModal = () => {
+        updateKycStatusState({
+            loading: false,
+            visibility: true,
+            status: "pending",
+            title: "Your account is under review",
+            description: "Your account is under review. Please complete your bank verification to proceed.",
+            data: {
+                applicationNumber: (application as any)?.applicationNumber,
+                applicationId: (application as any)?._id || (application as any)?.applicationId,
+                status: "HOLD",
+                reason: "Your account is under review. Please complete your bank verification to proceed.",
+            },
+            // After a successful upload, close the popup and refresh context.
+            onSuccess: () => {
+                getApplication();
+                getCustomer();
+            },
+        });
+    };
+
+    // Map a decision payload (Approve / Reject / Proceed-to-Bank) to the result
+    // modal. Shared by the BRE flow and the SurePass AA store step.
+    const showDecisionModal = (decision: any) => {
+        const status = normalizeBreStatus(decision?.status);
+        const copy = ELIGIBILITY_COPY[status];
+
+        setFormData((prev) => ({
+            ...prev,
+            breStatus: status === "proceed-to-bank" ? "HOLD" : decision?.status,
+            brePulled: true,
+        }));
+
+        updateKycStatusState({
+            loading: false,
+            visibility: true,
+            status,
+            title: copy.title,
+            description: copy.description,
+            data: {
+                applicationNumber: decision?.applicationNumber,
+                applicationId: decision?.applicationId,
+                status: decision?.status,
+                reason: copy.description,
+                loanAmount: decision?.loanAmount ?? formData.approvedLoanAmount ?? formData.loanAmount,
+                tenure: decision?.tenure ?? formData.tenure,
+                tenureUnit: decision?.tenureUnit ?? formData.tenureUnit,
+                totalInterest: decision?.totalInterest ?? formData.totalInterest,
+                totalRepayment: decision?.totalRepayment ?? formData.totalRepayment,
+                netDisbursalAmount: decision?.netDisbursalAmount ?? formData.netDisbursalAmount,
+                interestRate: decision?.interestRate ?? formData.interestRate,
+            },
+            onSuccess: () => {
+                onNext();
+                getApplication();
+                getCustomer();
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            },
+        });
+    };
+
+    // SurePass AA — after the consent flow returns to
+    // /apply/quick?surepassAA=success, we wait 30s (handled by the effect below)
+    // then store the fetched AA data and surface the resulting decision.
+    const storeSurepassData = async (customerId: string, applicationId: string) => {
+        try {
+            const response = await axios.post(`/api/surepassAA/storeData`, {
+                customerId,
+                applicationId,
+            });
+            const result = response.data;
+
+            getCustomer();
+            getApplication();
+
+            const decision = result?.data;
+            if ((response.status === 200 || response.status === 201) && decision?.status) {
+                showDecisionModal(decision);
+            } else {
+                updateKycStatusState({ visibility: false, loading: false });
+                toast({ variant: "success", title: "Verification submitted", description: result?.message || "Your bank data has been received." });
+            }
+        } catch (error: unknown) {
+            updateKycStatusState({ visibility: false, loading: false });
+            const message =
+                error instanceof AxiosError
+                    ? error.response?.data?.message || "Could not complete bank verification."
+                    : "Something went wrong";
+            toast({ variant: "error", title: "Error", description: message });
+        }
+    };
+
+    // On return from SurePass AA consent, wait 30 seconds then store the data.
+    const surepassHandled = useRef(false);
+    const surepassStored = useRef(false);
+    useEffect(() => {
+        if (surepassHandled.current) return;
+        if (searchParams.get("surepassAA") !== "success") return;
+
+        const customerId = user?.id;
+        const applicationId = (application as any)?._id || formData.applicationId;
+        if (!customerId || !applicationId) return; // wait until user/application load
+
+        surepassHandled.current = true;
+        // Strip the param so a manual refresh can't re-trigger the store step.
+        window.history.replaceState({}, "", window.location.pathname);
+
+        // Show a processing modal during the 30s wait, then store the AA data.
+        updateKycStatusState({ visibility: true, loading: true });
+
+        // IMPORTANT: do NOT clear this timer on cleanup. React StrictMode (dev)
+        // mounts → unmounts → remounts, and a cleanup clearTimeout would cancel
+        // the scheduled store call so /api/surepassAA/storeData never fires.
+        // surepassStored dedupes the actual call instead.
+        setTimeout(() => {
+            if (surepassStored.current) return;
+            surepassStored.current = true;
+            storeSurepassData(customerId, applicationId);
+        }, 30000);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams, user?.id, application]);
 
     const [finFactorDetails, setFinFactorDetails] = useState<{
         visibility: boolean;
@@ -52,6 +257,13 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             const result = response.data;
 
             if (response.status === 200 || response.status === 201) {
+                // Consent was reinitiated — redirect the customer to the new consent URL
+                if (result.data?.reinitiated && result.data?.url) {
+                    toast({ variant: "default", title: "Consent Required", description: result.message || "Please approve the new consent request." });
+                    window.location.href = result.data.url;
+                    return;
+                }
+
                 // Determine bsaBreStatus from finFactor result
                 const bsaBreResult = result.data?.status === "Reject" || result.data?.status === "REJECTED" ? "REJECTED" : result.data?.status;
 
@@ -94,19 +306,24 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
         }
     };
 
-    const bsaInitiatedCalled = useRef(false);
+    const finFactorFetched = useRef(false);
 
     useEffect(() => {
+        // Guard so the BRE/finFactor result is fetched at most once per page load,
+        // regardless of how many times `user` is re-fetched from /api/auth/session.
+        if (finFactorFetched.current) return;
+
         const finfactorParam = searchParams.get('finfactor');
         if (finfactorParam === "success") {
+            finFactorFetched.current = true;
+            // Strip the param so a manual refresh can't re-trigger the fetch.
+            window.history.replaceState({}, '', window.location.pathname);
             fetchBreFinfactorResult();
             return;
         }
 
         if (user && user?.bsaInitiated) {
-            if (bsaInitiatedCalled.current) return;
-            bsaInitiatedCalled.current = true;
-
+            finFactorFetched.current = true;
             fetchBreFinfactorResult();
             return;
         }
@@ -122,7 +339,7 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
         // }
 
         // if (user && user?.bsaInitiated) {
-        //     console.log("bsa initial...!");
+        //     //console.log("bsa initial...!");
         //     fetchBreFinfactorResult();
         //     return;
         // }
@@ -158,7 +375,76 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
         }
     };
 
+    /**
+     * NEW FLOW (BRE_DECISION): runs the rules engine via v2/bre/initialize and
+     * routes on its decision — Approve / Reject / Proceed to Bank — surfaced
+     * through the shared KYC status modal (ResultView).
+     */
+    const runBreDecisionFlow = async () => {
+        // Safety net: never re-run the rules engine for an already-approved
+        // applicant (handleContinue also short-circuits before reaching here).
+        // Show the approval offer instead of skipping straight ahead.
+        if (alreadyApproved) {
+            showApprovalModal();
+            return;
+        }
+
+        // Already on HOLD / Proceed-to-Bank — show the review popup, don't re-run.
+        if (alreadyOnHold) {
+            showHoldModal();
+            return;
+        }
+
+        updateKycStatusState({ visibility: true, loading: true });
+        try {
+            const response = await axios.get(`/api/v2/bre/initialize`);
+            const result = response.data;
+            const decision = result?.data;
+
+            if ((response.status === 200 || response.status === 201) && decision) {
+                // Keep customer/application context fresh for downstream steps.
+                getCustomer();
+                getApplication();
+                showDecisionModal(decision);
+            } else {
+                throw new Error(result?.message || "Eligibility check failed");
+            }
+        } catch (error: unknown) {
+            // Log the real cause for diagnosis; show a friendly message to the user.
+            if (error instanceof AxiosError) {
+                console.error(
+                    "[bre/initialize] failed:",
+                    error.response?.status,
+                    error.response?.data ?? error.message
+                );
+            } else {
+                console.error("[bre/initialize] failed:", error);
+            }
+            updateKycStatusState({ visibility: false, loading: false });
+            toast({
+                variant: "error",
+                title: "Something went wrong",
+                description: "We couldn't complete your eligibility check. Please try again.",
+            });
+        }
+    };
+
     const handleContinue = async () => {
+        // Already approved — skip eligibility (no loan re-create, no
+        // v2/bre/initialize) and show the approval offer. The applicant continues
+        // to the next step only after accepting it (never straight to camera).
+        if (alreadyApproved) {
+            showApprovalModal();
+            return;
+        }
+
+        // Already on HOLD / Proceed-to-Bank — don't re-run eligibility; show the
+        // "account under review / contact support" popup instead.
+        if (alreadyOnHold) {
+            showHoldModal();
+            return;
+        }
+
         const nameParts = formData.fullName.trim().split(/\s+/);
         const firstName = nameParts[0] || "";
         const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
@@ -187,7 +473,7 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             return;
         }
 
-        // Validate Loan Amount (from previous requirement)
+        // Validate Loan Amount
         if (formData.loanAmount < 2500 || formData.loanAmount > 50000) {
             toast({ variant: "error", title: "Invalid Amount", description: "Loan must be between ₹2,500 and ₹50,000." });
             return;
@@ -202,10 +488,55 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             return;
         }
 
+        // Validate References
+        const r1NameOk = (formData.reference1Name || '').trim().length >= 2;
+        const r2NameOk = (formData.reference2Name || '').trim().length >= 2;
+        const r1MobileOk = VALIDATION.MOBILE.test(formData.reference1Mobile || '');
+        const r2MobileOk = VALIDATION.MOBILE.test(formData.reference2Mobile || '');
+        const r1RelOk = !!formData.reference1Relationship;
+        const r2RelOk = !!formData.reference2Relationship;
+        if (!(r1NameOk && r2NameOk && r1MobileOk && r2MobileOk && r1RelOk && r2RelOk)) {
+            toast({
+                variant: "warning",
+                title: "References Required",
+                description: "Please fill both references with name, valid mobile, and relationship.",
+            });
+            return;
+        }
+        if (formData.reference1Mobile === formData.reference2Mobile) {
+            toast({ variant: "error", title: "References must have different mobile numbers" });
+            return;
+        }
+        if (formData.reference1Mobile === formData.mobile || formData.reference2Mobile === formData.mobile) {
+            toast({ variant: "error", title: "Reference cannot be your own mobile number" });
+            return;
+        }
+
+        // TEST MODE: skip the loan/create + BRE backend calls and show the
+        // approval offer directly. Accepting it advances to the bank step.
+        if (isTestMode()) {
+            setFormData((prev) => ({ ...prev, breStatus: "Approve", brePulled: true }));
+            showApprovalModal();
+            return;
+        }
+
         const isBasicDetailsFilled = true;
 
         const selectedProduct = formData.selectedProduct || null;
         const locationData = location || (await getLocation()); // Use existing location from context or fetch if not available
+
+        const references = [
+            {
+                name: (formData.reference1Name || '').trim(),
+                mobile: formData.reference1Mobile || '',
+                relationship: formData.reference1Relationship || '',
+            },
+            {
+                name: (formData.reference2Name || '').trim(),
+                mobile: formData.reference2Mobile || '',
+                relationship: formData.reference2Relationship || '',
+            },
+        ];
 
         const basicDetails = {
             employmentType: formData.employmentType,
@@ -218,6 +549,7 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             isBasicDetailsFilled,
             dateOfBirth: formData.dob,
             companyName: formData.companyName,
+            references,
         }
         const loanDetails = {
             requestedLoanAmount: formData.loanAmount,
@@ -267,7 +599,7 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
                 try {
                     //                 const response = await axios.get("/api/v2/bre/initialize");
                     //                 if (response.status === 200 || response.status === 201) {
-                    //                     console.log(response.data)
+                    //                     //console.log(response.data)
                     //                     // const eligibilityStep = isLogin && user?.brePulled && application && application?.status !== "REJECTED";
 
                     //                     /*
@@ -297,7 +629,16 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
                     //                     }
                     //                 }
 
-                    handleProceedToBankApi();
+                    // ── Flow branch ──
+                    // BRE_DECISION (new): run the rules engine first and route on
+                    // its Approve / Reject / Proceed-to-Bank decision.
+                    // DIRECT_TO_BANK (current): skip straight to bank-statement
+                    // analysis.
+                    if (flowMode === "BRE_DECISION") {
+                        await runBreDecisionFlow();
+                    } else {
+                        handleProceedToBankApi();
+                    }
                 } catch (error: unknown) {
                     if (error instanceof AxiosError) {
                         toast({ variant: "error", title: error?.response?.data?.message || "Kyc Failed", description: "User denied request." });
@@ -336,6 +677,20 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
         // 5. product required
         const product = !!formData.productId && !!formData.selectedProduct;
 
+        // 6. references required
+        const r1NameOk = (formData.reference1Name || '').trim().length >= 2;
+        const r2NameOk = (formData.reference2Name || '').trim().length >= 2;
+        const r1MobileOk = VALIDATION.MOBILE.test(formData.reference1Mobile || '');
+        const r2MobileOk = VALIDATION.MOBILE.test(formData.reference2Mobile || '');
+        const r1RelOk = !!formData.reference1Relationship;
+        const r2RelOk = !!formData.reference2Relationship;
+        const distinct = formData.reference1Mobile !== formData.reference2Mobile;
+        const notSelf =
+            formData.reference1Mobile !== formData.mobile &&
+            formData.reference2Mobile !== formData.mobile;
+        const referencesValid =
+            r1NameOk && r2NameOk && r1MobileOk && r2MobileOk && r1RelOk && r2RelOk && distinct && notSelf;
+
         // Final result
         return (
             isContactVerified &&
@@ -343,8 +698,9 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             isAadhaarVerify &&
             income > 0 &&
             isWorkDetailsValid &&
-            // (loanAmount >= 2500 && loanAmount <= 50000) &&
-            product
+            (loanAmount >= 2500 && loanAmount <= 50000) &&
+            product &&
+            referencesValid
         );
     }, [formData]);
 

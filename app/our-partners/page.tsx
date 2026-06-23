@@ -45,7 +45,7 @@ const PATHS: PathCard[] = [
     tagline: "Your brand, your customers, your capital. Our NBFC, our tech, our compliance.",
     blurb:
       "Private Limited companies plug into the same stack that runs Quikkred — Satsai Finlease as the lender of record, Fluxusforge's tech, our RBI-aligned compliance. Four tracks from pure sourcing (T1) to capital deployment via NCD (T2), co-lending for NBFCs (T3), and seasoned-portfolio purchase (T4).",
-    href: "/partners",
+    href: "/partners/lending-partner-program",
     cta: "Explore the program",
     icon: Building2,
     flagship: true,
@@ -57,7 +57,7 @@ const PATHS: PathCard[] = [
     tagline: "Reach last-mile retail borrowers — through community retailers, not sales teams.",
     blurb:
       "Under any partner track, deploy a network of proprietor sub-agents — neighbourhood retail outlets, local market aggregators, transport-hub operators — who source micro-loans. Funds always flow through Satsai's dynamic QR at the counter; proprietors never touch rupees. RBI-aligned under DLD 2025.",
-    href: "/partners/proprietor",
+    href: "/partners/proprietor-network",
     cta: "See the architecture",
     icon: Network,
     flagship: true,
@@ -69,7 +69,7 @@ const PATHS: PathCard[] = [
     tagline: "Earn commissions on loans you source — with real dashboards and weekly payouts.",
     blurb:
       "Loan sourcing agents earning 1.5–3% commission on disbursals. Real-time dashboard for applications, approvals, earnings. Training and certification included. No upfront cost, pan-India coverage.",
-    href: "/channel-partner",
+    href: "/partners/channel-partner",
     cta: "Join the network",
     icon: Handshake,
   },
@@ -79,7 +79,7 @@ const PATHS: PathCard[] = [
     tagline: "Modernised field-agent platform — no cash handling, only Satsai-owned payment links.",
     blurb:
       "Work the collections queue on a mobile app. Geo-tagged check-ins, DPD-prioritised cases, Truecaller login, expense claims. Borrower repayments flow through Satsai-issued payment links — agents never touch cash (DLD 2025 requirement).",
-    href: "/collect-partner",
+    href: "/partners/collection-partner",
     cta: "Apply as a field agent",
     icon: Store,
   },
@@ -89,7 +89,7 @@ const PATHS: PathCard[] = [
     tagline: "Back a high-growth, compliance-first digital NBFC.",
     blurb:
       "Quikkred operates on Satsai Finlease (RBI NBFC Reg. B-14.01646) with Fluxusforge as the LSP. Structured investment opportunities via NCDs, term debt, or direct equity. Monthly MIS, quarterly portfolio reviews, DPDP-compliant data room.",
-    href: "/our-partners/investor-relations",
+    href: "/partners/investor-relations",
     cta: "See investment deals",
     icon: TrendingUp,
   },
@@ -465,14 +465,14 @@ export default function PartnersPage() {
               </p>
               <div className="flex flex-wrap gap-3">
                 <Link
-                  href="/partners/apply"
+                  href="/partners/lending-partner-program/apply"
                   className="inline-flex items-center gap-2 px-6 py-3.5 bg-white text-[#1F8F68] hover:bg-[#D3F1EB] transition-colors rounded-xl font-semibold shadow-lg"
                 >
                   Apply to become a partner
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link
-                  href="/partners"
+                  href="/partners/lending-partner-program"
                   className="inline-flex items-center gap-2 px-6 py-3.5 border border-white/30 hover:bg-white/10 transition-colors rounded-xl font-semibold text-white"
                 >
                   Deep-dive the Lending Partner Program

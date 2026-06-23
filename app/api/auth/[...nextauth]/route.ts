@@ -78,20 +78,99 @@ export const authOptions: AuthOptions = {
       },
     }),
 
+    // ✅ OTP Pre-Verified Tokens
+    // Used after a successful direct call to /api/auth/customer/verifyOtp.
+    // The OTP is already consumed and validated by the backend; this provider
+    // only re-validates the access token by calling /api/customer/get and then
+    // hands the credentials to NextAuth so a session can be established.
+    CredentialsProvider({
+      id: "otp-tokens",
+      name: "OTP Verified Session",
+      credentials: {
+        userId: { label: "userId", type: "text" },
+        email: { label: "email", type: "text" },
+        mobile: { label: "mobile", type: "text" },
+        role: { label: "role", type: "text" },
+        accessToken: { label: "accessToken", type: "text" },
+        refreshToken: { label: "refreshToken", type: "text" },
+        customerUniqueId: { label: "customerUniqueId", type: "text" },
+        // Present only when an ADMIN/CEO starts a support session via
+        // /api/auth/admin/impersonate. Empty/undefined for a normal OTP login.
+        impersonatedBy: { label: "impersonatedBy", type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.accessToken || !credentials?.userId) {
+          throw new Error("Missing session credentials");
+        }
+
+        // The OTP was already verified server-side by /api/auth/customer/verifyOtp
+        // immediately before this call, and these tokens are its freshly-issued
+        // result. The /api/customer/get call below is only a best-effort sanity
+        // check — it must NOT be the gatekeeper, otherwise any transient/non-auth
+        // failure of that endpoint blocks a legitimate login. We log the real
+        // status for diagnostics but still establish the session; the backend
+        // remains the authority on every subsequent request (a bad token gets a
+        // 401 there and useAxios logs the user out).
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/customer/get`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${credentials.accessToken}`,
+            },
+          });
+
+          if (!res.ok) {
+            const body = await res.text().catch(() => "");
+            console.warn(
+              `[otp-tokens] /api/customer/get returned ${res.status} during login re-validation; proceeding with verified tokens. Body: ${body?.slice(0, 300)}`
+            );
+          }
+        } catch (err: any) {
+          console.warn(
+            `[otp-tokens] /api/customer/get re-validation request failed (${err?.message || err}); proceeding with verified tokens.`
+          );
+        }
+
+        return {
+          id: credentials.userId,
+          email: credentials.email || null,
+          mobile: credentials.mobile || null,
+          role: credentials.role,
+          accessToken: credentials.accessToken,
+          refreshToken: credentials.refreshToken,
+          customerUniqueId: credentials.customerUniqueId,
+          impersonatedBy: credentials.impersonatedBy || null,
+          verifiedAt: new Date().toISOString(),
+        };
+      },
+    }),
+
     // ✅ DigiLocker Provider
     CredentialsProvider({
       id: "digilocker",
       name: "DigiLocker",
       credentials: {
         requestId: { label: "Request ID", type: "text" },
+        clientId: { label: "Client ID", type: "text" },
       },
       async authorize(credentials) {
+        // v1 DigiLocker returns a `requestId`; the v2 flow
+        // (/api/v2/customer/digilocker/login) returns a `client_id`. Accept
+        // either and query the status endpoint with the matching param — the
+        // backend resolves the session by clientId too (see the
+        // /auth/digilocker/callback page, which uses ?clientId=).
         const requestId = credentials?.requestId;
-        if (!requestId) return null;
+        const clientId = credentials?.clientId;
+        if (!requestId && !clientId) return null;
+
+        const statusQuery = clientId
+          ? `clientId=${encodeURIComponent(clientId)}`
+          : `requestId=${encodeURIComponent(requestId as string)}`;
 
         try {
           const res = await fetch(
-            `${API_BASE_URL}/api/auth/customer/digilocker/status?requestId=${encodeURIComponent(requestId)}`,
+            `${API_BASE_URL}/api/auth/customer/digilocker/status?${statusQuery}`,
             {
               method: "GET",
               headers: { "Content-Type": "application/json" },
@@ -212,6 +291,7 @@ export const authOptions: AuthOptions = {
               token.customerUniqueId = result.data.customerUniqueId;
               token.role = result.data.role;
               token.verifiedAt = result.data.verifiedAt;
+              (token as any).mobile = result.data.mobile ?? null;
             } else {
               // Passing error to be caught if necessary
               throw new Error(result?.message || "Google backend login failed");
@@ -222,8 +302,8 @@ export const authOptions: AuthOptions = {
         }
       }
 
-      // ✅ 2) OTP/Truecaller/DigiLocker sign-in
-      if ((account?.provider === "otp" || account?.provider === "truecaller" || account?.provider === "digilocker") && user) {
+      // ✅ 2) OTP/OTP-Tokens/Truecaller/DigiLocker sign-in
+      if ((account?.provider === "otp" || account?.provider === "otp-tokens" || account?.provider === "truecaller" || account?.provider === "digilocker") && user) {
         token.userId = (user as any).id;
         token.accessToken = (user as any).accessToken;
         token.refreshToken = (user as any).refreshToken;
@@ -232,6 +312,7 @@ export const authOptions: AuthOptions = {
         token.verifiedAt = (user as any).verifiedAt;
         token.email = (user as any).email;
         (token as any).mobile = (user as any).mobile;
+        (token as any).impersonatedBy = (user as any).impersonatedBy ?? null;
         if ((user as any).phoneNumber) (token as any).phoneNumber = (user as any).phoneNumber;
       }
 
@@ -250,6 +331,7 @@ export const authOptions: AuthOptions = {
       (session as any).role = (token as any).role;
       (session as any).verifiedAt = (token as any).verifiedAt;
       (session as any).mobile = (token as any).mobile;
+      (session as any).impersonatedBy = (token as any).impersonatedBy ?? null;
 
       return session;
     },

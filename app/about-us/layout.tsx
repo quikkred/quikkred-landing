@@ -5,7 +5,7 @@ const SITE_NAME = "Quikkred";
 const SITE_URL = "https://quikkred.in";
 const PAGE_PATH = "/about-us";
 const PAGE_URL = `${SITE_URL}${PAGE_PATH}`;
-const OG_IMAGE = `${SITE_URL}/Aboutus_hero_image.jpg`;
+const OG_IMAGE = `${SITE_URL}/Aboutus_hero_image.png`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -95,10 +95,37 @@ export const metadata: Metadata = {
 
   icons: {
     icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
+    shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
 };
 
-const AboutUsLayout = ({ children }: LayoutInterface) => children;
+const breadcrumbJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: SITE_URL,
+    },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: "About Us",
+      item: PAGE_URL,
+    },
+  ],
+};
+
+const AboutUsLayout = ({ children }: LayoutInterface) => (
+  <>
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+    />
+    {children}
+  </>
+);
 export default AboutUsLayout;

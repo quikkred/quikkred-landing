@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from "nextjs-toploader/app";
 import {
@@ -8,7 +8,7 @@ import {
   TrendingUp, Calendar, Clock, Download, Plus,
   IndianRupee, Percent, Target, CheckCircle,
   AlertTriangle, FileText, Phone, Mail, MapPin,
-  Building, Award, Star, ArrowUpRight, ArrowDownRight,
+  Award, Star, ArrowUpRight, ArrowDownRight,
   Wallet, Calculator, Eye, EyeOff, RefreshCw,
   Shield, UserCheck, History, Gift, HelpCircle,
   Smartphone, Globe, Heart, Zap, Activity,
@@ -20,15 +20,18 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/toast';
 import { API_BASE_URL, RAZORPAY_KEY } from '@/lib/config';
 import { COMPANY_EMAIL_SUPPORT, COMPANY_PHONE_DISPLAY, COMPANY_PHONE_TEL } from '@/lib/constants/companyInfo';
+import { SKIP_EMANDATE } from '@/lib/constants/flowConfig';
 import { useDashboard } from '@/store/hooks/useDashboard';
 import { useLoans } from '@/store/hooks/useLoans';
+import { globalHandlerService } from '@/lib/api/global-handler.service';
 import { signOut } from 'next-auth/react';
 import getToken from '@/lib/getToken';
 import useAxios from '@/hooks/useAxios';
 import ApplicationStatus from './_components/ApplicationStatus';
-import { DashboardData, ActiveLoanDetails, PaymentResponse, PaymentProof, ReapplyEligibility } from "@/interfaces/dashboardInterface";
+import { DashboardData, ActiveLoanDetails, PaymentResponse, PaymentProof, ReapplyEligibility, LedgerSplit } from "@/interfaces/dashboardInterface";
 import PreviousApplicationStatus from './_components/PreviousApplicationStatus';
 import { Skeleton, SkeletonCircle } from '@/components/ui/Skeleton';
+import { isTestMode } from '@/lib/testMode';
 
 declare global {
   interface Window {
@@ -58,12 +61,19 @@ export default function UserDashboard() {
   } = useLoans();
 
   const [data, setData] = useState<DashboardData | null>(null);
+  // Full customer profile from /api/customer/get — carries repayment details
+  // (au_virtual_accounts) that aren't part of the dashboard payload.
+  const [customerData, setCustomerData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [selectedEmiCount, setSelectedEmiCount] = useState<number>(1);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [customAmount, setCustomAmount] = useState<string>('');
   const [paymentType, setPaymentType] = useState<'FULL_CLOSURE' | 'PART_PAYMENT'>('FULL_CLOSURE');
+  // Ledger (daily payment) selection — only used when the loan is ledger eligible.
+  // 'DAILY' pays a single selected split; 'FULL' closes the whole loan at once.
+  const [ledgerPayMode, setLedgerPayMode] = useState<'DAILY' | 'FULL'>('DAILY');
+  const [selectedSplitDate, setSelectedSplitDate] = useState<string>('');
   const [selectedLoanNumber, setSelectedLoanNumber] = useState<string>('');
   const [activeLoanDetails, setActiveLoanDetails] = useState<ActiveLoanDetails | null>(null);
   const [loadingLoanDetails, setLoadingLoanDetails] = useState(false);
@@ -91,16 +101,58 @@ export default function UserDashboard() {
     subscriptionStatus?: string;
     keyId?: string;
     applicationNumber?: string;
+    applicationStatus?: string;
     amount?: number;
     dueDate?: string;
     message?: string;
   } | null>(null);
   const [loadingEmandate, setLoadingEmandate] = useState(false);
   const [authorizingEmandate, setAuthorizingEmandate] = useState(false);
+  const [cancelingEmandate, setCancelingEmandate] = useState(false);
 
   // Reapply Eligibility States
   const [reapplyEligibility, setReapplyEligibility] = useState<ReapplyEligibility | null>(null);
   const [loadingReapply, setLoadingReapply] = useState(false);
+
+  // ----- Ledger (daily payment) derived state -----
+  // Frontend-only detection (no dependency on /api/customer/get): the loan
+  // response carries `ledgerSplits`, and either the loan or dashboard payload
+  // may carry `isLedgerEligible`. Treat the loan as ledger eligible when any of
+  // those signal it.
+  const isLedgerEligible = !!(activeLoanDetails?.isLedgerEligible || data?.isLedgerEligible);
+  const ledgerSplits: LedgerSplit[] = activeLoanDetails?.ledgerSplits ?? [];
+  // Show the daily ledger flow (replacing "Part Payment") when the loan is
+  // flagged eligible OR the backend has already sent daily splits for it.
+  const hasLedger = isLedgerEligible || ledgerSplits.length > 0;
+  const pendingSplits = ledgerSplits.filter((s) => s.status === 'PENDING');
+  // Next unpaid split — the day the borrower is expected to pay next.
+  const nextPendingSplit = pendingSplits[0] ?? null;
+
+  // ----- AU virtual account(s) for repayment -----
+  // `au_virtual_accounts` comes from /api/customer/get (fetched into
+  // customerData below) — an array of AU Bank virtual accounts. The customer
+  // repays by transferring to the VAN + IFSC.
+  const repayAccounts = useMemo(() => {
+    const raw = customerData?.au_virtual_accounts;
+    if (!Array.isArray(raw)) {
+      return [] as { beneficiaryName: string; van: string; actualAccount: string; ifsc: string; customerRef: string; status: string }[];
+    }
+    return raw
+      .map((a: any) => ({
+        beneficiaryName: a?.beneficiaryName ?? '',
+        van: a?.van ?? '',
+        actualAccount: a?.actualAccount ?? '',
+        ifsc: a?.ifsc ?? '',
+        customerRef: a?.customerRef ?? '',
+        status: a?.status ?? '',
+      }))
+      .filter((a) => a.van || a.actualAccount);
+  }, [customerData]);
+
+  const copyRepayDetail = (value: string, label: string) => {
+    navigator.clipboard.writeText(value);
+    toast({ variant: 'success', title: 'Copied!', description: `${label} copied to clipboard` });
+  };
 
   // Update local state from Redux
   useEffect(() => {
@@ -108,6 +160,54 @@ export default function UserDashboard() {
       setData(dashboardData);
     }
   }, [dashboardData]);
+
+  // Fetch the full customer profile (/api/customer/get) for repayment details
+  // (au_virtual_accounts). Non-blocking: if it fails, the repay card just
+  // doesn't render.
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await axios.get('/api/customer/get');
+        const customer = res.data?.data ?? res.data;
+        if (!cancelled) setCustomerData(customer);
+      } catch {
+        // ignore — repayment card is optional
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  // Route approved / rejected applicants to the dedicated status page once per
+  // session. From there they can choose to continue to the dashboard. The
+  // "applicationStatusSeen" flag is set by /application-status on load, so
+  // returning here does not loop back.
+  useEffect(() => {
+    if (!data || typeof window === 'undefined') return;
+    if (sessionStorage.getItem('applicationStatusSeen')) return;
+
+    const status = (data.applicationStatus || '').toUpperCase();
+    if (status !== 'APPROVED' && status !== 'REJECTED') return;
+
+    const loanNumber = data.oldApplicationNumber || data.loans?.[0]?.loanNumber || '';
+    const amount =
+      status === 'APPROVED' && data.loans?.[0]?.principalAmount
+        ? String(data.loans[0].principalAmount)
+        : '';
+
+    localStorage.setItem(
+      'applicationStatusData',
+      JSON.stringify({
+        status: status.toLowerCase(),
+        loanNumber,
+        amount,
+        reason: '',
+      })
+    );
+
+    router.replace('/application-status');
+  }, [data, router]);
 
   useEffect(() => {
     if (reduxActiveLoan) {
@@ -137,16 +237,42 @@ export default function UserDashboard() {
     document.body.appendChild(script);
   }, []);
 
-  // Set default amount to remaining amount when loan details are loaded (for full closure)
+  // Set default amount to remaining amount when loan details are loaded (for full closure).
+  // Skipped for ledger loans — those are driven by the ledger effect below.
   useEffect(() => {
-    if (activeLoanDetails) {
+    if (activeLoanDetails && !hasLedger) {
       const remaining = getTotalLoanAmount() - (activeLoanDetails.paidAmount || 0);
       // Only set for full closure, or if no amount is set yet
       if (paymentType === 'FULL_CLOSURE' || !customAmount) {
         setCustomAmount(remaining.toString());
       }
     }
-  }, [activeLoanDetails, paymentType]);
+  }, [activeLoanDetails, paymentType, hasLedger]);
+
+  // Drive the payable amount for ledger loans: daily mode pays the selected
+  // split (defaulting to the next pending one), full mode pays the remaining balance.
+  useEffect(() => {
+    if (!hasLedger) return;
+
+    if (ledgerPayMode === 'FULL') {
+      setCustomAmount(getRemainingAmount().toString());
+      return;
+    }
+
+    // DAILY mode — keep the current selection if it is still pending, else
+    // fall back to the next pending split.
+    const selected = ledgerSplits.find(
+      (s) => s.date === selectedSplitDate && s.status === 'PENDING'
+    ) || nextPendingSplit;
+
+    if (selected) {
+      setSelectedSplitDate(selected.date);
+      setCustomAmount(selected.amount.toString());
+    } else {
+      setSelectedSplitDate('');
+      setCustomAmount('');
+    }
+  }, [hasLedger, ledgerPayMode, selectedSplitDate, activeLoanDetails]);
 
   // Fetch active loan details using Redux
   const fetchActiveLoanDetails = async (loanNumber: string) => {
@@ -162,7 +288,7 @@ export default function UserDashboard() {
     // }
 
     if (result?.success) {
-      console.log('✅ Active loan details loaded successfully');
+      //console.log('✅ Active loan details loaded successfully');
     } else if (result?.error) {
       toast({
         variant: "error",
@@ -197,7 +323,7 @@ export default function UserDashboard() {
     const result = await reduxFetchDashboard();
 
     if (result?.success) {
-      console.log('✅ Dashboard data loaded successfully');
+      //console.log('✅ Dashboard data loaded successfully');
     } else if (result?.error) {
       toast({
         variant: "error",
@@ -299,6 +425,25 @@ export default function UserDashboard() {
     }
   };
 
+  // Select a specific daily split to pay (ledger loans only).
+  const handleSelectSplit = (split: LedgerSplit) => {
+    if (split.status !== 'PENDING') return;
+    setLedgerPayMode('DAILY');
+    setSelectedSplitDate(split.date);
+    setCustomAmount(split.amount.toString());
+  };
+
+  // Switch the ledger payment mode (daily split vs. full closure).
+  const handleLedgerModeChange = (mode: 'DAILY' | 'FULL') => {
+    setLedgerPayMode(mode);
+    if (mode === 'FULL') {
+      setCustomAmount(getRemainingAmount().toString());
+    } else if (nextPendingSplit) {
+      setSelectedSplitDate(nextPendingSplit.date);
+      setCustomAmount(nextPendingSplit.amount.toString());
+    }
+  };
+
   const handlePayment = async () => {
     if (!activeLoanDetails) return;
 
@@ -337,6 +482,32 @@ export default function UserDashboard() {
         });
         setProcessingPayment(false);
         return;
+      }
+
+      // Ledger loans only allow a daily split amount or a full closure —
+      // never an arbitrary partial amount.
+      if (hasLedger && ledgerPayMode === 'DAILY') {
+        const selected = ledgerSplits.find(
+          (s) => s.date === selectedSplitDate && s.status === 'PENDING'
+        );
+        if (!selected) {
+          toast({
+            variant: "error",
+            title: "Select a Day",
+            description: "Please select a pending daily payment to continue."
+          });
+          setProcessingPayment(false);
+          return;
+        }
+        if (amount !== selected.amount) {
+          toast({
+            variant: "error",
+            title: "Partial Payment Not Allowed",
+            description: "Pay the full daily amount or choose to close the loan in full."
+          });
+          setProcessingPayment(false);
+          return;
+        }
       }
 
       // const token = await getToken();
@@ -392,7 +563,13 @@ export default function UserDashboard() {
 
       const payinResponse = await axios.post("/api/emi/customerEmiPayment", {
         paymentAmount: totalAmount,
-        loanId: activeLoanDetails._id
+        loanId: activeLoanDetails._id,
+        // Ledger context lets the backend mark the correct daily split as PAID,
+        // or close the whole ledger when paying in full.
+        ...(hasLedger && {
+          paymentMode: ledgerPayMode === 'FULL' ? 'LEDGER_FULL' : 'LEDGER_DAILY',
+          ...(ledgerPayMode === 'DAILY' && { ledgerSplitDate: selectedSplitDate }),
+        }),
       });
       const payinResult = payinResponse.data;
 
@@ -491,7 +668,7 @@ export default function UserDashboard() {
         },
         modal: {
           ondismiss: () => {
-            console.log("Payment cancelled");
+            //console.log("Payment cancelled");
             toast({
               variant: "default",
               title: "Payment Cancelled",
@@ -571,6 +748,7 @@ export default function UserDashboard() {
   };
 
   const fetchMyPaymentProofs = async () => {
+    if (isTestMode()) return;
     if (!activeLoanDetails) return;
 
     setLoadingProofs(true);
@@ -679,6 +857,7 @@ export default function UserDashboard() {
 
   // Fetch E-Mandate details
   const fetchEmandateDetails = async () => {
+    if (isTestMode()) return;
     if (!data?.customerId) return;
 
     setLoadingEmandate(true);
@@ -701,8 +880,9 @@ export default function UserDashboard() {
     }
   };
 
-  // Fetch E-Mandate when dashboard data is available
+  // Fetch E-Mandate when dashboard data is available (skipped when e-mandate is off)
   useEffect(() => {
+    if (SKIP_EMANDATE) return;
     if (data?.customerId) {
       fetchEmandateDetails();
     }
@@ -710,6 +890,7 @@ export default function UserDashboard() {
 
   // Fetch Reapply Eligibility
   const fetchReapplyEligibility = async () => {
+    if (isTestMode()) return;
     if (!data?.customerId) return;
 
     setLoadingReapply(true);
@@ -752,21 +933,73 @@ export default function UserDashboard() {
 
   // Authorize E-Mandate with Razorpay Checkout
   const handleAuthorizeEmandate = async () => {
-    if (!emandateData?.subscriptionId || !emandateData?.keyId || !razorpayLoaded) {
+    if (!razorpayLoaded) {
       toast({
         variant: "error",
         title: "Error",
-        description: "E-Mandate details not available. Please refresh and try again."
+        description: "Payment gateway is still loading. Please try again in a moment."
+      });
+      return;
+    }
+
+    if (!data?.customerId) {
+      toast({
+        variant: "error",
+        title: "Error",
+        description: "Customer details not available. Please refresh and try again."
       });
       return;
     }
 
     setAuthorizingEmandate(true);
 
+    // Kill-switch: if the MANDATE global handler is disabled, the e-mandate
+    // feature is temporarily unavailable — block the action with a message.
+    const mandateActive = await globalHandlerService.isEventActive('MANDATE');
+    if (!mandateActive) {
+      toast({
+        variant: "error",
+        title: "E-Mandate Unavailable",
+        description: "Currently the e-mandate feature has some problem. Please retry after some time."
+      });
+      setAuthorizingEmandate(false);
+      return;
+    }
+
     try {
+      const token = await getToken();
+      if (!token) {
+        toast({ variant: 'error', title: 'Session expired', description: 'Please log in again.' });
+        setAuthorizingEmandate(false);
+        return;
+      }
+
+      // Create the mandate (POST) only now, when the user clicks Authorize.
+      // The page-load fetch is GET-only (status), so simply viewing the
+      // dashboard never creates a mandate.
+      const createResponse = await fetch(`${API_BASE_URL}/api/upi/emandate/checkout/${data.customerId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const createResult = await createResponse.json().catch(() => ({}));
+
+      if (!createResult?.subscriptionId || !createResult?.keyId) {
+        toast({
+          variant: "error",
+          title: "Error",
+          description: createResult?.message || "Failed to create E-Mandate. Please try again."
+        });
+        setAuthorizingEmandate(false);
+        return;
+      }
+
       const options = {
-        key: emandateData.keyId,
-        subscription_id: emandateData.subscriptionId,
+        key: createResult.keyId,
+        subscription_id: createResult.subscriptionId,
         name: "Quikkred",
         description: "E-Mandate Authorization for Loan Repayment",
         prefill: {
@@ -800,7 +1033,7 @@ export default function UserDashboard() {
       const rzp = new window.Razorpay(options);
 
       rzp.on("payment.failed", (response: any) => {
-        console.log("E-Mandate Authorization Failed:", response.error);
+        //console.log("E-Mandate Authorization Failed:", response.error);
         toast({
           variant: "error",
           title: "Authorization Failed",
@@ -818,6 +1051,69 @@ export default function UserDashboard() {
         description: error.message || "Failed to open authorization. Please try again."
       });
       setAuthorizingEmandate(false);
+    }
+  };
+
+  // Cancel E-Mandate (allowed only while loan is not yet disbursed).
+  // Prefer the emandate response's status — it reflects the latest disbursement
+  // state — and fall back to the main application data.
+  const effectiveApplicationStatus = (emandateData?.applicationStatus || data?.applicationStatus || '').toUpperCase();
+  const canCancelEmandate = !!emandateData?.isAuthorized
+    && !!emandateData?.applicationNumber
+    && effectiveApplicationStatus !== 'DISBURSED';
+
+  const handleCancelEmandate = async () => {
+    if (!canCancelEmandate) return;
+    const applicationNumber = emandateData?.applicationNumber;
+    if (!applicationNumber) return;
+
+    const confirmed = typeof window !== 'undefined'
+      ? window.confirm('Cancel your E-Mandate authorization? You will need to re-authorize before disbursement.')
+      : true;
+    if (!confirmed) return;
+
+    setCancelingEmandate(true);
+    try {
+      const token = await getToken();
+      if (!token) {
+        toast({ variant: 'error', title: 'Session expired', description: 'Please log in again.' });
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/upi/autoPay/cancel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ applicationNumbers: [applicationNumber] }),
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (response.ok && (result.success ?? true)) {
+        toast({
+          variant: 'success',
+          title: 'E-Mandate Cancelled',
+          description: result.message || 'Your E-Mandate authorization has been cancelled.',
+        });
+        await fetchEmandateDetails();
+      } else {
+        toast({
+          variant: 'error',
+          title: 'Cancellation Failed',
+          description: result.message || 'Unable to cancel E-Mandate. Please try again.',
+        });
+      }
+    } catch (error: any) {
+      console.error('E-Mandate cancellation error:', error);
+      toast({
+        variant: 'error',
+        title: 'Cancellation Failed',
+        description: error?.message || 'Unable to cancel E-Mandate. Please try again.',
+      });
+    } finally {
+      setCancelingEmandate(false);
     }
   };
 
@@ -1036,8 +1332,17 @@ export default function UserDashboard() {
           </motion.div>
         )}
 
-        {/* E-Mandate Section - Show only if E-Mandate exists and not authorized */}
-        {emandateData?.hasEMandate && !emandateData?.isAuthorized && (
+        {/* E-Mandate Section - Show when the application is submitted, the mandate is
+            not yet authorized, and the application is not in a terminal/blocked state.
+            We intentionally do NOT require hasEMandate here: the subscription is created
+            on Authorize click (POST), so this block must show first to expose the button. */}
+        {!SKIP_EMANDATE
+          && data?.isSubmit
+          && !!emandateData
+          && !emandateData?.isAuthorized
+          && !['CLOSED', 'REJECTED', 'CANCELLED', 'HOLD'].includes(
+            (emandateData?.applicationStatus || data?.applicationStatus || '').toUpperCase()
+          ) && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1096,45 +1401,52 @@ export default function UserDashboard() {
                   </div>
                 </div>
 
-                {/* Authorization Button */}
-                <button
-                  onClick={handleAuthorizeEmandate}
-                  disabled={authorizingEmandate || !razorpayLoaded}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-lg hover:shadow-lg transition-all font-medium text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {authorizingEmandate ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>Processing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Shield className="w-4 h-4" />
-                      <span>Authorize E-Mandate Now</span>
-                      <ChevronRight className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
+                {/* Authorization Button - hidden if application is rejected or on hold */}
+           {/* Authorization Button - hidden if application is rejected or on hold */}
+{data?.applicationStatus !== 'REJECTED' &&
+ data?.applicationStatus !== 'HOLD' && (
+  <>
+    <button
+      onClick={handleAuthorizeEmandate}
+      disabled={authorizingEmandate || !razorpayLoaded}
+      className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-lg hover:shadow-lg transition-all font-medium text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {authorizingEmandate ? (
+        <>
+          <RefreshCw className="w-4 h-4 animate-spin" />
+          <span>Processing...</span>
+        </>
+      ) : (
+        <>
+          <Shield className="w-4 h-4" />
+          <span>Authorize E-Mandate Now</span>
+          <ChevronRight className="w-4 h-4" />
+        </>
+      )}
+    </button>
 
-                {/* Help Text */}
-                <p className="text-xs text-purple-600 mt-3">
-                  You will be redirected to your bank's UPI app to authorize the mandate. This is a one-time authorization.
-                </p>
+    {/* Help Text */}
+    <p className="text-xs text-purple-600 mt-3">
+      You will be redirected to your bank&apos;s UPI app to authorize
+      the mandate. This is a one-time authorization.
+    </p>
+  </>
+)}
               </div>
             </div>
           </motion.div>
         )}
 
-        {/* E-Mandate Authorized Success - Show briefly when authorized */}
-        {emandateData?.hasEMandate && emandateData?.isAuthorized && (
+        {/* E-Mandate Authorized Success - Show whenever the mandate is authorized */}
+        {!SKIP_EMANDATE && emandateData?.isAuthorized && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
             className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border-2 border-green-300 mb-4 sm:mb-6"
           >
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="p-2 sm:p-3 bg-green-500/20 rounded-lg sm:rounded-xl">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <div className="p-2 sm:p-3 bg-green-500/20 rounded-lg sm:rounded-xl self-start">
                 <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
               </div>
               <div className="flex-1">
@@ -1145,10 +1457,36 @@ export default function UserDashboard() {
                   Your E-Mandate has been successfully authorized. Your loan will be disbursed shortly.
                 </p>
               </div>
-              <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full border border-green-300">
-                Active
-              </span>
+              <div className="flex items-center gap-2 sm:flex-col sm:items-end">
+                <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full border border-green-300">
+                  Active
+                </span>
+                {canCancelEmandate && (
+                  <button
+                    onClick={handleCancelEmandate}
+                    disabled={cancelingEmandate}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium text-red-700 bg-white border border-red-300 rounded-lg hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {cancelingEmandate ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Cancelling...</span>
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="w-3.5 h-3.5" />
+                        <span>Cancel E-Mandate</span>
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
+            {canCancelEmandate && (
+              <p className="text-xs text-green-700/80 mt-2 sm:ml-14">
+                You can cancel this authorization any time before disbursement.
+              </p>
+            )}
           </motion.div>
         )}
 
@@ -1287,6 +1625,105 @@ export default function UserDashboard() {
 
             {!loadingLoanDetails && activeLoanDetails && (
               <>
+
+                {/* Repay to Virtual Account (AU) — fallback when Razorpay fails */}
+                {repayAccounts.length > 0 && (
+                  <div className="mb-6 space-y-3">
+                    {/* Razorpay-down note */}
+                    <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                      <p className="text-xs leading-relaxed text-amber-800">
+                        <span className="font-semibold">Payment not going through?</span> If
+                        Razorpay / auto-pay isn&apos;t working, transfer your repayment directly
+                        to the virtual account below from any bank or UPI app — it
+                        auto-reconciles to your loan.
+                      </p>
+                    </div>
+
+                    {repayAccounts.map((acc, idx) => (
+                      <div
+                        key={idx}
+                        className="relative overflow-hidden rounded-2xl border border-emerald-900/10 bg-gradient-to-br from-[#0B3B32] via-[#0E4A3D] to-[#10B4A3] text-white shadow-lg shadow-emerald-900/15"
+                      >
+                        {/* decorative glow */}
+                        <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-emerald-300/10 blur-2xl" />
+
+                        {/* Header */}
+                        <div className="relative flex items-start justify-between gap-3 px-5 pt-5">
+                          <div className="flex items-center gap-3">
+                            <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/10 ring-1 ring-white/15">
+                              <CreditCard className="h-5 w-5 text-emerald-100" />
+                            </div>
+                            <div>
+                              <p className="text-[11px] uppercase tracking-[0.14em] text-emerald-200/70">Repay to</p>
+                              <h3 className="text-base font-semibold leading-tight">{acc.beneficiaryName || 'Virtual Account'}</h3>
+                            </div>
+                          </div>
+                          {acc.status && (
+                            <span className="shrink-0 rounded-full bg-emerald-400/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-100 ring-1 ring-emerald-300/25">
+                              {acc.status}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* VAN — primary */}
+                        <div className="relative px-5 pt-4">
+                          <p className="text-[11px] uppercase tracking-[0.14em] text-emerald-200/60">Virtual Account Number</p>
+                          <div className="mt-1 flex items-center justify-between gap-3">
+                            <p className="font-mono text-xl font-bold tracking-[0.06em] break-all">{acc.van}</p>
+                            <button
+                              onClick={() => copyRepayDetail(acc.van, 'Virtual account number')}
+                              className="shrink-0 rounded-lg bg-white/10 p-2 ring-1 ring-white/10 transition-colors hover:bg-white/20"
+                              aria-label="Copy virtual account number"
+                            >
+                              <Copy className="h-4 w-4 text-emerald-50" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Actual account number */}
+                        {acc.actualAccount && (
+                          <div className="relative px-5 pt-3">
+                            <p className="text-[11px] uppercase tracking-[0.14em] text-emerald-200/60">Account Number</p>
+                            <div className="mt-1 flex items-center justify-between gap-3">
+                              <p className="font-mono text-base font-semibold tracking-[0.04em] break-all">{acc.actualAccount}</p>
+                              <button
+                                onClick={() => copyRepayDetail(acc.actualAccount, 'Account number')}
+                                className="shrink-0 rounded-lg bg-white/10 p-2 ring-1 ring-white/10 transition-colors hover:bg-white/20"
+                                aria-label="Copy account number"
+                              >
+                                <Copy className="h-4 w-4 text-emerald-50" />
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* IFSC + Loan reference */}
+                        <div className="relative mt-4 grid grid-cols-2 gap-px bg-white/10">
+                          <div className="bg-[#0E4A3D] px-5 py-3">
+                            <p className="text-[11px] uppercase tracking-[0.14em] text-emerald-200/60">IFSC</p>
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="font-mono text-sm font-semibold">{acc.ifsc || '—'}</p>
+                              {acc.ifsc && (
+                                <button
+                                  onClick={() => copyRepayDetail(acc.ifsc, 'IFSC')}
+                                  className="shrink-0 rounded-md p-1.5 transition-colors hover:bg-white/15"
+                                  aria-label="Copy IFSC"
+                                >
+                                  <Copy className="h-3.5 w-3.5 text-emerald-200" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          <div className="bg-[#0E4A3D] px-5 py-3">
+                            <p className="text-[11px] uppercase tracking-[0.14em] text-emerald-200/60">Loan Reference</p>
+                            <p className="truncate font-mono text-sm font-semibold">{acc.customerRef || '—'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* Payment Progress Overview */}
                 <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-4 sm:p-6 border border-purple-200 mb-6">
@@ -1468,10 +1905,138 @@ export default function UserDashboard() {
                     <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-4 sm:p-6 mb-4 border-2 border-indigo-200">
                       <h4 className="text-sm font-semibold text-indigo-800 mb-4 flex items-center gap-2">
                         <Target className="w-4 h-4" />
-                        Choose Payment Type
+                        {hasLedger ? 'Choose How to Pay' : 'Choose Payment Type'}
                       </h4>
 
-                      {/* Toggle Buttons */}
+                      {/* ===== Ledger (daily payment) UI ===== */}
+                      {hasLedger && (
+                        <div className="mb-4">
+                          {/* Daily vs Full mode toggle */}
+                          <div className="grid grid-cols-2 gap-3 mb-4">
+                            <button
+                              onClick={() => handleLedgerModeChange('DAILY')}
+                              className={`p-4 rounded-xl border-2 transition-all ${ledgerPayMode === 'DAILY'
+                                ? 'bg-gradient-to-br from-blue-500 to-indigo-600 border-blue-600 text-white shadow-lg'
+                                : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50'
+                                }`}
+                            >
+                              <div className="flex flex-col items-center gap-2">
+                                <Calendar className={`w-6 h-6 ${ledgerPayMode === 'DAILY' ? 'text-white' : 'text-blue-600'}`} />
+                                <span className="font-semibold text-sm">Daily Payment</span>
+                                <span className={`text-xs ${ledgerPayMode === 'DAILY' ? 'text-blue-100' : 'text-gray-500'}`}>
+                                  Pay one day at a time
+                                </span>
+                              </div>
+                            </button>
+
+                            <button
+                              onClick={() => handleLedgerModeChange('FULL')}
+                              className={`p-4 rounded-xl border-2 transition-all ${ledgerPayMode === 'FULL'
+                                ? 'bg-gradient-to-br from-green-500 to-emerald-600 border-green-600 text-white shadow-lg'
+                                : 'bg-white border-gray-200 text-gray-700 hover:border-green-300 hover:bg-green-50'
+                                }`}
+                            >
+                              <div className="flex flex-col items-center gap-2">
+                                <CheckCircle className={`w-6 h-6 ${ledgerPayMode === 'FULL' ? 'text-white' : 'text-green-600'}`} />
+                                <span className="font-semibold text-sm">Pay in Full</span>
+                                <span className={`text-xs ${ledgerPayMode === 'FULL' ? 'text-green-100' : 'text-gray-500'}`}>
+                                  Close the entire loan
+                                </span>
+                              </div>
+                            </button>
+                          </div>
+
+                          {/* Partial payment not allowed notice */}
+                          <div className="flex items-start gap-2 p-3 mb-4 bg-amber-50 rounded-lg border border-amber-200">
+                            <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                            <p className="text-xs text-amber-700">
+                              Partial payments are not allowed on this loan. Pay a full day&apos;s
+                              amount or close the loan in full.
+                            </p>
+                          </div>
+
+                          {/* Daily split schedule — selectable list */}
+                          {ledgerPayMode === 'DAILY' && (
+                            <div className="space-y-2 mb-2">
+                              <p className="text-xs font-medium text-indigo-800 mb-1">
+                                Daily Payment Schedule
+                              </p>
+                              <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
+                                {ledgerSplits.map((split, idx) => {
+                                  const isPaid = split.status === 'PAID';
+                                  const isSelected = !isPaid && split.date === selectedSplitDate;
+                                  return (
+                                    <button
+                                      key={split._id || `${split.date}-${idx}`}
+                                      onClick={() => handleSelectSplit(split)}
+                                      disabled={isPaid}
+                                      className={`w-full flex items-center justify-between p-3 rounded-lg border-2 text-left transition-all ${isPaid
+                                        ? 'bg-green-50 border-green-200 cursor-default'
+                                        : isSelected
+                                          ? 'bg-indigo-50 border-indigo-500 shadow-sm'
+                                          : 'bg-white border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/50'
+                                        }`}
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        <div className={`p-1.5 rounded-lg ${isPaid ? 'bg-green-100' : isSelected ? 'bg-indigo-100' : 'bg-gray-100'}`}>
+                                          {isPaid
+                                            ? <CheckCircle2 className="w-4 h-4 text-green-600" />
+                                            : <Calendar className={`w-4 h-4 ${isSelected ? 'text-indigo-600' : 'text-gray-500'}`} />}
+                                        </div>
+                                        <div>
+                                          <p className={`text-sm font-semibold ${isPaid ? 'text-green-900' : 'text-gray-900'}`}>
+                                            {formatDate(split.date)}
+                                          </p>
+                                          {isPaid && split.paidAt && (
+                                            <p className="text-xs text-green-600">
+                                              Paid on {formatDate(split.paidAt)}
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <span className={`text-sm font-bold ${isPaid ? 'text-green-700' : 'text-gray-900'}`}>
+                                          ₹{(isPaid ? (split.paidAmount ?? split.amount) : split.amount).toLocaleString()}
+                                        </span>
+                                        <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full border ${isPaid
+                                          ? 'bg-green-100 text-green-800 border-green-300'
+                                          : 'bg-yellow-100 text-yellow-800 border-yellow-300'
+                                          }`}>
+                                          {split.status}
+                                        </span>
+                                      </div>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                              {ledgerSplits.length === 0 ? (
+                                <p className="text-xs text-gray-500 text-center py-2">
+                                  Your daily payment schedule will appear here once it&apos;s generated. You can still pay in full above.
+                                </p>
+                              ) : pendingSplits.length === 0 ? (
+                                <p className="text-xs text-green-700 text-center py-2">
+                                  All daily payments are cleared. 🎉
+                                </p>
+                              ) : null}
+                            </div>
+                          )}
+
+                          {/* Full closure amount for ledger */}
+                          {ledgerPayMode === 'FULL' && (
+                            <div className="bg-white rounded-xl p-4 border border-green-200">
+                              <div className="text-center">
+                                <p className="text-sm text-green-700 mb-1">Full Closure Amount</p>
+                                <p className="text-3xl font-bold text-green-800">₹{getRemainingAmount().toLocaleString()}</p>
+                                <p className="text-xs text-green-600 mt-1">Clears all remaining daily payments</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Toggle Buttons — standard (non-ledger) loans */}
+                      {!hasLedger && (
+                      <>
                       <div className="grid grid-cols-2 gap-3 mb-4">
                         <button
                           onClick={() => handlePaymentTypeChange('FULL_CLOSURE')}
@@ -1558,22 +2123,34 @@ export default function UserDashboard() {
                           </div>
                         </div>
                       )}
+                      </>
+                      )}
 
                       {/* Payment Summary */}
                       <div className="bg-white rounded-xl p-4 border border-indigo-200 mb-4">
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-gray-600">Payment Amount:</span>
                           <span className="text-xl font-bold text-indigo-900">
-                            ₹{paymentType === 'FULL_CLOSURE'
-                              ? getRemainingAmount().toLocaleString()
-                              : (parseFloat(customAmount) || 0).toLocaleString()}
+                            ₹{(hasLedger || paymentType !== 'FULL_CLOSURE')
+                              ? (parseFloat(customAmount) || 0).toLocaleString()
+                              : getRemainingAmount().toLocaleString()}
                           </span>
                         </div>
-                        {paymentType === 'PART_PAYMENT' && customAmount && parseFloat(customAmount) > 0 && (
+                        {!hasLedger && paymentType === 'PART_PAYMENT' && customAmount && parseFloat(customAmount) > 0 && (
                           <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
                             <span className="text-xs text-gray-500">Balance after payment:</span>
                             <span className="text-sm font-semibold text-orange-600">
                               ₹{(getRemainingAmount() - parseFloat(customAmount)).toLocaleString()}
+                            </span>
+                          </div>
+                        )}
+                        {hasLedger && (
+                          <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-100">
+                            <span className="text-xs text-gray-500">
+                              {ledgerPayMode === 'FULL' ? 'Closing the loan in full' : 'Balance after this day'}
+                            </span>
+                            <span className="text-sm font-semibold text-orange-600">
+                              ₹{(getRemainingAmount() - (parseFloat(customAmount) || 0)).toLocaleString()}
                             </span>
                           </div>
                         )}
@@ -1582,7 +2159,7 @@ export default function UserDashboard() {
                       {/* Pay Now Button */}
                       <button
                         onClick={handlePayment}
-                        disabled={processingPayment || !razorpayLoaded || (paymentType === 'PART_PAYMENT' && (!customAmount || parseFloat(customAmount) <= 0))}
+                        disabled={processingPayment || !razorpayLoaded || (!hasLedger && paymentType === 'PART_PAYMENT' && (!customAmount || parseFloat(customAmount) <= 0)) || (hasLedger && (!customAmount || parseFloat(customAmount) <= 0))}
                         className="w-full py-4 bg-gradient-to-r from-[#10B4A3] to-emerald-600 text-white rounded-xl font-bold text-lg hover:from-[#0EA594] hover:to-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg hover:shadow-xl"
                       >
                         {processingPayment ? (
@@ -1617,82 +2194,6 @@ export default function UserDashboard() {
                         </div>
                       </div>
                     )}
-
-                    {/* Bank Account Details for Manual Payment */}
-                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 border-2 border-blue-200">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Building className="w-5 h-5 text-blue-700" />
-                        <h4 className="text-base font-semibold text-blue-900">Bank Transfer Details</h4>
-                      </div>
-
-                      <div className="space-y-3">
-                        {/* Account Name */}
-                        <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-blue-100">
-                          <div>
-                            <p className="text-xs text-gray-500">Account Name</p>
-                            <p className="text-sm font-semibold text-gray-900">Satsai Finlease Pvt Ltd</p>
-                          </div>
-                        </div>
-
-                        {/* Account Number */}
-                        <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-blue-100">
-                          <div>
-                            <p className="text-xs text-gray-500">Account Number</p>
-                            <p className="text-base font-bold text-gray-900 font-mono">401655461518</p>
-                          </div>
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText('401655461518');
-                              toast({ variant: "success", title: "Copied!", description: "Account number copied to clipboard" });
-                            }}
-                            className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
-                          >
-                            <Copy className="w-4 h-4 text-blue-600" />
-                          </button>
-                        </div>
-
-                        {/* IFSC Code */}
-                        <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-blue-100">
-                          <div>
-                            <p className="text-xs text-gray-500">IFSC Code</p>
-                            <p className="text-base font-bold text-gray-900 font-mono">RATN0000315</p>
-                          </div>
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText('RATN0000315');
-                              toast({ variant: "success", title: "Copied!", description: "IFSC code copied to clipboard" });
-                            }}
-                            className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
-                          >
-                            <Copy className="w-4 h-4 text-blue-600" />
-                          </button>
-                        </div>
-
-                        {/* Bank Name */}
-                        <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-blue-100">
-                          <div>
-                            <p className="text-xs text-gray-500">Bank Name</p>
-                            <p className="text-sm font-semibold text-gray-900">RBL Bank</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Payment Instructions */}
-                      <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
-                        <div className="flex items-start gap-2">
-                          <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <p className="text-xs font-semibold text-amber-800">Important Instructions</p>
-                            <ul className="text-xs text-amber-700 mt-1 space-y-1 list-disc list-inside">
-                              <li>Transfer exact amount: ₹{getRemainingAmount().toLocaleString()}</li>
-                              <li>Use IMPS/NEFT/UPI for instant transfer</li>
-                              <li>Add your Loan Number <span className="font-mono font-bold">{activeLoanDetails.loanNumber}</span> in remarks</li>
-                              <li>Payment will be updated within 24 hours</li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
 
                     {/* -------------------------------------------------------->UPI */}
 

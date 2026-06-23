@@ -15,6 +15,7 @@ import { loansService } from '@/lib/api/loans.service';
 import { API_BASE_URL } from '@/lib/config';
 import { useApplications } from '@/store/hooks/useApplications';
 import { Skeleton } from '@/components/ui/Skeleton';
+import BankStatementUpload from './BankStatementUpload';
 
 interface Application {
   _id: string;
@@ -152,6 +153,15 @@ interface DetailedApplication {
       respondedAt: string;
       cost: number;
     };
+  };
+  breHistory?: {
+    breStatus?: string;
+    bsaBreStatus?: string;
+    manuallyBreStatus?: string;
+    manullyExtractedBankStatementFlag?: boolean;
+    bankStatementUploadedVerified?: boolean;
+    // When true, surface the manual bank-statement upload control in the modal.
+    isActivebankStatementUpload?: boolean;
   };
   lastModifiedBy?: {
     _id: string;
@@ -307,9 +317,9 @@ export default function MyApplicationsPage() {
       (filterStatus === 'approved' && (statusUpper === 'APPROVED' || statusUpper === 'DISBURSED')) ||
       (filterStatus === 'rejected' && (statusUpper === 'REJECTED' || statusUpper === 'CANCELLED'));
 
-    const matchesSearch = app.applicationNumber?.toLowerCase()?.includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = app.applicationNumber?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
       (app.purpose?.toLowerCase() || '')?.includes(searchTerm.toLowerCase()) ||
-      (app.customerId?.fullName?.toLowerCase() || '')?.includes(searchTerm.toLowerCase());
+      (app.customerId?.fullName?.toLowerCase() || '')?.includes(searchTerm?.toLowerCase());
 
     return matchesStatus && matchesSearch;
   });
@@ -490,7 +500,6 @@ export default function MyApplicationsPage() {
                   {/* <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Customer</th> */}
                   <th className="px-2 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Total Repayment</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Tenure</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Priority</th>
                   <th className="px-8 py-2 text-left text-xs font-semibold text-gray-700 uppercase">Status</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Actions</th>
                 </tr>
@@ -519,15 +528,6 @@ export default function MyApplicationsPage() {
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{app.tenure || '-'} {app.tenureUnit || ''}</div>
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      {app.priority && (
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          app.priority === 'High' ? 'text-red-600 bg-red-100' : 'text-blue-600 bg-blue-100'
-                        }`}>
-                          {app.priority}
-                        </span>
-                      )}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(app.status)}`}>
@@ -703,16 +703,16 @@ export default function MyApplicationsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <div>
                         <p className="text-sm text-gray-600">Full Name</p>
-                        <p className="font-semibold text-gray-900">{detailedApplication.customerId.fullName .toLowerCase()
+                        <p className="font-semibold text-gray-900">{detailedApplication.customerId.fullName?.toLowerCase()
     .replace(/\b\w/g, char => char.toUpperCase())}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Email</p>
-                        <p className="font-semibold text-gray-900">{detailedApplication.customerId.email}</p>
+                        <p className="font-semibold text-gray-900">{detailedApplication?.customerId.email}</p>
                       </div>
 
                       {/* References */}
-                      {detailedApplication.customerId.references && detailedApplication.customerId.references.length > 0 && (
+                      {detailedApplication?.customerId.references && detailedApplication?.customerId.references.length > 0 && (
                         <div className="col-span-full mt-2">
                           <div className="flex items-center gap-2 mb-2">
                             <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
@@ -844,6 +844,16 @@ export default function MyApplicationsPage() {
                         ))}
                       </div>
                     </div>
+                  )}
+
+                  {/* Manual bank statement upload — shown only when
+                      breHistory.isActivebankStatementUpload is true. */}
+                  {detailedApplication.breHistory?.isActivebankStatementUpload && (
+                    <BankStatementUpload
+                      applicationNumber={detailedApplication.applicationNumber}
+                      applicationId={detailedApplication._id}
+                      onUploaded={() => fetchApplicationDetails(detailedApplication.applicationNumber)}
+                    />
                   )}
 
                   {/* Bank Account */}

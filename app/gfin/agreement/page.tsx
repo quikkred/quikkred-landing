@@ -74,9 +74,10 @@ export default function GfinAgreementPage() {
     return Number(value).toLocaleString('en-IN');
   };
 
+  // Masking removed — show the full Aadhaar number (grouped for readability).
   const maskAadhaar = (aadhaar: string) => {
-    if (!aadhaar || aadhaar.length < 4) return 'N/A';
-    return 'XXXX-XXXX-' + aadhaar.slice(-4);
+    if (!aadhaar) return 'N/A';
+    return aadhaar.replace(/\D/g, '').replace(/(.{4})(?=.)/g, '$1-');
   };
 
   // Fetch customer data from API
@@ -396,7 +397,7 @@ export default function GfinAgreementPage() {
               {/* Footer */}
               <div className="bg-gray-100 p-6 text-center text-sm text-gray-600">
                 <p className="font-semibold">Satsai Finlease Private Limited (trading as Quikkred)</p>
-                <p>RBI Registered NBFC | CIN: U65100MH2024PTC123456</p>
+                <p>RBI Registered NBFC | RBI Reg. B-14.01646 | CIN: U71290DL1996PTC081328</p>
                 <p className="mt-2 text-xs text-gray-500">
                   This is a computer-generated document and is valid without physical signature.
                 </p>

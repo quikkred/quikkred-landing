@@ -292,16 +292,16 @@ export default function PostApprovalAadhaar({
                 // PHASE 1-4: Handle Validation Results
                 // ============================================
                 // if (data.data?.contactValidation) {
-                //     console.log('📱 Contact Validation:', data.data.contactValidation);
+                //     //console.log('📱 Contact Validation:', data.data.contactValidation);
                 // }
                 // if (data.data?.duplicateCheck?.isDuplicate) {
-                //     console.log('🚨 Duplicate Aadhaar:', data.data.duplicateCheck);
+                //     //console.log('🚨 Duplicate Aadhaar:', data.data.duplicateCheck);
                 // }
                 // if (data.data?.photoValidation?.photoUploaded) {
-                //     console.log('📸 Photo uploaded:', data.data.photoValidation.photoUrl);
+                //     //console.log('📸 Photo uploaded:', data.data.photoValidation.photoUrl);
                 // }
                 // if (data.data?.addressValidation?.addressExtracted) {
-                //     console.log('🏠 Address validation:', data.data.addressValidation);
+                //     //console.log('🏠 Address validation:', data.data.addressValidation);
                 // }
 
                 // Track success

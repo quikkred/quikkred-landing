@@ -4,8 +4,13 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // ✅ change path if different
 import { API_BASE_URL } from "@/lib/config";
 import type { User } from "@/contexts/AuthContext";
+import { isTestMode } from "@/lib/testMode";
 
 export default async function getUserDetails(): Promise<User | null> {
+  // TEST MODE: never call the backend on the server. The dummy user is seeded
+  // client-side (and the apply flow intentionally starts logged-out).
+  if (isTestMode()) return null;
+
   // 1) Get NextAuth session (server-side)
   const session = await getServerSession(authOptions);
 
@@ -24,13 +29,13 @@ export default async function getUserDetails(): Promise<User | null> {
   // @ts-ignore
   const accessToken: string | undefined = session.accessToken;
 
-  // console.log("access-token:", accessToken);
+  // //console.log("access-token:", accessToken);
 
   if (!accessToken) return baseUser; // logged in but no backend token
 
   // 4) Fetch profile from your API using backend token
   try {
-    // console.log("🔵 Fetching user profile from API...");
+    // //console.log("🔵 Fetching user profile from API...");
     const response = await fetch(`${API_BASE_URL}/api/customer/get`, {
       method: "GET",
       headers: {
@@ -41,7 +46,7 @@ export default async function getUserDetails(): Promise<User | null> {
     });
 
     const result = await response.json();
-    // console.log("🔵 User profile API response:", result);
+    // //console.log("🔵 User profile API response:", result);
 
     if (!response.ok || !result?.success || !result?.data) {
       return baseUser;
@@ -50,7 +55,7 @@ export default async function getUserDetails(): Promise<User | null> {
     const apiData = result.data;
     const fullName = apiData.fullName || baseUser.name;
 
-    // console.log("api Data", apiData)
+    // //console.log("api Data", apiData)
 
     const updatedUser: User = {
       ...baseUser,

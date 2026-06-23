@@ -74,7 +74,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     };
 
     // Mock error reporting
-    console.log('Error reported:', errorReport);
+    //console.log('Error reported:', errorReport);
   };
 
   private handleRetry = () => {

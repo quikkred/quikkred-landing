@@ -403,7 +403,7 @@ const Page4Approval = ({
             <div className="min-w-0 w-full">
               <p className="text-xs text-gray-500">Aadhaar</p>
               <p className="font-medium text-gray-900">
-                {formData.aadhaar ? `XXXX-XXXX-${formData.aadhaar.slice(-4)}` : "-"}
+                {formData.aadhaar ? formData.aadhaar.replace(/\D/g, '').replace(/(.{4})(?=.)/g, '$1-') : "-"}
               </p>
             </div>
           </div>
