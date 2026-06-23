@@ -173,7 +173,10 @@ export default function QuickApplyV2Page() {
         if (isLogin && application?.breHistory?.bankStatementUploadedVerified) {
             setStep("bank");
             hasAutoRouted.current = true;
-        } else if (isLogin && user?.bsaInitiated && (user?.isProfileVerified || user?.isBankDetailsFilled)) {
+        } else if (isLogin && application?.breHistory?.bsaInitiated && (user?.isProfileVerified || user?.isBankDetailsFilled)) {
+            // Use the CURRENT application's bsaInitiated (cycle-specific), not the
+            // persistent user flag — otherwise a reapply (fresh application) would
+            // skip eligibility/BRE and jump straight to the bank step.
             setStep("bank");
             hasAutoRouted.current = true;
         } else if (isLogin && basicAndKycFilled) {

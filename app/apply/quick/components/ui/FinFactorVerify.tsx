@@ -56,26 +56,30 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
     // application). Used to skip re-running eligibility — a re-run could flip an
     // approved decision to rejected.
     const alreadyApproved = useMemo(() => {
+        // Only treat as already-decided if BRE was pulled for THIS application.
+        // A fresh reapply has breHistory.brePulled = false and must run BRE again,
+        // so we must not short-circuit on a previous cycle's status.
+        if (!(application as any)?.breHistory?.brePulled) return false;
         const isApproved = (s?: string) => normalizeBreStatus(s) === "approved";
         return (
-            isApproved(formData.breStatus) ||
             isApproved((application as any)?.status) ||
             isApproved((application as any)?.breHistory?.breStatus)
         );
-    }, [formData.breStatus, application]);
+    }, [application]);
 
     // True when the application is on HOLD / Proceed-to-Bank (under review).
     // Used to show a "contact support" popup on re-entry instead of re-running
     // eligibility.
     const alreadyOnHold = useMemo(() => {
+        // Same cycle-gate as alreadyApproved — don't short-circuit a reapply.
+        if (!(application as any)?.breHistory?.brePulled) return false;
         const isHold = (s?: string) =>
             (s || "").toUpperCase() === "HOLD" || normalizeBreStatus(s) === "proceed-to-bank";
         return (
-            isHold(formData.breStatus) ||
             isHold((application as any)?.status) ||
             isHold((application as any)?.breHistory?.breStatus)
         );
-    }, [formData.breStatus, application]);
+    }, [application]);
 
     // Show the approval modal (with the approved offer details) and only advance
     // to the next step after the applicant accepts. Used both for the live
