@@ -168,15 +168,17 @@ export default function QuickApplyV2Page() {
         const isLogin = user?.isEmailVerified || user?.isMobileVerified || user?.isAadhaarVerify;
         const basicAndKycFilled = user?.isBasicDetailsFilled && user?.isKycDetailsFilled;
 
-        // Skip eligibility entirely once the bank statement has been manually
-        // uploaded & verified — send the applicant straight to selfie + bank.
-        if (isLogin && application?.breHistory?.bankStatementUploadedVerified) {
+        // Has BRE been run for the CURRENT application this cycle? A fresh reapply
+        // has brePulled = false and MUST go through eligibility first — never jump
+        // to the bank step (which would skip the v2/bre/initialize call).
+        const breDecidedThisCycle = !!application?.breHistory?.brePulled;
+
+        // Bank step only applies once BRE has been decided this cycle AND the
+        // applicant has progressed into bank verification.
+        if (isLogin && breDecidedThisCycle && application?.breHistory?.bankStatementUploadedVerified) {
             setStep("bank");
             hasAutoRouted.current = true;
-        } else if (isLogin && application?.breHistory?.bsaInitiated && (user?.isProfileVerified || user?.isBankDetailsFilled)) {
-            // Use the CURRENT application's bsaInitiated (cycle-specific), not the
-            // persistent user flag — otherwise a reapply (fresh application) would
-            // skip eligibility/BRE and jump straight to the bank step.
+        } else if (isLogin && breDecidedThisCycle && application?.breHistory?.bsaInitiated && (user?.isProfileVerified || user?.isBankDetailsFilled)) {
             setStep("bank");
             hasAutoRouted.current = true;
         } else if (isLogin && basicAndKycFilled) {

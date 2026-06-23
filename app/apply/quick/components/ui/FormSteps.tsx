@@ -45,22 +45,27 @@ const FormSteps = ({
     const { application, loading: applicationLoading } = useApplication();
     const router = useRouter();
 
+    // `user.isSubmit` persists across cycles. A reapply creates a fresh app
+    // (PENDING, BRE not pulled) that must NOT be treated as submitted — otherwise
+    // it both blocks the /application-status redirect AND leaves the render stuck
+    // on an endless "redirecting" spinner. This single flag drives both.
+    const shouldGoToStatus = useMemo(() => {
+        if (!user?.isSubmit) return false;
+        const status = (application?.status || '').toUpperCase();
+        const brePulled = !!application?.breHistory?.brePulled;
+        const isFreshReapply = !brePulled && status === 'PENDING';
+        return !isFreshReapply;
+    }, [user?.isSubmit, application]);
+
     // Once the application is submitted, send the applicant to the dedicated
     // /application-status page instead of rendering the success/status screen
     // inline within /apply/quick. Wait for the application to finish loading so
     // the correct approved/rejected status is shown.
     useEffect(() => {
         if (ipLoading || ipBlocked) return;
-        if (!user?.isSubmit) return;
         if (applicationLoading) return;
+        if (!shouldGoToStatus) return;
         if (typeof window === 'undefined') return;
-
-        // `user.isSubmit` is a PERSISTENT flag from the previous cycle. On a
-        // reapply the new application is fresh (status PENDING, BRE not pulled),
-        // so don't bounce it to /application-status — let it run eligibility/BRE.
-        const status = (application?.status || '').toUpperCase();
-        const brePulled = !!application?.breHistory?.brePulled;
-        if (!brePulled && status === 'PENDING') return;
 
         const isRejected =
             (application?.status || '').toUpperCase() === 'REJECTED' ||
@@ -83,7 +88,7 @@ const FormSteps = ({
         );
 
         router.replace('/application-status');
-    }, [user?.isSubmit, applicationLoading, ipLoading, ipBlocked, application, formData?.approvedLoanAmount, router]);
+    }, [shouldGoToStatus, applicationLoading, ipLoading, ipBlocked, application, formData?.approvedLoanAmount, router]);
 
     const currentStep = useMemo(() => {
         if (step === "bank") return 3;
@@ -123,7 +128,7 @@ const FormSteps = ({
 
             {/* Main Flow */}
             {!ipLoading && !ipBlocked && (
-                user?.isSubmit ? (
+                shouldGoToStatus ? (
                     /* Redirecting to /application-status (see effect above) */
                     <div className="flex items-center justify-center py-20">
                         <div className="w-10 h-10 border-4 border-[#25B181] border-t-transparent rounded-full animate-spin" />
