@@ -5,6 +5,7 @@ import useAxios from "@/hooks/useAxios";
 import { useEffect, useState, useRef, useMemo } from "react";
 import FinFactorStatus from "./FinFactorStatus";
 import { useSearchParams } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { toast } from "@/components/ui/toast";
 import { QuickApplyV2FormData } from "@/lib/types/quickApplyV2";
 import { VALIDATION } from "@/lib/constants/quickApplyV2";
@@ -45,10 +46,11 @@ const ELIGIBILITY_COPY = {
 
 const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps) => {
     const axios = useAxios();
+    const router = useRouter();
     const { getApplication, application, getCustomer } = useApplication();
     const searchParams = useSearchParams();
     const { updateKycStatusState } = useKycStatus();
-    const { user } = useAuth();
+    const { user, updateUser } = useAuth();
     const { location, getLocation } = useLocation();
     const { mode: flowMode } = useFlowMode();
 
@@ -379,6 +381,37 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
         }
     };
 
+    // Mark the application completed (submitted) and send the applicant to the
+    // /application-status page. Used for reapply terminal decisions (Approve/Reject)
+    // where there's no further step to collect.
+    const completeApplication = (decision: any, isRejected: boolean) => {
+        setFormData((prev) => ({ ...prev, breStatus: decision?.status, brePulled: true }));
+        try {
+            localStorage.setItem(
+                "applicationStatusData",
+                JSON.stringify({
+                    status: isRejected ? "rejected" : "approved",
+                    loanNumber: decision?.applicationNumber || (application as any)?.applicationNumber || "",
+                    amount: isRejected
+                        ? ""
+                        : String(decision?.loanAmount ?? formData.approvedLoanAmount ?? ""),
+                    reason: isRejected
+                        ? decision?.reason || "Your application does not meet eligibility criteria."
+                        : "",
+                })
+            );
+        } catch {
+            /* ignore storage errors */
+        }
+        // Reflect completion locally so the app shows as submitted (the backend
+        // should also persist isSubmit for this to survive a reload).
+        updateUser({ isSubmit: true });
+        updateKycStatusState({ visibility: false, loading: false });
+        getCustomer();
+        getApplication();
+        router.push("/application-status");
+    };
+
     /**
      * NEW FLOW (BRE_DECISION): runs the rules engine via v2/bre/initialize and
      * routes on its decision — Approve / Reject / Proceed to Bank — surfaced
@@ -409,7 +442,19 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
                 // Keep customer/application context fresh for downstream steps.
                 getCustomer();
                 getApplication();
-                showDecisionModal(decision);
+
+                const status = normalizeBreStatus(decision.status);
+                // A reapply is a returning customer who already has bank + profile
+                // on file. For them a terminal decision (Approve/Reject) completes
+                // the application — mark it submitted and go to the status page
+                // instead of routing into the bank step.
+                const isReturningCustomer = !!(user?.isBankDetailsFilled && user?.isProfileVerified);
+
+                if (isReturningCustomer && (status === "approved" || status === "rejected")) {
+                    completeApplication(decision, status === "rejected");
+                } else {
+                    showDecisionModal(decision);
+                }
             } else {
                 throw new Error(result?.message || "Eligibility check failed");
             }
