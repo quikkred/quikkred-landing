@@ -9,13 +9,15 @@ import {
   AlertCircle, FileText, CreditCard, Briefcase,
   Home, Upload, Loader2, ArrowLeft, Clock,
   CheckCircle2, XCircle, Globe, Users, RefreshCw,
-  Plus, Trash2
+  Plus, Trash2, ShieldCheck, Timer, Lock
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { API_BASE_URL } from '@/lib/config';
 import { useProfile } from '@/store/hooks/useProfile';
 import getToken from "@/lib/getToken";
 import { RELATIONSHIP_TYPES } from '@/lib/constants/quickApply';
+import { toast } from "@/components/ui/toast";
+import { isTestMode, TEST_OTP } from "@/lib/testMode";
 
 interface Address {
   street?: string;
@@ -122,6 +124,34 @@ interface ProfileData {
   profile?: Profile;
 }
 
+// Per-reference OTP verification state — mirrors the application-submission flow
+// (app/apply/quick/components/ui/References.tsx) but keyed by the reference
+// subdocument _id since profile references are a dynamic list.
+type RefOtpState = {
+  sent: boolean;
+  code: string;
+  sending: boolean;
+  verifying: boolean;
+  expiry: number; // seconds until the OTP expires (display countdown)
+  channel?: string; // "sms" | "whatsapp"
+  lockedUntil?: number; // epoch ms — set on 429 (too many attempts)
+  error?: string;
+};
+
+const emptyRefOtp = (): RefOtpState => ({
+  sent: false,
+  code: "",
+  sending: false,
+  verifying: false,
+  expiry: 0,
+});
+
+const formatMMSS = (totalSeconds: number) => {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
+};
+
 export default function ProfilePage() {
   const { user } = useAuth();
   const router = useRouter();
@@ -157,6 +187,8 @@ export default function ProfilePage() {
   // Inline error for the references save action — kept separate from the page-level
   // `error` so a save failure never replaces the whole profile with the error screen.
   const [referencesError, setReferencesError] = useState<string | null>(null);
+  // Per-reference OTP verification state, keyed by the reference subdocument _id.
+  const [refOtp, setRefOtp] = useState<Record<string, RefOtpState>>({});
 
   // Bank edit state
   const [editingBankId, setEditingBankId] = useState<string | null>(null);
@@ -402,6 +434,169 @@ export default function ProfilePage() {
       setReferencesError(err.message || 'Failed to save references');
     } finally {
       setIsSavingReferences(false);
+    }
+  };
+
+  /* -------------------- Reference OTP verification -------------------- */
+  // Same flow as the application-submission references step: send an OTP to the
+  // reference's own mobile, then verify it to mark the reference verified.
+
+  const getRefOtp = (id: string): RefOtpState => refOtp[id] || emptyRefOtp();
+
+  const setRefOtpFor = (id: string, updates: Partial<RefOtpState>) =>
+    setRefOtp((prev) => ({ ...prev, [id]: { ...(prev[id] || emptyRefOtp()), ...updates } }));
+
+  const isRefLocked = (id: string) => {
+    const l = refOtp[id]?.lockedUntil;
+    return !!l && l > Date.now();
+  };
+
+  // Tick down every open OTP box once per second. Re-runs only when a timer
+  // starts/stops (not on every tick) since the dependency is a boolean.
+  const anyRefTimerActive = Object.values(refOtp).some((s) => s.expiry > 0);
+  useEffect(() => {
+    if (!anyRefTimerActive) return;
+    const id = setInterval(() => {
+      setRefOtp((prev) => {
+        let changed = false;
+        const next: Record<string, RefOtpState> = {};
+        for (const [k, v] of Object.entries(prev)) {
+          if (v.expiry > 0) {
+            next[k] = { ...v, expiry: v.expiry - 1 };
+            changed = true;
+          } else {
+            next[k] = v;
+          }
+        }
+        return changed ? next : prev;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [anyRefTimerActive]);
+
+  // Shared error handling for both OTP endpoints:
+  // 400 already-verified → reflect verified + refresh; 429 → lock until
+  // lockedUntil; everything else → surface the message inline.
+  const handleRefOtpError = (id: string, status: number, result: any) => {
+    const message = result?.message || 'Something went wrong. Please try again.';
+
+    if (status === 400 && /already verified/i.test(message)) {
+      setRefOtpFor(id, emptyRefOtp());
+      toast({ variant: 'success', title: 'Reference already verified' });
+      fetchProfile();
+      return;
+    }
+
+    const updates: Partial<RefOtpState> = { sending: false, verifying: false, error: message };
+    if (status === 429 && result?.lockedUntil) {
+      updates.lockedUntil = new Date(result.lockedUntil).getTime();
+    }
+    setRefOtpFor(id, updates);
+  };
+
+  const sendReferenceOtp = async (reference: Reference) => {
+    const id = reference._id;
+    if (!id || isRefLocked(id)) return;
+
+    const customerId = profileData?._id;
+    if (!customerId) {
+      setRefOtpFor(id, { error: 'Profile not loaded. Please refresh and try again.' });
+      return;
+    }
+
+    setRefOtpFor(id, { sending: true, error: undefined });
+
+    // TEST MODE: backend is disabled — just reveal the OTP box.
+    if (isTestMode()) {
+      setRefOtpFor(id, { ...emptyRefOtp(), sent: true, expiry: 600, channel: 'sms' });
+      return;
+    }
+
+    try {
+      const token = await getToken();
+      if (!token) throw new Error('Please log in to verify references.');
+
+      const res = await fetch(
+        `${API_BASE_URL}/api/customer/references/${customerId}/${id}/send-otp`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        },
+      );
+      const result = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        handleRefOtpError(id, res.status, result);
+        return;
+      }
+
+      const d = result?.data || {};
+      const secs = d.expiry
+        ? Math.max(0, Math.floor((new Date(d.expiry).getTime() - Date.now()) / 1000))
+        : 600;
+      setRefOtpFor(id, { ...emptyRefOtp(), sent: true, expiry: secs, channel: d.channel });
+      toast({
+        variant: 'success',
+        title: 'OTP sent',
+        description: `Code sent to ${reference.mobile}${d.channel ? ` via ${d.channel}` : ''}.`,
+      });
+    } catch (err: any) {
+      setRefOtpFor(id, {
+        sending: false,
+        error: err?.message || 'Something went wrong. Please try again.',
+      });
+    }
+  };
+
+  const verifyReferenceOtp = async (reference: Reference) => {
+    const id = reference._id;
+    if (!id || isRefLocked(id)) return;
+    const code = getRefOtp(id).code;
+
+    if (!/^\d{6}$/.test(code)) {
+      setRefOtpFor(id, { error: 'Enter the 6-digit OTP' });
+      return;
+    }
+
+    setRefOtpFor(id, { verifying: true, error: undefined });
+
+    // TEST MODE: accept the fixed test OTP without hitting the backend.
+    if (isTestMode()) {
+      if (code !== TEST_OTP) {
+        setRefOtpFor(id, { verifying: false, error: 'Invalid OTP. Please try again.' });
+        return;
+      }
+      setRefOtpFor(id, emptyRefOtp());
+      toast({ variant: 'success', title: 'Reference verified' });
+      await fetchProfile();
+      return;
+    }
+
+    try {
+      const customerId = profileData?._id;
+      const token = await getToken();
+      if (!customerId || !token) throw new Error('Please log in to verify references.');
+
+      const res = await fetch(
+        `${API_BASE_URL}/api/customer/references/${customerId}/${id}/verify-otp`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ otp: code }),
+        },
+      );
+      const result = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        handleRefOtpError(id, res.status, result);
+        return;
+      }
+      setRefOtpFor(id, emptyRefOtp());
+      toast({ variant: 'success', title: 'Reference verified' });
+      await fetchProfile();
+    } catch (err: any) {
+      setRefOtpFor(id, {
+        verifying: false,
+        error: err?.message || 'Something went wrong. Please try again.',
+      });
     }
   };
 
@@ -1617,7 +1812,10 @@ export default function ProfilePage() {
                       {/* Existing References */}
                       {profileData.references && profileData.references.length > 0 && (
                         <div className="space-y-4 sm:space-y-6 mb-6">
-                          {profileData.references.map((reference, index) => (
+                          {profileData.references.map((reference, index) => {
+                            const slot = getRefOtp(reference._id);
+                            const locked = isRefLocked(reference._id);
+                            return (
                             <div key={reference._id} className={`p-4 sm:p-6 bg-gradient-to-br ${reference.verified ? 'from-green-50 to-emerald-50 border-green-200' : 'from-purple-50 to-pink-50 border-purple-200'} rounded-lg sm:rounded-xl border-2`}>
                               <div className="flex items-center justify-between mb-3 sm:mb-4">
                                 <h4 className="text-sm sm:text-md font-semibold text-gray-800 flex items-center gap-2">
@@ -1648,8 +1846,118 @@ export default function ProfilePage() {
                                   value={reference.relationship}
                                 />
                               </div>
+
+                              {/* OTP verification — same flow as application submission */}
+                              {!reference.verified && (
+                                <div className="mt-4 pt-4 border-t border-purple-200 space-y-2">
+                                  {locked && (
+                                    <p className="flex items-center gap-1.5 text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-2.5 py-2">
+                                      <Lock className="w-3.5 h-3.5 shrink-0" />
+                                      <span>
+                                        Too many attempts. Try again after{" "}
+                                        {new Date(slot.lockedUntil as number).toLocaleString()}.
+                                      </span>
+                                    </p>
+                                  )}
+
+                                  {!slot.sent ? (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={() => sendReferenceOtp(reference)}
+                                        disabled={slot.sending || locked}
+                                        className="w-full sm:w-auto py-2.5 px-4 rounded-lg font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 bg-[#1F8F68] hover:bg-[#1a7a59] text-white disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                                      >
+                                        {slot.sending ? (
+                                          <>
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            <span>Sending OTP...</span>
+                                          </>
+                                        ) : (
+                                          <>
+                                            <ShieldCheck className="w-4 h-4" />
+                                            <span>Verify via OTP</span>
+                                          </>
+                                        )}
+                                      </button>
+                                      {slot.error && !locked && (
+                                        <p className="text-xs text-red-600">{slot.error}</p>
+                                      )}
+                                    </>
+                                  ) : (
+                                    <div className="space-y-2">
+                                      <label className="block text-xs font-medium text-gray-700">
+                                        Enter OTP sent to {reference.mobile}
+                                        {slot.channel ? ` via ${slot.channel}` : ""}
+                                      </label>
+                                      <div className="flex gap-2">
+                                        <input
+                                          type="tel"
+                                          inputMode="numeric"
+                                          value={slot.code}
+                                          disabled={locked}
+                                          onChange={(e) =>
+                                            setRefOtpFor(reference._id, {
+                                              code: e.target.value.replace(/\D/g, "").slice(0, 6),
+                                              error: undefined,
+                                            })
+                                          }
+                                          maxLength={6}
+                                          placeholder="6-digit OTP"
+                                          className={`flex-1 px-3 py-2.5 border rounded-lg tracking-[0.3em] text-center font-semibold focus:ring-2 focus:ring-[#1F8F68] disabled:bg-gray-50 ${
+                                            slot.error ? "border-red-500" : "border-gray-300"
+                                          }`}
+                                        />
+                                        <button
+                                          type="button"
+                                          onClick={() => verifyReferenceOtp(reference)}
+                                          disabled={
+                                            slot.code.length !== 6 || slot.verifying || locked
+                                          }
+                                          className="px-4 py-2.5 rounded-lg font-semibold text-xs sm:text-sm bg-[#1F8F68] hover:bg-[#1a7a59] text-white disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                                        >
+                                          {slot.verifying ? (
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                          ) : (
+                                            "Verify"
+                                          )}
+                                        </button>
+                                      </div>
+
+                                      <div className="flex items-center justify-between text-xs px-0.5">
+                                        <span className="flex items-center gap-1 text-gray-500">
+                                          <Timer className="w-3.5 h-3.5" />
+                                          {slot.expiry > 0 ? (
+                                            <span>
+                                              Expires in{" "}
+                                              <span className="font-mono text-gray-700">
+                                                {formatMMSS(slot.expiry)}
+                                              </span>
+                                            </span>
+                                          ) : (
+                                            <span className="text-gray-400">OTP expired</span>
+                                          )}
+                                        </span>
+                                        <button
+                                          type="button"
+                                          onClick={() => sendReferenceOtp(reference)}
+                                          disabled={slot.sending || locked}
+                                          className="font-semibold text-[#1F8F68] hover:underline disabled:text-gray-300 disabled:no-underline disabled:cursor-not-allowed"
+                                        >
+                                          {slot.sending ? "Sending..." : "Resend OTP"}
+                                        </button>
+                                      </div>
+
+                                      {slot.error && !locked && (
+                                        <p className="text-xs text-red-600">{slot.error}</p>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
-                          ))}
+                          );
+                          })}
                         </div>
                       )}
 
