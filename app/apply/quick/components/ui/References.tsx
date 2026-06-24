@@ -437,8 +437,9 @@ const References = ({ formData, setFormData }: ReferencesProps) => {
                                         onChange={(e) =>
                                             handleNameChange(nameKey, e.target.value)
                                         }
+                                        disabled={isVerified}
                                         placeholder="Enter full name"
-                                        className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                                        className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-50 disabled:text-gray-500 ${
                                             errors[nameKey]
                                                 ? "border-red-500"
                                                 : "border-gray-300"
@@ -498,7 +499,8 @@ const References = ({ formData, setFormData }: ReferencesProps) => {
                                             e.target.value,
                                         )
                                     }
-                                    className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#25B181] bg-white ${
+                                    disabled={isVerified}
+                                    className={`w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#25B181] bg-white disabled:bg-gray-50 disabled:text-gray-500 ${
                                         errors[relKey]
                                             ? "border-red-500"
                                             : "border-gray-300"
@@ -523,8 +525,9 @@ const References = ({ formData, setFormData }: ReferencesProps) => {
                                                 e.target.value,
                                             )
                                         }
+                                        disabled={isVerified}
                                         placeholder="Specify relationship"
-                                        className={`mt-2 w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#25B181] ${
+                                        className={`mt-2 w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#25B181] disabled:bg-gray-50 disabled:text-gray-500 ${
                                             errors[relKey]
                                                 ? "border-red-500"
                                                 : "border-gray-300"
