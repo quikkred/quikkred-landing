@@ -18,6 +18,7 @@
 import { signIn, getSession } from "next-auth/react";
 import { API_BASE_URL } from "@/lib/config";
 import { clearSession } from "@/lib/auth-utils";
+import { isTokenExpiring } from "@/lib/jwt";
 
 /** Roles allowed to start a support session. The backend enforces this too. */
 export const ADMIN_ROLES = ["ADMIN", "CEO", "OWNER", "SUPER_ADMIN"] as const;
@@ -122,6 +123,44 @@ function clearStashedAdminSession() {
   }
 }
 
+// ── admin access-token refresh ──────────────────────────────────────────────
+// The admin signs in via POST /api/user/login, which mints a 1-day access token
+// but stores it in a ~30-day NextAuth session. Nothing refreshes it, so after a
+// day the stored token is dead and /api/auth/admin/impersonate returns 401 — the
+// "close the browser and sign in again" symptom.
+//
+// The backend's admin refresh (POST /api/user/refresh-token) is COOKIE-based: it
+// reads the httpOnly `user_refreshToken` cookie (7-day TTL, sameSite=none,
+// domain=.quikkred.in) that the login set in THIS browser. A server-side NextAuth
+// fetch can't see that cookie, so the refresh must run here, in the browser, with
+// `credentials:"include"`. It returns a fresh access token AND sets a fresh
+// `user_token` cookie, so both the Authorization header and the cookie the
+// `authorization` middleware reads are renewed.
+//
+// Returns the new access token, or null if the refresh token is also gone/expired
+// (in which case the caller falls back to a clean re-login).
+async function refreshAdminAccessToken(): Promise<string | null> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/user/refresh-token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        // Prefer the user_token cookie over any stale customer_token in the
+        // backend's auth-source precedence (see authorization middleware).
+        "x-app-type": "user",
+      },
+      credentials: "include", // sends the httpOnly user_refreshToken cookie
+    });
+    const json = await res.json().catch(() => null);
+    if (res.ok && json?.success && json?.data?.accessToken) {
+      return json.data.accessToken as string;
+    }
+  } catch {
+    /* network/other error — treat as "couldn't refresh" */
+  }
+  return null;
+}
+
 /**
  * Start a support session as the given customer.
  *
@@ -152,25 +191,52 @@ export async function startImpersonation(params: ImpersonateParams): Promise<Imp
   else throw new Error("Provide a customer ID, mobile number, or customer unique ID.");
   if (params.reason?.trim()) body.reason = params.reason.trim();
 
-  // 3) call the admin-only backend endpoint with the admin's bearer token.
-  let json: any = null;
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/auth/admin/impersonate`, {
+  // 3) call the admin-only backend endpoint. The token we send must be live:
+  //    the stored one is often expired (1-day token in a 30-day session), so we
+  //    refresh proactively when it's near expiry, and reactively on a 401.
+  let activeToken = adminToken as string;
+
+  // Proactive: if the stored token is already (about to be) dead, get a fresh
+  // one up front so we don't waste a guaranteed-401 round trip.
+  if (isTokenExpiring(activeToken)) {
+    const refreshed = await refreshAdminAccessToken();
+    if (refreshed) activeToken = refreshed;
+  }
+
+  const callImpersonate = (bearer: string) =>
+    fetch(`${API_BASE_URL}/api/auth/admin/impersonate`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${adminToken}`,
+        Authorization: `Bearer ${bearer}`,
+        // Make the backend prefer the (refreshed) user_token cookie over any
+        // stale customer_token in its auth-source precedence.
+        "x-app-type": "user",
       },
       credentials: "include",
       body: JSON.stringify(body),
     });
+
+  let json: any = null;
+  try {
+    let res = await callImpersonate(activeToken);
+
+    // Reactive: a 401 means the token expired (or the cookie the middleware
+    // read is stale). Try one silent refresh via the user_refreshToken cookie
+    // and replay the request before giving up on the admin session.
+    if (res.status === 401) {
+      const refreshed = await refreshAdminAccessToken();
+      if (refreshed) {
+        activeToken = refreshed;
+        res = await callImpersonate(activeToken);
+      }
+    }
+
     json = await res.json().catch(() => null);
 
-    // The NextAuth session can outlive the backend access token (nothing
-    // refreshes it), so a stored-but-expired admin token comes back here as a
-    // 401 "Token expired". The admin's session can't authorise anything in
-    // that state — clear it and send them to the sign-in page to
-    // re-authenticate, mirroring how useAxios handles 401s for customers.
+    // Still 401 after a refresh attempt → the refresh token is gone/expired too.
+    // The admin's session can't authorise anything in that state — clear it and
+    // send them to sign in again, mirroring how useAxios handles 401s.
     if (res.status === 401) {
       clearImpersonationMeta();
       clearStashedAdminSession();
@@ -193,8 +259,10 @@ export async function startImpersonation(params: ImpersonateParams): Promise<Imp
   const data = json.data as ImpersonationData;
 
   // 4) remember the admin's own session so "Exit" can switch back, and stash
-  //    display info for the banner BEFORE we replace the session.
-  stashAdminSession(adminSession);
+  //    display info for the banner BEFORE we replace the session. Stash the
+  //    token we actually ended up using (possibly refreshed) so switching back
+  //    doesn't restore a dead token.
+  stashAdminSession({ ...(adminSession as any), accessToken: activeToken });
   setImpersonationMeta({
     customerLabel: data.email || data.mobile || data.customerUniqueId || data.userId,
     customerId: data.userId,
