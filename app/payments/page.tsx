@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/lib/contexts/LanguageContext";
 import { paymentsService, loansService } from "@/lib/api";
+import PayuCheckout from "@/components/payment/PayuCheckout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 interface PaymentMethod {
@@ -383,65 +384,12 @@ export default function PaymentsPage() {
 
                   {selectedEMI && (
                     <div className="mt-8">
-                      <h3 className="text-lg font-semibold mb-4">Select Payment Method</h3>
-
-                      <div className="grid md:grid-cols-3 gap-4 mb-6">
-                        {paymentMethods.map((method) => (
-                          <motion.div
-                            key={method.id}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => setSelectedPaymentMethod(method.id)}
-                            className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                              selectedPaymentMethod === method.id
-                                ? "border-blue-500 bg-blue-50"
-                                : "border-gray-200 hover:border-gray-300"
-                            }`}
-                          >
-                            <div className="flex items-center space-x-3">
-                              <method.icon className="w-6 h-6 text-gray-600" />
-                              <div>
-                                <p className="font-medium text-gray-900">{method.name}</p>
-                                <p className="text-xs text-gray-600">{method.details}</p>
-                              </div>
-                            </div>
-                            {selectedPaymentMethod === method.id && (
-                              <CheckCircle className="w-5 h-5 text-blue-600 mt-2" />
-                            )}
-                          </motion.div>
-                        ))}
-                      </div>
-
-                      {/* Security Info */}
-                      <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                        <div className="flex items-center space-x-2">
-                          <Shield className="w-5 h-5 text-green-600" />
-                          <span className="text-sm text-gray-700">
-                            Your payment information is secured with 256-bit encryption
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Pay Button */}
-                      <button
-                        onClick={handlePayment}
-                        disabled={!selectedPaymentMethod || isProcessing}
-                        className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold flex items-center justify-center space-x-2 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {isProcessing ? (
-                          <>
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                            <span>Processing Payment...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Lock className="w-5 h-5" />
-                            <span>
-                              Pay {formatCurrency(selectedEMI.amount + (selectedEMI.penaltyAmount || 0))}
-                            </span>
-                          </>
-                        )}
-                      </button>
+                      <PayuCheckout
+                        loanId={selectedEMI.loanId}
+                        amount={selectedEMI.amount + (selectedEMI.penaltyAmount || 0)}
+                        productinfo={`EMI Payment #${selectedEMI.emiNumber}`}
+                        onError={(msg) => setError(msg)}
+                      />
                     </div>
                   )}
                 </div>

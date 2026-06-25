@@ -112,3 +112,5 @@ export type {
   CreateReviewRequest,
   CreateReviewResponse,
 } from './review.service';
+export { payuService } from "./payu.service";
+export type { PayuMethod, PayuInitiateResponse, PayuPaymentLinkResponse, PayuVerifyResponse } from "./payu.service";
