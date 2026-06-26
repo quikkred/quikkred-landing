@@ -569,12 +569,12 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             return;
         }
 
-        // At least one reference must be OTP-verified before eligibility can be checked.
-        if (!formData.reference1Verified && !formData.reference2Verified) {
+        // Both references must be OTP-verified before eligibility can be checked.
+        if (!formData.reference1Verified || !formData.reference2Verified) {
             toast({
                 variant: "error",
-                title: "Reference not verified",
-                description: "Please verify at least one reference with the OTP sent to their mobile number before checking eligibility.",
+                title: "References not verified",
+                description: "Please verify both references with the OTP sent to their mobile numbers before checking eligibility.",
             });
             return;
         }
@@ -749,10 +749,10 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
             formData.reference2Mobile !== formData.mobile;
         const referencesValid =
             r1NameOk && r2NameOk && r1MobileOk && r2MobileOk && r1RelOk && r2RelOk && distinct && notSelf;
-        // At least one reference must be OTP-verified — the button is enabled as
-        // soon as either reference is verified.
+        // Both references must be OTP-verified — the button stays disabled until
+        // both references are verified.
         const referencesVerified =
-            !!formData.reference1Verified || !!formData.reference2Verified;
+            !!formData.reference1Verified && !!formData.reference2Verified;
 
         // Final result
         return (
