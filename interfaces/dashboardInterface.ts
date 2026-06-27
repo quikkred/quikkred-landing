@@ -30,6 +30,9 @@ export interface ActiveLoanDetails {
     lateCharges: number;
     lateChargeInterest: number;
     paidAmount: number;
+    // Authoritative remaining balance from the backend. Preferred over the
+    // locally-derived remaining (total - paid) for display.
+    totalOutstanding?: number;
     totalEMIsPaid: number;
     installment: number;
     appliedDate?: string;
