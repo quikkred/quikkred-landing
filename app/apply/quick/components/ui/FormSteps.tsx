@@ -1,6 +1,5 @@
 "use client"
 
-import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useMemo } from "react";
 import { useRouter } from "nextjs-toploader/app";
 import CustomerLogin from "./CustomerLogin";
@@ -41,21 +40,22 @@ const FormSteps = ({
     setFormData,
     performIPCheck,
 }: FormStepsProps) => {
-    const { user } = useAuth();
     const { application, loading: applicationLoading } = useApplication();
     const router = useRouter();
 
-    // `user.isSubmit` persists across cycles. A reapply creates a fresh app
-    // (PENDING, BRE not pulled) that must NOT be treated as submitted — otherwise
-    // it both blocks the /application-status redirect AND leaves the render stuck
-    // on an endless "redirecting" spinner. This single flag drives both.
+    // Gate the /application-status redirect on the CURRENT application's own
+    // `isSubmit`, not the global `user.isSubmit`. `user.isSubmit` persists across
+    // cycles, so for a returning customer it's already true while they reapply —
+    // and the moment BRE is pulled at "Proceed to Bank" (brePulled flips true,
+    // status leaves PENDING) the old guard treated the in-progress app as
+    // submitted and yanked them to /application-status, cutting off bank
+    // verification. The per-cycle `application.isSubmit` is false until this
+    // application is actually submitted, so the flow now runs to completion and
+    // only redirects once it's genuinely done. (Also drives the "redirecting"
+    // spinner below, so a fresh reapply never gets stuck on it.)
     const shouldGoToStatus = useMemo(() => {
-        if (!user?.isSubmit) return false;
-        const status = (application?.status || '').toUpperCase();
-        const brePulled = !!application?.breHistory?.brePulled;
-        const isFreshReapply = !brePulled && status === 'PENDING';
-        return !isFreshReapply;
-    }, [user?.isSubmit, application]);
+        return !!application?.isSubmit;
+    }, [application?.isSubmit]);
 
     // Once the application is submitted, send the applicant to the dedicated
     // /application-status page instead of rendering the success/status screen

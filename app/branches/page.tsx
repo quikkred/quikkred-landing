@@ -29,38 +29,38 @@ export default function BranchesPage() {
       email: "mumbai@Quikkred.com",
       hours: "Mon-Sat: 9:00 AM - 6:00 PM"
     },
-    {
-      city: "Bangalore",
-      name: "Bangalore Branch",
-      address: "789 MG Road, Bangalore - 560001",
-      phone: "+91-80-3456-7890",
-      email: "bangalore@Quikkred.com",
-      hours: "Mon-Sat: 9:00 AM - 6:00 PM"
-    },
-    {
-      city: "Hyderabad",
-      name: "Hyderabad Branch",
-      address: "321 HITEC City, Hyderabad - 500081",
-      phone: "+91-40-4567-8901",
-      email: "hyderabad@Quikkred.com",
-      hours: "Mon-Sat: 9:00 AM - 6:00 PM"
-    },
-    {
-      city: "Pune",
-      name: "Pune Branch",
-      address: "654 Koregaon Park, Pune - 411001",
-      phone: "+91-20-5678-9012",
-      email: "pune@Quikkred.com",
-      hours: "Mon-Sat: 9:00 AM - 6:00 PM"
-    },
-    {
-      city: "Chennai",
-      name: "Chennai Branch",
-      address: "987 Anna Salai, Chennai - 600002",
-      phone: "+91-44-6789-0123",
-      email: "chennai@Quikkred.com",
-      hours: "Mon-Sat: 9:00 AM - 6:00 PM"
-    }
+    // {
+    //   city: "Bangalore",
+    //   name: "Bangalore Branch",
+    //   address: "789 MG Road, Bangalore - 560001",
+    //   phone: "+91-80-3456-7890",
+    //   email: "bangalore@Quikkred.com",
+    //   hours: "Mon-Sat: 9:00 AM - 6:00 PM"
+    // },
+    // {
+    //   city: "Hyderabad",
+    //   name: "Hyderabad Branch",
+    //   address: "321 HITEC City, Hyderabad - 500081",
+    //   phone: "+91-40-4567-8901",
+    //   email: "hyderabad@Quikkred.com",
+    //   hours: "Mon-Sat: 9:00 AM - 6:00 PM"
+    // },
+    // {
+    //   city: "Pune",
+    //   name: "Pune Branch",
+    //   address: "654 Koregaon Park, Pune - 411001",
+    //   phone: "+91-20-5678-9012",
+    //   email: "pune@Quikkred.com",
+    //   hours: "Mon-Sat: 9:00 AM - 6:00 PM"
+    // },
+    // {
+    //   city: "Chennai",
+    //   name: "Chennai Branch",
+    //   address: "987 Anna Salai, Chennai - 600002",
+    //   phone: "+91-44-6789-0123",
+    //   email: "chennai@Quikkred.com",
+    //   hours: "Mon-Sat: 9:00 AM - 6:00 PM"
+    // }
   ];
 
   const cities = ["all", ...new Set(branches.map(b => b.city))];

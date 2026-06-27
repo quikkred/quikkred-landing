@@ -39,6 +39,26 @@ declare global {
   }
 }
 
+// When true, the PayU flow logs the action + params and does NOT submit the form,
+// so you can inspect them in the console. Set NEXT_PUBLIC_PAYU_DEBUG=true in .env.
+const PAYU_DEBUG = process.env.NEXT_PUBLIC_PAYU_DEBUG === 'true';
+
+// PayU net-banking banks. `code` is the PayU `bankcode` sent to /collect/initiate.
+// HDFC / SBIN / ICICI are confirmed by the backend guide; the rest are PayU's
+// standard production net-banking codes.
+const PAYU_NB_BANKS = [
+  { code: 'HDFC', name: 'HDFC Bank' },
+  { code: 'ICICI', name: 'ICICI Bank' },
+  { code: 'SBIN', name: 'State Bank of India' },
+  { code: 'AXIS', name: 'Axis Bank' },
+  { code: 'KKBK', name: 'Kotak Mahindra Bank' },
+  { code: 'YESB', name: 'Yes Bank' },
+  { code: 'PUNB_R', name: 'Punjab National Bank' },
+  { code: 'BARB_R', name: 'Bank of Baroda' },
+  { code: 'IDFB', name: 'IDFC First Bank' },
+  { code: 'INDB', name: 'IndusInd Bank' },
+];
+
 export default function UserDashboard() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
@@ -79,6 +99,14 @@ export default function UserDashboard() {
   const [loadingLoanDetails, setLoadingLoanDetails] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
   const isProcessingRef = useRef(false);
+
+  // Payment gateway selection. Razorpay opens an in-page SDK modal; PayU uses a
+  // hosted checkout that redirects the page via a POSTed form.
+  const [paymentGateway, setPaymentGateway] = useState<'razorpay' | 'payu'>('razorpay');
+  // PayU hosted-checkout method. 'NB' needs a selected bank; 'UPI' and 'DC'
+  // (debit card) collect their details on PayU's own page (no bankcode).
+  const [payuMethod, setPayuMethod] = useState<'NB' | 'UPI' | 'DC'>('NB');
+  const [payuBankcode, setPayuBankcode] = useState<string>(PAYU_NB_BANKS[0].code);
 
   // Payment Proof States
   const [showProofUpload, setShowProofUpload] = useState(false);
@@ -378,11 +406,24 @@ export default function UserDashboard() {
 
   const getPaidAmount = () => {
     if (!activeLoanDetails) return 0;
+    // When the backend gives an authoritative outstanding, derive paid from it
+    // (Total - Outstanding) so the progress bar and "Amount Paid" stay in sync —
+    // the raw paidAmount field can lag or come back 0 right after a payment.
+    if (activeLoanDetails.totalOutstanding != null) {
+      const paid = getTotalLoanAmount() - activeLoanDetails.totalOutstanding;
+      return paid > 0 ? paid : 0;
+    }
     return activeLoanDetails.paidAmount || 0;
   };
 
   const getRemainingAmount = () => {
     if (!activeLoanDetails) return 0;
+    // Prefer the backend's authoritative outstanding (drives the Remaining
+    // display, Full Closure amount, part-payment limits and validation). Fall
+    // back to the locally-derived total - paid when it isn't provided.
+    if (activeLoanDetails.totalOutstanding != null) {
+      return activeLoanDetails.totalOutstanding;
+    }
     return getTotalLoanAmount() - getPaidAmount();
   };
 
@@ -441,6 +482,127 @@ export default function UserDashboard() {
     } else if (nextPendingSplit) {
       setSelectedSplitDate(nextPendingSplit.date);
       setCustomAmount(nextPendingSplit.amount.toString());
+    }
+  };
+
+  // Shared amount validation for both gateways. Shows a toast and returns null
+  // when invalid; returns the numeric amount to charge when valid.
+  const validatePaymentAmount = (): number | null => {
+    if (!customAmount || customAmount.trim() === '') {
+      toast({ variant: "error", title: "Invalid Amount", description: "Please enter a payment amount." });
+      return null;
+    }
+    const amount = parseFloat(customAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast({ variant: "error", title: "Invalid Amount", description: "Please enter a valid payment amount greater than 0." });
+      return null;
+    }
+    const remainingAmount = getRemainingAmount();
+    if (amount > remainingAmount) {
+      toast({ variant: "error", title: "Amount Exceeds Limit", description: `Payment amount cannot exceed remaining balance of ₹${remainingAmount.toLocaleString()}.` });
+      return null;
+    }
+    // Ledger loans only allow a daily split amount or a full closure — never an
+    // arbitrary partial amount.
+    if (hasLedger && ledgerPayMode === 'DAILY') {
+      const selected = ledgerSplits.find((s) => s.date === selectedSplitDate && s.status === 'PENDING');
+      if (!selected) {
+        toast({ variant: "error", title: "Select a Day", description: "Please select a pending daily payment to continue." });
+        return null;
+      }
+      if (amount !== selected.amount) {
+        toast({ variant: "error", title: "Partial Payment Not Allowed", description: "Pay the full daily amount or choose to close the loan in full." });
+        return null;
+      }
+    }
+    return amount;
+  };
+
+  // PayU hands off via a POSTed hidden form: the SHA-512 hash is bound to the
+  // POST body, so a GET/redirect won't work — it must be a form submit. This
+  // navigates the page away, so nothing runs after.
+  const submitPayuForm = (action: string, params: Record<string, any>) => {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = action;
+    form.style.display = 'none';
+    Object.entries(params).forEach(([name, value]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = String(value ?? '');
+      form.appendChild(input);
+    });
+    document.body.appendChild(form);
+    form.submit();
+  };
+
+  const handlePayUPayment = async () => {
+    if (!activeLoanDetails) return;
+
+    const amount = validatePaymentAmount();
+    if (amount === null) return;
+
+    try {
+      setProcessingPayment(true);
+
+      // Step 1: Initiate — backend loads the loan, builds the udf fields, txnid
+      // and SHA-512 hash, then returns the PayU action URL + params to POST.
+      const initiateResponse = await axios.post('/api/payu/collect/initiate', {
+        loanId: activeLoanDetails._id,
+        amount,
+        method: payuMethod,
+        bankcode: payuMethod === 'NB' ? payuBankcode : '',
+        // Ledger context lets the backend mark the correct daily split as PAID,
+        // or close the whole ledger when paying in full.
+        ...(hasLedger && {
+          paymentMode: ledgerPayMode === 'FULL' ? 'LEDGER_FULL' : 'LEDGER_DAILY',
+          ...(ledgerPayMode === 'DAILY' && { ledgerSplitDate: selectedSplitDate }),
+        }),
+      });
+
+      // Response is { success, data: { action, params, txnid } } — some envs
+      // return the payload directly.
+      const result = initiateResponse.data?.data || initiateResponse.data;
+      const action = result?.action;
+      const params = result?.params;
+
+      if (!action || !params) {
+        console.error('[PayU] checkout details missing in response:', initiateResponse.data);
+        throw new Error('PayU did not return checkout details. Please try again.');
+      }
+
+      // Debug mode: log the handoff and stop, so it can be inspected without leaving.
+      if (PAYU_DEBUG) {
+        console.warn('[PayU] PAYU_DEBUG is on — not submitting. Would POST:', { action, params, txnid: result?.txnid });
+        toast({
+          variant: 'default',
+          title: 'PayU debug mode',
+          description: 'Form submit skipped. The action + params are logged in the console.'
+        });
+        setProcessingPayment(false);
+        isProcessingRef.current = false;
+        return;
+      }
+
+      toast({
+        variant: 'default',
+        title: 'Redirecting to PayU',
+        description: `Taking you to a secure payment of ₹${amount.toLocaleString()}...`
+      });
+
+      // Step 2: POST the form — browser navigates to PayU.
+      submitPayuForm(action, params);
+
+    } catch (error: any) {
+      console.error('PayU initiation error:', error);
+      toast({
+        variant: 'error',
+        title: 'Payment Error',
+        description: error?.response?.data?.message || error.message || 'Failed to start PayU payment. Please try again.'
+      });
+      setProcessingPayment(false);
+      isProcessingRef.current = false;
     }
   };
 
@@ -2156,28 +2318,104 @@ export default function UserDashboard() {
                         )}
                       </div>
 
+                      {/* Pay using — gateway selector */}
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-indigo-800 mb-2">Pay using</label>
+                        <div className="grid grid-cols-2 gap-3">
+                          <button
+                            onClick={() => setPaymentGateway('razorpay')}
+                            className={`p-3 rounded-xl border-2 transition-all flex items-center justify-center gap-2 ${paymentGateway === 'razorpay'
+                              ? 'bg-[#10B4A3]/10 border-[#10B4A3] text-[#0B7F73] shadow-sm'
+                              : 'bg-white border-gray-200 text-gray-600 hover:border-[#10B4A3]/40'
+                              }`}
+                          >
+                            <Zap className={`w-4 h-4 ${paymentGateway === 'razorpay' ? 'text-[#10B4A3]' : 'text-gray-400'}`} />
+                            <span className="font-semibold text-sm">Razorpay</span>
+                          </button>
+                          <button
+                            onClick={() => setPaymentGateway('payu')}
+                            className={`p-3 rounded-xl border-2 transition-all flex items-center justify-center gap-2 ${paymentGateway === 'payu'
+                              ? 'bg-[#10B4A3]/10 border-[#10B4A3] text-[#0B7F73] shadow-sm'
+                              : 'bg-white border-gray-200 text-gray-600 hover:border-[#10B4A3]/40'
+                              }`}
+                          >
+                            <Globe className={`w-4 h-4 ${paymentGateway === 'payu' ? 'text-[#10B4A3]' : 'text-gray-400'}`} />
+                            <span className="font-semibold text-sm">PayU</span>
+                          </button>
+                        </div>
+
+                        {/* PayU hosted-checkout options */}
+                        {paymentGateway === 'payu' && (
+                          <div className="mt-3 bg-white rounded-xl p-4 border border-indigo-200 space-y-3">
+                            <div className="grid grid-cols-3 gap-2">
+                              {([
+                                { key: 'NB', label: 'Net Banking' },
+                                { key: 'UPI', label: 'UPI' },
+                                { key: 'DC', label: 'Debit Card' },
+                              ] as const).map((m) => (
+                                <button
+                                  key={m.key}
+                                  onClick={() => setPayuMethod(m.key)}
+                                  className={`py-2.5 px-1 rounded-lg border-2 text-xs sm:text-sm font-semibold transition-all ${payuMethod === m.key
+                                    ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
+                                    : 'bg-white border-gray-200 text-gray-600 hover:border-indigo-300'
+                                    }`}
+                                >
+                                  {m.label}
+                                </button>
+                              ))}
+                            </div>
+
+                            {payuMethod === 'NB' && (
+                              <div>
+                                <label className="block text-xs font-medium text-indigo-800 mb-1.5">Select your bank</label>
+                                <select
+                                  value={payuBankcode}
+                                  onChange={(e) => setPayuBankcode(e.target.value)}
+                                  className="w-full px-3 py-2.5 text-sm font-medium border-2 border-indigo-200 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                                >
+                                  {PAYU_NB_BANKS.map((bank) => (
+                                    <option key={bank.code} value={bank.code}>{bank.name}</option>
+                                  ))}
+                                </select>
+                              </div>
+                            )}
+                            {payuMethod === 'UPI' && (
+                              <p className="text-xs text-gray-500">
+                                Approve the request in any UPI app (GPay, PhonePe, Paytm) on PayU&apos;s page.
+                              </p>
+                            )}
+                            {payuMethod === 'DC' && (
+                              <p className="text-xs text-gray-500">
+                                You&apos;ll enter your card details securely on PayU&apos;s payment page.
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
                       {/* Pay Now Button */}
                       <button
-                        onClick={handlePayment}
-                        disabled={processingPayment || !razorpayLoaded || (!hasLedger && paymentType === 'PART_PAYMENT' && (!customAmount || parseFloat(customAmount) <= 0)) || (hasLedger && (!customAmount || parseFloat(customAmount) <= 0))}
+                        onClick={paymentGateway === 'payu' ? handlePayUPayment : handlePayment}
+                        disabled={processingPayment || (paymentGateway === 'razorpay' && !razorpayLoaded) || (paymentGateway === 'payu' && payuMethod === 'NB' && !payuBankcode) || (!hasLedger && paymentType === 'PART_PAYMENT' && (!customAmount || parseFloat(customAmount) <= 0)) || (hasLedger && (!customAmount || parseFloat(customAmount) <= 0))}
                         className="w-full py-4 bg-gradient-to-r from-[#10B4A3] to-emerald-600 text-white rounded-xl font-bold text-lg hover:from-[#0EA594] hover:to-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 shadow-lg hover:shadow-xl"
                       >
                         {processingPayment ? (
                           <>
                             <RefreshCw className="w-5 h-5 animate-spin" />
-                            <span>Processing Payment...</span>
+                            <span>{paymentGateway === 'payu' ? 'Redirecting...' : 'Processing Payment...'}</span>
                           </>
                         ) : (
                           <>
                             <CreditCard className="w-5 h-5" />
-                            <span>Pay Now</span>
+                            <span>{paymentGateway === 'payu' ? 'Pay with PayU' : 'Pay Now'}</span>
                             <ArrowUpRight className="w-5 h-5" />
                           </>
                         )}
                       </button>
 
                       <p className="text-xs text-center text-indigo-600 mt-3">
-                        Secure payment powered by Razorpay
+                        Secure payment powered by {paymentGateway === 'payu' ? 'PayU' : 'Razorpay'}
                       </p>
                     </div>
 
