@@ -11,13 +11,13 @@ import {
 } from "lucide-react";
 
 const MILESTONES = [
-  { day: "Day 0", time: "10:42 IST", icon: Smartphone, title: "Apply in 3 minutes", body: "Phone + PAN + Aadhaar e-KYC. Bureau pull (Credeau) + AA consent (FinFactor) gate the disbursement." },
-  { day: "Day 0", time: "11:18 IST", icon: FileCheck2, title: "Underwriting cleared", body: "PAN ↔ Aadhaar verified, V-CIP captured (Hyperverge), affordability 0.84× — within policy." },
-  { day: "Day 0", time: "11:24 IST", icon: BanknoteArrowUp, title: "₹50,000 disbursed", body: "Same-second IMPS to your bank. A unique UPI VA + QR is provisioned for daily repayments." },
-  { day: "Day 1", time: "—", icon: QrCode, title: "First rung · ₹2,500", body: "Scan the QR or push UPI — payment captured in real-time, ledger reflects the floor." },
-  { day: "Day 7", time: "—", icon: TrendingDown, title: "₹17,500 paid · ₹32,500 to go", body: "On schedule. Each capture lands within seconds; the daily-ladder OS updates outstanding live." },
-  { day: "Day 14", time: "—", icon: Repeat, title: "Capital recycled", body: "50% recovered. Same ₹ now ready to fund another borrower in your spoke's chain." },
-  { day: "Day 22", time: "12:09 IST", icon: PartyPopper, title: "Over-pay → close at day 22", body: "You paid ₹4,000 on day 22 instead of ₹2,500 — settle balance. Tenure ends 8 days early. Zero penalty." },
+  { day: "Day 0", time: "10:42 IST", icon: Smartphone, title: "Apply in 3 minutes", body: "Phone, PAN and Aadhaar e-KYC. A quick credit check and account-aggregator consent confirm your eligibility." },
+  { day: "Day 0", time: "11:18 IST", icon: FileCheck2, title: "Approved", body: "Identity verified and your application cleared — all within minutes, no branch visit." },
+  { day: "Day 0", time: "11:24 IST", icon: BanknoteArrowUp, title: "Money in your account", body: "Disbursed straight to your bank within seconds. A unique UPI ID and QR are set up for your daily repayments." },
+  { day: "Day 1", time: "—", icon: QrCode, title: "Your first rung", body: "Scan the QR or pay over UPI — confirmed instantly, and your balance updates the moment it lands." },
+  { day: "Day 7", time: "—", icon: TrendingDown, title: "On track", body: "A week in and your balance is steadily falling. Every payment shows up the second it's made." },
+  { day: "Day 14", time: "—", icon: Repeat, title: "Ahead of plan", body: "Over-paying on a few good days has put you ahead of schedule — your tenure is already shrinking." },
+  { day: "Day 22", time: "12:09 IST", icon: PartyPopper, title: "Closed early", body: "An extra payment on a good day clears your balance — your loan ends 8 days early, with zero penalty." },
 ];
 
 export function StoryTimeline() {
@@ -42,7 +42,7 @@ export function StoryTimeline() {
             From apply to early-close. In 22 days.
           </h2>
           <p className="mt-3 text-sm sm:text-base text-slate-600">
-            What actually happens with a ₹50,000 daily-ladder loan. Real timestamps, real ledger events.
+            What a daily-ladder loan actually feels like, from the tap to apply to closing early.
           </p>
         </motion.div>
 

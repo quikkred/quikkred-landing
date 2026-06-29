@@ -1,18 +1,13 @@
 "use client";
 
 // Hero band for the dedicated /daily-ladder page.
-// Award-style award eyebrow, dual-tone headline, animated rung preview, dual CTA.
+// New-product eyebrow, dual-tone headline, animated rung preview, dual CTA.
 
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
-import { Award, ArrowRight, IndianRupee, Calendar } from "lucide-react";
+import { Sparkles, ArrowRight, CalendarCheck, Calendar } from "lucide-react";
 import Link from "next/link";
 import { QUICK_FORM_URL } from "@/lib/config";
-
-const PRINCIPAL = 50000;
-const DAILY_FLOOR = 2500;
-
-const inr = (n: number) => `₹${n.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 
 export function LadderHero() {
   const ref = useRef<HTMLDivElement>(null);
@@ -58,8 +53,8 @@ export function LadderHero() {
           className="flex justify-center"
         >
           <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#25B181]/10 via-[#10b981]/10 to-[#6366F1]/10 border border-[#25B181]/25 text-[11px] sm:text-xs font-semibold tracking-[0.18em] uppercase text-[#0F766E]">
-            <Award className="w-3.5 h-3.5 text-[#25B181]" />
-            India's Lending Innovation · 2026
+            <Sparkles className="w-3.5 h-3.5 text-[#25B181]" />
+            A new way to borrow · 2026
           </span>
         </motion.div>
 
@@ -82,8 +77,8 @@ export function LadderHero() {
           transition={{ duration: 0.5, delay: 0.18 }}
           className="mt-6 text-center text-base sm:text-lg lg:text-xl text-slate-600 leading-relaxed max-w-3xl mx-auto"
         >
-          The first lending product in India where capital comes back in <span className="text-slate-900 font-semibold">24 hours, not 24 days</span>.
-          Pay a little every day. We see the risk every day. Over-pay any day — your tenure shortens, no penalty.
+          A new way to borrow in India: <span className="text-slate-900 font-semibold">pay a little every day</span> and
+          watch your balance fall in real time. Over-pay on any day — your tenure shortens, with zero penalty.
         </motion.p>
 
         {/* CTAs */}
@@ -118,22 +113,20 @@ export function LadderHero() {
           <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
             <div className="flex items-center gap-3">
               <div className="h-9 w-9 rounded-lg bg-[#25B181]/15 border border-[#25B181]/30 grid place-items-center">
-                <IndianRupee className="w-4 h-4 text-[#34d399]" />
+                <Calendar className="w-4 h-4 text-[#34d399]" />
               </div>
               <div>
-                <div className="text-[10px] uppercase tracking-[0.16em] text-slate-400 font-semibold">Reference loan</div>
-                <div className="text-lg sm:text-xl font-sora font-bold tabular-nums">{inr(PRINCIPAL)}</div>
+                <div className="text-[10px] uppercase tracking-[0.16em] text-slate-400 font-semibold">You pay</div>
+                <div className="text-lg sm:text-xl font-sora font-bold">A little, daily</div>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <div className="text-right">
-                <div className="text-[10px] uppercase tracking-[0.16em] text-slate-400 font-semibold">Daily floor</div>
-                <div className="text-lg sm:text-xl font-sora font-bold tabular-nums text-[#34d399]">
-                  {inr(DAILY_FLOOR)}<span className="text-slate-500 text-sm font-medium">/day</span>
-                </div>
+                <div className="text-[10px] uppercase tracking-[0.16em] text-slate-400 font-semibold">You can</div>
+                <div className="text-lg sm:text-xl font-sora font-bold text-[#34d399]">Finish early</div>
               </div>
               <div className="h-9 w-9 rounded-lg bg-[#6366F1]/15 border border-[#6366F1]/30 grid place-items-center">
-                <Calendar className="w-4 h-4 text-[#a5b4fc]" />
+                <CalendarCheck className="w-4 h-4 text-[#a5b4fc]" />
               </div>
             </div>
           </div>

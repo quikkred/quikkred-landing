@@ -2,19 +2,15 @@
 
 // Full 30-rung interactive ladder. The centerpiece of the page.
 // Each rung represents a day; over-pay days widen the bar.
-// Hover/tap a rung to see the running total + remaining principal.
+// Hover/tap a rung to see how far along the journey you are.
 
 import { motion, useInView } from "framer-motion";
 import { useMemo, useRef, useState } from "react";
-import { IndianRupee, Sparkles, TrendingUp } from "lucide-react";
+import { CalendarDays, Sparkles, TrendingUp, Flag } from "lucide-react";
 
-const PRINCIPAL = 50000;
 const TENURE = 30;
-const DAILY_FLOOR = PRINCIPAL * 0.05; // ₹2,500
 
-const inr = (n: number) => `₹${n.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
-
-// 30-day mix — most days = 100%, a few over-pay days, no misses
+// 30-day mix — most days = steady, a few over-pay days, no misses
 const PATTERN = [
   1.0, 1.0, 1.4, 1.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.2,
   1.0, 1.0, 1.0, 1.6, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
@@ -26,17 +22,15 @@ export function InteractiveLadder() {
   const inView = useInView(ref, { once: true, margin: "-80px" });
   const [hoverDay, setHoverDay] = useState<number | null>(null);
 
-  // Cumulative running totals so the hover tooltip is accurate
-  const cumulative = useMemo(() => {
+  // Cumulative share of the journey completed, expressed as % — no money math
+  const progress = useMemo(() => {
+    const totalW = PATTERN.reduce((a, b) => a + b, 0);
     let sum = 0;
     return PATTERN.map((w) => {
-      sum += DAILY_FLOOR * w;
-      return sum;
+      sum += w;
+      return Math.min(100, Math.round((sum / totalW) * 100));
     });
   }, []);
-
-  const totalScheduled = TENURE * DAILY_FLOOR;
-  const totalActualIfAllPaid = cumulative[TENURE - 1];
 
   return (
     <section
@@ -69,19 +63,19 @@ export function InteractiveLadder() {
             Climb the ladder, day by day.
           </h2>
           <p className="mt-4 text-sm sm:text-base text-slate-300 leading-relaxed">
-            Each rung is a single day. The wider the bar, the more you paid that day. Hover any rung to see the running total — over-pay any day, and you shorten the journey.
+            Each rung is a single day. The wider the bar, the more you paid that day. Hover any rung to see how far along you are — over-pay any day, and you shorten the journey.
           </p>
         </motion.div>
 
-        {/* Money rail at the top */}
+        {/* Progress rail at the top */}
         <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3 lg:gap-4">
-          <StatTile k="Principal" v={inr(PRINCIPAL)} icon={IndianRupee} accent="emerald" />
-          <StatTile k="Tenure" v={`${TENURE} days`} icon={Sparkles} accent="indigo" />
-          <StatTile k="Daily floor" v={`${inr(DAILY_FLOOR)} · 5%`} icon={TrendingUp} accent="emerald" />
+          <StatTile k="Tenure" v={`${TENURE} days`} icon={CalendarDays} accent="emerald" />
+          <StatTile k="Rungs" v={`${TENURE} rungs`} icon={Sparkles} accent="indigo" />
+          <StatTile k="You pay" v="A little, daily" icon={TrendingUp} accent="emerald" />
           <StatTile
-            k={hoverDay != null ? `Day ${hoverDay} running` : "If you stay on the floor"}
-            v={hoverDay != null ? inr(cumulative[hoverDay - 1]) : inr(totalScheduled)}
-            icon={IndianRupee}
+            k={hoverDay != null ? `Day ${hoverDay}` : "Over-pay to"}
+            v={hoverDay != null ? `${progress[hoverDay - 1]}% climbed` : "Finish early"}
+            icon={Flag}
             accent="indigo"
             live
           />
@@ -103,7 +97,7 @@ export function InteractiveLadder() {
                   onFocus={() => setHoverDay(day)}
                   onBlur={() => setHoverDay(null)}
                   onTouchStart={() => setHoverDay(day)}
-                  aria-label={`Day ${day}: paid ${inr(DAILY_FLOOR * width)}${isOver ? " (over-pay)" : ""}`}
+                  aria-label={`Day ${day}: ${isOver ? "over-pay day" : "steady day"} — ${progress[idx]}% of the way`}
                   className="group flex items-center gap-2 sm:gap-3 w-full text-left outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/40 rounded-md"
                 >
                   <span
@@ -143,7 +137,7 @@ export function InteractiveLadder() {
                       isHovered ? "text-white" : "text-slate-400"
                     }`}
                   >
-                    {inr(DAILY_FLOOR * width)}
+                    {isOver ? "over-pay" : "steady"}
                   </span>
                 </button>
               );
@@ -151,8 +145,8 @@ export function InteractiveLadder() {
           </div>
 
           <div className="mt-6 flex items-center justify-between text-[11px] sm:text-xs text-slate-400 font-mono tabular-nums border-t border-white/10 pt-4">
-            <span>Scheduled total · 30 × ₹2,500 = <span className="text-slate-200">{inr(totalScheduled)}</span></span>
-            <span>If you over-pay as shown · <span className="text-emerald-300">{inr(totalActualIfAllPaid)}</span> (≈{Math.round(((totalActualIfAllPaid - totalScheduled) / totalScheduled) * 100)}% ahead)</span>
+            <span>Pay the daily amount · <span className="text-slate-200">finish in 30 days</span></span>
+            <span>Over-pay on good days · <span className="text-emerald-300">finish ahead of schedule</span></span>
           </div>
         </div>
       </div>
@@ -174,7 +168,7 @@ function StatTile({
         </span>
         <div className="text-[10px] uppercase tracking-[0.14em] text-slate-400 font-semibold">{k}</div>
       </div>
-      <div className="mt-2 font-sora font-bold text-lg sm:text-xl tabular-nums">{v}</div>
+      <div className="mt-2 font-sora font-bold text-lg sm:text-xl">{v}</div>
     </div>
   );
 }

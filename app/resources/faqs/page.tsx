@@ -507,18 +507,6 @@ export default function FAQsPage() {
               </div>
             </Link>
 
-            <Link href="/track-application" className="h-full">
-              <div className="bg-white rounded-2xl p-6 h-full shadow-sm hover:shadow-lg transition-shadow cursor-pointer">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                  <Search className="w-6 h-6 text-green-600" />
-                </div>
-                <h3 className="text-lg font-bold mb-2">Track Application</h3>
-                <p className="text-gray-600 text-sm">
-                  Check the real-time status of your loan application
-                </p>
-              </div>
-            </Link>
-
             <Link href={QUICK_FORM_URL as string} className="h-full">
               <div className="bg-white rounded-2xl p-6 h-full shadow-sm hover:shadow-lg transition-shadow cursor-pointer">
                 <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">

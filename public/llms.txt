@@ -61,14 +61,12 @@ The platform serves people who need immediate funds for personal needs — emerg
 - [Eligibility (Resources)](https://www.quikkred.in/resources/eligibility): Eligibility info within the resources hub.
 - [Eligibility Check (Resources)](https://www.quikkred.in/resources/eligibility-check): Eligibility check within the resources hub.
 - [Support](https://www.quikkred.in/support): Help for loan-related queries.
-- [Track Your Application](https://www.quikkred.in/track-application): Real-time application status.
 - [Application Status](https://www.quikkred.in/application-status): View your submitted application's status.
 - [Grievance Redressal](https://www.quikkred.in/grievance): Register a complaint or grievance.
 - [Nodal Officer](https://www.quikkred.in/nodal-officer): Contact for escalated complaints.
 - [Register a Complaint](https://www.quikkred.in/complaint): Submit a formal complaint.
 - [Report Fraud](https://www.quikkred.in/report-fraud): How to report fraudulent activity.
 - [Account Deletion Request](https://www.quikkred.in/account-deletion): Request deletion of your account.
-- [Downloads](https://www.quikkred.in/downloads): Downloadable forms and documents.
 
 ## Legal & Policies
 

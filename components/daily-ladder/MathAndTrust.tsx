@@ -6,21 +6,21 @@ import { motion } from "framer-motion";
 import { ShieldCheck, Eye, Scale, BadgeCheck } from "lucide-react";
 
 const MATH = [
-  { k: "Principal", v: "₹50,000" },
+  { k: "Loan amount", v: "Up to ₹50,000" },
   { k: "Tenure", v: "30 days" },
-  { k: "Daily floor", v: "₹2,500 (5%)" },
-  { k: "Interest", v: "1%/day · reducing balance" },
+  { k: "You pay", v: "A little, every day" },
+  { k: "Interest", v: "Reducing balance · only on what you owe" },
   { k: "Prepayment", v: "Zero penalty" },
   { k: "Cadence", v: "Daily / weekly (salaried)" },
   { k: "Repayment rail", v: "UPI · QR · UPI Autopay" },
-  { k: "Settlement", v: "T+0 capture · ledger-grade" },
+  { k: "Confirmation", v: "Instant" },
 ];
 
 const TRUST = [
   { icon: ShieldCheck, label: "RBI-registered NBFC", body: "Non-Banking Financial Company licensed under RBI; lending compliant with Master Direction." },
-  { icon: Eye, label: "DPDP §8(7) audit ledger", body: "Every bureau, AA, and credit-decision read is logged with actor + reason + request_id." },
-  { icon: Scale, label: "Reducing-balance APR", body: "Transparent. Interest charged only on outstanding principal. No flat-rate math sleight." },
-  { icon: BadgeCheck, label: "Paise-perfect accounting", body: "Double-entry ledger in Postgres. Every paise tied to a capture, allocation, and audit row." },
+  { icon: Eye, label: "Your data, protected", body: "DPDP-compliant. Access to your information is consent-based and fully auditable." },
+  { icon: Scale, label: "Reducing-balance interest", body: "Transparent. Interest charged only on outstanding principal. No flat-rate math sleight." },
+  { icon: BadgeCheck, label: "Accurate to the paise", body: "Every payment is tracked and reconciled, so the balance you see is always the balance you owe." },
 ];
 
 export function MathAndTrust() {
@@ -43,7 +43,7 @@ export function MathAndTrust() {
               Every paise visible. Every day.
             </h3>
             <p className="mt-2 text-sm text-slate-600">
-              No hidden charges, no surprise EMI. The math you see is the math the ledger records.
+              No hidden charges, no surprise EMI. What you see is exactly what you pay.
             </p>
             <dl className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
               {MATH.map((r) => (

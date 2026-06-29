@@ -6,12 +6,11 @@ import { motion } from "framer-motion";
 import { X, CheckCircle2 } from "lucide-react";
 
 const ROWS = [
-  { k: "Signal", bullet: "Default surfaces · day 30", ladder: "Default surfaces · day 1" },
-  { k: "NPA", bullet: "12–18%", ladder: "3–5%" },
-  { k: "Capital", bullet: "Locked · 30 days", ladder: "Recycles every ~15 days" },
-  { k: "Prepayment", bullet: "Penalty applies", ladder: "Zero penalty · tenure shortens" },
-  { k: "Visibility", bullet: "One bullet payment", ladder: "Every paise visible, every day" },
+  { k: "Cadence", bullet: "One lump sum at the end", ladder: "A little, every day" },
   { k: "Interest", bullet: "Charged on full principal", ladder: "Reducing balance · only on outstanding" },
+  { k: "Prepayment", bullet: "Penalty applies", ladder: "Zero penalty · tenure shortens" },
+  { k: "Tenure", bullet: "Fixed term", ladder: "Finish early when you over-pay" },
+  { k: "Visibility", bullet: "One bullet payment", ladder: "Every paise visible, every day" },
 ];
 
 export function VersusBullet() {

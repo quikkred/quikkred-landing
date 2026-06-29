@@ -25,21 +25,21 @@ export function Pillars() {
         </motion.div>
 
         <div className="mt-10 lg:mt-14 grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
-          {/* Pillar 1: Daily signal */}
+          {/* Pillar 1: Real-time visibility */}
           <Pillar
             num="01"
-            title="Daily signal, not 30-day blindness"
-            body="Industry sees a default on day 30. We see it in 24 hours. Risk surfaces before it compounds."
+            title="Your balance, in real time"
+            body="No statement to wait for. Every payment updates your outstanding the moment it lands — you always know exactly where you stand."
             tone="emerald"
-            visual={<SignalSpike />}
+            visual={<BalanceFall />}
           />
-          {/* Pillar 2: Capital velocity */}
+          {/* Pillar 2: Flexibility */}
           <Pillar
             num="02"
-            title="Capital recycles every 15 days"
-            body="50% of the loan is back by day 15. Re-lend it the same week — same ₹1 funds 2× more borrowers per year."
+            title="Pay to your own rhythm"
+            body="Pay the daily amount on tight days, a little more on good ones. Every extra rupee goes straight to your balance."
             tone="indigo"
-            visual={<FlywheelIcon />}
+            visual={<RhythmBars />}
           />
           {/* Pillar 3: Flexibility */}
           <Pillar
@@ -83,86 +83,67 @@ function Pillar({
   );
 }
 
-function SignalSpike() {
-  // Line that climbs then spikes — represents risk going from invisible to obvious
+function BalanceFall() {
+  // Line that descends — represents your outstanding balance dropping day by day
   return (
     <svg viewBox="0 0 200 100" className="w-full h-full">
       <defs>
-        <linearGradient id="signal-fade" x1="0" x2="1" y1="0" y2="0">
-          <stop offset="0%" stopColor="#25B181" stopOpacity="0.4" />
-          <stop offset="100%" stopColor="#25B181" />
+        <linearGradient id="balance-fade" x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0%" stopColor="#25B181" />
+          <stop offset="100%" stopColor="#25B181" stopOpacity="0.4" />
         </linearGradient>
       </defs>
       {/* baseline */}
       <line x1="10" y1="80" x2="190" y2="80" stroke="#E2E8F0" strokeDasharray="2 3" />
-      {/* growing line with spike */}
+      {/* descending balance line */}
       <motion.path
         initial={{ pathLength: 0 }}
         whileInView={{ pathLength: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-        d="M 10 78 L 30 76 L 50 75 L 70 73 L 90 70 L 110 66 L 130 60 L 150 50 L 165 36 L 180 18 L 190 10"
+        d="M 10 14 L 30 20 L 50 28 L 70 36 L 90 44 L 110 52 L 130 60 L 150 67 L 170 73 L 190 78"
         fill="none"
-        stroke="url(#signal-fade)"
+        stroke="url(#balance-fade)"
         strokeWidth="2.5"
         strokeLinecap="round"
       />
-      {/* spike marker */}
+      {/* end marker */}
       <motion.circle
         initial={{ scale: 0, opacity: 0 }}
         whileInView={{ scale: 1, opacity: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 0.4, delay: 1.2 }}
-        cx="180" cy="18" r="5"
+        cx="190" cy="78" r="5"
         fill="#25B181"
-        style={{ transformOrigin: "180px 18px" }}
+        style={{ transformOrigin: "190px 78px" }}
       />
-      <motion.text
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.4, delay: 1.4 }}
-        x="178" y="10" textAnchor="end" fontSize="9" fill="#0F766E" fontWeight="600"
-      >
-        Risk visible
-      </motion.text>
+      <text x="10" y="9" fontSize="9" fill="#0F766E" fontWeight="600">Balance</text>
       <text x="10" y="92" fontSize="8" fill="#94A3B8" fontFamily="monospace">Day 1</text>
       <text x="190" y="92" textAnchor="end" fontSize="8" fill="#94A3B8" fontFamily="monospace">Day 30</text>
     </svg>
   );
 }
 
-function FlywheelIcon() {
+function RhythmBars() {
+  // Variable-height bars — steady days and over-pay days, your own pace
+  const bars = [0.5, 0.5, 0.9, 0.5, 1.0, 0.5, 0.7, 0.5];
   return (
-    <div className="w-full h-full grid place-items-center">
-      <motion.svg
-        viewBox="0 0 120 120"
-        className="w-24 h-24"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 14, ease: "linear", repeat: Infinity }}
-      >
-        <defs>
-          <linearGradient id="fw-grad" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stopColor="#25B181" />
-            <stop offset="100%" stopColor="#6366F1" />
-          </linearGradient>
-        </defs>
-        <circle cx="60" cy="60" r="44" fill="none" stroke="#E2E8F0" strokeWidth="3" />
-        <circle
-          cx="60" cy="60" r="44" fill="none"
-          stroke="url(#fw-grad)"
-          strokeWidth="3.5"
-          strokeLinecap="round"
-          strokeDasharray="138 138"
-          transform="rotate(-90 60 60)"
+    <div className="w-full h-full flex items-end justify-center gap-2 p-4">
+      {bars.map((h, i) => (
+        <motion.div
+          key={i}
+          initial={{ scaleY: 0 }}
+          whileInView={{ scaleY: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.1 + i * 0.07, ease: [0.22, 1, 0.36, 1] }}
+          style={{ height: `${h * 100}%`, transformOrigin: "bottom" }}
+          className={`w-3.5 rounded-md ${
+            h > 0.8
+              ? "bg-gradient-to-t from-[#10b981] to-[#a5b4fc]"
+              : "bg-gradient-to-t from-[#0d8b65] to-[#25B181]"
+          }`}
         />
-        {/* spokes */}
-        <line x1="60" y1="20" x2="60" y2="36" stroke="url(#fw-grad)" strokeWidth="2.5" strokeLinecap="round" />
-        <line x1="60" y1="84" x2="60" y2="100" stroke="url(#fw-grad)" strokeWidth="2.5" strokeLinecap="round" />
-        <line x1="20" y1="60" x2="36" y2="60" stroke="url(#fw-grad)" strokeWidth="2.5" strokeLinecap="round" />
-        <line x1="84" y1="60" x2="100" y2="60" stroke="url(#fw-grad)" strokeWidth="2.5" strokeLinecap="round" />
-        <circle cx="60" cy="60" r="6" fill="#0F172A" />
-      </motion.svg>
+      ))}
     </div>
   );
 }

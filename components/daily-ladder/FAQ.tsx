@@ -8,15 +8,15 @@ import { Plus } from "lucide-react";
 const Q = [
   {
     q: "What if I miss a daily payment?",
-    a: "We grace you for the first 24 hours and a reminder goes out. Two consecutive misses move the loan to AT_RISK and our risk desk reaches out. Seven misses in a row triggers the EJECTED state — at that point we treat it as a recovery case. We do not auto-debit or auto-block your other services; you remain in control.",
+    a: "A short grace window kicks in and we send you a reminder. If payments keep slipping, our team reaches out to help you get back on track. We never auto-debit or block your other services without your consent — you stay in control throughout.",
   },
   {
     q: "Can I prepay or close early?",
-    a: "Yes — any day, any amount above the daily floor. The extra payment reduces principal immediately, interest drops accordingly (reducing balance), and your tenure shortens. There is zero prepayment penalty.",
+    a: "Yes — any day, any amount above your daily payment. The extra goes straight to principal, your interest drops accordingly (reducing balance), and your tenure shortens. There is zero prepayment penalty.",
   },
   {
     q: "How is the interest calculated?",
-    a: "1% per day on the outstanding principal, charged with the daily floor. Because the principal reduces as you pay, the absolute interest also reduces each day. We never charge interest on principal you've already repaid.",
+    a: "Interest is charged on a reducing-balance basis — only on the principal you still owe. Because that principal drops as you pay, the interest shrinks alongside it. You're never charged interest on money you've already repaid.",
   },
   {
     q: "Is the daily ladder more expensive than a regular EMI loan?",
@@ -28,7 +28,7 @@ const Q = [
   },
   {
     q: "What's the maximum loan amount?",
-    a: "₹50,000 for first-time borrowers. Repeat borrowers with a clean ladder graduate to ₹1,00,000 and beyond. Eligibility depends on your bureau profile, AA-verified income, and our affordability model — typically requiring an affordability ratio ≥ 0.7×.",
+    a: "₹50,000 for first-time borrowers. Repeat borrowers with a clean ladder graduate to ₹1,00,000 and beyond. Eligibility depends on your credit profile, verified income, and how comfortably a new loan fits your finances.",
   },
 ];
 

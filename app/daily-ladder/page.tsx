@@ -9,9 +9,9 @@ import { FAQ } from "@/components/daily-ladder/FAQ";
 import { ClosingCTA } from "@/components/daily-ladder/ClosingCTA";
 
 export const metadata: Metadata = {
-  title: "The Daily Ladder · India's Lending Innovation 2026 | Quikkred",
+  title: "The Daily Ladder · A New Way to Borrow | Quikkred",
   description:
-    "30 days, 30 rungs. Pay a little every day, see your repayment in real-time. Reducing-balance interest, zero prepayment penalty, capital recycles every 15 days. India's first daily-ladder loan product.",
+    "30 days, 30 rungs. Pay a little every day and watch your balance fall in real time. Reducing-balance interest, zero prepayment penalty, finish early with no fees. A new daily-ladder loan from Quikkred.",
   keywords: [
     "daily ladder loan",
     "quikkred daily ladder",
@@ -21,9 +21,9 @@ export const metadata: Metadata = {
     "NBFC daily ladder",
   ],
   openGraph: {
-    title: "The Daily Ladder · India's Lending Innovation 2026",
+    title: "The Daily Ladder · A New Way to Borrow",
     description:
-      "Pay a little every day. Capital comes back in 24 hours, not 24 days. India's first daily-ladder loan product.",
+      "Pay a little every day. Finish early, with zero penalty. A new daily-ladder loan from Quikkred.",
     type: "website",
     url: "https://quikkred.in/daily-ladder",
     siteName: "Quikkred",

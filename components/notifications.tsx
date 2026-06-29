@@ -131,7 +131,7 @@ export function Notifications({ userId, userRole = 'CUSTOMER', className = '' }:
       isRead: true,
       isImportant: false,
       createdAt: new Date(Date.now() - 7200000).toISOString(),
-      actionUrl: '/documents',
+      actionUrl: '/user/documents',
       actionText: 'Upload Document'
     },
     {

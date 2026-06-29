@@ -77,14 +77,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     entry("/resources/how-to-apply", 0.7, "monthly"),
     entry("/resources/interest-rates", 0.7, "monthly"),
     entry("/document-checklist", 0.65, "monthly"),
-    entry("/downloads", 0.6, "monthly"),
     entry("/interest-rates", 0.7, "monthly"),
     entry("/blog", 0.7, "weekly"),
     entry("/blogs", 0.6, "weekly"),
 
     // ── Support / regulatory ──────────────────────────────
     entry("/support", 0.65, "monthly"),
-    entry("/track-application", 0.6, "monthly"),
     entry("/application-status", 0.6, "monthly"),
     entry("/complaint", 0.6, "yearly"),
     entry("/grievance", 0.65, "yearly"),
