@@ -5,7 +5,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Award, ArrowRight } from "lucide-react";
+import { Sparkles, ArrowRight } from "lucide-react";
 import { QUICK_FORM_URL } from "@/lib/config";
 
 export default function DailyLadderTeaser() {
@@ -42,8 +42,8 @@ export default function DailyLadderTeaser() {
           <div className="relative grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 lg:gap-10 items-center">
             <div className="min-w-0">
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-emerald-400/15 to-indigo-400/15 border border-emerald-400/25 text-[10px] sm:text-[11px] font-semibold tracking-[0.18em] uppercase text-emerald-300">
-                <Award className="w-3.5 h-3.5" />
-                India's Lending Innovation · 2026
+                <Sparkles className="w-3.5 h-3.5" />
+                A new way to borrow · 2026
               </span>
               <h2 className="mt-4 font-sora font-bold text-2xl sm:text-3xl lg:text-4xl leading-[1.05]">
                 The Daily Ladder.{" "}
@@ -52,7 +52,7 @@ export default function DailyLadderTeaser() {
                 </span>
               </h2>
               <p className="mt-3 text-sm sm:text-base text-slate-300 max-w-2xl leading-relaxed">
-                Pay a little every day. See your repayment in real-time. Capital comes back in 24 hours, not 24 days — the first lending product in India that lets you over-pay any day and shorten your tenure with zero penalty.
+                Pay a little every day and watch your balance fall in real time — a new way to borrow in India that lets you over-pay any day and shorten your tenure with zero penalty.
               </p>
 
               <div className="mt-6 flex flex-col sm:flex-row gap-3">
@@ -108,14 +108,14 @@ function MiniRungs() {
                   }`}
                 />
               </div>
-              <span className="w-12 text-right text-[9px] font-mono text-slate-400 tabular-nums">
-                ₹{(2500 * w).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+              <span className="w-12 text-right text-[9px] font-mono text-slate-500 tabular-nums">
+                {w > 0.9 ? "over" : "steady"}
               </span>
             </div>
           ))}
         </div>
         <div className="mt-3 pt-3 border-t border-white/10 text-[10px] text-slate-400 text-center">
-          Daily floor · 5% of principal
+          A little, every day
         </div>
       </div>
     </div>

@@ -49,13 +49,22 @@ const FormSteps = ({
     // and the moment BRE is pulled at "Proceed to Bank" (brePulled flips true,
     // status leaves PENDING) the old guard treated the in-progress app as
     // submitted and yanked them to /application-status, cutting off bank
-    // verification. The per-cycle `application.isSubmit` is false until this
-    // application is actually submitted, so the flow now runs to completion and
-    // only redirects once it's genuinely done. (Also drives the "redirecting"
-    // spinner below, so a fresh reapply never gets stuck on it.)
+    // verification. (Also drives the "redirecting" spinner below, so a fresh
+    // reapply never gets stuck on it.)
+    //
+    // CRUCIALLY, also require `breHistory.brePulled` for THIS cycle. On a first
+    // reapply the backend leaves the previous cycle's `isSubmit = true` (only the
+    // user-level flag is reset on the dashboard), so gating on `isSubmit` alone
+    // redirected the reapply straight to /application-status as "approved" —
+    // skipping eligibility entirely, so `v2/bre/initialize` was never called and
+    // the application was "completed" without a BRE response. A fresh reapply has
+    // brePulled = false, so requiring it forces the applicant through eligibility
+    // (which runs BRE) before any completion redirect. This matches the same
+    // per-cycle gate used by `alreadyApproved` / `alreadyOnHold` in
+    // FinFactorVerify and `breDecidedThisCycle` in the apply page.
     const shouldGoToStatus = useMemo(() => {
-        return !!application?.isSubmit;
-    }, [application?.isSubmit]);
+        return !!application?.isSubmit && !!application?.breHistory?.brePulled;
+    }, [application?.isSubmit, application?.breHistory?.brePulled]);
 
     // Once the application is submitted, send the applicant to the dedicated
     // /application-status page instead of rendering the success/status screen

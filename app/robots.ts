@@ -31,7 +31,6 @@ export default function robots(): MetadataRoute.Robots {
           "/auth/*",
           "/authorize-mandate",
           "/kyc",
-          "/documents",
           "/payments",
           "/referrals",
           "/reports",
