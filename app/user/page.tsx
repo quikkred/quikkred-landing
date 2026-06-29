@@ -102,7 +102,7 @@ export default function UserDashboard() {
 
   // Payment gateway selection. Razorpay opens an in-page SDK modal; PayU uses a
   // hosted checkout that redirects the page via a POSTed form.
-  const [paymentGateway, setPaymentGateway] = useState<'razorpay' | 'payu'>('razorpay');
+  const [paymentGateway, setPaymentGateway] = useState<'razorpay' | 'payu'>('payu');
   // PayU hosted-checkout method. 'NB' needs a selected bank; 'UPI' and 'DC'
   // (debit card) collect their details on PayU's own page (no bankcode).
   const [payuMethod, setPayuMethod] = useState<'NB' | 'UPI' | 'DC'>('NB');
