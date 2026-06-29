@@ -46,8 +46,22 @@ export interface PayuInitiateResponse {
 }
 
 export interface PayuPaymentLinkResponse {
+  /** Shareable hosted-checkout link: <frontend>/pay/<txnid>. */
   paymentLink: string;
-  invoiceId: string;
+  txnid: string;
+  amount: string;
+}
+
+/** Resolved hosted-checkout form for a shared payment link (/pay/<txnid>). */
+export interface PayuCheckoutResponse {
+  action: string;
+  params: PayuFormParams;
+  amount: string;
+  productinfo: string;
+  loanNumber: string;
+  txnid: string;
+  /** Set when the link's transaction was already booked. */
+  alreadyPaid?: boolean;
 }
 
 export type PayuVerifyStatus = 'success' | 'failure' | 'pending';
@@ -89,6 +103,17 @@ class PayuService {
   async verify(txnid: string): Promise<ApiResponse<PayuVerifyResponse>> {
     return apiClient.get<PayuVerifyResponse>(
       `/api/payu/collect/verify/${encodeURIComponent(txnid)}`,
+      true
+    );
+  }
+
+  /**
+   * PUBLIC: resolve a shared payment-link txnid into hosted-checkout form params.
+   * The customer opening /pay/<txnid> is not authenticated — the backend route is public.
+   */
+  async getCheckout(txnid: string): Promise<ApiResponse<PayuCheckoutResponse>> {
+    return apiClient.get<PayuCheckoutResponse>(
+      `/api/payu/checkout/${encodeURIComponent(txnid)}`,
       true
     );
   }
