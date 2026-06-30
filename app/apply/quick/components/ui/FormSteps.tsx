@@ -24,6 +24,7 @@ interface FormStepsProps {
     ipBlocked: boolean;
     blockType: 'vpn' | 'region' | 'error';
     blockState: string;
+    isFreshReapply?: boolean;
     setStep: (step: FormStepsType) => void;
     setFormData: React.Dispatch<React.SetStateAction<QuickApplyV2FormData>>;
     performIPCheck: () => void;
@@ -36,6 +37,7 @@ const FormSteps = ({
     ipBlocked = false,
     blockType,
     blockState,
+    isFreshReapply = false,
     setStep,
     setFormData,
     performIPCheck,
@@ -63,8 +65,15 @@ const FormSteps = ({
     // per-cycle gate used by `alreadyApproved` / `alreadyOnHold` in
     // FinFactorVerify and `breDecidedThisCycle` in the apply page.
     const shouldGoToStatus = useMemo(() => {
+        // On a fresh reapply, ignore the "already submitted" resume redirect until
+        // the applicant actually reaches the submit step. The backend can briefly
+        // still return the PREVIOUS cycle's application (isSubmit + brePulled both
+        // true), which would otherwise yank the reapply to /application-status and
+        // skip eligibility/BRE entirely. Once they complete the bank step,
+        // step === "submit" and the redirect is allowed through normally.
+        if (isFreshReapply && step !== "submit") return false;
         return !!application?.isSubmit && !!application?.breHistory?.brePulled;
-    }, [application?.isSubmit, application?.breHistory?.brePulled]);
+    }, [application?.isSubmit, application?.breHistory?.brePulled, isFreshReapply, step]);
 
     // Once the application is submitted, send the applicant to the dedicated
     // /application-status page instead of rendering the success/status screen
@@ -137,7 +146,12 @@ const FormSteps = ({
 
             {/* Main Flow */}
             {!ipLoading && !ipBlocked && (
-                shouldGoToStatus ? (
+                /* `step === "submit"` is the moment the bank step posted isSubmit:true
+                   and called onNext(). There's no inline UI for it — we hold a
+                   spinner while the application refetches (isSubmit + brePulled) and
+                   the effect above redirects to /application-status, so the card
+                   never flashes blank between submit and redirect. */
+                (shouldGoToStatus || step === "submit") ? (
                     /* Redirecting to /application-status (see effect above) */
                     <div className="flex items-center justify-center py-20">
                         <div className="w-10 h-10 border-4 border-[#25B181] border-t-transparent rounded-full animate-spin" />

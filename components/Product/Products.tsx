@@ -212,13 +212,15 @@ export default function Products({
 
         {/* Right Section */}
         <div className="md:w-1/2 flex justify-center w-full">
-          <div className="relative rounded-xl sm:rounded-2xl overflow-hidden w-full max-w-[320px] sm:max-w-[380px] md:max-w-[460px]">
+          <div className="relative w-full max-w-[380px] sm:max-w-[480px] md:max-w-[560px] lg:max-w-[640px]">
             <Image
               src={imageSrc}
-              alt="product-main"
-              width={460}
-              height={320}
-              className="object-cover w-full h-auto"
+              alt="Quikkred mascot relaxing on a bean bag while applying for a loan on a phone"
+              width={1536}
+              height={1024}
+              priority
+              unoptimized
+              className="object-contain w-full h-auto"
             />
           </div>
         </div>
