@@ -11,6 +11,8 @@ import {
   Shield,
   Heart,
   CheckCircle,
+  Check,
+  BadgeCheck,
   Globe,
   Briefcase,
   Clock,
@@ -89,6 +91,52 @@ const values = [
     title: "Social impact",
     description:
       "Empowering communities and contributing to India's economic growth through responsible, PSL-eligible lending.",
+  },
+];
+
+// Operating commitments — concrete promises that sit between the abstract
+// core values and the formal regulatory frame. Rewritten from the source
+// checklist into plain, customer-facing language (active voice, one job each).
+const commitments = [
+  {
+    title: "RBI-aligned practices",
+    desc: "Lending and collections follow RBI's Digital Lending Directions, start to finish.",
+  },
+  {
+    title: "Transparent pricing",
+    desc: "One all-inclusive rate on your Key Fact Statement — no hidden charges, ever.",
+  },
+  {
+    title: "Fast, secure onboarding",
+    desc: "Apply in minutes with fully digital KYC, verified through secure channels.",
+  },
+  {
+    title: "Repayment on your terms",
+    desc: "Pay early or pay extra to shorten your tenure, with zero prepayment penalty.",
+  },
+  {
+    title: "Bank-grade security",
+    desc: "Your data stays encrypted and private, to DPDP and ISO-grade standards.",
+  },
+  {
+    title: "Real-time tracking",
+    desc: "Watch your balance update live, with a reminder before every due date.",
+  },
+  {
+    title: "Dedicated support",
+    desc: "Real people for borrowers and partners — over phone, email and chat.",
+  },
+  {
+    title: "Responsible lending",
+    desc: "We lend only what comfortably fits your income and existing obligations.",
+  },
+  {
+    title: "Always-on fraud monitoring",
+    desc: "Continuous checks guard every account against fraud and misuse.",
+  },
+  {
+    title: "Smart underwriting",
+    desc: "Technology-led credit decisions get you an answer in minutes, not days.",
   },
 ];
 
@@ -423,6 +471,57 @@ export default function AboutPage() {
                 </motion.div>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Our commitments (operating standards) ─── */}
+      <section className="bg-[#F6F6F6] py-12 sm:py-16">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
+          <div className="text-center mb-10">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#D3F1EB] text-[#1F8F68] rounded-full text-xs font-semibold uppercase tracking-wide mb-4">
+              <BadgeCheck className="w-3.5 h-3.5" />
+              Our commitments
+            </span>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-sora text-gray-900 mb-3">
+              What you can <span className="text-[#25B181]">count on</span>
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Ten standards that shape every loan we make — and every interaction after it.
+            </p>
+          </div>
+
+          {/* Ruled commitments ledger — a single sheet whose 1px grid gaps form
+              the hairline rules, so dividers stay even across every breakpoint. */}
+          <div className="rounded-3xl overflow-hidden border border-gray-200 shadow-sm">
+            <div
+              aria-hidden
+              className="h-1.5 bg-gradient-to-r from-[#25B181] via-[#51C9AF] to-[#4A66FF]"
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-gray-200">
+              {commitments.map((c, i) => (
+                <motion.div
+                  key={c.title}
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.04 }}
+                  className="group bg-white p-5 sm:p-6 flex items-start gap-4 hover:bg-[#F7FBFA] transition-colors"
+                >
+                  <span className="flex-shrink-0 mt-0.5 w-8 h-8 rounded-full bg-[#D3F1EB] text-[#1F8F68] flex items-center justify-center group-hover:bg-[#25B181] group-hover:text-white transition-colors">
+                    <Check className="w-4 h-4" strokeWidth={3} />
+                  </span>
+                  <div>
+                    <h3 className="font-sora font-bold text-gray-900 text-[15px] sm:text-base mb-1">
+                      {c.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      {c.desc}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
