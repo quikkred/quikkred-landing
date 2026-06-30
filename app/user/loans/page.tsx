@@ -743,7 +743,13 @@ export default function MyLoansPage() {
         updateUser({ isSubmit: false });
         setTimeout(() => {
           resetReapplyModal();
-          router.push('/apply/quick');
+          // Mark this as a fresh reapply. Right after reapply the backend may still
+          // return the PREVIOUS cycle's application (isSubmit + brePulled both true)
+          // for a moment, which would make /apply/quick redirect straight to
+          // /application-status and skip eligibility/BRE. The marker forces the
+          // applicant through eligibility and suppresses that stale-data redirect
+          // until they actually submit the new application at the bank step.
+          router.push('/apply/quick?reapply=1');
         }, 2000);
       } else {
         setReapplyError(response.message || 'Failed to submit reapplication');

@@ -303,7 +303,7 @@ export default function ProductsPage() {
           subtitle={t('products.hero.subtitle')}
           buttonPrimaryText={t('products.hero.buttonPrimary')}
           buttonSecondaryText={t('products.hero.buttonSecondary')}
-          imageSrc="/product-main.jpg"
+          imageSrc="/quikkred_image.webp"
           primaryColor="emerald"
         />
       </section>

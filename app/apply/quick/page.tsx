@@ -28,6 +28,7 @@ import CustomerLogin from './components/ui/CustomerLogin';
 import CheckEligibility from './components/CheckEligibility';
 import FormSteps, { FormStepsType } from './components/ui/FormSteps';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { COMPANY_PHONE_TEL } from '@/lib/constants/companyInfo';
 import { LayoutDashboard, LogOut } from 'lucide-react';
 import FlowSwitcher from './components/ui/FlowSwitcher';
@@ -48,6 +49,25 @@ export default function QuickApplyV2Page() {
     // const storage = useStorage();
     // const breForm = useMemo<StorageApplicationForm | null>(() => ((storage.data?.breForm as StorageApplicationForm) || null), [storage]);
     const { application, getCustomer } = useApplication();
+
+    // Fresh-reapply marker (?reapply=1 from the dashboard). Captured once into a
+    // ref so it survives the URL being cleaned below and persists across the SPA
+    // step transitions. A fresh reapply must ALWAYS start at eligibility — the
+    // backend can momentarily still return the previous cycle's submitted
+    // application, and the bank/status shortcuts below would otherwise route the
+    // applicant past BRE straight to a completed state.
+    const searchParams = useSearchParams();
+    const isFreshReapplyRef = useRef<boolean | null>(null);
+    if (isFreshReapplyRef.current === null) {
+        isFreshReapplyRef.current = searchParams?.get('reapply') === '1';
+    }
+    useEffect(() => {
+        if (isFreshReapplyRef.current && typeof window !== 'undefined') {
+            // Strip the param so a manual reload doesn't keep forcing eligibility
+            // once the new cycle's data has settled.
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    }, []);
 
     // Form Data
     const [formData, setFormData] = useState<QuickApplyV2FormData>(getInitialFormData);
@@ -181,6 +201,15 @@ export default function QuickApplyV2Page() {
         // has brePulled = false and MUST go through eligibility first — never jump
         // to the bank step (which would skip the v2/bre/initialize call).
         const breDecidedThisCycle = !!application?.breHistory?.brePulled;
+
+        // A fresh reapply always starts at eligibility, regardless of any stale
+        // previous-cycle flags on `application` (which may still report a decided
+        // BRE / verified bank statement until the new cycle's data loads).
+        if (isLogin && isFreshReapplyRef.current) {
+            setStep("eligibility");
+            hasAutoRouted.current = true;
+            return;
+        }
 
         // Bank step only applies once BRE has been decided this cycle AND the
         // applicant has progressed into bank verification.
@@ -342,6 +371,7 @@ export default function QuickApplyV2Page() {
                 key={"form-steps"}
                 step={step}
                 setStep={setStep}
+                isFreshReapply={!!isFreshReapplyRef.current}
                 blockState={blockState}
                 blockType={blockType}
                 formData={formData}

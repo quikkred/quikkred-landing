@@ -445,13 +445,18 @@ const FinFactorVerify = ({ formData, setFormData, onNext }: FinFactorVerifyProps
 
                 const status = normalizeBreStatus(decision.status);
                 // A reapply is a returning customer who already has bank + profile
-                // on file. For them a terminal decision (Approve/Reject) completes
-                // the application — mark it submitted and go to the status page
-                // instead of routing into the bank step.
+                // on file. A REJECT is terminal — there's no bank step to collect,
+                // so mark the application submitted and go straight to the status
+                // page. An APPROVE / Proceed-to-Bank must still route through the
+                // bank step exactly like a fresh application: the applicant
+                // re-verifies their bank account and uploads the statement, and only
+                // the bank-step "Submit" flips isSubmit true (which then redirects to
+                // /application-status). Short-circuiting an approved reapply here used
+                // to skip bank verification entirely.
                 const isReturningCustomer = !!(user?.isBankDetailsFilled && user?.isProfileVerified);
 
-                if (isReturningCustomer && (status === "approved" || status === "rejected")) {
-                    completeApplication(decision, status === "rejected");
+                if (isReturningCustomer && status === "rejected") {
+                    completeApplication(decision, true);
                 } else {
                     showDecisionModal(decision);
                 }
