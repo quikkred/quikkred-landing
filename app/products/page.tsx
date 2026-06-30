@@ -283,30 +283,17 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="">
-        {/* <div className="relative">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24">
-            <div className="flex items-center gap-2 text-white/80 text-xs sm:text-sm mb-4 sm:mb-6">
-              <Link href="/" className="hover:text-white transition-colors">Home</Link>
-              <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="text-white">All Loan Products</span>
-            </div>
-          </div>
-
-       
-        </div> */}
-
-        <Products
-          title={t('products.hero.title')}
-          highlightWord={t('products.hero.highlightWord')}
-          subtitle={t('products.hero.subtitle')}
-          buttonPrimaryText={t('products.hero.buttonPrimary')}
-          buttonSecondaryText={t('products.hero.buttonSecondary')}
-          imageSrc="/quikkred_image.webp"
-          primaryColor="emerald"
-        />
-      </section>
+      {/* Hero Section — Products renders its own full-bleed <section>, so no
+          wrapper here (a wrapping <section> would re-add the global side padding). */}
+      <Products
+        title={t('products.hero.title')}
+        highlightWord={t('products.hero.highlightWord')}
+        subtitle={t('products.hero.subtitle')}
+        buttonPrimaryText={t('products.hero.buttonPrimary')}
+        buttonSecondaryText={t('products.hero.buttonSecondary')}
+        imageSrc="/quikkred_image.webp"
+        primaryColor="emerald"
+      />
 
       {/* Featured Product - Payday Loan */}
       <motion.section
